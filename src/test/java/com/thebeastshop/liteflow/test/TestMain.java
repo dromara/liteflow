@@ -20,13 +20,12 @@ public class TestMain {
 		executor.setRulePath(Arrays.asList(new String[]{"flow.xml"}));
 		executor.init();
 		
-		for(int i=0;i<200;i++){
+		for(int i=0;i<1;i++){
 			String response = executor.execute("chain2", "it's a request");
 			System.out.println(response);
 		}
 		
 		
-		System.in.read();
 	}
 	
 }
