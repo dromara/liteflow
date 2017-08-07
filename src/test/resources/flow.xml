@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+	<nodes>
+		<node id="a" class="com.thebeastshop.liteflow.test.component.AComponent"/>
+		<node id="b" class="com.thebeastshop.liteflow.test.component.BComponent"/>
+		<node id="c" class="com.thebeastshop.liteflow.test.component.CComponent"/>
+		<node id="d" class="com.thebeastshop.liteflow.test.component.DComponent"/>
+		<node id="e" class="com.thebeastshop.liteflow.test.component.EComponent"/>
+		<node id="f" class="com.thebeastshop.liteflow.test.component.FComponent"/>
+		<node id="g" class="com.thebeastshop.liteflow.test.component.GComponent"/>
+	</nodes>
+	
+	<chain name="chain1">
+		<then value="a,c"/>
+		<when value="b,d"/>
+		<then value="e,f,g"/>
+	</chain>
+	
+	<chain name="chain2">
+		<then value="a,c,g"/>
+		<when value="b,e"/>
+		<then value="d,f"/>
+	</chain>
+</flow>
