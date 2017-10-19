@@ -65,11 +65,11 @@ public class FlowParser {
 				clazz = e.attributeValue("class");
 				node.setId(id);
 				node.setClazz(clazz);
-				component.setNodeId(id);
 				component = (Component) Class.forName(clazz).newInstance();
 				if (component == null) {
 					LOG.error("couldn't find component class [{}] ", clazz);
 				}
+				component.setNodeId(id);
 				node.setInstance(component);
 				nodeMap.put(id, node);
 			}
