@@ -65,8 +65,11 @@ public class FlowParser {
 				clazz = e.attributeValue("class");
 				node.setId(id);
 				node.setClazz(clazz);
-				component = (Component) Class.forName(clazz).newInstance();
 				component.setNodeId(id);
+				component = (Component) Class.forName(clazz).newInstance();
+				if (component == null) {
+					LOG.error("couldn't find component class [{}] ", clazz);
+				}
 				node.setInstance(component);
 				nodeMap.put(id, node);
 			}
@@ -102,7 +105,7 @@ public class FlowParser {
 				FlowBus.addChain(chainName, new Chain(conditionList));
 			}
 		} catch (Exception e) {
-			LOG.error("FlowParser解析异常: {}", e);
+			LOG.error("FlowParser parser exception: {}", e);
 		}
 
 	}
