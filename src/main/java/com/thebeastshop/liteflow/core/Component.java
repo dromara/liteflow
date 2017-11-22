@@ -51,6 +51,10 @@ public abstract class Component {
 	
 	protected abstract void process() throws Exception;
 	
+	protected boolean isAccess(){
+		return true;
+	}
+	
 	public boolean isContinueOnError() {
 		return continueOnError;
 	}

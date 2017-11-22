@@ -73,7 +73,10 @@ public class FlowExecutor {
 					for(Node node : nodeList){
 						component = node.getInstance();
 						try{
-							component.setSlotIndex(slotIndex).execute();
+							component.setSlotIndex(slotIndex);
+							if(component.isAccess()){
+								component.execute();
+							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
 								LOG.error("component[{}] cause error,but flow is still go on",t,component.getClass().getSimpleName());
