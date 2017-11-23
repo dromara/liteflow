@@ -12,14 +12,15 @@
 		<java.version>1.7</java.version>
 		<commons.lang3.version>3.4</commons.lang3.version>
 		<commons-collections.version>4.1</commons-collections.version>
-		<spring.version>4.1.7.RELEASE</spring.version>
+		<commons-io.version>2.4</commons-io.version>
+		<spring.version>4.2.6.RELEASE</spring.version>
 		<org.slf4j.version>1.7.21</org.slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
 		<log4j-slf4j.version>1.7.5</log4j-slf4j.version>
 		<slf4j.version>1.7.13</slf4j.version>
 		<fastjson.version>1.2.7</fastjson.version>
-		<classfinder.version>1.0</classfinder.version>
 		<dom4j.version>1.6.1</dom4j.version>
+		<junit.version>4.12</junit.version>
     </properties>
 
 	<dependencies>
@@ -33,9 +34,24 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
         <dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
         <dependency>
@@ -59,15 +75,15 @@
 			<version>${fastjson.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.poolik</groupId>
-		    <artifactId>classfinder</artifactId>
-		    <version>${classfinder.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>${dom4j.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
 	</dependencies>
 
     <build>

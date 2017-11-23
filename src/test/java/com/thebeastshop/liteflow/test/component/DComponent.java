@@ -9,10 +9,13 @@
  */
 package com.thebeastshop.liteflow.test.component;
 
-import com.thebeastshop.liteflow.core.Component;
+import org.springframework.stereotype.Component;
+
+import com.thebeastshop.liteflow.core.NodeComponent;
 import com.thebeastshop.liteflow.entity.data.Slot;
 
-public class DComponent extends Component {
+@Component("d")
+public class DComponent extends NodeComponent {
 
 	@Override
 	public void process() {

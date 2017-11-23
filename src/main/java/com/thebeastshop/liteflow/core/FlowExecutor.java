@@ -65,7 +65,7 @@ public class FlowExecutor {
 			List<Condition> conditionList = chain.getConditionList();
 			
 			List<Node> nodeList = null;
-			Component component = null;
+			NodeComponent component = null;
 			for(Condition condition : conditionList){
 				nodeList = condition.getNodeList();
 				
@@ -76,6 +76,8 @@ public class FlowExecutor {
 							component.setSlotIndex(slotIndex);
 							if(component.isAccess()){
 								component.execute();
+							}else{
+								LOG.info("component[{}] do not gain access",component.getClass().getSimpleName());
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){

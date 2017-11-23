@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -21,13 +22,14 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thebeastshop.liteflow.core.Component;
+import com.thebeastshop.liteflow.core.NodeComponent;
 import com.thebeastshop.liteflow.entity.config.Chain;
 import com.thebeastshop.liteflow.entity.config.Condition;
 import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.flow.FlowBus;
+import com.thebeastshop.liteflow.spring.ComponentScaner;
 import com.thebeastshop.liteflow.util.Dom4JReader;
 import com.thebeastshop.liteflow.util.IOUtil;
 
@@ -52,26 +54,33 @@ public class FlowParser {
 		try {
 			Element rootElement = document.getRootElement();
 
-			// 解析node节点
-			List<Element> nodeList = rootElement.element("nodes").elements("node");
-			String id = null;
-			String clazz = null;
-			Node node = null;
-			Component component = null;
+			//判断是以spring方式注册节点，还是以xml方式注册
 			Map<String, Node> nodeMap = new HashMap<String, Node>();
-			for (Element e : nodeList) {
-				node = new Node();
-				id = e.attributeValue("id");
-				clazz = e.attributeValue("class");
-				node.setId(id);
-				node.setClazz(clazz);
-				component = (Component) Class.forName(clazz).newInstance();
-				if (component == null) {
-					LOG.error("couldn't find component class [{}] ", clazz);
+			if(ComponentScaner.nodeComponentMap.isEmpty()){
+				// 解析node节点
+				List<Element> nodeList = rootElement.element("nodes").elements("node");
+				String id = null;
+				String clazz = null;
+				Node node = null;
+				NodeComponent component = null;
+				for (Element e : nodeList) {
+					node = new Node();
+					id = e.attributeValue("id");
+					clazz = e.attributeValue("class");
+					node.setId(id);
+					node.setClazz(clazz);
+					component = (NodeComponent) Class.forName(clazz).newInstance();
+					if (component == null) {
+						LOG.error("couldn't find component class [{}] ", clazz);
+					}
+					component.setNodeId(id);
+					node.setInstance(component);
+					nodeMap.put(id, node);
 				}
-				component.setNodeId(id);
-				node.setInstance(component);
-				nodeMap.put(id, node);
+			}else{
+				for(Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()){
+					nodeMap.put(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+				}
 			}
 
 			// 解析chain节点

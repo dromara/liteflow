@@ -12,9 +12,12 @@ package com.thebeastshop.liteflow.test.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.thebeastshop.liteflow.core.Component;
+import org.springframework.stereotype.Component;
 
-public class BComponent extends Component {
+import com.thebeastshop.liteflow.core.NodeComponent;
+
+@Component("b")
+public class BComponent extends NodeComponent {
 
 	@Override
 	public void process() {

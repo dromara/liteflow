@@ -17,9 +17,9 @@ import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
 import com.thebeastshop.liteflow.monitor.MonitorBus;
 
-public abstract class Component {
+public abstract class NodeComponent {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(Component.class);
+	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 	
 	private InheritableThreadLocal<Integer> slotIndexTL = new InheritableThreadLocal<Integer>();
 	
@@ -63,7 +63,7 @@ public abstract class Component {
 		this.continueOnError = continueOnError;
 	}
 
-	public Component setSlotIndex(Integer slotIndex) {
+	public NodeComponent setSlotIndex(Integer slotIndex) {
 		this.slotIndexTL.set(slotIndex);
 		return this;
 	}

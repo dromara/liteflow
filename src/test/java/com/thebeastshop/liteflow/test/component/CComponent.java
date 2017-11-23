@@ -9,9 +9,12 @@
  */
 package com.thebeastshop.liteflow.test.component;
 
-import com.thebeastshop.liteflow.core.Component;
+import org.springframework.stereotype.Component;
 
-public class CComponent extends Component {
+import com.thebeastshop.liteflow.core.NodeComponent;
+
+@Component("c")
+public class CComponent extends NodeComponent {
 
 	@Override
 	public void process() {

@@ -9,7 +9,7 @@
  */
 package com.thebeastshop.liteflow.entity.config;
 
-import com.thebeastshop.liteflow.core.Component;
+import com.thebeastshop.liteflow.core.NodeComponent;
 
 public class Node {
 	
@@ -17,7 +17,17 @@ public class Node {
 	
 	private String clazz;
 	
-	private Component instance;
+	private NodeComponent instance;
+	
+	public Node(){
+		
+	}
+	
+	public Node(String id, String clazz, NodeComponent instance) {
+		this.id = id;
+		this.clazz = clazz;
+		this.instance = instance;
+	}
 
 	public String getId() {
 		return id;
@@ -35,11 +45,11 @@ public class Node {
 		this.clazz = clazz;
 	}
 
-	public Component getInstance() {
+	public NodeComponent getInstance() {
 		return instance;
 	}
 
-	public void setInstance(Component instance) {
+	public void setInstance(NodeComponent instance) {
 		this.instance = instance;
 	}
 }
