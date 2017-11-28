@@ -9,6 +9,9 @@
  */
 package com.thebeastshop.liteflow.entity.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.thebeastshop.liteflow.core.NodeComponent;
 
 public class Node {
@@ -18,6 +21,8 @@ public class Node {
 	private String clazz;
 	
 	private NodeComponent instance;
+	
+	private Map<String, Node> condNodeMap = new HashMap<String, Node>();
 	
 	public Node(){
 		
@@ -51,5 +56,13 @@ public class Node {
 
 	public void setInstance(NodeComponent instance) {
 		this.instance = instance;
+	}
+	
+	public Node getCondNode(String nodeId){
+		return this.condNodeMap.get(nodeId);
+	}
+	
+	public void setCondNode(String nodeId, Node condNode){
+		this.condNodeMap.put(nodeId, condNode);
 	}
 }

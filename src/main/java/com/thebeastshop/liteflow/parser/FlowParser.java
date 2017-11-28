@@ -10,11 +10,14 @@
 package com.thebeastshop.liteflow.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -39,6 +42,8 @@ public class FlowParser {
 	private static final Logger LOG = LoggerFactory.getLogger(FlowParser.class);
 
 	private static final String ENCODING_FORMAT = "UTF-8";
+	
+	private static Map<String, Node> nodeMap = new HashMap<String, Node>();
 
 	public static void parseLocal(String rulePath) throws Exception {
 		String ruleContent = IOUtil.read(rulePath, ENCODING_FORMAT);
@@ -55,7 +60,6 @@ public class FlowParser {
 			Element rootElement = document.getRootElement();
 
 			//判断是以spring方式注册节点，还是以xml方式注册
-			Map<String, Node> nodeMap = new HashMap<String, Node>();
 			if(ComponentScaner.nodeComponentMap.isEmpty()){
 				// 解析node节点
 				List<Element> nodeList = rootElement.element("nodes").elements("node");
@@ -102,8 +106,20 @@ public class FlowParser {
 					}
 					chainNodeList = new ArrayList<Node>();
 					condArray = condArrayStr.split(",");
+					RegexEntity regexEntity = null;
+					Node node = null;
 					for (int i = 0; i < condArray.length; i++) {
-						chainNodeList.add(nodeMap.get(condArray[i]));
+						regexEntity = parseNodeStr(condArray[i]);
+						node = nodeMap.get(regexEntity.getCondNode());
+						chainNodeList.add(node);
+						if(regexEntity.getRealNodeArray() != null){
+							for(String key : regexEntity.getRealNodeArray()){
+								Node condNode = nodeMap.get(key);
+								if(condNode != null){
+									node.setCondNode(condNode.getId(), condNode);
+								}
+							}
+						}
 					}
 					if (condE.getName().equals("then")) {
 						conditionList.add(new ThenCondition(chainNodeList));
@@ -117,5 +133,53 @@ public class FlowParser {
 			LOG.error("FlowParser parser exception: {}", e);
 		}
 
+	}
+	
+	public static Node getNode(String nodeId){
+		return nodeMap.get(nodeId);
+	}
+	
+	private static class RegexEntity{
+		
+		private String condNode;
+		
+		private String[] realNodeArray;
+
+		public String getCondNode() {
+			return condNode;
+		}
+
+		public void setCondNode(String condNode) {
+			this.condNode = condNode;
+		}
+
+		public String[] getRealNodeArray() {
+			return realNodeArray;
+		}
+
+		public void setRealNodeArray(String[] realNodeArray) {
+			this.realNodeArray = realNodeArray;
+		}
+
+		@Override
+		public String toString() {
+			return "RegexEntity [condNode=" + condNode + ", realNodeArray="
+					+ Arrays.toString(realNodeArray) + "]";
+		}
+	}
+	
+	public static RegexEntity parseNodeStr(String str) {
+	    List<String> list = new ArrayList<String>();
+	    Pattern p = Pattern.compile("[^\\)\\(]+");
+	    Matcher m = p.matcher(str);
+	    while(m.find()){
+	        list.add(m.group());
+	    }
+	    RegexEntity regexEntity = new RegexEntity();
+	    regexEntity.setCondNode(list.get(0));
+	    if(list.size() > 1){
+	    	regexEntity.setRealNodeArray(list.get(1).split("\\|"));
+	    }
+	    return regexEntity;
 	}
 }

@@ -21,7 +21,7 @@ public class TestMain {
 		executor.init();
 		
 		for(int i=0;i<1;i++){
-			String response = executor.execute("chain2", "it's a request");
+			String response = executor.execute("chain1", "it's a request");
 			System.out.println(response);
 		}
 		

@@ -9,13 +9,17 @@
  */
 package com.thebeastshop.liteflow.core;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
 import com.thebeastshop.liteflow.monitor.MonitorBus;
+import com.thebeastshop.liteflow.parser.FlowParser;
 
 public abstract class NodeComponent {
 	
@@ -45,6 +49,20 @@ public abstract class NodeComponent {
 		statistics.setTimeSpent(timeSpent);
 		statistics.setMemorySpent(initm-endm);
 		MonitorBus.addStatistics(statistics);
+		
+		
+		if(this instanceof NodeCondComponent){
+			String condNodeId = this.getSlot().getCondResult(this.getClass().getName());
+			if(StringUtils.isNotBlank(condNodeId)){
+				Node thisNode = FlowParser.getNode(nodeId);
+				Node condNode = thisNode.getCondNode(condNodeId);
+				if(condNode != null){
+					NodeComponent condComponent = condNode.getInstance();
+					condComponent.setSlotIndex(slotIndexTL.get());
+					condComponent.execute();
+				}
+			}
+		}
 		
 		LOG.debug("componnet[{}] finished in {} milliseconds",this.getClass().getSimpleName(),timeSpent);
 	}

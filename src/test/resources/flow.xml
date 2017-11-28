@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
+	<!-- 如果和spring集成，以下<nodes>配置可以不要 -->
 	<nodes>
 		<node id="a" class="com.thebeastshop.liteflow.test.component.AComponent"/>
 		<node id="b" class="com.thebeastshop.liteflow.test.component.BComponent"/>
@@ -8,15 +9,21 @@
 		<node id="e" class="com.thebeastshop.liteflow.test.component.EComponent"/>
 		<node id="f" class="com.thebeastshop.liteflow.test.component.FComponent"/>
 		<node id="g" class="com.thebeastshop.liteflow.test.component.GComponent"/>
+		<node id="cond" class="com.thebeastshop.liteflow.test.component.CondComponent"/>
 	</nodes>
 	
 	<chain name="chain1">
+		<then value="a,cond(b|d)"/>
+		<then value="e,f,g"/>
+	</chain>
+	
+	<chain name="chain2">
 		<then value="a,c"/>
 		<when value="b,d"/>
 		<then value="e,f,g"/>
 	</chain>
 	
-	<chain name="chain2">
+	<chain name="chain3">
 		<then value="a,c,g"/>
 		<when value="b,e"/>
 		<then value="d,f"/>

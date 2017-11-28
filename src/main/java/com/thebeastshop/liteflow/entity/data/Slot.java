@@ -25,6 +25,8 @@ public class Slot {
 	
 	private final String RESPONSE = "response";
 	
+	private final String COND_NODE_PREFIX = "cond_";
+	
 	private final String NODE_INPUT_PREFIX = "input_";
 	
 	private final String NODE_OUTPUT_PREFIX = "output_";
@@ -71,6 +73,14 @@ public class Slot {
 	
 	public <T> void setData(String key, T t){
 		dataMap.put(key, t);
+	}
+	
+	public <T> void setCondResult(String key, T t){
+		dataMap.put(COND_NODE_PREFIX + key, t);
+	}
+	
+	public <T> T getCondResult(String key){
+		return (T)dataMap.get(COND_NODE_PREFIX + key);
 	}
 	
 	public void addStep(String nodeId){
