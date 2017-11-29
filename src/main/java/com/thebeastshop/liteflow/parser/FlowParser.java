@@ -182,4 +182,8 @@ public class FlowParser {
 	    }
 	    return regexEntity;
 	}
+	
+	public static void main(String[] args) {
+		System.out.println(parseNodeStr("aaaa(bbb(xxxx|yyyy)|yyyy)"));
+	}
 }
