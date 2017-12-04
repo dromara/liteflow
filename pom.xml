@@ -13,6 +13,7 @@
 		<commons.lang3.version>3.4</commons.lang3.version>
 		<commons-collections.version>4.1</commons-collections.version>
 		<commons-io.version>2.4</commons-io.version>
+		<commons-logging.version>1.2</commons-logging.version>
 		<spring.version>4.2.6.RELEASE</spring.version>
 		<org.slf4j.version>1.7.21</org.slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
@@ -51,6 +52,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
@@ -84,6 +95,11 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
         </dependency>
+        <dependency>
+        	<groupId>commons-logging</groupId>
+        	<artifactId>commons-logging</artifactId>
+        	<version>${commons-logging.version}</version>
+        </dependency>
 	</dependencies>
 
     <build>
@@ -107,4 +123,17 @@
 			</plugin>
         </plugins>
     </build>
+    
+    <distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>nexus-releases</name>
+			<url>http://118.178.236.200:8087/nexus/content/repositories/thirdparty</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>nexus-snapshots</name>
+			<url>http://118.178.236.200:8087/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>

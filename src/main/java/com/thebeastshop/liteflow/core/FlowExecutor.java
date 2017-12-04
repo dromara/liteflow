@@ -23,6 +23,7 @@ import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
+import com.thebeastshop.liteflow.exception.FlowException;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.parser.FlowParser;
 
@@ -78,13 +79,15 @@ public class FlowExecutor {
 							if(component.isAccess()){
 								component.execute();
 							}else{
-								LOG.info("component[{}] do not gain access",component.getClass().getSimpleName());
+								LOG.error("component[{}] do not gain access",component.getClass().getSimpleName());
+								throw new FlowException("component ["+component.getClass().getSimpleName()+"] do not gain access");
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
 								LOG.error("component[{}] cause error,but flow is still go on",t,component.getClass().getSimpleName());
 							}else{
-								throw new Exception(t);
+								LOG.error(t.getMessage(),t);
+								throw t;
 							}
 						}
 					}
@@ -100,7 +103,7 @@ public class FlowExecutor {
 			return DataBus.getSlot(slotIndex).getResponseData();
 		}catch(Exception e){
 			LOG.error("executor cause error",e);
-			return null;
+			throw new FlowException("executor cause error");
 		}finally{
 			DataBus.releaseSlot(slotIndex);
 		}
