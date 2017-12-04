@@ -24,13 +24,18 @@ public class DataBus {
 	
 	private static Slot[] slots = new Slot[SLOT_SIZE];
 	
-	public synchronized static int offerSlot(){
-		for(int i = 0; i < slots.length; i++){
-			if(slots[i] == null){
-				slots[i] = new Slot();
-				OCCUPY_COUNT.incrementAndGet();
-				return i;
+	public synchronized static int offerSlot(Class<? extends Slot> slotClazz){
+		try{
+			for(int i = 0; i < slots.length; i++){
+				if(slots[i] == null){
+					slots[i] = slotClazz.newInstance();
+					OCCUPY_COUNT.incrementAndGet();
+					return i;
+				}
 			}
+		}catch(Exception e){
+			LOG.error("offer slot error",e);
+			return -1;
 		}
 		return -1;
 	}

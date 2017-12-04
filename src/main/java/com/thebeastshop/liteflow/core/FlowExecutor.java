@@ -24,6 +24,8 @@ import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
+import com.thebeastshop.liteflow.entity.data.DefaultSlot;
+import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.exception.ChainNotFoundException;
 import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
 import com.thebeastshop.liteflow.exception.FlowExecutorNotInitException;
@@ -54,6 +56,10 @@ public class FlowExecutor {
 	}
 
 	public <T> T execute(String chainId,Object param){
+		return execute(chainId, param, DefaultSlot.class);
+	}
+	
+	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
 		int slotIndex = -1;
 		try{
 			Chain chain = FlowBus.getChain(chainId);
@@ -63,7 +69,7 @@ public class FlowExecutor {
 				throw new ChainNotFoundException(errorMsg);
 			}
 			
-			slotIndex = DataBus.offerSlot();
+			slotIndex = DataBus.offerSlot(slotClazz);
 			LOG.info("slot[{}] offered",slotIndex);
 			if(slotIndex == -1){
 				throw new NoAvailableSlotException("there is no available slot");

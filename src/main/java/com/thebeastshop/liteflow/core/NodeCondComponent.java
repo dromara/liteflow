@@ -1,10 +1,11 @@
 /**
- * <p>Title: litis</p>
- * <p>Description: redis的全方位开发运维平台</p>
+ * <p>Title: liteFlow</p>
+ * <p>Description: 轻量级的组件式流程框架</p>
  * <p>Copyright: Copyright (c) 2017</p>
  * @author Bryan.Zhang
- * @email 47483522@qq.com
- * @Date 2017-11-28
+ * @email weenyc31@163.com
+ * @Date 2017-7-28
+ * @version 1.0
  */
 package com.thebeastshop.liteflow.core;
 
