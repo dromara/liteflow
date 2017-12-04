@@ -1,13 +1,13 @@
 package com.thebeastshop.liteflow.exception;
 
-public class FlowException extends RuntimeException {
+public class ChainNotFoundException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	
 	/** 异常信息 */
 	private String message;
 
-	public FlowException(String message) {
+	public ChainNotFoundException(String message) {
 		this.message = message;
 	}
 

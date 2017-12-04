@@ -9,6 +9,7 @@
  */
 package com.thebeastshop.liteflow.core;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,11 @@ import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
-import com.thebeastshop.liteflow.exception.FlowException;
+import com.thebeastshop.liteflow.exception.ChainNotFoundException;
+import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
+import com.thebeastshop.liteflow.exception.FlowExecutorNotInitException;
+import com.thebeastshop.liteflow.exception.FlowSystemException;
+import com.thebeastshop.liteflow.exception.NoAvailableSlotException;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.parser.FlowParser;
 
@@ -38,7 +43,8 @@ public class FlowExecutor {
 			try {
 				FlowParser.parseLocal(path);
 			} catch (Exception e) {
-				LOG.error("init flow executor cause error,cannot parse rule file{}", path, e);
+				String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{}", path);
+				throw new FlowExecutorNotInitException(errorMsg);
 			}
 		}
 	}
@@ -53,13 +59,14 @@ public class FlowExecutor {
 			Chain chain = FlowBus.getChain(chainId);
 			
 			if(chain == null){
-				LOG.error("couldn't find chain with the id[{}]",chainId);
+				String errorMsg = MessageFormat.format("couldn't find chain with the id[{}]", chainId);
+				throw new ChainNotFoundException(errorMsg);
 			}
 			
 			slotIndex = DataBus.offerSlot();
 			LOG.info("slot[{}] offered",slotIndex);
 			if(slotIndex == -1){
-				throw new Exception("there is no available slot");
+				throw new NoAvailableSlotException("there is no available slot");
 			}
 			
 			DataBus.getSlot(slotIndex).setRequestData(param);
@@ -79,14 +86,13 @@ public class FlowExecutor {
 							if(component.isAccess()){
 								component.execute();
 							}else{
-								LOG.error("component[{}] do not gain access",component.getClass().getSimpleName());
-								throw new FlowException("component ["+component.getClass().getSimpleName()+"] do not gain access");
+								String errorMsg = MessageFormat.format("component[{}] do not gain access", component.getClass().getSimpleName());
+								throw new ComponentNotAccessException(errorMsg);
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
 								LOG.error("component[{}] cause error,but flow is still go on",t,component.getClass().getSimpleName());
 							}else{
-								LOG.error(t.getMessage(),t);
 								throw t;
 							}
 						}
@@ -102,8 +108,7 @@ public class FlowExecutor {
 			DataBus.getSlot(slotIndex).printStep();
 			return DataBus.getSlot(slotIndex).getResponseData();
 		}catch(Exception e){
-			LOG.error("executor cause error",e);
-			throw new FlowException("executor cause error");
+			throw new FlowSystemException("executor cause error");
 		}finally{
 			DataBus.releaseSlot(slotIndex);
 		}
