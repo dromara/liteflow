@@ -33,7 +33,7 @@ public class DefaultSlot implements Slot{
 	
 	private List<String> executeSteps = new ArrayList<String>();
 	
-	private ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 	
 	public <T> T getInput(String nodeId){
 		return (T)dataMap.get(NODE_INPUT_PREFIX + nodeId);
