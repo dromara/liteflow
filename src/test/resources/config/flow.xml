@@ -13,7 +13,7 @@
 	</nodes>
 	
 	<chain name="chain1">
-		<then value="a,cond(b|d)"/> <!-- cond是条件节点，根据cond里的逻辑决定路由到b节点还是d节点 -->
+		<then value="a,cond(b|d)"/> <!-- cond是条件节点，根据cond里的逻辑决定路由到b节点还是d节点,可以配置多个 -->
 		<then value="e,f,g"/>
 	</chain>
 	
