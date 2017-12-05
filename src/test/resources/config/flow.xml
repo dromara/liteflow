@@ -13,13 +13,13 @@
 	</nodes>
 	
 	<chain name="chain1">
-		<then value="a,cond(b|d)"/>
+		<then value="a,cond(b|d)"/> <!-- cond是条件节点，根据cond里的逻辑决定路由到b节点还是d节点 -->
 		<then value="e,f,g"/>
 	</chain>
 	
 	<chain name="chain2">
-		<then value="a,c"/>
-		<when value="b,d"/>
+		<then value="a,c"/> <!-- then表示串行 -->
+		<when value="b,d"/> <!-- when表示串行 -->
 		<then value="e,f,g"/>
 	</chain>
 	
