@@ -25,6 +25,7 @@ import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.DefaultSlot;
+import com.thebeastshop.liteflow.entity.data.AbsSlot;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.exception.ChainNotFoundException;
 import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
