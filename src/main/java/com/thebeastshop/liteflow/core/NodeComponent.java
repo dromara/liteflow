@@ -86,7 +86,7 @@ public abstract class NodeComponent {
 		return this;
 	}
 	
-	public Slot getSlot(){
+	public <T extends Slot> T getSlot(){
 		return DataBus.getSlot(this.slotIndexTL.get());
 	}
 

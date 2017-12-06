@@ -40,8 +40,9 @@ public class DataBus {
 		return -1;
 	}
 	
-	public static Slot getSlot(int slotIndex){
-		return slots[slotIndex];
+	@SuppressWarnings("unchecked")
+	public static <T extends Slot> T getSlot(int slotIndex){
+		return (T)slots[slotIndex];
 	}
 	
 	public static void releaseSlot(int slotIndex){
