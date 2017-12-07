@@ -29,8 +29,6 @@ public abstract class NodeComponent {
 	
 	private String nodeId;
 	
-	private boolean continueOnError;
-	
 	public void execute() throws Exception{
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -69,16 +67,25 @@ public abstract class NodeComponent {
 	
 	protected abstract void process() throws Exception;
 	
+	/**
+	 * 是否进入该节点
+	 */
 	protected boolean isAccess(){
 		return true;
 	}
 	
-	public boolean isContinueOnError() {
-		return continueOnError;
+	/**
+	 * 出错是否继续执行
+	 */
+	protected boolean isContinueOnError() {
+		return false;
 	}
-
-	public void setContinueOnError(boolean continueOnError) {
-		this.continueOnError = continueOnError;
+	
+	/**
+	 * 是否结束整个流程(不往下继续执行)
+	 */
+	protected boolean isEnd() {
+		return false;
 	}
 
 	public NodeComponent setSlotIndex(Integer slotIndex) {

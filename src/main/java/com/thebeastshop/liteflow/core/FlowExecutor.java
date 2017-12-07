@@ -92,6 +92,10 @@ public class FlowExecutor {
 							component.setSlotIndex(slotIndex);
 							if(component.isAccess()){
 								component.execute();
+								if(component.isEnd()) {
+									LOG.info("component[{}] lead the chain to end",component.getClass().getSimpleName());
+									break;
+								}
 							}else{
 								String errorMsg = MessageFormat.format("component[{}] do not gain access", component.getClass().getSimpleName());
 								throw new ComponentNotAccessException(errorMsg);
