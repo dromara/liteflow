@@ -24,8 +24,10 @@
 	</chain>
 	
 	<chain name="chain3">
-		<then value="a,c,g"/>
-		<when value="b,e"/>
-		<then value="d,f"/>
+		<then value="a,c,h,g"/>
+	</chain>
+	
+	<chain name="strategy">
+		<then value="m(m1|m2)"/>
 	</chain>
 </flow>

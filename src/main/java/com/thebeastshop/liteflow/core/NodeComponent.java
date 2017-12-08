@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thebeastshop.liteflow.entity.config.Node;
+import com.thebeastshop.liteflow.entity.data.CmpStep;
+import com.thebeastshop.liteflow.entity.data.CmpStepType;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
@@ -30,6 +32,7 @@ public abstract class NodeComponent {
 	private String nodeId;
 	
 	public void execute() throws Exception{
+		this.getSlot().addStep(new CmpStep(nodeId, CmpStepType.START));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		long initm=Runtime.getRuntime().freeMemory();
@@ -39,7 +42,7 @@ public abstract class NodeComponent {
 		long timeSpent = stopWatch.getTime();
 		long endm=Runtime.getRuntime().freeMemory();
 		
-		this.getSlot().addStep(nodeId);
+		this.getSlot().addStep(new CmpStep(nodeId, CmpStepType.END));
 		
 		//性能统计
 		CompStatistics statistics = new CompStatistics();
@@ -91,6 +94,10 @@ public abstract class NodeComponent {
 	public NodeComponent setSlotIndex(Integer slotIndex) {
 		this.slotIndexTL.set(slotIndex);
 		return this;
+	}
+	
+	public Integer getSlotIndex() {
+		return this.slotIndexTL.get();
 	}
 	
 	public <T extends Slot> T getSlot(){

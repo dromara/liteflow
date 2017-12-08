@@ -46,7 +46,7 @@ public class FlowExecutor {
 			try {
 				FlowParser.parseLocal(path);
 			} catch (Exception e) {
-				String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{}", path);
+				String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{0}", path);
 				throw new FlowExecutorNotInitException(errorMsg);
 			}
 		}
@@ -57,26 +57,47 @@ public class FlowExecutor {
 	}
 
 	public <T> T execute(String chainId,Object param){
-		return execute(chainId, param, DefaultSlot.class);
+		return execute(chainId, param, DefaultSlot.class,null,false);
 	}
 	
 	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
-		int slotIndex = -1;
+		return execute(chainId, param, slotClazz,null,false);
+	}
+	
+	public <T> T invoke(String chainId,Class<? extends Slot> slotClazz,Integer slotIndex){
+		return execute(chainId,null, slotClazz,slotIndex,true);
+	}
+	
+	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
 		try{
+			if(FlowBus.needInit()) {
+				init();
+			}
+			
 			Chain chain = FlowBus.getChain(chainId);
 			
 			if(chain == null){
-				String errorMsg = MessageFormat.format("couldn't find chain with the id[{}]", chainId);
+				String errorMsg = MessageFormat.format("couldn't find chain with the id[{0}]", chainId);
 				throw new ChainNotFoundException(errorMsg);
 			}
 			
-			slotIndex = DataBus.offerSlot(slotClazz);
-			LOG.info("slot[{}] offered",slotIndex);
+			if(!isInnerChain && slotIndex == null) {
+				slotIndex = DataBus.offerSlot(slotClazz);
+				LOG.info("slot[{}] offered",slotIndex);
+			}
+			
 			if(slotIndex == -1){
 				throw new NoAvailableSlotException("there is no available slot");
 			}
 			
-			DataBus.getSlot(slotIndex).setRequestData(param);
+			Slot slot = DataBus.getSlot(slotIndex);
+			if(slot == null) {
+				throw new NoAvailableSlotException("the slot is not exist");
+			}
+			
+			if(!isInnerChain && param != null) {
+				slot.setRequestData(param);
+			}
 			
 			List<Condition> conditionList = chain.getConditionList();
 			
@@ -97,7 +118,7 @@ public class FlowExecutor {
 									break;
 								}
 							}else{
-								String errorMsg = MessageFormat.format("component[{}] do not gain access", component.getClass().getSimpleName());
+								String errorMsg = MessageFormat.format("component[{0}] do not gain access", component.getClass().getSimpleName());
 								throw new ComponentNotAccessException(errorMsg);
 							}
 						}catch(Throwable t){
@@ -116,12 +137,17 @@ public class FlowExecutor {
 					latch.await(15, TimeUnit.SECONDS);
 				}
 			}
-			DataBus.getSlot(slotIndex).printStep();
-			return DataBus.getSlot(slotIndex).getResponseData();
+			if(!isInnerChain) {
+				slot.printStep();
+			}
+			return slot.getResponseData();
 		}catch(Exception e){
+			LOG.error("executor cause error",e);
 			throw new FlowSystemException("executor cause error");
 		}finally{
-			DataBus.releaseSlot(slotIndex);
+			if(!isInnerChain) {
+				DataBus.releaseSlot(slotIndex);
+			}
 		}
 	}
 	

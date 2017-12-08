@@ -9,7 +9,10 @@
  */
 package com.thebeastshop.liteflow.entity.data;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,7 +34,7 @@ public abstract class AbsSlot implements Slot{
 	
 	private final String NODE_OUTPUT_PREFIX = "output_";
 	
-	private List<String> executeSteps = new ArrayList<String>();
+	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
 	
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 	
@@ -83,15 +86,22 @@ public abstract class AbsSlot implements Slot{
 		return (T)dataMap.get(COND_NODE_PREFIX + key);
 	}
 	
-	public void addStep(String nodeId){
-		this.executeSteps.add(nodeId);
+	public void addStep(CmpStep step){
+		CmpStep lastStep = this.executeSteps.peekLast();
+		if(lastStep != null && lastStep.equals(step)) {
+			lastStep.setStepType(CmpStepType.SINGLE);
+		}else {
+			this.executeSteps.add(step);
+		}
 	}
 	
 	public void printStep(){
 		StringBuffer str = new StringBuffer();
-		for(int i = 0; i < this.executeSteps.size(); i++){
-			str.append(executeSteps.get(i));
-			if(i < this.executeSteps.size()-1){
+		CmpStep cmpStep = null;
+		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
+			cmpStep = it.next();
+			str.append(cmpStep);
+			if(it.hasNext()){
 				str.append("==>");
 			}
 		}

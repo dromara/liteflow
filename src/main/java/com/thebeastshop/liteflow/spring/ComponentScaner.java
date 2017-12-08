@@ -31,6 +31,7 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 		return Ordered.LOWEST_PRECEDENCE;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = bean.getClass();

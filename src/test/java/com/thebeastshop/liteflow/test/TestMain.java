@@ -17,7 +17,7 @@ import com.thebeastshop.liteflow.parser.FlowParser;
 public class TestMain {
 	public static void main(String[] args) throws Exception {
 		final FlowExecutor executor = new FlowExecutor();
-		executor.setRulePath(Arrays.asList(new String[]{"flow.xml"}));
+		executor.setRulePath(Arrays.asList(new String[]{"config/flow.xml"}));
 		executor.init();
 		
 		for(int i=0;i<1;i++){

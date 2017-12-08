@@ -10,7 +10,7 @@
  	<context:component-scan base-package="com.thebeastshop.liteflow.test.component" />
  	<bean class="com.thebeastshop.liteflow.spring.ComponentScaner"/>
  	
- 	<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor" init-method="init">
+ 	<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
 		<property name="rulePath">
 			<list>
 				<value>config/flow.xml</value>

@@ -34,7 +34,7 @@ public interface Slot {
 	
 	public <T> T getCondResult(String key);
 	
-	public void addStep(String nodeId);
+	public void addStep(CmpStep step);
 	
 	public void printStep();
 }

@@ -25,16 +25,28 @@ public class TestWithSpringMain {
 	public void test1() throws Exception {
 		ExecutorService executorService = Executors.newFixedThreadPool(10);
 		
-		for(int i=0;i<1;i++){
+		for(int i=0;i<10;i++){
 			executorService.submit(new Thread(){
 				@Override
 				public void run() {
-					String response = flowExecutor.execute("chain2", "it's a request");
+					String response = flowExecutor.execute("chain1", "it's a request");
 					System.out.println(response);
 				}
 			});
 		}
 		System.out.println("done!");
 		System.in.read();
+	}
+	
+	@Test
+	public void test2() throws Exception {
+		try {
+			String response = flowExecutor.execute("chain3", "it's a request");
+			System.out.println(response);
+			System.in.read();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
