@@ -32,6 +32,7 @@ public abstract class NodeComponent {
 	private String nodeId;
 	
 	public void execute() throws Exception{
+		LOG.info("start component[{}] execution",this.getClass().getSimpleName());
 		this.getSlot().addStep(new CmpStep(nodeId, CmpStepType.START));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
