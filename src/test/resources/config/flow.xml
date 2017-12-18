@@ -27,7 +27,11 @@
 		<then value="a,c,h,g"/>
 	</chain>
 	
-	<chain name="strategy">
-		<then value="m(m1|m2)"/>
+	<chain name="strategy1">
+		<then value="m(m1|m2|m3)"/>
+	</chain>
+	
+	<chain name="strategy2">
+		<then value="p(p1|p2)"/>
 	</chain>
 </flow>

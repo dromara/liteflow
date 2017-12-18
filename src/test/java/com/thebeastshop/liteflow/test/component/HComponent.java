@@ -26,7 +26,7 @@ public class HComponent extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("Hcomponent executed!");
-		flowExecutor.invoke("strategy", DefaultSlot.class, this.getSlotIndex());
+		flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
 	}
 	
 }

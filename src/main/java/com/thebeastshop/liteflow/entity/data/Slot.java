@@ -24,6 +24,10 @@ public interface Slot {
 	
 	public <T> T getResponseData();
 	
+	public <T> void setChainReqData(String chainId, T t);
+	
+	public <T> T getChainReqData(String chainId);
+	
 	public <T> void setResponseData(T t);
 	
 	public <T> T getData(String key);

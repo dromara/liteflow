@@ -64,8 +64,8 @@ public class FlowExecutor {
 		return execute(chainId, param, slotClazz,null,false);
 	}
 	
-	public <T> T invoke(String chainId,Class<? extends Slot> slotClazz,Integer slotIndex){
-		return execute(chainId,null, slotClazz,slotIndex,true);
+	public void invoke(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex){
+		execute(chainId, param, slotClazz,slotIndex,true);
 	}
 	
 	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
@@ -95,8 +95,10 @@ public class FlowExecutor {
 				throw new NoAvailableSlotException("the slot is not exist");
 			}
 			
-			if(!isInnerChain && param != null) {
+			if(!isInnerChain) {
 				slot.setRequestData(param);
+			}else {
+				slot.setChainReqData(chainId, param);
 			}
 			
 			List<Condition> conditionList = chain.getConditionList();

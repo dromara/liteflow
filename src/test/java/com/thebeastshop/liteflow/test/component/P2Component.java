@@ -15,26 +15,16 @@ import org.springframework.stereotype.Component;
 
 import com.thebeastshop.liteflow.core.FlowExecutor;
 import com.thebeastshop.liteflow.core.NodeComponent;
-import com.thebeastshop.liteflow.core.NodeCondComponent;
 
-@Component("m")
-public class MComponent extends NodeCondComponent {
+@Component("p2")
+public class P2Component extends NodeComponent {
 
 	@Resource
 	private FlowExecutor flowExecutor;
 	
 	@Override
-	protected String processCond() throws Exception {
-		System.out.println("m conponent executed");
-		Integer flag = this.getSlot().getChainReqData("strategy1");
-		if(flag == 1) {
-			return "m1";
-		}else if(flag == 2){
-			return "m2";
-		}else {
-			return "m3";
-		}
-		
+	public void process() {
+		System.out.println("p2 component executed!");
 	}
 	
 }
