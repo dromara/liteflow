@@ -9,14 +9,18 @@
  */
 package com.thebeastshop.liteflow.core;
 
+import org.springframework.stereotype.Component;
+
 public abstract class NodeCondComponent extends NodeComponent {
 
 	@Override
 	protected void process() throws Exception {
-		String nodeId = this.processCond();
+		Class<?> clazz = this.processCond();
+		Component component = clazz.getAnnotation(Component.class);
+		String nodeId = component.value();
 		this.getSlot().setCondResult(this.getClass().getName(), nodeId);
 	}
 	
-	protected abstract String processCond() throws Exception;
+	protected abstract Class<? extends NodeComponent> processCond() throws Exception;
 
 }

@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.thebeastshop.liteflow.core.FlowExecutor;
+import com.thebeastshop.liteflow.entity.data.Slot;
 
 
 
@@ -29,8 +30,8 @@ public class TestWithSpringMain {
 			executorService.submit(new Thread(){
 				@Override
 				public void run() {
-					String response = flowExecutor.execute("chain1", "it's a request");
-					System.out.println(response);
+					Slot slot = flowExecutor.execute("chain1", "it's a request");
+					System.out.println(slot);
 				}
 			});
 		}
@@ -41,8 +42,8 @@ public class TestWithSpringMain {
 	@Test
 	public void test2() throws Exception {
 		try {
-			String response = flowExecutor.execute("chain3", "it's a request");
-			System.out.println(response);
+			Slot slot = flowExecutor.execute("chain3", "it's a request");
+			System.out.println(slot);
 			System.in.read();
 		}catch(Exception e) {
 			e.printStackTrace();

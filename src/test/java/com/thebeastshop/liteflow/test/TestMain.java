@@ -12,7 +12,7 @@ package com.thebeastshop.liteflow.test;
 import java.util.Arrays;
 
 import com.thebeastshop.liteflow.core.FlowExecutor;
-import com.thebeastshop.liteflow.parser.FlowParser;
+import com.thebeastshop.liteflow.entity.data.Slot;
 
 public class TestMain {
 	public static void main(String[] args) throws Exception {
@@ -21,8 +21,8 @@ public class TestMain {
 		executor.init();
 		
 		for(int i=0;i<1;i++){
-			String response = executor.execute("chain1", "it's a request");
-			System.out.println(response);
+			Slot slot = executor.execute("chain1", "it's a request");
+			System.out.println(slot);
 		}
 		
 		

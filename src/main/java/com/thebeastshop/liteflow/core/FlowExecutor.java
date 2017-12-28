@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,6 @@ import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.DefaultSlot;
-import com.thebeastshop.liteflow.entity.data.AbsSlot;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.exception.ChainNotFoundException;
 import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
@@ -56,11 +54,11 @@ public class FlowExecutor {
 		init();
 	}
 
-	public <T> T execute(String chainId,Object param){
+	public Slot execute(String chainId,Object param){
 		return execute(chainId, param, DefaultSlot.class,null,false);
 	}
 	
-	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
+	public Slot execute(String chainId,Object param,Class<? extends Slot> slotClazz){
 		return execute(chainId, param, slotClazz,null,false);
 	}
 	
@@ -68,7 +66,7 @@ public class FlowExecutor {
 		execute(chainId, param, slotClazz,slotIndex,true);
 	}
 	
-	public <T> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
+	public Slot execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
 		try{
 			if(FlowBus.needInit()) {
 				init();
@@ -142,7 +140,7 @@ public class FlowExecutor {
 			if(!isInnerChain) {
 				slot.printStep();
 			}
-			return slot.getResponseData();
+			return slot;
 		}catch(Exception e){
 			LOG.error("executor cause error",e);
 			throw new FlowSystemException("executor cause error");

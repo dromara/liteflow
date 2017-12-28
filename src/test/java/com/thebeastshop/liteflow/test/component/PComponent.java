@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import com.thebeastshop.liteflow.core.FlowExecutor;
+import com.thebeastshop.liteflow.core.NodeComponent;
 import com.thebeastshop.liteflow.core.NodeCondComponent;
 
 @Component("p")
@@ -23,13 +24,13 @@ public class PComponent extends NodeCondComponent {
 	private FlowExecutor flowExecutor;
 	
 	@Override
-	protected String processCond() throws Exception {
+	protected Class<? extends NodeComponent> processCond() throws Exception {
 		System.out.println("p conponent executed");
 		Integer flag = this.getSlot().getChainReqData("strategy2");
 		if(flag == 10) {
-			return "p1";
+			return P1Component.class;
 		}else {
-			return "p2";
+			return P2Component.class;
 		}
 		
 	}

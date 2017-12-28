@@ -24,15 +24,15 @@ public class MComponent extends NodeCondComponent {
 	private FlowExecutor flowExecutor;
 	
 	@Override
-	protected String processCond() throws Exception {
+	protected Class<? extends NodeComponent> processCond() throws Exception {
 		System.out.println("m conponent executed");
 		Integer flag = this.getSlot().getChainReqData("strategy1");
 		if(flag == 1) {
-			return "m1";
+			return M1Component.class;
 		}else if(flag == 2){
-			return "m2";
+			return M2Component.class;
 		}else {
-			return "m3";
+			return M3Component.class;
 		}
 		
 	}

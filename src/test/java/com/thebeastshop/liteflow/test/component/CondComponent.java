@@ -10,13 +10,14 @@ package com.thebeastshop.liteflow.test.component;
 
 import org.springframework.stereotype.Component;
 
+import com.thebeastshop.liteflow.core.NodeComponent;
 import com.thebeastshop.liteflow.core.NodeCondComponent;
 
 @Component("cond")
 public class CondComponent extends NodeCondComponent {
 
 	@Override
-	protected String processCond() throws Exception {
-		return "b";
+	protected Class<? extends NodeComponent> processCond() throws Exception {
+		return BComponent.class;
 	}
 }
