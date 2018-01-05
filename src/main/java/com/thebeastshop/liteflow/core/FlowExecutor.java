@@ -54,11 +54,11 @@ public class FlowExecutor {
 		init();
 	}
 
-	public Slot execute(String chainId,Object param){
+	public <T extends Slot> T execute(String chainId,Object param){
 		return execute(chainId, param, DefaultSlot.class,null,false);
 	}
 	
-	public Slot execute(String chainId,Object param,Class<? extends Slot> slotClazz){
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
 		return execute(chainId, param, slotClazz,null,false);
 	}
 	
@@ -66,7 +66,7 @@ public class FlowExecutor {
 		execute(chainId, param, slotClazz,slotIndex,true);
 	}
 	
-	public Slot execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
 		try{
 			if(FlowBus.needInit()) {
 				init();
@@ -140,7 +140,7 @@ public class FlowExecutor {
 			if(!isInnerChain) {
 				slot.printStep();
 			}
-			return slot;
+			return (T)slot;
 		}catch(Exception e){
 			LOG.error("executor cause error",e);
 			throw new FlowSystemException("executor cause error");
