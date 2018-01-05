@@ -67,6 +67,7 @@ public class FlowExecutor {
 	}
 	
 	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
+		Slot slot = null;
 		try{
 			if(FlowBus.needInit()) {
 				init();
@@ -88,7 +89,7 @@ public class FlowExecutor {
 				throw new NoAvailableSlotException("there is no available slot");
 			}
 			
-			Slot slot = DataBus.getSlot(slotIndex);
+			slot = DataBus.getSlot(slotIndex);
 			if(slot == null) {
 				throw new NoAvailableSlotException("the slot is not exist");
 			}
@@ -137,15 +138,13 @@ public class FlowExecutor {
 					latch.await(15, TimeUnit.SECONDS);
 				}
 			}
-			if(!isInnerChain) {
-				slot.printStep();
-			}
 			return (T)slot;
 		}catch(Exception e){
 			LOG.error("executor cause error",e);
 			throw new FlowSystemException("executor cause error");
 		}finally{
 			if(!isInnerChain) {
+				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
 			}
 		}
