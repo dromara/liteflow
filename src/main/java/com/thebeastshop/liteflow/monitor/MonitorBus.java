@@ -39,7 +39,7 @@ public class MonitorBus {
 			public void run() {
 				MonitorBus.printStatistics();
 			}
-		}, 30*1000L, 1*60*1000L);
+		}, 5*60*1000L, 5*60*1000L);
 	}
 	
 	public static void addStatistics(CompStatistics statistics){
