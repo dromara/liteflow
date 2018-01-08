@@ -118,9 +118,6 @@ public class FlowExecutor {
 									LOG.info("component[{}] lead the chain to end",component.getClass().getSimpleName());
 									break;
 								}
-							}else{
-								String errorMsg = MessageFormat.format("component[{0}] do not gain access", component.getClass().getSimpleName());
-								throw new ComponentNotAccessException(errorMsg);
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){

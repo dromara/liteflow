@@ -49,9 +49,9 @@ public class DataBus {
 		if(slots[slotIndex] != null){
 			slots[slotIndex] = null;
 			OCCUPY_COUNT.decrementAndGet();
-			LOG.info("the slot[{}] released",slotIndex);
+			LOG.info("slot[{}] released",slotIndex);
 		}else{
-			LOG.warn("the slot[{}] has been released",slotIndex);
+			LOG.warn("slot[{}] already has been released",slotIndex);
 		}
 	}
 }
