@@ -32,8 +32,9 @@ public abstract class NodeComponent {
 	private String nodeId;
 	
 	public void execute() throws Exception{
-		LOG.info("start component[{}] execution",this.getClass().getSimpleName());
-		this.getSlot().addStep(new CmpStep(nodeId, CmpStepType.START));
+		Slot slot = this.getSlot();
+		LOG.info("[{}]:start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
+		slot.addStep(new CmpStep(nodeId, CmpStepType.START));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		long initm=Runtime.getRuntime().freeMemory();
@@ -43,7 +44,7 @@ public abstract class NodeComponent {
 		long timeSpent = stopWatch.getTime();
 		long endm=Runtime.getRuntime().freeMemory();
 		
-		this.getSlot().addStep(new CmpStep(nodeId, CmpStepType.END));
+		slot.addStep(new CmpStep(nodeId, CmpStepType.END));
 		
 		//性能统计
 		CompStatistics statistics = new CompStatistics();
@@ -54,7 +55,7 @@ public abstract class NodeComponent {
 		
 		
 		if(this instanceof NodeCondComponent){
-			String condNodeId = this.getSlot().getCondResult(this.getClass().getName());
+			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if(StringUtils.isNotBlank(condNodeId)){
 				Node thisNode = FlowParser.getNode(nodeId);
 				Node condNode = thisNode.getCondNode(condNodeId);
@@ -66,7 +67,7 @@ public abstract class NodeComponent {
 			}
 		}
 		
-		LOG.debug("componnet[{}] finished in {} milliseconds",this.getClass().getSimpleName(),timeSpent);
+		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
 	}
 	
 	protected abstract void process() throws Exception;

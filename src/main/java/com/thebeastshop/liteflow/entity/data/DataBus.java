@@ -47,9 +47,9 @@ public class DataBus {
 	
 	public static void releaseSlot(int slotIndex){
 		if(slots[slotIndex] != null){
+			LOG.info("[{}]:slot[{}] released",slots[slotIndex].getRequestId(),slotIndex);
 			slots[slotIndex] = null;
 			OCCUPY_COUNT.decrementAndGet();
-			LOG.info("slot[{}] released",slotIndex);
 		}else{
 			LOG.warn("slot[{}] already has been released",slotIndex);
 		}

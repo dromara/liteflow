@@ -97,6 +97,7 @@ public class FlowExecutor {
 			
 			if(StringUtils.isBlank(slot.getRequestId())) {
 				slot.generateRequestId();
+				LOG.info("requestId[{}] has generated",slot.getRequestId());
 			}
 			
 			if(!isInnerChain) {
@@ -120,13 +121,13 @@ public class FlowExecutor {
 							if(component.isAccess()){
 								component.execute();
 								if(component.isEnd()) {
-									LOG.info("component[{}] lead the chain to end",component.getClass().getSimpleName());
+									LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),component.getClass().getSimpleName());
 									break;
 								}
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
-								LOG.error("component[{}] cause error,but flow is still go on",t,component.getClass().getSimpleName());
+								LOG.error("[{}]:component[{}] cause error,but flow is still go on",t,slot.getRequestId(),component.getClass().getSimpleName());
 							}else{
 								throw t;
 							}
@@ -142,7 +143,7 @@ public class FlowExecutor {
 			}
 			return (T)slot;
 		}catch(Exception e){
-			LOG.error("executor cause error",e);
+			LOG.error("[{}]:executor cause error",e,slot.getRequestId());
 			throw new FlowSystemException("executor cause error");
 		}finally{
 			if(!isInnerChain) {
