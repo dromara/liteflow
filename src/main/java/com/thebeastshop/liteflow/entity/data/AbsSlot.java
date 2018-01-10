@@ -122,7 +122,7 @@ public abstract class AbsSlot implements Slot{
 	
 	@Override
 	public void generateRequestId() {
-		dataMap.put(REQUEST_ID, System.nanoTime());
+		dataMap.put(REQUEST_ID, new Long(System.nanoTime()).toString());
 	}
 	
 	@Override
