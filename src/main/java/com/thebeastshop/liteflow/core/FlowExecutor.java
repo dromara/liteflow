@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +93,10 @@ public class FlowExecutor {
 			slot = DataBus.getSlot(slotIndex);
 			if(slot == null) {
 				throw new NoAvailableSlotException("the slot is not exist");
+			}
+			
+			if(StringUtils.isBlank(slot.getRequestId())) {
+				slot.generateRequestId();
 			}
 			
 			if(!isInnerChain) {

@@ -36,6 +36,8 @@ public abstract class AbsSlot implements Slot{
 	
 	private final String CHAIN_REQ_PREFIX = "chain_req_";
 	
+	private final String REQUEST_ID = "req_id";
+	
 	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
 	
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
@@ -116,5 +118,15 @@ public abstract class AbsSlot implements Slot{
 			}
 		}
 		LOG.info(str.toString());
+	}
+	
+	@Override
+	public void generateRequestId() {
+		dataMap.put(REQUEST_ID, System.nanoTime());
+	}
+	
+	@Override
+	public String getRequestId() {
+		return (String)dataMap.get(REQUEST_ID);
 	}
 }

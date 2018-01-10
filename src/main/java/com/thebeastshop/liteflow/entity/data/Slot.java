@@ -41,4 +41,8 @@ public interface Slot {
 	public void addStep(CmpStep step);
 	
 	public void printStep();
+	
+	public void generateRequestId();
+	
+	public String getRequestId();
 }
