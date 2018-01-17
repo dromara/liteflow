@@ -125,7 +125,7 @@ public class FlowExecutor {
 									break;
 								}
 							}else {
-								LOG.info("[{}]:[×]skip component[{}] execution",slot.getRequestId(),component.getClass().getSimpleName());
+								LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),component.getClass().getSimpleName());
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
@@ -179,7 +179,7 @@ public class FlowExecutor {
 				if(cmp.isAccess()) {
 					cmp.execute();
 				}else {
-					LOG.info("[{}]:[×]skip component[{}] execution",requestId,cmp.getClass().getSimpleName());
+					LOG.info("[{}]:[X]skip component[{}] execution",requestId,cmp.getClass().getSimpleName());
 				}
 			}catch(Exception e){
 				LOG.error("component [{}] execute cause error",node.getClazz(),e);
