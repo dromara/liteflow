@@ -138,7 +138,7 @@ public class FlowExecutor {
 				}else if(condition instanceof WhenCondition){
 					final CountDownLatch latch = new CountDownLatch(nodeList.size());
 					for(Node node : nodeList){
-						new WhenConditionThread(node,slotIndex,latch).start();
+						new WhenConditionThread(node,slotIndex,slot.getRequestId(),latch).start();
 					}
 					latch.await(15, TimeUnit.SECONDS);
 				}
@@ -161,18 +161,26 @@ public class FlowExecutor {
 		
 		private Integer slotIndex;
 		
+		private String requestId;
+		
 		private CountDownLatch latch;
 		
-		public WhenConditionThread(Node node,Integer slotIndex,CountDownLatch latch){
+		public WhenConditionThread(Node node,Integer slotIndex,String requestId,CountDownLatch latch){
 			this.node = node;
 			this.slotIndex = slotIndex;
+			this.requestId = requestId;
 			this.latch = latch;
 		}
 		
 		@Override
 		public void run() {
 			try{
-				node.getInstance().setSlotIndex(slotIndex).execute();
+				NodeComponent cmp = node.getInstance().setSlotIndex(slotIndex);
+				if(cmp.isAccess()) {
+					cmp.execute();
+				}else {
+					LOG.info("[{}]:component[{}] do not have access",requestId,cmp.getClass().getSimpleName());
+				}
 			}catch(Exception e){
 				LOG.error("component [{}] execute cause error",node.getClazz(),e);
 			}finally{
