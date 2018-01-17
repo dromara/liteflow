@@ -127,7 +127,7 @@ public class FlowParser {
 						conditionList.add(new WhenCondition(chainNodeList));
 					}
 				}
-				FlowBus.addChain(chainName, new Chain(conditionList));
+				FlowBus.addChain(chainName, new Chain(chainName,conditionList));
 			}
 		} catch (Exception e) {
 			LOG.error("FlowParser parser exception: {}", e);

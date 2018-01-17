@@ -13,9 +13,12 @@ import java.util.List;
 
 public class Chain {
 	
+	private String chainName;
+	
 	private List<Condition> conditionList;
 	
-	public Chain(List<Condition> conditionList) {
+	public Chain(String chainName, List<Condition> conditionList) {
+		this.chainName = chainName;
 		this.conditionList = conditionList;
 	}
 
@@ -25,5 +28,13 @@ public class Chain {
 
 	public void setConditionList(List<Condition> conditionList) {
 		this.conditionList = conditionList;
+	}
+
+	public String getChainName() {
+		return chainName;
+	}
+
+	public void setChainName(String chainName) {
+		this.chainName = chainName;
 	}
 }
