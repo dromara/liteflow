@@ -5,7 +5,7 @@
     <artifactId>liteflow</artifactId>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.2.11</version>
+    <version>1.2.12</version>
 
     <properties>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

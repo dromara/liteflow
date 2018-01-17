@@ -124,6 +124,8 @@ public class FlowExecutor {
 									LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),component.getClass().getSimpleName());
 									break;
 								}
+							}else {
+								LOG.info("[{}]:component[{}] do not have access",slot.getRequestId(),component.getClass().getSimpleName());
 							}
 						}catch(Throwable t){
 							if(component.isContinueOnError()){
