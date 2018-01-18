@@ -132,6 +132,7 @@ public class FlowExecutor {
 							if(component.isContinueOnError()){
 								LOG.error("[{}]:component[{}] cause error,but flow is still go on",t,slot.getRequestId(),component.getClass().getSimpleName());
 							}else{
+								LOG.error("[{}]:executor cause error",t,slot.getRequestId());
 								throw t;
 							}
 						}
@@ -146,7 +147,6 @@ public class FlowExecutor {
 			}
 			return (T)slot;
 		}catch(Exception e){
-			LOG.error("[{}]:executor cause error",e,slot.getRequestId());
 			throw new FlowSystemException("executor cause error");
 		}finally{
 			if(!isInnerChain) {
