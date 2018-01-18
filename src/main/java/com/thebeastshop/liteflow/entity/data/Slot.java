@@ -45,4 +45,8 @@ public interface Slot {
 	public void generateRequestId();
 	
 	public String getRequestId();
+	
+	public void setChainName(String chainName);
+	
+	public String getChainName();
 }

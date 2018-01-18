@@ -102,6 +102,7 @@ public class FlowExecutor {
 			
 			if(!isInnerChain) {
 				slot.setRequestData(param);
+				slot.setChainName(chainId);
 			}else {
 				slot.setChainReqData(chainId, param);
 			}

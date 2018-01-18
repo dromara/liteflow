@@ -28,6 +28,8 @@ public abstract class AbsSlot implements Slot{
 	
 	private final String RESPONSE = "response";
 	
+	private final String CHAINNAME = "chain_name";
+	
 	private final String COND_NODE_PREFIX = "cond_";
 	
 	private final String NODE_INPUT_PREFIX = "input_";
@@ -98,6 +100,14 @@ public abstract class AbsSlot implements Slot{
 		return (T)dataMap.get(COND_NODE_PREFIX + key);
 	}
 	
+	public void setChainName(String chainName) {
+		dataMap.put(CHAINNAME, chainName);
+	}
+	
+	public String getChainName() {
+		return (String)dataMap.get(CHAINNAME);
+	}
+	
 	public void addStep(CmpStep step){
 		CmpStep lastStep = this.executeSteps.peekLast();
 		if(lastStep != null && lastStep.equals(step)) {
@@ -117,7 +127,7 @@ public abstract class AbsSlot implements Slot{
 				str.append("==>");
 			}
 		}
-		LOG.info("[{}]:{}",getRequestId(),str.toString());
+		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),str.toString());
 	}
 	
 	@Override
