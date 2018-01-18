@@ -127,7 +127,7 @@ public abstract class AbsSlot implements Slot{
 				str.append("==>");
 			}
 		}
-		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),str.toString());
+		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(),str.toString());
 	}
 	
 	@Override
