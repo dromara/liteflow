@@ -128,11 +128,13 @@ public class FlowExecutor {
 							}else {
 								LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),component.getClass().getSimpleName());
 							}
-						}catch(Throwable t){
+						}catch(Exception t){
 							if(component.isContinueOnError()){
-								LOG.error("[{}]:component[{}] cause error,but flow is still go on",t,slot.getRequestId(),component.getClass().getSimpleName());
+								String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),component.getClass().getSimpleName());
+								LOG.error(errorMsg,t);
 							}else{
-								LOG.error("[{}]:executor cause error",t,slot.getRequestId());
+								String errorMsg = MessageFormat.format("[{0}]:executor cause error",slot.getRequestId());
+								LOG.error(errorMsg,t);
 								throw t;
 							}
 						}
