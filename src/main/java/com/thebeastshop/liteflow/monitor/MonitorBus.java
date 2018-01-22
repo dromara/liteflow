@@ -11,13 +11,19 @@ package com.thebeastshop.liteflow.monitor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +45,7 @@ public class MonitorBus {
 			public void run() {
 				MonitorBus.printStatistics();
 			}
-		}, 5*60*1000L, 5*60*1000L);
+		}, 1*60*1000L, 5*60*1000L);
 	}
 	
 	public static void addStatistics(CompStatistics statistics){
@@ -68,19 +74,40 @@ public class MonitorBus {
 				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP).longValue());
 				compAverageMemorySpent.put(entry.getKey(), new BigDecimal(totalMemorySpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP).longValue());
 			}
-			System.out.println("======================================================================================");
-			System.out.println("===================================SLOT INFO==========================================");
-			System.out.println("SLOT TOTAL SIZE : "+DataBus.SLOT_SIZE);
-			System.out.println("SLOT OCCUPY COUNT : "+DataBus.OCCUPY_COUNT);
-			System.out.println("===============================TIME AVERAGE SPENT=====================================");
-			for(Entry<String, Long> entry : compAverageTimeSpent.entrySet()){
-				System.out.println("COMPONENT["+entry.getKey()+"] AVERAGE TIME SPENT : " + entry.getValue());
+			
+			List<Entry<String, Long>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
+			List<Entry<String, Long>> compAverageMemorySpentEntryList = new ArrayList<>(compAverageMemorySpent.entrySet());
+			
+			Collections.sort(compAverageTimeSpentEntryList,new Comparator<Entry<String, Long>>() {
+				@Override
+				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+					return o2.getValue().compareTo(o1.getValue());
+				}
+			});
+			
+			Collections.sort(compAverageMemorySpentEntryList,new Comparator<Entry<String, Long>>() {
+				@Override
+				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+					return o2.getValue().compareTo(o1.getValue());
+				}
+			});
+			
+			StringBuilder logStr = new StringBuilder();
+			logStr.append("以下为LiteFlow中间件统计信息：\n");
+			logStr.append("======================================================================================\n");
+			logStr.append("===================================SLOT INFO==========================================\n");
+			logStr.append(MessageFormat.format("SLOT TOTAL SIZE : {0}\n", DataBus.SLOT_SIZE));
+			logStr.append(MessageFormat.format("SLOT OCCUPY COUNT : {0}\n", DataBus.OCCUPY_COUNT));
+			logStr.append("===============================TIME AVERAGE SPENT=====================================\n");
+			for(Entry<String, Long> entry : compAverageTimeSpentEntryList){
+				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE TIME SPENT : {1}\n", entry.getKey(), entry.getValue()));
 			}
-			System.out.println("==============================MEMORY AVERAGE SPENT====================================");
-			for(Entry<String, Long> entry : compAverageMemorySpent.entrySet()){
-				System.out.println("COMPONENT["+entry.getKey()+"] AVERAGE MEMORY SPENT : "+ new BigDecimal(entry.getValue()).divide(new BigDecimal(1024), 2, RoundingMode.HALF_UP) + "K");
+			logStr.append("==============================MEMORY AVERAGE SPENT====================================\n");
+			for(Entry<String, Long> entry : compAverageMemorySpentEntryList){
+				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE MEMORY SPENT : {1}K\n", entry.getKey(), new BigDecimal(entry.getValue()).divide(new BigDecimal(1024), 2, RoundingMode.HALF_UP)));
 			}
-			System.out.println("======================================================================================");
+			logStr.append("======================================================================================\n");
+			LOG.info(logStr.toString());
 		}catch(Exception e){
 			LOG.error("print statistics cause error",e);
 		}
