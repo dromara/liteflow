@@ -45,15 +45,15 @@ public class MonitorBus {
 			public void run() {
 				MonitorBus.printStatistics();
 			}
-		}, 1*60*1000L, 5*60*1000L);
+		}, 5*60*1000L, 5*60*1000L);
 	}
 	
 	public static void addStatistics(CompStatistics statistics){
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
-			statisticsMap.get(statistics.getComponentClazzName()).add(statistics);
+			statisticsMap.get(statistics.getComponentClazzName()).offer(statistics);
 		}else{
 			LimitQueue<CompStatistics> queue = new LimitQueue<CompStatistics>(QUEUE_LIMIT_SIZE);
-			queue.add(statistics);
+			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
 	}
