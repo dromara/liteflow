@@ -139,4 +139,8 @@ public abstract class AbsSlot implements Slot{
 	public String getRequestId() {
 		return (String)dataMap.get(REQUEST_ID);
 	}
+
+	public Deque<CmpStep> getExecuteSteps() {
+		return executeSteps;
+	}
 }

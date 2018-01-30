@@ -50,7 +50,6 @@ public abstract class NodeComponent {
 		CompStatistics statistics = new CompStatistics();
 		statistics.setComponentClazzName(this.getClass().getSimpleName());
 		statistics.setTimeSpent(timeSpent);
-		statistics.setMemorySpent(initm-endm);
 		MonitorBus.addStatistics(statistics);
 		
 		

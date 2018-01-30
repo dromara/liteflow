@@ -60,34 +60,22 @@ public class MonitorBus {
 	
 	public static void printStatistics(){
 		try{
-			Map<String, Long> compAverageTimeSpent = new HashMap<String, Long>();
-			Map<String, Long> compAverageMemorySpent = new HashMap<String, Long>();
+			Map<String, BigDecimal> compAverageTimeSpent = new HashMap<String, BigDecimal>();
 			
 			long totalTimeSpent = 0;
-			long totalMemorySpent = 0;
 			
 			for(Entry<String, LimitQueue<CompStatistics>> entry : statisticsMap.entrySet()){
 				for(CompStatistics statistics : entry.getValue()){
 					totalTimeSpent += statistics.getTimeSpent();
-					totalMemorySpent += statistics.getMemorySpent();
 				}
-				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP).longValue());
-				compAverageMemorySpent.put(entry.getKey(), new BigDecimal(totalMemorySpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP).longValue());
+				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP));
 			}
 			
-			List<Entry<String, Long>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
-			List<Entry<String, Long>> compAverageMemorySpentEntryList = new ArrayList<>(compAverageMemorySpent.entrySet());
+			List<Entry<String, BigDecimal>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
 			
-			Collections.sort(compAverageTimeSpentEntryList,new Comparator<Entry<String, Long>>() {
+			Collections.sort(compAverageTimeSpentEntryList,new Comparator<Entry<String, BigDecimal>>() {
 				@Override
-				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-					return o2.getValue().compareTo(o1.getValue());
-				}
-			});
-			
-			Collections.sort(compAverageMemorySpentEntryList,new Comparator<Entry<String, Long>>() {
-				@Override
-				public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+				public int compare(Entry<String, BigDecimal> o1, Entry<String, BigDecimal> o2) {
 					return o2.getValue().compareTo(o1.getValue());
 				}
 			});
@@ -99,12 +87,8 @@ public class MonitorBus {
 			logStr.append(MessageFormat.format("SLOT TOTAL SIZE : {0}\n", DataBus.SLOT_SIZE));
 			logStr.append(MessageFormat.format("SLOT OCCUPY COUNT : {0}\n", DataBus.OCCUPY_COUNT));
 			logStr.append("===============================TIME AVERAGE SPENT=====================================\n");
-			for(Entry<String, Long> entry : compAverageTimeSpentEntryList){
+			for(Entry<String, BigDecimal> entry : compAverageTimeSpentEntryList){
 				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE TIME SPENT : {1}\n", entry.getKey(), entry.getValue()));
-			}
-			logStr.append("==============================MEMORY AVERAGE SPENT====================================\n");
-			for(Entry<String, Long> entry : compAverageMemorySpentEntryList){
-				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE MEMORY SPENT : {1}K\n", entry.getKey(), new BigDecimal(entry.getValue()).divide(new BigDecimal(1024), 2, RoundingMode.HALF_UP)));
 			}
 			logStr.append("======================================================================================\n");
 			LOG.info(logStr.toString());
