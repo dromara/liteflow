@@ -12,6 +12,8 @@ package com.thebeastshop.liteflow.flow;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections4.MapUtils;
+
 import com.thebeastshop.liteflow.entity.config.Chain;
 
 public class FlowBus {
@@ -30,5 +32,9 @@ public class FlowBus {
 			chainMap = new HashMap<String, Chain>();
 		}
 		chainMap.put(name, chain);
+	}
+	
+	public static boolean needInit() {
+		return MapUtils.isEmpty(chainMap);
 	}
 }

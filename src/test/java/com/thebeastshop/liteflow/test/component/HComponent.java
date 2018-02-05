@@ -9,23 +9,24 @@
  */
 package com.thebeastshop.liteflow.test.component;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
+import com.thebeastshop.liteflow.core.FlowExecutor;
 import com.thebeastshop.liteflow.core.NodeComponent;
+import com.thebeastshop.liteflow.entity.data.DefaultSlot;
 
-@Component("b")
-public class BComponent extends NodeComponent {
+@Component("h")
+public class HComponent extends NodeComponent {
 
+	@Resource
+	private FlowExecutor flowExecutor;
+	
 	@Override
 	public void process() {
-		try {
-			Thread.sleep(400L);
-			String[] temp = new String[1000];
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Bcomponent executed!");
-		
+		System.out.println("Hcomponent executed!");
+		flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
 	}
 	
 }

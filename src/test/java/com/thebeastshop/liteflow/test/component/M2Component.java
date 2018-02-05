@@ -9,23 +9,22 @@
  */
 package com.thebeastshop.liteflow.test.component;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
+import com.thebeastshop.liteflow.core.FlowExecutor;
 import com.thebeastshop.liteflow.core.NodeComponent;
 
-@Component("b")
-public class BComponent extends NodeComponent {
+@Component("m2")
+public class M2Component extends NodeComponent {
 
+	@Resource
+	private FlowExecutor flowExecutor;
+	
 	@Override
 	public void process() {
-		try {
-			Thread.sleep(400L);
-			String[] temp = new String[1000];
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Bcomponent executed!");
-		
+		System.out.println("m2 component executed!");
 	}
 	
 }

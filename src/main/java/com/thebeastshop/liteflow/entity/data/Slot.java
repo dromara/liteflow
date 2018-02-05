@@ -4,97 +4,49 @@
  * <p>Copyright: Copyright (c) 2017</p>
  * @author Bryan.Zhang
  * @email weenyc31@163.com
- * @Date 2017-8-3
+ * @Date 2017-12-4
  * @version 1.0
  */
 package com.thebeastshop.liteflow.entity.data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@SuppressWarnings("unchecked")
-public class Slot {
+public interface Slot {
+	public <T> T getInput(String nodeId);
 	
-	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
+	public <T> T getOutput(String nodeId);
 	
-	private final String REQUEST = "request";
+	public <T> void setInput(String nodeId,T t);
 	
-	private final String RESPONSE = "response";
+	public <T> void setOutput(String nodeId,T t);
 	
-	private final String COND_NODE_PREFIX = "cond_";
+	public <T> T getRequestData();
 	
-	private final String NODE_INPUT_PREFIX = "input_";
+	public <T> void setRequestData(T t);
 	
-	private final String NODE_OUTPUT_PREFIX = "output_";
+	public <T> T getResponseData();
 	
-	private List<String> executeSteps = new ArrayList<String>();
+	public <T> void setChainReqData(String chainId, T t);
 	
-	private ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+	public <T> T getChainReqData(String chainId);
 	
-	public <T> T getInput(String nodeId){
-		return (T)dataMap.get(NODE_INPUT_PREFIX + nodeId);
-	}
+	public <T> void setResponseData(T t);
 	
-	public <T> T getOutput(String nodeId){
-		return (T)dataMap.get(NODE_OUTPUT_PREFIX + nodeId);
-	}
+	public <T> T getData(String key);
 	
-	public <T> void setInput(String nodeId,T t){
-		dataMap.put(NODE_INPUT_PREFIX + nodeId, t);
-	}
+	public <T> void setData(String key, T t);
 	
-	public <T> void setOutput(String nodeId,T t){
-		dataMap.put(NODE_OUTPUT_PREFIX + nodeId, t);
-	}
+	public <T> void setCondResult(String key, T t);
 	
-	public <T> T getRequestData(){
-		return (T)dataMap.get(REQUEST);
-	}
+	public <T> T getCondResult(String key);
 	
-	public <T> void setRequestData(T t){
-		dataMap.put(REQUEST, t);
-	}
+	public void addStep(CmpStep step);
 	
-	public <T> T getResponseData(){
-		return (T)dataMap.get(RESPONSE);
-	}
+	public void printStep();
 	
-	public <T> void setResponseData(T t){
-		dataMap.put(RESPONSE, t);
-	}
+	public void generateRequestId();
 	
-	public <T> T getData(String key){
-		return (T)dataMap.get(key);
-	}
+	public String getRequestId();
 	
-	public <T> void setData(String key, T t){
-		dataMap.put(key, t);
-	}
+	public void setChainName(String chainName);
 	
-	public <T> void setCondResult(String key, T t){
-		dataMap.put(COND_NODE_PREFIX + key, t);
-	}
-	
-	public <T> T getCondResult(String key){
-		return (T)dataMap.get(COND_NODE_PREFIX + key);
-	}
-	
-	public void addStep(String nodeId){
-		this.executeSteps.add(nodeId);
-	}
-	
-	public void printStep(){
-		StringBuffer str = new StringBuffer();
-		for(int i = 0; i < this.executeSteps.size(); i++){
-			str.append(executeSteps.get(i));
-			if(i < this.executeSteps.size()-1){
-				str.append("==>");
-			}
-		}
-		LOG.info(str.toString());
-	}
+	public String getChainName();
 }

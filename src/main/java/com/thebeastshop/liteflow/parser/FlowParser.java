@@ -109,7 +109,7 @@ public class FlowParser {
 					RegexEntity regexEntity = null;
 					Node node = null;
 					for (int i = 0; i < condArray.length; i++) {
-						regexEntity = parseNodeStr(condArray[i]);
+						regexEntity = parseNodeStr(condArray[i].trim());
 						node = nodeMap.get(regexEntity.getCondNode());
 						chainNodeList.add(node);
 						if(regexEntity.getRealNodeArray() != null){
@@ -127,7 +127,7 @@ public class FlowParser {
 						conditionList.add(new WhenCondition(chainNodeList));
 					}
 				}
-				FlowBus.addChain(chainName, new Chain(conditionList));
+				FlowBus.addChain(chainName, new Chain(chainName,conditionList));
 			}
 		} catch (Exception e) {
 			LOG.error("FlowParser parser exception: {}", e);
@@ -176,14 +176,18 @@ public class FlowParser {
 	        list.add(m.group());
 	    }
 	    RegexEntity regexEntity = new RegexEntity();
-	    regexEntity.setCondNode(list.get(0));
+	    regexEntity.setCondNode(list.get(0).trim());
 	    if(list.size() > 1){
-	    	regexEntity.setRealNodeArray(list.get(1).split("\\|"));
+	    	String[] realNodeArray = list.get(1).split("\\|");
+	    	for (int i = 0; i < realNodeArray.length; i++) {
+	    		realNodeArray[i] = realNodeArray[i].trim();
+			}
+	    	regexEntity.setRealNodeArray(realNodeArray);
 	    }
 	    return regexEntity;
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(parseNodeStr("aaaa(bbb(xxxx|yyyy)|yyyy)"));
+		System.out.println(parseNodeStr("aaaa ( xxxx | yyyy | vvvv )"));
 	}
 }

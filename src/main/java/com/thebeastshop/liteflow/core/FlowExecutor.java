@@ -9,6 +9,7 @@
  */
 package com.thebeastshop.liteflow.core;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,13 @@ import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.entity.config.ThenCondition;
 import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.entity.data.DataBus;
+import com.thebeastshop.liteflow.entity.data.DefaultSlot;
+import com.thebeastshop.liteflow.entity.data.Slot;
+import com.thebeastshop.liteflow.exception.ChainNotFoundException;
+import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
+import com.thebeastshop.liteflow.exception.FlowExecutorNotInitException;
+import com.thebeastshop.liteflow.exception.FlowSystemException;
+import com.thebeastshop.liteflow.exception.NoAvailableSlotException;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.parser.FlowParser;
 
@@ -37,7 +45,8 @@ public class FlowExecutor {
 			try {
 				FlowParser.parseLocal(path);
 			} catch (Exception e) {
-				LOG.error("init flow executor cause error,cannot parse rule file{}", path, e);
+				String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{0}", path);
+				throw new FlowExecutorNotInitException(errorMsg);
 			}
 		}
 	}
@@ -46,22 +55,57 @@ public class FlowExecutor {
 		init();
 	}
 
-	public <T> T execute(String chainId,Object param){
-		int slotIndex = -1;
+	public <T extends Slot> T execute(String chainId,Object param){
+		return execute(chainId, param, DefaultSlot.class,null,false);
+	}
+	
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
+		return execute(chainId, param, slotClazz,null,false);
+	}
+	
+	public void invoke(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex){
+		execute(chainId, param, slotClazz,slotIndex,true);
+	}
+	
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
+		Slot slot = null;
 		try{
+			if(FlowBus.needInit()) {
+				init();
+			}
+			
 			Chain chain = FlowBus.getChain(chainId);
 			
 			if(chain == null){
-				LOG.error("couldn't find chain with the id[{}]",chainId);
+				String errorMsg = MessageFormat.format("couldn't find chain with the id[{0}]", chainId);
+				throw new ChainNotFoundException(errorMsg);
 			}
 			
-			slotIndex = DataBus.offerSlot();
-			LOG.info("slot[{}] offered",slotIndex);
+			if(!isInnerChain && slotIndex == null) {
+				slotIndex = DataBus.offerSlot(slotClazz);
+				LOG.info("slot[{}] offered",slotIndex);
+			}
+			
 			if(slotIndex == -1){
-				throw new Exception("there is no available slot");
+				throw new NoAvailableSlotException("there is no available slot");
 			}
 			
-			DataBus.getSlot(slotIndex).setRequestData(param);
+			slot = DataBus.getSlot(slotIndex);
+			if(slot == null) {
+				throw new NoAvailableSlotException("the slot is not exist");
+			}
+			
+			if(StringUtils.isBlank(slot.getRequestId())) {
+				slot.generateRequestId();
+				LOG.info("requestId[{}] has generated",slot.getRequestId());
+			}
+			
+			if(!isInnerChain) {
+				slot.setRequestData(param);
+				slot.setChainName(chainId);
+			}else {
+				slot.setChainReqData(chainId, param);
+			}
 			
 			List<Condition> conditionList = chain.getConditionList();
 			
@@ -77,32 +121,40 @@ public class FlowExecutor {
 							component.setSlotIndex(slotIndex);
 							if(component.isAccess()){
 								component.execute();
-							}else{
-								LOG.info("component[{}] do not gain access",component.getClass().getSimpleName());
+								if(component.isEnd()) {
+									LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),component.getClass().getSimpleName());
+									break;
+								}
+							}else {
+								LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),component.getClass().getSimpleName());
 							}
-						}catch(Throwable t){
+						}catch(Exception t){
 							if(component.isContinueOnError()){
-								LOG.error("component[{}] cause error,but flow is still go on",t,component.getClass().getSimpleName());
+								String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),component.getClass().getSimpleName());
+								LOG.error(errorMsg,t);
 							}else{
-								throw new Exception(t);
+								String errorMsg = MessageFormat.format("[{0}]:executor cause error",slot.getRequestId());
+								LOG.error(errorMsg,t);
+								throw t;
 							}
 						}
 					}
 				}else if(condition instanceof WhenCondition){
 					final CountDownLatch latch = new CountDownLatch(nodeList.size());
 					for(Node node : nodeList){
-						new WhenConditionThread(node,slotIndex,latch).start();
+						new WhenConditionThread(node,slotIndex,slot.getRequestId(),latch).start();
 					}
 					latch.await(15, TimeUnit.SECONDS);
 				}
 			}
-			DataBus.getSlot(slotIndex).printStep();
-			return DataBus.getSlot(slotIndex).getResponseData();
+			return (T)slot;
 		}catch(Exception e){
-			LOG.error("executor cause error",e);
-			return null;
+			throw new FlowSystemException("executor cause error");
 		}finally{
-			DataBus.releaseSlot(slotIndex);
+			if(!isInnerChain) {
+				slot.printStep();
+				DataBus.releaseSlot(slotIndex);
+			}
 		}
 	}
 	
@@ -112,18 +164,26 @@ public class FlowExecutor {
 		
 		private Integer slotIndex;
 		
+		private String requestId;
+		
 		private CountDownLatch latch;
 		
-		public WhenConditionThread(Node node,Integer slotIndex,CountDownLatch latch){
+		public WhenConditionThread(Node node,Integer slotIndex,String requestId,CountDownLatch latch){
 			this.node = node;
 			this.slotIndex = slotIndex;
+			this.requestId = requestId;
 			this.latch = latch;
 		}
 		
 		@Override
 		public void run() {
 			try{
-				node.getInstance().setSlotIndex(slotIndex).execute();
+				NodeComponent cmp = node.getInstance().setSlotIndex(slotIndex);
+				if(cmp.isAccess()) {
+					cmp.execute();
+				}else {
+					LOG.info("[{}]:[X]skip component[{}] execution",requestId,cmp.getClass().getSimpleName());
+				}
 			}catch(Exception e){
 				LOG.error("component [{}] execute cause error",node.getClazz(),e);
 			}finally{

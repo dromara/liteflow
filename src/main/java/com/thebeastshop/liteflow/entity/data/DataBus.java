@@ -24,27 +24,34 @@ public class DataBus {
 	
 	private static Slot[] slots = new Slot[SLOT_SIZE];
 	
-	public synchronized static int offerSlot(){
-		for(int i = 0; i < slots.length; i++){
-			if(slots[i] == null){
-				slots[i] = new Slot();
-				OCCUPY_COUNT.incrementAndGet();
-				return i;
+	public synchronized static int offerSlot(Class<? extends Slot> slotClazz){
+		try{
+			for(int i = 0; i < slots.length; i++){
+				if(slots[i] == null){
+					slots[i] = slotClazz.newInstance();
+					OCCUPY_COUNT.incrementAndGet();
+					return i;
+				}
 			}
+		}catch(Exception e){
+			LOG.error("offer slot error",e);
+			return -1;
 		}
 		return -1;
 	}
 	
-	public static Slot getSlot(int slotIndex){
-		return slots[slotIndex];
+	@SuppressWarnings("unchecked")
+	public static <T extends Slot> T getSlot(int slotIndex){
+		return (T)slots[slotIndex];
 	}
 	
 	public static void releaseSlot(int slotIndex){
 		if(slots[slotIndex] != null){
+			LOG.info("[{}]:slot[{}] released",slots[slotIndex].getRequestId(),slotIndex);
 			slots[slotIndex] = null;
 			OCCUPY_COUNT.decrementAndGet();
 		}else{
-			LOG.warn("the slot[{}] has been released",slotIndex);
+			LOG.warn("slot[{}] already has been released",slotIndex);
 		}
 	}
 }

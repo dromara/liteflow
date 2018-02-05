@@ -13,19 +13,25 @@
 	</nodes>
 	
 	<chain name="chain1">
-		<then value="a,cond(b|d)"/>
+		<then value="a,cond(b|d)"/> <!-- cond是条件节点，根据cond里的逻辑决定路由到b节点还是d节点,可以配置多个 -->
 		<then value="e,f,g"/>
 	</chain>
 	
 	<chain name="chain2">
-		<then value="a,c"/>
-		<when value="b,d"/>
+		<then value="a,c"/> <!-- then表示串行 -->
+		<when value="b,d"/> <!-- when表示串行 -->
 		<then value="e,f,g"/>
 	</chain>
 	
 	<chain name="chain3">
-		<then value="a,c,g"/>
-		<when value="b,e"/>
-		<then value="d,f"/>
+		<then value="a,c,h,g"/>
+	</chain>
+	
+	<chain name="strategy1">
+		<then value="m(m1|m2|m3)"/>
+	</chain>
+	
+	<chain name="strategy2">
+		<then value="p(p1|p2)"/>
 	</chain>
 </flow>

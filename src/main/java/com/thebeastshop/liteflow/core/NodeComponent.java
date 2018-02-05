@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thebeastshop.liteflow.entity.config.Node;
+import com.thebeastshop.liteflow.entity.data.CmpStep;
+import com.thebeastshop.liteflow.entity.data.CmpStepType;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
@@ -29,9 +31,10 @@ public abstract class NodeComponent {
 	
 	private String nodeId;
 	
-	private boolean continueOnError;
-	
 	public void execute() throws Exception{
+		Slot slot = this.getSlot();
+		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
+		slot.addStep(new CmpStep(nodeId, CmpStepType.START));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		long initm=Runtime.getRuntime().freeMemory();
@@ -41,18 +44,17 @@ public abstract class NodeComponent {
 		long timeSpent = stopWatch.getTime();
 		long endm=Runtime.getRuntime().freeMemory();
 		
-		this.getSlot().addStep(nodeId);
+		slot.addStep(new CmpStep(nodeId, CmpStepType.END));
 		
 		//性能统计
 		CompStatistics statistics = new CompStatistics();
 		statistics.setComponentClazzName(this.getClass().getSimpleName());
 		statistics.setTimeSpent(timeSpent);
-		statistics.setMemorySpent(initm-endm);
 		MonitorBus.addStatistics(statistics);
 		
 		
 		if(this instanceof NodeCondComponent){
-			String condNodeId = this.getSlot().getCondResult(this.getClass().getName());
+			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if(StringUtils.isNotBlank(condNodeId)){
 				Node thisNode = FlowParser.getNode(nodeId);
 				Node condNode = thisNode.getCondNode(condNodeId);
@@ -64,21 +66,30 @@ public abstract class NodeComponent {
 			}
 		}
 		
-		LOG.debug("componnet[{}] finished in {} milliseconds",this.getClass().getSimpleName(),timeSpent);
+		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
 	}
 	
 	protected abstract void process() throws Exception;
 	
+	/**
+	 * 是否进入该节点
+	 */
 	protected boolean isAccess(){
 		return true;
 	}
 	
-	public boolean isContinueOnError() {
-		return continueOnError;
+	/**
+	 * 出错是否继续执行
+	 */
+	protected boolean isContinueOnError() {
+		return false;
 	}
-
-	public void setContinueOnError(boolean continueOnError) {
-		this.continueOnError = continueOnError;
+	
+	/**
+	 * 是否结束整个流程(不往下继续执行)
+	 */
+	protected boolean isEnd() {
+		return false;
 	}
 
 	public NodeComponent setSlotIndex(Integer slotIndex) {
@@ -86,7 +97,11 @@ public abstract class NodeComponent {
 		return this;
 	}
 	
-	public Slot getSlot(){
+	public Integer getSlotIndex() {
+		return this.slotIndexTL.get();
+	}
+	
+	public <T extends Slot> T getSlot(){
 		return DataBus.getSlot(this.slotIndexTL.get());
 	}
 
