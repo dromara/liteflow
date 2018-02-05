@@ -5,7 +5,7 @@
     <artifactId>liteflow</artifactId>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 
     <properties>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -123,17 +123,4 @@
 			</plugin>
         </plugins>
     </build>
-    
-    <distributionManagement>
-		<repository>
-			<id>nexus-releases</id>
-			<name>nexus-releases</name>
-			<url>http://118.178.236.200:8087/nexus/content/repositories/thirdparty</url>
-		</repository>
-		<snapshotRepository>
-			<id>nexus-snapshots</id>
-			<name>nexus-snapshots</name>
-			<url>http://118.178.236.200:8087/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
