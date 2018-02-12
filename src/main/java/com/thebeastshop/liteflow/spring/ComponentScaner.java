@@ -19,6 +19,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import com.thebeastshop.liteflow.core.NodeComponent;
 import com.thebeastshop.liteflow.entity.config.Node;
+import com.thebeastshop.liteflow.util.LOGOPrinter;
 
 public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	
@@ -26,6 +27,10 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	
 	public static Map<String, NodeComponent> nodeComponentMap = new HashMap<String, NodeComponent>();
 
+	static {
+		LOGOPrinter.print();
+	}
+	
 	@Override
 	public int getOrder() {
 		return Ordered.LOWEST_PRECEDENCE;

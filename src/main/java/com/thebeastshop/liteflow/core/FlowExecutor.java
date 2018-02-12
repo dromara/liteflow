@@ -33,6 +33,7 @@ import com.thebeastshop.liteflow.exception.FlowSystemException;
 import com.thebeastshop.liteflow.exception.NoAvailableSlotException;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.parser.FlowParser;
+import com.thebeastshop.liteflow.util.LOGOPrinter;
 
 public class FlowExecutor {
 	
