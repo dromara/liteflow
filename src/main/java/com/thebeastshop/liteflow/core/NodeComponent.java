@@ -20,8 +20,9 @@ import com.thebeastshop.liteflow.entity.data.CmpStepType;
 import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
+import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.monitor.MonitorBus;
-import com.thebeastshop.liteflow.parser.FlowParser;
+import com.thebeastshop.liteflow.parser.LocalXmlFlowParser;
 
 public abstract class NodeComponent {
 	
@@ -37,12 +38,11 @@ public abstract class NodeComponent {
 		slot.addStep(new CmpStep(nodeId, CmpStepType.START));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
-		long initm=Runtime.getRuntime().freeMemory();
 		
 		process();
+		
 		stopWatch.stop();
 		long timeSpent = stopWatch.getTime();
-		long endm=Runtime.getRuntime().freeMemory();
 		
 		slot.addStep(new CmpStep(nodeId, CmpStepType.END));
 		
@@ -56,7 +56,7 @@ public abstract class NodeComponent {
 		if(this instanceof NodeCondComponent){
 			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if(StringUtils.isNotBlank(condNodeId)){
-				Node thisNode = FlowParser.getNode(nodeId);
+				Node thisNode = FlowBus.getNode(nodeId);
 				Node condNode = thisNode.getCondNode(condNodeId);
 				if(condNode != null){
 					NodeComponent condComponent = condNode.getInstance();

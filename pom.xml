@@ -21,6 +21,7 @@
 		<slf4j.version>1.7.13</slf4j.version>
 		<fastjson.version>1.2.7</fastjson.version>
 		<dom4j.version>1.6.1</dom4j.version>
+		<curator.version>2.11.1</curator.version>
 		<junit.version>4.12</junit.version>
     </properties>
 
@@ -99,6 +100,11 @@
         	<groupId>commons-logging</groupId>
         	<artifactId>commons-logging</artifactId>
         	<version>${commons-logging.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.apache.curator</groupId>
+    		<artifactId>curator-recipes</artifactId>
+        	<version>${curator.version}</version>
         </dependency>
 	</dependencies>
 

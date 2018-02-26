@@ -19,7 +19,7 @@ import com.thebeastshop.liteflow.entity.data.Slot;
 @ContextConfiguration(locations = { "classpath:spring-test.xml" })
 public class TestWithSpringMain {
 	
-	@Resource
+	@Resource(name="flowExecutor")
 	private FlowExecutor flowExecutor;
 	
 	@Test
@@ -45,6 +45,19 @@ public class TestWithSpringMain {
 			Slot slot = flowExecutor.execute("chain3", "it's a request");
 			System.out.println(slot);
 			System.in.read();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	@Test
+	public void test3() throws Exception {
+		try {
+			while(true) {
+				Slot slot = flowExecutor.execute("chain3", "it's a request");
+				Thread.sleep(2000);
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

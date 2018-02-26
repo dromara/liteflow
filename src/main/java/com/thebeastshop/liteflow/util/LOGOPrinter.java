@@ -15,7 +15,7 @@ public class LOGOPrinter {
 		str.append("		| |    | |  | | |  _| _____| |_  | |  | | | \\ \\ /\\ / / \n");
 		str.append("		| |___ | |  | | | |__|_____|  _| | |__| |_| |\\ V  V /  \n");
 		str.append("		|_____|___| |_| |_____|    |_|   |_____\\___/  \\_/\\_/   \n\n");
-		str.append("		做最轻量级，最吊炸天的微流程框架\n");
+		str.append("		做最轻量级，最实用的微流程框架\n");
 		str.append("		To be the most lightweight and the most practical micro-process framework\n");
 		str.append("================================================================================================\n");
 		LOG.info(str.toString());
