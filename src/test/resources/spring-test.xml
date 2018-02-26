@@ -10,21 +10,22 @@
  	<context:component-scan base-package="com.thebeastshop.liteflow.test.component" />
  	<bean class="com.thebeastshop.liteflow.spring.ComponentScaner"/>
  	
- 	<!-- <bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+ 	<!-- 本地方式配置 -->
+ 	<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
 		<property name="rulePath">
 			<list>
 				<value>config/flow.xml</value>
 			</list>
 		</property>
-	</bean> -->
+	</bean>
 	
 	<!-- 这种是zk方式配置 -->
-	<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+	<!-- <bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
 		<property name="rulePath">
 			<list>
 				<value>123.206.92.144:2181,123.206.92.144:2182,123.206.92.144:2183</value>
 			</list>
 		</property>
-		<property name="zkNode" value="/lite-flow/customFlow"/><!-- 这个不配置就用默认的/lite-flow/flow节点 -->
-	</bean>
+		<property name="zkNode" value="/lite-flow/customFlow"/>这个不配置就用默认的/lite-flow/flow节点
+	</bean> -->
 </beans>
