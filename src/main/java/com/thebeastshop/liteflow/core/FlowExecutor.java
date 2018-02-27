@@ -51,14 +51,17 @@ public class FlowExecutor {
 		XmlFlowParser parser = null;
 		for(String path : rulePath){
 			try {
-				if(isZKConfig(path)) {
+				if(isLocalConfig(path)) {
+					parser = new LocalXmlFlowParser();
+				}else if(isZKConfig(path)){
 					if(StringUtils.isNotBlank(zkNode)) {
 						parser = new ZookeeperXmlFlowParser(zkNode);
 					}else {
 						parser = new ZookeeperXmlFlowParser();
 					}
-				}else {
-					parser = new LocalXmlFlowParser();
+				}else if(isClassConfig(path)) {
+					Class c = Class.forName(path);
+					parser = (XmlFlowParser)c.newInstance();
 				}
 				parser.parseMain(path);
 			} catch (Exception e) {
@@ -71,6 +74,18 @@ public class FlowExecutor {
 	
 	private boolean isZKConfig(String path) {
 		Pattern p = Pattern.compile("[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*");
+	    Matcher m = p.matcher(path);
+	    return m.find();
+	}
+	
+	private boolean isLocalConfig(String path) {
+		Pattern p = Pattern.compile("^[\\w\\/]+(\\/\\w+)*\\.xml$");
+	    Matcher m = p.matcher(path);
+	    return m.find();
+	}
+	
+	private boolean isClassConfig(String path) {
+		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
