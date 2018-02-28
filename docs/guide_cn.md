@@ -161,6 +161,9 @@ public <T extends Slot> T execute(String chainId,Object param);
 返回为`Slot`接口的子类，以上方法所返回的为默认的实现类`DefaultSlot`  
 
 ?> 实际在使用时，并不推荐用默认的`DefaultSlot`，推荐自己新建一个类继承`AbsSlot`类  
+这是因为默认Slot实现类里面大多数都存放元数据，给用户扩展的数据存储是一个弱类型的Map  
+而用户自定义的Slot可以实现强类型的数据，这样对开发者更加友好
+
 推荐使用带自定义Slot的执行接口：
 ```java
 public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz);
