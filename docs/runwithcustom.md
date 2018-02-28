@@ -1,7 +1,7 @@
-## 使用自定义的方式配置
-如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置的扩展点。
+## 使用自定义的配置源
+如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置源的扩展点。
 
-# 创建自定义的配置的类
+# 创建自定义配置源的类
 在你的项目中创建一个类继承`ClassXmlFlowParser`这个类
 ```java
 public class TestCustomParser extends ClassXmlFlowParser {
