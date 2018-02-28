@@ -131,7 +131,7 @@ public class TestCustomParser extends ClassXmlFlowParser {
 }
 ```
 
-## 4.2spring配置
+## 4.2Spring配置
 spring中需要改的地方还是执行器的配置，只需要在配置的路径地方放入自定义类的类路径即可
 ```xml
 <bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
