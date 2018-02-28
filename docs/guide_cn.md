@@ -172,4 +172,79 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 关于`Slot`的说明，请参照[数据槽](http://123.206.92.144:3000/#/?id=_62%e6%95%b0%e6%8d%ae%e6%a7%bd)
 
 ## 6.2数据槽
-数据槽
+在执行器执行流程时会分配唯一的一个数据槽给这个请求。不同请求的数据槽是完全隔离的。  
+数据槽实际上是一个Map，里面存放着liteFlow的元数据  
+比如可以通过`getRequestData`获得流程的初始参数，通过`getChainName`获取流程的命名，通过`setInput`,`getInput`,`setOutput`,`getOutput`设置和获取属于某个组件专有的数据对象。当然也提供了最通用的方法`setData`和`getData`用来设置和获取业务的数据。
+
+?> 不过这里还是推荐扩展出自定义的Slot（上一小章阐述了原因），自定义的Slot更加友好。更加贴合业务。
+
+## 6.3组件节点
+组件节点需要继承`NodeComponent`类  
+需要实现`process`方法  
+但是推荐实现`isAccess`方法，表示是否进入该节点，可以用于业务参数的预先判断  
+
+其他几个可以覆盖的方法有：  
+方法`isContinueOnError`：表示出错是否继续往下执行下一个组件  
+方法`isEnd`：表示是否立即结束整个流程  
+
+在组件节点里，随时可以通过方法`getSlot`获取当前的数据槽，从而可以获取任何数据。
+
+## 6.4条件节点
+在实际业务中，往往要通过动态的业务逻辑判断到底接下去该执行哪一个节点  
+```xml
+<chain name="chain1">
+    <then value="a,c(b|d)"/> <!-- cond是条件节点，根据c里的逻辑决定路由到b节点还是d节点,可以配置多个 -->
+    <then value="e,f,g"/>
+</chain>
+```
+利用表达式可以很方便的进行条件的判断  
+c节点是用来路由的，被称为条件节点，这种节点需要继承`NodeCondComponent`类  
+需要实现方法`processCond`，这个方法需要返回`Class`类型，就是具体的结果节点
+
+## 6.5嵌套执行
+liteFlow可以无极嵌套执行n条流程  
+```java
+@Component("h")
+public class HComponent extends NodeComponent {
+
+	@Resource
+	private FlowExecutor flowExecutor;
+	
+	@Override
+	public void process() {
+		System.out.println("Hcomponent executed!");
+		flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
+	}
+	
+}
+```
+这段代码演示了在某个业务节点内调用另外一个流程链的方法
+
+## 6.6步骤打印
+liteFlow在执行每一条流程链后会打印步骤  
+样例如下：
+```
+a==>c==>h(START)==>m==>p==>p1==>h(END)==>g
+```
+?> 其中h节点分start和end两个步骤，说明在h节点内调用了另一条流程。start和end之间的步骤就是另一条流程的步骤
+
+## 6.7监控
+liteFlow提供了简单的监控，目前只统计一个指标：每个组件的平均耗时  
+每5分钟会打印一次，并且是根据耗时时长倒序排的。 
+
+# 七、更新记录
+## 1.3.1更新日志
+优化大量潜在的问题，此版本为稳定版本，主要更新点如下：
+* 增加条件节点功能
+* 优化异常捕获的日志打印
+* 支持自定义SLOT的特性
+* 优化步骤打印，能够支持开闭区间的打印方式
+* 增加了内部策略的调用方式
+* 增加了追踪ID
+* 优化了监控打印
+
+## 2.0.1更新日志
+更新点如下：
+* 增加对zookeeper的支持
+* 增加自定义配置源
+* 优化监控的表现
