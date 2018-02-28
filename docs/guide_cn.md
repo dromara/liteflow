@@ -97,9 +97,8 @@ public class AComponent extends NodeComponent
 然后你的项目中通过spring拿到执行器进行调用流程。
 
 ## 三、和zookeeper进行集成
-liteFlow支持把配置放在zk集群中，并支持实时修改流程
-
 # 3.1spring配置
+liteFlow支持把配置放在zk集群中，并支持实时修改流程
 你只需在原来配置执行器的地方，把本地xml路径换成zk地址就ok了
 ```xml
 <!-- 这种是zk方式配置 -->
@@ -118,9 +117,8 @@ liteFlow支持把配置放在zk集群中，并支持实时修改流程
 使用这种方式加载配置，在zk上进行更改配置。liteFlow会实时刷新配置。
 
 ## 四、使用自定义的配置源
-如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置源的扩展点。
-
 # 4.1创建自定义配置源的类
+如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置源的扩展点。
 在你的项目中创建一个类继承`ClassXmlFlowParser`这个类
 ```java
 public class TestCustomParser extends ClassXmlFlowParser {
@@ -148,18 +146,14 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 ```
 
 ## 五、架构设计
-
-![architecture_image](images/architecture.png)
-
 # 5.1组件式流程引擎架构设计
+![architecture_image](images/architecture.png)
 Handler Unit：我们想象成每一个业务都是一个业务组件，每一个业务组件就是一个handlerUnit（处理单元）
 EPU：这里的epu对应的就是我们的执行器，用来统筹并处理handlerUnit。相当于计算机的CPU
 Event Bus：事件总线，用来指定下一个命令是什么，该如何去执行处理单元。这里的时间总线由我们的配置构成
 Data Bus：数据总线，用来存储整个调用链里数据。每一个请求生成一个数据槽。一个数据里最多有1024个数据槽。
 
 ## 六、接入详细指南
-教你如何利用liteFlow写出低耦合，易扩展的项目
-
 # 6.1执行器
 执行器`FlowExecutor`用来执行一个流程，用法为
 ```java
