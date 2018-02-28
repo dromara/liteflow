@@ -62,8 +62,6 @@ Slot slot = executor.execute("demoChain", "arg");
 如果你的项目使用spring，推荐参考[和Spring进行集成](http://123.206.92.144:3000/guide_cn?id=和spring进行集成)
 
 # 二、和spring进行集成
-如果你的项目中使用了spring，liteFlow可以很方便和spring进行集成
-
 ## 2.1流程配置可以省略的部分
 流程配置中的`nodes`节点，可以不用配置了，支持spring的自动扫描方式。你需要在你的spring配置文件中定义
 ```xml
