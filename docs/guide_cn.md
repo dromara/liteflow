@@ -59,7 +59,7 @@ executor.init();
 Slot slot = executor.execute("demoChain", "arg");
 ```
 
-如果你的项目使用spring，推荐参考[和Spring进行集成](http://123.206.92.144:3000/guide_cn?id=和spring进行集成)
+如果你的项目使用spring，推荐参考[和Spring进行集成](http://123.206.92.144:3000/#/?id=和spring进行集成)
 
 # 二、和spring进行集成
 ## 2.1流程配置可以省略的部分
@@ -166,7 +166,7 @@ public <T extends Slot> T execute(String chainId,Object param);
 public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz);
 ```
 
-关于`Slot`的说明，请参照[数据槽](http://123.206.92.144:3000/#/guide?id=数据槽)
+关于`Slot`的说明，请参照[数据槽](http://123.206.92.144:3000/#/?id=数据槽)
 
 ## 6.2数据槽
 数据槽
