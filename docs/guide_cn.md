@@ -145,7 +145,7 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 
 # 五、架构设计
 ## 5.1组件式流程引擎架构设计
-![architecture_image](https://github.com/thebeastshop/liteFlow/blob/master/docs/images/architecture.png)
+![architecture_image](https://raw.githubusercontent.com/thebeastshop/liteFlow/master/docs/images/architecture.png)
 Handler Unit：我们想象成每一个业务都是一个业务组件，每一个业务组件就是一个handlerUnit（处理单元）  
 EPU：这里的epu对应的就是我们的执行器，用来统筹并处理handlerUnit。相当于计算机的CPU    
 Event Bus：事件总线，用来指定下一个命令是什么，该如何去执行处理单元。这里的时间总线由我们的配置构成  
