@@ -160,7 +160,7 @@ public <T extends Slot> T execute(String chainId,Object param);
 第一个参数为流程ID，第二个参数为流程入参  
 返回为`Slot`接口的子类，以上方法所返回的为默认的实现类`DefaultSlot`  
 
-?> 实际在使用时，并不推荐用默认的`DefaultSlot`，推荐自己新建一个类继承`AbsSlot`类  
+!> 实际在使用时，并不推荐用默认的`DefaultSlot`，推荐自己新建一个类继承`AbsSlot`类  
 这是因为默认Slot实现类里面大多数都存放元数据，给用户扩展的数据存储是一个弱类型的Map  
 而用户自定义的Slot可以实现强类型的数据，这样对开发者更加友好
 
@@ -176,7 +176,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 数据槽实际上是一个Map，里面存放着liteFlow的元数据  
 比如可以通过`getRequestData`获得流程的初始参数，通过`getChainName`获取流程的命名，通过`setInput`,`getInput`,`setOutput`,`getOutput`设置和获取属于某个组件专有的数据对象。当然也提供了最通用的方法`setData`和`getData`用来设置和获取业务的数据。
 
-?> 不过这里还是推荐扩展出自定义的Slot（上一小章阐述了原因），自定义的Slot更加友好。更加贴合业务。
+!> 不过这里还是推荐扩展出自定义的Slot（上一小章阐述了原因），自定义的Slot更加友好。更加贴合业务。
 
 ## 6.3组件节点
 组件节点需要继承`NodeComponent`类  
