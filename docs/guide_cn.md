@@ -8,6 +8,8 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
+最新版本为<font color=red>2.0.1</font>  
+稳定版本为<font color=red>1.3.1</font>
 ## 1.2流程配置文件
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
