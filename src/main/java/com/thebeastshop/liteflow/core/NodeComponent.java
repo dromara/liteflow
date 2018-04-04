@@ -22,7 +22,6 @@ import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.monitor.MonitorBus;
-import com.thebeastshop.liteflow.parser.LocalXmlFlowParser;
 
 public abstract class NodeComponent {
 	
