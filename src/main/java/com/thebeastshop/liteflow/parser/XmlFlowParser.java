@@ -1,20 +1,8 @@
-/**
- * <p>Title: liteFlow</p>
- * <p>Description: 轻量级的组件式流程框架</p>
- * <p>Copyright: Copyright (c) 2017</p>
- * @author Bryan.Zhang
- * @email weenyc31@163.com
- * @Date 2017-7-28
- * @version 1.0
- */
 package com.thebeastshop.liteflow.parser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,28 +22,20 @@ import com.thebeastshop.liteflow.entity.config.WhenCondition;
 import com.thebeastshop.liteflow.flow.FlowBus;
 import com.thebeastshop.liteflow.spring.ComponentScaner;
 import com.thebeastshop.liteflow.util.Dom4JReader;
-import com.thebeastshop.liteflow.util.IOUtil;
 
-@SuppressWarnings("unchecked")
-public class FlowParser {
-
-	private static final Logger LOG = LoggerFactory.getLogger(FlowParser.class);
-
-	private static final String ENCODING_FORMAT = "UTF-8";
+public abstract class XmlFlowParser {
 	
-	private static Map<String, Node> nodeMap = new HashMap<String, Node>();
-
-	public static void parseLocal(String rulePath) throws Exception {
-		String ruleContent = IOUtil.read(rulePath, ENCODING_FORMAT);
-		parse(ruleContent);
-	}
-
-	public static void parse(String content) throws Exception {
+	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
+	
+	public abstract void parseMain(String path) throws Exception;
+	
+	public void parse(String content) throws Exception {
 		Document document = Dom4JReader.getFormatDocument(content);
 		parse(document);
 	}
 
-	public static void parse(Document document) throws Exception {
+	@SuppressWarnings("unchecked")
+	public void parse(Document document) throws Exception {
 		try {
 			Element rootElement = document.getRootElement();
 
@@ -79,11 +59,11 @@ public class FlowParser {
 					}
 					component.setNodeId(id);
 					node.setInstance(component);
-					nodeMap.put(id, node);
+					FlowBus.addNode(id, node);
 				}
 			}else{
 				for(Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()){
-					nodeMap.put(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+					FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
 				}
 			}
 
@@ -110,11 +90,11 @@ public class FlowParser {
 					Node node = null;
 					for (int i = 0; i < condArray.length; i++) {
 						regexEntity = parseNodeStr(condArray[i].trim());
-						node = nodeMap.get(regexEntity.getCondNode());
+						node = FlowBus.getNode(regexEntity.getCondNode());
 						chainNodeList.add(node);
 						if(regexEntity.getRealNodeArray() != null){
 							for(String key : regexEntity.getRealNodeArray()){
-								Node condNode = nodeMap.get(key);
+								Node condNode = FlowBus.getNode(key);
 								if(condNode != null){
 									node.setCondNode(condNode.getId(), condNode);
 								}
@@ -135,39 +115,6 @@ public class FlowParser {
 
 	}
 	
-	public static Node getNode(String nodeId){
-		return nodeMap.get(nodeId);
-	}
-	
-	private static class RegexEntity{
-		
-		private String condNode;
-		
-		private String[] realNodeArray;
-
-		public String getCondNode() {
-			return condNode;
-		}
-
-		public void setCondNode(String condNode) {
-			this.condNode = condNode;
-		}
-
-		public String[] getRealNodeArray() {
-			return realNodeArray;
-		}
-
-		public void setRealNodeArray(String[] realNodeArray) {
-			this.realNodeArray = realNodeArray;
-		}
-
-		@Override
-		public String toString() {
-			return "RegexEntity [condNode=" + condNode + ", realNodeArray="
-					+ Arrays.toString(realNodeArray) + "]";
-		}
-	}
-	
 	public static RegexEntity parseNodeStr(String str) {
 	    List<String> list = new ArrayList<String>();
 	    Pattern p = Pattern.compile("[^\\)\\(]+");
@@ -185,9 +132,5 @@ public class FlowParser {
 	    	regexEntity.setRealNodeArray(realNodeArray);
 	    }
 	    return regexEntity;
-	}
-	
-	public static void main(String[] args) {
-		System.out.println(parseNodeStr("aaaa ( xxxx | yyyy | vvvv )"));
 	}
 }

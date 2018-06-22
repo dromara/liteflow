@@ -15,10 +15,13 @@ import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
 
 import com.thebeastshop.liteflow.entity.config.Chain;
+import com.thebeastshop.liteflow.entity.config.Node;
 
 public class FlowBus {
 	
 	private static Map<String, Chain> chainMap;
+	
+	private static Map<String, Node> nodeMap;
 	
 	public static Chain getChain(String id) throws Exception{
 		if(chainMap == null || chainMap.isEmpty()){
@@ -36,5 +39,16 @@ public class FlowBus {
 	
 	public static boolean needInit() {
 		return MapUtils.isEmpty(chainMap);
+	}
+	
+	public static void addNode(String nodeId, Node node) {
+		if(nodeMap == null) {
+			nodeMap = new HashMap<String, Node>();
+		}
+		nodeMap.put(nodeId, node);
+	}
+	
+	public static Node getNode(String nodeId) {
+		return nodeMap.get(nodeId);
 	}
 }

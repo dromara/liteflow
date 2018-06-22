@@ -13,6 +13,8 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,12 +29,15 @@ import com.thebeastshop.liteflow.entity.data.DataBus;
 import com.thebeastshop.liteflow.entity.data.DefaultSlot;
 import com.thebeastshop.liteflow.entity.data.Slot;
 import com.thebeastshop.liteflow.exception.ChainNotFoundException;
-import com.thebeastshop.liteflow.exception.ComponentNotAccessException;
 import com.thebeastshop.liteflow.exception.FlowExecutorNotInitException;
 import com.thebeastshop.liteflow.exception.FlowSystemException;
 import com.thebeastshop.liteflow.exception.NoAvailableSlotException;
+import com.thebeastshop.liteflow.exception.ParseException;
 import com.thebeastshop.liteflow.flow.FlowBus;
-import com.thebeastshop.liteflow.parser.FlowParser;
+import com.thebeastshop.liteflow.parser.LocalXmlFlowParser;
+import com.thebeastshop.liteflow.parser.XmlFlowParser;
+import com.thebeastshop.liteflow.parser.ZookeeperXmlFlowParser;
+import com.thebeastshop.liteflow.util.LOGOPrinter;
 
 public class FlowExecutor {
 	
@@ -40,15 +45,49 @@ public class FlowExecutor {
 	
 	private List<String> rulePath;
 	
+	private String zkNode;
+	
 	public void init() {
+		XmlFlowParser parser = null;
 		for(String path : rulePath){
 			try {
-				FlowParser.parseLocal(path);
+				if(isLocalConfig(path)) {
+					parser = new LocalXmlFlowParser();
+				}else if(isZKConfig(path)){
+					if(StringUtils.isNotBlank(zkNode)) {
+						parser = new ZookeeperXmlFlowParser(zkNode);
+					}else {
+						parser = new ZookeeperXmlFlowParser();
+					}
+				}else if(isClassConfig(path)) {
+					Class c = Class.forName(path);
+					parser = (XmlFlowParser)c.newInstance();
+				}
+				parser.parseMain(path);
 			} catch (Exception e) {
 				String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{0}", path);
+				LOG.error(errorMsg,e);
 				throw new FlowExecutorNotInitException(errorMsg);
 			}
 		}
+	}
+	
+	private boolean isZKConfig(String path) {
+		Pattern p = Pattern.compile("[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*");
+	    Matcher m = p.matcher(path);
+	    return m.find();
+	}
+	
+	private boolean isLocalConfig(String path) {
+		Pattern p = Pattern.compile("^[\\w\\/]+(\\/\\w+)*\\.xml$");
+	    Matcher m = p.matcher(path);
+	    return m.find();
+	}
+	
+	private boolean isClassConfig(String path) {
+		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$");
+	    Matcher m = p.matcher(path);
+	    return m.find();
 	}
 	
 	public void reloadRule(){
@@ -199,5 +238,13 @@ public class FlowExecutor {
 
 	public void setRulePath(List<String> rulePath) {
 		this.rulePath = rulePath;
+	}
+	
+	public String getZkNode() {
+		return zkNode;
+	}
+
+	public void setZkNode(String zkNode) {
+		this.zkNode = zkNode;
 	}
 }
