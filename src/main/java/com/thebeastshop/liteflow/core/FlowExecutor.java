@@ -149,7 +149,8 @@ public class FlowExecutor {
 			}
 			return (T)slot;
 		}catch(Exception e){
-			throw new FlowSystemException("executor cause error");
+			String errorMsg = MessageFormat.format("[{0}]executor cause error", slot.getRequestId());
+			throw new FlowSystemException(errorMsg);
 		}finally{
 			if(!isInnerChain) {
 				slot.printStep();
