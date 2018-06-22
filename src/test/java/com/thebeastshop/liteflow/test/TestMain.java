@@ -24,8 +24,6 @@ public class TestMain {
 			Slot slot = executor.execute("chain1", "it's a request");
 			System.out.println(slot);
 		}
-		
-		
 	}
 	
 }
