@@ -189,6 +189,7 @@ public class FlowExecutor {
 			return (T)slot;
 		}catch(Exception e){
 			String errorMsg = MessageFormat.format("[{0}]executor cause error", slot.getRequestId());
+			LOG.error(errorMsg,e);
 			throw new FlowSystemException(errorMsg);
 		}finally{
 			if(!isInnerChain) {
