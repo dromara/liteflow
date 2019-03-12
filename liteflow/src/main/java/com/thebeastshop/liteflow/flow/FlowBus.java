@@ -18,36 +18,36 @@ import com.thebeastshop.liteflow.entity.config.Chain;
 import com.thebeastshop.liteflow.entity.config.Node;
 
 public class FlowBus {
-	
+
 	private static Map<String, Chain> chainMap;
-	
+
 	private static Map<String, Node> nodeMap;
-	
+
 	public static Chain getChain(String id) throws Exception{
 		if(chainMap == null || chainMap.isEmpty()){
 			throw new Exception("please config the rule first");
 		}
 		return chainMap.get(id);
 	}
-	
+
 	public static void addChain(String name,Chain chain){
 		if(chainMap == null){
-			chainMap = new HashMap<String, Chain>();
+			chainMap = new HashMap<>();
 		}
 		chainMap.put(name, chain);
 	}
-	
+
 	public static boolean needInit() {
 		return MapUtils.isEmpty(chainMap);
 	}
-	
+
 	public static void addNode(String nodeId, Node node) {
 		if(nodeMap == null) {
-			nodeMap = new HashMap<String, Node>();
+			nodeMap = new HashMap<>();
 		}
 		nodeMap.put(nodeId, node);
 	}
-	
+
 	public static Node getNode(String nodeId) {
 		return nodeMap.get(nodeId);
 	}

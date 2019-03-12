@@ -24,11 +24,11 @@ import com.thebeastshop.liteflow.spring.ComponentScaner;
 import com.thebeastshop.liteflow.util.Dom4JReader;
 
 public abstract class XmlFlowParser {
-	
+
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
-	
+
 	public abstract void parseMain(String path) throws Exception;
-	
+
 	public void parse(String content) throws Exception {
 		Document document = Dom4JReader.getFormatDocument(content);
 		parse(document);
@@ -77,14 +77,14 @@ public abstract class XmlFlowParser {
 			List<Element> chainList = rootElement.elements("chain");
 			for (Element e : chainList) {
 				chainName = e.attributeValue("name");
-				conditionList = new ArrayList<Condition>();
+				conditionList = new ArrayList<>();
 				for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 					Element condE = it.next();
 					condArrayStr = condE.attributeValue("value");
 					if (StringUtils.isBlank(condArrayStr)) {
 						continue;
 					}
-					chainNodeList = new ArrayList<Node>();
+					chainNodeList = new ArrayList<>();
 					condArray = condArrayStr.split(",");
 					RegexEntity regexEntity = null;
 					Node node = null;
@@ -114,7 +114,7 @@ public abstract class XmlFlowParser {
 		}
 
 	}
-	
+
 	public static RegexEntity parseNodeStr(String str) {
 	    List<String> list = new ArrayList<String>();
 	    Pattern p = Pattern.compile("[^\\)\\(]+");
