@@ -9,9 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.thebeastshop</groupId>
-    <artifactId>flowtest</artifactId>
+    <artifactId>liteflow-test</artifactId>
     <version>1.0.0</version>
-    <name>flowtest</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>

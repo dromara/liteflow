@@ -14,16 +14,17 @@ import java.util.Arrays;
 import com.thebeastshop.liteflow.core.FlowExecutor;
 import com.thebeastshop.liteflow.entity.data.Slot;
 
+/**
+ * 这是编程式引用liteflow
+ */
 public class TestMain {
 	public static void main(String[] args) throws Exception {
 		final FlowExecutor executor = new FlowExecutor();
 		executor.setRulePath(Arrays.asList(new String[]{"config/flow.xml"}));
 		executor.init();
-		
-		for(int i=0;i<1;i++){
-			Slot slot = executor.execute("chain1", "it's a request");
-			System.out.println(slot);
-		}
+
+		Slot slot = executor.execute("chain1", "it's a request");
+		System.out.println(slot);
 	}
-	
+
 }

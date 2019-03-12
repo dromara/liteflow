@@ -14,31 +14,25 @@ import com.thebeastshop.liteflow.core.FlowExecutor;
 import com.thebeastshop.liteflow.entity.data.Slot;
 
 
-
+/**
+ * 此示例演示了如何在spring中用liteflow
+ * 如果是springboot请参考flowtest
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring-test.xml" })
 public class TestWithSpringMain {
-	
+
 	@Resource(name="flowExecutor")
 	private FlowExecutor flowExecutor;
-	
+
 	@Test
 	public void test1() throws Exception {
-		ExecutorService executorService = Executors.newFixedThreadPool(10);
-		
-		for(int i=0;i<1;i++){
-			executorService.submit(new Thread(){
-				@Override
-				public void run() {
-					Slot slot = flowExecutor.execute("chain1", "it's a request");
-					System.out.println(slot);
-				}
-			});
-		}
+		Slot slot = flowExecutor.execute("chain1", "it's a request");
+		System.out.println(slot);
 		System.out.println("done!");
 		System.in.read();
 	}
-	
+
 	@Test
 	public void test2() throws Exception {
 		try {
@@ -48,9 +42,9 @@ public class TestWithSpringMain {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	@Test
 	public void test3() throws Exception {
 		try {
@@ -61,6 +55,6 @@ public class TestWithSpringMain {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 }
