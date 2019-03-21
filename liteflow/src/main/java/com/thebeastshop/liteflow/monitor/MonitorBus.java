@@ -32,23 +32,29 @@ import com.thebeastshop.liteflow.entity.monitor.CompStatistics;
 import com.thebeastshop.liteflow.util.LimitQueue;
 
 public class MonitorBus {
-	
-	private static final int QUEUE_LIMIT_SIZE = 200;
-	
-	private static final Logger LOG = LoggerFactory.getLogger(MonitorBus.class);
-	
-	private static ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
 
-	static{
-		Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
-			public void run() {
-				MonitorBus.printStatistics();
-			}
-		}, 5*60*1000L, 5*60*1000L);
+	private static final int QUEUE_LIMIT_SIZE = 200;
+
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+	private ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
+
+	private static MonitorBus monitorBus;
+
+	public static MonitorBus load(){
+		if(monitorBus == null){
+			monitorBus = new MonitorBus();
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+				public void run() {
+					monitorBus.printStatistics();
+				}
+			}, 5*60*1000L, 5*60*1000L);
+		}
+		return monitorBus;
 	}
-	
-	public static void addStatistics(CompStatistics statistics){
+
+	public void addStatistics(CompStatistics statistics){
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
 			statisticsMap.get(statistics.getComponentClazzName()).offer(statistics);
 		}else{
@@ -57,29 +63,29 @@ public class MonitorBus {
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
 	}
-	
-	public static void printStatistics(){
+
+	public void printStatistics(){
 		try{
 			Map<String, BigDecimal> compAverageTimeSpent = new HashMap<String, BigDecimal>();
-			
+
 			long totalTimeSpent = 0;
-			
+
 			for(Entry<String, LimitQueue<CompStatistics>> entry : statisticsMap.entrySet()){
 				for(CompStatistics statistics : entry.getValue()){
 					totalTimeSpent += statistics.getTimeSpent();
 				}
 				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP));
 			}
-			
+
 			List<Entry<String, BigDecimal>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
-			
+
 			Collections.sort(compAverageTimeSpentEntryList,new Comparator<Entry<String, BigDecimal>>() {
 				@Override
 				public int compare(Entry<String, BigDecimal> o1, Entry<String, BigDecimal> o2) {
 					return o2.getValue().compareTo(o1.getValue());
 				}
 			});
-			
+
 			StringBuilder logStr = new StringBuilder();
 			logStr.append("以下为LiteFlow中间件统计信息：\n");
 			logStr.append("======================================================================================\n");
