@@ -22,15 +22,15 @@ import com.thebeastshop.liteflow.entity.config.Node;
 import com.thebeastshop.liteflow.util.LOGOPrinter;
 
 public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentScaner.class);
-	
+
 	public static Map<String, NodeComponent> nodeComponentMap = new HashMap<String, NodeComponent>();
 
 	static {
 		LOGOPrinter.print();
 	}
-	
+
 	@Override
 	public int getOrder() {
 		return Ordered.LOWEST_PRECEDENCE;
@@ -48,7 +48,7 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 		}
 		return bean;
 	}
-	
+
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;

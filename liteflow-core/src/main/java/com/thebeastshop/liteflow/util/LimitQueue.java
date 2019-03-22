@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class LimitQueue<E> implements Queue<E> {
 
@@ -21,7 +22,7 @@ public class LimitQueue<E> implements Queue<E> {
 	 */
 	private int limit;
 
-	Queue<E> queue = new LinkedList<E>();
+	Queue<E> queue = new ConcurrentLinkedQueue<>();
 
 	public LimitQueue(int limit) {
 		this.limit = limit;
@@ -49,7 +50,7 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 获取队列
-	 * 
+	 *
 	 * @return
 	 * @author SHANHY
 	 * @date 2015年11月9日
@@ -60,7 +61,7 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 获取限制大小
-	 * 
+	 *
 	 * @return
 	 * @author SHANHY
 	 * @date 2015年11月9日
