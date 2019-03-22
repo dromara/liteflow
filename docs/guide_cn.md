@@ -1,4 +1,5 @@
 # 一、快速开始
+
 liteflow需要你的项目使用maven
 ## 1.1依赖
 ```xml
@@ -8,9 +9,13 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
-最新版本为<font color=red>**2.0.1**</font>  
-稳定版本为<font color=red>**1.3.1**</font>
+最新版本为<font color=red>**2.1.0**</font>  
+稳定版本为<font color=red>**2.0.1**</font>
+
 ## 1.2流程配置文件
+
+(不依赖任何框架的写法)
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
@@ -54,6 +59,9 @@ chain为流程链，每个链上可配置多个组件节点。目前执行的模
 ```
 
 ## 1.3执行流程链
+
+(不依赖任何框架的写法)
+
 ```java
 FlowExecutor executor = new FlowExecutor();
 executor.setRulePath(Arrays.asList(new String[]{"/config/flow.xml"}));
@@ -96,10 +104,39 @@ public class AComponent extends NodeComponent
 ```
 然后你的项目中通过spring拿到执行器进行调用流程。
 
-# 三、和zookeeper进行集成
-## 3.1spring配置
+# 三、和Spring Boot集成
+
+## 3.1 依赖
+
+liteFlow提供了liteflow-spring-boot-starter依赖包
+
+```xml
+<dependency>
+  <groupId>com.thebeastshop</groupId>
+  <artifactId>liteflow-spring-boot-starter</artifactId>
+  <version>2.1.0</version>
+</dependency>
+```
+
+## 3.2配置
+
+在依赖了以上jar包后。
+
+在application.properties里加上配置地址后，就可以在容器中依赖拿到`FlowExecutor`实例
+
+```properties
+liteflow.ruleSource=config/flow.xml
+```
+
+工程中的liteflow-test演示了如何在springboot下进行快速配置
+
+# 四、和zookeeper进行集成
+
+## 4.1spring配置
+
 liteFlow支持把配置放在zk集群中，并支持实时修改流程  
 你只需在原来配置执行器的地方，把本地xml路径换成zk地址就ok了
+
 ```xml
 <!-- 这种是zk方式配置 -->
 <bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
@@ -116,8 +153,10 @@ liteFlow支持把配置放在zk集群中，并支持实时修改流程
 如果你不加zkNode这个标签，就用默认的节点路径进行读取配置。  
 使用这种方式加载配置，在zk上进行更改配置。liteFlow会实时刷新配置。  
 
-# 四、使用自定义的配置源
-## 4.1创建自定义配置源的类
+# 五、使用自定义的配置源
+
+## 5.1创建自定义配置源的类
+
 如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置源的扩展点。  
 在你的项目中创建一个类继承`ClassXmlFlowParser`这个类  
 ```java
@@ -133,7 +172,8 @@ public class TestCustomParser extends ClassXmlFlowParser {
 }
 ```
 
-## 4.2Spring配置
+## 5.2Spring配置
+
 spring中需要改的地方还是执行器的配置，只需要在配置的路径地方放入自定义类的类路径即可  
 ```xml
 <bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
@@ -145,16 +185,20 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 </bean>
 ```
 
-# 五、架构设计
-## 5.1组件式流程引擎架构设计
+# 六、架构设计
+
+## 6.1组件式流程引擎架构设计
+
 ![architecture_image](https://raw.githubusercontent.com/thebeastshop/liteFlow/master/docs/images/architecture.png)
 Handler Unit：我们想象成每一个业务都是一个业务组件，每一个业务组件就是一个handlerUnit（处理单元）  
 EPU：这里的epu对应的就是我们的执行器，用来统筹并处理handlerUnit。相当于计算机的CPU    
 Event Bus：事件总线，用来指定下一个命令是什么，该如何去执行处理单元。这里的时间总线由我们的配置构成  
 Data Bus：数据总线，用来存储整个调用链里数据。每一个请求生成一个数据槽。一个数据里最多有1024个数据槽  
 
-# 六、接入详细指南
-## 6.1执行器
+# 七、接入详细指南
+
+## 7.1执行器
+
 执行器`FlowExecutor`用来执行一个流程，用法为  
 ```java
 public <T extends Slot> T execute(String chainId,Object param);
@@ -173,14 +217,16 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 关于`Slot`的说明，请参照[数据槽](http://yomahub.com/liteflow/#/?id=_62%e6%95%b0%e6%8d%ae%e6%a7%bd)
 
-## 6.2数据槽
+## 7.2数据槽
+
 在执行器执行流程时会分配唯一的一个数据槽给这个请求。不同请求的数据槽是完全隔离的。  
 数据槽实际上是一个Map，里面存放着liteFlow的元数据  
 比如可以通过`getRequestData`获得流程的初始参数，通过`getChainName`获取流程的命名，通过`setInput`,`getInput`,`setOutput`,`getOutput`设置和获取属于某个组件专有的数据对象。当然也提供了最通用的方法`setData`和`getData`用来设置和获取业务的数据。
 
 !> 不过这里还是推荐扩展出自定义的Slot（上一小章阐述了原因），自定义的Slot更加友好。更加贴合业务。
 
-## 6.3组件节点
+## 7.3组件节点
+
 组件节点需要继承`NodeComponent`类  
 需要实现`process`方法  
 但是推荐实现`isAccess`方法，表示是否进入该节点，可以用于业务参数的预先判断  
@@ -191,7 +237,8 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 在组件节点里，随时可以通过方法`getSlot`获取当前的数据槽，从而可以获取任何数据。
 
-## 6.4条件节点
+## 7.4条件节点
+
 在实际业务中，往往要通过动态的业务逻辑判断到底接下去该执行哪一个节点  
 ```xml
 <chain name="chain1">
@@ -203,7 +250,8 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 c节点是用来路由的，被称为条件节点，这种节点需要继承`NodeCondComponent`类  
 需要实现方法`processCond`，这个方法需要返回`Class`类型，就是具体的结果节点
 
-## 6.5嵌套执行
+## 7.5嵌套执行
+
 liteFlow可以无极嵌套执行n条流程  
 ```java
 @Component("h")
@@ -222,7 +270,8 @@ public class HComponent extends NodeComponent {
 ```
 这段代码演示了在某个业务节点内调用另外一个流程链的方法
 
-## 6.6步骤打印
+## 7.6步骤打印
+
 liteFlow在执行每一条流程链后会打印步骤  
 样例如下：
 ```
@@ -230,11 +279,13 @@ a==>c==>h(START)==>m==>p==>p1==>h(END)==>g
 ```
 ?> 其中h节点分start和end两个步骤，说明在h节点内调用了另一条流程。start和end之间的步骤就是另一条流程的步骤
 
-## 6.7监控
+## 7.7监控
+
 liteFlow提供了简单的监控，目前只统计一个指标：每个组件的平均耗时  
 每5分钟会打印一次，并且是根据耗时时长倒序排的。 
 
-# 七、未来版本计划
+# 八、未来版本计划
+
 ## 2.5版本
 * 支持更多的表达式，重写表达式解析器
 * 重新设计数据总线，解决数据槽热点问题
