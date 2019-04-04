@@ -1,15 +1,16 @@
 package com.thebeastshop.liteflow.springboot;
 
 import com.thebeastshop.liteflow.core.FlowExecutor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.InitializingBean;
+import javax.annotation.Resource;
 
-@Configuration
-public class LiteflowExecutorInit {
+public class LiteflowExecutorInit implements InitializingBean {
 
-    @Bean
-    public String initExecutor(FlowExecutor flowExecutor){
+    @Resource
+    private FlowExecutor flowExecutor;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
         flowExecutor.init();
-        return "init";
     }
 }
