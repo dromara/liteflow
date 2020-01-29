@@ -9,7 +9,7 @@
     <parent>
 		<groupId>com.thebeastshop</groupId>
 		<artifactId>liteflow</artifactId>
-		<version>2.1.1</version>
+		<version>2.1.3-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>

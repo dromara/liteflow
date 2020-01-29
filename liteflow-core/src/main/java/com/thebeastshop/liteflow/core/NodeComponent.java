@@ -31,6 +31,8 @@ public abstract class NodeComponent {
 
 	private String nodeId;
 
+	private InheritableThreadLocal<Boolean> isEndTL = new InheritableThreadLocal<>();
+
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
 		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
@@ -88,7 +90,23 @@ public abstract class NodeComponent {
 	 * 是否结束整个流程(不往下继续执行)
 	 */
 	protected boolean isEnd() {
-		return false;
+		Boolean isEnd = isEndTL.get();
+		if(isEnd == null){
+			return false;
+		}else{
+			return isEndTL.get();
+		}
+	}
+
+	/**
+	 * 设置是否结束整个流程
+	 */
+	protected void setIsEnd(boolean isEnd){
+		this.isEndTL.set(isEnd);
+	}
+
+	protected void removeIsEnd(){
+		this.isEndTL.remove();
 	}
 
 	public NodeComponent setSlotIndex(Integer slotIndex) {
@@ -98,6 +116,10 @@ public abstract class NodeComponent {
 
 	public Integer getSlotIndex() {
 		return this.slotIndexTL.get();
+	}
+
+	public void removeSlotIndex(){
+		this.slotIndexTL.remove();
 	}
 
 	public <T extends Slot> T getSlot(){

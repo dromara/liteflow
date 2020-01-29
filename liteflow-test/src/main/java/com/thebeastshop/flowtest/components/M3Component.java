@@ -25,7 +25,10 @@ public class M3Component extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("m3 component executed!");
-		flowExecutor.invoke("strategy2",10, DefaultSlot.class, this.getSlotIndex());
+		try{
+			flowExecutor.invoke("strategy2",10, DefaultSlot.class, this.getSlotIndex());
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 	}
-
 }

@@ -40,13 +40,13 @@ import com.thebeastshop.liteflow.parser.ZookeeperXmlFlowParser;
 import com.thebeastshop.liteflow.util.LOGOPrinter;
 
 public class FlowExecutor {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
-	
+
 	private List<String> rulePath;
-	
+
 	private String zkNode;
-	
+
 	public void init() {
 		XmlFlowParser parser = null;
 		for(String path : rulePath){
@@ -71,88 +71,88 @@ public class FlowExecutor {
 			}
 		}
 	}
-	
+
 	private boolean isZKConfig(String path) {
 		Pattern p = Pattern.compile("[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
-	
+
 	private boolean isLocalConfig(String path) {
 		Pattern p = Pattern.compile("^[\\w\\/]+(\\/\\w+)*\\.xml$");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
-	
+
 	private boolean isClassConfig(String path) {
 		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
-	
+
 	public void reloadRule(){
 		init();
 	}
 
-	public <T extends Slot> T execute(String chainId,Object param){
+	public <T extends Slot> T execute(String chainId,Object param) throws Exception{
 		return execute(chainId, param, DefaultSlot.class,null,false);
 	}
-	
-	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz){
+
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz) throws Exception{
 		return execute(chainId, param, slotClazz,null,false);
 	}
-	
-	public void invoke(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex){
+
+	public void invoke(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex) throws Exception{
 		execute(chainId, param, slotClazz,slotIndex,true);
 	}
-	
-	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain){
+
+	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain) throws Exception{
 		Slot slot = null;
 		try{
 			if(FlowBus.needInit()) {
 				init();
 			}
-			
+
 			Chain chain = FlowBus.getChain(chainId);
-			
+
 			if(chain == null){
 				String errorMsg = MessageFormat.format("couldn't find chain with the id[{0}]", chainId);
 				throw new ChainNotFoundException(errorMsg);
 			}
-			
+
 			if(!isInnerChain && slotIndex == null) {
 				slotIndex = DataBus.offerSlot(slotClazz);
 				LOG.info("slot[{}] offered",slotIndex);
 			}
-			
+
 			if(slotIndex == -1){
 				throw new NoAvailableSlotException("there is no available slot");
 			}
-			
+
 			slot = DataBus.getSlot(slotIndex);
 			if(slot == null) {
 				throw new NoAvailableSlotException("the slot is not exist");
 			}
-			
+
 			if(StringUtils.isBlank(slot.getRequestId())) {
 				slot.generateRequestId();
 				LOG.info("requestId[{}] has generated",slot.getRequestId());
 			}
-			
+
 			if(!isInnerChain) {
 				slot.setRequestData(param);
 				slot.setChainName(chainId);
 			}else {
 				slot.setChainReqData(chainId, param);
 			}
-			
+
 			List<Condition> conditionList = chain.getConditionList();
-			
+
 			List<Node> nodeList = null;
 			NodeComponent component = null;
 			for(Condition condition : conditionList){
 				nodeList = condition.getNodeList();
-				
+
 				if(condition instanceof ThenCondition){
 					for(Node node : nodeList){
 						component = node.getInstance();
@@ -176,6 +176,9 @@ public class FlowExecutor {
 								LOG.error(errorMsg,t);
 								throw t;
 							}
+						}finally {
+							component.removeSlotIndex();
+							component.removeIsEnd();
 						}
 					}
 				}else if(condition instanceof WhenCondition){
@@ -190,7 +193,7 @@ public class FlowExecutor {
 		}catch(Exception e){
 			String errorMsg = MessageFormat.format("[{0}]executor cause error", slot.getRequestId());
 			LOG.error(errorMsg,e);
-			throw new FlowSystemException(errorMsg);
+			throw e;
 		}finally{
 			if(!isInnerChain) {
 				slot.printStep();
@@ -198,24 +201,24 @@ public class FlowExecutor {
 			}
 		}
 	}
-	
+
 	private class WhenConditionThread extends Thread{
-		
+
 		private Node node;
-		
+
 		private Integer slotIndex;
-		
+
 		private String requestId;
-		
+
 		private CountDownLatch latch;
-		
+
 		public WhenConditionThread(Node node,Integer slotIndex,String requestId,CountDownLatch latch){
 			this.node = node;
 			this.slotIndex = slotIndex;
 			this.requestId = requestId;
 			this.latch = latch;
 		}
-		
+
 		@Override
 		public void run() {
 			try{
@@ -240,7 +243,7 @@ public class FlowExecutor {
 	public void setRulePath(List<String> rulePath) {
 		this.rulePath = rulePath;
 	}
-	
+
 	public String getZkNode() {
 		return zkNode;
 	}

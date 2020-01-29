@@ -22,11 +22,16 @@ public class HComponent extends NodeComponent {
 
 	@Resource
 	private FlowExecutor flowExecutor;
-	
+
 	@Override
 	public void process() {
 		System.out.println("Hcomponent executed!");
-		flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
+		try{
+			flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
 	}
-	
+
 }
