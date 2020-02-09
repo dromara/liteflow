@@ -227,7 +227,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 ## 7.3组件节点
 
-组件节点需要继承`NodeComponent`类  
+组件节点需要继承`NodeComponent`类
 需要实现`process`方法  
 但是推荐实现`isAccess`方法，表示是否进入该节点，可以用于业务参数的预先判断  
 
