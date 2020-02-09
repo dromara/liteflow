@@ -60,7 +60,7 @@ chain为流程链，每个链上可配置多个组件节点。目前执行的模
 
 ## 1.3执行流程链
 
-(不依赖任何框架的写法)
+(不依赖任何第三方框架的写法)
 
 ```java
 FlowExecutor executor = new FlowExecutor();
