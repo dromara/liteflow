@@ -9,8 +9,7 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
-最新版本为<font color=red>**2.1.0**</font>  
-稳定版本为<font color=red>**2.0.1**</font>
+最新版本为<font color=red>**2.1.3**</font>，为稳定版本
 
 ## 1.2流程配置文件
 
@@ -233,7 +232,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 其他几个可以覆盖的方法有：  
 方法`isContinueOnError`：表示出错是否继续往下执行下一个组件  
-方法`isEnd`：表示是否立即结束整个流程  
+方法`isEnd`：表示是否立即结束整个流程 ，也可以在业务日志里根据业务判断来调用this.setIsEnd(true)来结束整个流程。
 
 在组件节点里，随时可以通过方法`getSlot`获取当前的数据槽，从而可以获取任何数据。
 
@@ -319,6 +318,13 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 * 增加对zookeeper的支持
 * 增加自定义配置源
 * 优化监控的表现
+
+## 2.1.3更新日志
+
+更新点如下：
+
+* 增加组件里结束整个流程的配置
+* 修复一些可能导致内存变大的bug
 
 # 九、联系作者
 ![wx](media/wx.jpeg)
