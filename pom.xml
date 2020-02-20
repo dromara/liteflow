@@ -143,6 +143,7 @@
 		<module>liteflow-spring-boot-starter</module>
 	</modules>
 
+	<!--
 	<distributionManagement>
 		<repository>
 			<id>nexus-releases</id>
@@ -155,4 +156,5 @@
 			<url>http://118.178.236.200:8087/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+	-->
 </project>
