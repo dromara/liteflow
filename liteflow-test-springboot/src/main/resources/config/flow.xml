@@ -2,14 +2,14 @@
 <flow>
 	<!-- 如果和spring集成，以下<nodes>配置可以不要
 	<nodes>
-		<node id="a" class="com.thebeastshop.flowtest.components.AComponent"/>
-		<node id="b" class="com.thebeastshop.flowtest.components.BComponent"/>
-		<node id="c" class="com.thebeastshop.flowtest.components.CComponent"/>
-		<node id="d" class="com.thebeastshop.flowtest.components.DComponent"/>
-		<node id="e" class="com.thebeastshop.flowtest.components.EComponent"/>
-		<node id="f" class="com.thebeastshop.flowtest.components.FComponent"/>
-		<node id="g" class="com.thebeastshop.flowtest.components.GComponent"/>
-		<node id="cond" class="com.thebeastshop.liteflow.test.component.CondComponent"/>
+		<node id="a" class="com.yomahub.liteflow.test.component.AComponent"/>
+		<node id="b" class="com.yomahub.liteflow.test.component.BComponent"/>
+		<node id="c" class="com.yomahub.liteflow.test.component.CComponent"/>
+		<node id="d" class="com.yomahub.liteflow.test.component.DComponent"/>
+		<node id="e" class="com.yomahub.liteflow.test.component.EComponent"/>
+		<node id="f" class="com.yomahub.liteflow.test.component.FComponent"/>
+		<node id="g" class="com.yomahub.liteflow.test.component.GComponent"/>
+		<node id="cond" class="com.yomahub.liteflow.test.component.CondComponent"/>
 	</nodes>
 	-->
 

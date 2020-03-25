@@ -7,11 +7,11 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-	<context:component-scan base-package="com.thebeastshop.flowtest.components" />
+	<context:component-scan base-package="com.yomahub.flowtest.components" />
 
-	<bean class="com.thebeastshop.liteflow.spring.ComponentScaner" depends-on="flowExecutor"/>
+	<bean class="com.yomahub.liteflow.spring.ComponentScaner" depends-on="flowExecutor"/>
 
-	<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+	<bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
 		<property name="rulePath">
 			<list>
 				<value>config/flow.xml</value>

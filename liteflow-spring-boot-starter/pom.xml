@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>liteflow</artifactId>
-        <groupId>com.thebeastshop</groupId>
+        <groupId>com.yomahub</groupId>
         <version>2.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -13,7 +13,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.thebeastshop</groupId>
+            <groupId>com.yomahub</groupId>
             <artifactId>liteflow-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

@@ -4,7 +4,7 @@ liteflow需要你的项目使用maven
 ## 1.1依赖
 ```xml
 <dependency>
-	<groupId>com.thebeastshop.liteflow</groupId>
+	<groupId>com.yomahub.liteflow</groupId>
 	<artifactId>liteflow</artifactId>
 	<version>${liteFlow.version}</version>
 </dependency>
@@ -19,11 +19,11 @@ liteflow需要你的项目使用maven
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
 	<nodes>
-		<node id="a" class="com.thebeastshop.liteflow.test.component.AComponent"/>
-		<node id="b" class="com.thebeastshop.liteflow.test.component.BComponent"/>
-		<node id="c" class="com.thebeastshop.liteflow.test.component.CComponent"/>
-		<node id="d" class="com.thebeastshop.liteflow.test.component.DComponent"/>
-		<node id="e" class="com.thebeastshop.liteflow.test.component.EComponent"/>
+		<node id="a" class="com.yomahub.liteflow.test.component.AComponent"/>
+		<node id="b" class="com.yomahub.liteflow.test.component.BComponent"/>
+		<node id="c" class="com.yomahub.liteflow.test.component.CComponent"/>
+		<node id="d" class="com.yomahub.liteflow.test.component.DComponent"/>
+		<node id="e" class="com.yomahub.liteflow.test.component.EComponent"/>
 	</nodes>
 	
 	<chain name="demoChain">
@@ -74,8 +74,8 @@ Slot slot = executor.execute("demoChain", "arg");
 ## 2.1流程配置可以省略的部分
 流程配置中的`nodes`节点，可以不用配置了，支持spring的自动扫描方式。你需要在你的spring配置文件中定义
 ```xml
-<context:component-scan base-package="com.thebeastshop.liteflow.test.component" />
-<bean class="com.thebeastshop.liteflow.spring.ComponentScaner"/>
+<context:component-scan base-package="com.yomahub.liteflow.test.component" />
+<bean class="ComponentScaner"/>
 ```
 
 当然，你的组件节点也需要注册进spirng容器
@@ -93,7 +93,7 @@ public class AComponent extends NodeComponent
 
 ## 2.2spring中执行器的配置
 ```xml
-<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+<bean id="flowExecutor" class="FlowExecutor">
 	<property name="rulePath">
 		<list>
 			<value>/config/flow.xml</value>
@@ -111,7 +111,7 @@ liteFlow提供了liteflow-spring-boot-starter依赖包
 
 ```xml
 <dependency>
-  <groupId>com.thebeastshop</groupId>
+  <groupId>com.yomahub</groupId>
   <artifactId>liteflow-spring-boot-starter</artifactId>
   <version>2.1.0</version>
 </dependency>
@@ -138,7 +138,7 @@ liteFlow支持把配置放在zk集群中，并支持实时修改流程
 
 ```xml
 <!-- 这种是zk方式配置 -->
-<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+<bean id="flowExecutor" class="FlowExecutor">
 	<property name="rulePath">
 		<list>
 			<value>127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183</value>
@@ -175,10 +175,10 @@ public class TestCustomParser extends ClassXmlFlowParser {
 
 spring中需要改的地方还是执行器的配置，只需要在配置的路径地方放入自定义类的类路径即可  
 ```xml
-<bean id="flowExecutor" class="com.thebeastshop.liteflow.core.FlowExecutor">
+<bean id="flowExecutor" class="FlowExecutor">
 	<property name="rulePath">
 		<list>
-			<value>com.thebeastshop.liteflow.test.TestCustomParser</value>
+			<value>com.yomahub.liteflow.test.TestCustomParser</value>
 		</list>
 	</property>
 </bean>
