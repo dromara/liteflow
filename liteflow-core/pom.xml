@@ -5,6 +5,7 @@
     <artifactId>liteflow-core</artifactId>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
+	<description>liteflow core</description>
 
     <parent>
 		<groupId>com.yomahub</groupId>
