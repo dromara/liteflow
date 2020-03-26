@@ -74,6 +74,7 @@ public abstract class NodeComponent {
 
 	/**
 	 * 是否进入该节点
+	 * @return boolean
 	 */
 	protected boolean isAccess(){
 		return true;
@@ -81,6 +82,7 @@ public abstract class NodeComponent {
 
 	/**
 	 * 出错是否继续执行
+	 * @return boolean
 	 */
 	protected boolean isContinueOnError() {
 		return false;
@@ -88,6 +90,7 @@ public abstract class NodeComponent {
 
 	/**
 	 * 是否结束整个流程(不往下继续执行)
+	 * @return boolean
 	 */
 	protected boolean isEnd() {
 		Boolean isEnd = isEndTL.get();
@@ -100,6 +103,7 @@ public abstract class NodeComponent {
 
 	/**
 	 * 设置是否结束整个流程
+	 * @param isEnd
 	 */
 	protected void setIsEnd(boolean isEnd){
 		this.isEndTL.set(isEnd);

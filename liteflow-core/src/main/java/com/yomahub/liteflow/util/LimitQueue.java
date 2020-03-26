@@ -30,6 +30,8 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 入队
+	 * @param e
+	 * @return
 	 */
 	@Override
 	public boolean offer(E e) {
@@ -42,6 +44,7 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 出队
+	 * @return
 	 */
 	@Override
 	public E poll() {
@@ -50,10 +53,7 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 获取队列
-	 *
 	 * @return
-	 * @author SHANHY
-	 * @date 2015年11月9日
 	 */
 	public Queue<E> getQueue() {
 		return queue;
@@ -61,10 +61,7 @@ public class LimitQueue<E> implements Queue<E> {
 
 	/**
 	 * 获取限制大小
-	 *
 	 * @return
-	 * @author SHANHY
-	 * @date 2015年11月9日
 	 */
 	public int getLimit() {
 		return limit;
