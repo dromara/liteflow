@@ -63,7 +63,9 @@ public abstract class XmlFlowParser {
 				}
 			}else{
 				for(Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()){
-					FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+					if(!FlowBus.containNode(componentEntry.getKey())){
+						FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+					}
 				}
 			}
 

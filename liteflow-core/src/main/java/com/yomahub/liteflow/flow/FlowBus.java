@@ -19,9 +19,9 @@ import com.yomahub.liteflow.entity.config.Node;
 
 public class FlowBus {
 
-	private static Map<String, Chain> chainMap;
+	private static Map<String, Chain> chainMap = new HashMap<>();
 
-	private static Map<String, Node> nodeMap;
+	private static Map<String, Node> nodeMap = new HashMap<>();
 
 	public static Chain getChain(String id) throws Exception{
 		if(chainMap == null || chainMap.isEmpty()){
@@ -31,9 +31,6 @@ public class FlowBus {
 	}
 
 	public static void addChain(String name,Chain chain){
-		if(chainMap == null){
-			chainMap = new HashMap<>();
-		}
 		chainMap.put(name, chain);
 	}
 
@@ -41,10 +38,11 @@ public class FlowBus {
 		return MapUtils.isEmpty(chainMap);
 	}
 
+	public static boolean containNode(String nodeId){
+		return nodeMap.containsKey(nodeId);
+	}
+
 	public static void addNode(String nodeId, Node node) {
-		if(nodeMap == null) {
-			nodeMap = new HashMap<>();
-		}
 		nodeMap.put(nodeId, node);
 	}
 
