@@ -9,7 +9,7 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
-最新版本为<font color=red>**2.1.3**</font>，为稳定版本
+最新版本为<font color=red>**2.2.2**</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
 
 ## 1.2流程配置文件
 
@@ -113,7 +113,7 @@ liteFlow提供了liteflow-spring-boot-starter依赖包
 <dependency>
   <groupId>com.yomahub</groupId>
   <artifactId>liteflow-spring-boot-starter</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.2</version>
 </dependency>
 ```
 
@@ -326,5 +326,13 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 * 增加组件里结束整个流程的配置
 * 修复一些可能导致内存变大的bug
 
+## 2.2.0 更新日志
+
+更新点如下：
+
+* pom规划化
+* 包路径改成个人域名路径
+* 修复当有多个流程配置时，条件节点失效的bug
+
 # 九、联系作者
-![wx](media/wx.jpeg)
+![wx](media/wx.jpeg)![offIical-wx](media/offIical-wx.jpg)
