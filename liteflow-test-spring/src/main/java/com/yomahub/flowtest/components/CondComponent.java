@@ -8,7 +8,6 @@
  */
 package com.yomahub.flowtest.components;
 
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.NodeCondComponent;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class CondComponent extends NodeCondComponent {
 
 	@Override
-	protected Class<? extends NodeComponent> processCond() throws Exception {
-		return BComponent.class;
+	public String processCond() throws Exception {
+		return "b";
 	}
 }

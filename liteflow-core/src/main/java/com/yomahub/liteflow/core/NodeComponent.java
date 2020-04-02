@@ -1,20 +1,19 @@
 /**
- * <p>Title: liteFlow</p>
+ * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
- * <p>Copyright: Copyright (c) 2017</p>
  * @author Bryan.Zhang
  * @email weenyc31@163.com
- * @Date 2017-7-28
- * @version 1.0
+ * @Date 2020/4/1
  */
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.entity.flow.Executable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yomahub.liteflow.entity.config.Node;
+import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.data.CmpStep;
 import com.yomahub.liteflow.entity.data.CmpStepType;
 import com.yomahub.liteflow.entity.data.DataBus;
@@ -31,6 +30,7 @@ public abstract class NodeComponent {
 
 	private String nodeId;
 
+	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private InheritableThreadLocal<Boolean> isEndTL = new InheritableThreadLocal<>();
 
 	public void execute() throws Exception{
@@ -58,11 +58,9 @@ public abstract class NodeComponent {
 			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if(StringUtils.isNotBlank(condNodeId)){
 				Node thisNode = FlowBus.getNode(nodeId);
-				Node condNode = thisNode.getCondNode(condNodeId);
-				if(condNode != null){
-					NodeComponent condComponent = condNode.getInstance();
-					condComponent.setSlotIndex(slotIndexTL.get());
-					condComponent.execute();
+				Executable condExecutor = thisNode.getCondNode(condNodeId);
+				if(condExecutor != null){
+					condExecutor.execute(slotIndexTL.get());
 				}
 			}
 		}
@@ -70,21 +68,21 @@ public abstract class NodeComponent {
 		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
 	}
 
-	protected abstract void process() throws Exception;
+	public abstract void process() throws Exception;
 
 	/**
 	 * 是否进入该节点
 	 * @return boolean
 	 */
-	protected boolean isAccess(){
+	public boolean isAccess(){
 		return true;
 	}
 
 	/**
-	 * 出错是否继续执行
+	 * 出错是否继续执行(这个只适用于串行流程，并行节点不起作用)
 	 * @return boolean
 	 */
-	protected boolean isContinueOnError() {
+	public boolean isContinueOnError() {
 		return false;
 	}
 
@@ -92,7 +90,7 @@ public abstract class NodeComponent {
 	 * 是否结束整个流程(不往下继续执行)
 	 * @return boolean
 	 */
-	protected boolean isEnd() {
+	public boolean isEnd() {
 		Boolean isEnd = isEndTL.get();
 		if(isEnd == null){
 			return false;
@@ -105,11 +103,11 @@ public abstract class NodeComponent {
 	 * 设置是否结束整个流程
 	 * @param isEnd
 	 */
-	protected void setIsEnd(boolean isEnd){
+	public void setIsEnd(boolean isEnd){
 		this.isEndTL.set(isEnd);
 	}
 
-	protected void removeIsEnd(){
+	public void removeIsEnd(){
 		this.isEndTL.remove();
 	}
 

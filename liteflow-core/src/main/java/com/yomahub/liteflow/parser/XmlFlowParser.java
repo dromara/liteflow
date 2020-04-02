@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.yomahub.liteflow.entity.flow.*;
+import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -14,11 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.config.Chain;
-import com.yomahub.liteflow.entity.config.Condition;
-import com.yomahub.liteflow.entity.config.Node;
-import com.yomahub.liteflow.entity.config.ThenCondition;
-import com.yomahub.liteflow.entity.config.WhenCondition;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
 import com.yomahub.liteflow.util.Dom4JReader;
@@ -70,51 +67,82 @@ public abstract class XmlFlowParser {
 			}
 
 			// 解析chain节点
-			String chainName = null;
-			String condArrayStr = null;
-			String[] condArray = null;
-			List<Node> chainNodeList = null;
-			List<Condition> conditionList = null;
-
 			List<Element> chainList = rootElement.elements("chain");
 			for (Element e : chainList) {
-				chainName = e.attributeValue("name");
-				conditionList = new ArrayList<>();
-				for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
-					Element condE = it.next();
-					condArrayStr = condE.attributeValue("value");
-					if (StringUtils.isBlank(condArrayStr)) {
-						continue;
-					}
-					chainNodeList = new ArrayList<>();
-					condArray = condArrayStr.split(",");
-					RegexEntity regexEntity = null;
-					Node node = null;
-					for (int i = 0; i < condArray.length; i++) {
-						regexEntity = parseNodeStr(condArray[i].trim());
-						node = FlowBus.getNode(regexEntity.getCondNode());
-						chainNodeList.add(node);
-						if(regexEntity.getRealNodeArray() != null){
-							for(String key : regexEntity.getRealNodeArray()){
-								Node condNode = FlowBus.getNode(key);
-								if(condNode != null){
-									node.setCondNode(condNode.getId(), condNode);
-								}
-							}
-						}
-					}
-					if (condE.getName().equals("then")) {
-						conditionList.add(new ThenCondition(chainNodeList));
-					} else if (condE.getName().equals("when")) {
-						conditionList.add(new WhenCondition(chainNodeList));
-					}
-				}
-				FlowBus.addChain(chainName, new Chain(chainName,conditionList));
+				parseOneChain(e);
 			}
 		} catch (Exception e) {
 			LOG.error("FlowParser parser exception: {}", e);
+			throw e;
 		}
+	}
 
+	private void parseOneChain(Element e) throws Exception{
+		String condArrayStr;
+		String[] condArray;
+		List<Executable> chainNodeList;
+		List<Condition> conditionList;
+
+		String chainName = e.attributeValue("name");
+		conditionList = new ArrayList<>();
+		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
+			Element condE = it.next();
+			condArrayStr = condE.attributeValue("value");
+			if (StringUtils.isBlank(condArrayStr)) {
+				continue;
+			}
+			chainNodeList = new ArrayList<>();
+			condArray = condArrayStr.split(",");
+			RegexEntity regexEntity;
+			String itemExpression;
+			String item;
+			for (int i = 0; i < condArray.length; i++) {
+				itemExpression = condArray[i].trim();
+				regexEntity = parseNodeStr(itemExpression);
+				item = regexEntity.getItem();
+				if(FlowBus.containNode(item)){
+					Node node = FlowBus.getNode(item);
+					chainNodeList.add(node);
+					if(regexEntity.getRealItemArray() != null){
+						for(String key : regexEntity.getRealItemArray()){
+							if(FlowBus.containNode(key)){
+								Node condNode = FlowBus.getNode(key);
+								node.setCondNode(condNode.getId(), condNode);
+							}else if(hasChain(e,key)){
+								Chain chain = FlowBus.getChain(key);
+								node.setCondNode(chain.getChainName(), chain);
+							}
+						}
+					}
+				}else if(hasChain(e,item)){
+					Chain chain = FlowBus.getChain(item);
+					chainNodeList.add(chain);
+				}else{
+					throw new ExecutableItemNotFoundException();
+				}
+			}
+			if (condE.getName().equals("then")) {
+				conditionList.add(new ThenCondition(chainNodeList));
+			} else if (condE.getName().equals("when")) {
+				conditionList.add(new WhenCondition(chainNodeList));
+			}
+		}
+		FlowBus.addChain(chainName, new Chain(chainName,conditionList));
+	}
+
+	private boolean hasChain(Element e,String chainName) throws Exception{
+		Element rootElement = e.getParent();
+		List<Element> chainList = rootElement.elements("chain");
+		for(Element ce : chainList){
+			String ceName = ce.attributeValue("name");
+			if(ceName.equals(chainName)){
+				if(!FlowBus.containChain(chainName)){
+					parseOneChain(ce);
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static RegexEntity parseNodeStr(String str) {
@@ -125,13 +153,13 @@ public abstract class XmlFlowParser {
 	        list.add(m.group());
 	    }
 	    RegexEntity regexEntity = new RegexEntity();
-	    regexEntity.setCondNode(list.get(0).trim());
+	    regexEntity.setItem(list.get(0).trim());
 	    if(list.size() > 1){
 	    	String[] realNodeArray = list.get(1).split("\\|");
 	    	for (int i = 0; i < realNodeArray.length; i++) {
 	    		realNodeArray[i] = realNodeArray[i].trim();
 			}
-	    	regexEntity.setRealNodeArray(realNodeArray);
+	    	regexEntity.setRealItemArray(realNodeArray);
 	    }
 	    return regexEntity;
 	}

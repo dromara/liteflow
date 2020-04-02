@@ -25,14 +25,14 @@
 	</chain>
 
 	<chain name="chain3">
-		<then value="a,c,h,g"/>
+		<then value="a,c,strategy1,g"/>
 	</chain>
 
 	<chain name="strategy1">
-		<then value="m(m1|m2|m3)"/>
+		<then value="m(m1|m2|m3|strategy2)"/>
 	</chain>
 
 	<chain name="strategy2">
-		<then value="p(p1|p2)"/>
+		<then value="q,p(p1|p2)"/>
 	</chain>
 </flow>

@@ -1,32 +1,31 @@
+/**
+ * <p>Title: liteflow</p>
+ * <p>Description: 轻量级的组件式流程框架</p>
+ * @author Bryan.Zhang
+ * @email weenyc31@163.com
+ * @Date 2020/4/1
+ */
 package com.yomahub.liteflow.parser;
-
-import java.util.Arrays;
 
 public class RegexEntity {
 
-	private String condNode;
+	private String item;
 
-	private String[] realNodeArray;
+	private String[] realItemArray;
 
-	public String getCondNode() {
-		return condNode;
+	public String getItem() {
+		return item;
 	}
 
-	public void setCondNode(String condNode) {
-		this.condNode = condNode;
+	public void setItem(String item) {
+		this.item = item;
 	}
 
-	public String[] getRealNodeArray() {
-		return realNodeArray;
+	public String[] getRealItemArray() {
+		return realItemArray;
 	}
 
-	public void setRealNodeArray(String[] realNodeArray) {
-		this.realNodeArray = realNodeArray;
-	}
-
-	@Override
-	public String toString() {
-		return "RegexEntity [condNode=" + condNode + ", realNodeArray="
-				+ Arrays.toString(realNodeArray) + "]";
+	public void setRealItemArray(String[] realItemArray) {
+		this.realItemArray = realItemArray;
 	}
 }

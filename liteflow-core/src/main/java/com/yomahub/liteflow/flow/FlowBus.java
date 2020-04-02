@@ -1,11 +1,9 @@
 /**
- * <p>Title: liteFlow</p>
+ * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
- * <p>Copyright: Copyright (c) 2017</p>
  * @author Bryan.Zhang
  * @email weenyc31@163.com
- * @Date 2017-7-28
- * @version 1.0
+ * @Date 2020/4/1
  */
 package com.yomahub.liteflow.flow;
 
@@ -14,8 +12,8 @@ import java.util.Map;
 
 import org.apache.commons.collections4.MapUtils;
 
-import com.yomahub.liteflow.entity.config.Chain;
-import com.yomahub.liteflow.entity.config.Node;
+import com.yomahub.liteflow.entity.flow.Chain;
+import com.yomahub.liteflow.entity.flow.Node;
 
 public class FlowBus {
 
@@ -32,6 +30,10 @@ public class FlowBus {
 
 	public static void addChain(String name,Chain chain){
 		chainMap.put(name, chain);
+	}
+
+	public static boolean containChain(String chainId){
+		return chainMap.containsKey(chainId);
 	}
 
 	public static boolean needInit() {

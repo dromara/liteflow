@@ -5,10 +5,8 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.enums;
 
-public enum CmpStepType {
-	START,
-	END,
-	SINGLE;
+public enum ExecuteTypeEnum {
+    CHAIN,NODE
 }

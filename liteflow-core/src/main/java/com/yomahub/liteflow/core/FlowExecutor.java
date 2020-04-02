@@ -1,18 +1,15 @@
 /**
- * <p>Title: liteFlow</p>
+ * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
- * <p>Copyright: Copyright (c) 2017</p>
  * @author Bryan.Zhang
  * @email weenyc31@163.com
- * @Date 2017-7-31
- * @version 1.0
+ * @Date 2020/4/1
  */
 package com.yomahub.liteflow.core;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,11 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yomahub.liteflow.entity.config.Chain;
-import com.yomahub.liteflow.entity.config.Condition;
-import com.yomahub.liteflow.entity.config.Node;
-import com.yomahub.liteflow.entity.config.ThenCondition;
-import com.yomahub.liteflow.entity.config.WhenCondition;
+import com.yomahub.liteflow.entity.flow.Chain;
+import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.Slot;
@@ -143,49 +137,9 @@ public class FlowExecutor {
 				slot.setChainReqData(chainId, param);
 			}
 
-			List<Condition> conditionList = chain.getConditionList();
+			//执行chain
+			chain.execute(slotIndex);
 
-			List<Node> nodeList = null;
-			NodeComponent component = null;
-			for(Condition condition : conditionList){
-				nodeList = condition.getNodeList();
-
-				if(condition instanceof ThenCondition){
-					for(Node node : nodeList){
-						component = node.getInstance();
-						try{
-							component.setSlotIndex(slotIndex);
-							if(component.isAccess()){
-								component.execute();
-								if(component.isEnd()) {
-									LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),component.getClass().getSimpleName());
-									break;
-								}
-							}else {
-								LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),component.getClass().getSimpleName());
-							}
-						}catch(Exception t){
-							if(component.isContinueOnError()){
-								String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),component.getClass().getSimpleName());
-								LOG.error(errorMsg,t);
-							}else{
-								String errorMsg = MessageFormat.format("[{0}]:executor cause error",slot.getRequestId());
-								LOG.error(errorMsg,t);
-								throw t;
-							}
-						}finally {
-							component.removeSlotIndex();
-							component.removeIsEnd();
-						}
-					}
-				}else if(condition instanceof WhenCondition){
-					final CountDownLatch latch = new CountDownLatch(nodeList.size());
-					for(Node node : nodeList){
-						new WhenConditionThread(node,slotIndex,slot.getRequestId(),latch).start();
-					}
-					latch.await(15, TimeUnit.SECONDS);
-				}
-			}
 			return (T)slot;
 		}catch(Exception e){
 			String errorMsg = MessageFormat.format("[{0}]executor cause error", slot.getRequestId());

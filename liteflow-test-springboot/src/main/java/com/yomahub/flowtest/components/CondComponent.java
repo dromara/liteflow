@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class CondComponent extends NodeCondComponent {
 
 	@Override
-	protected Class<? extends NodeComponent> processCond() throws Exception {
-		return BComponent.class;
+	public String processCond() throws Exception {
+		return "b";
 	}
 }
