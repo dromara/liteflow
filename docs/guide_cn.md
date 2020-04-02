@@ -9,11 +9,13 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
-最新版本为<font color=red>**2.2.2**</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
+最新版本为<font color=red>*2.2.2*</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
 
 ## 1.2流程配置文件
 
-(不依赖任何框架的写法)
+如果你的项目不依赖spring框架（现在还有不依赖spring的项目吗？没关系，liteflow也为你提供了配置）
+
+如果你的项目使用spring或者springboot，请跳过此章节
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -71,6 +73,9 @@ Slot slot = executor.execute("demoChain", "arg");
 如果你的项目使用spring，推荐参考[和Spring进行集成](https://bryan31.gitee.io/liteflow/#/?id=%e4%ba%8c%e3%80%81%e5%92%8cspring%e8%bf%9b%e8%a1%8c%e9%9b%86%e6%88%90)
 
 # 二、和spring进行集成
+
+针对于使用了spring但没有使用springboot的项目
+
 ## 2.1流程配置可以省略的部分
 流程配置中的`nodes`节点，可以不用配置了，支持spring的自动扫描方式。你需要在你的spring配置文件中定义
 ```xml
@@ -107,7 +112,7 @@ public class AComponent extends NodeComponent
 
 ## 3.1 依赖
 
-liteFlow提供了liteflow-spring-boot-starter依赖包
+liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功能
 
 ```xml
 <dependency>
@@ -186,7 +191,7 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 
 # 六、架构设计
 
-## 6.1组件式流程引擎架构设计
+## 6.1组件编排式流程引擎架构设计
 
 ![architecture_image](media/architecture.png)
 Handler Unit：我们想象成每一个业务都是一个业务组件，每一个业务组件就是一个handlerUnit（处理单元）  
@@ -236,22 +241,47 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 在组件节点里，随时可以通过方法`getSlot`获取当前的数据槽，从而可以获取任何数据。
 
-## 7.4条件节点
+## 7.4路由节点
 
 在实际业务中，往往要通过动态的业务逻辑判断到底接下去该执行哪一个节点  
 ```xml
 <chain name="chain1">
-    <then value="a,c(b|d)"/> <!-- cond是条件节点，根据c里的逻辑决定路由到b节点还是d节点,可以配置多个 -->
+    <then value="a,c(b|d)"/> <!-- cond是路由节点，根据c里的逻辑决定路由到b节点还是d节点,可以配置多个 -->
     <then value="e,f,g"/>
 </chain>
 ```
 利用表达式可以很方便的进行条件的判断  
 c节点是用来路由的，被称为条件节点，这种节点需要继承`NodeCondComponent`类  
-需要实现方法`processCond`，这个方法需要返回`Class`类型，就是具体的结果节点
+需要实现方法`processCond`，这个方法需要返回`String`类型，就是具体的结果节点
 
-## 7.5嵌套执行
+## 7.5子流程
 
-liteFlow可以无极嵌套执行n条流程  
+liteflow从`2.3.0`开始支持显式子流程，在xml里配置的节点，可以是节点，也可以是流程id。比如，你可以这么配置
+
+```xml
+<chain name="chain3">
+    <then value="a,c,strategy1,g"/>
+</chain>
+<chain name="strategy1">
+    <then value="m(m1|m2|strategy2)"/>
+</chain>
+<chain name="strategy2">
+    <then value="q,p(p1|p2)"/>
+</chain>
+```
+
+这样是不是很清晰
+
+liteflow支持无穷的嵌套结构，只要你想的出。可以完成相对复杂的流程。
+
+!> 如果存在相同名字的节点和流程，优先节点。
+
+## 7.6节点内执行流程
+
+liteflow支持在一个节点里通过代码调用另外一条流程， 这个流程关系在xml中并不会显示。所以这里称之为隐式调用。
+
+隐式调用可以完成更为复杂的子流程，比如循环调用：
+
 ```java
 @Component("h")
 public class HComponent extends NodeComponent {
@@ -262,7 +292,9 @@ public class HComponent extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("Hcomponent executed!");
-		flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
+    for(int i=0;i<10;i++){
+      flowExecutor.invoke("strategy1",3, DefaultSlot.class, this.getSlotIndex());
+    }
 	}
 	
 }
@@ -273,6 +305,13 @@ public class HComponent extends NodeComponent {
 
 liteFlow在执行每一条流程链后会打印步骤  
 样例如下：
+
+```
+a==>c==>m==>q==>p==>p1==>g
+```
+
+当然你还可能看到这样的情况：
+
 ```
 a==>c==>h(START)==>m==>p==>p1==>h(END)==>g
 ```
@@ -326,13 +365,20 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 * 增加组件里结束整个流程的配置
 * 修复一些可能导致内存变大的bug
 
-## 2.2.0 更新日志
+## 2.2.2 更新日志
 
 更新点如下：
 
-* pom规划化
+* pom规划化，符合中央仓库的要求
 * 包路径改成个人域名路径
 * 修复当有多个流程配置时，条件节点失效的bug
+
+## 2.3.0 更新日志
+
+更新点如下：
+
+* 重构核心部分代码
+* 增加子流程显式调用
 
 # 九、联系作者
 ![wx](media/wx.jpeg)![offIical-wx](media/offIical-wx.jpg)
