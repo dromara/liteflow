@@ -5,7 +5,7 @@ liteflow需要你的项目使用maven
 ```xml
 <dependency>
 	<groupId>com.yomahub</groupId>
-	<artifactId>liteflow</artifactId>
+    <artifactId>liteflow-core</artifactId>
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
