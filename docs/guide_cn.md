@@ -381,7 +381,8 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 * 增加子流程显式调用
 
 # 九、联系作者
-微信公众号
+微信公众号<br>
 ![offIical-wx](media/offIical-wx.jpg)
-加微信群参与讨论
+<br><br>
+加微信群参与讨论<br>
 ![liteflow](media/liteflow.jpg)
