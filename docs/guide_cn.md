@@ -384,4 +384,4 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 微信公众号
 ![offIical-wx](media/offIical-wx.jpg)
 加微信群参与讨论
-![liteflow](media/liteflow.jpeg)
+![liteflow](media/liteflow.jpg)
