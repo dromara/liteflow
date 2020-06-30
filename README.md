@@ -17,6 +17,7 @@ liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，
 **微信公众号**
 <br>
 ![offIical-wx](docs/media/offIical-wx.jpg)
+<br>
 **微信讨论群**
 <br>
 ![liteflow](docs/media/liteflow.jpg)
