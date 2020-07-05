@@ -9,7 +9,7 @@ liteflow需要你的项目使用maven
 	<version>${liteFlow.version}</version>
 </dependency>
 ```
-最新版本为<font color=red>*2.2.2*</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
+最新版本为<font color=red>*2.3.1*</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
 
 ## 1.2流程配置文件
 
@@ -303,19 +303,12 @@ public class HComponent extends NodeComponent {
 
 ## 7.7步骤打印
 
-liteFlow在执行每一条流程链后会打印步骤  
+liteFlow在执行每一条流程链后会打印步骤，这个步骤是程序实际执行的顺序  
 样例如下：
 
 ```
 a==>c==>m==>q==>p==>p1==>g
 ```
-
-当然你还可能看到这样的情况：
-
-```
-a==>c==>h(START)==>m==>p==>p1==>h(END)==>g
-```
-?> 其中h节点分start和end两个步骤，说明在h节点内调用了另一条流程。start和end之间的步骤就是另一条流程的步骤
 
 ## 7.8监控
 

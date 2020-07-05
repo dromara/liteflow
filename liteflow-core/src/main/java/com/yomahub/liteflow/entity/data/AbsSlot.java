@@ -105,12 +105,7 @@ public abstract class AbsSlot implements Slot{
 	}
 
 	public void addStep(CmpStep step){
-		CmpStep lastStep = this.executeSteps.peekLast();
-		if(lastStep != null && lastStep.equals(step)) {
-			lastStep.setStepType(CmpStepType.SINGLE);
-		}else {
-			this.executeSteps.add(step);
-		}
+		this.executeSteps.add(step);
 	}
 
 	public void printStep(){
