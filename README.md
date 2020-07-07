@@ -2,6 +2,7 @@
 liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，帮助解耦业务代码，让每一个业务片段都是一个组件，并支持热加载规则配置，实现即时修改。
 
 ## 详细文档请点击：[中文文档](https://bryan31.gitee.io/liteflow)
+## 示例工程请点击：[示例工程](https://gitee.com/bryan31/liteflow-example)
 
 ## 特性
 * 提供本地xml的流程配置
