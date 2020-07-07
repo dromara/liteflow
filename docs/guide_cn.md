@@ -72,11 +72,38 @@ Slot slot = executor.execute("demoChain", "arg");
 
 如果你的项目使用spring，推荐参考[和Spring进行集成](https://bryan31.gitee.io/liteflow/#/?id=%e4%ba%8c%e3%80%81%e5%92%8cspring%e8%bf%9b%e8%a1%8c%e9%9b%86%e6%88%90)
 
-# 二.和spring进行集成
+# 二.和Spring Boot集成
+
+## 2.1 依赖
+
+liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功能
+
+```xml
+<dependency>
+  <groupId>com.yomahub</groupId>
+  <artifactId>liteflow-spring-boot-starter</artifactId>
+  <version>2.2.2</version>
+</dependency>
+```
+
+## 2.2配置
+
+在依赖了以上jar包后。
+
+在application.properties里加上配置地址后，就可以在容器中依赖拿到`FlowExecutor`实例
+
+```properties
+liteflow.ruleSource=config/flow.xml
+```
+
+工程中的liteflow-test演示了如何在springboot下进行快速配置
+
+# 三.和spring进行集成
 
 针对于使用了spring但没有使用springboot的项目
 
-## 2.1流程配置可以省略的部分
+## 3.1流程配置可以省略的部分
+
 流程配置中的`nodes`节点，可以不用配置了，支持spring的自动扫描方式。你需要在你的spring配置文件中定义
 ```xml
 <context:component-scan base-package="com.yomahub.liteflow.test.component" />
@@ -96,7 +123,8 @@ public class AComponent extends NodeComponent
 }
 ```
 
-## 2.2spring中执行器的配置
+## 3.2spring中执行器的配置
+
 ```xml
 <bean id="flowExecutor" class="FlowExecutor">
 	<property name="rulePath">
@@ -108,31 +136,7 @@ public class AComponent extends NodeComponent
 ```
 然后你的项目中通过spring拿到执行器进行调用流程。
 
-# 三.和Spring Boot集成
 
-## 3.1 依赖
-
-liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功能
-
-```xml
-<dependency>
-  <groupId>com.yomahub</groupId>
-  <artifactId>liteflow-spring-boot-starter</artifactId>
-  <version>2.2.2</version>
-</dependency>
-```
-
-## 3.2配置
-
-在依赖了以上jar包后。
-
-在application.properties里加上配置地址后，就可以在容器中依赖拿到`FlowExecutor`实例
-
-```properties
-liteflow.ruleSource=config/flow.xml
-```
-
-工程中的liteflow-test演示了如何在springboot下进行快速配置
 
 # 四.和zookeeper进行集成
 
