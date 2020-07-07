@@ -8,4 +8,4 @@
 
 [Gitee](https://gitee.com/bryan31/liteFlow)
 [GitHub](https://github.com/thebeastshop/liteFlow)
-[快速开始](#一、快速开始)
+[快速开始](#一.快速开始)
