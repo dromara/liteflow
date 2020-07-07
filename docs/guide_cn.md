@@ -70,7 +70,7 @@ executor.init();
 Slot slot = executor.execute("demoChain", "arg");
 ```
 
-如果你的项目使用spring，推荐参考[和Spring进行集成](https://bryan31.gitee.io/liteflow/#/?id=%e4%ba%8c%e3%80%81%e5%92%8cspring%e8%bf%9b%e8%a1%8c%e9%9b%86%e6%88%90)
+如果你的项目使用spring，推荐参考[和Spring进行集成](https://bryan31.gitee.io/liteflow/#/?id=%e4%ba%8c%e5%92%8cspring-boot%e9%9b%86%e6%88%90)
 
 # 二.和Spring Boot集成
 
@@ -82,7 +82,7 @@ liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功�
 <dependency>
   <groupId>com.yomahub</groupId>
   <artifactId>liteflow-spring-boot-starter</artifactId>
-  <version>2.2.2</version>
+  <version>2.3.1</version>
 </dependency>
 ```
 
