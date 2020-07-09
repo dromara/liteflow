@@ -7,5 +7,5 @@
 * liteFlow能最大程度上解耦，支持即时调整策略的一个中间件
 
 [Gitee](https://gitee.com/bryan31/liteFlow)
-[GitHub](https://github.com/thebeastshop/liteFlow)
+[GitHub](https://github.com/bryan31/liteFlow)
 [快速开始](#一快速开始)
