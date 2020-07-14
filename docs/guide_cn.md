@@ -1,7 +1,8 @@
 # 一.快速开始
 
 liteflow需要你的项目使用maven
-## 1.1依赖
+## 1.1 依赖
+
 ```xml
 <dependency>
 	<groupId>com.yomahub</groupId>
@@ -11,7 +12,7 @@ liteflow需要你的项目使用maven
 ```
 最新版本为<font color=red>*2.3.1*</font>，为稳定版本，目前jar包已上传中央仓库，可以直接依赖到
 
-## 1.2流程配置文件
+## 1.2 流程配置文件
 
 如果你的项目不依赖spring框架（现在还有不依赖spring的项目吗？没关系，liteflow也为你提供了配置）
 
@@ -59,7 +60,7 @@ chain为流程链，每个链上可配置多个组件节点。目前执行的模
 <then value="c,d"/>
 ```
 
-## 1.3执行流程链
+## 1.3 执行流程链
 
 (不依赖任何第三方框架的写法)
 
@@ -86,7 +87,7 @@ liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功�
 </dependency>
 ```
 
-## 2.2配置
+## 2.2 配置
 
 在依赖了以上jar包后。
 
@@ -102,7 +103,7 @@ liteflow.ruleSource=config/flow.xml
 
 针对于使用了spring但没有使用springboot的项目
 
-## 3.1流程配置可以省略的部分
+## 3.1 流程配置可以省略的部分
 
 流程配置中的`nodes`节点，可以不用配置了，支持spring的自动扫描方式。你需要在你的spring配置文件中定义
 ```xml
@@ -123,7 +124,7 @@ public class AComponent extends NodeComponent
 }
 ```
 
-## 3.2spring中执行器的配置
+## 3.2 Spring中执行器的配置
 
 ```xml
 <bean id="flowExecutor" class="FlowExecutor">
@@ -140,10 +141,10 @@ public class AComponent extends NodeComponent
 
 # 四.和zookeeper进行集成
 
-## 4.1spring配置
-
 liteFlow支持把配置放在zk集群中，并支持实时修改流程  
-你只需在原来配置执行器的地方，把本地xml路径换成zk地址就ok了
+你只需在原来配置流程的地方，把本地xml路径换成zk地址就ok了
+
+## 4.1 Spring配置
 
 ```xml
 <!-- 这种是zk方式配置 -->
@@ -158,12 +159,17 @@ liteFlow支持把配置放在zk集群中，并支持实时修改流程
 </bean>
 ```
 
-如果你不加zkNode这个标签，就用默认的节点路径进行读取配置。  
-使用这种方式加载配置，在zk上进行更改配置。liteFlow会实时刷新配置。  
+## 4.2 Springboot配置
+
+```properties
+liteflow.ruleSource=127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+```
+
+
 
 # 五.使用自定义的配置源
 
-## 5.1创建自定义配置源的类
+## 5.1 创建自定义配置源的类
 
 如果你不想用本地的配置，也不打算使用zk作为配置持久化工具。liteFlow支持自定义的配置源的扩展点。  
 在你的项目中创建一个类继承`ClassXmlFlowParser`这个类  
@@ -180,7 +186,7 @@ public class TestCustomParser extends ClassXmlFlowParser {
 }
 ```
 
-## 5.2Spring配置
+## 5.2 Spring配置
 
 spring中需要改的地方还是执行器的配置，只需要在配置的路径地方放入自定义类的类路径即可  
 ```xml
@@ -193,15 +199,23 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 </bean>
 ```
 
+## 5.3 Springboot配置
+
+```properties
+liteflow.ruleSource=com.yomahub.liteflow.test.TestCustomParser
+```
+
+
+
 # 六.架构设计
 
-## 6.1组件编排式流程引擎架构设计
+## 6.1 组件编排式流程引擎架构设计
 
 ![architecture_image](media/architecture.jpg)
 
 # 七.接入详细指南
 
-## 7.1执行器
+## 7.1 执行器
 
 执行器`FlowExecutor`用来执行一个流程，用法为  
 ```java
@@ -221,7 +235,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 关于`Slot`的说明，请参照[数据槽](https://bryan31.gitee.io/liteflow/#/?id=_72%e6%95%b0%e6%8d%ae%e6%a7%bd)
 
-## 7.2数据槽
+## 7.2 数据槽
 
 在执行器执行流程时会分配唯一的一个数据槽给这个请求。不同请求的数据槽是完全隔离的。  
 数据槽实际上是一个Map，里面存放着liteFlow的元数据  
@@ -229,7 +243,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 !> 不过这里还是推荐扩展出自定义的Slot（上一小章阐述了原因），自定义的Slot更加友好。更加贴合业务。
 
-## 7.3组件节点
+## 7.3 组件节点
 
 组件节点需要继承`NodeComponent`类
 需要实现`process`方法  
@@ -241,7 +255,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 
 在组件节点里，随时可以通过方法`getSlot`获取当前的数据槽，从而可以获取任何数据。
 
-## 7.4路由节点
+## 7.4 路由节点
 
 在实际业务中，往往要通过动态的业务逻辑判断到底接下去该执行哪一个节点  
 ```xml
@@ -254,7 +268,7 @@ public <T extends Slot> T execute(String chainId,Object param,Class<? extends Sl
 c节点是用来路由的，被称为条件节点，这种节点需要继承`NodeCondComponent`类  
 需要实现方法`processCond`，这个方法需要返回`String`类型，就是具体的结果节点
 
-## 7.5子流程
+## 7.5 子流程
 
 liteflow从`2.3.0`开始支持显式子流程，在xml里配置的节点，可以是节点，也可以是流程id。比如，你可以这么配置
 
@@ -276,7 +290,7 @@ liteflow支持无穷的嵌套结构，只要你想的出。可以完成相对复
 
 !> 如果存在相同名字的节点和流程，优先节点。
 
-## 7.6节点内执行流程
+## 7.6 节点内执行流程
 
 liteflow支持在一个节点里通过代码调用另外一条流程， 这个流程关系在xml中并不会显示。所以这里称之为隐式调用。
 
@@ -301,7 +315,7 @@ public class HComponent extends NodeComponent {
 ```
 这段代码演示了在某个业务节点内调用另外一个流程链的方法
 
-## 7.7步骤打印
+## 7.7 步骤打印
 
 liteFlow在执行每一条流程链后会打印步骤，这个步骤是程序实际执行的顺序  
 样例如下：
@@ -310,14 +324,14 @@ liteFlow在执行每一条流程链后会打印步骤，这个步骤是程序实
 a==>c==>m==>q==>p==>p1==>g
 ```
 
-## 7.8监控
+## 7.8 监控
 
 liteFlow提供了简单的监控，目前只统计一个指标：每个组件的平均耗时  
 每5分钟会打印一次，并且是根据耗时时长倒序排的。 
 
 # 八.示例工程
 
-## 8.1测试工程
+## 8.1 测试工程
 
 在项目内有2个简单的测试工程示例：
 
@@ -326,7 +340,7 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 
 分别对应了spring和springboot环境下的示例工程，可以运行`Runner`进行启动(会连带启动测试用例)
 
-## 8.2一个完整的案例
+## 8.2 一个完整的案例
 
 如果你想看一个实际的案例，加深对liteflow的理解。可以查看：
 
