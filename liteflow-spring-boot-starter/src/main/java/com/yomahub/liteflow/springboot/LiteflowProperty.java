@@ -1,12 +1,10 @@
 package com.yomahub.liteflow.springboot;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Configuration
+@ConfigurationProperties(prefix = "liteflow", ignoreUnknownFields = true)
 public class LiteflowProperty {
 
-    @Value("${liteflow.ruleSource}")
     private String ruleSource;
 
     public String getRuleSource() {

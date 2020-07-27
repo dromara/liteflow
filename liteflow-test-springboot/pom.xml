@@ -9,7 +9,7 @@
     <parent>
         <artifactId>liteflow</artifactId>
         <groupId>com.yomahub</groupId>
-        <version>2.3.1</version>
+        <version>2.3.2</version>
     </parent>
 
     <dependencyManagement>

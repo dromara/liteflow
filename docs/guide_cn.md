@@ -94,7 +94,7 @@ liteFlow提供了liteflow-spring-boot-starter依赖包，提供自动装配功�
 在application.properties里加上配置地址后，就可以在容器中依赖拿到`FlowExecutor`实例
 
 ```properties
-liteflow.ruleSource=config/flow.xml
+liteflow.rule-source=config/flow.xml
 ```
 
 工程中的liteflow-test演示了如何在springboot下进行快速配置
@@ -162,7 +162,7 @@ liteFlow支持把配置放在zk集群中，并支持实时修改流程
 ## 4.2 Springboot配置
 
 ```properties
-liteflow.ruleSource=127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+liteflow.rule-source=127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
 ```
 
 
@@ -202,7 +202,7 @@ spring中需要改的地方还是执行器的配置，只需要在配置的路�
 ## 5.3 Springboot配置
 
 ```properties
-liteflow.ruleSource=com.yomahub.liteflow.test.TestCustomParser
+liteflow.rule-source=com.yomahub.liteflow.test.TestCustomParser
 ```
 
 

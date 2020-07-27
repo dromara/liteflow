@@ -5,13 +5,15 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.spring.ComponentScaner;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 @Configuration
-@ConditionalOnProperty(name = "liteflow.ruleSource")
+@EnableConfigurationProperties(LiteflowProperty.class)
+@ConditionalOnProperty(prefix = "liteflow", name = "rule-source")
 public class LiteflowAutoConfiguration {
 
     @Bean
