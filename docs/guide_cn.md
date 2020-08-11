@@ -415,8 +415,6 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 
 # 十一.联系作者
 
-微信公众号<br>
+关注公众号回复`liteflow`即可加入讨论群
+
 ![offIical-wx](media/offIical-wx.jpg)
-<br><br>
-加微信群参与讨论(微信群二维码会定时更新)<br>
-![liteflow](media/liteflow.png)

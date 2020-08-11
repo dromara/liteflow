@@ -16,10 +16,8 @@ liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，
 * 自带简单的监控，能够知道每个组件的运行耗时排行
 
 **微信公众号**
-<br>
+
+关注公众号回复`liteflow`即可加入讨论群
+
 ![offIical-wx](docs/media/offIical-wx.jpg)
-<br>
-**微信讨论群(二维码会定期更新)**
-<br>
-![liteflow](docs/media/liteflow.png)
 
