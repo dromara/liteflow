@@ -63,7 +63,7 @@ public class Chain implements Executable{
 					try{
 						executableItem.execute(slotIndex);
 					}catch (ChainEndException e){
-						break;
+						throw e;
 					}
 				}
 			}else if(condition instanceof WhenCondition){
