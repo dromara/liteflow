@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
@@ -88,8 +89,8 @@ public class Node implements Executable{
 				instance.execute();
 
 				if(instance.isEnd()){
-					LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
-					throw new ChainEndException("component lead the chain to end");
+					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
+					throw new ChainEndException(errorInfo);
 				}
 			}else{
 				LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),instance.getClass().getSimpleName());
