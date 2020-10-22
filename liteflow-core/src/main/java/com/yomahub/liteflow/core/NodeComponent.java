@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.entity.flow.Executable;
+import com.yomahub.liteflow.spring.ComponentScaner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -40,7 +41,17 @@ public abstract class NodeComponent {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
+		//process前置处理
+		if(ComponentScaner.cmpAroundAspect != null){
+			ComponentScaner.cmpAroundAspect.beforeProcess(slot);
+		}
+
 		process();
+
+		//process后置处理
+		if(ComponentScaner.cmpAroundAspect != null){
+			ComponentScaner.cmpAroundAspect.afterProcess(slot);
+		}
 
 		stopWatch.stop();
 		long timeSpent = stopWatch.getTime();
