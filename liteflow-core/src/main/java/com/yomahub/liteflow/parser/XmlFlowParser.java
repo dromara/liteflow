@@ -7,8 +7,10 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
+import com.yomahub.liteflow.util.SpringAware;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -44,13 +46,15 @@ public abstract class XmlFlowParser {
 				String clazz = null;
 				Node node = null;
 				NodeComponent component = null;
+				Class<NodeComponent> nodeComponentClass;
 				for (Element e : nodeList) {
 					node = new Node();
 					id = e.attributeValue("id");
 					clazz = e.attributeValue("class");
 					node.setId(id);
 					node.setClazz(clazz);
-					component = (NodeComponent) Class.forName(clazz).newInstance();
+					nodeComponentClass = (Class<NodeComponent>)Class.forName(clazz);
+					component = SpringAware.registerOrGet(nodeComponentClass);
 					if (component == null) {
 						LOG.error("couldn't find component class [{}] ", clazz);
 					}
@@ -72,7 +76,7 @@ public abstract class XmlFlowParser {
 				parseOneChain(e);
 			}
 		} catch (Exception e) {
-			LOG.error("FlowParser parser exception: {}", e);
+			LOG.error("FlowParser parser exception", e);
 			throw e;
 		}
 	}
@@ -118,7 +122,8 @@ public abstract class XmlFlowParser {
 					Chain chain = FlowBus.getChain(item);
 					chainNodeList.add(chain);
 				}else{
-					throw new ExecutableItemNotFoundException();
+					String errorMsg = StrUtil.format("executable node[{}] is not found!",regexEntity.getItem());
+					throw new ExecutableItemNotFoundException(errorMsg);
 				}
 			}
 			if (condE.getName().equals("then")) {
