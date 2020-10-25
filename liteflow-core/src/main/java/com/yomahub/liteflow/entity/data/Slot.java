@@ -47,4 +47,12 @@ public interface Slot {
 	public void setChainName(String chainName);
 
 	public String getChainName();
+
+	public boolean isSuccess();
+
+	public void setSuccess(boolean success);
+
+	public String getErrorMsg();
+
+	public void setErrorMsg(String errorMsg);
 }
