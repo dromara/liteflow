@@ -22,12 +22,18 @@ import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
 	private InheritableThreadLocal<Integer> slotIndexTL = new InheritableThreadLocal<Integer>();
+
+	@Resource
+	private MonitorBus monitorBus;
 
 	private String nodeId;
 
@@ -62,8 +68,7 @@ public abstract class NodeComponent {
 		CompStatistics statistics = new CompStatistics();
 		statistics.setComponentClazzName(this.getClass().getSimpleName());
 		statistics.setTimeSpent(timeSpent);
-		MonitorBus.load().addStatistics(statistics);
-
+		monitorBus.addStatistics(statistics);
 
 		if(this instanceof NodeCondComponent){
 			String condNodeId = slot.getCondResult(this.getClass().getName());
