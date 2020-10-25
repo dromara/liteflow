@@ -43,6 +43,14 @@ public class MonitorBus {
 
 	private ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
 
+	public MonitorBus(boolean enableMonitorLog) {
+		this.enableMonitorLog = enableMonitorLog;
+		if(this.enableMonitorLog){
+			Timer timer = new Timer();
+			timer.schedule(new MonitorTimeTask(this), this.getDelay(), this.getPeriod());
+		}
+	}
+
 	public MonitorBus(boolean enableMonitorLog, int queueLimit, long delay, long period) {
 		this.enableMonitorLog = enableMonitorLog;
 		this.queueLimit = queueLimit;

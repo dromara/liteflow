@@ -19,4 +19,8 @@
 		</property>
 	</bean>
 
+	<bean class="com.yomahub.liteflow.monitor.MonitorBus">
+		<constructor-arg name="enableMonitorLog" value="true"/>
+	</bean>
+
 </beans>
