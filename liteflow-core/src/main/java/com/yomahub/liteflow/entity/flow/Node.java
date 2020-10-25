@@ -100,7 +100,7 @@ public class Node implements Executable{
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),id);
 				LOG.error(errorMsg,e);
 			}else{
-				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error",slot.getRequestId(),id);
+				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,error:{2}",slot.getRequestId(),id,e.getMessage());
 				LOG.error(errorMsg,e);
 				throw e;
 			}
