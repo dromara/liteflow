@@ -9,7 +9,9 @@
 
 	<context:component-scan base-package="com.yomahub.flowtest.components" />
 
-	<bean class="com.yomahub.liteflow.spring.ComponentScaner" depends-on="flowExecutor"/>
+	<bean id="springAware" class="com.yomahub.liteflow.util.SpringAware"/>
+
+	<bean class="com.yomahub.liteflow.spring.ComponentScaner" depends-on="flowExecutor,springAware"/>
 
 	<bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
 		<property name="rulePath">
