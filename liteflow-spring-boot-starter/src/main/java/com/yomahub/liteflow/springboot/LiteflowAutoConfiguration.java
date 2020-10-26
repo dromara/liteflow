@@ -11,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.swing.*;
 import java.util.List;
 
 @Configuration
@@ -36,13 +37,13 @@ public class LiteflowAutoConfiguration {
     }
 
     @Bean
-    public LiteflowExecutorInit liteflowExecutorInit(FlowExecutor flowExecutor){
-        return new LiteflowExecutorInit(flowExecutor);
+    public SpringAware springAware(){
+        return new SpringAware();
     }
 
     @Bean
-    public SpringAware springAware(){
-        return new SpringAware();
+    public LiteflowExecutorInit liteflowExecutorInit(FlowExecutor flowExecutor, SpringAware springAware){
+        return new LiteflowExecutorInit(flowExecutor);
     }
 
     @Bean
