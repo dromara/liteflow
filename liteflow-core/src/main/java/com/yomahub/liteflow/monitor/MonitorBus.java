@@ -43,6 +43,9 @@ public class MonitorBus {
 
 	private ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
 
+	public MonitorBus() {
+	}
+
 	public MonitorBus(boolean enableMonitorLog) {
 		this.enableMonitorLog = enableMonitorLog;
 		if(this.enableMonitorLog){
