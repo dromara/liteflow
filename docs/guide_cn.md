@@ -417,4 +417,4 @@ liteFlow提供了简单的监控，目前只统计一个指标：每个组件的
 
 关注公众号回复`liteflow`即可加入讨论群
 
-![offIical-wx](http://yomahub.com/images/offical-wx.jpg)
+![offical-wx](http://yomahub.com/images/offical-wx.jpg)
