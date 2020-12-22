@@ -84,6 +84,11 @@ public abstract class XmlFlowParser {
 		List<Condition> conditionList;
 
 		String chainName = e.attributeValue("name");
+		// 增加循环加载组件时的加载过滤
+		if (FlowBus.containChain(chainName)){
+			return;
+		}
+
 		conditionList = new ArrayList<>();
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 			Element condE = it.next();
