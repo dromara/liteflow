@@ -1,6 +1,6 @@
 <p align="center">
 <a href="http://yomahub.com/liteflow/">
-    <img width="500" src="static/img/logo.svg" alt="logo">
+    <img width="500" src="static/img/logo.png" alt="logo">
 </a>
 </p>
 
