@@ -1,3 +1,11 @@
+<p align="center">
+<a href="http://yomahub.com/liteflow/">
+    <img width="500" src="static/img/logo.png" alt="logo">
+</a>
+</p>
+
+<h3>您的star是我继续前进的动力，如果喜欢请右上角帮忙点个star</h3>
+
 ## 概述
 liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，帮助解耦业务代码，让每一个业务片段都是一个组件，并支持热加载规则配置，实现即时修改。
 
@@ -19,5 +27,5 @@ liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，
 
 关注公众号回复`liteflow`即可加入讨论群
 
-![offIical-wx](docs/media/offical-wx.jpg)
+![offIical-wx](static/img/offical-wx.jpg)
 
