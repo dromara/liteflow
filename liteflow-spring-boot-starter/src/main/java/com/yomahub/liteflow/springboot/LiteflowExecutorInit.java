@@ -6,8 +6,11 @@ import javax.annotation.Resource;
 
 public class LiteflowExecutorInit implements InitializingBean {
 
-    @Resource
     private FlowExecutor flowExecutor;
+
+    public LiteflowExecutorInit(FlowExecutor flowExecutor) {
+        this.flowExecutor = flowExecutor;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {

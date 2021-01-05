@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,32 +31,45 @@ import com.yomahub.liteflow.util.LimitQueue;
 
 public class MonitorBus {
 
-	private static final int QUEUE_LIMIT_SIZE = 200;
+	private boolean enableMonitorLog = false;
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private int queueLimit = 200;
+
+	private long delay = 5*60*1000;
+
+	private long period = 5*60*1000;
+
+	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
 
-	private static MonitorBus monitorBus;
+	public MonitorBus() {
+	}
 
-	public static MonitorBus load(){
-		if(monitorBus == null){
-			monitorBus = new MonitorBus();
+	public MonitorBus(boolean enableMonitorLog) {
+		this.enableMonitorLog = enableMonitorLog;
+		if(this.enableMonitorLog){
 			Timer timer = new Timer();
-			timer.schedule(new TimerTask() {
-				public void run() {
-					monitorBus.printStatistics();
-				}
-			}, 5*60*1000L, 5*60*1000L);
+			timer.schedule(new MonitorTimeTask(this), this.getDelay(), this.getPeriod());
 		}
-		return monitorBus;
+	}
+
+	public MonitorBus(boolean enableMonitorLog, int queueLimit, long delay, long period) {
+		this.enableMonitorLog = enableMonitorLog;
+		this.queueLimit = queueLimit;
+		this.delay = delay;
+		this.period = period;
+		if(this.enableMonitorLog){
+			Timer timer = new Timer();
+			timer.schedule(new MonitorTimeTask(this), this.getDelay(), this.getPeriod());
+		}
 	}
 
 	public void addStatistics(CompStatistics statistics){
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
 			statisticsMap.get(statistics.getComponentClazzName()).offer(statistics);
 		}else{
-			LimitQueue<CompStatistics> queue = new LimitQueue<CompStatistics>(QUEUE_LIMIT_SIZE);
+			LimitQueue<CompStatistics> queue = new LimitQueue<CompStatistics>(queueLimit);
 			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
@@ -98,5 +112,37 @@ public class MonitorBus {
 		}catch(Exception e){
 			LOG.error("print statistics cause error",e);
 		}
+	}
+
+	public boolean isEnableMonitorLog() {
+		return enableMonitorLog;
+	}
+
+	public void setEnableMonitorLog(boolean enableMonitorLog) {
+		this.enableMonitorLog = enableMonitorLog;
+	}
+
+	public int getQueueLimit() {
+		return queueLimit;
+	}
+
+	public void setQueueLimit(int queueLimit) {
+		this.queueLimit = queueLimit;
+	}
+
+	public long getDelay() {
+		return delay;
+	}
+
+	public void setDelay(long delay) {
+		this.delay = delay;
+	}
+
+	public long getPeriod() {
+		return period;
+	}
+
+	public void setPeriod(long period) {
+		this.period = period;
 	}
 }

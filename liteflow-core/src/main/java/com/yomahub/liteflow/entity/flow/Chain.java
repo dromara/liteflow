@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.entity.flow;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
@@ -62,8 +63,8 @@ public class Chain implements Executable{
 				for(Executable executableItem : condition.getNodeList()){
 					try{
 						executableItem.execute(slotIndex);
-					}catch (ChainEndException e){
-						break;
+					}catch (Exception e){
+						throw e;
 					}
 				}
 			}else if(condition instanceof WhenCondition){

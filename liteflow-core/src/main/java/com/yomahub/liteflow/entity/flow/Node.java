@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
@@ -88,8 +89,8 @@ public class Node implements Executable{
 				instance.execute();
 
 				if(instance.isEnd()){
-					LOG.info("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
-					throw new ChainEndException("component lead the chain to end");
+					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
+					throw new ChainEndException(errorInfo);
 				}
 			}else{
 				LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),instance.getClass().getSimpleName());
@@ -99,7 +100,7 @@ public class Node implements Executable{
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),id);
 				LOG.error(errorMsg,e);
 			}else{
-				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error",slot.getRequestId(),id);
+				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,error:{2}",slot.getRequestId(),id,e.getMessage());
 				LOG.error(errorMsg,e);
 				throw e;
 			}

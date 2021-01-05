@@ -9,6 +9,8 @@ package com.yomahub.liteflow.spring;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -24,6 +26,8 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 
 	public static Map<String, NodeComponent> nodeComponentMap = new HashMap<String, NodeComponent>();
 
+	public static ICmpAroundAspect cmpAroundAspect;
+
 	static {
 		LOGOPrinter.print();
 	}
@@ -37,12 +41,20 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = bean.getClass();
+		//组件的扫描发现
 		if(NodeComponent.class.isAssignableFrom(clazz)){
 			LOG.info("component[{}] has been found",beanName);
 			NodeComponent nodeComponent = (NodeComponent)bean;
 			nodeComponent.setNodeId(beanName);
 			nodeComponentMap.put(beanName, nodeComponent);
 		}
+
+		//组件Aop的实现类加载
+		if(ICmpAroundAspect.class.isAssignableFrom(clazz)){
+			LOG.info("component aspect implement[{}] has been found",beanName);
+			cmpAroundAspect = (ICmpAroundAspect)bean;
+		}
+
 		return bean;
 	}
 

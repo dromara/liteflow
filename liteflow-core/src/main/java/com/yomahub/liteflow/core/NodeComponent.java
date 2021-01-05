@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.entity.flow.Executable;
+import com.yomahub.liteflow.spring.ComponentScaner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -21,12 +22,18 @@ import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
 	private InheritableThreadLocal<Integer> slotIndexTL = new InheritableThreadLocal<Integer>();
+
+	@Resource
+	private MonitorBus monitorBus;
 
 	private String nodeId;
 
@@ -40,7 +47,17 @@ public abstract class NodeComponent {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
+		//process前置处理
+		if(ComponentScaner.cmpAroundAspect != null){
+			ComponentScaner.cmpAroundAspect.beforeProcess(slot);
+		}
+
 		process();
+
+		//process后置处理
+		if(ComponentScaner.cmpAroundAspect != null){
+			ComponentScaner.cmpAroundAspect.afterProcess(slot);
+		}
 
 		stopWatch.stop();
 		long timeSpent = stopWatch.getTime();
@@ -51,8 +68,7 @@ public abstract class NodeComponent {
 		CompStatistics statistics = new CompStatistics();
 		statistics.setComponentClazzName(this.getClass().getSimpleName());
 		statistics.setTimeSpent(timeSpent);
-		MonitorBus.load().addStatistics(statistics);
-
+		monitorBus.addStatistics(statistics);
 
 		if(this instanceof NodeCondComponent){
 			String condNodeId = slot.getCondResult(this.getClass().getName());

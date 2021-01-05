@@ -36,6 +36,10 @@ public abstract class AbsSlot implements Slot{
 
 	private final String REQUEST_ID = "req_id";
 
+	private boolean isSuccess = true;
+
+	private String errorMsg;
+
 	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
 
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
@@ -133,5 +137,21 @@ public abstract class AbsSlot implements Slot{
 
 	public Deque<CmpStep> getExecuteSteps() {
 		return executeSteps;
+	}
+
+	public boolean isSuccess() {
+		return isSuccess;
+	}
+
+	public void setSuccess(boolean success) {
+		isSuccess = success;
+	}
+
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+
+	public void setErrorMsg(String errorMsg) {
+		this.errorMsg = errorMsg;
 	}
 }
