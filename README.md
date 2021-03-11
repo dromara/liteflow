@@ -10,7 +10,7 @@
 [![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/3NHPVWVK.png)](https://giteye.net/chart/3NHPVWVK)
 
 ## 贡献者列表
-[[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/DHU59WRM.png)](https://giteye.net/chart/DHU59WRM)
+[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/DHU59WRM.png)](https://giteye.net/chart/DHU59WRM)
 
 ## 概述
 liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，帮助解耦业务代码，让每一个业务片段都是一个组件，并支持热加载规则配置，实现即时修改。
