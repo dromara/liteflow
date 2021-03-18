@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.entity.flow;
 
-import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.NodeComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
