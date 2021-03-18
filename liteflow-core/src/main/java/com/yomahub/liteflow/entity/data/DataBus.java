@@ -9,6 +9,9 @@ package com.yomahub.liteflow.entity.data;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +19,20 @@ public class DataBus {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataBus.class);
 
-	public static int SLOT_SIZE = 1024;
-
 	public static AtomicInteger OCCUPY_COUNT = new AtomicInteger(0);
 
-	private static Slot[] slots = new Slot[SLOT_SIZE];
+	private static Slot[] slots;
+
+	static {
+		LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
+		int slotSize = 1024;
+		if (ObjectUtil.isNotNull(liteflowConfig)){
+			if (ObjectUtil.isNotNull(liteflowConfig.getSlotSize())){
+				slotSize = liteflowConfig.getSlotSize();
+			}
+		}
+		slots = new Slot[slotSize];
+	}
 
 	public synchronized static int offerSlot(Class<? extends Slot> slotClazz){
 		try{
@@ -51,13 +63,5 @@ public class DataBus {
 		}else{
 			LOG.warn("slot[{}] already has been released",slotIndex);
 		}
-	}
-
-	public static int getSlotSize() {
-		return SLOT_SIZE;
-	}
-
-	public static void setSlotSize(int slotSize) {
-		SLOT_SIZE = slotSize;
 	}
 }

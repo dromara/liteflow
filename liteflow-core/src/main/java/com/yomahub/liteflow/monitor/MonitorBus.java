@@ -22,6 +22,8 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cn.hutool.core.collection.BoundedPriorityQueue;
+import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,37 +34,40 @@ import com.yomahub.liteflow.util.LimitQueue;
 
 public class MonitorBus {
 
-	private boolean enableMonitorLog = false;
+	private LiteflowConfig liteflowConfig;
+
+	private boolean enableLog = false;
 
 	private int queueLimit = 200;
 
-	private long delay = 5*60*1000;
+	private long delay = 300000;
 
-	private long period = 5*60*1000;
+	private long preiod = 300000;
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private final ConcurrentHashMap<String, BoundedPriorityQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
 
-	public MonitorBus() {
-	}
-
-	public MonitorBus(boolean enableMonitorLog) {
-		this.enableMonitorLog = enableMonitorLog;
-		if(this.enableMonitorLog){
-			Timer timer = new Timer();
-			timer.schedule(new MonitorTimeTask(this), this.getDelay(), this.getPeriod());
+	public MonitorBus(LiteflowConfig liteflowConfig) {
+		if (ObjectUtil.isNotNull(liteflowConfig.getEnableLog())){
+			this.enableLog = liteflowConfig.getEnableLog();
 		}
-	}
 
-	public MonitorBus(boolean enableMonitorLog, int queueLimit, long delay, long period) {
-		this.enableMonitorLog = enableMonitorLog;
-		this.queueLimit = queueLimit;
-		this.delay = delay;
-		this.period = period;
-		if(this.enableMonitorLog){
+		if (ObjectUtil.isNotNull(liteflowConfig.getQueueLimit())){
+			queueLimit = liteflowConfig.getQueueLimit();
+		}
+
+		if (ObjectUtil.isNotNull(liteflowConfig.getDelay())){
+			delay = liteflowConfig.getDelay();
+		}
+
+		if (ObjectUtil.isNotNull(liteflowConfig.getPeriod())){
+			preiod = liteflowConfig.getPeriod();
+		}
+
+		if(enableLog){
 			Timer timer = new Timer();
-			timer.schedule(new MonitorTimeTask(this), this.getDelay(), this.getPeriod());
+			timer.schedule(new MonitorTimeTask(this), delay, preiod);
 		}
 	}
 
@@ -97,7 +102,7 @@ public class MonitorBus {
 			logStr.append("以下为LiteFlow中间件统计信息：\n");
 			logStr.append("======================================================================================\n");
 			logStr.append("===================================SLOT INFO==========================================\n");
-			logStr.append(MessageFormat.format("SLOT TOTAL SIZE : {0}\n", DataBus.SLOT_SIZE));
+			logStr.append(MessageFormat.format("SLOT TOTAL SIZE : {0}\n", liteflowConfig.getSlotSize()));
 			logStr.append(MessageFormat.format("SLOT OCCUPY COUNT : {0}\n", DataBus.OCCUPY_COUNT));
 			logStr.append("===============================TIME AVERAGE SPENT=====================================\n");
 			for(Entry<String, BigDecimal> entry : compAverageTimeSpentEntryList){
@@ -110,35 +115,11 @@ public class MonitorBus {
 		}
 	}
 
-	public boolean isEnableMonitorLog() {
-		return enableMonitorLog;
+	public LiteflowConfig getLiteflowConfig() {
+		return liteflowConfig;
 	}
 
-	public void setEnableMonitorLog(boolean enableMonitorLog) {
-		this.enableMonitorLog = enableMonitorLog;
-	}
-
-	public int getQueueLimit() {
-		return queueLimit;
-	}
-
-	public void setQueueLimit(int queueLimit) {
-		this.queueLimit = queueLimit;
-	}
-
-	public long getDelay() {
-		return delay;
-	}
-
-	public void setDelay(long delay) {
-		this.delay = delay;
-	}
-
-	public long getPeriod() {
-		return period;
-	}
-
-	public void setPeriod(long period) {
-		this.period = period;
+	public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
+		this.liteflowConfig = liteflowConfig;
 	}
 }

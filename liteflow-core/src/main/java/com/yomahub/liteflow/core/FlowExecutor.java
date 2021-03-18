@@ -13,6 +13,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
+import com.yomahub.liteflow.exception.ConfigErrorException;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +39,17 @@ public class FlowExecutor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
 
-	private List<String> rulePath;
+	private LiteflowConfig liteflowConfig;
 
 	private String zkNode;
 
 	public void init() {
+		if (ObjectUtil.isNull(liteflowConfig) || StrUtil.isBlank(liteflowConfig.getRuleSource())){
+			throw new ConfigErrorException("config error, please check liteflow config property");
+		}
+
+		List<String> rulePath = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
+
 		XmlFlowParser parser = null;
 		for(String path : rulePath){
 			try {
@@ -152,19 +163,19 @@ public class FlowExecutor {
 		return (T)slot;
 	}
 
-	public List<String> getRulePath() {
-		return rulePath;
-	}
-
-	public void setRulePath(List<String> rulePath) {
-		this.rulePath = rulePath;
-	}
-
 	public String getZkNode() {
 		return zkNode;
 	}
 
 	public void setZkNode(String zkNode) {
 		this.zkNode = zkNode;
+	}
+
+	public LiteflowConfig getLiteflowConfig() {
+		return liteflowConfig;
+	}
+
+	public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
+		this.liteflowConfig = liteflowConfig;
 	}
 }

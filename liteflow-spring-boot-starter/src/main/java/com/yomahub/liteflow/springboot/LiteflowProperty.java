@@ -9,6 +9,8 @@ public class LiteflowProperty {
 
     private int slotSize;
 
+    private int whenMaxWaitSecond;
+
     public String getRuleSource() {
         return ruleSource;
     }
@@ -23,5 +25,13 @@ public class LiteflowProperty {
 
     public void setSlotSize(int slotSize) {
         this.slotSize = slotSize;
+    }
+
+    public int getWhenMaxWaitSecond() {
+        return whenMaxWaitSecond;
+    }
+
+    public void setWhenMaxWaitSecond(int whenMaxWaitSecond) {
+        this.whenMaxWaitSecond = whenMaxWaitSecond;
     }
 }
