@@ -5,13 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "liteflow.monitor", ignoreUnknownFields = true)
 public class LiteflowMonitorProperty {
 
-    private boolean enableLog = false;
+    private boolean enableLog;
 
-    private int queueLimit = 200;
+    private int queueLimit;
 
-    private long delay = 5*60*1000;
+    private long delay;
 
-    private long period = 5*60*1000;
+    private long period;
 
     public boolean isEnableLog() {
         return enableLog;

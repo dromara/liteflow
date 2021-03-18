@@ -16,7 +16,7 @@ public class DataBus {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataBus.class);
 
-	public static final int SLOT_SIZE = 1024;
+	public static int SLOT_SIZE = 1024;
 
 	public static AtomicInteger OCCUPY_COUNT = new AtomicInteger(0);
 
@@ -51,5 +51,13 @@ public class DataBus {
 		}else{
 			LOG.warn("slot[{}] already has been released",slotIndex);
 		}
+	}
+
+	public static int getSlotSize() {
+		return SLOT_SIZE;
+	}
+
+	public static void setSlotSize(int slotSize) {
+		SLOT_SIZE = slotSize;
 	}
 }
