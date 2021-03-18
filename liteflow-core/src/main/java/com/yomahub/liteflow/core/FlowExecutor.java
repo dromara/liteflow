@@ -152,40 +152,6 @@ public class FlowExecutor {
 		return (T)slot;
 	}
 
-	private class WhenConditionThread extends Thread{
-
-		private Node node;
-
-		private Integer slotIndex;
-
-		private String requestId;
-
-		private CountDownLatch latch;
-
-		public WhenConditionThread(Node node,Integer slotIndex,String requestId,CountDownLatch latch){
-			this.node = node;
-			this.slotIndex = slotIndex;
-			this.requestId = requestId;
-			this.latch = latch;
-		}
-
-		@Override
-		public void run() {
-			try{
-				NodeComponent cmp = node.getInstance().setSlotIndex(slotIndex);
-				if(cmp.isAccess()) {
-					cmp.execute();
-				}else {
-					LOG.info("[{}]:[X]skip component[{}] execution",requestId,cmp.getClass().getSimpleName());
-				}
-			}catch(Exception e){
-				LOG.error("component [{}] execute cause error",node.getClazz(),e);
-			}finally{
-				latch.countDown();
-			}
-		}
-	}
-
 	public List<String> getRulePath() {
 		return rulePath;
 	}
