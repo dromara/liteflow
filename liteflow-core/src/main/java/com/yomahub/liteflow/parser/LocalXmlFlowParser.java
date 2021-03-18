@@ -7,14 +7,13 @@
  */
 package com.yomahub.liteflow.parser;
 
-import com.yomahub.liteflow.util.IOUtil;
+import cn.hutool.core.io.FileUtil;
 
 public class LocalXmlFlowParser extends XmlFlowParser{
 
-	private final String ENCODING_FORMAT = "UTF-8";
-
 	public void parseMain(String rulePath) throws Exception {
-		String ruleContent = IOUtil.read(rulePath, ENCODING_FORMAT);
+		String ENCODING_FORMAT = "UTF-8";
+		String ruleContent = FileUtil.readString(rulePath, ENCODING_FORMAT);
 		parse(ruleContent);
 	}
 }

@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.hutool.core.collection.BoundedPriorityQueue;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class MonitorBus {
 
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	private ConcurrentHashMap<String, LimitQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<String, LimitQueue<CompStatistics>>();
+	private final ConcurrentHashMap<String, BoundedPriorityQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
 
 	public MonitorBus() {
 	}
@@ -69,7 +70,7 @@ public class MonitorBus {
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
 			statisticsMap.get(statistics.getComponentClazzName()).offer(statistics);
 		}else{
-			LimitQueue<CompStatistics> queue = new LimitQueue<CompStatistics>(queueLimit);
+			BoundedPriorityQueue<CompStatistics> queue = new BoundedPriorityQueue<>(queueLimit);
 			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
@@ -81,7 +82,7 @@ public class MonitorBus {
 
 			long totalTimeSpent = 0;
 
-			for(Entry<String, LimitQueue<CompStatistics>> entry : statisticsMap.entrySet()){
+			for(Entry<String, BoundedPriorityQueue<CompStatistics>> entry : statisticsMap.entrySet()){
 				for(CompStatistics statistics : entry.getValue()){
 					totalTimeSpent += statistics.getTimeSpent();
 				}
@@ -90,12 +91,7 @@ public class MonitorBus {
 
 			List<Entry<String, BigDecimal>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
 
-			Collections.sort(compAverageTimeSpentEntryList,new Comparator<Entry<String, BigDecimal>>() {
-				@Override
-				public int compare(Entry<String, BigDecimal> o1, Entry<String, BigDecimal> o2) {
-					return o2.getValue().compareTo(o1.getValue());
-				}
-			});
+			Collections.sort(compAverageTimeSpentEntryList, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 			StringBuilder logStr = new StringBuilder();
 			logStr.append("以下为LiteFlow中间件统计信息：\n");

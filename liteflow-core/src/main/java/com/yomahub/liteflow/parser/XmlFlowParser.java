@@ -10,9 +10,11 @@ import java.util.regex.Pattern;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
+import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.util.SpringAware;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
-import com.yomahub.liteflow.util.Dom4JReader;
 
 public abstract class XmlFlowParser {
 
@@ -29,7 +30,7 @@ public abstract class XmlFlowParser {
 	public abstract void parseMain(String path) throws Exception;
 
 	public void parse(String content) throws Exception {
-		Document document = Dom4JReader.getFormatDocument(content);
+		Document document = DocumentHelper.parseText(content);
 		parse(document);
 	}
 
@@ -42,10 +43,10 @@ public abstract class XmlFlowParser {
 			if(ComponentScaner.nodeComponentMap.isEmpty()){
 				// 解析node节点
 				List<Element> nodeList = rootElement.element("nodes").elements("node");
-				String id = null;
-				String clazz = null;
-				Node node = null;
-				NodeComponent component = null;
+				String id;
+				String clazz;
+				Node node;
+				NodeComponent component;
 				Class<NodeComponent> nodeComponentClass;
 				for (Element e : nodeList) {
 					node = new Node();
@@ -57,6 +58,7 @@ public abstract class XmlFlowParser {
 					component = SpringAware.registerOrGet(nodeComponentClass);
 					if (component == null) {
 						LOG.error("couldn't find component class [{}] ", clazz);
+						throw new ParseException("cannot parse flow xml");
 					}
 					component.setNodeId(id);
 					node.setInstance(component);
