@@ -24,13 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import cn.hutool.core.collection.BoundedPriorityQueue;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
-import com.yomahub.liteflow.util.LimitQueue;
 
 public class MonitorBus {
 
