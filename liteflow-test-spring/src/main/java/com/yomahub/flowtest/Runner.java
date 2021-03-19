@@ -19,6 +19,10 @@ public class Runner {
         Slot slot = flowExecutor.execute("chain3", "it's a request");
         System.out.println(slot);
 
+        while (true){
+            Thread.sleep(60000);
+        }
+
 //        System.exit(0);
     }
 }
