@@ -70,7 +70,7 @@ public class FlowExecutor {
 	}
 
 	private boolean isLocalConfig(String path) {
-		Pattern p = Pattern.compile("^[\\w\\/]+(\\/\\w+)*\\.xml$");
+		Pattern p = Pattern.compile("^[\\w\\-\\_\\/]+(\\/\\w+)*\\.xml$");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
