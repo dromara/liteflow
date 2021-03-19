@@ -76,7 +76,7 @@ public class FlowExecutor {
 	}
 
 	private boolean isClassConfig(String path) {
-		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$");
+		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$dd");
 	    Matcher m = p.matcher(path);
 	    return m.find();
 	}
