@@ -47,6 +47,8 @@ public class MonitorBus {
 	private final ConcurrentHashMap<String, BoundedPriorityQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
 
 	public MonitorBus(LiteflowConfig liteflowConfig) {
+		this.liteflowConfig = liteflowConfig;
+
 		if (ObjectUtil.isNotNull(liteflowConfig.getEnableLog())){
 			this.enableLog = liteflowConfig.getEnableLog();
 		}

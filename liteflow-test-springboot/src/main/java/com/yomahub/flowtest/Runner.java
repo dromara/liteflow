@@ -10,7 +10,7 @@ public class Runner {
         try{
             SpringApplication.run(Runner.class, args);
 
-            System.exit(0);
+//            System.exit(0);
         }catch (Throwable t){
             t.printStackTrace();
         }
