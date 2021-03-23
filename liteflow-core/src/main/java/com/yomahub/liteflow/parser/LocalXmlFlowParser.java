@@ -12,8 +12,7 @@ import cn.hutool.core.io.FileUtil;
 public class LocalXmlFlowParser extends XmlFlowParser{
 
 	public void parseMain(String rulePath) throws Exception {
-		String ENCODING_FORMAT = "UTF-8";
-		String ruleContent = FileUtil.readString(rulePath, ENCODING_FORMAT);
+		String ruleContent = FileUtil.readUtf8String(rulePath);
 		parse(ruleContent);
 	}
 }
