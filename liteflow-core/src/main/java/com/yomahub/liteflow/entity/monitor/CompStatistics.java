@@ -7,7 +7,7 @@
  */
 package com.yomahub.liteflow.entity.monitor;
 
-public class CompStatistics {
+public class CompStatistics implements Comparable{
 
 	private String componentClazzName;
 
@@ -37,5 +37,10 @@ public class CompStatistics {
 
 	public void setMemorySpent(long memorySpent) {
 		this.memorySpent = memorySpent;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		return -1;
 	}
 }

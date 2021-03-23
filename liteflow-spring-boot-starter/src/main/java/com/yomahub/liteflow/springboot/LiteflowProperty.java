@@ -2,14 +2,21 @@ package com.yomahub.liteflow.springboot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * 执行流程主要的参数类
+ * @author Bryan.Zhang
+ */
 @ConfigurationProperties(prefix = "liteflow", ignoreUnknownFields = true)
 public class LiteflowProperty {
 
+    //流程定义资源地址
     private String ruleSource;
 
+    //slot的数量
     private int slotSize;
 
-    private int whenMaxWaitSecond;
+    //异步线程最大等待描述
+    private int whenMaxWaitSeconds;
 
     public String getRuleSource() {
         return ruleSource;
@@ -27,11 +34,11 @@ public class LiteflowProperty {
         this.slotSize = slotSize;
     }
 
-    public int getWhenMaxWaitSecond() {
-        return whenMaxWaitSecond;
+    public int getWhenMaxWaitSeconds() {
+        return whenMaxWaitSeconds;
     }
 
-    public void setWhenMaxWaitSecond(int whenMaxWaitSecond) {
-        this.whenMaxWaitSecond = whenMaxWaitSecond;
+    public void setWhenMaxWaitSeconds(int whenMaxWaitSeconds) {
+        this.whenMaxWaitSeconds = whenMaxWaitSeconds;
     }
 }

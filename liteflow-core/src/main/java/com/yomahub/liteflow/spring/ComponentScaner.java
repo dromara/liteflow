@@ -20,6 +20,10 @@ import org.springframework.core.PriorityOrdered;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.util.LOGOPrinter;
 
+/**
+ * 组件扫描类，只要是NodeComponent的实现类，都可以被这个扫描器扫到
+ * @author Bryan.Zhang
+ */
 public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentScaner.class);
@@ -29,6 +33,7 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	public static ICmpAroundAspect cmpAroundAspect;
 
 	static {
+		//打印liteflow的LOGO
 		LOGOPrinter.print();
 	}
 
@@ -41,7 +46,7 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = bean.getClass();
-		//组件的扫描发现
+		//组件的扫描发现，扫到之后缓存到类属性map中
 		if(NodeComponent.class.isAssignableFrom(clazz)){
 			LOG.info("component[{}] has been found",beanName);
 			NodeComponent nodeComponent = (NodeComponent)bean;

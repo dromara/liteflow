@@ -38,7 +38,7 @@ public class Chain implements Executable {
     static {
         LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
         if (ObjectUtil.isNotNull(liteflowConfig)) {
-            whenMaxWaitSeconds = liteflowConfig.getWhenMaxWaitSecond();
+            whenMaxWaitSeconds = liteflowConfig.getWhenMaxWaitSeconds();
         } else {
             whenMaxWaitSeconds = 15;
         }

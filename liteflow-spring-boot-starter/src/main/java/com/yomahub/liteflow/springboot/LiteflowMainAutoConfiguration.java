@@ -21,13 +21,16 @@ import org.springframework.context.annotation.PropertySource;
 import javax.swing.*;
 import java.util.List;
 
+/**
+ * 主要的业务装配器
+ * 在这个装配器里装配了执行器，执行器初始化类，监控器
+ * 这个装配前置条件是需要LiteflowConfig，LiteflowPropertyAutoConfiguration以及SpringAware
+ * @author Bryan.Zhang
+ */
 @Configuration
 @ConditionalOnBean(LiteflowConfig.class)
 @AutoConfigureAfter(LiteflowPropertyAutoConfiguration.class)
 @Import(SpringAware.class)
-@PropertySource(
-        name = "Liteflow Default Properties",
-        value = "classpath:/META-INF/liteflow-default.properties")
 public class LiteflowMainAutoConfiguration {
 
     @Bean

@@ -21,6 +21,7 @@
 	<chain name="chain2">
 		<then value="a,c"/> <!-- then表示串行 -->
 		<when value="b,d,e,f,g"/> <!-- when表示串行 -->
+		<then value="c"/>
 	</chain>
 
 	<chain name="chain3">

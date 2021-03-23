@@ -35,6 +35,10 @@ import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 
+/**
+ * 流程规则主要执行器类
+ * @author Bryan.Zhang
+ */
 public class FlowExecutor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);

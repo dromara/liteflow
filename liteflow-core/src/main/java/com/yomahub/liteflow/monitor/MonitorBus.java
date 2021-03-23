@@ -73,7 +73,7 @@ public class MonitorBus {
 
 	public void addStatistics(CompStatistics statistics){
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
-			statisticsMap.get(statistics.getComponentClazzName()).offer(statistics);
+			statisticsMap.get(statistics.getComponentClazzName()).add(statistics);
 		}else{
 			BoundedPriorityQueue<CompStatistics> queue = new BoundedPriorityQueue<>(queueLimit);
 			queue.offer(statistics);

@@ -15,6 +15,11 @@ public class GComponent extends NodeComponent {
 
 	@Override
 	public void process() {
+		try{
+			Thread.sleep(6000);
+		}catch (Exception e){
+
+		}
 		System.out.println("Gcomponent executed!");
 		this.getSlot().setResponseData("i am a response");
 	}

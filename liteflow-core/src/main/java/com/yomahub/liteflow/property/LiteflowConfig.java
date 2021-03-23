@@ -9,18 +9,25 @@ package com.yomahub.liteflow.property;
 
 public class LiteflowConfig {
 
+    //流程定义资源地址
     private String ruleSource;
 
+    //slot的数量
     private Integer slotSize;
 
-    private Integer whenMaxWaitSecond;
+    //异步线程最大等待秒数
+    private Integer whenMaxWaitSeconds;
 
+    //是否打印监控log
     private Boolean enableLog;
 
+    //监控存储信息最大队列数量
     private Integer queueLimit;
 
+    //延迟多少秒打印
     private Long delay;
 
+    //每隔多少秒打印
     private Long period;
 
     public String getRuleSource() {
@@ -39,12 +46,12 @@ public class LiteflowConfig {
         this.slotSize = slotSize;
     }
 
-    public Integer getWhenMaxWaitSecond() {
-        return whenMaxWaitSecond;
+    public Integer getWhenMaxWaitSeconds() {
+        return whenMaxWaitSeconds;
     }
 
-    public void setWhenMaxWaitSecond(Integer whenMaxWaitSecond) {
-        this.whenMaxWaitSecond = whenMaxWaitSecond;
+    public void setWhenMaxWaitSeconds(Integer whenMaxWaitSeconds) {
+        this.whenMaxWaitSeconds = whenMaxWaitSeconds;
     }
 
     public Integer getQueueLimit() {
