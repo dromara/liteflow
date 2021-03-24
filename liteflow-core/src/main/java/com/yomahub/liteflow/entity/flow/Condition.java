@@ -9,6 +9,10 @@ package com.yomahub.liteflow.entity.flow;
 
 import java.util.List;
 
+/**
+ * 里面包含了when或者then
+ * @author Bryan.Zhang
+ */
 public class Condition {
 
 	private List<Executable> nodeList;

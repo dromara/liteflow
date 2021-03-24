@@ -9,6 +9,11 @@ package com.yomahub.liteflow.aop;
 
 import com.yomahub.liteflow.entity.data.Slot;
 
+/**
+ * 全局组件拦截器接口
+ * 实现这个接口并注入到spring上下文即可
+ * @author Bryan.Zhang
+ */
 public interface ICmpAroundAspect {
 
     void beforeProcess(Slot slot);

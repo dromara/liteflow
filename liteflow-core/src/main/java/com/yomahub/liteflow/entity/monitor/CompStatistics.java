@@ -7,6 +7,10 @@
  */
 package com.yomahub.liteflow.entity.monitor;
 
+/**
+ * 统计类
+ * @author Bryan.Zhang
+ */
 public class CompStatistics implements Comparable{
 
 	private String componentClazzName;

@@ -9,6 +9,10 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.io.FileUtil;
 
+/**
+ * 基于本地的xml方式解析器
+ * @author Bryan.Zhang
+ */
 public class LocalXmlFlowParser extends XmlFlowParser{
 
 	public void parseMain(String rulePath) throws Exception {

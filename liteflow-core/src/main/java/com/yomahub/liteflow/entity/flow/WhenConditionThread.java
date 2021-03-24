@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * 并行器线程
+ * @author Bryan.Zhang
+ */
 public class WhenConditionThread extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(WhenConditionThread.class);

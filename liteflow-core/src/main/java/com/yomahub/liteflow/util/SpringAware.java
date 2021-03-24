@@ -10,6 +10,10 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * 基于代码形式的spring上下文工具类
+ * @author Bryan.Zhang
+ */
 public class SpringAware implements ApplicationContextAware {
     private static final Logger log = LoggerFactory.getLogger(SpringAware.class);
     private static ApplicationContext applicationContext = null;

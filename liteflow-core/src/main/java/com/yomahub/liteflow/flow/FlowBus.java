@@ -15,6 +15,10 @@ import org.apache.commons.collections4.MapUtils;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
 
+/**
+ * 流程元数据类
+ * @author Bryan.Zhang
+ */
 public class FlowBus {
 
 	private static Map<String, Chain> chainMap = new HashMap<>();

@@ -15,6 +15,10 @@ import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 数据BUS，主要用来管理Slot，用以分配和回收
+ * @author Bryan.Zhang
+ */
 public class DataBus {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataBus.class);

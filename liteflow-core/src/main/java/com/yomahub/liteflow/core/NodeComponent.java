@@ -28,6 +28,10 @@ import org.springframework.lang.Nullable;
 
 import javax.annotation.Resource;
 
+/**
+ * 普通组件抽象类
+ * @author Bryan.Zhang
+ */
 public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
@@ -54,6 +58,7 @@ public abstract class NodeComponent {
 			ComponentScaner.cmpAroundAspect.beforeProcess(slot);
 		}
 
+		//业务处理逻辑
 		process();
 
 		//process后置处理
@@ -74,6 +79,7 @@ public abstract class NodeComponent {
 			monitorBus.addStatistics(statistics);
 		}
 
+		//进行判断是否是条件节点，条件节点最终也会落到node节点或者chain节点上
 		if(this instanceof NodeCondComponent){
 			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if(StringUtils.isNotBlank(condNodeId)){

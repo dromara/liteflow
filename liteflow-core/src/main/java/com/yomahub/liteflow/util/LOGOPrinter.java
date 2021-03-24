@@ -3,6 +3,10 @@ package com.yomahub.liteflow.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * logo打印器
+ * @author Bryan.Zhang
+ */
 public class LOGOPrinter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LOGOPrinter.class);

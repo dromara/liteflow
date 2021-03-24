@@ -15,6 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Slot的抽象类实现
+ * @author Bryan.Zhang
+ */
 @SuppressWarnings("unchecked")
 public abstract class AbsSlot implements Slot{
 

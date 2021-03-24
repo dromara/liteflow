@@ -12,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.exception.ParseException;
 
+/**
+ * 基于zk方式的xml形式的解析器
+ * @author Bryan.Zhang
+ */
 public class ZookeeperXmlFlowParser extends XmlFlowParser{
 
 	private static final Logger LOG = LoggerFactory.getLogger(ZookeeperXmlFlowParser.class);

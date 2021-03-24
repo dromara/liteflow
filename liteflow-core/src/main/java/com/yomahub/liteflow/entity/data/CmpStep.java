@@ -9,6 +9,10 @@ package com.yomahub.liteflow.entity.data;
 
 import java.text.MessageFormat;
 
+/**
+ * 组件步骤对象
+ * @author Bryan.Zhang
+ */
 public class CmpStep {
 	private String nodeId;
 

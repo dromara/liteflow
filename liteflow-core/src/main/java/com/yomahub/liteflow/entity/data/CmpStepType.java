@@ -7,6 +7,10 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+/**
+ * 组件步骤类型
+ * @author Bryan.Zhang
+ */
 public enum CmpStepType {
 	START,
 	END,

@@ -7,6 +7,10 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+/**
+ * Slot的接口
+ * @author Bryan.Zhang
+ */
 public interface Slot {
 	public <T> T getInput(String nodeId);
 

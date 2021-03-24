@@ -7,6 +7,11 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+/**
+ * 默认Slot的实现类
+ * 不建议业务系统直接用此类，此类基于弱类型Map，应该自己去继承AbsSlot
+ * @author Bryan.Zhang
+ */
 public class DefaultSlot extends AbsSlot {
 
 }

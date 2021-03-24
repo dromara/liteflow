@@ -23,6 +23,10 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
 
+/**
+ * xml形式的解析器
+ * @author Bryan.Zhang
+ */
 public abstract class XmlFlowParser {
 
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
@@ -34,6 +38,7 @@ public abstract class XmlFlowParser {
 		parse(document);
 	}
 
+	//xml形式的主要解析过程
 	@SuppressWarnings("unchecked")
 	public void parse(Document document) throws Exception {
 		try {
@@ -83,6 +88,7 @@ public abstract class XmlFlowParser {
 		}
 	}
 
+	//解析一个chain的过程
 	private void parseOneChain(Element e) throws Exception{
 		String condArrayStr;
 		String[] condArray;
@@ -102,6 +108,7 @@ public abstract class XmlFlowParser {
 			RegexEntity regexEntity;
 			String itemExpression;
 			String item;
+			//这里解析的规则，优先按照node去解析，再按照chain去解析
 			for (int i = 0; i < condArray.length; i++) {
 				itemExpression = condArray[i].trim();
 				regexEntity = parseNodeStr(itemExpression);
@@ -109,6 +116,7 @@ public abstract class XmlFlowParser {
 				if(FlowBus.containNode(item)){
 					Node node = FlowBus.getNode(item);
 					chainNodeList.add(node);
+					//这里判断是不是条件节点，条件节点会含有realItem，也就是括号里的node
 					if(regexEntity.getRealItemArray() != null){
 						for(String key : regexEntity.getRealItemArray()){
 							if(FlowBus.containNode(key)){
@@ -137,6 +145,8 @@ public abstract class XmlFlowParser {
 		FlowBus.addChain(chainName, new Chain(chainName,conditionList));
 	}
 
+	//判断在这个FlowBus元数据里是否含有这个chain
+	//因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
 	private boolean hasChain(Element e,String chainName) throws Exception{
 		Element rootElement = e.getParent();
 		List<Element> chainList = rootElement.elements("chain");
@@ -152,6 +162,7 @@ public abstract class XmlFlowParser {
 		return false;
 	}
 
+	//条件节点的正则解析
 	public static RegexEntity parseNodeStr(String str) {
 	    List<String> list = new ArrayList<String>();
 	    Pattern p = Pattern.compile("[^\\)\\(]+");

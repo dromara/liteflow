@@ -45,6 +45,7 @@ public class FlowExecutor {
 
 	private String zkNode;
 
+	//FlowExecutor的初始化化方式，主要用于parse规则文件
 	public void init() {
 		if (ObjectUtil.isNull(liteflowConfig) || StrUtil.isBlank(liteflowConfig.getRuleSource())){
 			throw new ConfigErrorException("config error, please check liteflow config property");
@@ -55,15 +56,16 @@ public class FlowExecutor {
 		XmlFlowParser parser = null;
 		for(String path : rulePath){
 			try {
-				if(isLocalConfig(path)) {
+
+				if(isLocalConfig(path)) { //判断是否是本地的xml文件
 					parser = new LocalXmlFlowParser();
-				}else if(isZKConfig(path)){
+				}else if(isZKConfig(path)){ //判断是否是zk配置
 					if(StringUtils.isNotBlank(zkNode)) {
 						parser = new ZookeeperXmlFlowParser(zkNode);
 					}else {
 						parser = new ZookeeperXmlFlowParser();
 					}
-				}else if(isClassConfig(path)) {
+				}else if(isClassConfig(path)) { //判断是否是自定义配置
 					Class c = Class.forName(path);
 					parser = (XmlFlowParser)c.newInstance();
 				}

@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 
+/**
+ * 监控类元数据，打印执行器类
+ * @author Bryan.Zhang
+ */
 public class MonitorBus {
 
 	private LiteflowConfig liteflowConfig;

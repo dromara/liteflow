@@ -9,6 +9,10 @@ package com.yomahub.liteflow.entity.flow;
 
 import java.util.List;
 
+/**
+ * 并行器
+ * @author Bryan.Zhang
+ */
 public class WhenCondition extends Condition{
 
 	public WhenCondition(List<Executable> nodeList) {

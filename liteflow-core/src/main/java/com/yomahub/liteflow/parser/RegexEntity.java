@@ -7,6 +7,10 @@
  */
 package com.yomahub.liteflow.parser;
 
+/**
+ * 正则实体，主要用于条件节点
+ * @author Bryan.Zhang
+ */
 public class RegexEntity {
 
 	private String item;

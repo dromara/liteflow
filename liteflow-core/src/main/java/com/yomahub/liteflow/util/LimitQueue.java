@@ -13,6 +13,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * 有限队列集合
+ * @author Bryan.Zhang
+ */
 public class LimitQueue<E> implements Queue<E> {
 
 	/**

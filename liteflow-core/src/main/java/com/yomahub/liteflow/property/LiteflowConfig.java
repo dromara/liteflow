@@ -7,6 +7,10 @@
  */
 package com.yomahub.liteflow.property;
 
+/**
+ * liteflow的配置实体类
+ * @author Bryan.Zhang
+ */
 public class LiteflowConfig {
 
     //流程定义资源地址
