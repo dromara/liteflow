@@ -7,22 +7,24 @@
  */
 package com.yomahub.liteflow.flow;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FlowBus {
 
 	private static Map<String, Chain> chainMap = new HashMap<>();
 
 	private static Map<String, Node> nodeMap = new HashMap<>();
-
+	
+	private FlowBus() {
+	}
+	
 	public static Chain getChain(String id) throws Exception{
-		if(chainMap == null || chainMap.isEmpty()){
+		if(MapUtils.isEmpty(chainMap)){
 			throw new Exception("please config the rule first");
 		}
 		return chainMap.get(id);
