@@ -24,7 +24,7 @@ public class FlowBus {
 	private FlowBus() {
 	}
 	
-	public static Chain getChain(String id) throws Exception{
+	public static Chain getChain(String id) throws Exception {
 		if (MapUtils.isEmpty(chainMap)) {
 			throw new Exception("please config the rule first");
 		}
