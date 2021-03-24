@@ -32,9 +32,9 @@ public class WhenConditionThread extends Thread {
     public void run() {
         try{
             executableItem.execute(slotIndex);
-        }catch(Exception e){
+        } catch (Exception e) {
             LOG.error("item [{}] execute cause error",executableItem.getExecuteName(),e);
-        }finally{
+        } finally {
             latch.countDown();
         }
     }

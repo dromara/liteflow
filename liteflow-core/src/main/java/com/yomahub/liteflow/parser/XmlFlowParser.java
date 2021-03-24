@@ -7,21 +7,26 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.entity.flow.*;
-import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
-import com.yomahub.liteflow.exception.ParseException;
-import com.yomahub.liteflow.util.SpringAware;
-import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.hutool.core.util.StrUtil;
+
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.entity.flow.Chain;
+import com.yomahub.liteflow.entity.flow.Condition;
+import com.yomahub.liteflow.entity.flow.Executable;
+import com.yomahub.liteflow.entity.flow.Node;
+import com.yomahub.liteflow.entity.flow.ThenCondition;
+import com.yomahub.liteflow.entity.flow.WhenCondition;
+import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
+import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
+import com.yomahub.liteflow.util.SpringAware;
 
 /**
  * xml形式的解析器
@@ -100,7 +105,7 @@ public abstract class XmlFlowParser {
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 			Element condE = it.next();
 			condArrayStr = condE.attributeValue("value");
-			if (StringUtils.isBlank(condArrayStr)) {
+			if (StrUtil.isBlank(condArrayStr)) {
 				continue;
 			}
 			chainNodeList = new ArrayList<>();

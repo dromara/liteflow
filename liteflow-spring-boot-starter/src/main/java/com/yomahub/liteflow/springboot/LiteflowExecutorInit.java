@@ -2,7 +2,6 @@ package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import org.springframework.beans.factory.InitializingBean;
-import javax.annotation.Resource;
 
 /**
  * 执行器初始化类

@@ -9,15 +9,11 @@ package com.yomahub.liteflow.core;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.yomahub.liteflow.exception.ConfigErrorException;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +22,14 @@ import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
+import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.NoAvailableSlotException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
+import com.yomahub.liteflow.property.LiteflowConfig;
 
 /**
  * 流程规则主要执行器类
@@ -40,7 +38,13 @@ import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 public class FlowExecutor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
-
+	
+	private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
+	
+	private static final String LOCAL_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.xml$";
+	
+	private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
+	
 	private LiteflowConfig liteflowConfig;
 
 	private String zkNode;
@@ -54,20 +58,19 @@ public class FlowExecutor {
 		List<String> rulePath = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
 		XmlFlowParser parser = null;
-		for(String path : rulePath){
+		for (String path : rulePath) {
 			try {
-
-				if(isLocalConfig(path)) { //判断是否是本地的xml文件
+				if (isLocalConfig(path)) {
 					parser = new LocalXmlFlowParser();
-				}else if(isZKConfig(path)){ //判断是否是zk配置
-					if(StringUtils.isNotBlank(zkNode)) {
+				} else if (isZKConfig(path)) {
+					if (StrUtil.isNotBlank(zkNode)) {
 						parser = new ZookeeperXmlFlowParser(zkNode);
-					}else {
+					} else {
 						parser = new ZookeeperXmlFlowParser();
 					}
-				}else if(isClassConfig(path)) { //判断是否是自定义配置
+				} else if (isClassConfig(path)) {
 					Class c = Class.forName(path);
-					parser = (XmlFlowParser)c.newInstance();
+					parser = (XmlFlowParser) c.newInstance();
 				}
 				parser.parseMain(path);
 			} catch (Exception e) {
@@ -79,21 +82,15 @@ public class FlowExecutor {
 	}
 
 	private boolean isZKConfig(String path) {
-		Pattern p = Pattern.compile("[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*");
-	    Matcher m = p.matcher(path);
-	    return m.find();
+		return ReUtil.isMatch(ZK_CONFIG_REGEX, path);
 	}
 
 	private boolean isLocalConfig(String path) {
-		Pattern p = Pattern.compile("^[\\w_\\-\\@\\/]+\\.xml$");
-	    Matcher m = p.matcher(path);
-	    return m.find();
+		return ReUtil.isMatch(LOCAL_CONFIG_REGEX, path);
 	}
 
 	private boolean isClassConfig(String path) {
-		Pattern p = Pattern.compile("^\\w+(\\.\\w+)*$");
-	    Matcher m = p.matcher(path);
-	    return m.find();
+		return ReUtil.isMatch(CLASS_CONFIG_REGEX, path);
 	}
 
 	public void reloadRule(){
@@ -121,34 +118,34 @@ public class FlowExecutor {
 
 		Chain chain = FlowBus.getChain(chainId);
 
-		if(chain == null){
+		if (ObjectUtil.isNull(chain)) {
 			String errorMsg = MessageFormat.format("couldn't find chain with the id[{0}]", chainId);
 			throw new ChainNotFoundException(errorMsg);
 		}
 
-		if(!isInnerChain && slotIndex == null) {
+		if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
 			slotIndex = DataBus.offerSlot(slotClazz);
-			LOG.info("slot[{}] offered",slotIndex);
+			LOG.info("slot[{}] offered", slotIndex);
 		}
 
-		if(slotIndex == -1){
+		if (slotIndex == -1) {
 			throw new NoAvailableSlotException("there is no available slot");
 		}
 
 		slot = DataBus.getSlot(slotIndex);
-		if(slot == null) {
+		if (slot == null) {
 			throw new NoAvailableSlotException("the slot is not exist");
 		}
 
-		if(StringUtils.isBlank(slot.getRequestId())) {
+		if (StrUtil.isBlank(slot.getRequestId())) {
 			slot.generateRequestId();
-			LOG.info("requestId[{}] has generated",slot.getRequestId());
+			LOG.info("requestId[{}] has generated", slot.getRequestId());
 		}
 
-		if(!isInnerChain) {
+		if (!isInnerChain) {
 			slot.setRequestData(param);
 			slot.setChainName(chainId);
-		}else {
+		} else {
 			slot.setChainReqData(chainId, param);
 		}
 

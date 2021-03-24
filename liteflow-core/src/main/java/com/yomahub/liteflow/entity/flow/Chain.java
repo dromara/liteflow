@@ -8,29 +8,26 @@
  */
 package com.yomahub.liteflow.entity.flow;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * chain对象，实现可执行器
  * @author Bryan.Zhang
  */
 public class Chain implements Executable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Chain.class);
-
+    
     private String chainName;
 
     private List<Condition> conditionList;
@@ -70,7 +67,7 @@ public class Chain implements Executable {
     //执行chain的主方法
     @Override
     public void execute(Integer slotIndex) throws Exception {
-        if (CollectionUtils.isEmpty(conditionList)) {
+        if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
 

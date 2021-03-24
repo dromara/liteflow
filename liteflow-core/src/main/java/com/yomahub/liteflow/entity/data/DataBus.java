@@ -41,7 +41,7 @@ public class DataBus {
 	public synchronized static int offerSlot(Class<? extends Slot> slotClazz){
 		try{
 			for(int i = 0; i < slots.length; i++){
-				if(slots[i] == null){
+				if(ObjectUtil.isNull(slots[i])){
 					slots[i] = slotClazz.newInstance();
 					OCCUPY_COUNT.incrementAndGet();
 					return i;
@@ -60,7 +60,7 @@ public class DataBus {
 	}
 
 	public static void releaseSlot(int slotIndex){
-		if(slots[slotIndex] != null){
+		if(ObjectUtil.isNotNull(slots[slotIndex])){
 			LOG.info("[{}]:slot[{}] released",slots[slotIndex].getRequestId(),slotIndex);
 			slots[slotIndex] = null;
 			OCCUPY_COUNT.decrementAndGet();

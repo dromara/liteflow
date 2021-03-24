@@ -2,7 +2,8 @@ package com.yomahub.liteflow.parser;
 
 import java.text.MessageFormat;
 
-import org.apache.commons.lang3.StringUtils;
+import cn.hutool.core.util.StrUtil;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.NodeCache;
@@ -10,6 +11,7 @@ import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.yomahub.liteflow.exception.ParseException;
 
 /**
@@ -45,7 +47,7 @@ public class ZookeeperXmlFlowParser extends XmlFlowParser{
         String content = new String(client.getData().forPath(nodePath));
 
 
-        if(StringUtils.isBlank(content)) {
+        if (StrUtil.isBlank(content)) {
         	String error = MessageFormat.format("the node[{0}] value is empty", nodePath);
         	throw new ParseException(error);
         }
