@@ -9,7 +9,6 @@ package com.yomahub.liteflow.core;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.Slot;
@@ -153,13 +151,14 @@ public class FlowExecutor {
 		}
 
 		try {
-			//执行chain
+			// 执行chain
 			chain.execute(slotIndex);
-		}catch(Exception e){
+		} catch (Exception e) {
+			LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
 			slot.setSuccess(false);
 			slot.setErrorMsg(e.getMessage());
-		}finally{
-			if(!isInnerChain) {
+		} finally {
+			if (!isInnerChain) {
 				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
 			}

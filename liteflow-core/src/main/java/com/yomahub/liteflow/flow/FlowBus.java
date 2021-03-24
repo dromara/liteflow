@@ -20,9 +20,12 @@ public class FlowBus {
 	private static Map<String, Chain> chainMap = new HashMap<>();
 
 	private static Map<String, Node> nodeMap = new HashMap<>();
-
-	public static Chain getChain(String id) throws Exception{
-		if(chainMap == null || chainMap.isEmpty()){
+	
+	private FlowBus() {
+	}
+	
+	public static Chain getChain(String id) throws Exception {
+		if (MapUtils.isEmpty(chainMap)) {
 			throw new Exception("please config the rule first");
 		}
 		return chainMap.get(id);
