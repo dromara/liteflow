@@ -7,33 +7,30 @@
  */
 package com.yomahub.liteflow.core;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.yomahub.liteflow.exception.ConfigErrorException;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
+import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.NoAvailableSlotException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FlowExecutor {
 
@@ -152,6 +149,7 @@ public class FlowExecutor {
 			//执行chain
 			chain.execute(slotIndex);
 		}catch(Exception e){
+			LOG.error("[{}]:chain[{}] execute error on slot[{}]",slot.getRequestId(),chain.getChainName(),slotIndex);
 			slot.setSuccess(false);
 			slot.setErrorMsg(e.getMessage());
 		}finally{
