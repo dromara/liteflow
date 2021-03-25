@@ -33,6 +33,8 @@ import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * 流程规则主要执行器类
  * @author Bryan.Zhang
@@ -42,6 +44,8 @@ public class FlowExecutor {
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
 
 	private LiteflowConfig liteflowConfig;
+
+	private ExecutorService parallelExecutor;
 
 	private String zkNode;
 
@@ -126,6 +130,10 @@ public class FlowExecutor {
 			throw new ChainNotFoundException(errorMsg);
 		}
 
+		if (parallelExecutor != null) {
+			chain.setParallelExecutor(parallelExecutor);
+		}
+
 		if(!isInnerChain && slotIndex == null) {
 			slotIndex = DataBus.offerSlot(slotClazz);
 			LOG.info("slot[{}] offered",slotIndex);
@@ -182,5 +190,13 @@ public class FlowExecutor {
 
 	public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
+	}
+
+	public ExecutorService getParallelExecutor() {
+		return parallelExecutor;
+	}
+
+	public void setParallelExecutor(ExecutorService parallelExecutor) {
+		this.parallelExecutor = parallelExecutor;
 	}
 }

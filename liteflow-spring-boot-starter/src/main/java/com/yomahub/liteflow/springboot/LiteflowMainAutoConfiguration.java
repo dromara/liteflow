@@ -20,6 +20,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 主要的业务装配器
@@ -29,15 +30,16 @@ import java.util.List;
  */
 @Configuration
 @ConditionalOnBean(LiteflowConfig.class)
-@AutoConfigureAfter(LiteflowPropertyAutoConfiguration.class)
+@AutoConfigureAfter({LiteflowPropertyAutoConfiguration.class, LiteflowExecutorAutoConfiguration.class})
 @Import(SpringAware.class)
 public class LiteflowMainAutoConfiguration {
 
     @Bean
-    public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig){
+    public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig, ExecutorService parallelExecutor){
         if(StrUtil.isNotBlank(liteflowConfig.getRuleSource())){
             FlowExecutor flowExecutor = new FlowExecutor();
             flowExecutor.setLiteflowConfig(liteflowConfig);
+            flowExecutor.setParallelExecutor(parallelExecutor);
             return flowExecutor;
         }else{
             return null;

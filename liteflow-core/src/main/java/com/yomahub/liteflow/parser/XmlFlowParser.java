@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
+import org.dom4j.Attribute;
 
 /**
  * xml形式的解析器
@@ -139,7 +140,15 @@ public abstract class XmlFlowParser {
 			if (condE.getName().equals("then")) {
 				conditionList.add(new ThenCondition(chainNodeList));
 			} else if (condE.getName().equals("when")) {
-				conditionList.add(new WhenCondition(chainNodeList));
+				/**
+				 * 设置是否为async异步
+				 */
+				Attribute isSync = condE.attribute("async");
+				if (isSync != null) {
+					conditionList.add(new WhenCondition(chainNodeList, isSync.getValue().equals("true")));
+				} else {
+					conditionList.add(new WhenCondition(chainNodeList));
+				}
 			}
 		}
 		FlowBus.addChain(chainName, new Chain(chainName,conditionList));
