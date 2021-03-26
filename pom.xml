@@ -51,6 +51,7 @@
 		<curator.version>2.12.0</curator.version>
 		<junit.version>4.12</junit.version>
 		<hutool-core.version>5.3.10</hutool-core.version>
+		<transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
     </properties>
 
     <dependencyManagement>
@@ -124,6 +125,11 @@
 				<groupId>cn.hutool</groupId>
 				<artifactId>hutool-core</artifactId>
 				<version>${hutool-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>transmittable-thread-local</artifactId>
+				<version>${transmittable-thread-local.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

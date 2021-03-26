@@ -10,7 +10,7 @@ package com.yomahub.liteflow.core;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-
+import com.alibaba.ttl.TransmittableThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,6 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
 
-
-
 /**
  * 普通组件抽象类
  * @author Bryan.Zhang
@@ -36,7 +34,7 @@ public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
-	private InheritableThreadLocal<Integer> slotIndexTL = new InheritableThreadLocal<Integer>();
+	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<Integer>();
 
 	@Autowired(required = false)
 	private MonitorBus monitorBus;
@@ -44,7 +42,7 @@ public abstract class NodeComponent {
 	private String nodeId;
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
-	private InheritableThreadLocal<Boolean> isEndTL = new InheritableThreadLocal<>();
+	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
