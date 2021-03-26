@@ -16,6 +16,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.exception.ConfigErrorException;
+import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,9 +30,6 @@ import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.NoAvailableSlotException;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.parser.LocalXmlFlowParser;
-import com.yomahub.liteflow.parser.XmlFlowParser;
-import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 
 /**
  * 流程规则主要执行器类
@@ -53,13 +51,18 @@ public class FlowExecutor {
 
 		List<String> rulePath = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
-		XmlFlowParser parser = null;
+//		XmlFlowParser parser = null;
+		FlowParser parser = null;
 		for(String path : rulePath){
 			try {
 
 				if(isLocalConfig(path)) { //判断是否是本地的xml文件
 					parser = new LocalXmlFlowParser();
-				}else if(isZKConfig(path)){ //判断是否是zk配置
+				} else if(isLocalJsonConfig(path)) {
+					parser = new LocalJsonFlowParser();
+				} else if(isLocalYmlConfig(path)) {
+					parser = new LocalYmlFlowParser();
+				} else if(isZKConfig(path)){ //判断是否是zk配置
 					if(StringUtils.isNotBlank(zkNode)) {
 						parser = new ZookeeperXmlFlowParser(zkNode);
 					}else {
@@ -88,6 +91,18 @@ public class FlowExecutor {
 		Pattern p = Pattern.compile("^[\\w_\\-\\@\\/]+\\.xml$");
 	    Matcher m = p.matcher(path);
 	    return m.find();
+	}
+
+	private boolean isLocalJsonConfig(String path) {
+		Pattern p = Pattern.compile("^[\\w_\\-\\@\\/]+\\.json$");
+		Matcher m = p.matcher(path);
+		return m.find();
+	}
+
+	private boolean isLocalYmlConfig(String path) {
+		Pattern p = Pattern.compile("^[\\w_\\-\\@\\/]+\\.yml$");
+		Matcher m = p.matcher(path);
+		return m.find();
 	}
 
 	private boolean isClassConfig(String path) {

@@ -27,11 +27,9 @@ import com.yomahub.liteflow.spring.ComponentScaner;
  * xml形式的解析器
  * @author Bryan.Zhang
  */
-public abstract class XmlFlowParser {
+public abstract class XmlFlowParser extends FlowParser{
 
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
-
-	public abstract void parseMain(String path) throws Exception;
 
 	public void parse(String content) throws Exception {
 		Document document = DocumentHelper.parseText(content);
@@ -160,25 +158,5 @@ public abstract class XmlFlowParser {
 			}
 		}
 		return false;
-	}
-
-	//条件节点的正则解析
-	public static RegexEntity parseNodeStr(String str) {
-	    List<String> list = new ArrayList<String>();
-	    Pattern p = Pattern.compile("[^\\)\\(]+");
-	    Matcher m = p.matcher(str);
-	    while(m.find()){
-	        list.add(m.group());
-	    }
-	    RegexEntity regexEntity = new RegexEntity();
-	    regexEntity.setItem(list.get(0).trim());
-	    if(list.size() > 1){
-	    	String[] realNodeArray = list.get(1).split("\\|");
-	    	for (int i = 0; i < realNodeArray.length; i++) {
-	    		realNodeArray[i] = realNodeArray[i].trim();
-			}
-	    	regexEntity.setRealItemArray(realNodeArray);
-	    }
-	    return regexEntity;
 	}
 }
