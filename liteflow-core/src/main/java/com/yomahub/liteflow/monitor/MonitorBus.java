@@ -88,10 +88,9 @@ public class MonitorBus {
 	public void printStatistics(){
 		try{
 			Map<String, BigDecimal> compAverageTimeSpent = new HashMap<String, BigDecimal>();
-
-			long totalTimeSpent = 0;
-
+			
 			for(Entry<String, BoundedPriorityQueue<CompStatistics>> entry : statisticsMap.entrySet()){
+				long totalTimeSpent = 0;
 				for(CompStatistics statistics : entry.getValue()){
 					totalTimeSpent += statistics.getTimeSpent();
 				}
