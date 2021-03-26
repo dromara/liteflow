@@ -149,9 +149,9 @@ public class Chain implements Executable {
                 for (Future<Boolean> f : futures) {
                     f.cancel(true);
                 }
+                LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled and move to next executableItem."
+                        , requestId);
             }
-            LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled and move to next executableItem."
-                    , requestId);
         } catch (InterruptedException e) {
             //  ignore InterruptedException
 
