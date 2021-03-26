@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 线程池工具类
- * @author justin.xu
+ * @author Bryan.Zhang
  */
 public class ExecutorHelper {
 

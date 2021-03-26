@@ -10,9 +10,9 @@ import java.util.concurrent.CountDownLatch;
  * 并行器线程
  * @author Bryan.Zhang
  */
-public class ParallelCondition implements Callable<Boolean> {
+public class ParallelCallable implements Callable<Boolean> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ParallelCondition.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParallelCallable.class);
 
     private Executable executableItem;
 
@@ -20,9 +20,10 @@ public class ParallelCondition implements Callable<Boolean> {
 
     private String requestId;
 
+
     private CountDownLatch latch;
 
-    public ParallelCondition(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch) {
+    public ParallelCallable(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch) {
         this.executableItem = executableItem;
         this.slotIndex = slotIndex;
         this.requestId = requestId;
@@ -33,12 +34,14 @@ public class ParallelCondition implements Callable<Boolean> {
     public Boolean call() throws Exception {
         try {
             executableItem.execute(slotIndex);
+
+            return true;
         }catch(Exception e){
-            LOG.error("requestId [{}], item [{}] execute cause error", requestId, executableItem.getExecuteName(), e);
+            LOG.error("requestId [{}], item [{}] execute error", requestId, executableItem.getExecuteName());
+
+            return false;
         } finally {
             latch.countDown();
         }
-
-        return true;
     }
 }

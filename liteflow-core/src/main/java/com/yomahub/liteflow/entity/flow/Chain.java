@@ -13,6 +13,7 @@ import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
 import org.apache.commons.collections4.CollectionUtils;
@@ -110,7 +111,7 @@ public class Chain implements Executable {
 
     //  使用线程池执行when并发流程
     private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) {
-        ExecutorService parallelExecutor = SpringAware.getBean(ExecutorService.class);
+        ExecutorService parallelExecutor = SpringAware.getBean("whenExecutors");
 
         final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
         final List<Future<Boolean>> futures = new ArrayList<>(condition.getNodeList().size());
@@ -118,21 +119,48 @@ public class Chain implements Executable {
 
         for (int i = 0; i < condition.getNodeList().size(); i++) {
             futures.add(parallelExecutor.submit(
-                    new ParallelCondition(condition.getNodeList().get(i), slotIndex, requestId, latch)
+                    new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch)
             ));
         }
 
+        boolean interrupted = false;
         try {
             if (!latch.await(whenMaxWaitSeconds, TimeUnit.SECONDS)) {
                 for (Future<Boolean> f : futures) {
                     f.cancel(true);
                 }
-                LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled and move to next executableItem."
-                        , requestId);
+                interrupted = true;
+                LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled.", requestId);
             }
         } catch (InterruptedException e) {
-            //  ignore InterruptedException
-
+            interrupted = true;
         }
+
+        /**
+         * 当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
+         */
+        if (!condition.isErrorResume()) {
+            if (interrupted) {
+                throw new WhenExecuteException(String.format(
+                        "requestId [%s] when execute interrupted. errorResume [false].", requestId));
+            }
+
+            for (Future<Boolean> f : futures) {
+                try {
+                    if (!f.get()) {
+                        throw new WhenExecuteException(String.format(
+                                "requestId [%s] when execute failed. errorResume [false].", requestId));
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new WhenExecuteException(String.format(
+                            "requestId [%s] when execute failed. errorResume [false].", requestId));
+                }
+            }
+
+        } else if (interrupted) {
+            //  这里由于配置了errorResume，所以只打印warn日志
+            LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", requestId);
+        }
+
     }
 }

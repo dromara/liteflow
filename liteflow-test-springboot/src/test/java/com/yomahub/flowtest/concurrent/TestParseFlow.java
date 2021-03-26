@@ -28,22 +28,25 @@ import java.util.List;
 @SpringBootTest
 public class TestParseFlow {
 
-    private Check caseAsync = new Check("async", Arrays.asList(
-            ThenCondition.class,
-            WhenCondition.class,
-            WhenCondition.class,
-            WhenCondition.class
+    private Check caseErrorResume = new Check("test-errorResume", Arrays.asList(
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(ThenCondition.class, null),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, true),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, true),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, true)
     ));
 
-    private Check caseConcurrent = new Check("async-concurrent1", Collections.singletonList(
-            WhenCondition.class
+    private Check caseErrorBreak = new Check("test-errorBreak", Arrays.asList(
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(ThenCondition.class, null),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, true),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, false),
+            new AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>(WhenCondition.class, true)
     ));
 
     @Test
     public void parseWhen() throws Exception {
-        assertTrue(caseAsync, FlowBus.getChain(caseAsync.getChainCode()));
+        assertTrue(caseErrorResume, FlowBus.getChain(caseErrorResume.getChainCode()));
 
-        assertTrue(caseConcurrent, FlowBus.getChain(caseConcurrent.getChainCode()));
+        assertTrue(caseErrorBreak, FlowBus.getChain(caseErrorBreak.getChainCode()));
     }
 
     private void assertTrue(Check check, Chain chain) {
@@ -52,28 +55,31 @@ public class TestParseFlow {
         Assert.assertTrue(null != chain.getConditionList() && !chain.getConditionList().isEmpty());
         for (int i = 0; i < chain.getConditionList().size(); i ++) {
 
-            Class<? extends Condition> expected = check.getConditionClazz().get(i);
+            AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean> expected = check.getClazzWithFlags().get(i);
             Condition actual = chain.getConditionList().get(i);
 
-            Assert.assertEquals(expected, actual.getClass());
+            Assert.assertEquals(expected.getKey(), actual.getClass());
+            if (actual.getClass().equals(WhenCondition.class)) {
+                Assert.assertEquals(expected.getValue(), ((WhenCondition) actual).isErrorResume());
+            }
         }
     }
 
     public static class Check {
         private String chainCode;
-        private List<Class<? extends Condition>> conditionClazz;
+        private List<AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>> clazzWithFlags;
 
-        public Check(String chainCode, List<Class<? extends Condition>> conditionClazz) {
+        public Check(String chainCode, List<AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>> clazzWithFlags) {
             this.chainCode = chainCode;
-            this.conditionClazz = conditionClazz;
+            this.clazzWithFlags = clazzWithFlags;
         }
 
         public String getChainCode() {
             return chainCode;
         }
 
-        public List<Class<? extends Condition>> getConditionClazz() {
-            return conditionClazz;
+        public List<AbstractMap.SimpleEntry<Class<? extends Condition>, Boolean>> getClazzWithFlags() {
+            return clazzWithFlags;
         }
     }
 }

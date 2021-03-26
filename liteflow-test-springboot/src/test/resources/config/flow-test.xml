@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <!-- 测试XML解析 when节点中async是否正常 -->
-    <!-- 测试when节点中async是值各种设置后是否按照正确逻辑调用 -->
-    <chain name="async">
+    <!-- 测试when节点中errorResume是值各种设置后是否按照正确逻辑调用 -->
+    <chain name="test-errorResume">
         <then value="s1, s2"/> <!-- then表示串行 -->
-        <when value="s3, s4, s5, s6"/> <!-- async = false 表示串行 -->
-        <when value="p3, p4, p5, p6"/> <!-- async = true 表示并行 -->
-        <when value = "p7, p8"/> <!-- async未设置表示并行 -->
+        <when errorResume = "true" value="s3, s4, s5, s6"/> <!-- errorResume = false 表示失败将继续 -->
+        <when errorResume = "true" value="p3, p4, p5, p6"/> <!-- errorResume = true 表示失败将继续 -->
+        <when value = "p7, p8"/> <!-- 假设P5抛出Exception时，errorResume未设置 则p7 p8必会执行  -->
+    </chain>
+
+    <chain name="test-errorBreak">
+        <then value="s1, s2"/> <!-- then表示串行 -->
+        <when errorResume = "true" value="s3, s4, s5, s6"/> <!-- errorResume = false 表示失败将继续 -->
+        <when errorResume = "false" value="p3, p4, p5, p6"/> <!-- errorResume = true 表示失败将退出 -->
+        <when value = "p7, p8"/> <!-- 假设P5抛出Exception时，则p7 p8必不会执行-->
     </chain>
 
     <!-- 模拟线程池中可用线程只有2个线程时，当并发的when都大于2时，线程来回处理切换中threadLocal中的slotIndex是否正确 -->

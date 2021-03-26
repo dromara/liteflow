@@ -13,6 +13,7 @@ import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.util.SpringAware;
 import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -139,7 +140,12 @@ public abstract class XmlFlowParser {
 			if (condE.getName().equals("then")) {
 				conditionList.add(new ThenCondition(chainNodeList));
 			} else if (condE.getName().equals("when")) {
-				conditionList.add(new WhenCondition(chainNodeList));
+				Attribute errorResume = condE.attribute("errorResume");
+				if (errorResume != null) {
+					conditionList.add(new WhenCondition(chainNodeList, errorResume.getValue().equals("true")));
+				} else {
+					conditionList.add(new WhenCondition(chainNodeList));
+				}
 			}
 		}
 		FlowBus.addChain(chainName, new Chain(chainName,conditionList));

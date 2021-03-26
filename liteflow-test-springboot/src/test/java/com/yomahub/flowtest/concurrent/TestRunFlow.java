@@ -38,16 +38,29 @@ public class TestRunFlow {
     }
 
     @Test
-    public void mixedRunTest() throws Exception {
-        String requestId = init(Arrays.asList("s1", "s2", "s3", "s4", "s5", "s6", "p3", "p4", "p5", "p6", "p7", "p8"));
+    public void mixedRunByErrorResumeTest() throws Exception {
+        //由于errorResume，即使p5执行失败抛出异常, p7， p8也将会执行
+        String requestId = init(Arrays.asList("s1", "s2", "s3", "s4", "s5", "s6", "p3", "p4", "p6", "p7", "p8"));
 
-        flowExecutor.execute("async", requestId);
+        flowExecutor.execute("test-errorResume", requestId);
+
+        caseAssertRandom(requestId);
+    }
+
+
+    @Test
+    public void mixedRunByErrorBreakTest() throws Exception {
+        //由于errorBreak，p5执行失败抛出异常, p7， p8将不会执行
+        String requestId = init(Arrays.asList("s1", "s2", "s3", "s4", "s5", "s6", "p3", "p4", "p6"));
+
+        flowExecutor.execute("test-errorBreak", requestId);
 
         caseAssertRandom(requestId);
     }
 
     @Test
     public void parallelTest() throws InterruptedException {
+        //测试2个线程并发时，所执行的序列是正常的，线程安全的（slotIndex在每个执行序列chain中都是不变的）
         String requestId1 = init(Arrays.asList("c1", "c2", "c3", "c4", "c5"));
         String requestId2 = init(Arrays.asList("c6", "c7", "c8", "c9", "c10"));
 
