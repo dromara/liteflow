@@ -15,16 +15,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
 /**
- * desc :
- * name : TestParseFlow
- *
- * @author : xujia
- * date : 2021/3/25
- * @since : 1.8
+ * 测试流程的解析
+ * @author justin.xu
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -32,14 +29,14 @@ import java.util.List;
 public class TestParseFlow {
 
     private Check caseAsync = new Check("async", Arrays.asList(
-            new AbstractMap.SimpleEntry<>(ThenCondition.class, null),
-            new AbstractMap.SimpleEntry<>(WhenCondition.class, false),
-            new AbstractMap.SimpleEntry<>(WhenCondition.class, true),
-            new AbstractMap.SimpleEntry<>(WhenCondition.class, true)
+            ThenCondition.class,
+            WhenCondition.class,
+            WhenCondition.class,
+            WhenCondition.class
     ));
 
-    private Check caseConcurrent = new Check("async-concurrent1", Arrays.asList(
-            new AbstractMap.SimpleEntry<>(WhenCondition.class, true)
+    private Check caseConcurrent = new Check("async-concurrent1", Collections.singletonList(
+            WhenCondition.class
     ));
 
     @Test
@@ -55,31 +52,28 @@ public class TestParseFlow {
         Assert.assertTrue(null != chain.getConditionList() && !chain.getConditionList().isEmpty());
         for (int i = 0; i < chain.getConditionList().size(); i ++) {
 
-            AbstractMap.SimpleEntry<Class<?>, Boolean> expected = check.getAsyncWithWhen().get(i);
+            Class<? extends Condition> expected = check.getConditionClazz().get(i);
             Condition actual = chain.getConditionList().get(i);
 
-            Assert.assertEquals(expected.getKey(), actual.getClass());
-            if (actual.getClass().equals(WhenCondition.class)) {
-                Assert.assertEquals(expected.getValue(), ((WhenCondition) actual).isASync());
-            }
+            Assert.assertEquals(expected, actual.getClass());
         }
     }
 
     public static class Check {
         private String chainCode;
-        private List<AbstractMap.SimpleEntry<Class<?>, Boolean>> asyncWithWhen;
+        private List<Class<? extends Condition>> conditionClazz;
 
-        public Check(String chainCode, List<AbstractMap.SimpleEntry<Class<?>, Boolean>> asyncWithWhen) {
+        public Check(String chainCode, List<Class<? extends Condition>> conditionClazz) {
             this.chainCode = chainCode;
-            this.asyncWithWhen = asyncWithWhen;
+            this.conditionClazz = conditionClazz;
         }
 
         public String getChainCode() {
             return chainCode;
         }
 
-        public List<AbstractMap.SimpleEntry<Class<?>, Boolean>> getAsyncWithWhen() {
-            return asyncWithWhen;
+        public List<Class<? extends Condition>> getConditionClazz() {
+            return conditionClazz;
         }
     }
 }

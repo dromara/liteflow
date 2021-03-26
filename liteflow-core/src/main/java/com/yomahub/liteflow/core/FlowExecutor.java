@@ -45,8 +45,6 @@ public class FlowExecutor {
 
 	private LiteflowConfig liteflowConfig;
 
-	private ExecutorService parallelExecutor;
-
 	private String zkNode;
 
 	//FlowExecutor的初始化化方式，主要用于parse规则文件
@@ -130,10 +128,6 @@ public class FlowExecutor {
 			throw new ChainNotFoundException(errorMsg);
 		}
 
-		if (parallelExecutor != null) {
-			chain.setParallelExecutor(parallelExecutor);
-		}
-
 		if(!isInnerChain && slotIndex == null) {
 			slotIndex = DataBus.offerSlot(slotClazz);
 			LOG.info("slot[{}] offered",slotIndex);
@@ -192,11 +186,4 @@ public class FlowExecutor {
 		this.liteflowConfig = liteflowConfig;
 	}
 
-	public ExecutorService getParallelExecutor() {
-		return parallelExecutor;
-	}
-
-	public void setParallelExecutor(ExecutorService parallelExecutor) {
-		this.parallelExecutor = parallelExecutor;
-	}
 }

@@ -21,6 +21,8 @@
 		<property name="queueLimit" value="100"/>
 		<property name="period" value="5000"/>
 		<property name="delay" value="5000"/>
+		<property name="whenMaxWorkers" value="3"/>
+		<property name="whenQueueLimit" value="512"/>
 	</bean>
 
 	<bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
@@ -31,5 +33,8 @@
 		<property name="liteflowConfig" ref="liteflowConfig"/>
 	</bean>
 
+	<bean class="java.util.concurrent.ExecutorService">
+		<property name="liteflowConfig" ref="liteflowConfig"/>
+	</bean>
 
 </beans>

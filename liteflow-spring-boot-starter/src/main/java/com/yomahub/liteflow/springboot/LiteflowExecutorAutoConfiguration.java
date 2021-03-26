@@ -1,30 +1,28 @@
 package com.yomahub.liteflow.springboot;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.util.ExecutorHelper;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.concurrent.ExecutorService;
 
-import static com.yomahub.liteflow.util.ExecutorHelper.buildExecutor;
-
 /**
- * desc :
- * name : LiteflowExecutorAutoConfiguration
- *
- * @author : xujia
- * date : 2021/3/24
- * @since : 1.8
+ * 线程池装配类
+ * 这个装配前置条件是需要LiteflowConfig，LiteflowPropertyAutoConfiguration以及SpringAware
+ * @author justin.xu
  */
 @Configuration
+@ConditionalOnBean(LiteflowConfig.class)
+@AutoConfigureAfter({LiteflowPropertyAutoConfiguration.class})
 public class LiteflowExecutorAutoConfiguration {
 
-    @Bean("parallelExecutor")
-    public ExecutorService parallelExecutor(
-            @Value("${threadPool.parallel.worker:0}") int worker,
-            @Value("${threadPool.parallel.queue:512}") int queue) {
-        int useWorker = worker;
-        int useQueue = queue;
+    @Bean
+    public ExecutorService executorService(LiteflowConfig liteflowConfig) {
+        int useWorker = liteflowConfig.getWhenMaxWorkers();
+        int useQueue = liteflowConfig.getWhenQueueLimit();
         if (useWorker == 0) {
             useWorker = Runtime.getRuntime().availableProcessors() + 1;
         }
@@ -33,6 +31,6 @@ public class LiteflowExecutorAutoConfiguration {
             useQueue = 512;
         }
 
-        return buildExecutor(useWorker, useQueue, "parallel-executors", false);
+        return ExecutorHelper.buildExecutor(useWorker, useQueue, "liteflow-when-calls", false);
     }
 }

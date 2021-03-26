@@ -1,15 +1,19 @@
+/**
+ * <p>Title: liteflow</p>
+ * <p>Description: 轻量级的组件式流程框架</p>
+ * @author Bryan.Zhang
+ * @email weenyc31@163.com
+ * @Date 2020/4/1
+ */
 package com.yomahub.liteflow.util;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+
 /**
- * desc :
- * name : ExecutorHelper
- *
- * @author : xujia
- * date : 2021/3/24
- * @since : 1.8
+ * 线程池工具类
+ * @author justin.xu
  */
 public class ExecutorHelper {
 

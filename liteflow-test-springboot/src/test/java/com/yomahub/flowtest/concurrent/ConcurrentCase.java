@@ -9,14 +9,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
 /**
- * desc :
- * name : ConcurrentCase
- *
- * @author : xujia
- * date : 2021/3/25
- * @since : 1.8
+ * 流程的顺序执行、并发执行的CASE构造器
+ * @author justin.xu
  */
 public class ConcurrentCase {
     public static final Map<String, AbstractMap.SimpleEntry<List<Routers>, List<Routers>>> CASES = new ConcurrentHashMap<>();

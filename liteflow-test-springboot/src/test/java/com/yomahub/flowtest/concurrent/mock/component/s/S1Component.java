@@ -5,12 +5,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
 /**
- * desc :
- * name : S1Component
- *
- * @author : xujia
- * date : 2021/3/25
- * @since : 1.8
+ * 测试mock component
+ * @author justin.xu
  */
 @Component("s1")
 public class S1Component extends NodeComponent {

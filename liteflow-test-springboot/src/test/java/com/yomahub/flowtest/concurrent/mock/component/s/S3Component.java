@@ -5,12 +5,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
 /**
- * desc :
- * name : S3
- *
- * @author : xujia
- * date : 2021/3/25
- * @since : 1.8
+ * 测试mock component
+ * @author justin.xu
  */
 @Component("s3")
 public class S3Component extends NodeComponent {

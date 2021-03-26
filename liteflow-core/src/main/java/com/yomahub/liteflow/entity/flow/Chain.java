@@ -40,8 +40,6 @@ public class Chain implements Executable {
 
     private static int whenMaxWaitSeconds;
 
-    private ExecutorService parallelExecutor;
-
     static {
         LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
         if (ObjectUtil.isNotNull(liteflowConfig)) {
@@ -54,14 +52,6 @@ public class Chain implements Executable {
     public Chain(String chainName, List<Condition> conditionList) {
         this.chainName = chainName;
         this.conditionList = conditionList;
-    }
-
-    public ExecutorService getParallelExecutor() {
-        return parallelExecutor;
-    }
-
-    public void setParallelExecutor(ExecutorService parallelExecutor) {
-        this.parallelExecutor = parallelExecutor;
     }
 
     public List<Condition> getConditionList() {
@@ -101,18 +91,8 @@ public class Chain implements Executable {
                     }
                 }
             } else if (condition instanceof WhenCondition) {
-                /**
-                 for (Executable executableItem : condition.getNodeList()) {
-                 * 设置了线程池且当前condition isSync = true时，使用异步线程池执行
-                 new WhenConditionThread(executableItem, slotIndex, slot.getRequestId(), latch).start();
-                 */
-                if (((WhenCondition) condition).isASync() && parallelExecutor != null) {
-                    executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
-                } else {
-                    for (Executable executableItem : condition.getNodeList()) {
-                        executableItem.execute(slotIndex);
-                    }
-                }
+
+                executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
             }
         }
     }
@@ -128,15 +108,13 @@ public class Chain implements Executable {
     }
 
 
-    /**
-     * 使用线程池执行并发流程
-     * @param condition
-     * @param slotIndex
-     * @param requestId
-     */
+    //  使用线程池执行when并发流程
     private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) {
+        ExecutorService parallelExecutor = SpringAware.getBean(ExecutorService.class);
+
         final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
         final List<Future<Boolean>> futures = new ArrayList<>(condition.getNodeList().size());
+
 
         for (int i = 0; i < condition.getNodeList().size(); i++) {
             futures.add(parallelExecutor.submit(

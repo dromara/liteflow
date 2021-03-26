@@ -34,6 +34,12 @@ public class LiteflowConfig {
     //每隔多少秒打印
     private Long period;
 
+    //异步线程池最大线程数
+    private int whenMaxWorkers;
+
+    //异步线程池最大队列数量
+    private int whenQueueLimit;
+
     public String getRuleSource() {
         return ruleSource;
     }
@@ -88,5 +94,21 @@ public class LiteflowConfig {
 
     public void setEnableLog(Boolean enableLog) {
         this.enableLog = enableLog;
+    }
+
+    public int getWhenMaxWorkers() {
+        return whenMaxWorkers;
+    }
+
+    public void setWhenMaxWorkers(int whenMaxWorkers) {
+        this.whenMaxWorkers = whenMaxWorkers;
+    }
+
+    public int getWhenQueueLimit() {
+        return whenQueueLimit;
+    }
+
+    public void setWhenQueueLimit(int whenQueueLimit) {
+        this.whenQueueLimit = whenQueueLimit;
     }
 }

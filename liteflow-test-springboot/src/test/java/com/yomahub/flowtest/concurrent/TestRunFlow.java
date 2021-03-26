@@ -17,12 +17,8 @@ import static com.yomahub.flowtest.concurrent.ConcurrentCase.caseAssertRandom;
 import static com.yomahub.flowtest.concurrent.ConcurrentCase.caseInit;
 
 /**
- * desc :
- * name : TestRunFlow
- *
- * @author : xujia
- * date : 2021/3/25
- * @since : 1.8
+ * 测试流程的顺序执行、并发执行等
+ * @author justin.xu
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)

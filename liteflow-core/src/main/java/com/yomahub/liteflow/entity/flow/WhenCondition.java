@@ -14,21 +14,8 @@ import java.util.List;
  * @author Bryan.Zhang
  */
 public class WhenCondition extends Condition{
-	/**
-	 * 增加isSync属性，以区分是循序执行还是并发执行
-	 */
-	private boolean isASync;
 
 	public WhenCondition(List<Executable> nodeList) {
 		super(nodeList);
-		isASync = true;
-	}
-	public WhenCondition(List<Executable> nodeList, boolean isASync) {
-		super(nodeList);
-		this.isASync = isASync;
-	}
-
-	public boolean isASync() {
-		return isASync;
 	}
 }

@@ -5,12 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * desc :
- * name : SpringBootApp
- *
- * @author : xujia
- * date : 2021/3/3
- * @since : 1.8
+ * 启动类
+ * @author justin.xu
  */
 @SpringBootApplication(exclude={DataSourceAutoConfiguration.class})
 public class SpringBootApp {

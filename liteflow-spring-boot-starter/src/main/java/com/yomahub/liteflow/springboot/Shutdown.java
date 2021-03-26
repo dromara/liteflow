@@ -11,12 +11,9 @@ import javax.annotation.Resource;
 import java.util.concurrent.ExecutorService;
 
 /**
- * desc :
- * name : Shutdown
- *
- * @author : xujia
- * date : 2021/3/24
- * @since : 1.8
+ * 关闭shutdown类
+ * 执行清理工作
+ * @author justin.xu
  */
 @Order(Integer.MIN_VALUE)
 @Component
@@ -24,14 +21,14 @@ public class Shutdown {
 
     private static final Logger LOG = LoggerFactory.getLogger(Shutdown.class);
 
-    @Resource(name = "parallelExecutor")
-    private ExecutorService parallelExecutor;
+    @Resource
+    private ExecutorService executorService;
 
     @PreDestroy
     public void destroy() throws Exception {
-        LOG.info("Start closing the parallel-executors...");
-        ExecutorHelper.shutdownAwaitTermination(parallelExecutor, 3600);
-        LOG.info("Succeed closing the parallel-executors ok...");
+        LOG.info("Start closing the liteflow-when-calls...");
+        ExecutorHelper.shutdownAwaitTermination(executorService);
+        LOG.info("Succeed closing the liteflow-when-calls ok...");
     }
 
 }
