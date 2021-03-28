@@ -142,7 +142,7 @@ public abstract class XmlFlowParser {
 			} else if (condE.getName().equals("when")) {
 				Attribute errorResume = condE.attribute("errorResume");
 				if (errorResume != null) {
-					conditionList.add(new WhenCondition(chainNodeList, errorResume.getValue().equals("true")));
+					conditionList.add(new WhenCondition(chainNodeList, errorResume.getValue().equals(Boolean.TRUE.toString())));
 				} else {
 					conditionList.add(new WhenCondition(chainNodeList));
 				}

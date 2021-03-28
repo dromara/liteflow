@@ -17,7 +17,7 @@ public class TestFlow implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Slot slot = flowExecutor.execute("chain2", "it's a request");
+        Slot slot = flowExecutor.execute("chain1", "it's a request");
         System.out.println(slot);
     }
 }

@@ -38,14 +38,6 @@ public class MonitorBus {
 
 	private LiteflowConfig liteflowConfig;
 
-	private boolean enableLog = false;
-
-	private int queueLimit = 200;
-
-	private long delay = 300000;
-
-	private long preiod = 300000;
-
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private final ConcurrentHashMap<String, BoundedPriorityQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
@@ -53,25 +45,9 @@ public class MonitorBus {
 	public MonitorBus(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
 
-		if (ObjectUtil.isNotNull(liteflowConfig.getEnableLog())){
-			this.enableLog = liteflowConfig.getEnableLog();
-		}
-
-		if (ObjectUtil.isNotNull(liteflowConfig.getQueueLimit())){
-			queueLimit = liteflowConfig.getQueueLimit();
-		}
-
-		if (ObjectUtil.isNotNull(liteflowConfig.getDelay())){
-			delay = liteflowConfig.getDelay();
-		}
-
-		if (ObjectUtil.isNotNull(liteflowConfig.getPeriod())){
-			preiod = liteflowConfig.getPeriod();
-		}
-
-		if(enableLog){
+		if(liteflowConfig.getEnableLog()){
 			Timer timer = new Timer();
-			timer.schedule(new MonitorTimeTask(this), delay, preiod);
+			timer.schedule(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod());
 		}
 	}
 
@@ -79,7 +55,7 @@ public class MonitorBus {
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
 			statisticsMap.get(statistics.getComponentClazzName()).add(statistics);
 		}else{
-			BoundedPriorityQueue<CompStatistics> queue = new BoundedPriorityQueue<>(queueLimit);
+			BoundedPriorityQueue<CompStatistics> queue = new BoundedPriorityQueue<>(liteflowConfig.getQueueLimit());
 			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}

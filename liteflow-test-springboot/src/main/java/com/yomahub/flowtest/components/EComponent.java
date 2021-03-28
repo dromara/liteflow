@@ -17,13 +17,9 @@ public class EComponent extends NodeComponent {
 	public void process() {
 		try {
 			Thread.sleep(120L);
-			System.out.println("E:" + this.getSlot().getOutput("a"));
-			this.getSlot().setOutput(this.getNodeId(), "E component output");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Eomponent executed!");
-
 	}
-
 }

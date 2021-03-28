@@ -22,17 +22,9 @@ public class LiteflowExecutorAutoConfiguration {
 
     @Bean("whenExecutors")
     public ExecutorService executorService(LiteflowConfig liteflowConfig) {
-        int useWorker = liteflowConfig.getWhenMaxWorkers();
-        int useQueue = liteflowConfig.getWhenQueueLimit();
-        if (useWorker == 0) {
-            useWorker = Runtime.getRuntime().availableProcessors() + 1;
-        }
-
-        if (useQueue < 512) {
-            useQueue = 512;
-        }
-
-        return ExecutorHelper.buildExecutor(useWorker, useQueue, "liteflow-when-calls", false);
+        Integer useWorker = liteflowConfig.getWhenMaxWorkers();
+        Integer useQueue = liteflowConfig.getWhenQueueLimit();
+        return ExecutorHelper.buildExecutor(useWorker, useQueue, "liteflow-when-thead", false);
     }
 
     @Bean

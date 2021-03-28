@@ -16,7 +16,7 @@
 	<bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
 		<property name="ruleSource" value="config/flow.xml"/>
 		<property name="slotSize" value="2024"/>
-		<property name="whenMaxWaitSecond" value="20"/>
+		<property name="whenMaxWaitSeconds" value="20"/>
 		<property name="enableLog" value="true"/>
 		<property name="queueLimit" value="100"/>
 		<property name="period" value="5000"/>
@@ -30,10 +30,6 @@
 	</bean>
 	
 	<bean class="com.yomahub.liteflow.monitor.MonitorBus">
-		<property name="liteflowConfig" ref="liteflowConfig"/>
-	</bean>
-
-	<bean class="java.util.concurrent.ExecutorService">
 		<property name="liteflowConfig" ref="liteflowConfig"/>
 	</bean>
 
