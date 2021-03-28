@@ -12,7 +12,7 @@ import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.util.SpringAware;
-import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
