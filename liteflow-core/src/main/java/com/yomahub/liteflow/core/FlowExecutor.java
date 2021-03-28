@@ -31,6 +31,8 @@ import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 import com.yomahub.liteflow.property.LiteflowConfig;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * 流程规则主要执行器类
  * @author Bryan.Zhang
@@ -180,4 +182,5 @@ public class FlowExecutor {
 	public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
 	}
+
 }

@@ -28,11 +28,21 @@ public class SpringAware implements ApplicationContextAware {
     }
 
     public static <T> T getBean(String name) {
-        return (T) applicationContext.getBean(name);
+        try{
+            T t = (T) applicationContext.getBean(name);
+            return t;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static <T> T getBean(Class<T> clazz) {
-        return applicationContext.getBean(clazz);
+        try{
+            T t = applicationContext.getBean(clazz);
+            return t;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static <T> T registerBean(Class<T> c) {

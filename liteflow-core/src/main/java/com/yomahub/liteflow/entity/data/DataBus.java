@@ -10,6 +10,7 @@ package com.yomahub.liteflow.entity.data;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
@@ -29,12 +30,11 @@ public class DataBus {
 
 	static {
 		LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-		int slotSize = 1024;
-		if (ObjectUtil.isNotNull(liteflowConfig)){
-			if (ObjectUtil.isNotNull(liteflowConfig.getSlotSize())){
-				slotSize = liteflowConfig.getSlotSize();
-			}
+
+		if (ObjectUtil.isNull(liteflowConfig)){
+			throw new ConfigErrorException("config error, please check liteflow config property");
 		}
+		int slotSize = liteflowConfig.getSlotSize();
 		slots = new Slot[slotSize];
 	}
 
