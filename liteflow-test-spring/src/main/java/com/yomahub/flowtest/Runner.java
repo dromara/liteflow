@@ -1,7 +1,7 @@
 package com.yomahub.flowtest;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -16,8 +16,8 @@ public class Runner {
         context.start();
         log.info("启动成功");
         FlowExecutor flowExecutor = context.getBean(FlowExecutor.class);
-        Slot slot = flowExecutor.execute("chain3", "it's a request");
-        System.out.println(slot);
+        LiteflowResponse response = flowExecutor.execute("chain3", "it's a request");
+        System.out.println(response);
 
         while (true){
             Thread.sleep(60000);

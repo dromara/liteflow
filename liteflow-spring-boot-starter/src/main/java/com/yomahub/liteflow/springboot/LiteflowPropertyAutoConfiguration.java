@@ -31,6 +31,8 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
         liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
         liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
+        liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
+        liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
         return liteflowConfig;
     }
 }

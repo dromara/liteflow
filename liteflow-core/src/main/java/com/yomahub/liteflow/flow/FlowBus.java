@@ -10,7 +10,7 @@ package com.yomahub.liteflow.flow;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections4.MapUtils;
+import cn.hutool.core.map.MapUtil;
 
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
@@ -29,7 +29,7 @@ public class FlowBus {
 	}
 	
 	public static Chain getChain(String id) throws Exception {
-		if (MapUtils.isEmpty(chainMap)) {
+		if (MapUtil.isEmpty(chainMap)) {
 			throw new Exception("please config the rule first");
 		}
 		return chainMap.get(id);
@@ -44,10 +44,10 @@ public class FlowBus {
 	}
 
 	public static boolean needInit() {
-		return MapUtils.isEmpty(chainMap);
+		return MapUtil.isEmpty(chainMap);
 	}
 
-	public static boolean containNode(String nodeId){
+	public static boolean containNode(String nodeId) {
 		return nodeMap.containsKey(nodeId);
 	}
 

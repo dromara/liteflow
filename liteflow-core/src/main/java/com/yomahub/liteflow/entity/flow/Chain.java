@@ -8,20 +8,23 @@
  */
 package com.yomahub.liteflow.entity.flow;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.util.ExecutorHelper;
 import com.yomahub.liteflow.util.SpringAware;
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * chain对象，实现可执行器
@@ -35,14 +38,24 @@ public class Chain implements Executable {
 
     private List<Condition> conditionList;
 
-    private static int whenMaxWaitSeconds;
+    private static ExecutorService parallelExecutor;
+
+    private static final LiteflowConfig liteflowConfig;
 
     static {
-        LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-        if (ObjectUtil.isNotNull(liteflowConfig)) {
-            whenMaxWaitSeconds = liteflowConfig.getWhenMaxWaitSeconds();
-        } else {
-            whenMaxWaitSeconds = 15;
+        //这里liteflowConfig不可能为null
+        //如果在springboot环境，由于自动装配，所以不可能为null
+        //在spring环境，如果xml没配置，在FlowExecutor的init时候就已经报错了
+        liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
+
+        //这里为了严谨，还是判断了下
+        if (ObjectUtil.isNull(liteflowConfig)){
+            throw new ConfigErrorException("config error, please check liteflow config property");
+        }
+
+        parallelExecutor = SpringAware.getBean(ExecutorService.class);
+        if (ObjectUtil.isNull(parallelExecutor)){
+            parallelExecutor = ExecutorHelper.buildExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenQueueLimit(), "liteflow-when-thread", false);
         }
     }
 
@@ -70,7 +83,7 @@ public class Chain implements Executable {
     //执行chain的主方法
     @Override
     public void execute(Integer slotIndex) throws Exception {
-        if (CollectionUtils.isEmpty(conditionList)) {
+        if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
 
@@ -88,11 +101,8 @@ public class Chain implements Executable {
                     }
                 }
             } else if (condition instanceof WhenCondition) {
-                final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
-                for (Executable executableItem : condition.getNodeList()) {
-                    new WhenConditionThread(executableItem, slotIndex, slot.getRequestId(), latch).start();
-                }
-                latch.await(whenMaxWaitSeconds, TimeUnit.SECONDS);
+
+                executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
             }
         }
     }
@@ -105,5 +115,59 @@ public class Chain implements Executable {
     @Override
     public String getExecuteName() {
         return chainName;
+    }
+
+
+    //  使用线程池执行when并发流程
+    private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) {
+        final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
+        final List<Future<Boolean>> futures = new ArrayList<>(condition.getNodeList().size());
+
+
+        for (int i = 0; i < condition.getNodeList().size(); i++) {
+            futures.add(parallelExecutor.submit(
+                    new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch)
+            ));
+        }
+
+        boolean interrupted = false;
+        try {
+            if (!latch.await(liteflowConfig.getWhenMaxWaitSeconds(), TimeUnit.SECONDS)) {
+                for (Future<Boolean> f : futures) {
+                    f.cancel(true);
+                }
+                interrupted = true;
+                LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled.", requestId);
+            }
+        } catch (InterruptedException e) {
+            interrupted = true;
+        }
+
+        /**
+         * 当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
+         */
+        if (!condition.isErrorResume()) {
+            if (interrupted) {
+                throw new WhenExecuteException(String.format(
+                        "requestId [%s] when execute interrupted. errorResume [false].", requestId));
+            }
+
+            for (Future<Boolean> f : futures) {
+                try {
+                    if (!f.get()) {
+                        throw new WhenExecuteException(String.format(
+                                "requestId [%s] when execute failed. errorResume [false].", requestId));
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new WhenExecuteException(String.format(
+                            "requestId [%s] when execute failed. errorResume [false].", requestId));
+                }
+            }
+
+        } else if (interrupted) {
+            //  这里由于配置了errorResume，所以只打印warn日志
+            LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", requestId);
+        }
+
     }
 }

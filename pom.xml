@@ -41,10 +41,6 @@
     <properties>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<commons.lang3.version>3.4</commons.lang3.version>
-		<commons-collections.version>4.1</commons-collections.version>
-		<commons-io.version>2.4</commons-io.version>
-		<commons-logging.version>1.2</commons-logging.version>
 		<spring.version>5.0.9.RELEASE</spring.version>
 		<org.slf4j.version>1.7.21</org.slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
@@ -56,25 +52,11 @@
 		<curator.version>2.12.0</curator.version>
 		<junit.version>4.12</junit.version>
 		<hutool-core.version>5.3.10</hutool-core.version>
+		<transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
     </properties>
 
     <dependencyManagement>
 		<dependencies>
-			<dependency>
-	            <groupId>org.apache.commons</groupId>
-	            <artifactId>commons-lang3</artifactId>
-	            <version>${commons.lang3.version}</version>
-	        </dependency>
-	        <dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-collections4</artifactId>
-				<version>${commons-collections.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>${commons-io.version}</version>
-			</dependency>
 	        <dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-beans</artifactId>
@@ -125,11 +107,6 @@
 	            <artifactId>junit</artifactId>
 	            <version>${junit.version}</version>
 	        </dependency>
-	        <dependency>
-	        	<groupId>commons-logging</groupId>
-	        	<artifactId>commons-logging</artifactId>
-	        	<version>${commons-logging.version}</version>
-	        </dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-framework</artifactId>
@@ -154,6 +131,11 @@
 				<groupId>cn.hutool</groupId>
 				<artifactId>hutool-core</artifactId>
 				<version>${hutool-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>transmittable-thread-local</artifactId>
+				<version>${transmittable-thread-local.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

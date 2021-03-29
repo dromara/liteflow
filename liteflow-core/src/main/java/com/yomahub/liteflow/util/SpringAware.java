@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -15,7 +13,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Bryan.Zhang
  */
 public class SpringAware implements ApplicationContextAware {
-    private static final Logger log = LoggerFactory.getLogger(SpringAware.class);
+
     private static ApplicationContext applicationContext = null;
 
     public SpringAware() {
@@ -30,11 +28,21 @@ public class SpringAware implements ApplicationContextAware {
     }
 
     public static <T> T getBean(String name) {
-        return (T) applicationContext.getBean(name);
+        try{
+            T t = (T) applicationContext.getBean(name);
+            return t;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static <T> T getBean(Class<T> clazz) {
-        return applicationContext.getBean(clazz);
+        try{
+            T t = applicationContext.getBean(clazz);
+            return t;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static <T> T registerBean(Class<T> c) {
@@ -45,12 +53,12 @@ public class SpringAware implements ApplicationContextAware {
         return getBean(c.getName());
     }
 
-    public static <T> T registerOrGet(Class<T> clazz){
+    public static <T> T registerOrGet(Class<T> clazz) {
         T t = null;
-        try{
+        try {
             t = SpringAware.getBean(clazz);
-        }catch (NoSuchBeanDefinitionException e){
-            if(t == null){
+        } catch (NoSuchBeanDefinitionException e) {
+            if (t == null) {
                 t = SpringAware.registerBean(clazz);
             }
         }

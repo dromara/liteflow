@@ -7,26 +7,24 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.entity.flow.Executable;
-import com.yomahub.liteflow.spring.ComponentScaner;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.data.CmpStep;
 import com.yomahub.liteflow.entity.data.CmpStepType;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.flow.Executable;
+import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-
-import javax.annotation.Resource;
+import com.yomahub.liteflow.spring.ComponentScaner;
 
 /**
  * 普通组件抽象类
@@ -36,7 +34,7 @@ public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
-	private InheritableThreadLocal<Integer> slotIndexTL = new InheritableThreadLocal<Integer>();
+	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<Integer>();
 
 	@Autowired(required = false)
 	private MonitorBus monitorBus;
@@ -44,7 +42,7 @@ public abstract class NodeComponent {
 	private String nodeId;
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
-	private InheritableThreadLocal<Boolean> isEndTL = new InheritableThreadLocal<>();
+	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
@@ -53,39 +51,34 @@ public abstract class NodeComponent {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		//process前置处理
-		if(ComponentScaner.cmpAroundAspect != null){
+		// process前置处理
+		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
 			ComponentScaner.cmpAroundAspect.beforeProcess(slot);
 		}
 
-		//业务处理逻辑
 		process();
 
-		//process后置处理
-		if(ComponentScaner.cmpAroundAspect != null){
+		// process后置处理
+		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
 			ComponentScaner.cmpAroundAspect.afterProcess(slot);
 		}
 
 		stopWatch.stop();
-		long timeSpent = stopWatch.getTime();
-
+		
 //		slot.addStep(new CmpStep(nodeId, CmpStepType.END));
-
-		//性能统计
-		CompStatistics statistics = new CompStatistics();
-		statistics.setComponentClazzName(this.getClass().getSimpleName());
-		statistics.setTimeSpent(timeSpent);
-		if (ObjectUtil.isNotNull(monitorBus)){
+		final long timeSpent = stopWatch.getTotalTimeMillis();
+		// 性能统计
+		if (ObjectUtil.isNotNull(monitorBus)) {
+			CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
 			monitorBus.addStatistics(statistics);
 		}
 
-		//进行判断是否是条件节点，条件节点最终也会落到node节点或者chain节点上
-		if(this instanceof NodeCondComponent){
+		if (this instanceof NodeCondComponent) {
 			String condNodeId = slot.getCondResult(this.getClass().getName());
-			if(StringUtils.isNotBlank(condNodeId)){
+			if (StrUtil.isNotBlank(condNodeId)) {
 				Node thisNode = FlowBus.getNode(nodeId);
 				Executable condExecutor = thisNode.getCondNode(condNodeId);
-				if(condExecutor != null){
+				if (ObjectUtil.isNotNull(condExecutor)) {
 					condExecutor.execute(slotIndexTL.get());
 				}
 			}
@@ -118,9 +111,9 @@ public abstract class NodeComponent {
 	 */
 	public boolean isEnd() {
 		Boolean isEnd = isEndTL.get();
-		if(isEnd == null){
+		if(ObjectUtil.isNull(isEnd)){
 			return false;
-		}else{
+		} else {
 			return isEndTL.get();
 		}
 	}

@@ -9,6 +9,8 @@ package com.yomahub.liteflow.entity.data;
 
 import java.text.MessageFormat;
 
+import cn.hutool.core.util.ObjectUtil;
+
 /**
  * 组件步骤对象
  * @author Bryan.Zhang
@@ -52,7 +54,7 @@ public class CmpStep {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null) {
+		if (ObjectUtil.isNull(obj)) {
 			return false;
 		}else {
 			if(getClass() != obj.getClass()) {

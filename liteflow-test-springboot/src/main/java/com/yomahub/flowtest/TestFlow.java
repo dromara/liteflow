@@ -1,9 +1,7 @@
 package com.yomahub.flowtest;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.Slot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +15,7 @@ public class TestFlow implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Slot slot = flowExecutor.execute("chain2", "it's a request");
-        System.out.println(slot);
+        LiteflowResponse response= flowExecutor.execute("chain2", "it's a request");
+        System.out.println(response);
     }
 }

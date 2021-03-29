@@ -18,6 +18,12 @@ public class LiteflowProperty {
     //异步线程最大等待描述
     private int whenMaxWaitSeconds;
 
+    //异步线程池最大线程数
+    private int whenMaxWorkers;
+
+    //异步线程池最大队列数量
+    private int whenQueueLimit;
+
     public String getRuleSource() {
         return ruleSource;
     }
@@ -40,5 +46,21 @@ public class LiteflowProperty {
 
     public void setWhenMaxWaitSeconds(int whenMaxWaitSeconds) {
         this.whenMaxWaitSeconds = whenMaxWaitSeconds;
+    }
+
+    public int getWhenMaxWorkers() {
+        return whenMaxWorkers;
+    }
+
+    public void setWhenMaxWorkers(int whenMaxWorkers) {
+        this.whenMaxWorkers = whenMaxWorkers;
+    }
+
+    public int getWhenQueueLimit() {
+        return whenQueueLimit;
+    }
+
+    public void setWhenQueueLimit(int whenQueueLimit) {
+        this.whenQueueLimit = whenQueueLimit;
     }
 }

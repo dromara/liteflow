@@ -19,6 +19,13 @@ public class CompStatistics implements Comparable{
 
 	private long memorySpent;
 
+	private long recordTime;
+	
+	public CompStatistics(String componentClazzName, long timeSpent) {
+		this.componentClazzName = componentClazzName;
+		this.timeSpent = timeSpent;
+		this.recordTime = System.currentTimeMillis();
+	}
 	public String getComponentClazzName() {
 		return componentClazzName;
 	}
@@ -42,9 +49,16 @@ public class CompStatistics implements Comparable{
 	public void setMemorySpent(long memorySpent) {
 		this.memorySpent = memorySpent;
 	}
-
+	
+	public long getRecordTime() {
+		return recordTime;
+	}
+	
 	@Override
 	public int compareTo(Object o) {
-		return -1;
+		if( o instanceof CompStatistics) {
+			return this.recordTime >= ((CompStatistics) o).getRecordTime()  ? -1 : 1;
+		}
+		return 1;
 	}
 }

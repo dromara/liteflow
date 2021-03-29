@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
@@ -83,7 +84,7 @@ public class Node implements Executable{
 	//所有的可执行节点，其实最终都会落到node上来，因为chain中包含的也是node
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
-		if(instance == null){
+		if (ObjectUtil.isNull(instance)) {
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
 		//每次执行node前，把分配的slot index信息放入threadLocal里
@@ -92,30 +93,30 @@ public class Node implements Executable{
 
 		try{
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
-			if(instance.isAccess()){
+			if (instance.isAccess()) {
 
 				//执行业务逻辑的主要入口
 				instance.execute();
 
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
-				if(instance.isEnd()){
+				if (instance.isEnd()) {
 					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
 					throw new ChainEndException(errorInfo);
 				}
-			}else{
+			} else {
 				LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),instance.getClass().getSimpleName());
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			//如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
-			if(instance.isContinueOnError()){
+			if (instance.isContinueOnError()) {
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),id);
 				LOG.error(errorMsg,e);
-			}else{
+			} else {
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,error:{2}",slot.getRequestId(),id,e.getMessage());
 				LOG.error(errorMsg,e);
 				throw e;
 			}
-		}finally {
+		} finally {
 			//移除threadLocal里的信息
 			instance.removeSlotIndex();
 			instance.removeIsEnd();

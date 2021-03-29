@@ -10,13 +10,14 @@ package com.yomahub.liteflow.spring;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
+
+import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.util.LOGOPrinter;
 
@@ -33,7 +34,7 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	public static ICmpAroundAspect cmpAroundAspect;
 
 	static {
-		//打印liteflow的LOGO
+		// 打印liteflow的LOGO
 		LOGOPrinter.print();
 	}
 
@@ -46,18 +47,18 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = bean.getClass();
-		//组件的扫描发现，扫到之后缓存到类属性map中
-		if(NodeComponent.class.isAssignableFrom(clazz)){
-			LOG.info("component[{}] has been found",beanName);
-			NodeComponent nodeComponent = (NodeComponent)bean;
+		// 组件的扫描发现，扫到之后缓存到类属性map中
+		if (NodeComponent.class.isAssignableFrom(clazz)) {
+			LOG.info("component[{}] has been found", beanName);
+			NodeComponent nodeComponent = (NodeComponent) bean;
 			nodeComponent.setNodeId(beanName);
 			nodeComponentMap.put(beanName, nodeComponent);
 		}
 
-		//组件Aop的实现类加载
-		if(ICmpAroundAspect.class.isAssignableFrom(clazz)){
-			LOG.info("component aspect implement[{}] has been found",beanName);
-			cmpAroundAspect = (ICmpAroundAspect)bean;
+		// 组件Aop的实现类加载
+		if (ICmpAroundAspect.class.isAssignableFrom(clazz)) {
+			LOG.info("component aspect implement[{}] has been found", beanName);
+			cmpAroundAspect = (ICmpAroundAspect) bean;
 		}
 
 		return bean;
