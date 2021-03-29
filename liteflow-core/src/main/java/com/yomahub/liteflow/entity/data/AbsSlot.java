@@ -7,42 +7,38 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Slot的抽象类实现
  * @author Bryan.Zhang
  */
 @SuppressWarnings("unchecked")
-public abstract class AbsSlot implements Slot{
+public abstract class AbsSlot implements Slot {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
 
-	private final String REQUEST = "request";
+	private static final String REQUEST = "request";
 
-	private final String RESPONSE = "response";
+	private static final String RESPONSE = "response";
 
-	private final String CHAINNAME = "chain_name";
+	private static final String CHAINNAME = "chain_name";
 
-	private final String COND_NODE_PREFIX = "cond_";
+	private static final String COND_NODE_PREFIX = "cond_";
 
-	private final String NODE_INPUT_PREFIX = "input_";
+	private static final String NODE_INPUT_PREFIX = "input_";
 
-	private final String NODE_OUTPUT_PREFIX = "output_";
+	private static final String NODE_OUTPUT_PREFIX = "output_";
 
-	private final String CHAIN_REQ_PREFIX = "chain_req_";
+	private static final String CHAIN_REQ_PREFIX = "chain_req_";
 
-	private final String REQUEST_ID = "req_id";
-
-	private boolean isSuccess = true;
-
-	private String errorMsg;
+	private static final String REQUEST_ID = "req_id";
 
 	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
 
@@ -141,21 +137,5 @@ public abstract class AbsSlot implements Slot{
 
 	public Deque<CmpStep> getExecuteSteps() {
 		return executeSteps;
-	}
-
-	public boolean isSuccess() {
-		return isSuccess;
-	}
-
-	public void setSuccess(boolean success) {
-		isSuccess = success;
-	}
-
-	public String getErrorMsg() {
-		return errorMsg;
-	}
-
-	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
 	}
 }

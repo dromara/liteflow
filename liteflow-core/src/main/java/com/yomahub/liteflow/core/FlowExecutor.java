@@ -7,20 +7,15 @@
  */
 package com.yomahub.liteflow.core;
 
-import java.text.MessageFormat;
-import java.util.List;
-
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
@@ -30,8 +25,11 @@ import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
+import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * 流程规则主要执行器类
@@ -98,23 +96,24 @@ public class FlowExecutor {
 	public void reloadRule(){
 		init();
 	}
-
-	public <T extends Slot> T execute(String chainId,Object param) throws Exception{
-		return execute(chainId, param, DefaultSlot.class,null,false);
+	
+	public void invoke(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex) throws Exception {
+		execute(chainId, param, slotClazz, slotIndex,true);
+	}
+	
+	public LiteflowResponse execute(String chainId, Object param) throws Exception {
+		return execute(chainId, param, DefaultSlot.class, null, false);
 	}
 
-	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz) throws Exception{
+	public LiteflowResponse execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
 		return execute(chainId, param, slotClazz,null,false);
 	}
-
-	public void invoke(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex) throws Exception{
-		execute(chainId, param, slotClazz,slotIndex,true);
-	}
-
-	public <T extends Slot> T execute(String chainId,Object param,Class<? extends Slot> slotClazz,Integer slotIndex,boolean isInnerChain) throws Exception{
+	
+	public LiteflowResponse execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex, 
+									boolean isInnerChain) throws Exception {
 		Slot slot = null;
 
-		if(FlowBus.needInit()) {
+		if (FlowBus.needInit()) {
 			init();
 		}
 
@@ -150,21 +149,22 @@ public class FlowExecutor {
 		} else {
 			slot.setChainReqData(chainId, param);
 		}
-
+		LiteflowResponse<Slot> response = new LiteflowResponse<>(slot);
 		try {
 			// 执行chain
 			chain.execute(slotIndex);
 		} catch (Exception e) {
+			response.setSuccess(false);
+			response.setMessage(e.getMessage());
+			response.setCause(e.getCause());
 			LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
-			slot.setSuccess(false);
-			slot.setErrorMsg(e.getMessage());
 		} finally {
 			if (!isInnerChain) {
 				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
 			}
 		}
-		return (T)slot;
+		return response;
 	}
 
 	public String getZkNode() {
