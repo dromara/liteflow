@@ -39,14 +39,14 @@
     "chain": [
       {
         "name": "chain1",
-        "topo": [
+        "condition": [
           {"type": "then", "value": "a,cond(b|d)"},
           {"type": "then", "value": "e,f,g"}
         ]
       },
       {
         "name": "chain2",
-        "topo": [
+        "condition": [
           {"type": "then", "value": "a,c"},
           {"type": "when", "value": "b,d,e,f,g"},
           {"type": "then", "value": "c"}
@@ -54,19 +54,19 @@
       },
       {
         "name": "chain3",
-        "topo": [
+        "condition": [
           {"type": "then", "value": "a,c,strategy1,g"}
         ]
       },
       {
         "name": "strategy1",
-        "topo": [
+        "condition": [
           {"type": "then", "value": "m(m1|m2|strategy2)"}
         ]
       },
       {
         "name": "strategy2",
-        "topo": [
+        "condition": [
           {"type": "then", "value": "q,p(p1|p2)"}
         ]
       }

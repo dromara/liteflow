@@ -11,7 +11,6 @@ import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
 import com.yomahub.liteflow.util.SpringAware;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +77,7 @@ public abstract class JsonFlowParser extends FlowParser{
             Map<String, JSONObject> chainMap = new HashMap<>();
             for(int i=0; i<chainList.size(); i++) {
                 JSONObject chainObject = chainList.getJSONObject(i);
-                if(chainObject.containsKey("name") && StringUtils.isNotBlank(chainObject.getString("name"))) {
+                if(chainObject.containsKey("name") && StrUtil.isNotBlank(chainObject.getString("name"))) {
                     chainMap.put(chainObject.getString("name"), chainObject);
                 }
             }
@@ -105,13 +104,13 @@ public abstract class JsonFlowParser extends FlowParser{
         List<Executable> chainNodeList;
         List<Condition> conditionList;
         String chainName = chainObject.getString("name");
-        JSONArray chainTopoArray = chainObject.getJSONArray("topo");
+        JSONArray chainTopoArray = chainObject.getJSONArray("condition");
         conditionList = new ArrayList<>();
         for(Iterator<Object> iterator = chainTopoArray.iterator(); iterator.hasNext();) {
             JSONObject condObject = (JSONObject) iterator.next();
             String condType = condObject.getString("type");
             condArrayStr = condObject.getString("value");
-            if (StringUtils.isBlank(condType) || StringUtils.isBlank(condArrayStr)) {
+            if (StrUtil.isBlank(condType) || StrUtil.isBlank(condArrayStr)) {
                 continue;
             }
             chainNodeList = new ArrayList<>();
