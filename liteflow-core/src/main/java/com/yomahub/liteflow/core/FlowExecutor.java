@@ -101,15 +101,15 @@ public class FlowExecutor {
 		execute(chainId, param, slotClazz, slotIndex,true);
 	}
 	
-	public LiteflowResponse execute(String chainId, Object param) throws Exception {
+	public LiteflowResponse<Slot> execute(String chainId, Object param) throws Exception {
 		return execute(chainId, param, DefaultSlot.class, null, false);
 	}
 
-	public LiteflowResponse execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
+	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
 		return execute(chainId, param, slotClazz,null,false);
 	}
 	
-	public LiteflowResponse execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex, 
+	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex,
 									boolean isInnerChain) throws Exception {
 		Slot slot = null;
 
