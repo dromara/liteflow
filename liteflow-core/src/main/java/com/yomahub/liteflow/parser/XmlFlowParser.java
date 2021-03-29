@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.common.LocalDefaultFlowConent;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
@@ -92,6 +93,8 @@ public abstract class XmlFlowParser {
 	private void parseOneChain(Element e) throws Exception{
 		String condArrayStr;
 		String[] condArray;
+		String groupId;
+		String errorResume;
 		List<Executable> chainNodeList;
 		List<Condition> conditionList;
 
@@ -100,8 +103,16 @@ public abstract class XmlFlowParser {
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 			Element condE = it.next();
 			condArrayStr = condE.attributeValue("value");
+			errorResume = e.attributeValue("errorResume");
+			groupId = e.attributeValue("groupId");
 			if (StrUtil.isBlank(condArrayStr)) {
 				continue;
+			}
+			if (StrUtil.isBlank(groupId)) {
+				groupId = LocalDefaultFlowConent.DEFAULT;
+			}
+			if (StrUtil.isBlank(errorResume)) {
+				errorResume = Boolean.TRUE.toString();
 			}
 			chainNodeList = new ArrayList<>();
 			condArray = condArrayStr.split(",");
@@ -136,14 +147,22 @@ public abstract class XmlFlowParser {
 					throw new ExecutableItemNotFoundException(errorMsg);
 				}
 			}
+
+
 			if (condE.getName().equals("then")) {
-				conditionList.add(new ThenCondition(chainNodeList));
+				if(conditionList.size() > 1 &&
+						conditionList.get(conditionList.size() - 1) instanceof ThenCondition ){
+					conditionList.get(conditionList.size() - 1).getNodeList().addAll(chainNodeList);
+				}else{
+					conditionList.add(new ThenCondition(chainNodeList));
+				}
 			} else if (condE.getName().equals("when")) {
-				Attribute errorResume = condE.attribute("errorResume");
-				if (errorResume != null) {
-					conditionList.add(new WhenCondition(chainNodeList, errorResume.getValue().equals(Boolean.TRUE.toString())));
-				} else {
-					conditionList.add(new WhenCondition(chainNodeList));
+				if(conditionList.size() > 1 &&
+						conditionList.get(conditionList.size() - 1) instanceof WhenCondition &&
+						conditionList.get(conditionList.size() - 1).getGroupId().equals(groupId)){
+					conditionList.get(conditionList.size() - 1).getNodeList().addAll(chainNodeList);
+				}else{
+					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
 				}
 			}
 		}
