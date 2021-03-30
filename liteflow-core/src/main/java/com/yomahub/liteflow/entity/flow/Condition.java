@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Condition {
 	//	增加errorResume属性，以区分当when调用链调用失败时是否继续往下执行 默认true继续执行
-	private boolean errorResume;
+	private boolean errorResume = true;
 	// 增加groupId属性，用于不同node进行同组合并
 	private String groupId = LocalDefaultFlowConent.DEFAULT;
 

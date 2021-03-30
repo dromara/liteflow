@@ -93,7 +93,7 @@ public abstract class XmlFlowParser {
 	private void parseOneChain(Element e) throws Exception{
 		String condArrayStr;
 		String[] condArray;
-		String groupId;
+		String group;
 		String errorResume;
 		List<Executable> chainNodeList;
 		List<Condition> conditionList;
@@ -104,12 +104,12 @@ public abstract class XmlFlowParser {
 			Element condE = it.next();
 			condArrayStr = condE.attributeValue("value");
 			errorResume = e.attributeValue("errorResume");
-			groupId = e.attributeValue("groupId");
+			group = e.attributeValue("group");
 			if (StrUtil.isBlank(condArrayStr)) {
 				continue;
 			}
-			if (StrUtil.isBlank(groupId)) {
-				groupId = LocalDefaultFlowConent.DEFAULT;
+			if (StrUtil.isBlank(group)) {
+				group = LocalDefaultFlowConent.DEFAULT;
 			}
 			if (StrUtil.isBlank(errorResume)) {
 				errorResume = Boolean.TRUE.toString();
@@ -159,7 +159,7 @@ public abstract class XmlFlowParser {
 			} else if (condE.getName().equals("when")) {
 				if(conditionList.size() > 1 &&
 						conditionList.get(conditionList.size() - 1) instanceof WhenCondition &&
-						conditionList.get(conditionList.size() - 1).getGroupId().equals(groupId)){
+						conditionList.get(conditionList.size() - 1).getGroupId().equals(group)){
 					conditionList.get(conditionList.size() - 1).getNodeList().addAll(chainNodeList);
 				}else{
 					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
