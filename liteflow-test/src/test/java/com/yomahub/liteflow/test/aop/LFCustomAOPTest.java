@@ -1,9 +1,12 @@
 package com.yomahub.liteflow.test.aop;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.aop.aspect.CustomAspect;
+import com.yomahub.liteflow.test.aop.cmp1.ACmp;
+import com.yomahub.liteflow.util.SpringAware;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +46,7 @@ public class LFCustomAOPTest {
 
     //测试自定义AOP，并行场景
     @Test
-    public void testGlobalAopP() throws Exception{
+    public void testCustomAopP() throws Exception{
         LiteflowResponse<Slot> response= flowExecutor.execute("chain2", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("before_after", response.getData().getData("a"));

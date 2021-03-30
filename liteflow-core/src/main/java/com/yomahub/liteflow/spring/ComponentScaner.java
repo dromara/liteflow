@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 
@@ -25,7 +26,7 @@ import com.yomahub.liteflow.util.LOGOPrinter;
  * 组件扫描类，只要是NodeComponent的实现类，都可以被这个扫描器扫到
  * @author Bryan.Zhang
  */
-public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
+public class ComponentScaner implements InstantiationAwareBeanPostProcessor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentScaner.class);
 
@@ -39,19 +40,20 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 	}
 
 	@Override
-	public int getOrder() {
-		return Ordered.LOWEST_PRECEDENCE;
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		return bean;
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = bean.getClass();
 		// 组件的扫描发现，扫到之后缓存到类属性map中
 		if (NodeComponent.class.isAssignableFrom(clazz)) {
 			LOG.info("component[{}] has been found", beanName);
 			NodeComponent nodeComponent = (NodeComponent) bean;
 			nodeComponent.setNodeId(beanName);
+			nodeComponent.setSelf(nodeComponent);
 			nodeComponentMap.put(beanName, nodeComponent);
 		}
 
@@ -61,11 +63,6 @@ public class ComponentScaner implements BeanPostProcessor, PriorityOrdered {
 			cmpAroundAspect = (ICmpAroundAspect) bean;
 		}
 
-		return bean;
-	}
-
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 }

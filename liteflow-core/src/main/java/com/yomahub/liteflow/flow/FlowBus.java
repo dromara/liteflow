@@ -14,6 +14,7 @@ import cn.hutool.core.map.MapUtil;
 
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
+import com.yomahub.liteflow.util.SpringAware;
 
 /**
  * 流程元数据类

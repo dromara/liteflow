@@ -34,12 +34,16 @@ public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
-	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<Integer>();
+	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
 	@Autowired(required = false)
 	private MonitorBus monitorBus;
 
 	private String nodeId;
+
+	//这是自己的实例，取代this
+	//为何要设置这个，用this不行么，因为如果有aop去切的话，this在spring的aop里是切不到的。self对象有可能是代理过的对象
+	private NodeComponent self;
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
@@ -56,7 +60,7 @@ public abstract class NodeComponent {
 			ComponentScaner.cmpAroundAspect.beforeProcess(this.getNodeId(), slot);
 		}
 
-		process();
+		self.process();
 
 		// process后置处理
 		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
@@ -153,5 +157,13 @@ public abstract class NodeComponent {
 
 	public void setNodeId(String nodeId) {
 		this.nodeId = nodeId;
+	}
+
+	public NodeComponent getSelf() {
+		return self;
+	}
+
+	public void setSelf(NodeComponent self) {
+		this.self = self;
 	}
 }
