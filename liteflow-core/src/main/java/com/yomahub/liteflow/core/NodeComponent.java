@@ -53,14 +53,14 @@ public abstract class NodeComponent {
 
 		// process前置处理
 		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
-			ComponentScaner.cmpAroundAspect.beforeProcess(slot);
+			ComponentScaner.cmpAroundAspect.beforeProcess(this.getNodeId(), slot);
 		}
 
 		process();
 
 		// process后置处理
 		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
-			ComponentScaner.cmpAroundAspect.afterProcess(slot);
+			ComponentScaner.cmpAroundAspect.afterProcess(this.getNodeId(), slot);
 		}
 
 		stopWatch.stop();

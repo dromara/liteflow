@@ -16,7 +16,7 @@ import com.yomahub.liteflow.entity.data.Slot;
  */
 public interface ICmpAroundAspect {
 
-    void beforeProcess(Slot slot);
+    void beforeProcess(String nodeId, Slot slot);
 
-    void afterProcess(Slot slot);
+    void afterProcess(String nodeId, Slot slot);
 }

@@ -11,7 +11,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DComp extends NodeComponent {
+public class DCmp extends NodeComponent {
 
 	@Override
 	public void process() {
