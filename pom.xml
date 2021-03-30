@@ -41,6 +41,7 @@
     <properties>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
+		<springboot.version>2.0.5.RELEASE</springboot.version>
 		<spring.version>5.0.9.RELEASE</spring.version>
 		<org.slf4j.version>1.7.21</org.slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
