@@ -1,7 +1,6 @@
 /**
  * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
- *
  * @author Bryan.Zhang
  * @email weenyc31@163.com
  * @Date 2020/4/1
@@ -199,6 +198,13 @@ public class FlowExecutor {
         return execute(chainId, param, DefaultSlot.class, null, false);
     }
 
+	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
+		return execute(chainId, param, slotClazz,null,false);
+	}
+
+	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex,
+									boolean isInnerChain) throws Exception {
+		Slot slot = null;
     public LiteflowResponse execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
         return execute(chainId, param, slotClazz, null, false);
     }

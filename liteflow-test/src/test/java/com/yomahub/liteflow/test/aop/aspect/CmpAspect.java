@@ -1,18 +1,18 @@
-package com.yomahub.flowtest.aspect;
+package com.yomahub.liteflow.test.aop.aspect;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.entity.data.Slot;
 import org.springframework.stereotype.Component;
 
-@Component
-public class ComponentAspect implements ICmpAroundAspect {
+public class CmpAspect implements ICmpAroundAspect {
     @Override
     public void beforeProcess(String nodeId, Slot slot) {
-        System.out.println("before process");
+        slot.setData(nodeId, "before");
     }
 
     @Override
     public void afterProcess(String nodeId, Slot slot) {
-        System.out.println("after process");
+        slot.setData(nodeId, StrUtil.format("{}_{}", slot.getData(nodeId), "after"));
     }
 }
