@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConent;
 import com.yomahub.liteflow.entity.flow.*;
@@ -151,16 +152,16 @@ public abstract class XmlFlowParser {
 
 			if (condE.getName().equals("then")) {
 				if(conditionList.size() > 1 &&
-						conditionList.get(conditionList.size() - 1) instanceof ThenCondition ){
-					conditionList.get(conditionList.size() - 1).getNodeList().addAll(chainNodeList);
+						CollectionUtil.getLast(conditionList) instanceof ThenCondition ){
+					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
 				}else{
 					conditionList.add(new ThenCondition(chainNodeList));
 				}
 			} else if (condE.getName().equals("when")) {
 				if(conditionList.size() > 1 &&
-						conditionList.get(conditionList.size() - 1) instanceof WhenCondition &&
-						conditionList.get(conditionList.size() - 1).getGroupId().equals(group)){
-					conditionList.get(conditionList.size() - 1).getNodeList().addAll(chainNodeList);
+						CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
+						CollectionUtil.getLast(conditionList).getGroupId().equals(group)){
+					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
 				}else{
 					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
 				}
