@@ -205,29 +205,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.6</version>
-				<executions>
-					<execution>
-						<id>pre-unit-test</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>post-unit-test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report-aggregate</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/../target/site/jacoco</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
         </plugins>
     </build>
 
@@ -237,7 +214,6 @@
 		<module>liteflow-test</module>
 		<module>liteflow-test-springboot</module>
 		<module>liteflow-test-spring</module>
-		<module>liteflow-test-report</module>
 	</modules>
 
 	<distributionManagement>
