@@ -40,7 +40,6 @@ public abstract class XmlFlowParser {
 	}
 
 	//xml形式的主要解析过程
-	@SuppressWarnings("unchecked")
 	public void parse(Document document) throws Exception {
 		try {
 			Element rootElement = document.getRootElement();

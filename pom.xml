@@ -211,7 +211,6 @@
     <modules>
         <module>liteflow-core</module>
         <module>liteflow-spring-boot-starter</module>
-		<module>liteflow-test</module>
 		<module>liteflow-test-springboot</module>
 		<module>liteflow-test-spring</module>
 	</modules>

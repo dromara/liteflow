@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.aop.aspect;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.entity.data.Slot;
-import org.springframework.stereotype.Component;
 
 public class CmpAspect implements ICmpAroundAspect {
     @Override

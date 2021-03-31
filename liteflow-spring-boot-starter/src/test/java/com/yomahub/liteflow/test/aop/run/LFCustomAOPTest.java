@@ -1,12 +1,9 @@
-package com.yomahub.liteflow.test.aop;
+package com.yomahub.liteflow.test.aop.run;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.aop.aspect.CustomAspect;
-import com.yomahub.liteflow.test.aop.cmp1.ACmp;
-import com.yomahub.liteflow.util.SpringAware;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
