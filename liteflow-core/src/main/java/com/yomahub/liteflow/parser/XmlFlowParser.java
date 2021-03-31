@@ -9,12 +9,11 @@ import java.util.regex.Pattern;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.common.LocalDefaultFlowConent;
+import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.util.SpringAware;
-import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -110,7 +109,7 @@ public abstract class XmlFlowParser {
 				continue;
 			}
 			if (StrUtil.isBlank(group)) {
-				group = LocalDefaultFlowConent.DEFAULT;
+				group = LocalDefaultFlowConstant.DEFAULT;
 			}
 			if (StrUtil.isBlank(errorResume)) {
 				errorResume = Boolean.TRUE.toString();

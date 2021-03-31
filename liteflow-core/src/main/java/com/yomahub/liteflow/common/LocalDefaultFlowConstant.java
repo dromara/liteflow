@@ -1,5 +1,5 @@
 package com.yomahub.liteflow.common;
 
-public class LocalDefaultFlowConent {
+public class LocalDefaultFlowConstant {
     public static final String DEFAULT="default";
 }
