@@ -7,6 +7,9 @@
  */
 package com.yomahub.liteflow.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,7 +19,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Bryan.Zhang
  */
 public class ExecutorHelper {
-
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
+    
     private ExecutorHelper() {
     }
 
@@ -44,7 +49,7 @@ public class ExecutorHelper {
             if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
                 if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
-                    System.err.println("Pool did not terminate.");
+                    LOG.error("Pool did not terminate.");
                 }
             }
         } catch (InterruptedException ie) {
