@@ -7,12 +7,13 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.util.SpringAware;
-import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -92,6 +93,8 @@ public abstract class XmlFlowParser {
 	private void parseOneChain(Element e) throws Exception{
 		String condArrayStr;
 		String[] condArray;
+		String group;
+		String errorResume;
 		List<Executable> chainNodeList;
 		List<Condition> conditionList;
 
@@ -100,8 +103,16 @@ public abstract class XmlFlowParser {
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 			Element condE = it.next();
 			condArrayStr = condE.attributeValue("value");
+			errorResume = e.attributeValue("errorResume");
+			group = e.attributeValue("group");
 			if (StrUtil.isBlank(condArrayStr)) {
 				continue;
+			}
+			if (StrUtil.isBlank(group)) {
+				group = LocalDefaultFlowConstant.DEFAULT;
+			}
+			if (StrUtil.isBlank(errorResume)) {
+				errorResume = Boolean.TRUE.toString();
 			}
 			chainNodeList = new ArrayList<>();
 			condArray = condArrayStr.split(",");
@@ -136,14 +147,22 @@ public abstract class XmlFlowParser {
 					throw new ExecutableItemNotFoundException(errorMsg);
 				}
 			}
+
+
 			if (condE.getName().equals("then")) {
-				conditionList.add(new ThenCondition(chainNodeList));
+				if(conditionList.size() > 1 &&
+						CollectionUtil.getLast(conditionList) instanceof ThenCondition ){
+					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
+				}else{
+					conditionList.add(new ThenCondition(chainNodeList));
+				}
 			} else if (condE.getName().equals("when")) {
-				Attribute errorResume = condE.attribute("errorResume");
-				if (errorResume != null) {
-					conditionList.add(new WhenCondition(chainNodeList, errorResume.getValue().equals(Boolean.TRUE.toString())));
-				} else {
-					conditionList.add(new WhenCondition(chainNodeList));
+				if(conditionList.size() > 1 &&
+						CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
+						CollectionUtil.getLast(conditionList).getGroupId().equals(group)){
+					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
+				}else{
+					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
 				}
 			}
 		}

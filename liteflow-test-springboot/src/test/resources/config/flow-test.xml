@@ -24,4 +24,10 @@
     <chain name="async-concurrent2">
         <when value="c6, c7, c8, c9, c10"/> <!-- async = true 表示并行 -->
     </chain>
+
+    <chain name="test-groupId">
+        <then value="s1, s2"/> <!-- then表示串行 -->
+        <when errorResume = "true" value="s3, s4, s5, s6" groupId="g1"/> <!-- 相同groupId errorResume = true  -->
+        <when errorResume = "false" value="p3, p4, p5, p6" groupId="g1"/> <!-- 相同groupId 合并compentent -->
+    </chain>
 </flow>

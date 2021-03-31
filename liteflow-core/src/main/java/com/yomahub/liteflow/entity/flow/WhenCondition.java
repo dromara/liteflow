@@ -14,20 +14,16 @@ import java.util.List;
  * @author Bryan.Zhang
  */
 public class WhenCondition extends Condition{
-	//	增加errorResume属性，以区分当when调用链调用失败时是否继续往下执行
-	private boolean errorResume;
+
 
 	public WhenCondition(List<Executable> nodeList) {
 		super(nodeList);
-		errorResume = true;
+		super.setErrorResume(true);
 	}
 
 	public WhenCondition(List<Executable> nodeList, boolean errorResume) {
 		super(nodeList);
-		this.errorResume = errorResume;
+		super.setErrorResume(errorResume);
 	}
 
-	public boolean isErrorResume() {
-		return errorResume;
-	}
 }
