@@ -1,18 +1,21 @@
 package com.yomahub.liteflow.parser;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.PatternPool;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
-import com.yomahub.liteflow.entity.flow.*;
+import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.entity.flow.Chain;
+import com.yomahub.liteflow.entity.flow.Condition;
+import com.yomahub.liteflow.entity.flow.Executable;
+import com.yomahub.liteflow.entity.flow.Node;
+import com.yomahub.liteflow.entity.flow.ThenCondition;
+import com.yomahub.liteflow.entity.flow.WhenCondition;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.ParseException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.spring.ComponentScaner;
 import com.yomahub.liteflow.util.SpringAware;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -20,9 +23,11 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spring.ComponentScaner;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * xml形式的解析器
@@ -31,21 +36,27 @@ import com.yomahub.liteflow.spring.ComponentScaner;
 public abstract class XmlFlowParser {
 
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
-
+	
+	public static final String NODE_REGEX = "[^\\)\\(]+";
+	
 	public abstract void parseMain(String path) throws Exception;
 
 	public void parse(String content) throws Exception {
 		Document document = DocumentHelper.parseText(content);
 		parse(document);
 	}
-
-	//xml形式的主要解析过程
+	
+	/**
+	 * xml形式的主要解析过程
+	 * @param document
+	 * @throws Exception
+	 */
 	public void parse(Document document) throws Exception {
 		try {
 			Element rootElement = document.getRootElement();
 
 			//判断是以spring方式注册节点，还是以xml方式注册
-			if(ComponentScaner.nodeComponentMap.isEmpty()){
+			if (ComponentScaner.nodeComponentMap.isEmpty()) {
 				// 解析node节点
 				List<Element> nodeList = rootElement.element("nodes").elements("node");
 				String id;
@@ -69,9 +80,9 @@ public abstract class XmlFlowParser {
 					node.setInstance(component);
 					FlowBus.addNode(id, node);
 				}
-			}else{
-				for(Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()){
-					if(!FlowBus.containNode(componentEntry.getKey())){
+			} else {
+				for (Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()) {
+					if (!FlowBus.containNode(componentEntry.getKey())) {
 						FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
 					}
 				}
@@ -87,9 +98,13 @@ public abstract class XmlFlowParser {
 			throw e;
 		}
 	}
-
-	//解析一个chain的过程
-	private void parseOneChain(Element e) throws Exception{
+	
+	/**
+	 * 解析一个chain的过程
+	 * @param e chain节点
+	 * @throws Exception
+	 */
+	private void parseOneChain(Element e) throws Exception {
 		String condArrayStr;
 		String[] condArray;
 		String group;
@@ -123,25 +138,25 @@ public abstract class XmlFlowParser {
 				itemExpression = condArray[i].trim();
 				regexEntity = parseNodeStr(itemExpression);
 				item = regexEntity.getItem();
-				if(FlowBus.containNode(item)){
+				if (FlowBus.containNode(item)) {
 					Node node = FlowBus.getNode(item);
 					chainNodeList.add(node);
 					//这里判断是不是条件节点，条件节点会含有realItem，也就是括号里的node
-					if(regexEntity.getRealItemArray() != null){
-						for(String key : regexEntity.getRealItemArray()){
-							if(FlowBus.containNode(key)){
+					if (regexEntity.getRealItemArray() != null) {
+						for (String key : regexEntity.getRealItemArray()) {
+							if (FlowBus.containNode(key)){
 								Node condNode = FlowBus.getNode(key);
 								node.setCondNode(condNode.getId(), condNode);
-							}else if(hasChain(e,key)){
+							} else if (hasChain(e,key)) {
 								Chain chain = FlowBus.getChain(key);
 								node.setCondNode(chain.getChainName(), chain);
 							}
 						}
 					}
-				}else if(hasChain(e,item)){
+				} else if (hasChain(e,item)) {
 					Chain chain = FlowBus.getChain(item);
 					chainNodeList.add(chain);
-				}else{
+				} else {
 					String errorMsg = StrUtil.format("executable node[{}] is not found!",regexEntity.getItem());
 					throw new ExecutableItemNotFoundException(errorMsg);
 				}
@@ -149,18 +164,18 @@ public abstract class XmlFlowParser {
 
 
 			if (condE.getName().equals("then")) {
-				if(conditionList.size() > 1 &&
-						CollectionUtil.getLast(conditionList) instanceof ThenCondition ){
+				if (conditionList.size() > 1 &&
+						CollectionUtil.getLast(conditionList) instanceof ThenCondition ) {
 					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
-				}else{
+				} else {
 					conditionList.add(new ThenCondition(chainNodeList));
 				}
 			} else if (condE.getName().equals("when")) {
-				if(conditionList.size() > 1 &&
+				if (conditionList.size() > 1 &&
 						CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
-						CollectionUtil.getLast(conditionList).getGroupId().equals(group)){
+						CollectionUtil.getLast(conditionList).getGroupId().equals(group)) {
 					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
-				}else{
+				} else {
 					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
 				}
 			}
@@ -173,10 +188,10 @@ public abstract class XmlFlowParser {
 	private boolean hasChain(Element e,String chainName) throws Exception{
 		Element rootElement = e.getParent();
 		List<Element> chainList = rootElement.elements("chain");
-		for(Element ce : chainList){
+		for (Element ce : chainList) {
 			String ceName = ce.attributeValue("name");
-			if(ceName.equals(chainName)){
-				if(!FlowBus.containChain(chainName)){
+			if (ceName.equals(chainName)) {
+				if (!FlowBus.containChain(chainName)) {
 					parseOneChain(ce);
 				}
 				return true;
@@ -185,17 +200,17 @@ public abstract class XmlFlowParser {
 		return false;
 	}
 
-	//条件节点的正则解析
+	/**
+	 * 条件节点的正则解析
+	 * @param str
+	 * @return
+	 */
 	public static RegexEntity parseNodeStr(String str) {
-	    List<String> list = new ArrayList<String>();
-	    Pattern p = Pattern.compile("[^\\)\\(]+");
-	    Matcher m = p.matcher(str);
-	    while(m.find()){
-	        list.add(m.group());
-	    }
+		Pattern pattern = PatternPool.get(NODE_REGEX, Pattern.DOTALL);
+		List<String> list = ReUtil.findAllGroup0(pattern, str);
 	    RegexEntity regexEntity = new RegexEntity();
 	    regexEntity.setItem(list.get(0).trim());
-	    if(list.size() > 1){
+	    if (list.size() > 1) {
 	    	String[] realNodeArray = list.get(1).split("\\|");
 	    	for (int i = 0; i < realNodeArray.length; i++) {
 	    		realNodeArray[i] = realNodeArray[i].trim();
