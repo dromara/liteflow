@@ -111,8 +111,6 @@ public class FlowExecutor {
 	
 	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex,
 									boolean isInnerChain) throws Exception {
-		Slot slot = null;
-
 		if (FlowBus.needInit()) {
 			init();
 		}
@@ -133,8 +131,8 @@ public class FlowExecutor {
 			throw new NoAvailableSlotException("there is no available slot");
 		}
 
-		slot = DataBus.getSlot(slotIndex);
-		if (slot == null) {
+		Slot slot = DataBus.getSlot(slotIndex);
+		if (ObjectUtil.isNull(slot)) {
 			throw new NoAvailableSlotException("the slot is not exist");
 		}
 
