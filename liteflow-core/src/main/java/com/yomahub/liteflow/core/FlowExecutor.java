@@ -154,7 +154,7 @@ public class FlowExecutor {
 		} catch (Exception e) {
 			response.setSuccess(false);
 			response.setMessage(e.getMessage());
-			response.setCause(e.getCause());
+			response.setCause(e.fillInStackTrace());
 			LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
 		} finally {
 			if (!isInnerChain) {
