@@ -33,19 +33,15 @@ import java.util.regex.Pattern;
  * xml形式的解析器
  * @author Bryan.Zhang
  */
-public abstract class XmlFlowParser {
+public abstract class XmlFlowParser extends FlowParser{
 
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
-	
-	public static final String NODE_REGEX = "[^\\)\\(]+";
-	
-	public abstract void parseMain(String path) throws Exception;
 
 	public void parse(String content) throws Exception {
 		Document document = DocumentHelper.parseText(content);
 		parse(document);
 	}
-	
+
 	/**
 	 * xml形式的主要解析过程
 	 * @param document
@@ -96,7 +92,7 @@ public abstract class XmlFlowParser {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * 解析一个chain的过程
 	 * @param e chain节点
@@ -196,25 +192,5 @@ public abstract class XmlFlowParser {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * 条件节点的正则解析
-	 * @param str
-	 * @return
-	 */
-	public static RegexEntity parseNodeStr(String str) {
-		Pattern pattern = PatternPool.get(NODE_REGEX, Pattern.DOTALL);
-		List<String> list = ReUtil.findAllGroup0(pattern, str);
-	    RegexEntity regexEntity = new RegexEntity();
-	    regexEntity.setItem(list.get(0).trim());
-	    if (list.size() > 1) {
-	    	String[] realNodeArray = list.get(1).split("\\|");
-	    	for (int i = 0; i < realNodeArray.length; i++) {
-	    		realNodeArray[i] = realNodeArray[i].trim();
-			}
-	    	regexEntity.setRealItemArray(realNodeArray);
-	    }
-	    return regexEntity;
 	}
 }
