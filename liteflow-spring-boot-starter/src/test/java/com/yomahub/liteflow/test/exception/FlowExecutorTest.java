@@ -26,44 +26,45 @@ import javax.annotation.Resource;
 /**
  * 流程执行异常
  * 单元测试
+ *
  * @author zendwang
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("exception")
 @SpringBootTest(classes = FlowExecutorTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.exception.cmp1","com.yomahub.liteflow.test.exception.cmp2"})
+@ComponentScan({"com.yomahub.liteflow.test.exception.cmp1", "com.yomahub.liteflow.test.exception.cmp2"})
 public class FlowExecutorTest {
     private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorTest.class);
-    
+
     @Resource
     private FlowExecutor flowExecutor;
-    
+
     @Autowired
     private ApplicationContext context;
-    
+
     @Test(expected = ConfigErrorException.class)
     public void testConfigErrorException() {
         LiteflowConfig config = context.getBean(LiteflowConfig.class);
         config.setRuleSource("");
         flowExecutor.init();
     }
-    
+
     @Test(expected = FlowExecutorNotInitException.class)
     public void testFlowExecutorNotInitException() {
         LiteflowConfig config = context.getBean(LiteflowConfig.class);
         config.setRuleSource("error/flow.txt");
         flowExecutor.init();
     }
-    
+
     @Test(expected = ChainNotFoundException.class)
     public void testChainNotFoundException() throws Exception {
         flowExecutor.execute("chain0", "it's a request");
     }
-    
+
     @Test(expected = FlowSystemException.class)
     public void testChainExecuteException() throws Exception {
-       LiteflowResponse response = flowExecutor.execute("chain1", "exception");
+        LiteflowResponse response = flowExecutor.execute("chain1", "exception");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("chain execute execption", response.getMessage());
         ReflectionUtils.rethrowException(response.getCause());
