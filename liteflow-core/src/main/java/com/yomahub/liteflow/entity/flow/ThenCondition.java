@@ -19,4 +19,11 @@ public class ThenCondition extends Condition {
 		super(nodeList);
 	}
 
+	public ThenCondition(Condition condition){
+		super(condition.getNodeList());
+		super.setConditionType(condition.getConditionType());
+		super.setGroupId(condition.getGroupId());
+		super.setErrorResume(condition.isErrorResume());
+	}
+
 }
