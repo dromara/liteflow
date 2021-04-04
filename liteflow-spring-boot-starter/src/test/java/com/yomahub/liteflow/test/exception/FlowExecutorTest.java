@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
 
@@ -30,7 +31,7 @@ import javax.annotation.Resource;
  * @author zendwang
  */
 @RunWith(SpringRunner.class)
-@ActiveProfiles("exception")
+@TestPropertySource(value = "classpath:/aop/application.properties")
 @SpringBootTest(classes = FlowExecutorTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.exception.cmp1", "com.yomahub.liteflow.test.exception.cmp2"})

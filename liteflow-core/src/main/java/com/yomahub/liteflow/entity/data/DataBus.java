@@ -32,7 +32,8 @@ public class DataBus {
 		LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
 
 		if (ObjectUtil.isNull(liteflowConfig)){
-			throw new ConfigErrorException("config error, please check liteflow config property");
+			//liteflowConfig有自己的默认值
+			liteflowConfig = new LiteflowConfig();
 		}
 		int slotSize = liteflowConfig.getSlotSize();
 		slots = new Slot[slotSize];

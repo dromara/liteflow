@@ -29,11 +29,6 @@ public class LimitQueue<E> implements Queue<E> {
 		this.limit = limit;
 	}
 
-	/**
-	 * 入队
-	 * @param e
-	 * @return
-	 */
 	@Override
 	public boolean offer(E e) {
 		if (queue.size() >= limit) {
@@ -43,27 +38,15 @@ public class LimitQueue<E> implements Queue<E> {
 		return queue.offer(e);
 	}
 
-	/**
-	 * 出队
-	 * @return
-	 */
 	@Override
 	public E poll() {
 		return queue.poll();
 	}
 
-	/**
-	 * 获取队列
-	 * @return
-	 */
 	public Queue<E> getQueue() {
 		return queue;
 	}
 
-	/**
-	 * 获取限制大小
-	 * @return
-	 */
 	public int getLimit() {
 		return limit;
 	}

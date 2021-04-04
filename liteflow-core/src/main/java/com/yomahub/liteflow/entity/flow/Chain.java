@@ -40,7 +40,7 @@ public class Chain implements Executable {
 
     private static ExecutorService parallelExecutor;
 
-    private static final LiteflowConfig liteflowConfig;
+    private static LiteflowConfig liteflowConfig;
 
     static {
         //这里liteflowConfig不可能为null
@@ -48,9 +48,10 @@ public class Chain implements Executable {
         //在spring环境，如果xml没配置，在FlowExecutor的init时候就已经报错了
         liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
 
-        //这里为了严谨，还是判断了下
+        //这里为了非spring环境下的严谨，还是判断
         if (ObjectUtil.isNull(liteflowConfig)){
-            throw new ConfigErrorException("config error, please check liteflow config property");
+            //liteflowConfig有自己的默认值
+            liteflowConfig = new LiteflowConfig();
         }
 
         parallelExecutor = SpringAware.getBean(ExecutorService.class);

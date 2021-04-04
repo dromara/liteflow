@@ -3,8 +3,8 @@ package com.yomahub.liteflow.parser;
 /**
  * Yaml格式转换
  *
- * @Author: guodongqing
- * @Date: 2021/3/26 12:56 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public class LocalYmlFlowParser extends YmlFlowParser {
 

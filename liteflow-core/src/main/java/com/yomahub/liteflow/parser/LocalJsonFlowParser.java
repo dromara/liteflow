@@ -3,8 +3,8 @@ package com.yomahub.liteflow.parser;
 import cn.hutool.core.io.FileUtil;
 
 /**
- * @Author: guodongqing
- * @Date: 2021/3/26 12:26 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public class LocalJsonFlowParser extends JsonFlowParser{
 

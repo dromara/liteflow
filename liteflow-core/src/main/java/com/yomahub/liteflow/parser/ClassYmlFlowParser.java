@@ -2,8 +2,8 @@ package com.yomahub.liteflow.parser;
 
 /**
  * 基于自定义的Yml方式解析器
- * @Author: guodongqing
- * @Date: 2021/3/29 4:20 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public abstract class ClassYmlFlowParser extends YmlFlowParser{
     @Override

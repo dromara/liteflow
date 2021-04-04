@@ -14,8 +14,8 @@ import java.text.MessageFormat;
 
 /**
  * 基于zk方式的yml形式的解析器
- * @Author: guodongqing
- * @Date: 2021/3/29 7:42 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public class ZookeeperYmlFlowParser extends YmlFlowParser{
 

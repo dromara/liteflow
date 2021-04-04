@@ -22,7 +22,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@ActiveProfiles("aop")
+@TestPropertySource(value = "classpath:/aop/application.properties")
 @SpringBootTest(classes = LFGlobalAOPTest.class)
 @EnableAutoConfiguration
 @Import(CmpAspect.class)

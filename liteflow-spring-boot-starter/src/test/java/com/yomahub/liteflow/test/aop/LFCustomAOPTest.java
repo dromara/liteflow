@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -22,7 +22,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@ActiveProfiles("aop")
+@TestPropertySource(value = "classpath:/aop/application.properties")
 @SpringBootTest(classes = LFCustomAOPTest.class)
 @EnableAutoConfiguration
 @Import(CustomAspect.class)

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -18,8 +19,8 @@ import java.util.*;
 
 /**
  * Json格式解析器
- * @Author: guodongqing
- * @Date: 2021-03-25 16:40:00
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public abstract class JsonFlowParser extends FlowParser{
 
@@ -34,14 +35,12 @@ public abstract class JsonFlowParser extends FlowParser{
 
     /**
      * json格式，解析过程
-     * @param flowJsonObject
-     * @throws Exception
      */
     public void parse(JSONObject flowJsonObject) throws Exception {
         try {
             //判断是以spring方式注册节点，还是以json方式注册
             if(ComponentScaner.nodeComponentMap.isEmpty()){
-                JSONArray nodeArrayList = flowJsonObject.getJSONObject("nodes").getJSONArray("node");
+                JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
                 String id;
                 String clazz;
                 Node node;
@@ -55,12 +54,15 @@ public abstract class JsonFlowParser extends FlowParser{
                     node.setId(id);
                     node.setClazz(clazz);
                     nodeComponentClass = (Class<NodeComponent>)Class.forName(clazz);
+                    //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
+                    //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                     component = SpringAware.registerOrGet(nodeComponentClass);
-                    if (component == null) {
-                        LOG.error("couldn't find component class [{}] ", clazz);
-                        throw new ParseException("cannot parse flow json");
+                    if (ObjectUtil.isNull(component)) {
+                        LOG.error("couldn't find component class [{}] from spring context", clazz);
+                        component = nodeComponentClass.newInstance();
                     }
                     component.setNodeId(id);
+                    component.setSelf(component);
                     node.setInstance(component);
                     FlowBus.addNode(id, node);
                 }

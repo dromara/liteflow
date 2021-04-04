@@ -10,8 +10,8 @@ import java.util.Map;
 
 /**
  * Yml格式解析器，转换为json格式进行解析
- * @Author: guodongqing
- * @Date: 2021/3/29 2:29 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public abstract class YmlFlowParser extends JsonFlowParser{
 

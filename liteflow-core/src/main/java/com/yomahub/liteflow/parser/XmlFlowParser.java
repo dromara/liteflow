@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.PatternPool;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
@@ -44,8 +45,6 @@ public abstract class XmlFlowParser extends FlowParser{
 
 	/**
 	 * xml形式的主要解析过程
-	 * @param document
-	 * @throws Exception
 	 */
 	public void parse(Document document) throws Exception {
 		try {
@@ -67,12 +66,16 @@ public abstract class XmlFlowParser extends FlowParser{
 					node.setId(id);
 					node.setClazz(clazz);
 					nodeComponentClass = (Class<NodeComponent>)Class.forName(clazz);
+
+					//以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
+					//这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
 					component = SpringAware.registerOrGet(nodeComponentClass);
-					if (component == null) {
-						LOG.error("couldn't find component class [{}] ", clazz);
-						throw new ParseException("cannot parse flow xml");
+					if (ObjectUtil.isNull(component)) {
+						LOG.error("couldn't find component class [{}] from spring context", clazz);
+						component = nodeComponentClass.newInstance();
 					}
 					component.setNodeId(id);
+					component.setSelf(component);
 					node.setInstance(component);
 					FlowBus.addNode(id, node);
 				}

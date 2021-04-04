@@ -6,8 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @Author: guodongqing
- * @Date: 2021/3/25 4:47 下午
+ * @author: guodongqing
+ * @since: 2.5.0
  */
 public abstract class FlowParser {
 

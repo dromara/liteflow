@@ -85,13 +85,13 @@ public class FlowExecutor {
                     default:
                         LOG.error("can't surport the format {}", path);
                 }
-                if(null != parser) {
+                if(ObjectUtil.isNotNull(parser)) {
                     parser.parseMain(path);
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
 			} catch (Exception e) {
-                String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file{0}", path);
+                String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file {0}", path);
                 LOG.error(errorMsg, e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
@@ -194,7 +194,7 @@ public class FlowExecutor {
         execute(chainId, param, slotClazz, slotIndex, true);
     }
 
-    public LiteflowResponse execute(String chainId, Object param) throws Exception {
+    public LiteflowResponse<Slot> execute(String chainId, Object param) throws Exception {
         return execute(chainId, param, DefaultSlot.class, null, false);
     }
 
