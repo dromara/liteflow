@@ -13,7 +13,7 @@ import org.junit.Test;
  */
 public class LFParserJsonNoSpringTest {
 
-    //测试无spring场景的xml parser
+    //测试无spring场景的json parser
     @Test
     public void testNoSpring() throws Exception{
         FlowExecutor executor = new FlowExecutor();
