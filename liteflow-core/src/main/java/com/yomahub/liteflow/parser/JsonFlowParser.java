@@ -9,7 +9,6 @@ import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
-import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScaner;
 import com.yomahub.liteflow.util.SpringAware;
@@ -88,7 +87,6 @@ public abstract class JsonFlowParser extends FlowParser{
             for(Map.Entry<String, JSONObject> chainEntry : chainMap.entrySet()) {
                 parseOneChain(chainEntry.getValue(), chainMap);
             }
-
         } catch (Exception e) {
             LOG.error("JsonFlowParser parser exception", e);
             throw e;
@@ -110,9 +108,9 @@ public abstract class JsonFlowParser extends FlowParser{
         String errorResume;
         Condition condition;
         String chainName = chainObject.getString("name");
-        JSONArray chainTopoArray = chainObject.getJSONArray("condition");
+        JSONArray conditionArray = chainObject.getJSONArray("condition");
         conditionList = new ArrayList<>();
-        for(Iterator<Object> iterator = chainTopoArray.iterator(); iterator.hasNext();) {
+        for(Iterator<Object> iterator = conditionArray.iterator(); iterator.hasNext();) {
             JSONObject condObject = (JSONObject) iterator.next();
             String condType = condObject.getString("type");
             condArrayStr = condObject.getString("value");
@@ -181,6 +179,8 @@ public abstract class JsonFlowParser extends FlowParser{
     private boolean hasChain(Map<String, JSONObject> chainMap, String chainName) throws Exception {
         if(chainMap.containsKey(chainName) && !FlowBus.containChain(chainName)) {
             parseOneChain(chainMap.get(chainName), chainMap);
+            return true;
+        } else if(FlowBus.containChain(chainName)) {
             return true;
         }
         return false;

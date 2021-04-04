@@ -31,7 +31,7 @@ public class LFParserJsonSpringbootTest {
     //测试无springboot场景的json parser
     @Test
     public void testSpringboot() throws Exception{
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
+        LiteflowResponse<Slot> response = flowExecutor.execute("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

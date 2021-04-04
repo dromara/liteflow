@@ -11,6 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -70,17 +71,17 @@ public class FlowExecutor {
         FlowParser parser = null;
         for (String path : rulePath) {
             try {
-                String pattern = matchFormatConfig(path);
+                FlowParserTypeEnum pattern = matchFormatConfig(path);
                 path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
                 switch (pattern) {
-                    case "xml" :
-                        parser = matchFormatParser(path, "xml");
+                    case TYPE_XML:
+                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
                         break;
-                    case "json" :
-                        parser = matchFormatParser(path, "json");
+                    case TYPE_JSON:
+                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
                         break;
-                    case "yml" :
-                        parser = matchFormatParser(path, "yml");
+                    case TYPE_YML:
+                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
                         break;
                     default:
                         LOG.error("can't surport the format {}", path);
@@ -104,36 +105,36 @@ public class FlowExecutor {
      * @param pattern 格式
      * @return
      */
-    private FlowParser matchFormatParser(String path, String pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private FlowParser matchFormatParser(String path, FlowParserTypeEnum pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         boolean isLocalFile = isLocalConfig(path);
         if(isLocalFile) {
             switch (pattern) {
-                case "xml":
+                case TYPE_XML:
                     return new LocalXmlFlowParser();
-                case "json":
+                case TYPE_JSON:
                     return new LocalJsonFlowParser();
-                case "yml":
+                case TYPE_YML:
                     return new LocalYmlFlowParser();
                 default:
             }
         } else if(isClassConfig(path)){
             Class c = Class.forName(path);
             switch (pattern) {
-                case "xml":
+                case TYPE_XML:
                     return (XmlFlowParser) c.newInstance();
-                case "json":
+                case TYPE_JSON:
                     return (JsonFlowParser) c.newInstance();
-                case "yml":
+                case TYPE_YML:
                     return (YmlFlowParser) c.newInstance();
                 default:
             }
         } else if(isZKConfig(path)) {
             switch (pattern) {
-                case "xml":
+                case TYPE_XML:
                     return StrUtil.isNotBlank(zkNode) ? new ZookeeperXmlFlowParser(zkNode) : new ZookeeperXmlFlowParser();
-                case "json":
+                case TYPE_JSON:
                     return StrUtil.isNotBlank(zkNode) ? new ZookeeperJsonFlowParser(zkNode) : new ZookeeperJsonFlowParser();
-                case "yml":
+                case TYPE_YML:
                     return StrUtil.isNotBlank(zkNode) ? new ZookeeperYmlFlowParser(zkNode) : new ZookeeperYmlFlowParser();
                 default:
             }
@@ -175,15 +176,15 @@ public class FlowExecutor {
      * @param path
      * @return
      */
-    private String matchFormatConfig(String path) {
+    private FlowParserTypeEnum matchFormatConfig(String path) {
         if(ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_XML_CONFIG_REGEX, path)) {
-            return "xml";
+            return FlowParserTypeEnum.TYPE_XML;
         } else if(ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_JSON_CONFIG_REGEX, path)) {
-            return "json";
+            return FlowParserTypeEnum.TYPE_JSON;
         } else if(ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
-            return "yml";
+            return FlowParserTypeEnum.TYPE_YML;
         }
-        return "";
+        return null;
     }
 
     public void reloadRule() {
