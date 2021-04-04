@@ -29,7 +29,7 @@ public class WhenCondition extends Condition{
 	public WhenCondition(Condition condition) {
 		super(condition.getNodeList());
 		super.setConditionType(condition.getConditionType());
-		super.setGroupId(condition.getGroupId());
+		super.setGroup(condition.getGroup());
 		super.setErrorResume(condition.isErrorResume());
 	}
 
