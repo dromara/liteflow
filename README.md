@@ -6,12 +6,6 @@
 
 <h3>您的star是我继续前进的动力，如果喜欢请右上角帮忙点个star</h3>
 
-## Gitee Star趋势图
-[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/3NHPVWVK.png)](https://giteye.net/chart/3NHPVWVK)
-
-## 贡献者列表
-[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/DHU59WRM.png)](https://giteye.net/chart/DHU59WRM)
-
 ## 概述
 liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，帮助解耦业务代码，让每一个业务片段都是一个组件，并支持热加载规则配置，实现即时修改。
 
@@ -28,6 +22,12 @@ liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，
 * 提供无级嵌套子流程模式
 * 数据槽高并发隔离机制
 * 自带简单的监控，能够知道每个组件的运行耗时排行
+
+## Gitee Star趋势图
+[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/3NHPVWVK.png)](https://giteye.net/chart/3NHPVWVK)
+
+## 贡献者列表
+[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/DHU59WRM.png)](https://giteye.net/chart/DHU59WRM)
 
 **微信公众号**
 
