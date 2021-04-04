@@ -10,7 +10,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spring.ComponentScaner;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public abstract class JsonFlowParser extends FlowParser{
     public void parse(JSONObject flowJsonObject) throws Exception {
         try {
             //判断是以spring方式注册节点，还是以json方式注册
-            if(ComponentScaner.nodeComponentMap.isEmpty()){
+            if(ComponentScanner.nodeComponentMap.isEmpty()){
                 JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
                 String id;
                 String clazz;
@@ -67,7 +67,7 @@ public abstract class JsonFlowParser extends FlowParser{
                     FlowBus.addNode(id, node);
                 }
             } else {
-                for(Map.Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()){
+                for(Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()){
                     if(!FlowBus.containNode(componentEntry.getKey())){
                         FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
                     }

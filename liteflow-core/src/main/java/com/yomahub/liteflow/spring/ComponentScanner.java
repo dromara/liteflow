@@ -13,10 +13,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
-import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -26,11 +23,11 @@ import com.yomahub.liteflow.util.LOGOPrinter;
  * 组件扫描类，只要是NodeComponent的实现类，都可以被这个扫描器扫到
  * @author Bryan.Zhang
  */
-public class ComponentScaner implements InstantiationAwareBeanPostProcessor {
+public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ComponentScaner.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ComponentScanner.class);
 
-	public static Map<String, NodeComponent> nodeComponentMap = new HashMap<String, NodeComponent>();
+	public static Map<String, NodeComponent> nodeComponentMap = new HashMap<>();
 
 	public static ICmpAroundAspect cmpAroundAspect;
 
@@ -64,5 +61,9 @@ public class ComponentScaner implements InstantiationAwareBeanPostProcessor {
 		}
 
 		return bean;
+	}
+
+	public static void cleanCache(){
+		nodeComponentMap.clear();
 	}
 }

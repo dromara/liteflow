@@ -1,23 +1,16 @@
 package com.yomahub.liteflow.parser;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.lang.PatternPool;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Executable;
 import com.yomahub.liteflow.entity.flow.Node;
-import com.yomahub.liteflow.entity.flow.ThenCondition;
-import com.yomahub.liteflow.entity.flow.WhenCondition;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
-import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spring.ComponentScaner;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.util.SpringAware;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -29,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 /**
  * xml形式的解析器
@@ -52,7 +44,7 @@ public abstract class XmlFlowParser extends FlowParser{
 			Element rootElement = document.getRootElement();
 
 			//判断是以spring方式注册节点，还是以xml方式注册
-			if (ComponentScaner.nodeComponentMap.isEmpty()) {
+			if (ComponentScanner.nodeComponentMap.isEmpty()) {
 				// 解析node节点
 				List<Element> nodeList = rootElement.element("nodes").elements("node");
 				String id;
@@ -81,7 +73,7 @@ public abstract class XmlFlowParser extends FlowParser{
 					FlowBus.addNode(id, node);
 				}
 			} else {
-				for (Entry<String, NodeComponent> componentEntry : ComponentScaner.nodeComponentMap.entrySet()) {
+				for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
 					FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
 				}
 			}

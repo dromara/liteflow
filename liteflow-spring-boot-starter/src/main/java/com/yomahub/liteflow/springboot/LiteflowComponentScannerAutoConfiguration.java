@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.springboot;
 
-import com.yomahub.liteflow.spring.ComponentScaner;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class LiteflowComponentScannerAutoConfiguration {
 
     @Bean
-    public ComponentScaner componentScaner(){
-        return new ComponentScaner();
+    public ComponentScanner componentScaner(){
+        return new ComponentScanner();
     }
 }

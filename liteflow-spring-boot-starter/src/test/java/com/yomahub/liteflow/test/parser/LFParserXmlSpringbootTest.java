@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +26,7 @@ import javax.annotation.Resource;
 @SpringBootTest(classes = LFParserXmlSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
-public class LFParserXmlSpringbootTest {
+public class LFParserXmlSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

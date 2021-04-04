@@ -7,6 +7,8 @@ import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.test.BaseTest;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +37,7 @@ import javax.annotation.Resource;
 @SpringBootTest(classes = FlowExecutorTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.exception.cmp1", "com.yomahub.liteflow.test.exception.cmp2"})
-public class FlowExecutorTest {
+public class FlowExecutorTest extends BaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorTest.class);
 
     @Resource

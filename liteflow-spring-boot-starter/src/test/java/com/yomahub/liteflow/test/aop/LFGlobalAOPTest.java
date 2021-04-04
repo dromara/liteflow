@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.aop;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.aop.aspect.CmpAspect;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +28,7 @@ import javax.annotation.Resource;
 @EnableAutoConfiguration
 @Import(CmpAspect.class)
 @ComponentScan({"com.yomahub.liteflow.test.aop.cmp1","com.yomahub.liteflow.test.aop.cmp2"})
-public class LFGlobalAOPTest {
+public class LFGlobalAOPTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

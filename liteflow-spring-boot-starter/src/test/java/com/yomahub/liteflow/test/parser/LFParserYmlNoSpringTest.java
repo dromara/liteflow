@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ import org.junit.Test;
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-public class LFParserYmlNoSpringTest {
+public class LFParserYmlNoSpringTest extends BaseTest {
 
     //测试无spring场景的yml parser
     @Test

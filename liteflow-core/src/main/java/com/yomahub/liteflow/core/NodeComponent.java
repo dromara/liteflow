@@ -24,7 +24,7 @@ import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
-import com.yomahub.liteflow.spring.ComponentScaner;
+import com.yomahub.liteflow.spring.ComponentScanner;
 
 /**
  * 普通组件抽象类
@@ -56,15 +56,15 @@ public abstract class NodeComponent {
 		stopWatch.start();
 
 		// process前置处理
-		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
-			ComponentScaner.cmpAroundAspect.beforeProcess(this.getNodeId(), slot);
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.beforeProcess(this.getNodeId(), slot);
 		}
 
 		self.process();
 
 		// process后置处理
-		if (ObjectUtil.isNotNull(ComponentScaner.cmpAroundAspect)) {
-			ComponentScaner.cmpAroundAspect.afterProcess(this.getNodeId(), slot);
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.afterProcess(this.getNodeId(), slot);
 		}
 
 		stopWatch.stop();
