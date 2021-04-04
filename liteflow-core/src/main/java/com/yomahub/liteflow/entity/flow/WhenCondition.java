@@ -26,4 +26,11 @@ public class WhenCondition extends Condition{
 		super.setErrorResume(errorResume);
 	}
 
+	public WhenCondition(Condition condition) {
+		super(condition.getNodeList());
+		super.setConditionType(condition.getConditionType());
+		super.setGroup(condition.getGroup());
+		super.setErrorResume(condition.isErrorResume());
+	}
+
 }

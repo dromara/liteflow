@@ -1,5 +1,11 @@
 package com.yomahub.liteflow.parser;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.yomahub.liteflow.entity.flow.Condition;
+import com.yomahub.liteflow.entity.flow.ThenCondition;
+import com.yomahub.liteflow.entity.flow.WhenCondition;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,6 +39,25 @@ public abstract class FlowParser {
             regexEntity.setRealItemArray(realNodeArray);
         }
         return regexEntity;
+    }
+
+    protected void buildBaseFlowConditions(List<Condition> conditionList,Condition condition){
+        if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN.getType())) {
+            if (conditionList.size() > 1 &&
+                    CollectionUtil.getLast(conditionList) instanceof ThenCondition) {
+                CollectionUtil.getLast(conditionList).getNodeList().addAll(condition.getNodeList());
+            } else {
+                conditionList.add(new ThenCondition(condition));
+            }
+        } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_WHEN.getType())) {
+            if (conditionList.size() > 1 &&
+                    CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
+                    CollectionUtil.getLast(conditionList).getGroup().equals(condition.getGroup())) {
+                CollectionUtil.getLast(conditionList).getNodeList().addAll(condition.getNodeList());
+            } else {
+                conditionList.add(new WhenCondition(condition));
+            }
+        }
     }
 
 }

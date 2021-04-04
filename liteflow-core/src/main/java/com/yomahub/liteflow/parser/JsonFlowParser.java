@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
@@ -105,6 +106,9 @@ public abstract class JsonFlowParser extends FlowParser{
         String[] condArray;
         List<Executable> chainNodeList;
         List<Condition> conditionList;
+        String group;
+        String errorResume;
+        Condition condition;
         String chainName = chainObject.getString("name");
         JSONArray chainTopoArray = chainObject.getJSONArray("condition");
         conditionList = new ArrayList<>();
@@ -112,9 +116,18 @@ public abstract class JsonFlowParser extends FlowParser{
             JSONObject condObject = (JSONObject) iterator.next();
             String condType = condObject.getString("type");
             condArrayStr = condObject.getString("value");
+            group = condObject.getString("group");
+            errorResume = condObject.getString("errorResume");
             if (StrUtil.isBlank(condType) || StrUtil.isBlank(condArrayStr)) {
                 continue;
             }
+            if (StrUtil.isBlank(group)) {
+                group = LocalDefaultFlowConstant.DEFAULT;
+            }
+            if (StrUtil.isBlank(errorResume)) {
+                errorResume = Boolean.TRUE.toString();
+            }
+            condition = new Condition();
             chainNodeList = new ArrayList<>();
             condArray = condArrayStr.split(",");
             RegexEntity regexEntity;
@@ -149,14 +162,13 @@ public abstract class JsonFlowParser extends FlowParser{
                     throw new ExecutableItemNotFoundException(errorMsg);
                 }
             }
-            if (condType.equals("then")) {
-                conditionList.add(new ThenCondition(chainNodeList));
-            } else if (condType.equals("when")) {
-                conditionList.add(new WhenCondition(chainNodeList));
-            }
-            FlowBus.addChain(chainName, new Chain(chainName,conditionList));
+            condition.setErrorResume(errorResume.equals(Boolean.TRUE.toString()));
+            condition.setGroup(group);
+            condition.setConditionType(condType);
+            condition.setNodeList(chainNodeList);
+            super.buildBaseFlowConditions(conditionList,condition);
         }
-
+        FlowBus.addChain(chainName, new Chain(chainName,conditionList));
     }
 
     /**

@@ -5,6 +5,7 @@ import cn.hutool.core.lang.PatternPool;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
@@ -106,13 +107,15 @@ public abstract class XmlFlowParser extends FlowParser{
 		String[] condArray;
 		String group;
 		String errorResume;
+		Condition condition;
+		Element condE;
 		List<Executable> chainNodeList;
 		List<Condition> conditionList;
 
 		String chainName = e.attributeValue("name");
 		conditionList = new ArrayList<>();
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
-			Element condE = it.next();
+			condE = it.next();
 			condArrayStr = condE.attributeValue("value");
 			errorResume = e.attributeValue("errorResume");
 			group = e.attributeValue("group");
@@ -125,6 +128,7 @@ public abstract class XmlFlowParser extends FlowParser{
 			if (StrUtil.isBlank(errorResume)) {
 				errorResume = Boolean.TRUE.toString();
 			}
+			condition = new Condition();
 			chainNodeList = new ArrayList<>();
 			condArray = condArrayStr.split(",");
 			RegexEntity regexEntity;
@@ -158,24 +162,11 @@ public abstract class XmlFlowParser extends FlowParser{
 					throw new ExecutableItemNotFoundException(errorMsg);
 				}
 			}
-
-
-			if (condE.getName().equals("then")) {
-				if (conditionList.size() > 1 &&
-						CollectionUtil.getLast(conditionList) instanceof ThenCondition ) {
-					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
-				} else {
-					conditionList.add(new ThenCondition(chainNodeList));
-				}
-			} else if (condE.getName().equals("when")) {
-				if (conditionList.size() > 1 &&
-						CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
-						CollectionUtil.getLast(conditionList).getGroupId().equals(group)) {
-					CollectionUtil.getLast(conditionList).getNodeList().addAll(chainNodeList);
-				} else {
-					conditionList.add(new WhenCondition(chainNodeList, errorResume.equals(Boolean.TRUE.toString())));
-				}
-			}
+			condition.setErrorResume(errorResume.equals(Boolean.TRUE.toString()));
+			condition.setGroup(group);
+			condition.setConditionType(condE.getName());
+			condition.setNodeList(chainNodeList);
+			super.buildBaseFlowConditions(conditionList,condition);
 		}
 		FlowBus.addChain(chainName, new Chain(chainName,conditionList));
 	}
