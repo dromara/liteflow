@@ -8,8 +8,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * 切面场景单元测试
+ * 无spring环境的xml parser单元测试
  * @author Bryan.Zhang
+ * @since 2.5.0
  */
 public class LFParserXmlNoSpringTest {
 

@@ -15,8 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * 切面场景单元测试
+ * spring环境的json parser单元测试
  * @author Bryan.Zhang
+ * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/parser/application-json.properties")
@@ -28,7 +29,7 @@ public class LFParserJsonSpringbootTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的json parser
+    //测试spring场景的json parser
     @Test
     public void testSpringboot() throws Exception{
         LiteflowResponse<Slot> response = flowExecutor.execute("chain2", "arg");

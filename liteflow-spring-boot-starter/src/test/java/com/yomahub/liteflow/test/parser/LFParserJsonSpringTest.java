@@ -11,14 +11,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-/**
- * spring环境的xml parser单元测试
- * @author Bryan.Zhang
- * @since 2.5.0
- */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/parser/application-xml.xml")
-public class LFParserXmlSpringTest {
+@ContextConfiguration("classpath:/parser/application-json.xml")
+public class LFParserJsonSpringTest {
 
     @Resource
     private FlowExecutor flowExecutor;

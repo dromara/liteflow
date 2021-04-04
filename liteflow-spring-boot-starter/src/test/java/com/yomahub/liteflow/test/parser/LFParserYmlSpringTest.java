@@ -17,8 +17,8 @@ import javax.annotation.Resource;
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/parser/application-xml.xml")
-public class LFParserXmlSpringTest {
+@ContextConfiguration("classpath:/parser/application-yml.xml")
+public class LFParserYmlSpringTest {
 
     @Resource
     private FlowExecutor flowExecutor;

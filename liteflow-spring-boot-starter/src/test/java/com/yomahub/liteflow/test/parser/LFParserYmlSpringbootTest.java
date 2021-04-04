@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.parser;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.property.LiteflowConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,24 +15,24 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境的xml parser单元测试
+ * springboot下的yml parser测试用例
  * @author Bryan.Zhang
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/parser/application-xml.properties")
-@SpringBootTest(classes = LFParserXmlSpringbootTest.class)
+@TestPropertySource(value = "classpath:/parser/application-yml.properties")
+@SpringBootTest(classes = LFParserYmlSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
-public class LFParserXmlSpringbootTest {
+public class LFParserYmlSpringbootTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的xml parser
+    //测试无springboot场景的yml parser
     @Test
     public void testSpringboot() throws Exception{
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
+        LiteflowResponse<Slot> response = flowExecutor.execute("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

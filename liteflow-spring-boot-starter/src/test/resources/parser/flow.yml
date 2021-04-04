@@ -2,45 +2,29 @@ flow:
   nodes:
     node:
       - id: a
-        class: com.yomahub.liteflow.test.component.AComponent
+        class: com.yomahub.liteflow.test.parser.cmp.ACmp
       - id: b
-        class: com.yomahub.liteflow.test.component.BComponent
+        class: com.yomahub.liteflow.test.parser.cmp.BCmp
       - id: c
-        class: com.yomahub.liteflow.test.component.CComponent
+        class: com.yomahub.liteflow.test.parser.cmp.CCmp
       - id: d
-        class: com.yomahub.liteflow.test.component.DComponent
+        class: com.yomahub.liteflow.test.parser.cmp.DCmp
       - id: e
-        class: com.yomahub.liteflow.test.component.EComponent
+        class: com.yomahub.liteflow.test.parser.cmp.ECmp
       - id: f
-        class: com.yomahub.liteflow.test.component.FComponent
+        class: com.yomahub.liteflow.test.parser.cmp.FCmp
       - id: g
-        class: com.yomahub.liteflow.test.component.GComponent
-      - id: cond
-        class: com.yomahub.liteflow.test.component.CondComponent
+        class: com.yomahub.liteflow.test.parser.cmp.GCmp
   chain:
     - name: chain1
       condition:
         - type: then
-          value: 'a,cond(b|d)'
+          value: 'a,c'
+        - type: when
+          value: 'b,d,e(f|g)'
         - type: then
-          value: 'e,f,g'
+          value: 'chain2'
     - name: chain2
       condition:
         - type: then
-          value: 'a,c'
-        - type: when
-          value: 'b,d,e,f,g'
-        - type: then
-          value: 'c'
-    - name: chain3
-      condition:
-        - type: then
-          value: 'a,c,strategy1,g'
-    - name: strategy1
-      condition:
-        - type: then
-          value: m(m1|m2|strategy2)
-    - name: strategy2
-      condition:
-        - type: then
-          value: 'q,p(p1|p2)'
+          value: 'c,g,f'

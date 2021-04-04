@@ -8,18 +8,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * 无spring环境的json parser单元测试
+ * 无spring环境的yml parser单元测试
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-public class LFParserJsonNoSpringTest {
+public class LFParserYmlNoSpringTest {
 
-    //测试无spring场景的json parser
+    //测试无spring场景的yml parser
     @Test
     public void testNoSpring() throws Exception{
         FlowExecutor executor = new FlowExecutor();
         LiteflowConfig liteflowConfig = new LiteflowConfig();
-        liteflowConfig.setRuleSource("parser/flow.json");
+        liteflowConfig.setRuleSource("parser/flow.yml");
         executor.setLiteflowConfig(liteflowConfig);
         executor.init();
         LiteflowResponse<Slot> response = executor.execute("chain1", "arg");
