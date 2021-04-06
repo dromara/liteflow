@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.subflow;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.test.parser.LFParserXmlSpringbootTest;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +26,7 @@ import javax.annotation.Resource;
 @SpringBootTest(classes = SubflowYmlSpringBootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.subflow.cmp1"})
-public class SubflowYmlSpringBootTest {
+public class SubflowYmlSpringBootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
@@ -37,6 +37,4 @@ public class SubflowYmlSpringBootTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getData().printStep());
     }
-
-
 }

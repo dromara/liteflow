@@ -11,7 +11,7 @@ public class MCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
 
-        RUN_TIME_SLOT.add(this.getSlotIndex());
+        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
 
         System.out.println("Mcomp executed!");
     }
