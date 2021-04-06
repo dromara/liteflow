@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.configsource;
+package com.yomahub.liteflow.test.config;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
@@ -13,10 +13,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -24,24 +21,21 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * springboot环境下的zk配置源功能测试
+ * spring环境下的zk配置源功能测试
  * @author zendwang
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/configsource/application-zk.properties")
-@SpringBootTest(classes = ZkConfigSourceSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.configsource.cmp"})
-public class ZkConfigSourceSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/config/application-zk.xml")
+public class ZkConfigSourceSpringtTest extends BaseTest {
     
     private static final String ZK_NODE_PATH = "/lite-flow/flow";
-
+    
     private static TestingServer zkServer;
     
     @Resource
     private FlowExecutor flowExecutor;
-
+    
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         zkServer = new TestingServer(21810);
@@ -54,7 +48,7 @@ public class ZkConfigSourceSpringbootTest extends BaseTest {
                 public byte[] serialize(final Object o) throws ZkMarshallingError {
                     return o.toString().getBytes(Charset.forName("UTF-8"));
                 }
-
+                
                 @Override
                 public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
                     return new String(bytes, Charset.forName("UTF-8"));
@@ -69,7 +63,7 @@ public class ZkConfigSourceSpringbootTest extends BaseTest {
     }
     
     @Test
-    public void test() throws Exception {
+    public void test() throws Exception{
         LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }

@@ -6,7 +6,6 @@ import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.FlowSystemException;
-import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
@@ -31,10 +30,10 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/exception/application.properties")
-@SpringBootTest(classes = FlowExecutorTest.class)
+@SpringBootTest(classes = FlowExecutorSpringBootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.exception.cmp1", "com.yomahub.liteflow.test.exception.cmp2"})
-public class FlowExecutorTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.exception.cmp1"})
+public class FlowExecutorSpringBootTest extends BaseTest {
     
     @Resource
     private FlowExecutor flowExecutor;
@@ -77,10 +76,10 @@ public class FlowExecutorTest extends BaseTest {
         ReflectionUtils.rethrowException(response.getCause());
     }
     
-    @Test(expected = WhenExecuteException.class)
-    public void testWhenExecuteTimeoutException() throws Exception {
-        LiteflowResponse response = flowExecutor.execute("chain3", "when");
-        Assert.assertFalse(response.isSuccess());
-        ReflectionUtils.rethrowException(response.getCause());
-    }
+//    @Test(expected = WhenExecuteException.class)
+//    public void testWhenExecuteTimeoutException() throws Exception {
+//        LiteflowResponse response = flowExecutor.execute("chain3", "when");
+//        Assert.assertFalse(response.isSuccess());
+//        ReflectionUtils.rethrowException(response.getCause());
+//    }
 }
