@@ -42,7 +42,7 @@ public interface Slot {
 
 	public void addStep(CmpStep step);
 
-	public void printStep();
+	public String printStep();
 
 	public void generateRequestId();
 

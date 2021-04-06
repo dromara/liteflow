@@ -112,7 +112,7 @@ public abstract class AbsSlot implements Slot {
 		this.executeSteps.add(step);
 	}
 
-	public void printStep(){
+	public String printStep(){
 		StringBuffer str = new StringBuffer();
 		CmpStep cmpStep = null;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
@@ -123,6 +123,7 @@ public abstract class AbsSlot implements Slot {
 			}
 		}
 		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(),str.toString());
+		return str.toString();
 	}
 
 	@Override
