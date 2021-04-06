@@ -6,20 +6,17 @@ import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
@@ -33,13 +30,12 @@ import javax.annotation.Resource;
  * @author zendwang
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/aop/application.properties")
+@TestPropertySource(value = "classpath:/exception/application.properties")
 @SpringBootTest(classes = FlowExecutorTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.exception.cmp1", "com.yomahub.liteflow.test.exception.cmp2"})
 public class FlowExecutorTest extends BaseTest {
-    private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorTest.class);
-
+    
     @Resource
     private FlowExecutor flowExecutor;
 
@@ -65,11 +61,26 @@ public class FlowExecutorTest extends BaseTest {
         flowExecutor.execute("chain0", "it's a request");
     }
 
-    @Test(expected = FlowSystemException.class)
-    public void testChainExecuteException() throws Exception {
+    @Test(expected = RuntimeException.class)
+    public void testComponentCustomException() throws Exception {
         LiteflowResponse response = flowExecutor.execute("chain1", "exception");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("chain execute execption", response.getMessage());
+        ReflectionUtils.rethrowException(response.getCause());
+    }
+    
+    @Test(expected = FlowSystemException.class)
+    public void testNoConditionInChainException() throws Exception {
+        LiteflowResponse response = flowExecutor.execute("chain2", "test");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals("no conditionList in this chain[chain2]", response.getMessage());
+        ReflectionUtils.rethrowException(response.getCause());
+    }
+    
+    @Test(expected = WhenExecuteException.class)
+    public void testWhenExecuteTimeoutException() throws Exception {
+        LiteflowResponse response = flowExecutor.execute("chain3", "when");
+        Assert.assertFalse(response.isSuccess());
         ReflectionUtils.rethrowException(response.getCause());
     }
 }

@@ -7,15 +7,29 @@
  */
 package com.yomahub.liteflow.test.exception.cmp1;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("b")
 public class BCmp extends NodeComponent {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(BCmp.class);
 
 	@Override
-	public void process() {
-		System.out.println("Bcomp executed!");
+	public void process() throws InterruptedException {
+		String str = this.getSlot().getRequestData();
+		if(StrUtil.isNotBlank(str) && str.equals("when")) {
+			try {
+				LOG.info("Bcomp sleep begin");
+				Thread.sleep(3000);
+				LOG.info("Bcomp sleep end");
+			} catch (InterruptedException e) {
+				throw e;
+			}
+		}
+		LOG.info("Bcomp executed!");
 	}
-
 }

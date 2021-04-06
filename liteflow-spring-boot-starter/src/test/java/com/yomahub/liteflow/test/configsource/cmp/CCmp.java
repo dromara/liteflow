@@ -5,17 +5,17 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.exception.cmp2;
+package com.yomahub.liteflow.test.configsource.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-@Component("e")
-public class ECmp extends NodeComponent {
+@Component("c")
+public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("Ecomp executed!");
+		System.out.println("CCmp executed!");
 	}
 
 }

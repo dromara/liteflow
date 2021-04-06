@@ -5,20 +5,17 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.exception.cmp1;
+package com.yomahub.liteflow.test.configsource.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-@Component("c")
-public class CCmp extends NodeComponent {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(CCmp.class);
-	
+@Component("b")
+public class BCmp extends NodeComponent {
+
 	@Override
 	public void process() {
-		LOG.info("Ccomp executed!");
+		System.out.println("BCmp executed!");
 	}
+
 }

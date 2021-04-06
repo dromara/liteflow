@@ -9,19 +9,22 @@ package com.yomahub.liteflow.test.exception.cmp1;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.exception.FlowSystemException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("a")
 public class ACmp extends NodeComponent {
-
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ACmp.class);
+	
 	@Override
 	public void process() {
 		String str = this.getSlot().getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new FlowSystemException("chain execute execption");
+			throw new RuntimeException("chain execute execption");
 		}
-		System.out.println("Acomp executed!");
+		LOG.info("Acomp executed!");
 	}
 
 }
