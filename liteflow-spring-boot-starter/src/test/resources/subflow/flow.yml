@@ -1,5 +1,9 @@
 flow:
   chain:
+    - name: chain3
+      condition:
+        - type: then
+          value: 'e,d'
     - name: chain1
       condition:
         - type: then
@@ -16,3 +20,5 @@ flow:
       condition:
         - type: then
           value: 'b,a'
+        - type: then
+          value: 'chain3'

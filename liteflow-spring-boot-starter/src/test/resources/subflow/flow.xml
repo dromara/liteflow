@@ -12,6 +12,11 @@
 
     <chain name="chain2">
         <then value="b,a"/>
+        <then value="chain3"/>
     </chain>
-    <!-- a,b,c,b,a -->
+
+    <chain name="chain3">
+        <then value="e,d"/>
+    </chain>
+    <!-- a,b,c,b,a,e,d -->
 </flow>

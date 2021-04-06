@@ -2,9 +2,16 @@
   "flow": {
     "chain": [
       {
+        "name": "chain3",
+        "condition": [
+          {"type": "then", "value": "e,d"}
+        ]
+      },
+      {
         "name": "chain2",
         "condition": [
-          {"type": "then", "value": "b,a"}
+          {"type": "then", "value": "b,a"},
+          {"type": "then", "value": "chain3"}
         ]
       },
       {

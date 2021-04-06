@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <chain name="chain3">
-        <then value="f,g"/> <!-- f隐式调用chain4 -->
+        <then value="f,g"/> <!-- g隐式调用chain4 -->
     </chain>
 
     <chain name="chain4">
