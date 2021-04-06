@@ -59,4 +59,9 @@ public class FlowBus {
 	public static Node getNode(String nodeId) {
 		return nodeMap.get(nodeId);
 	}
+
+	public static void cleanCache(){
+		chainMap.clear();
+		nodeMap.clear();
+	}
 }
