@@ -24,7 +24,7 @@ import java.util.Set;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/subflow/application-implicit.properties")
-@SpringBootTest(classes = SubflowJsonSpringBootTest.class)
+@SpringBootTest(classes = ImplicitSubFlowTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.subflow.cmp2"})
 public class ImplicitSubFlowTest {
