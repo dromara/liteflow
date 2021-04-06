@@ -107,8 +107,8 @@ public abstract class XmlFlowParser extends FlowParser{
 		for (Iterator<Element> it = e.elementIterator(); it.hasNext();) {
 			condE = it.next();
 			condArrayStr = condE.attributeValue("value");
-			errorResume = e.attributeValue("errorResume");
-			group = e.attributeValue("group");
+			errorResume = condE.attributeValue("errorResume");
+			group = condE.attributeValue("group");
 			if (StrUtil.isBlank(condArrayStr)) {
 				continue;
 			}
