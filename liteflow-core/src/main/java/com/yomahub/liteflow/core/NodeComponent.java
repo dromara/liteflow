@@ -122,10 +122,7 @@ public abstract class NodeComponent {
 		}
 	}
 
-	/**
-	 * 设置是否结束整个流程
-	 * @param isEnd
-	 */
+	//设置是否结束整个流程
 	public void setIsEnd(boolean isEnd){
 		this.isEndTL.set(isEnd);
 	}

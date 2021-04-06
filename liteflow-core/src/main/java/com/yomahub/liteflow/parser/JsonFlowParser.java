@@ -33,9 +33,7 @@ public abstract class JsonFlowParser extends FlowParser{
         parse(flowJsonObject);
     }
 
-    /**
-     * json格式，解析过程
-     */
+    //json格式，解析过程
     public void parse(JSONObject flowJsonObject) throws Exception {
         try {
             //判断是以spring方式注册节点，还是以json方式注册

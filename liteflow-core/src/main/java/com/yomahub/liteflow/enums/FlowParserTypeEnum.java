@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.enums;
 
 /**
- * @Author: guodongqing
+ * @author guodongqing
  * @since 2.5.0
  */
 public enum FlowParserTypeEnum {

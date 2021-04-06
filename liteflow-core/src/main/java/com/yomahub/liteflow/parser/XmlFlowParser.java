@@ -36,9 +36,7 @@ public abstract class XmlFlowParser extends FlowParser{
 		parse(document);
 	}
 
-	/**
-	 * xml形式的主要解析过程
-	 */
+	//xml形式的主要解析过程
 	public void parse(Document document) throws Exception {
 		try {
 			Element rootElement = document.getRootElement();
