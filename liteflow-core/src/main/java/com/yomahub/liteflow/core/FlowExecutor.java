@@ -72,19 +72,21 @@ public class FlowExecutor {
         for (String path : rulePath) {
             try {
                 FlowParserTypeEnum pattern = matchFormatConfig(path);
-                path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
-                switch (pattern) {
-                    case TYPE_XML:
-                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
-                        break;
-                    case TYPE_JSON:
-                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
-                        break;
-                    case TYPE_YML:
-                        parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
-                        break;
-                    default:
-                        LOG.error("can't surport the format {}", path);
+                if(ObjectUtil.isNotNull(pattern)) {
+                    path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
+                    switch (pattern) {
+                        case TYPE_XML:
+                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
+                            break;
+                        case TYPE_JSON:
+                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
+                            break;
+                        case TYPE_YML:
+                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
+                            break;
+                        default:
+                            LOG.error("can't surport the format {}", path);
+                    }
                 }
                 if(ObjectUtil.isNotNull(parser)) {
                     parser.parseMain(path);
@@ -183,6 +185,19 @@ public class FlowExecutor {
             return FlowParserTypeEnum.TYPE_JSON;
         } else if(ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
             return FlowParserTypeEnum.TYPE_YML;
+        } else if(isClassConfig(path)) {
+            try {
+                Class clazz = Class.forName(path);
+                if(ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_XML;
+                } else if(ClassJsonFlowParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_JSON;
+                } else if(ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_YML;
+                }
+            } catch (ClassNotFoundException e) {
+                LOG.error(e.getMessage());
+            }
         }
         return null;
     }
