@@ -18,11 +18,4 @@
         <property name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 
-<!--    <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">-->
-<!--        <property name="rulePath">-->
-<!--            <list>-->
-<!--                <value>com.yomahub.liteflow.test.parsecustom.CustomJsonFlowParser</value>-->
-<!--            </list>-->
-<!--        </property>-->
-<!--    </bean>-->
 </beans>

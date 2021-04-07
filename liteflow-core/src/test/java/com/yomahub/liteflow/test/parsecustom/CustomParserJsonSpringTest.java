@@ -26,7 +26,7 @@ public class CustomParserJsonSpringTest extends BaseTest {
 
     //测试spring场景的自定义json parser
     @Test
-    public void testSpringboot() throws Exception{
+    public void testSpringCustomParser() throws Exception{
         LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "args");
         Assert.assertTrue(response.isSuccess());
     }
