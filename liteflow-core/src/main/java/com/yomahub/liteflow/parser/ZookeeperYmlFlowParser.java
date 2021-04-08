@@ -64,7 +64,8 @@ public class ZookeeperYmlFlowParser extends YmlFlowParser{
             public void nodeChanged() throws Exception {
                 String content = new String(cache.getCurrentData().getData());
                 LOG.info("stating load flow config....");
-                parse(content);
+                JSONObject ruleObject = convertToJson(content);
+                parse(ruleObject.toJSONString());
             }
         });
     }
