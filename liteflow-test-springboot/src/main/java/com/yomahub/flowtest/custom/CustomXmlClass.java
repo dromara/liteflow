@@ -3,8 +3,8 @@ package com.yomahub.flowtest.custom;
 import com.yomahub.liteflow.parser.ClassXmlFlowParser;
 
 /**
- * @Author: guodongqing
- * @since: 2.5.0
+ * @author guodongqing
+ * @since 2.5.0
  */
 public class CustomXmlClass extends ClassXmlFlowParser {
     @Override
