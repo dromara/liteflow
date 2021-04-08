@@ -210,15 +210,15 @@ public class FlowExecutor {
         execute(chainId, param, slotClazz, slotIndex, true);
     }
 
-    public LiteflowResponse<Slot> execute(String chainId, Object param) throws Exception {
+    public LiteflowResponse<DefaultSlot> execute(String chainId, Object param) throws Exception {
         return execute(chainId, param, DefaultSlot.class, null, false);
     }
 
-	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz) throws Exception {
+	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz) throws Exception {
 		return execute(chainId, param, slotClazz,null,false);
 	}
 	
-	public LiteflowResponse<Slot> execute(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex,
+	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
 									boolean isInnerChain) throws Exception {
 		if (FlowBus.needInit()) {
 			init();
@@ -256,7 +256,7 @@ public class FlowExecutor {
 		} else {
 			slot.setChainReqData(chainId, param);
 		}
-		LiteflowResponse<Slot> response = new LiteflowResponse<>(slot);
+		LiteflowResponse<T> response = new LiteflowResponse(slot);
 		try {
 			// 执行chain
 			chain.execute(slotIndex);

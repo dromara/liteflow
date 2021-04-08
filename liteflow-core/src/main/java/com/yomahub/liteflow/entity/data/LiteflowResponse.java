@@ -6,7 +6,7 @@ import java.io.Serializable;
  * 执行结果封装类
  * @author zend.wang
  */
-public class LiteflowResponse<T> implements Serializable {
+public class LiteflowResponse<T extends Slot> implements Serializable {
     
     private static final long serialVersionUID = -2792556188993845048L;
     
@@ -16,12 +16,12 @@ public class LiteflowResponse<T> implements Serializable {
     
     private Throwable cause;
     
-    private T data;
+    private T slot;
     
-    public LiteflowResponse(T data) {
+    public LiteflowResponse(T slot) {
         this.success = true;
         this.message = "";
-        this.data = data;
+        this.slot = slot;
     }
     
     public boolean isSuccess() {
@@ -48,11 +48,11 @@ public class LiteflowResponse<T> implements Serializable {
         this.cause = cause;
     }
     
-    public T getData() {
-        return data;
+    public T getSlot() {
+        return slot;
     }
     
-    public void setData(final T data) {
-        this.data = data;
+    public void setSlot(final T slot) {
+        this.slot = slot;
     }
 }
