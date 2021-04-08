@@ -54,6 +54,8 @@
 		<junit.version>4.12</junit.version>
 		<hutool-core.version>5.3.10</hutool-core.version>
 		<transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
+		<curator-test.version>5.1.0</curator-test.version>
+		<zkclient.version>0.10</zkclient.version>
     </properties>
 
     <dependencyManagement>
@@ -137,6 +139,16 @@
 				<groupId>com.alibaba</groupId>
 				<artifactId>transmittable-thread-local</artifactId>
 				<version>${transmittable-thread-local.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-test</artifactId>
+				<version>${curator-test.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.101tec</groupId>
+				<artifactId>zkclient</artifactId>
+				<version>${zkclient.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -37,23 +37,23 @@
   - [x] Yml方式在spring环境下测试
   - [] Yml方式在springboot环境下测试
 
-- [ ] 参数测试(只测到参数是不是被总的LiteFlowConfig加载到即可)
-  - [ ] 非spring环境下的参数测试，必要参数测试，非必须参数的默认值测试。
-  - [ ] spring环境下的参数测试，必要参数测试，非必须参数的默认值测试。
-  - [ ] springboot环境下的参数测试，必要参数测试，非必须参数的默认值测试。
-- [ ] zk配置源的功能测试(zk请自己本地安装提供)
-  - [ ] spring环境下的zk配置源功能测试
-  - [ ] springboot环境下的zk配置源功能测试
-- [ ] 自定义源的功能测试
-  - [ ] spring环境下的自定义配置源功能测试
-  - [ ] springboot环境下的自定义配置源功能测试
-- [ ] 组件功能点测试(基于springboot环境即可)
-  - [ ] isAccess方法的功能测试
-  - [ ] 组件抛错的功能点测试
-  - [ ] isContinueOnError方法的功能点测试
-  - [ ] isEnd方法和this.setIsEnd(true)的功能点测试
-- [ ] 条件组件功能点测试(基于springboot环境)
-  - [ ] 条件组件的功能点测试
+- [x] 参数测试(只测到参数是不是被总的LiteFlowConfig加载到即可)
+  - [x] 非spring环境下的参数测试，必要参数测试，非必须参数的默认值测试。
+  - [x] spring环境下的参数测试，必要参数测试，非必须参数的默认值测试。
+  - [x] springboot环境下的参数测试，必要参数测试，非必须参数的默认值测试。
+- [x] zk配置源的功能测试(zk请自己本地安装提供)
+  - [x] spring环境下的zk配置源功能测试
+  - [x] springboot环境下的zk配置源功能测试
+- [x] 自定义源的功能测试
+  - [x] spring环境下的自定义配置源功能测试
+  - [x] springboot环境下的自定义配置源功能测试
+- [x] 组件功能点测试(基于springboot环境即可)
+  - [x] isAccess方法的功能测试
+  - [x] 组件抛错的功能点测试
+  - [x] isContinueOnError方法的功能点测试
+  - [x] isEnd方法和this.setIsEnd(true)的功能点测试
+- [x] 条件组件功能点测试(基于springboot环境)
+  - [x] 条件组件的功能点测试
 - [x] 显式子流程测试(基于springboot环境)
   - [x] 子流程功能点测试，是否能进入子流程
   - [x] 多个子流程是否能串联衔接

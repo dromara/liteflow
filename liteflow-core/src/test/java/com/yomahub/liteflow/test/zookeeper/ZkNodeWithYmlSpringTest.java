@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.config;
+package com.yomahub.liteflow.test.zookeeper;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
@@ -22,12 +22,13 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * spring环境下的zk配置源功能测试
+ * ZK节点存储数据的格式为yml文件
  * @author zendwang
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/config/application-zk.xml")
-public class ZkConfigSourceSpringtTest extends BaseTest {
+@ContextConfiguration("classpath:/zookeeper/application-yml.xml")
+public class ZkNodeWithYmlSpringTest extends BaseTest {
     
     private static final String ZK_NODE_PATH = "/lite-flow/flow";
     
@@ -41,7 +42,13 @@ public class ZkConfigSourceSpringtTest extends BaseTest {
         zkServer = new TestingServer(21810);
         CountDownLatch latch = new CountDownLatch(1);
         new Thread(() -> {
-            String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\"><then value=\"a,b,c\"/></chain></flow>";
+            StringBuilder data = new StringBuilder()
+                    .append("flow:\n")
+                    .append("  chain:\n")
+                    .append("    - name: chain1\n")
+                    .append("      condition:\n")
+                    .append("        - type: then\n")
+                    .append("          value: 'a,b,c'");
             ZkClient zkClient = new ZkClient("127.0.0.1:21810");
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
@@ -66,6 +73,7 @@ public class ZkConfigSourceSpringtTest extends BaseTest {
     public void test() throws Exception{
         LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b==>c", response.getData().printStep());
     }
     
     @AfterClass
