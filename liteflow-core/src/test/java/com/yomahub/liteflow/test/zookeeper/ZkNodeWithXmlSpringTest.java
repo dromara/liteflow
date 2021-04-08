@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.zookeeper;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
@@ -65,9 +66,9 @@ public class ZkNodeWithXmlSpringTest extends BaseTest {
     
     @Test
     public void test() throws Exception{
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getData().printStep());
+        Assert.assertEquals("a==>b==>c", response.getSlot().printStep());
     }
     
     @AfterClass

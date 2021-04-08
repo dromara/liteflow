@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.aop;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
@@ -36,20 +37,20 @@ public class LFCustomAOPTest extends BaseTest {
     //测试自定义AOP，串行场景
     @Test
     public void testCustomAopS() throws Exception{
-        LiteflowResponse<Slot> response= flowExecutor.execute("chain1", "it's a request");
+        LiteflowResponse<DefaultSlot> response= flowExecutor.execute("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("before_after", response.getData().getData("a"));
-        Assert.assertEquals("before_after", response.getData().getData("b"));
-        Assert.assertEquals("before_after", response.getData().getData("c"));
+        Assert.assertEquals("before_after", response.getSlot().getData("a"));
+        Assert.assertEquals("before_after", response.getSlot().getData("b"));
+        Assert.assertEquals("before_after", response.getSlot().getData("c"));
     }
 
     //测试自定义AOP，并行场景
     @Test
     public void testCustomAopP() throws Exception{
-        LiteflowResponse<Slot> response= flowExecutor.execute("chain2", "it's a request");
+        LiteflowResponse<DefaultSlot> response= flowExecutor.execute("chain2", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("before_after", response.getData().getData("a"));
-        Assert.assertEquals("before_after", response.getData().getData("b"));
-        Assert.assertEquals("before_after", response.getData().getData("c"));
+        Assert.assertEquals("before_after", response.getSlot().getData("a"));
+        Assert.assertEquals("before_after", response.getSlot().getData("b"));
+        Assert.assertEquals("before_after", response.getSlot().getData("c"));
     }
 }

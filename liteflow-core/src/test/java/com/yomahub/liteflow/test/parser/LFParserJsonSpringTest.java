@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
@@ -27,7 +28,7 @@ public class LFParserJsonSpringTest extends BaseTest {
     //测试spring场景的xml parser
     @Test
     public void testSpring() throws Exception{
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "arg");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

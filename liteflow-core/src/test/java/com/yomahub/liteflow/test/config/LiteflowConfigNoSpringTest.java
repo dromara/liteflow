@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.config;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.exception.ConfigErrorException;
@@ -29,7 +30,7 @@ public class LiteflowConfigNoSpringTest extends BaseTest {
         config.setRuleSource("config/flow.json");
         executor.setLiteflowConfig(config);
         executor.init();
-        LiteflowResponse<Slot> response = executor.execute("chain1", "arg");
+        LiteflowResponse<DefaultSlot> response = executor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());
         Assert.assertEquals(200, config.getQueueLimit().intValue());

@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -23,7 +24,7 @@ public class LFParserYmlNoSpringTest extends BaseTest {
         liteflowConfig.setRuleSource("parser/flow.yml");
         executor.setLiteflowConfig(liteflowConfig);
         executor.init();
-        LiteflowResponse<Slot> response = executor.execute("chain1", "arg");
+        LiteflowResponse<DefaultSlot> response = executor.execute("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

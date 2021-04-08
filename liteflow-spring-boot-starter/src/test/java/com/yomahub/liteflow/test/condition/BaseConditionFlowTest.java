@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.condition;
 
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.exception.FlowSystemException;
@@ -46,9 +47,9 @@ public class BaseConditionFlowTest extends BaseTest {
      * **/
     @Test
     public void testBaseConditionFlow() throws Exception {
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain1", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "it's a base request");
         Assert.assertTrue(response.isSuccess());
-        System.out.println(response.getData().printStep());
+        System.out.println(response.getSlot().printStep());
     }
 
     /*****
@@ -59,12 +60,12 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test
     public void testBaseErrorResumeConditionFlow4() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain4", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain4", "it's a base request");
         Assert.assertTrue(response.isSuccess());
         //  传递了slotIndex，则set的size==2
         Assert.assertEquals(2, RUN_TIME_SLOT.size());
         //  set中第一次设置的requestId和response中的requestId一致
-        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getData().getRequestId()));
+        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
 
     }
 
@@ -76,14 +77,14 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test
     public void testBaseErrorResumeConditionFlow5() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain5", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain5", "it's a base request");
         System.out.println(response.isSuccess());
-        System.out.println(response.getData().printStep());
+        System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());
         //  传递了slotIndex，则set的size==2
         Assert.assertEquals(2, RUN_TIME_SLOT.size());
         //  set中第一次设置的requestId和response中的requestId一致
-        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getData().getRequestId()));
+        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
 
     }
 
@@ -95,14 +96,14 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test(expected = WhenExecuteException.class)
     public void testBaseErrorResumeConditionFlow6() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain6", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain6", "it's a base request");
         System.out.println(response.isSuccess());
-        System.out.println(response.getData().printStep());
+        System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());
         //  传递了slotIndex，则set的size==1
         Assert.assertEquals(1, RUN_TIME_SLOT.size());
         //  set中第一次设置的requestId和response中的requestId一致
-        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getData().getRequestId()));
+        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
         ReflectionUtils.rethrowException(response.getCause());
 
     }
@@ -115,14 +116,14 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test(expected = WhenExecuteException.class)
     public void testBaseErrorResumeConditionFlow7() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain7", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain7", "it's a base request");
         System.out.println(response.isSuccess());
-        System.out.println(response.getData().printStep());
+        System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());
         //  传递了slotIndex，则set的size==2
         Assert.assertEquals(2, BaseConditionFlowTest.RUN_TIME_SLOT.size());
         //  set中第一次设置的requestId和response中的requestId一致
-        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getData().getRequestId()));
+        Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
         ReflectionUtils.rethrowException(response.getCause());
 
     }

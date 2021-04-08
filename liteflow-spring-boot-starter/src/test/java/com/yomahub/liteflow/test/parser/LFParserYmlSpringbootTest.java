@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
@@ -33,7 +34,7 @@ public class LFParserYmlSpringbootTest extends BaseTest {
     //测试无springboot场景的yml parser
     @Test
     public void testSpringboot() throws Exception{
-        LiteflowResponse<Slot> response = flowExecutor.execute("chain2", "arg");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }
