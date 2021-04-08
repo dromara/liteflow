@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class DCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
+        Thread.sleep(3000);
         System.out.println("Dcomp executed!");
     }
 }
