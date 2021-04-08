@@ -102,7 +102,6 @@ public class Chain implements Executable {
                     }
                 }
             } else if (condition instanceof WhenCondition) {
-
                 executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
             }
         }
