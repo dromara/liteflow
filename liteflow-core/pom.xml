@@ -61,6 +61,7 @@
 		<dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+			<scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.apache.curator</groupId>
@@ -83,6 +84,16 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>transmittable-thread-local</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.101tec</groupId>
+			<artifactId>zkclient</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
