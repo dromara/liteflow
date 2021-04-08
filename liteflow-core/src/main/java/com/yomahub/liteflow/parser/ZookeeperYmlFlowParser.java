@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.yomahub.liteflow.exception.ParseException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -45,12 +46,14 @@ public class ZookeeperYmlFlowParser extends YmlFlowParser{
 
         String content = new String(client.getData().forPath(nodePath));
 
-
         if (StrUtil.isBlank(content)) {
             String error = MessageFormat.format("the node[{0}] value is empty", nodePath);
             throw new ParseException(error);
         }
-        parse(content);
+
+        JSONObject ruleObject = convertToJson(content);
+
+        parse(ruleObject.toJSONString());
 
 
         final NodeCache cache = new NodeCache(client,nodePath);

@@ -24,7 +24,7 @@ public abstract class YmlFlowParser extends JsonFlowParser{
         parse(ruleObject.toJSONString());
     }
 
-    private JSONObject convertToJson(String yamlString) {
+    protected JSONObject convertToJson(String yamlString) {
         Yaml yaml= new Yaml();
         Map<String, Object> map = yaml.load(yamlString);
         JSONObject jsonObject = new JSONObject(map);
