@@ -57,15 +57,12 @@ public class FlowExecutorSpringBootTest extends BaseTest {
 
     @Test(expected = ChainNotFoundException.class)
     public void testChainNotFoundException() throws Exception {
-        flowExecutor.execute("chain0", "it's a request");
+        flowExecutor.invoke("chain0", "it's a request");
     }
 
     @Test(expected = RuntimeException.class)
     public void testComponentCustomException() throws Exception {
-        LiteflowResponse response = flowExecutor.execute("chain1", "exception");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("chain execute execption", response.getMessage());
-        ReflectionUtils.rethrowException(response.getCause());
+        flowExecutor.invoke("chain1", "exception");
     }
     
     @Test(expected = FlowSystemException.class)

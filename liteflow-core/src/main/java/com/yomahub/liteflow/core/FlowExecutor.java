@@ -205,20 +205,48 @@ public class FlowExecutor {
     public void reloadRule() {
         init();
     }
-
-    public void invoke(String chainId, Object param, Class<? extends Slot> slotClazz, Integer slotIndex) throws Exception {
-        execute(chainId, param, slotClazz, slotIndex, true);
+    
+    public DefaultSlot invoke(String chainId, Object param) throws Exception {
+        return this.invoke(chainId, param, DefaultSlot.class, null, false);
+    }
+    
+    public <T extends Slot> T invoke(String chainId, Object param, Class<T> slotClazz) throws Exception {
+        return this.invoke(chainId, param, slotClazz, null, false);
+    }
+    
+    public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz, 
+                       Integer slotIndex) throws Exception {
+        this.invoke(chainId, param, slotClazz, slotIndex, true);
+    }
+    
+    public <T extends Slot> T invoke(String chainId, Object param, Class<T> slotClazz,
+                                     Integer slotIndex, boolean isInnerChain) throws Exception {
+        return this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
+    }
+    
+    public LiteflowResponse<DefaultSlot> execute(String chainId, Object param) {
+        return this.execute(chainId, param, DefaultSlot.class);
     }
 
-    public LiteflowResponse<DefaultSlot> execute(String chainId, Object param) throws Exception {
-        return execute(chainId, param, DefaultSlot.class, null, false);
+	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz)  {
+        return this.execute(chainId, param, slotClazz, null, false);
     }
-
-	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz) throws Exception {
-		return execute(chainId, param, slotClazz,null,false);
-	}
-	
-	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
+    
+    public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
+                                        boolean isInnerChain) {
+        LiteflowResponse<T> response = new LiteflowResponse<>();
+        try {
+            T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
+            response.setSlot(slot);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            response.setCause(e.fillInStackTrace());
+        }
+        return response;
+    }
+    
+    private <T extends Slot> T doExecute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
 									boolean isInnerChain) throws Exception {
 		if (FlowBus.needInit()) {
 			init();
@@ -240,7 +268,7 @@ public class FlowExecutor {
             throw new NoAvailableSlotException("there is no available slot");
         }
 
-		Slot slot = DataBus.getSlot(slotIndex);
+		T slot = DataBus.getSlot(slotIndex);
 		if (ObjectUtil.isNull(slot)) {
 			throw new NoAvailableSlotException("the slot is not exist");
 		}
@@ -256,22 +284,19 @@ public class FlowExecutor {
 		} else {
 			slot.setChainReqData(chainId, param);
 		}
-		LiteflowResponse<T> response = new LiteflowResponse(slot);
 		try {
 			// 执行chain
 			chain.execute(slotIndex);
 		} catch (Exception e) {
-			response.setSuccess(false);
-			response.setMessage(e.getMessage());
-			response.setCause(e.fillInStackTrace());
 			LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
+			throw e;
 		} finally {
 			if (!isInnerChain) {
 				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
 			}
 		}
-		return response;
+		return slot;
 	}
 
     public String getZkNode() {

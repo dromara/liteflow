@@ -18,6 +18,9 @@ public class LiteflowResponse<T extends Slot> implements Serializable {
     
     private T slot;
     
+    public LiteflowResponse() {
+      this(null);
+    }
     public LiteflowResponse(T slot) {
         this.success = true;
         this.message = "";
