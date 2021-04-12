@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.parsecustom;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,8 +32,8 @@ public class CustomParserJsonSpringbootTest extends BaseTest {
 
     //测试springboot场景的自定义json parser
     @Test
-    public void testSpringboot() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "args");
+    public void testSpringboot() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "args");
         Assert.assertTrue(response.isSuccess());
     }
 }

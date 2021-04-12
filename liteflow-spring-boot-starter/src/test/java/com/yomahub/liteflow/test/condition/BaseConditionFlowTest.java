@@ -42,8 +42,8 @@ public class BaseConditionFlowTest extends BaseTest {
      * 验证了默认参数情况下 when可以加载执行
      * **/
     @Test
-    public void testBaseConditionFlow() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "it's a base request");
+    public void testBaseConditionFlow() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a base request");
         Assert.assertTrue(response.isSuccess());
         System.out.println(response.getSlot().printStep());
     }
@@ -54,9 +54,9 @@ public class BaseConditionFlowTest extends BaseTest {
      * 验证多层when errorResume 合并 并参照最上层 errorResume配置
      * **/
     @Test
-    public void testBaseErrorResumeConditionFlow4() throws Exception {
+    public void testBaseErrorResumeConditionFlow4() {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain4", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "it's a base request");
         Assert.assertTrue(response.isSuccess());
         //  传递了slotIndex，则set的size==2
         Assert.assertEquals(2, RUN_TIME_SLOT.size());
@@ -73,7 +73,7 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test(expected = WhenExecuteException.class)
     public void testBaseErrorResumeConditionFlow5() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain5", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain5", "it's a base request");
         System.out.println(response.isSuccess());
         //System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());
@@ -92,7 +92,7 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test(expected = WhenExecuteException.class)
     public void testBaseErrorResumeConditionFlow6() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain6", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain6", "it's a base request");
         System.out.println(response.isSuccess());
         //System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());
@@ -112,7 +112,7 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test(expected = WhenExecuteException.class)
     public void testBaseErrorResumeConditionFlow7() throws Exception {
         RUN_TIME_SLOT.clear();
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain7", "it's a base request");
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain7", "it's a base request");
         System.out.println(response.isSuccess());
         //System.out.println(response.getSlot().printStep());
         Assert.assertFalse(response.isSuccess());

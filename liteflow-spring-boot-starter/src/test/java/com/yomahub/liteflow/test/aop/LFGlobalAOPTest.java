@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.aop;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.aop.aspect.CmpAspect;
 import org.junit.Assert;
@@ -13,7 +12,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,8 +34,8 @@ public class LFGlobalAOPTest extends BaseTest {
 
     //测试全局AOP，串行场景
     @Test
-    public void testGlobalAopS() throws Exception{
-        LiteflowResponse<DefaultSlot> response= flowExecutor.execute("chain1", "it's a request");
+    public void testGlobalAopS() {
+        LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("before_after", response.getSlot().getData("a"));
         Assert.assertEquals("before_after", response.getSlot().getData("b"));
@@ -48,8 +46,8 @@ public class LFGlobalAOPTest extends BaseTest {
 
     //测试全局AOP，并行场景
     @Test
-    public void testGlobalAopP() throws Exception{
-        LiteflowResponse<DefaultSlot> response= flowExecutor.execute("chain2", "it's a request");
+    public void testGlobalAopP() {
+        LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain2", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("before_after", response.getSlot().getData("a"));
         Assert.assertEquals("before_after", response.getSlot().getData("b"));

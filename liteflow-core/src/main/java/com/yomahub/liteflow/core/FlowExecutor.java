@@ -206,42 +206,52 @@ public class FlowExecutor {
         init();
     }
     
-    public DefaultSlot invoke(String chainId, Object param) throws Exception {
-        return this.invoke(chainId, param, DefaultSlot.class, null, false);
+    /**
+     * callback by implicit subflow
+     * @param chainId
+     * @param param
+     * @param slotClazz
+     * @param slotIndex
+     * @param <T>
+     * @throws Exception
+     */
+    public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz,
+                                        Integer slotIndex) throws Exception {
+        this.execute(chainId, param, slotClazz, slotIndex, true);
     }
     
-    public <T extends Slot> T invoke(String chainId, Object param, Class<T> slotClazz) throws Exception {
-        return this.invoke(chainId, param, slotClazz, null, false);
+    public DefaultSlot execute(String chainId, Object param) throws Exception {
+        return this.execute(chainId, param, DefaultSlot.class, null, false);
     }
     
-    public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz, 
-                       Integer slotIndex) throws Exception {
-        this.invoke(chainId, param, slotClazz, slotIndex, true);
+    public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz) throws Exception {
+        return this.execute(chainId, param, slotClazz, null, false);
     }
     
-    public <T extends Slot> T invoke(String chainId, Object param, Class<T> slotClazz,
+    public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
                                      Integer slotIndex, boolean isInnerChain) throws Exception {
         return this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
     }
     
-    public LiteflowResponse<DefaultSlot> execute(String chainId, Object param) {
-        return this.execute(chainId, param, DefaultSlot.class);
+    public LiteflowResponse<DefaultSlot> execute2Resp(String chainId, Object param) {
+        return this.execute2Resp(chainId, param, DefaultSlot.class);
     }
 
-	public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz)  {
-        return this.execute(chainId, param, slotClazz, null, false);
+	public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz)  {
+        return this.execute2Resp(chainId, param, slotClazz, null, false);
     }
     
-    public <T extends Slot> LiteflowResponse<T> execute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
+    public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                         boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
         try {
             T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
             response.setSlot(slot);
-        } catch (Exception e) {
+        } catch (Exception ex) {
             response.setSuccess(false);
-            response.setMessage(e.getMessage());
-            response.setCause(e.fillInStackTrace());
+            response.setMessage(ex.getMessage());
+            response.setCause(ex.fillInStackTrace());
+            LOG.error("chain execute exception:{}", ex);
         }
         return response;
     }

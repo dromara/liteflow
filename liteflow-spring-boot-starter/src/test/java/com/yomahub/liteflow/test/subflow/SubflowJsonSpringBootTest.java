@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.subflow;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,8 +32,8 @@ public class SubflowJsonSpringBootTest extends BaseTest {
 
     //是否按照流程定义配置执行
     @Test
-    public void testExplicitSubFlow() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "it's a request");
+    public void testExplicitSubFlow() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getSlot().printStep());
     }

@@ -17,47 +17,47 @@ import org.springframework.util.ReflectionUtils;
 public class FlowExecutorTest extends BaseTest {
     
     @Test
-    public void testMethodExecute() {
+    public void testMethodExecute2Resp() {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();
-        LiteflowResponse<CustomSlot> response = executor.execute("chain1", "test0", CustomSlot.class);
+        LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test0", CustomSlot.class);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("custom", response.getSlot().getName());
     }
     
     @Test(expected=RuntimeException.class)
-    public void testMethodExecuteWithException() throws Exception{
+    public void testMethodExecute2RespWithException() throws Exception{
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();
-        LiteflowResponse<CustomSlot> response = executor.execute("chain1", "test1", CustomSlot.class);
+        LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test1", CustomSlot.class);
         Assert.assertFalse(response.isSuccess());
         ReflectionUtils.rethrowException(response.getCause());
     }
     
     @Test
-    public void testMethodInvoke() throws Exception {
+    public void testMethodExecute() throws Exception {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();
-        CustomSlot slot = executor.invoke("chain1", "test0", CustomSlot.class);
+        CustomSlot slot = executor.execute("chain1", "test0", CustomSlot.class);
         Assert.assertEquals("custom", slot.getName());
     }
     
     @Test(expected=RuntimeException.class)
-    public void testMethodInvokeWithException() throws Exception {
+    public void testMethodExecuteWithException() throws Exception {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();
-        executor.invoke("chain1", "test1", CustomSlot.class);
+        executor.execute("chain1", "test1", CustomSlot.class);
     }
 }

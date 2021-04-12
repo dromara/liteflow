@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.zookeeper;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.test.BaseTest;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
@@ -71,8 +70,8 @@ public class ZkNodeWithJsonSpringbootTest extends BaseTest {
     }
     
     @Test
-    public void test() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "arg");
+    public void test() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
     

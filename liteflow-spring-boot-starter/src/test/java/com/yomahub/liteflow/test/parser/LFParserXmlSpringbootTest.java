@@ -3,8 +3,6 @@ package com.yomahub.liteflow.test.parser;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,8 +32,8 @@ public class LFParserXmlSpringbootTest extends BaseTest {
 
     //测试无springboot场景的xml parser
     @Test
-    public void testSpringboot() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute("chain1", "arg");
+    public void testSpringboot() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }
