@@ -19,8 +19,8 @@ import java.util.*;
 
 /**
  * Json格式解析器
- * @author: guodongqing
- * @since: 2.5.0
+ * @author guodongqing
+ * @since 2.5.0
  */
 public abstract class JsonFlowParser extends FlowParser{
 

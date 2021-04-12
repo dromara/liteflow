@@ -8,6 +8,8 @@
 package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * 基于本地的xml方式解析器
@@ -16,7 +18,7 @@ import cn.hutool.core.io.FileUtil;
 public class LocalXmlFlowParser extends XmlFlowParser{
 
 	public void parseMain(String rulePath) throws Exception {
-		String ruleContent = FileUtil.readUtf8String(rulePath);
+		String ruleContent = ResourceUtil.readUtf8Str(StrUtil.format("classpath:{}",rulePath));
 		parse(ruleContent);
 	}
 }

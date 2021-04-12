@@ -12,8 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author: guodongqing
- * @since: 2.5.0
+ * @author guodongqing
+ * @since 2.5.0
  */
 public abstract class FlowParser {
 

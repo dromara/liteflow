@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +12,8 @@ import java.util.Map;
 
 /**
  * Yml格式解析器，转换为json格式进行解析
- * @author: guodongqing
- * @since: 2.5.0
+ * @author guodongqing
+ * @since 2.5.0
  */
 public abstract class YmlFlowParser extends JsonFlowParser{
 
@@ -19,7 +21,7 @@ public abstract class YmlFlowParser extends JsonFlowParser{
 
     @Override
     public void parseMain(String rulePath) throws Exception {
-        String ruleContent = FileUtil.readUtf8String(rulePath);
+        String ruleContent = ResourceUtil.readUtf8Str(StrUtil.format("classpath:{}",rulePath));
         JSONObject ruleObject = convertToJson(ruleContent);
         parse(ruleObject.toJSONString());
     }

@@ -14,8 +14,8 @@ import java.text.MessageFormat;
 
 /**
  * 基于zk方式的json形式的解析器
- * @author: guodongqing
- * @since: 2.5.0
+ * @author guodongqing
+ * @since 2.5.0
  */
 public class ZookeeperJsonFlowParser extends JsonFlowParser{
 
