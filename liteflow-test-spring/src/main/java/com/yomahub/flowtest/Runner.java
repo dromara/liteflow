@@ -16,7 +16,7 @@ public class Runner {
         context.start();
         log.info("启动成功");
         FlowExecutor flowExecutor = context.getBean(FlowExecutor.class);
-        LiteflowResponse response = flowExecutor.execute("chain3", "it's a request");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a request");
         System.out.println(response);
 
         while (true){

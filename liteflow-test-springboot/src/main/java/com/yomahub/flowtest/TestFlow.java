@@ -15,7 +15,7 @@ public class TestFlow implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        LiteflowResponse response= flowExecutor.execute("chain4", "it's a request");
+        LiteflowResponse response= flowExecutor.execute2Resp("chain4", "it's a request");
         System.out.println(response);
     }
 }
