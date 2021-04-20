@@ -33,6 +33,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
         liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
         liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
+        liteflowConfig.setParseOnStart(property.isParseOnStart());
         return liteflowConfig;
     }
 }
