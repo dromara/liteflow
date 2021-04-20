@@ -1,0 +1,65 @@
+{
+  "properties": [
+    {
+      "name": "liteflow.rule-source",
+      "type": "java.lang.String",
+      "description": "Location of the flow rule source.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.slot-size",
+      "type": "java.lang.Integer",
+      "description": "Set concurrent data slot size.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.when-max-wait-seconds",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread max wait seconds on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 15
+    },
+    {
+      "name": "liteflow.when-max-workers",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread pool worker max-size on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 4
+    },
+    {
+      "name": "liteflow.when-queue-limit",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread pool queue max-size on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 512
+    },
+    {
+      "name": "liteflow.monitor.enable-log",
+      "type": "java.lang.Boolean",
+      "description": "Enable monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.monitor.queue-limit",
+      "type": "java.lang.Integer",
+      "description": "Set monitor queue size.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
+      "defaultValue": 200
+    },
+    {
+      "name": "liteflow.monitor.delay",
+      "type": "java.lang.Long",
+      "description": "Set delay time to print monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
+      "defaultValue": 300000
+    },
+    {
+      "name": "liteflow.monitor.period",
+      "type": "java.lang.Long",
+      "description": "Set period time to print monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
+      "defaultValue": 300000
+    }
+  ]
+}
