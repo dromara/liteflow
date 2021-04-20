@@ -2,6 +2,7 @@ package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * 执行器初始化类

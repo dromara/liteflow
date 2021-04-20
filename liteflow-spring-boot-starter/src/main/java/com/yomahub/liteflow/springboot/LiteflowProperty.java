@@ -24,6 +24,10 @@ public class LiteflowProperty {
     //异步线程池最大队列数量
     private int whenQueueLimit;
 
+    //是否在启动时解析规则文件
+    //这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
+    private boolean parseOnStart;
+
     public String getRuleSource() {
         return ruleSource;
     }
@@ -62,5 +66,13 @@ public class LiteflowProperty {
 
     public void setWhenQueueLimit(int whenQueueLimit) {
         this.whenQueueLimit = whenQueueLimit;
+    }
+
+    public boolean isParseOnStart() {
+        return parseOnStart;
+    }
+
+    public void setParseOnStart(boolean parseOnStart) {
+        this.parseOnStart = parseOnStart;
     }
 }

@@ -47,28 +47,10 @@ public abstract class XmlFlowParser extends FlowParser{
 				List<Element> nodeList = rootElement.element("nodes").elements("node");
 				String id;
 				String clazz;
-				Node node;
-				NodeComponent component;
-				Class<NodeComponent> nodeComponentClass;
 				for (Element e : nodeList) {
-					node = new Node();
 					id = e.attributeValue("id");
 					clazz = e.attributeValue("class");
-					node.setId(id);
-					node.setClazz(clazz);
-					nodeComponentClass = (Class<NodeComponent>)Class.forName(clazz);
-
-					//以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
-					//这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
-					component = SpringAware.registerOrGet(nodeComponentClass);
-					if (ObjectUtil.isNull(component)) {
-						LOG.error("couldn't find component class [{}] from spring context", clazz);
-						component = nodeComponentClass.newInstance();
-					}
-					component.setNodeId(id);
-					component.setSelf(component);
-					node.setInstance(component);
-					FlowBus.addNode(id, node);
+					FlowBus.addNode(id, clazz);
 				}
 			} else {
 				for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
