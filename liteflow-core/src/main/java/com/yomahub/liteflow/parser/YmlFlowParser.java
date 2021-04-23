@@ -22,6 +22,9 @@ public abstract class YmlFlowParser extends JsonFlowParser{
     @Override
     public void parseMain(String rulePath) throws Exception {
         String ruleContent = ResourceUtil.readUtf8Str(StrUtil.format("classpath:{}",rulePath));
+        if (StrUtil.isBlank(ruleContent)){
+            return;
+        }
         JSONObject ruleObject = convertToJson(ruleContent);
         parse(ruleObject.toJSONString());
     }

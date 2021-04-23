@@ -28,6 +28,10 @@ public abstract class JsonFlowParser extends FlowParser{
 
     @Override
     public void parse(String content) throws Exception {
+        if (StrUtil.isBlank(content)){
+            return;
+        }
+
         //把字符串原生转换为json对象，如果不加第二个参数OrderedField，会无序
         JSONObject flowJsonObject = JSONObject.parseObject(content, Feature.OrderedField);
         parse(flowJsonObject);
@@ -41,28 +45,11 @@ public abstract class JsonFlowParser extends FlowParser{
                 JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
                 String id;
                 String clazz;
-                Node node;
-                NodeComponent component;
-                Class<NodeComponent> nodeComponentClass;
                 for(int i = 0; i< nodeArrayList.size(); i++) {
                     JSONObject nodeObject = nodeArrayList.getJSONObject(i);
-                    node = new Node();
                     id = nodeObject.getString("id");
                     clazz = nodeObject.getString("class");
-                    node.setId(id);
-                    node.setClazz(clazz);
-                    nodeComponentClass = (Class<NodeComponent>)Class.forName(clazz);
-                    //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
-                    //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
-                    component = SpringAware.registerOrGet(nodeComponentClass);
-                    if (ObjectUtil.isNull(component)) {
-                        LOG.error("couldn't find component class [{}] from spring context", clazz);
-                        component = nodeComponentClass.newInstance();
-                    }
-                    component.setNodeId(id);
-                    component.setSelf(component);
-                    node.setInstance(component);
-                    FlowBus.addNode(id, node);
+                    FlowBus.addNode(id, clazz);
                 }
             } else {
                 for(Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()){

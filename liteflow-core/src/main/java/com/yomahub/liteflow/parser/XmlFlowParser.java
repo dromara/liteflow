@@ -32,6 +32,9 @@ public abstract class XmlFlowParser extends FlowParser{
 	private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
 
 	public void parse(String content) throws Exception {
+		if (StrUtil.isBlank(content)){
+			return;
+		}
 		Document document = DocumentHelper.parseText(content);
 		parse(document);
 	}
