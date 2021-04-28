@@ -40,4 +40,62 @@ public class LiteflowConfigNoSpringTest extends BaseTest {
         Assert.assertEquals(100, config.getWhenQueueLimit().longValue());
     }
     
+    /**
+     * rule source支持的通配符
+     * 匹配的文件
+     * config/nospringgroup0/flow0.xml
+     * config/nospringgroup1/flow.xml
+     */
+    @Test
+    public void testLocalXmlRuleSourcePatternMatch() {
+        FlowExecutor executor = new FlowExecutor();
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("config/nospring*/flow*.xml");
+        executor.setLiteflowConfig(config);
+        executor.init();
+        LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
+        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        
+        LiteflowResponse<DefaultSlot> response1 = executor.execute2Resp("chain3", "arg");
+        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().printStep());
+        
+    }
+    
+    /**
+     * rule source支持的通配符
+     * 匹配的文件
+     * config/nospringgroup0/flow0.json
+     * config/nospringgroup1/flow0.json
+     */
+    @Test
+    public void testLocalJsonRuleSourcePatternMatch() {
+        FlowExecutor executor = new FlowExecutor();
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("config/nospring*/flow*.json");
+        executor.setLiteflowConfig(config);
+        executor.init();
+        LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
+        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        LiteflowResponse<DefaultSlot> response1 = executor.execute2Resp("chain3", "arg");
+        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().printStep());
+    }
+    
+    /**
+     * rule source支持的通配符
+     * 匹配的文件
+     * config/nospringgroup0/flow0.yml
+     * config/nospringgroup1/flow.yml
+     */
+    @Test
+    public void testLocalYmlRuleSourcePatternMatch() {
+        FlowExecutor executor = new FlowExecutor();
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("config/nospring*/flow*.yml");
+        executor.setLiteflowConfig(config);
+        executor.init();
+        LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
+        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        LiteflowResponse<DefaultSlot> response = executor.execute2Resp("chain3", "arg");
+        Assert.assertEquals("a==>c==>f==>g", response.getSlot().printStep());
+    }
 }

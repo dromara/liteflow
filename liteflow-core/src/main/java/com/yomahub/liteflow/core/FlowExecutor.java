@@ -44,9 +44,9 @@ public class FlowExecutor {
 
     private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
 
-    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.xml$";
-    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.json$";
-    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.yml$";
+    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.xml$";
+    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.json$";
+    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.yml$";
 
     private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
     private static final String FORMATE_JSON_CONFIG_REGEX = "json:.+";
@@ -85,7 +85,7 @@ public class FlowExecutor {
                             parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
                             break;
                         default:
-                            LOG.error("can't surport the format {}", path);
+                            LOG.error("can't support the format {}", path);
                     }
                 }
                 if(ObjectUtil.isNotNull(parser)) {
@@ -94,7 +94,7 @@ public class FlowExecutor {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
 			} catch (Exception e) {
-                String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file {0}", path);
+                String errorMsg = MessageFormat.format("init flow executor cause error,can not parse rule file {0}", path);
                 LOG.error(errorMsg, e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
