@@ -7,9 +7,9 @@
  */
 package com.yomahub.liteflow.parser;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.CharsetUtil;
+import org.springframework.core.io.Resource;
 
 /**
  * 基于本地的xml方式解析器
@@ -18,7 +18,10 @@ import cn.hutool.core.util.StrUtil;
 public class LocalXmlFlowParser extends XmlFlowParser{
 
 	public void parseMain(String rulePath) throws Exception {
-		String ruleContent = ResourceUtil.readUtf8Str(StrUtil.format("classpath:{}",rulePath));
-		parse(ruleContent);
+		Resource[] resources = matchRuleResources(rulePath);
+		for (Resource resource : resources) {
+			String content = IoUtil.read(resource.getInputStream(), CharsetUtil.CHARSET_UTF_8);
+			parse(content);
+		}
 	}
 }

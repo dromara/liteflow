@@ -31,7 +31,7 @@ public class FlowExecutorTest extends BaseTest {
     @Test(expected=RuntimeException.class)
     public void testMethodExecute2RespWithException() throws Exception{
         LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("executor/flow.json");
+        config.setRuleSource("executor/flow0.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();
@@ -54,7 +54,7 @@ public class FlowExecutorTest extends BaseTest {
     @Test(expected=RuntimeException.class)
     public void testMethodExecuteWithException() throws Exception {
         LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("executor/flow.json");
+        config.setRuleSource("executor/flow0.json");
         FlowExecutor executor = new FlowExecutor();
         executor.setLiteflowConfig(config);
         executor.init();

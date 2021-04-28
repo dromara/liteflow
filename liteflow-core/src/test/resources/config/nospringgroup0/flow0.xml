@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.config.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.config.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.config.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.config.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.config.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.config.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.config.cmp.GCmp"/>
+    </nodes>
+    
+    <chain name="chain1">
+        <then value="a,b,c"/>
+    </chain>
+</flow>
