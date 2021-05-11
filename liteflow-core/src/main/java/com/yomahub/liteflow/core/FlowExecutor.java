@@ -110,6 +110,7 @@ public class FlowExecutor {
     private FlowParser matchFormatParser(String path, FlowParserTypeEnum pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         boolean isLocalFile = isLocalConfig(path);
         if(isLocalFile) {
+            LOG.info("flow info loaded from local file,path={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
                     return new LocalXmlFlowParser();
@@ -120,6 +121,7 @@ public class FlowExecutor {
                 default:
             }
         } else if(isClassConfig(path)){
+            LOG.info("flow info loaded from class config,class={},format type={}", path, pattern.getType());
             Class c = Class.forName(path);
             switch (pattern) {
                 case TYPE_XML:
@@ -131,6 +133,7 @@ public class FlowExecutor {
                 default:
             }
         } else if(isZKConfig(path)) {
+            LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
                     return StrUtil.isNotBlank(zkNode) ? new ZookeeperXmlFlowParser(zkNode) : new ZookeeperXmlFlowParser();
@@ -141,6 +144,7 @@ public class FlowExecutor {
                 default:
             }
         }
+        LOG.info("load flow info error, path={}, pattern={}", path, pattern.getType());
         return null;
     }
 
