@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.property.LiteflowConfig;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @EnableConfigurationProperties({LiteflowProperty.class,LiteflowMonitorProperty.class})
-@ConditionalOnProperty(prefix = "liteflow", name = "rule-source")
 @PropertySource(
         name = "Liteflow Default Properties",
         value = "classpath:/META-INF/liteflow-default.properties")
