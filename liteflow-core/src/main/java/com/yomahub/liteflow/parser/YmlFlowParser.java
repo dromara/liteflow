@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.parser;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -20,13 +18,12 @@ public abstract class YmlFlowParser extends JsonFlowParser{
     private final Logger LOG = LoggerFactory.getLogger(YmlFlowParser.class);
 
     @Override
-    public void parseMain(String rulePath) throws Exception {
-        String ruleContent = ResourceUtil.readUtf8Str(StrUtil.format("classpath:{}",rulePath));
-        if (StrUtil.isBlank(ruleContent)){
+    public void parse(String content) throws Exception {
+        if (StrUtil.isBlank(content)){
             return;
         }
-        JSONObject ruleObject = convertToJson(ruleContent);
-        parse(ruleObject.toJSONString());
+        JSONObject ruleObject = convertToJson(content);
+        super.parse(ruleObject.toJSONString());
     }
 
     protected JSONObject convertToJson(String yamlString) {

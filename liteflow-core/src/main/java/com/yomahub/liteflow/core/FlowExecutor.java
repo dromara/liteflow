@@ -44,9 +44,9 @@ public class FlowExecutor {
 
     private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
 
-    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.xml$";
-    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.json$";
-    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w_\\-\\@\\/]+\\.yml$";
+    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.xml$";
+    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.json$";
+    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.yml$";
 
     private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
     private static final String FORMATE_JSON_CONFIG_REGEX = "json:.+";
@@ -85,7 +85,7 @@ public class FlowExecutor {
                             parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
                             break;
                         default:
-                            LOG.error("can't surport the format {}", path);
+                            LOG.error("can't support the format {}", path);
                     }
                 }
                 if(ObjectUtil.isNotNull(parser)) {
@@ -94,7 +94,7 @@ public class FlowExecutor {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
 			} catch (Exception e) {
-                String errorMsg = MessageFormat.format("init flow executor cause error,cannot parse rule file {0}", path);
+                String errorMsg = MessageFormat.format("init flow executor cause error,can not parse rule file {0}", path);
                 LOG.error(errorMsg, e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
@@ -110,6 +110,7 @@ public class FlowExecutor {
     private FlowParser matchFormatParser(String path, FlowParserTypeEnum pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         boolean isLocalFile = isLocalConfig(path);
         if(isLocalFile) {
+            LOG.info("flow info loaded from local file,path={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
                     return new LocalXmlFlowParser();
@@ -120,6 +121,7 @@ public class FlowExecutor {
                 default:
             }
         } else if(isClassConfig(path)){
+            LOG.info("flow info loaded from class config,class={},format type={}", path, pattern.getType());
             Class c = Class.forName(path);
             switch (pattern) {
                 case TYPE_XML:
@@ -131,6 +133,7 @@ public class FlowExecutor {
                 default:
             }
         } else if(isZKConfig(path)) {
+            LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
                     return StrUtil.isNotBlank(zkNode) ? new ZookeeperXmlFlowParser(zkNode) : new ZookeeperXmlFlowParser();
@@ -141,6 +144,7 @@ public class FlowExecutor {
                 default:
             }
         }
+        LOG.info("load flow info error, path={}, pattern={}", path, pattern.getType());
         return null;
     }
 

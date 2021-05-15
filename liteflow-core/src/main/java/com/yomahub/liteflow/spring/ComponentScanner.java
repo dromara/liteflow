@@ -7,23 +7,22 @@
  */
 package com.yomahub.liteflow.spring;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
-
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.util.LOGOPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 组件扫描类，只要是NodeComponent的实现类，都可以被这个扫描器扫到
  * @author Bryan.Zhang
  */
-public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
+public class ComponentScanner implements BeanPostProcessor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentScanner.class);
 

@@ -7,11 +7,7 @@
  */
 package com.yomahub.liteflow.flow;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cn.hutool.core.map.MapUtil;
-
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -21,6 +17,9 @@ import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 流程元数据类
@@ -61,19 +60,19 @@ public class FlowBus {
 	}
 
 	public static void addNode(String nodeId, Node node) {
+		if (containNode(nodeId)) return;
 		nodeMap.put(nodeId, node);
 	}
 
 	public static void addNode(String nodeId, String cmpClazzStr) throws Exception{
+		if (containNode(nodeId)) return;
 		Class<NodeComponent> cmpClazz = (Class<NodeComponent>)Class.forName(cmpClazzStr);
 		addNode(nodeId, cmpClazz);
 	}
 
 	public static void addNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
+		if (containNode(nodeId)) return;
 		try{
-			Node node = new Node();
-			node.setId(nodeId);
-			node.setClazz(cmpClazz.getName());
 			//以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
 			//这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
 			NodeComponent cmpInstance = SpringAware.registerOrGet(cmpClazz);
@@ -83,8 +82,7 @@ public class FlowBus {
 			}
 			cmpInstance.setNodeId(nodeId);
 			cmpInstance.setSelf(cmpInstance);
-			node.setInstance(cmpInstance);
-			nodeMap.put(nodeId,node);
+			nodeMap.put(nodeId, new Node(nodeId, cmpClazz.getName(), cmpInstance));
 		}catch (Exception e){
 			String error = StrUtil.format("component[{}] register error", cmpClazz.getName());
 			LOG.error(error, e);
