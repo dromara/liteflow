@@ -71,6 +71,7 @@ public class DataBus {
 		if(ObjectUtil.isNotNull(SLOTS.get(slotIndex))){
 			LOG.info("[{}]:slot[{}] released",SLOTS.get(slotIndex).getRequestId(),slotIndex);
 			SLOTS.set(slotIndex, null);
+			QUEUE.add(slotIndex);
 			OCCUPY_COUNT.decrementAndGet();
 		}else{
 			LOG.warn("slot[{}] already has been released",slotIndex);
