@@ -47,7 +47,7 @@ public class DataBus {
 		QUEUE = IntStream.range(0, slotSize - 1).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
 	}
 
-	public synchronized static int offerSlot(Class<? extends Slot> slotClazz) {
+	public static int offerSlot(Class<? extends Slot> slotClazz) {
 		try {
 			Slot slot = slotClazz.newInstance();
 			Integer slotIndex = QUEUE.poll();
