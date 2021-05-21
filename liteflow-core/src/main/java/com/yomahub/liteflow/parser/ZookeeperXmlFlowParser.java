@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 
 import cn.hutool.core.util.StrUtil;
 
+import com.yomahub.liteflow.flow.FlowBus;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.NodeCache;
@@ -57,13 +58,11 @@ public class ZookeeperXmlFlowParser extends XmlFlowParser{
         final NodeCache cache = new NodeCache(client,nodePath);
         cache.start();
 
-        cache.getListenable().addListener(new NodeCacheListener() {
-            @Override
-            public void nodeChanged() throws Exception {
-                String content = new String(cache.getCurrentData().getData());
-                LOG.info("stating load flow config....");
-                parse(content);
-            }
+        cache.getListenable().addListener(() -> {
+            String content1 = new String(cache.getCurrentData().getData());
+            LOG.info("stating load flow config....");
+            FlowBus.cleanCache();
+            parse(content1);
         });
 	}
 }
