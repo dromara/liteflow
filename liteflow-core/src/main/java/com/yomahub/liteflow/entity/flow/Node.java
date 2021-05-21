@@ -36,7 +36,7 @@ public class Node implements Executable{
 
 	private NodeComponent instance;
 
-	private Map<String, Executable> condNodeMap = new HashMap<String, Executable>();
+	private final Map<String, Executable> condNodeMap = new HashMap<>();
 
 	public Node(){
 
