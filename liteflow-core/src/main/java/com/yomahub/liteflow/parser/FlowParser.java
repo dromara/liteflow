@@ -29,7 +29,7 @@ public abstract class FlowParser {
     public abstract void parse(String content) throws Exception ;
 
     //条件节点的正则解析
-    public static RegexEntity parseNodeStr(String str) {
+    public RegexEntity parseNodeStr(String str) {
         List<String> list = new ArrayList<String>();
         Pattern p = Pattern.compile("[^\\)\\(]+");
         Matcher m = p.matcher(str);

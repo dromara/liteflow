@@ -9,6 +9,7 @@ import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Executable;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
+import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.util.SpringAware;
@@ -67,8 +68,9 @@ public abstract class XmlFlowParser extends FlowParser{
 				parseOneChain(e);
 			}
 		} catch (Exception e) {
-			LOG.error("FlowParser parser exception", e);
-			throw e;
+			String errorMsg = "FlowParser parser exception";
+			LOG.error(errorMsg, e);
+			throw new ParseException(errorMsg);
 		}
 	}
 
