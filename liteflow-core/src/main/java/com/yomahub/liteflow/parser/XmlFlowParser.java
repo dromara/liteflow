@@ -58,7 +58,9 @@ public abstract class XmlFlowParser extends FlowParser{
 				}
 			} else {
 				for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-					FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+					if (!FlowBus.containNode(componentEntry.getKey())){
+						FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+					}
 				}
 			}
 
