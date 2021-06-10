@@ -104,7 +104,9 @@ public class FlowBus {
         nodeMap.clear();
     }
 
+    //目前这种方式刷新不完全平滑
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
+        FlowBus.cleanCache();
         if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
             new LocalXmlFlowParser().parse(content);
         } else if (type.equals(FlowParserTypeEnum.TYPE_JSON)) {
