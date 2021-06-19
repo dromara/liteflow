@@ -16,16 +16,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境的自定义json parser单元测试
- * @author dongguo.tao
- * @since 2.5.0
+ * springboot环境的自定义xml parser单元测试
+ * 主要测试自定义配置源类是否能引入springboot中的其他依赖
+ * @author bryan.zhang
+ * @since 2.5.7
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/parsecustom/application-custom-json.properties")
-@SpringBootTest(classes = CustomParserJsonSpringbootTest.class)
+@TestPropertySource(value = "classpath:/parsecustom/application-custom-xml.properties")
+@SpringBootTest(classes = CustomParserXmlSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parsecustom.cmp"})
-public class CustomParserJsonSpringbootTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.parsecustom.cmp","com.yomahub.liteflow.test.parsecustom.bean"})
+public class CustomParserXmlSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

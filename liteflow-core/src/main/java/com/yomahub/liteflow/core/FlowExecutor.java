@@ -15,6 +15,7 @@ import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,14 +123,14 @@ public class FlowExecutor {
             }
         } else if(isClassConfig(path)){
             LOG.info("flow info loaded from class config,class={},format type={}", path, pattern.getType());
-            Class c = Class.forName(path);
+            Class<?> c = Class.forName(path);
             switch (pattern) {
                 case TYPE_XML:
-                    return (XmlFlowParser) c.newInstance();
+                    return (XmlFlowParser) SpringAware.registerBean(c);
                 case TYPE_JSON:
-                    return (JsonFlowParser) c.newInstance();
+                    return (JsonFlowParser) SpringAware.registerBean(c);
                 case TYPE_YML:
-                    return (YmlFlowParser) c.newInstance();
+                    return (YmlFlowParser) SpringAware.registerBean(c);
                 default:
             }
         } else if(isZKConfig(path)) {

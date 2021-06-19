@@ -1,11 +1,11 @@
-package com.yomahub.liteflow.test.parsecustom;
+package com.yomahub.liteflow.test.parsecustom.parser;
 
 import com.yomahub.liteflow.parser.ClassJsonFlowParser;
 
 /**
  * 模拟用户自定义源解析
  * @author dongguo.tao
- * @date 2021/4/7
+ * @since 2.5.0
  */
 public class CustomJsonFlowParser extends ClassJsonFlowParser {
     @Override
