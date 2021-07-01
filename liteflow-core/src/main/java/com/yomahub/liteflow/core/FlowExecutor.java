@@ -256,7 +256,7 @@ public class FlowExecutor {
             response.setSuccess(false);
             response.setMessage(ex.getMessage());
             response.setCause(ex.fillInStackTrace());
-            LOG.error("chain execute exception:{}", ex);
+            LOG.error("chain execute exception", ex);
         }
         return response;
     }
