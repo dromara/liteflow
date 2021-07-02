@@ -27,7 +27,7 @@ public class FlowMetaSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试自定义AOP，串行场景
+    //测试动态添加元信息节点
     @Test
     public void testFlowMeta() {
         FlowBus.addNode("d", DCmp.class);

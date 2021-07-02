@@ -1,6 +1,7 @@
 /**
  * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
+ *
  * @author Bryan.Zhang
  * @email weenyc31@163.com
  * @Date 2020/4/1
@@ -37,6 +38,7 @@ import java.util.List;
 
 /**
  * 流程规则主要执行器类
+ *
  * @author Bryan.Zhang
  */
 public class FlowExecutor {
@@ -73,7 +75,7 @@ public class FlowExecutor {
         for (String path : rulePath) {
             try {
                 FlowParserTypeEnum pattern = matchFormatConfig(path);
-                if(ObjectUtil.isNotNull(pattern)) {
+                if (ObjectUtil.isNotNull(pattern)) {
                     path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
                     switch (pattern) {
                         case TYPE_XML:
@@ -89,12 +91,12 @@ public class FlowExecutor {
                             LOG.error("can't support the format {}", path);
                     }
                 }
-                if(ObjectUtil.isNotNull(parser)) {
+                if (ObjectUtil.isNotNull(parser)) {
                     parser.parseMain(path);
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
-			} catch (Exception e) {
+            } catch (Exception e) {
                 String errorMsg = MessageFormat.format("init flow executor cause error,can not parse rule file {0}", path);
                 LOG.error(errorMsg, e);
                 throw new FlowExecutorNotInitException(errorMsg);
@@ -104,13 +106,14 @@ public class FlowExecutor {
 
     /**
      * 匹配路径配置，生成对应的解析器
-     * @param path 配置路径
+     *
+     * @param path    配置路径
      * @param pattern 格式
      * @return
      */
     private FlowParser matchFormatParser(String path, FlowParserTypeEnum pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         boolean isLocalFile = isLocalConfig(path);
-        if(isLocalFile) {
+        if (isLocalFile) {
             LOG.info("flow info loaded from local file,path={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
@@ -121,7 +124,7 @@ public class FlowExecutor {
                     return new LocalYmlFlowParser();
                 default:
             }
-        } else if(isClassConfig(path)){
+        } else if (isClassConfig(path)) {
             LOG.info("flow info loaded from class config,class={},format type={}", path, pattern.getType());
             Class<?> c = Class.forName(path);
             switch (pattern) {
@@ -133,7 +136,7 @@ public class FlowExecutor {
                     return (YmlFlowParser) SpringAware.registerBean(c);
                 default:
             }
-        } else if(isZKConfig(path)) {
+        } else if (isZKConfig(path)) {
             LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
@@ -151,17 +154,19 @@ public class FlowExecutor {
 
     /**
      * 判定是否为本地文件
+     *
      * @param path
      * @return
      */
     private boolean isLocalConfig(String path) {
         return ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)
                 || ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) ;
+                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path);
     }
 
     /**
      * 判定是否为自定义class配置
+     *
      * @param path
      * @return
      */
@@ -171,6 +176,7 @@ public class FlowExecutor {
 
     /**
      * 判定是否为zk配置
+     *
      * @param path
      * @return
      */
@@ -180,24 +186,25 @@ public class FlowExecutor {
 
     /**
      * 匹配文本格式，支持xml，json和yml
+     *
      * @param path
      * @return
      */
     private FlowParserTypeEnum matchFormatConfig(String path) {
-        if(ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_XML_CONFIG_REGEX, path)) {
+        if (ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_XML_CONFIG_REGEX, path)) {
             return FlowParserTypeEnum.TYPE_XML;
-        } else if(ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_JSON_CONFIG_REGEX, path)) {
+        } else if (ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_JSON_CONFIG_REGEX, path)) {
             return FlowParserTypeEnum.TYPE_JSON;
-        } else if(ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
+        } else if (ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
             return FlowParserTypeEnum.TYPE_YML;
-        } else if(isClassConfig(path)) {
+        } else if (isClassConfig(path)) {
             try {
                 Class clazz = Class.forName(path);
-                if(ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
+                if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
                     return FlowParserTypeEnum.TYPE_XML;
-                } else if(ClassJsonFlowParser.class.isAssignableFrom(clazz)) {
+                } else if (ClassJsonFlowParser.class.isAssignableFrom(clazz)) {
                     return FlowParserTypeEnum.TYPE_JSON;
-                } else if(ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
+                } else if (ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
                     return FlowParserTypeEnum.TYPE_YML;
                 }
             } catch (ClassNotFoundException e) {
@@ -210,9 +217,10 @@ public class FlowExecutor {
     public void reloadRule() {
         init();
     }
-    
+
     /**
      * callback by implicit subflow
+     *
      * @param chainId
      * @param param
      * @param slotClazz
@@ -224,54 +232,54 @@ public class FlowExecutor {
                                         Integer slotIndex) throws Exception {
         this.execute(chainId, param, slotClazz, slotIndex, true);
     }
-    
+
     public DefaultSlot execute(String chainId, Object param) throws Exception {
         return this.execute(chainId, param, DefaultSlot.class, null, false);
     }
-    
+
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz) throws Exception {
         return this.execute(chainId, param, slotClazz, null, false);
     }
-    
+
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
-                                     Integer slotIndex, boolean isInnerChain) throws Exception {
-        return this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
+                                      Integer slotIndex, boolean isInnerChain) throws Exception {
+        T slot = this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
+        if (ObjectUtil.isNotNull(slot.getException())) {
+            throw slot.getException();
+        } else {
+            return slot;
+        }
     }
-    
+
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId, Object param) {
         return this.execute2Resp(chainId, param, DefaultSlot.class);
     }
 
-	public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz)  {
+    public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz) {
         return this.execute2Resp(chainId, param, slotClazz, null, false);
     }
-    
+
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
-                                        boolean isInnerChain) {
+                                                             boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
-        try {
-            T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
-            response.setSlot(slot);
-        } catch (Exception ex) {
+
+        T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
+
+        if (ObjectUtil.isNotNull(slot.getException())) {
             response.setSuccess(false);
-            response.setMessage(ex.getMessage());
-            response.setCause(ex.fillInStackTrace());
-            LOG.error("chain execute exception", ex);
+            response.setMessage(slot.getException().getMessage());
+            response.setCause(slot.getException());
+        } else {
+            response.setSuccess(true);
         }
+        response.setSlot(slot);
         return response;
     }
-    
+
     private <T extends Slot> T doExecute(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
-									boolean isInnerChain) throws Exception {
-		if (FlowBus.needInit()) {
-			init();
-		}
-
-        Chain chain = FlowBus.getChain(chainId);
-
-        if (ObjectUtil.isNull(chain)) {
-            String errorMsg = MessageFormat.format("couldn't find chain with the id[{0}]", chainId);
-            throw new ChainNotFoundException(errorMsg);
+                                         boolean isInnerChain) {
+        if (FlowBus.needInit()) {
+            init();
         }
 
         if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
@@ -283,36 +291,47 @@ public class FlowExecutor {
             throw new NoAvailableSlotException("there is no available slot");
         }
 
-		T slot = DataBus.getSlot(slotIndex);
-		if (ObjectUtil.isNull(slot)) {
-			throw new NoAvailableSlotException("the slot is not exist");
-		}
+        T slot = DataBus.getSlot(slotIndex);
+        if (ObjectUtil.isNull(slot)) {
+            throw new NoAvailableSlotException("the slot is not exist");
+        }
 
         if (StrUtil.isBlank(slot.getRequestId())) {
             slot.generateRequestId();
             LOG.info("requestId[{}] has generated", slot.getRequestId());
         }
 
-		if (!isInnerChain) {
-			slot.setRequestData(param);
-			slot.setChainName(chainId);
-		} else {
-			slot.setChainReqData(chainId, param);
-		}
-		try {
-			// 执行chain
-			chain.execute(slotIndex);
-		} catch (Exception e) {
-			LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
-			throw e;
-		} finally {
-			if (!isInnerChain) {
-				slot.printStep();
-				DataBus.releaseSlot(slotIndex);
-			}
-		}
-		return slot;
-	}
+        if (!isInnerChain) {
+            slot.setRequestData(param);
+            slot.setChainName(chainId);
+        } else {
+            slot.setChainReqData(chainId, param);
+        }
+
+        Chain chain = null;
+        try {
+            chain = FlowBus.getChain(chainId);
+
+            if (ObjectUtil.isNull(chain)) {
+                String errorMsg = StrUtil.format("couldn't find chain with the id[{}]", chainId);
+                throw new ChainNotFoundException(errorMsg);
+            }
+
+            // 执行chain
+            chain.execute(slotIndex);
+        } catch (Exception e) {
+            if (ObjectUtil.isNotNull(chain)){
+                LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
+            }
+            slot.setException(e);
+        } finally {
+            if (!isInnerChain) {
+                slot.printStep();
+                DataBus.releaseSlot(slotIndex);
+            }
+        }
+        return slot;
+    }
 
     public String getZkNode() {
         return zkNode;

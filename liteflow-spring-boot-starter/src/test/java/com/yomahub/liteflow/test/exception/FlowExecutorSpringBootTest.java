@@ -1,7 +1,9 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
@@ -71,6 +73,14 @@ public class FlowExecutorSpringBootTest extends BaseTest {
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("no conditionList in this chain[chain2]", response.getMessage());
         ReflectionUtils.rethrowException(response.getCause());
+    }
+
+    @Test
+    public void testGetSlotFromResponseWhenException() throws Exception{
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "test");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertNotNull(response.getCause());
+        Assert.assertNotNull(response.getSlot());
     }
     
 //    @Test(expected = WhenExecuteException.class)

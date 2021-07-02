@@ -12,43 +12,47 @@ package com.yomahub.liteflow.entity.data;
  * @author Bryan.Zhang
  */
 public interface Slot {
-	public <T> T getInput(String nodeId);
+	<T> T getInput(String nodeId);
 
-	public <T> T getOutput(String nodeId);
+	<T> T getOutput(String nodeId);
 
-	public <T> void setInput(String nodeId,T t);
+	<T> void setInput(String nodeId,T t);
 
-	public <T> void setOutput(String nodeId,T t);
+	<T> void setOutput(String nodeId,T t);
 
-	public <T> T getRequestData();
+	<T> T getRequestData();
 
-	public <T> void setRequestData(T t);
+	<T> void setRequestData(T t);
 
-	public <T> T getResponseData();
+	<T> T getResponseData();
 
-	public <T> void setChainReqData(String chainId, T t);
+	<T> void setChainReqData(String chainId, T t);
 
-	public <T> T getChainReqData(String chainId);
+	<T> T getChainReqData(String chainId);
 
-	public <T> void setResponseData(T t);
+	<T> void setResponseData(T t);
 
-	public <T> T getData(String key);
+	<T> T getData(String key);
 
-	public <T> void setData(String key, T t);
+	<T> void setData(String key, T t);
 
-	public <T> void setCondResult(String key, T t);
+	<T> void setCondResult(String key, T t);
 
-	public <T> T getCondResult(String key);
+	<T> T getCondResult(String key);
 
-	public void addStep(CmpStep step);
+	void addStep(CmpStep step);
 
-	public String printStep();
+	String printStep();
 
-	public void generateRequestId();
+	void generateRequestId();
 
-	public String getRequestId();
+	String getRequestId();
 
-	public void setChainName(String chainName);
+	void setChainName(String chainName);
 
-	public String getChainName();
+	String getChainName();
+
+	void setException(Exception e);
+
+	Exception getException();
 }

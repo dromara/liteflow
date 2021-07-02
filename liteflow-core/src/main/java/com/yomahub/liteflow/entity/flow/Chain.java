@@ -10,6 +10,7 @@ package com.yomahub.liteflow.entity.flow;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
@@ -143,31 +144,27 @@ public class Chain implements Executable {
             interrupted = true;
         }
 
-        /**
-         * 当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
-         */
+        //当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
         if (!condition.isErrorResume()) {
             if (interrupted) {
-                throw new WhenExecuteException(String.format(
-                        "requestId [%s] when execute interrupted. errorResume [false].", requestId));
+                throw new WhenExecuteException(StrUtil.format(
+                        "requestId [{}] when execute interrupted. errorResume [false].", requestId));
             }
 
             for (Future<Boolean> f : futures) {
                 try {
                     if (!f.get()) {
-                        throw new WhenExecuteException(String.format(
-                                "requestId [%s] when execute failed. errorResume [false].", requestId));
+                        throw new WhenExecuteException(StrUtil.format(
+                                "requestId [{}] when execute failed. errorResume [false].", requestId));
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new WhenExecuteException(String.format(
-                            "requestId [%s] when execute failed. errorResume [false].", requestId));
+                    throw new WhenExecuteException(StrUtil.format(
+                            "requestId [{}] when execute failed. errorResume [false].", requestId));
                 }
             }
-
         } else if (interrupted) {
             //  这里由于配置了errorResume，所以只打印warn日志
             LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", requestId);
         }
-
     }
 }

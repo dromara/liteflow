@@ -40,6 +40,8 @@ public abstract class AbsSlot implements Slot {
 
 	private static final String REQUEST_ID = "req_id";
 
+	private static final String EXCEPTION = "exception";
+
 	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
 
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
@@ -138,5 +140,15 @@ public abstract class AbsSlot implements Slot {
 
 	public Deque<CmpStep> getExecuteSteps() {
 		return executeSteps;
+	}
+
+	@Override
+	public Exception getException() {
+		return (Exception) this.dataMap.get(EXCEPTION);
+	}
+
+	@Override
+	public void setException(Exception e) {
+		this.dataMap.put(EXCEPTION, e);
 	}
 }
