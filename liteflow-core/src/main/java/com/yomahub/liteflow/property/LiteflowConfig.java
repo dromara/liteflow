@@ -18,6 +18,11 @@ import cn.hutool.core.util.ObjectUtil;
  */
 public class LiteflowConfig {
 
+    /**
+     * 是否启动liteflow自动装配
+     */
+    private Boolean enable;
+
     //流程定义资源地址
     private String ruleSource;
 
@@ -48,6 +53,18 @@ public class LiteflowConfig {
     //是否在启动时解析规则文件
     //这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
     private Boolean parseOnStart;
+
+    public Boolean getEnable() {
+        if (ObjectUtil.isNull(enable)){
+            return true;
+        }else{
+            return enable;
+        }
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
+    }
 
     public String getRuleSource() {
         return ruleSource;

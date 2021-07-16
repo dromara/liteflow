@@ -19,8 +19,9 @@ import org.springframework.context.annotation.Import;
  * @author Bryan.Zhang
  */
 @Configuration
-@ConditionalOnBean(LiteflowConfig.class)
 @AutoConfigureAfter({LiteflowPropertyAutoConfiguration.class})
+@ConditionalOnBean(LiteflowConfig.class)
+@ConditionalOnProperty(prefix = "liteflow", name = "enable", havingValue = "true")
 @Import(SpringAware.class)
 public class LiteflowMainAutoConfiguration {
 

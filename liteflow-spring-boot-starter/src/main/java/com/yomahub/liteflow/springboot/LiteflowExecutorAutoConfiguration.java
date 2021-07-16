@@ -5,6 +5,7 @@ import com.yomahub.liteflow.util.ExecutorHelper;
 import com.yomahub.liteflow.util.Shutdown;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,8 +17,9 @@ import java.util.concurrent.ExecutorService;
  * @author justin.xu
  */
 @Configuration
-@ConditionalOnBean(LiteflowConfig.class)
 @AutoConfigureAfter({LiteflowPropertyAutoConfiguration.class})
+@ConditionalOnProperty(prefix = "liteflow", name = "enable", havingValue = "true")
+@ConditionalOnBean(LiteflowConfig.class)
 public class LiteflowExecutorAutoConfiguration {
 
     @Bean("whenExecutors")

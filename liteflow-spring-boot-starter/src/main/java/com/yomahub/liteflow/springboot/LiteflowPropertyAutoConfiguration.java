@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.property.LiteflowConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
         liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
         liteflowConfig.setParseOnStart(property.isParseOnStart());
+        liteflowConfig.setEnable(property.isEnable());
         return liteflowConfig;
     }
 }
