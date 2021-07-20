@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser;
 
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -11,7 +12,6 @@ import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
-import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,51 +26,58 @@ public abstract class JsonFlowParser extends FlowParser{
 
     private final Logger LOG = LoggerFactory.getLogger(JsonFlowParser.class);
 
+    public void parse(String content) throws Exception{
+        parse(ListUtil.toList(content));
+    }
+
     @Override
-    public void parse(String content) throws Exception {
-        if (StrUtil.isBlank(content)){
+    public void parse(List<String> contentList) throws Exception {
+        if (CollectionUtil.isEmpty(contentList)) {
             return;
         }
 
-        //把字符串原生转换为json对象，如果不加第二个参数OrderedField，会无序
-        JSONObject flowJsonObject = JSONObject.parseObject(content, Feature.OrderedField);
-        parse(flowJsonObject);
+        List<JSONObject> jsonObjectList = ListUtil.toList();
+        for (String content : contentList){
+            //把字符串原生转换为json对象，如果不加第二个参数OrderedField，会无序
+            JSONObject flowJsonObject = JSONObject.parseObject(content, Feature.OrderedField);
+            jsonObjectList.add(flowJsonObject);
+        }
+
+        parseJsonObject(jsonObjectList);
     }
 
     //json格式，解析过程
-    public void parse(JSONObject flowJsonObject) throws Exception {
+    public void parseJsonObject(List<JSONObject> flowJsonObjectList) throws Exception {
         try {
-            //判断是以spring方式注册节点，还是以json方式注册
-            if(ComponentScanner.nodeComponentMap.isEmpty()){
-                JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
-                String id;
-                String clazz;
-                for(int i = 0; i< nodeArrayList.size(); i++) {
-                    JSONObject nodeObject = nodeArrayList.getJSONObject(i);
-                    id = nodeObject.getString("id");
-                    clazz = nodeObject.getString("class");
-                    FlowBus.addNode(id, clazz);
-                }
-            } else {
-                for(Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()){
-                    if(!FlowBus.containNode(componentEntry.getKey())){
-                        FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+            for (JSONObject flowJsonObject : flowJsonObjectList){
+                //判断是以spring方式注册节点，还是以json方式注册
+                if(ComponentScanner.nodeComponentMap.isEmpty()){
+                    JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
+                    String id;
+                    String clazz;
+                    for(int i = 0; i< nodeArrayList.size(); i++) {
+                        JSONObject nodeObject = nodeArrayList.getJSONObject(i);
+                        id = nodeObject.getString("id");
+                        clazz = nodeObject.getString("class");
+                        FlowBus.addNode(id, clazz);
+                    }
+                } else {
+                    for(Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()){
+                        if(!FlowBus.containNode(componentEntry.getKey())){
+                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+                        }
                     }
                 }
-            }
 
-            // 解析chain节点
-            JSONArray chainList = flowJsonObject.getJSONObject("flow").getJSONArray("chain");
-            Map<String, JSONObject> chainMap = new HashMap<>();
-            for(int i=0; i<chainList.size(); i++) {
-                JSONObject chainObject = chainList.getJSONObject(i);
-                if(chainObject.containsKey("name") && StrUtil.isNotBlank(chainObject.getString("name"))) {
-                    chainMap.put(chainObject.getString("name"), chainObject);
+                // 解析chain节点
+                JSONArray chainArray = flowJsonObject.getJSONObject("flow").getJSONArray("chain");
+                for (int i = 0; i < chainArray.size(); i++) {
+                    JSONObject jsonObject = chainArray.getJSONObject(i);
+                    String chainName = jsonObject.getString("name");
+                    if (!FlowBus.containChain(chainName)){
+                        parseOneChain(jsonObject, flowJsonObjectList);
+                    }
                 }
-            }
-
-            for(Map.Entry<String, JSONObject> chainEntry : chainMap.entrySet()) {
-                parseOneChain(chainEntry.getValue(), chainMap);
             }
         } catch (Exception e) {
             LOG.error("JsonFlowParser parser exception", e);
@@ -80,11 +87,8 @@ public abstract class JsonFlowParser extends FlowParser{
 
     /**
      * 解析一个chain的过程
-     * @param chainObject
-     * @param chainMap
-     * @throws Exception
      */
-    private void parseOneChain(JSONObject chainObject, Map<String, JSONObject> chainMap) throws Exception{
+    private void parseOneChain(JSONObject chainObject, List<JSONObject> flowJsonObjectList) throws Exception{
         String condArrayStr;
         String[] condArray;
         List<Executable> chainNodeList;
@@ -95,8 +99,8 @@ public abstract class JsonFlowParser extends FlowParser{
         String chainName = chainObject.getString("name");
         JSONArray conditionArray = chainObject.getJSONArray("condition");
         conditionList = new ArrayList<>();
-        for(Iterator<Object> iterator = conditionArray.iterator(); iterator.hasNext();) {
-            JSONObject condObject = (JSONObject) iterator.next();
+        for (Object o : conditionArray) {
+            JSONObject condObject = (JSONObject) o;
             String condType = condObject.getString("type");
             condArrayStr = condObject.getString("value");
             group = condObject.getString("group");
@@ -130,17 +134,16 @@ public abstract class JsonFlowParser extends FlowParser{
                             if (FlowBus.containNode(key)) {
                                 Node condNode = FlowBus.getNode(key);
                                 node.setCondNode(condNode.getId(), condNode);
-                            } else if (hasChain(chainMap, key)) {
+                            } else if (hasChain(flowJsonObjectList, key)) {
                                 Chain chain = FlowBus.getChain(key);
                                 node.setCondNode(chain.getChainName(), chain);
                             }
                         }
                     }
-                } else if(hasChain(chainMap,item)){
+                } else if (hasChain(flowJsonObjectList, item)) {
                     Chain chain = FlowBus.getChain(item);
                     chainNodeList.add(chain);
-                }
-                else {
+                } else {
                     String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem());
                     throw new ExecutableItemNotFoundException(errorMsg);
                 }
@@ -149,7 +152,7 @@ public abstract class JsonFlowParser extends FlowParser{
             condition.setGroup(group);
             condition.setConditionType(condType);
             condition.setNodeList(chainNodeList);
-            super.buildBaseFlowConditions(conditionList,condition);
+            super.buildBaseFlowConditions(conditionList, condition);
         }
         FlowBus.addChain(chainName, new Chain(chainName,conditionList));
     }
@@ -157,16 +160,19 @@ public abstract class JsonFlowParser extends FlowParser{
     /**
      * 判断在这个FlowBus元数据里是否含有这个chain
      * 因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
-     * @param chainMap
-     * @param chainName
-     * @return
      */
-    private boolean hasChain(Map<String, JSONObject> chainMap, String chainName) throws Exception {
-        if(chainMap.containsKey(chainName) && !FlowBus.containChain(chainName)) {
-            parseOneChain(chainMap.get(chainName), chainMap);
-            return true;
-        } else if(FlowBus.containChain(chainName)) {
-            return true;
+    private boolean hasChain(List<JSONObject> flowJsonObjectList, String chainName) throws Exception {
+        for (JSONObject jsonObject : flowJsonObjectList){
+            JSONArray chainArray = jsonObject.getJSONObject("flow").getJSONArray("chain");
+            for(int i=0; i<chainArray.size(); i++) {
+                JSONObject chainObject = chainArray.getJSONObject(i);
+                if (chainObject.getString("name").equals(chainName) && !FlowBus.containChain(chainName)){
+                    parseOneChain(chainObject, flowJsonObjectList);
+                    return true;
+                }else if(FlowBus.containChain(chainName)){
+                    return true;
+                }
+            }
         }
         return false;
     }

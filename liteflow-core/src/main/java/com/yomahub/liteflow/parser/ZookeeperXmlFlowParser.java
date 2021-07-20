@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 import cn.hutool.core.util.StrUtil;
 
@@ -8,7 +9,6 @@ import com.yomahub.liteflow.flow.FlowBus;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.NodeCache;
-import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,9 @@ public class ZookeeperXmlFlowParser extends XmlFlowParser{
 	}
 
 	@Override
-	public void parseMain(String path) throws Exception {
+	public void parseMain(List<String> pathList) throws Exception {
+        //zk不允许有多个path
+        String path = pathList.get(0);
 		CuratorFramework client = CuratorFrameworkFactory.newClient(
 				path,
                 new RetryNTimes(10, 5000)

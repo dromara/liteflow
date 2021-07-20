@@ -13,7 +13,7 @@ import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
-import com.yomahub.liteflow.exception.ConfigErrorException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
@@ -25,16 +25,15 @@ import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.exception.ChainNotFoundException;
-import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
-import com.yomahub.liteflow.exception.NoAvailableSlotException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 流程规则主要执行器类
@@ -72,6 +71,7 @@ public class FlowExecutor {
         List<String> rulePath = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
         FlowParser parser = null;
+        Set<String> parserNameSet = new HashSet<>();
         for (String path : rulePath) {
             try {
                 FlowParserTypeEnum pattern = matchFormatConfig(path);
@@ -80,27 +80,45 @@ public class FlowExecutor {
                     switch (pattern) {
                         case TYPE_XML:
                             parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
+                            parserNameSet.add(parser.getClass().getName());
                             break;
                         case TYPE_JSON:
                             parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
+                            parserNameSet.add(parser.getClass().getName());
                             break;
                         case TYPE_YML:
                             parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
+                            parserNameSet.add(parser.getClass().getName());
                             break;
                         default:
-                            LOG.error("can't support the format {}", path);
+                            String errorMsg = StrUtil.format("can't support the format {}", path);
+                            throw new ErrorSupportPathException(errorMsg);
                     }
                 }
-                if (ObjectUtil.isNotNull(parser)) {
-                    parser.parseMain(path);
-                } else {
-                    throw new ConfigErrorException("parse error, please check liteflow config property");
-                }
             } catch (Exception e) {
-                String errorMsg = MessageFormat.format("init flow executor cause error,can not parse rule file {0}", path);
+                String errorMsg = StrUtil.format("init flow executor cause error,cannot find the parse for path {}", path);
                 LOG.error(errorMsg, e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
+        }
+
+        //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
+        if (parserNameSet.size() != 1){
+            String errorMsg = "cannot have multiple different parsers";
+            LOG.error(errorMsg);
+            throw new MultipleParsersException(errorMsg);
+        }
+
+        try{
+            if (ObjectUtil.isNotNull(parser)) {
+                parser.parseMain(rulePath);
+            } else {
+                throw new ConfigErrorException("parse error, please check liteflow config property");
+            }
+        } catch (Exception e) {
+            String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePath);
+            LOG.error(errorMsg, e);
+            throw new FlowExecutorNotInitException(errorMsg);
         }
     }
 

@@ -5,12 +5,12 @@ import com.yomahub.liteflow.exception.ParseException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.NodeCache;
-import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * 基于zk方式的json形式的解析器
@@ -32,7 +32,9 @@ public class ZookeeperJsonFlowParser extends JsonFlowParser{
     }
 
     @Override
-    public void parseMain(String path) throws Exception {
+    public void parseMain(List<String> pathList) throws Exception {
+        //zk不允许有多个path
+        String path = pathList.get(0);
         CuratorFramework client = CuratorFrameworkFactory.newClient(
                 path,
                 new RetryNTimes(10, 5000)
@@ -56,13 +58,10 @@ public class ZookeeperJsonFlowParser extends JsonFlowParser{
         final NodeCache cache = new NodeCache(client,nodePath);
         cache.start();
 
-        cache.getListenable().addListener(new NodeCacheListener() {
-            @Override
-            public void nodeChanged() throws Exception {
-                String content = new String(cache.getCurrentData().getData());
-                LOG.info("stating load flow config....");
-                parse(content);
-            }
+        cache.getListenable().addListener(() -> {
+            String content1 = new String(cache.getCurrentData().getData());
+            LOG.info("stating load flow config....");
+            parse(content1);
         });
     }
 }

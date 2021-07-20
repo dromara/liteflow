@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ArrayUtil;
 import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.ThenCondition;
@@ -13,8 +15,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,9 +26,9 @@ import java.util.regex.Pattern;
  */
 public abstract class FlowParser {
 
-    public abstract void parseMain(String path) throws Exception;
+    public abstract void parseMain(List<String> pathList) throws Exception;
 
-    public abstract void parse(String content) throws Exception ;
+    public abstract void parse(List<String> contentList) throws Exception ;
 
     //条件节点的正则解析
     public RegexEntity parseNodeStr(String str) {
@@ -69,21 +71,31 @@ public abstract class FlowParser {
     
     /**
      *  根据配置的ruleSource查找匹配的资源
-     * @param ruleSource 
-     * @return
-     * @throws IOException
      */
-    protected Resource[] matchRuleResources(final String ruleSource)  throws IOException {
-        Assert.notNull(ruleSource, "rule source must not be null");
-        String locationPattern = ruleSource;
-        if (!locationPattern.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
-            locationPattern = ResourceUtils.CLASSPATH_URL_PREFIX + locationPattern;
+    protected Resource[] matchRuleResources(final List<String> pathList)  throws IOException {
+        Assert.notEmpty(pathList, "rule source must not be null");
+
+        List<Resource> allResource = new ArrayList<>();
+        for (String path : pathList){
+            String locationPattern = path;
+            if (!locationPattern.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
+                locationPattern = ResourceUtils.CLASSPATH_URL_PREFIX + locationPattern;
+            }
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources(locationPattern);
+            if(ArrayUtil.isEmpty(resources)) {
+                throw new ConfigErrorException("config error,please check rule source property");
+            }
+            allResource.addAll(ListUtil.toList(resources));
         }
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources(locationPattern);
-        if(ArrayUtil.isEmpty(resources)) {
-            throw new ConfigErrorException("config error,please check rule source property");
+
+        //如果有多个资源，检查资源都是同一个类型，如果出现不同类型的配置，则抛出错误提示
+        Set<String> fileTypeSet = new HashSet<>();
+        allResource.forEach(resource -> fileTypeSet.add(FileUtil.extName(resource.getFilename())));
+        if (fileTypeSet.size() != 1){
+            throw new ConfigErrorException("config error,please use the same type of configuration");
         }
-        return resources;
+
+        return allResource.toArray(new Resource[]{});
     }
 }
