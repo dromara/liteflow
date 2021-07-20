@@ -48,7 +48,7 @@ public class SubflowInDifferentConfigTest extends BaseTest {
     @Test(expected = MultipleParsersException.class)
     public void testExplicitSubFlow2() {
         LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        config.setRuleSource("/subflow/application-subInDifferentConfig2.properties");
+        config.setRuleSource("subflow/flow-main.xml,subflow/flow-sub1.xml,subflow/flow-sub2.yml");
         flowExecutor.init();
     }
 }

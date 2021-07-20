@@ -31,6 +31,7 @@ import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,11 +69,12 @@ public class FlowExecutor {
         if (ObjectUtil.isNull(liteflowConfig) || StrUtil.isBlank(liteflowConfig.getRuleSource())) {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
-        List<String> rulePath = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
+        List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
         FlowParser parser = null;
         Set<String> parserNameSet = new HashSet<>();
-        for (String path : rulePath) {
+        List<String> rulePathList = new ArrayList<>();
+        for (String path : sourceRulePathList) {
             try {
                 FlowParserTypeEnum pattern = matchFormatConfig(path);
                 if (ObjectUtil.isNotNull(pattern)) {
@@ -95,6 +97,7 @@ public class FlowExecutor {
                             throw new ErrorSupportPathException(errorMsg);
                     }
                 }
+                rulePathList.add(path);
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error,cannot find the parse for path {}", path);
                 LOG.error(errorMsg, e);
@@ -103,7 +106,7 @@ public class FlowExecutor {
         }
 
         //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
-        if (parserNameSet.size() != 1){
+        if (parserNameSet.size() > 1){
             String errorMsg = "cannot have multiple different parsers";
             LOG.error(errorMsg);
             throw new MultipleParsersException(errorMsg);
@@ -111,12 +114,12 @@ public class FlowExecutor {
 
         try{
             if (ObjectUtil.isNotNull(parser)) {
-                parser.parseMain(rulePath);
+                parser.parseMain(rulePathList);
             } else {
                 throw new ConfigErrorException("parse error, please check liteflow config property");
             }
         } catch (Exception e) {
-            String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePath);
+            String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePathList);
             LOG.error(errorMsg, e);
             throw new FlowExecutorNotInitException(errorMsg);
         }
