@@ -19,9 +19,7 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.collection.BoundedPriorityQueue;
-
+import com.yomahub.liteflow.util.BoundedPriorityBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +38,7 @@ public class MonitorBus {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	private final ConcurrentHashMap<String, BoundedPriorityQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, BoundedPriorityBlockingQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
 
 	public MonitorBus(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
@@ -55,7 +53,7 @@ public class MonitorBus {
 		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
 			statisticsMap.get(statistics.getComponentClazzName()).add(statistics);
 		}else{
-			BoundedPriorityQueue<CompStatistics> queue = new BoundedPriorityQueue<>(liteflowConfig.getQueueLimit());
+			BoundedPriorityBlockingQueue<CompStatistics> queue = new BoundedPriorityBlockingQueue<>(liteflowConfig.getQueueLimit());
 			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
@@ -65,7 +63,7 @@ public class MonitorBus {
 		try{
 			Map<String, BigDecimal> compAverageTimeSpent = new HashMap<String, BigDecimal>();
 			
-			for(Entry<String, BoundedPriorityQueue<CompStatistics>> entry : statisticsMap.entrySet()){
+			for(Entry<String, BoundedPriorityBlockingQueue<CompStatistics>> entry : statisticsMap.entrySet()){
 				long totalTimeSpent = 0;
 				for(CompStatistics statistics : entry.getValue()){
 					totalTimeSpent += statistics.getTimeSpent();

@@ -11,7 +11,7 @@ package com.yomahub.liteflow.entity.monitor;
  * 统计类
  * @author Bryan.Zhang
  */
-public class CompStatistics implements Comparable{
+public class CompStatistics implements Comparable<CompStatistics>{
 
 	private String componentClazzName;
 
@@ -55,9 +55,9 @@ public class CompStatistics implements Comparable{
 	}
 	
 	@Override
-	public int compareTo(Object o) {
-		if( o instanceof CompStatistics) {
-			return this.recordTime >= ((CompStatistics) o).getRecordTime()  ? -1 : 1;
+	public int compareTo(CompStatistics o) {
+		if(o != null) {
+			return this.recordTime >= o.getRecordTime()  ? -1 : 1;
 		}
 		return 1;
 	}

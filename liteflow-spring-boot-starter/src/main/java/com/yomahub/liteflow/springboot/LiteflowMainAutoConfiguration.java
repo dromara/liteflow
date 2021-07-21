@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
  * 主要的业务装配器
  * 在这个装配器里装配了执行器，执行器初始化类，监控器
  * 这个装配前置条件是需要LiteflowConfig，LiteflowPropertyAutoConfiguration以及SpringAware
+ *
  * @author Bryan.Zhang
  */
 @Configuration
@@ -37,12 +38,13 @@ public class LiteflowMainAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "liteflow",name = "parse-on-start",havingValue = "true")
+    @ConditionalOnProperty(prefix = "liteflow", name = "parse-on-start", havingValue = "true")
     public LiteflowExecutorInit liteflowExecutorInit(FlowExecutor flowExecutor) {
         return new LiteflowExecutorInit(flowExecutor);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "liteflow", name = "monitor.enable-log", havingValue = "true")
     public MonitorBus monitorBus(LiteflowConfig liteflowConfig) {
         return new MonitorBus(liteflowConfig);
     }
