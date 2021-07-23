@@ -2,7 +2,7 @@ package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.ExecutorHelper;
-import com.yomahub.liteflow.util.Shutdown;
+import com.yomahub.liteflow.util.LiteFlowExecutorPoolShutdown;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,7 +30,7 @@ public class LiteflowExecutorAutoConfiguration {
     }
 
     @Bean
-    public Shutdown shutdown() {
-        return new Shutdown();
+    public LiteFlowExecutorPoolShutdown liteFlowExecutorPoolShutdown() {
+        return new LiteFlowExecutorPoolShutdown();
     }
 }

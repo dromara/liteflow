@@ -11,9 +11,9 @@ import java.util.concurrent.ExecutorService;
  * 执行清理工作
  * @author Bryan.Zhang
  */
-public class Shutdown {
+public class LiteFlowExecutorPoolShutdown {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Shutdown.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LiteFlowExecutorPoolShutdown.class);
 
     @PreDestroy
     public void destroy() throws Exception {

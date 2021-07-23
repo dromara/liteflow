@@ -33,6 +33,6 @@
 		<property name="liteflowConfig" ref="liteflowConfig"/>
 	</bean>
 
-	<bean id="whenExecutors" class="com.yomahub.liteflow.util.Shutdown"/>
+	<bean id="whenExecutors" class="com.yomahub.liteflow.util.LiteFlowExecutorPoolShutdown"/>
 
 </beans>
