@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
@@ -98,6 +99,15 @@ public class FlowExecutor {
                     }
                 }
                 rulePathList.add(path);
+
+                //支持多类型的配置文件，分别解析
+                if (liteflowConfig.isSupportMultipleType()){
+                    if (ObjectUtil.isNotNull(parser)) {
+                        parser.parseMain(ListUtil.toList(path));
+                    } else {
+                        throw new ConfigErrorException("parse error, please check liteflow config property");
+                    }
+                }
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error,cannot find the parse for path {}", path);
                 LOG.error(errorMsg, e);
@@ -105,23 +115,27 @@ public class FlowExecutor {
             }
         }
 
-        //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
-        if (parserNameSet.size() > 1){
-            String errorMsg = "cannot have multiple different parsers";
-            LOG.error(errorMsg);
-            throw new MultipleParsersException(errorMsg);
-        }
-
-        try{
-            if (ObjectUtil.isNotNull(parser)) {
-                parser.parseMain(rulePathList);
-            } else {
-                throw new ConfigErrorException("parse error, please check liteflow config property");
+        //单类型的配置文件，需要一起解析
+        if (!liteflowConfig.isSupportMultipleType()){
+            //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
+            if (parserNameSet.size() > 1){
+                String errorMsg = "cannot have multiple different parsers";
+                LOG.error(errorMsg);
+                throw new MultipleParsersException(errorMsg);
             }
-        } catch (Exception e) {
-            String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePathList);
-            LOG.error(errorMsg, e);
-            throw new FlowExecutorNotInitException(errorMsg);
+
+            //进行
+            try{
+                if (ObjectUtil.isNotNull(parser)) {
+                    parser.parseMain(rulePathList);
+                } else {
+                    throw new ConfigErrorException("parse error, please check liteflow config property");
+                }
+            } catch (Exception e) {
+                String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePathList);
+                LOG.error(errorMsg, e);
+                throw new FlowExecutorNotInitException(errorMsg);
+            }
         }
     }
 

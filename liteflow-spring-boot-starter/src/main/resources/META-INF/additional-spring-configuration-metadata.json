@@ -1,6 +1,12 @@
 {
   "properties": [
     {
+      "name": "liteflow.enable",
+      "type": "java.lang.Boolean",
+      "description": "Whether to turn on liteflow.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.rule-source",
       "type": "java.lang.String",
       "description": "Location of the flow rule source.",
@@ -37,6 +43,13 @@
       "name": "liteflow.parse-on-start",
       "type": "java.lang.Boolean",
       "description": "Set whether the rule file needs to be parsed at startup.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.support-multiple-type",
+      "type": "java.lang.Boolean",
+      "description": "Whether to support multiple types of configuration.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": true
     },

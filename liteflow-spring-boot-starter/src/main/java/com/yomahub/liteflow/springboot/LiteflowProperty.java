@@ -31,6 +31,10 @@ public class LiteflowProperty {
     //这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
     private boolean parseOnStart;
 
+    //这个属性为true，则支持多种不同的类型的配置
+    //但是要注意，不能将主流程和子流程分配在不同类型配置文件中
+    private boolean supportMultipleType;
+
     public boolean isEnable() {
         return enable;
     }
@@ -85,5 +89,13 @@ public class LiteflowProperty {
 
     public void setParseOnStart(boolean parseOnStart) {
         this.parseOnStart = parseOnStart;
+    }
+
+    public boolean isSupportMultipleType() {
+        return supportMultipleType;
+    }
+
+    public void setSupportMultipleType(boolean supportMultipleType) {
+        this.supportMultipleType = supportMultipleType;
     }
 }

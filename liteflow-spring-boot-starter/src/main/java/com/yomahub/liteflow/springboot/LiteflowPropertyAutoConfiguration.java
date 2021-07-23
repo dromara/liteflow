@@ -34,6 +34,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
         liteflowConfig.setParseOnStart(property.isParseOnStart());
         liteflowConfig.setEnable(property.isEnable());
+        liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
         return liteflowConfig;
     }
 }

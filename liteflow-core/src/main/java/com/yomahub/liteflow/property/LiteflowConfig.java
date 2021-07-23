@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.property;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
  * liteflow的配置实体类
@@ -53,6 +54,10 @@ public class LiteflowConfig {
     //是否在启动时解析规则文件
     //这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
     private Boolean parseOnStart;
+
+    //这个属性为true，则支持多种不同的类型的配置
+    //但是要注意，不能将主流程和子流程分配在不同类型配置文件中
+    private Boolean supportMultipleType;
 
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)){
@@ -180,5 +185,17 @@ public class LiteflowConfig {
 
     public void setParseOnStart(Boolean parseOnStart) {
         this.parseOnStart = parseOnStart;
+    }
+
+    public Boolean isSupportMultipleType() {
+        if (ObjectUtil.isNull(supportMultipleType)){
+            return true;
+        }else{
+            return supportMultipleType;
+        }
+    }
+
+    public void setSupportMultipleType(Boolean supportMultipleType) {
+        this.supportMultipleType = supportMultipleType;
     }
 }
