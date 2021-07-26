@@ -124,7 +124,7 @@ public class FlowExecutor {
                 throw new MultipleParsersException(errorMsg);
             }
 
-            //进行
+            //进行多个配置文件的一起解析
             try{
                 if (ObjectUtil.isNotNull(parser)) {
                     parser.parseMain(rulePathList);
