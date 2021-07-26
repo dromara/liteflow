@@ -41,6 +41,8 @@ public abstract class NodeComponent {
 
 	private String nodeId;
 
+	private String name;
+
 	//这是自己的实例，取代this
 	//为何要设置这个，用this不行么，因为如果有aop去切的话，this在spring的aop里是切不到的。self对象有可能是代理过的对象
 	private NodeComponent self;
@@ -162,5 +164,13 @@ public abstract class NodeComponent {
 
 	public void setSelf(NodeComponent self) {
 		this.self = self;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

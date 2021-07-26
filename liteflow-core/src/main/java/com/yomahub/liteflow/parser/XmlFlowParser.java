@@ -33,7 +33,7 @@ public abstract class XmlFlowParser extends FlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
 
-    public void parse(String content) throws Exception{
+    public void parse(String content) throws Exception {
         parse(ListUtil.toList(content));
     }
 
@@ -58,17 +58,17 @@ public abstract class XmlFlowParser extends FlowParser {
                 if (ComponentScanner.nodeComponentMap.isEmpty()) {
                     // 解析node节点
                     List<Element> nodeList = rootElement.element("nodes").elements("node");
-                    String id;
-                    String clazz;
+                    String id, name, clazz;
                     for (Element e : nodeList) {
                         id = e.attributeValue("id");
+                        name = e.attributeValue("name");
                         clazz = e.attributeValue("class");
-                        FlowBus.addNode(id, clazz);
+                        FlowBus.addNode(id, name, clazz);
                     }
                 } else {
                     for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
                         if (!FlowBus.containNode(componentEntry.getKey())) {
-                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
                         }
                     }
                 }
@@ -77,7 +77,7 @@ public abstract class XmlFlowParser extends FlowParser {
                 List<Element> chainList = rootElement.elements("chain");
                 for (Element e : chainList) {
                     String chainName = e.attributeValue("name");
-                    if (!FlowBus.containChain(chainName)){
+                    if (!FlowBus.containChain(chainName)) {
                         parseOneChain(e, documentList);
                     }
                 }
@@ -165,7 +165,7 @@ public abstract class XmlFlowParser extends FlowParser {
     //因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
     @SuppressWarnings("unchecked")
     private boolean hasChain(List<Document> documentList, String chainName) throws Exception {
-        for(Document document : documentList){
+        for (Document document : documentList) {
             List<Element> chainList = document.getRootElement().elements("chain");
             for (Element ce : chainList) {
                 String ceName = ce.attributeValue("name");

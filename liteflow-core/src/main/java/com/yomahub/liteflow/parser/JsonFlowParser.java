@@ -19,14 +19,15 @@ import java.util.*;
 
 /**
  * Json格式解析器
+ *
  * @author guodongqing
  * @since 2.5.0
  */
-public abstract class JsonFlowParser extends FlowParser{
+public abstract class JsonFlowParser extends FlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(JsonFlowParser.class);
 
-    public void parse(String content) throws Exception{
+    public void parse(String content) throws Exception {
         parse(ListUtil.toList(content));
     }
 
@@ -37,7 +38,7 @@ public abstract class JsonFlowParser extends FlowParser{
         }
 
         List<JSONObject> jsonObjectList = ListUtil.toList();
-        for (String content : contentList){
+        for (String content : contentList) {
             //把字符串原生转换为json对象，如果不加第二个参数OrderedField，会无序
             JSONObject flowJsonObject = JSONObject.parseObject(content, Feature.OrderedField);
             jsonObjectList.add(flowJsonObject);
@@ -49,22 +50,22 @@ public abstract class JsonFlowParser extends FlowParser{
     //json格式，解析过程
     public void parseJsonObject(List<JSONObject> flowJsonObjectList) throws Exception {
         try {
-            for (JSONObject flowJsonObject : flowJsonObjectList){
+            for (JSONObject flowJsonObject : flowJsonObjectList) {
                 //判断是以spring方式注册节点，还是以json方式注册
-                if(ComponentScanner.nodeComponentMap.isEmpty()){
+                if (ComponentScanner.nodeComponentMap.isEmpty()) {
                     JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
-                    String id;
-                    String clazz;
-                    for(int i = 0; i< nodeArrayList.size(); i++) {
+                    String id, name, clazz;
+                    for (int i = 0; i < nodeArrayList.size(); i++) {
                         JSONObject nodeObject = nodeArrayList.getJSONObject(i);
                         id = nodeObject.getString("id");
+                        name = nodeObject.getString("name");
                         clazz = nodeObject.getString("class");
-                        FlowBus.addNode(id, clazz);
+                        FlowBus.addNode(id, name, clazz);
                     }
                 } else {
-                    for(Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()){
-                        if(!FlowBus.containNode(componentEntry.getKey())){
-                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getKey(), componentEntry.getValue().getClass().getName(), componentEntry.getValue()));
+                    for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
+                        if (!FlowBus.containNode(componentEntry.getKey())) {
+                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
                         }
                     }
                 }
@@ -74,7 +75,7 @@ public abstract class JsonFlowParser extends FlowParser{
                 for (int i = 0; i < chainArray.size(); i++) {
                     JSONObject jsonObject = chainArray.getJSONObject(i);
                     String chainName = jsonObject.getString("name");
-                    if (!FlowBus.containChain(chainName)){
+                    if (!FlowBus.containChain(chainName)) {
                         parseOneChain(jsonObject, flowJsonObjectList);
                     }
                 }
@@ -88,7 +89,7 @@ public abstract class JsonFlowParser extends FlowParser{
     /**
      * 解析一个chain的过程
      */
-    private void parseOneChain(JSONObject chainObject, List<JSONObject> flowJsonObjectList) throws Exception{
+    private void parseOneChain(JSONObject chainObject, List<JSONObject> flowJsonObjectList) throws Exception {
         String condArrayStr;
         String[] condArray;
         List<Executable> chainNodeList;
@@ -154,7 +155,7 @@ public abstract class JsonFlowParser extends FlowParser{
             condition.setNodeList(chainNodeList);
             super.buildBaseFlowConditions(conditionList, condition);
         }
-        FlowBus.addChain(chainName, new Chain(chainName,conditionList));
+        FlowBus.addChain(chainName, new Chain(chainName, conditionList));
     }
 
     /**
@@ -162,14 +163,14 @@ public abstract class JsonFlowParser extends FlowParser{
      * 因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
      */
     private boolean hasChain(List<JSONObject> flowJsonObjectList, String chainName) throws Exception {
-        for (JSONObject jsonObject : flowJsonObjectList){
+        for (JSONObject jsonObject : flowJsonObjectList) {
             JSONArray chainArray = jsonObject.getJSONObject("flow").getJSONArray("chain");
-            for(int i=0; i<chainArray.size(); i++) {
+            for (int i = 0; i < chainArray.size(); i++) {
                 JSONObject chainObject = chainArray.getJSONObject(i);
-                if (chainObject.getString("name").equals(chainName) && !FlowBus.containChain(chainName)){
+                if (chainObject.getString("name").equals(chainName) && !FlowBus.containChain(chainName)) {
                     parseOneChain(chainObject, flowJsonObjectList);
                     return true;
-                }else if(FlowBus.containChain(chainName)){
+                } else if (FlowBus.containChain(chainName)) {
                     return true;
                 }
             }

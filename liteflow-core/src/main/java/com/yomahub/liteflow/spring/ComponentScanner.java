@@ -7,6 +7,9 @@
  */
 package com.yomahub.liteflow.spring;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.util.LOGOPrinter;
@@ -49,6 +52,17 @@ public class ComponentScanner implements BeanPostProcessor {
 			LOG.info("component[{}] has been found", beanName);
 			NodeComponent nodeComponent = (NodeComponent) bean;
 			nodeComponent.setNodeId(beanName);
+
+			//判断NodeComponent是否是标识了@LiteflowComponent的标注
+			//如果标注了，那么要从中取到name字段
+			LiteflowComponent liteflowComponent = bean.getClass().getAnnotation(LiteflowComponent.class);
+			if (ObjectUtil.isNotNull(liteflowComponent)){
+				String name = liteflowComponent.name();
+				if (StrUtil.isNotBlank(name)){
+					nodeComponent.setName(name);
+				}
+			}
+
 			nodeComponent.setSelf(nodeComponent);
 			nodeComponentMap.put(beanName, nodeComponent);
 		}

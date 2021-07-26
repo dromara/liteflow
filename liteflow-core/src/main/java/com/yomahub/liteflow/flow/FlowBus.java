@@ -69,13 +69,17 @@ public class FlowBus {
         nodeMap.put(nodeId, node);
     }
 
-    public static void addNode(String nodeId, String cmpClazzStr) throws Exception {
+    public static void addNode(String nodeId, String name, String cmpClazzStr) throws Exception {
         if (containNode(nodeId)) return;
         Class<NodeComponent> cmpClazz = (Class<NodeComponent>) Class.forName(cmpClazzStr);
-        addNode(nodeId, cmpClazz);
+        addNode(nodeId, name ,cmpClazz);
     }
 
-    public static void addNode(String nodeId, Class<? extends NodeComponent> cmpClazz) {
+    public static void addNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
+        addNode(nodeId, null, cmpClazz);
+    }
+
+    public static void addNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz) {
         if (containNode(nodeId)) return;
         try {
             //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
@@ -86,8 +90,9 @@ public class FlowBus {
                 cmpInstance = cmpClazz.newInstance();
             }
             cmpInstance.setNodeId(nodeId);
+            cmpInstance.setName(name);
             cmpInstance.setSelf(cmpInstance);
-            nodeMap.put(nodeId, new Node(nodeId, cmpClazz.getName(), cmpInstance));
+            nodeMap.put(nodeId, new Node(cmpInstance));
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", cmpClazz.getName());
             LOG.error(error, e);

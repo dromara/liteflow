@@ -32,7 +32,7 @@ public class Node implements Executable{
 
 	private String id;
 
-	private String clazz;
+	private String name;
 
 	private NodeComponent instance;
 
@@ -42,9 +42,9 @@ public class Node implements Executable{
 
 	}
 
-	public Node(String id, String clazz, NodeComponent instance) {
-		this.id = id;
-		this.clazz = clazz;
+	public Node(NodeComponent instance) {
+		this.id = instance.getNodeId();
+		this.name = instance.getName();
 		this.instance = instance;
 	}
 
@@ -56,12 +56,12 @@ public class Node implements Executable{
 		this.id = id;
 	}
 
-	public String getClazz() {
-		return clazz;
+	public String getName() {
+		return name;
 	}
 
-	public void setClazz(String clazz) {
-		this.clazz = clazz;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public NodeComponent getInstance() {
