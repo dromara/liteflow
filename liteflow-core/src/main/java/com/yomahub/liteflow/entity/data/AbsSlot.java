@@ -9,11 +9,11 @@ package com.yomahub.liteflow.entity.data;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Slot的抽象类实现
@@ -42,7 +42,7 @@ public abstract class AbsSlot implements Slot {
 
 	private static final String EXCEPTION = "exception";
 
-	private Deque<CmpStep> executeSteps = new ArrayDeque<CmpStep>();
+	private final Queue<CmpStep> executeSteps = new ConcurrentLinkedQueue<>();
 
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
@@ -138,7 +138,7 @@ public abstract class AbsSlot implements Slot {
 		return (String)dataMap.get(REQUEST_ID);
 	}
 
-	public Deque<CmpStep> getExecuteSteps() {
+	public Queue<CmpStep> getExecuteSteps() {
 		return executeSteps;
 	}
 

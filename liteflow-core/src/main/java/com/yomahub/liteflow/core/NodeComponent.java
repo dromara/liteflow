@@ -53,7 +53,7 @@ public abstract class NodeComponent {
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
 		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
-		slot.addStep(new CmpStep(nodeId, CmpStepType.SINGLE));
+		slot.addStep(new CmpStep(nodeId, name, CmpStepType.SINGLE));
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -71,7 +71,6 @@ public abstract class NodeComponent {
 
 		stopWatch.stop();
 		
-//		slot.addStep(new CmpStep(nodeId, CmpStepType.END));
 		final long timeSpent = stopWatch.getTotalTimeMillis();
 		// 性能统计
 		if (ObjectUtil.isNotNull(monitorBus)) {
