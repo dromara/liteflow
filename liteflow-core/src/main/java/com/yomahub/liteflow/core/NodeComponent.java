@@ -34,7 +34,7 @@ public abstract class NodeComponent {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
-	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
+	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
 	@Autowired(required = false)
 	private MonitorBus monitorBus;
@@ -48,7 +48,7 @@ public abstract class NodeComponent {
 	private NodeComponent self;
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
-	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
+	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
