@@ -35,6 +35,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setParseOnStart(property.isParseOnStart());
         liteflowConfig.setEnable(property.isEnable());
         liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
+        liteflowConfig.setRetryCount(property.getRetryCount());
         return liteflowConfig;
     }
 }

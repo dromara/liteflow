@@ -14,31 +14,45 @@ public class ParallelCallable implements Callable<Boolean> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ParallelCallable.class);
 
-    private Executable executableItem;
+    private final Executable executableItem;
 
-    private Integer slotIndex;
+    private final Integer slotIndex;
 
-    private String requestId;
+    private final String requestId;
 
-    private CountDownLatch latch;
+    private final CountDownLatch latch;
 
-    public ParallelCallable(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch) {
+    private final int retryCount;
+
+    public ParallelCallable(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch, int retryCount) {
         this.executableItem = executableItem;
         this.slotIndex = slotIndex;
         this.requestId = requestId;
         this.latch = latch;
+        this.retryCount = retryCount;
     }
 
     @Override
     public Boolean call() throws Exception {
         try {
-            executableItem.execute(slotIndex);
-
-            return true;
-        }catch(Exception e){
-            LOG.error("requestId [{}], item [{}] execute error", requestId, executableItem.getExecuteName());
-
-            return false;
+            boolean flag = true;
+            for (int i = 0; i <= retryCount; i++) {
+                try{
+                    if (i > 0){
+                        LOG.info("[{}]:component[{}] performs {} retry", requestId, executableItem.getExecuteName(), i+1);
+                    }
+                    executableItem.execute(slotIndex);
+                    flag = true;
+                    break;
+                }catch (Exception e){
+                    if (i >= retryCount){
+                        LOG.error("requestId [{}], item [{}] execute error", requestId, executableItem.getExecuteName());
+                        flag = false;
+                        break;
+                    }
+                }
+            }
+            return flag;
         } finally {
             latch.countDown();
         }

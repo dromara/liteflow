@@ -35,6 +35,9 @@ public class LiteflowProperty {
     //但是要注意，不能将主流程和子流程分配在不同类型配置文件中
     private boolean supportMultipleType;
 
+    //重试次数
+    private int retryCount;
+
     public boolean isEnable() {
         return enable;
     }
@@ -97,5 +100,13 @@ public class LiteflowProperty {
 
     public void setSupportMultipleType(boolean supportMultipleType) {
         this.supportMultipleType = supportMultipleType;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
     }
 }

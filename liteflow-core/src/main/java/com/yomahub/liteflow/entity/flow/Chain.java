@@ -96,10 +96,19 @@ public class Chain implements Executable {
         for (Condition condition : conditionList) {
             if (condition instanceof ThenCondition) {
                 for (Executable executableItem : condition.getNodeList()) {
-                    try {
-                        executableItem.execute(slotIndex);
-                    } catch (Exception e) {
-                        throw e;
+                    //进行重试循环判断，如果重试次数为0，则只进行一次循环
+                    for (int i = 0; i <= liteflowConfig.getRetryCount(); i++) {
+                        try {
+                            if (i > 0){
+                                LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i+1);
+                            }
+                            executableItem.execute(slotIndex);
+                            break;
+                        } catch (Exception e) {
+                            if (i >= liteflowConfig.getRetryCount()){
+                                throw e;
+                            }
+                        }
                     }
                 }
             } else if (condition instanceof WhenCondition) {
@@ -127,7 +136,7 @@ public class Chain implements Executable {
 
         for (int i = 0; i < condition.getNodeList().size(); i++) {
             futures.add(parallelExecutor.submit(
-                    new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch)
+                    new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch, liteflowConfig.getRetryCount())
             ));
         }
 
@@ -147,19 +156,16 @@ public class Chain implements Executable {
         //当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
         if (!condition.isErrorResume()) {
             if (interrupted) {
-                throw new WhenExecuteException(StrUtil.format(
-                        "requestId [{}] when execute interrupted. errorResume [false].", requestId));
+                throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", requestId));
             }
 
             for (Future<Boolean> f : futures) {
                 try {
                     if (!f.get()) {
-                        throw new WhenExecuteException(StrUtil.format(
-                                "requestId [{}] when execute failed. errorResume [false].", requestId));
+                        throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute failed. errorResume [false].", requestId));
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new WhenExecuteException(StrUtil.format(
-                            "requestId [{}] when execute failed. errorResume [false].", requestId));
+                    throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute failed. errorResume [false].", requestId));
                 }
             }
         } else if (interrupted) {

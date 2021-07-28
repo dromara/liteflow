@@ -1,6 +1,7 @@
 /**
  * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
+ *
  * @author Bryan.Zhang
  * @email weenyc31@163.com
  * @Date 2021/3/18
@@ -59,10 +60,13 @@ public class LiteflowConfig {
     //但是要注意，不能将主流程和子流程分配在不同类型配置文件中
     private Boolean supportMultipleType;
 
+    //重试次数
+    private Integer retryCount;
+
     public Boolean getEnable() {
-        if (ObjectUtil.isNull(enable)){
+        if (ObjectUtil.isNull(enable)) {
             return true;
-        }else{
+        } else {
             return enable;
         }
     }
@@ -80,9 +84,9 @@ public class LiteflowConfig {
     }
 
     public Integer getSlotSize() {
-        if (ObjectUtil.isNull(slotSize)){
+        if (ObjectUtil.isNull(slotSize)) {
             return 1024;
-        }else{
+        } else {
             return slotSize;
         }
     }
@@ -92,9 +96,9 @@ public class LiteflowConfig {
     }
 
     public Integer getWhenMaxWaitSeconds() {
-        if (ObjectUtil.isNull(whenMaxWaitSeconds)){
+        if (ObjectUtil.isNull(whenMaxWaitSeconds)) {
             return 15;
-        }else{
+        } else {
             return whenMaxWaitSeconds;
         }
     }
@@ -104,9 +108,9 @@ public class LiteflowConfig {
     }
 
     public Integer getQueueLimit() {
-        if (ObjectUtil.isNull(queueLimit)){
+        if (ObjectUtil.isNull(queueLimit)) {
             return 200;
-        }else{
+        } else {
             return queueLimit;
         }
     }
@@ -116,9 +120,9 @@ public class LiteflowConfig {
     }
 
     public Long getDelay() {
-        if (ObjectUtil.isNull(delay)){
+        if (ObjectUtil.isNull(delay)) {
             return 300000L;
-        }else{
+        } else {
             return delay;
         }
     }
@@ -128,9 +132,9 @@ public class LiteflowConfig {
     }
 
     public Long getPeriod() {
-        if (ObjectUtil.isNull(period)){
+        if (ObjectUtil.isNull(period)) {
             return 300000L;
-        }else{
+        } else {
             return period;
         }
     }
@@ -140,9 +144,9 @@ public class LiteflowConfig {
     }
 
     public Boolean getEnableLog() {
-        if (ObjectUtil.isNull(enableLog)){
+        if (ObjectUtil.isNull(enableLog)) {
             return false;
-        }else{
+        } else {
             return enableLog;
         }
     }
@@ -152,9 +156,9 @@ public class LiteflowConfig {
     }
 
     public Integer getWhenMaxWorkers() {
-        if (ObjectUtil.isNull(whenMaxWorkers)){
+        if (ObjectUtil.isNull(whenMaxWorkers)) {
             return Runtime.getRuntime().availableProcessors() * 2;
-        }else{
+        } else {
             return whenMaxWorkers;
         }
     }
@@ -164,9 +168,9 @@ public class LiteflowConfig {
     }
 
     public Integer getWhenQueueLimit() {
-        if (ObjectUtil.isNull(whenQueueLimit)){
+        if (ObjectUtil.isNull(whenQueueLimit)) {
             return 100;
-        }else{
+        } else {
             return whenQueueLimit;
         }
     }
@@ -176,9 +180,9 @@ public class LiteflowConfig {
     }
 
     public Boolean isParseOnStart() {
-        if (ObjectUtil.isNull(parseOnStart)){
+        if (ObjectUtil.isNull(parseOnStart)) {
             return true;
-        }else{
+        } else {
             return parseOnStart;
         }
     }
@@ -188,14 +192,26 @@ public class LiteflowConfig {
     }
 
     public Boolean isSupportMultipleType() {
-        if (ObjectUtil.isNull(supportMultipleType)){
+        if (ObjectUtil.isNull(supportMultipleType)) {
             return true;
-        }else{
+        } else {
             return supportMultipleType;
         }
     }
 
     public void setSupportMultipleType(Boolean supportMultipleType) {
         this.supportMultipleType = supportMultipleType;
+    }
+
+    public int getRetryCount() {
+        if (ObjectUtil.isNull(retryCount) || retryCount < 0) {
+            return 0;
+        } else {
+            return retryCount;
+        }
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
     }
 }
