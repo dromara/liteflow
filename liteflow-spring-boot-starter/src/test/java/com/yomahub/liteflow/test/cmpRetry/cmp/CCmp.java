@@ -5,23 +5,17 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.retry.cmp;
+package com.yomahub.liteflow.test.cmpRetry.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 
-@LiteflowComponent("b")
-public class BCmp extends NodeComponent {
-
-	private int flag = 0;
+@LiteflowComponent("c")
+public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("BCmp executed!");
-		if (flag < 2){
-			flag++;
-			throw new RuntimeException("demo exception");
-		}
+		System.out.println("CCmp executed!");
 	}
 
 }

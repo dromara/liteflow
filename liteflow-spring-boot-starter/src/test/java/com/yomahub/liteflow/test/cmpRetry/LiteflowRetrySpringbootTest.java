@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.retry;
+package com.yomahub.liteflow.test.cmpRetry;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
@@ -14,24 +14,26 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.Resource;
+
 
 /**
- * 测试springboot下的enable参数
+ * 测试springboot下的组件重试
  * @author Bryan.Zhang
  * @since 2.5.10
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/retry/application.properties")
+@TestPropertySource(value = "classpath:/cmpRetry/application.properties")
 @SpringBootTest(classes = LiteflowRetrySpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.retry.cmp"})
+@ComponentScan({"com.yomahub.liteflow.test.cmpRetry.cmp"})
 public class LiteflowRetrySpringbootTest extends BaseTest {
 
-    @Autowired
+    @Resource
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testConfig() {
+    public void testRetry() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>b==>b==>c==>a==>d", response.getSlot().printStep());

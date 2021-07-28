@@ -54,7 +54,7 @@
       "defaultValue": false
     },
     {
-      "name": "liteflow.retry_count",
+      "name": "liteflow.retry-count",
       "type": "java.lang.Integer",
       "description": "Number of component retries.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
