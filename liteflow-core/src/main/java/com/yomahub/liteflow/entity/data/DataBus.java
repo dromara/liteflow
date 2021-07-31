@@ -9,6 +9,7 @@ package com.yomahub.liteflow.entity.data;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,16 +35,9 @@ public class DataBus {
 	private static ConcurrentLinkedQueue<Integer> QUEUE;
 
 	static {
-		LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-
-		if (ObjectUtil.isNull(liteflowConfig)){
-			//liteflowConfig有自己的默认值
-			liteflowConfig = new LiteflowConfig();
-		}
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		int slotSize = liteflowConfig.getSlotSize();
-
 		SLOTS = new AtomicReferenceArray<>(slotSize);
-
 		QUEUE = IntStream.range(0, slotSize - 1).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
 	}
 

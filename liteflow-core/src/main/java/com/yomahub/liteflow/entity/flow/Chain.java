@@ -18,6 +18,7 @@ import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ExecutorHelper;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
@@ -38,28 +39,6 @@ public class Chain implements Executable {
     private String chainName;
 
     private List<Condition> conditionList;
-
-    private static ExecutorService parallelExecutor;
-
-    private static LiteflowConfig liteflowConfig;
-
-    static {
-        //这里liteflowConfig不可能为null
-        //如果在springboot环境，由于自动装配，所以不可能为null
-        //在spring环境，如果xml没配置，在FlowExecutor的init时候就已经报错了
-        liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-
-        //这里为了非spring环境下的严谨，还是判断
-        if (ObjectUtil.isNull(liteflowConfig)){
-            //liteflowConfig有自己的默认值
-            liteflowConfig = new LiteflowConfig();
-        }
-
-        parallelExecutor = SpringAware.getBean(ExecutorService.class);
-        if (ObjectUtil.isNull(parallelExecutor)){
-            parallelExecutor = ExecutorHelper.buildExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenQueueLimit(), "liteflow-when-thread", false);
-        }
-    }
 
     public Chain(String chainName, List<Condition> conditionList) {
         this.chainName = chainName;
@@ -88,6 +67,8 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
+
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
         Slot slot = DataBus.getSlot(slotIndex);
 
@@ -133,6 +114,10 @@ public class Chain implements Executable {
         final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
         final List<Future<Boolean>> futures = new ArrayList<>(condition.getNodeList().size());
 
+        //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor();
+
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
         for (int i = 0; i < condition.getNodeList().size(); i++) {
             futures.add(parallelExecutor.submit(

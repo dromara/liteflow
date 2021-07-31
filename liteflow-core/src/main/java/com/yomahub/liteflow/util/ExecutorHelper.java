@@ -7,6 +7,8 @@
  */
 package com.yomahub.liteflow.util;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +22,20 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ExecutorHelper {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
+    private final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
+
+    private static ExecutorHelper executorHelper;
+
+    private ExecutorService executorService;
     
     private ExecutorHelper() {
+    }
+
+    public static ExecutorHelper loadInstance(){
+        if (ObjectUtil.isNull(executorHelper)){
+            executorHelper = new ExecutorHelper();
+        }
+        return executorHelper;
     }
 
     /**
@@ -31,7 +44,7 @@ public class ExecutorHelper {
      *
      * @param pool 需要关闭的线程组.
      */
-    public static void shutdownAwaitTermination(ExecutorService pool) {
+    public void shutdownAwaitTermination(ExecutorService pool) {
         shutdownAwaitTermination(pool, 60L);
     }
 
@@ -42,7 +55,7 @@ public class ExecutorHelper {
      * @param pool    需要关闭的管理者
      * @param timeout 等待时间
      */
-    public static void shutdownAwaitTermination(ExecutorService pool,
+    public void shutdownAwaitTermination(ExecutorService pool,
                                                 long timeout) {
         pool.shutdown();
         try {
@@ -65,7 +78,7 @@ public class ExecutorHelper {
      * @param name 名称.
      * @return 线程工厂实例.
      */
-    public static ThreadFactory buildExecutorFactory(final String name) {
+    public ThreadFactory buildExecutorFactory(final String name) {
         return buildExecutorFactory(name, false);
     }
 
@@ -76,7 +89,7 @@ public class ExecutorHelper {
      * @param daemon 是否为后台线程.
      * @return 线程工厂实例.
      */
-    public static ThreadFactory buildExecutorFactory(final String name, final boolean daemon) {
+    public ThreadFactory buildExecutorFactory(final String name, final boolean daemon) {
         return new ThreadFactory() {
 
             private final AtomicLong number = new AtomicLong();
@@ -92,12 +105,22 @@ public class ExecutorHelper {
         };
     }
 
-    public static ExecutorService buildExecutor(int worker, int queue, String namePrefix, boolean daemon) {
-        return new ThreadPoolExecutor(worker, worker,
-                0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(queue),
-                buildExecutorFactory(namePrefix, daemon),
-                new ThreadPoolExecutor.AbortPolicy()
-        );
+    public ExecutorService buildExecutor() {
+        if (ObjectUtil.isNull(executorService)){
+            LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
+            //只有在非spring的场景下liteflowConfig才会为null
+            if (ObjectUtil.isNull(liteflowConfig)){
+                liteflowConfig = new LiteflowConfig();
+            }
+
+
+            executorService = new ThreadPoolExecutor(liteflowConfig.getWhenMaxWorkers(),
+                    liteflowConfig.getWhenMaxWorkers(),
+                    0L, TimeUnit.MILLISECONDS,
+                    new ArrayBlockingQueue<>(liteflowConfig.getWhenQueueLimit()),
+                    buildExecutorFactory("liteflow-when-thead", false),
+                    new ThreadPoolExecutor.AbortPolicy());
+        }
+        return executorService;
     }
 }

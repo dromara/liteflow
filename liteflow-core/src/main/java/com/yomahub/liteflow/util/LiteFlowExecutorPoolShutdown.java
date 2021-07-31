@@ -20,7 +20,7 @@ public class LiteFlowExecutorPoolShutdown {
         ExecutorService executorService = SpringAware.getBean("whenExecutors");
 
         LOG.info("Start closing the liteflow-when-calls...");
-        ExecutorHelper.shutdownAwaitTermination(executorService);
+        ExecutorHelper.loadInstance().shutdownAwaitTermination(executorService);
         LOG.info("Succeed closing the liteflow-when-calls ok...");
     }
 }
