@@ -30,9 +30,9 @@ public class DataBus {
 
 	public static AtomicInteger OCCUPY_COUNT = new AtomicInteger(0);
 
-	private static AtomicReferenceArray<Slot> SLOTS;
+	private static final AtomicReferenceArray<Slot> SLOTS;
 
-	private static ConcurrentLinkedQueue<Integer> QUEUE;
+	private static final ConcurrentLinkedQueue<Integer> QUEUE;
 
 	static {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
