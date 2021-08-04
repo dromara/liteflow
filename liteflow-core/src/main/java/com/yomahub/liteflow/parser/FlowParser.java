@@ -15,8 +15,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,10 +32,12 @@ public abstract class FlowParser {
 
     public abstract void parse(List<String> contentList) throws Exception ;
 
+    private static final Pattern p = Pattern.compile("[^\\)\\(]+");
+
     //条件节点的正则解析
     public RegexEntity parseNodeStr(String str) {
         List<String> list = new ArrayList<String>();
-        Pattern p = Pattern.compile("[^\\)\\(]+");
+
         Matcher m = p.matcher(str);
         while(m.find()){
             list.add(m.group());
