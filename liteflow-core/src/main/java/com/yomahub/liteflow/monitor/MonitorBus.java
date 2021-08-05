@@ -7,26 +7,22 @@
  */
 package com.yomahub.liteflow.monitor;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.yomahub.liteflow.entity.data.DataBus;
+import com.yomahub.liteflow.entity.monitor.CompStatistics;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.BoundedPriorityBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.entity.monitor.CompStatistics;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 监控类元数据，打印执行器类
@@ -40,12 +36,13 @@ public class MonitorBus {
 
 	private final ConcurrentHashMap<String, BoundedPriorityBlockingQueue<CompStatistics>> statisticsMap = new ConcurrentHashMap<>();
 
+	private final ScheduledExecutorService printLogScheduler = Executors.newScheduledThreadPool(1);
+
 	public MonitorBus(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
 
 		if(liteflowConfig.getEnableLog()){
-			Timer timer = new Timer();
-			timer.schedule(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod());
+			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod(), TimeUnit.MICROSECONDS);
 		}
 	}
 
