@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.util.SpringAware;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -25,6 +26,11 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(prefix = "liteflow", name = "enable", havingValue = "true")
 @Import(SpringAware.class)
 public class LiteflowMainAutoConfiguration {
+
+    @Bean
+    public ComponentScanner componentScanner(){
+        return new ComponentScanner();
+    }
 
     @Bean
     public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
