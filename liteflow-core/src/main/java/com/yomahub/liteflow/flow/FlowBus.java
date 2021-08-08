@@ -12,6 +12,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.ScriptNodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
@@ -23,6 +24,7 @@ import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,14 +74,19 @@ public class FlowBus {
     public static void addNode(String nodeId, String name, String cmpClazzStr) throws Exception {
         if (containNode(nodeId)) return;
         Class<NodeComponent> cmpClazz = (Class<NodeComponent>) Class.forName(cmpClazzStr);
-        addNode(nodeId, name ,cmpClazz);
+        addNode(nodeId, name ,cmpClazz, null);
+    }
+
+    public static void addScriptNode(String nodeId, String name, String script){
+        if (containNode(nodeId)) return;
+        addNode(nodeId, name , ScriptNodeComponent.class, script);
     }
 
     public static void addNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
-        addNode(nodeId, null, cmpClazz);
+        addNode(nodeId, null, cmpClazz, null);
     }
 
-    public static void addNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz) {
+    public static void addNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz, String script) {
         if (containNode(nodeId)) return;
         try {
             //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
@@ -92,6 +99,11 @@ public class FlowBus {
             cmpInstance.setNodeId(nodeId);
             cmpInstance.setName(name);
             cmpInstance.setSelf(cmpInstance);
+
+            //如果是脚本节点，则还要加载script脚本
+            if (cmpClazz.equals(ScriptNodeComponent.class) && StrUtil.isNotBlank(script)){
+                ((ScriptNodeComponent)cmpInstance).loadScript(script);
+            }
             nodeMap.put(nodeId, new Node(cmpInstance));
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", cmpClazz.getName());

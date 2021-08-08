@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -52,23 +53,34 @@ public abstract class XmlFlowParser extends FlowParser {
     //xml形式的主要解析过程
     public void parseDocument(List<Document> documentList) throws Exception {
         try {
+            //先进行Spring上下文中的节点的判断
+            for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
+                if (!FlowBus.containNode(componentEntry.getKey())) {
+                    FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+                }
+            }
+
             for (Document document : documentList) {
                 Element rootElement = document.getRootElement();
-                //判断是以spring方式注册节点，还是以xml方式注册
-                if (ComponentScanner.nodeComponentMap.isEmpty()) {
-                    // 解析node节点
-                    List<Element> nodeList = rootElement.element("nodes").elements("node");
-                    String id, name, clazz;
+                Element nodesElement = rootElement.element("nodes");
+                // 当存在<nodes>节点定义时，解析node节点
+                if (ObjectUtil.isNotNull(nodesElement)){
+                    List<Element> nodeList = nodesElement.elements("node");
+                    String id, name, clazz, script;
                     for (Element e : nodeList) {
                         id = e.attributeValue("id");
                         name = e.attributeValue("name");
                         clazz = e.attributeValue("class");
-                        FlowBus.addNode(id, name, clazz);
-                    }
-                } else {
-                    for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-                        if (!FlowBus.containNode(componentEntry.getKey())) {
-                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+
+                        if (StrUtil.isNotBlank(clazz)){
+                            if (!FlowBus.containNode(id)){
+                                FlowBus.addNode(id, name, clazz);
+                            }
+                        }else{
+                            if (!FlowBus.containNode(id)){
+                                script = e.getTextTrim();
+                                FlowBus.addScriptNode(id, name, script);
+                            }
                         }
                     }
                 }

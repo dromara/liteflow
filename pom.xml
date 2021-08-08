@@ -56,6 +56,8 @@
 		<transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
+		<qlexpress.version>3.2.0</qlexpress.version>
+		<groovy.version>3.0.8</groovy.version>
     </properties>
 
     <dependencyManagement>
@@ -150,6 +152,17 @@
 				<artifactId>zkclient</artifactId>
 				<version>${zkclient.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>QLExpress</artifactId>
+				<version>${qlexpress.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -229,6 +242,8 @@
     <modules>
         <module>liteflow-core</module>
         <module>liteflow-spring-boot-starter</module>
+		<module>liteflow-script-qlexpress</module>
+		<module>liteflow-script-common</module>
 	</modules>
 
 	<distributionManagement>
