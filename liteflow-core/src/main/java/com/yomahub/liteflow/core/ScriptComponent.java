@@ -1,13 +1,17 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 脚本组件类
  * @author Bryan.Zhang
  * @since 2.5.11
  */
-public class ScriptNodeComponent extends NodeComponent{
+public class ScriptComponent extends NodeComponent{
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void process() throws Exception {
@@ -15,6 +19,7 @@ public class ScriptNodeComponent extends NodeComponent{
     }
 
     public void loadScript(String script) {
+        log.info("load script for component[{}]", getNodeId());
         ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
     }
 }

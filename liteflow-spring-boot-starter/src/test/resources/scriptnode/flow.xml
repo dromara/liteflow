@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1">
+        <node id="s1" type="script">
             <![CDATA[
                 a=3;
                 b=2;

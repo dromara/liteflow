@@ -12,11 +12,14 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.ScriptNodeComponent;
+import com.yomahub.liteflow.core.ScriptComponent;
+import com.yomahub.liteflow.core.ScriptCondComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
+import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
@@ -68,27 +71,32 @@ public class FlowBus {
         return nodeMap.containsKey(nodeId);
     }
 
-    public static void addNode(String nodeId, Node node) {
+    public static void addCommonNode(String nodeId, Node node) {
         if (containNode(nodeId)) return;
         nodeMap.put(nodeId, node);
     }
 
-    public static void addNode(String nodeId, String name, String cmpClazzStr) throws Exception {
+    public static void addCommonNode(String nodeId, String name, String cmpClazzStr) throws Exception {
         if (containNode(nodeId)) return;
         Class<NodeComponent> cmpClazz = (Class<NodeComponent>) Class.forName(cmpClazzStr);
-        addNode(nodeId, name ,cmpClazz, null);
+        addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
-    public static void addScriptNode(String nodeId, String name, String script){
+    public static void addCommonNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
+        addNode(nodeId, null, NodeTypeEnum.COMMON, cmpClazz, null);
+    }
+
+    public static void addCommonScriptNode(String nodeId, String name, String script){
         if (containNode(nodeId)) return;
-        addNode(nodeId, name , ScriptNodeComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
     }
 
-    public static void addNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
-        addNode(nodeId, null, cmpClazz, null);
+    public static void addCondScriptNode(String nodeId, String name, String script){
+        if (containNode(nodeId)) return;
+        addNode(nodeId, name, NodeTypeEnum.COND_SCRIPT, ScriptCondComponent.class, script);
     }
 
-    public static void addNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz, String script) {
+    private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<? extends NodeComponent> cmpClazz, String script) {
         if (containNode(nodeId)) return;
         try {
             //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
@@ -101,11 +109,17 @@ public class FlowBus {
             cmpInstance.setNodeId(nodeId);
             cmpInstance.setName(name);
             cmpInstance.setSelf(cmpInstance);
+            cmpInstance.setType(type);
 
-            //如果是脚本节点，则还要加载script脚本
-            if (cmpClazz.equals(ScriptNodeComponent.class) && StrUtil.isNotBlank(script)){
-                ((ScriptNodeComponent)cmpInstance).loadScript(script);
+            //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
+            if (StrUtil.isNotBlank(script)){
+                if (type.equals(NodeTypeEnum.SCRIPT)){
+                    ((ScriptComponent)cmpInstance).loadScript(script);
+                }else if(type.equals(NodeTypeEnum.COND_SCRIPT)){
+                    ((ScriptCondComponent)cmpInstance).loadScript(script);
+                }
             }
+
             nodeMap.put(nodeId, new Node(cmpInstance));
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", cmpClazz.getName());

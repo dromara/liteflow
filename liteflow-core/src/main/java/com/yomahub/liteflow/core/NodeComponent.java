@@ -11,6 +11,7 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public abstract class NodeComponent {
 	private String nodeId;
 
 	private String name;
+
+	private NodeTypeEnum type;
 
 	//这是自己的实例，取代this
 	//为何要设置这个，用this不行么，因为如果有aop去切的话，this在spring的aop里是切不到的。self对象有可能是代理过的对象
@@ -171,5 +174,13 @@ public abstract class NodeComponent {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public NodeTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(NodeTypeEnum type) {
+		this.type = type;
 	}
 }

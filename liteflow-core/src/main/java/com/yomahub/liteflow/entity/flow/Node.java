@@ -14,10 +14,10 @@ import java.util.Map;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.ScriptNodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import org.slf4j.Logger;
@@ -35,6 +35,8 @@ public class Node implements Executable{
 
 	private String name;
 
+	private NodeTypeEnum type;
+
 	private NodeComponent instance;
 
 	private final Map<String, Executable> condNodeMap = new HashMap<>();
@@ -47,6 +49,7 @@ public class Node implements Executable{
 		this.id = instance.getNodeId();
 		this.name = instance.getName();
 		this.instance = instance;
+		this.type = instance.getType();
 	}
 
 	public String getId() {
@@ -63,6 +66,14 @@ public class Node implements Executable{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public NodeTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(NodeTypeEnum type) {
+		this.type = type;
 	}
 
 	public NodeComponent getInstance() {

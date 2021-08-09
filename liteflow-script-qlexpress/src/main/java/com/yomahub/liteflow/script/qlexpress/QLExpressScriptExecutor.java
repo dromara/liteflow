@@ -37,13 +37,13 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public void execute(String nodeId, int slotIndex) {
+    public Object execute(String nodeId, int slotIndex) {
         List<String> errorList = new ArrayList<>();
         try{
             Slot slot = DataBus.getSlot(slotIndex);
             DefaultContext<String, Object> context = new DefaultContext<String, Object>();
             context.put("slot", slot);
-            expressRunner.executeByExpressName(nodeId, context, errorList, true, false, null);
+            return expressRunner.executeByExpressName(nodeId, context, errorList, true, false, null);
         }catch (Exception e){
             for (String scriptErrorMsg : errorList){
                 log.error("\n{}", scriptErrorMsg);

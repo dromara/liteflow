@@ -52,7 +52,7 @@ public abstract class JsonFlowParser extends FlowParser {
         try {
             for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
                 if (!FlowBus.containNode(componentEntry.getKey())) {
-                    FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+                    FlowBus.addCommonNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
                 }
             }
 
@@ -70,12 +70,12 @@ public abstract class JsonFlowParser extends FlowParser {
                         //如果有class的定义，则表明是java组件，无class的定义，则表明是脚本组件
                         if (StrUtil.isNotBlank(clazz)){
                             if (!FlowBus.containNode(id)){
-                                FlowBus.addNode(id, name, clazz);
+                                FlowBus.addCommonNode(id, name, clazz);
                             }
                         }else{
                             if (!FlowBus.containNode(id)){
                                 script = nodeObject.getString("script");
-                                FlowBus.addScriptNode(id, name, script);
+                                FlowBus.addCommonScriptNode(id, name, script);
                             }
                         }
                     }
