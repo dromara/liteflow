@@ -5,17 +5,22 @@ import com.yomahub.liteflow.script.exception.ScriptSpiException;
 
 import java.util.ServiceLoader;
 
-public class ScriptFactory {
+/**
+ * 脚本执行器工厂类
+ * @author Bryan.Zhang
+ * @since 2.5.11
+ */
+public class ScriptExecutorFactory {
 
-    private static ScriptFactory scriptFactory;
+    private static ScriptExecutorFactory scriptExecutorFactory;
 
     private ScriptExecutor scriptExecutor;
 
-    public static ScriptFactory loadInstance(){
-        if (ObjectUtil.isNull(scriptFactory)){
-            scriptFactory = new ScriptFactory();
+    public static ScriptExecutorFactory loadInstance(){
+        if (ObjectUtil.isNull(scriptExecutorFactory)){
+            scriptExecutorFactory = new ScriptExecutorFactory();
         }
-        return scriptFactory;
+        return scriptExecutorFactory;
     }
 
     public ScriptExecutor getScriptExecutor(){

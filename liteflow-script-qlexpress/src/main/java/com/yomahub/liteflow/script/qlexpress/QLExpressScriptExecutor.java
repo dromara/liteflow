@@ -52,4 +52,9 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             throw new ScriptExecuteException(errorMsg);
         }
     }
+
+    @Override
+    public void cleanCache() {
+        expressRunner.clearExpressCache();
+    }
 }

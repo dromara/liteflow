@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.core;
 
-import com.yomahub.liteflow.script.ScriptFactory;
+import com.yomahub.liteflow.script.ScriptExecutorFactory;
 
 /**
  * 脚本组件类
@@ -11,10 +11,10 @@ public class ScriptNodeComponent extends NodeComponent{
 
     @Override
     public void process() throws Exception {
-        ScriptFactory.loadInstance().getScriptExecutor().execute(getNodeId(), getSlotIndex());
+        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(getNodeId(), getSlotIndex());
     }
 
     public void loadScript(String script) {
-        ScriptFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
+        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
     }
 }

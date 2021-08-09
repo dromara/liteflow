@@ -20,11 +20,13 @@ import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
+import com.yomahub.liteflow.script.ScriptExecutor;
+import com.yomahub.liteflow.script.ScriptExecutorFactory;
+import com.yomahub.liteflow.script.exception.ScriptSpiException;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,6 +121,13 @@ public class FlowBus {
     public static void cleanCache() {
         chainMap.clear();
         nodeMap.clear();
+        //如果引入了脚本组件SPI，则还需要清理脚本的缓存
+        try{
+            ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor();
+            if (ObjectUtil.isNotNull(scriptExecutor)){
+                scriptExecutor.cleanCache();
+            }
+        }catch (ScriptSpiException e){}
     }
 
     //目前这种方式刷新不完全平滑
