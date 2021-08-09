@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1">
+            <![CDATA[
+                a=3;
+                b=2;
+                slot.setData("s1",a*b);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        <then value="a,b,c,s1"/>
+    </chain>
+</flow>

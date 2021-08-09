@@ -3,8 +3,11 @@ package com.yomahub.liteflow.test.aop;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.aop.aspect.CmpAspect;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,5 +57,11 @@ public class LFGlobalAOPTest extends BaseTest {
         Assert.assertEquals("before_after", response.getSlot().getData("c"));
         Assert.assertEquals("before_after", response.getSlot().getData("d"));
         Assert.assertEquals("before_after", response.getSlot().getData("e"));
+    }
+
+    @AfterClass
+    public static void cleanScanCache(){
+        BaseTest.cleanScanCache();
+        ComponentScanner.cmpAroundAspect = null;
     }
 }

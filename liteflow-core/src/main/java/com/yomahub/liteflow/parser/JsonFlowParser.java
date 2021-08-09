@@ -50,22 +50,33 @@ public abstract class JsonFlowParser extends FlowParser {
     //json格式，解析过程
     public void parseJsonObject(List<JSONObject> flowJsonObjectList) throws Exception {
         try {
+            for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
+                if (!FlowBus.containNode(componentEntry.getKey())) {
+                    FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+                }
+            }
+
             for (JSONObject flowJsonObject : flowJsonObjectList) {
-                //判断是以spring方式注册节点，还是以json方式注册
-                if (ComponentScanner.nodeComponentMap.isEmpty()) {
+                // 当存在<nodes>节点定义时，解析node节点
+                if (flowJsonObject.getJSONObject("flow").containsKey("nodes")){
                     JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
-                    String id, name, clazz;
+                    String id, name, clazz, script;
                     for (int i = 0; i < nodeArrayList.size(); i++) {
                         JSONObject nodeObject = nodeArrayList.getJSONObject(i);
                         id = nodeObject.getString("id");
                         name = nodeObject.getString("name");
                         clazz = nodeObject.getString("class");
-                        FlowBus.addNode(id, name, clazz);
-                    }
-                } else {
-                    for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-                        if (!FlowBus.containNode(componentEntry.getKey())) {
-                            FlowBus.addNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+
+                        //如果有class的定义，则表明是java组件，无class的定义，则表明是脚本组件
+                        if (StrUtil.isNotBlank(clazz)){
+                            if (!FlowBus.containNode(id)){
+                                FlowBus.addNode(id, name, clazz);
+                            }
+                        }else{
+                            if (!FlowBus.containNode(id)){
+                                script = nodeObject.getString("script");
+                                FlowBus.addScriptNode(id, name, script);
+                            }
                         }
                     }
                 }

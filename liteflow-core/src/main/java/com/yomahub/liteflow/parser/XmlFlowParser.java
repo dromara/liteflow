@@ -72,6 +72,7 @@ public abstract class XmlFlowParser extends FlowParser {
                         name = e.attributeValue("name");
                         clazz = e.attributeValue("class");
 
+                        //如果有class的定义，则表明是java组件，无class的定义，则表明是脚本组件
                         if (StrUtil.isNotBlank(clazz)){
                             if (!FlowBus.containNode(id)){
                                 FlowBus.addNode(id, name, clazz);
