@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.springboot;
+package com.yomahub.liteflow.springboot.config;
 
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.ExecutorHelper;

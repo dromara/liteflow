@@ -1,6 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.yomahub.liteflow.springboot.LiteflowPropertyAutoConfiguration,\
-  com.yomahub.liteflow.springboot.LiteflowExecutorAutoConfiguration,\
-  com.yomahub.liteflow.springboot.LiteflowMainAutoConfiguration
+  com.yomahub.liteflow.springboot.config.LiteflowPropertyAutoConfiguration,\
+  com.yomahub.liteflow.springboot.config.LiteflowExecutorAutoConfiguration,\
+  com.yomahub.liteflow.springboot.config.LiteflowMainAutoConfiguration
 
 
