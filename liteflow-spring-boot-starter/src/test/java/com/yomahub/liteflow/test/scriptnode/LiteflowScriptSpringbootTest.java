@@ -31,10 +31,19 @@ public class LiteflowScriptSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
+    //测试普通脚本节点
     @Test
     public void testScript1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(Integer.valueOf(6), response.getSlot().getData("s1"));
+    }
+
+    //测试条件脚本节点
+    @Test
+    public void testScript2() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("d==>s2==>b", response.getSlot().printStep());
     }
 }
