@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.scriptnode;
+package com.yomahub.liteflow.test.script.qlexpress;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
@@ -22,11 +22,11 @@ import javax.annotation.Resource;
  * @since 2.5.11
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/scriptnode/application.properties")
-@SpringBootTest(classes = LiteflowScriptSpringbootTest.class)
+@TestPropertySource(value = "classpath:/script/application.properties")
+@SpringBootTest(classes = LiteflowScriptQLExpressTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.scriptnode.cmp"})
-public class LiteflowScriptSpringbootTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.qlexpress.cmp"})
+public class LiteflowScriptQLExpressTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

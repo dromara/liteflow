@@ -57,7 +57,7 @@
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
 		<qlexpress.version>3.2.0</qlexpress.version>
-		<groovy.version>3.0.8</groovy.version>
+		<groovy.version>3.0.7</groovy.version>
     </properties>
 
     <dependencyManagement>
@@ -160,7 +160,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy-all</artifactId>
+				<artifactId>groovy</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-jsr223</artifactId>
 				<version>${groovy.version}</version>
 			</dependency>
 		</dependencies>
@@ -244,6 +249,10 @@
         <module>liteflow-spring-boot-starter</module>
 		<module>liteflow-script-qlexpress</module>
 		<module>liteflow-script-common</module>
+		<module>liteflow-script-groovy</module>
+		<module>liteflow-testcase-springboot</module>
+		<module>liteflow-testcase-springnative</module>
+		<module>liteflow-testcase-script-qlexpress</module>
 	</modules>
 
 	<distributionManagement>
