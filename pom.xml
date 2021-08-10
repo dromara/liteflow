@@ -253,6 +253,7 @@
 		<module>liteflow-testcase-springboot</module>
 		<module>liteflow-testcase-springnative</module>
 		<module>liteflow-testcase-script-qlexpress</module>
+		<module>liteflow-testcase-script-groovy</module>
 	</modules>
 
 	<distributionManagement>
