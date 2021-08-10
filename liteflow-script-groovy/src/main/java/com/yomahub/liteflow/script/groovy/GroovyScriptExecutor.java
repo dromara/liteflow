@@ -1,8 +1,6 @@
-package com.yomahub.liteflow.script.qlexpress;
+package com.yomahub.liteflow.script.groovy;
 
 import cn.hutool.core.util.StrUtil;
-import com.ql.util.express.DefaultContext;
-import com.ql.util.express.ExpressRunner;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -11,48 +9,59 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.script.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * 阿里QLExpress脚本语言的执行器实现
+ * Groovy脚本语言的执行器实现
  * @author Bryan.Zhang
  * @since 2.5.11
  */
-public class QLExpressScriptExecutor implements ScriptExecutor {
+public class GroovyScriptExecutor implements ScriptExecutor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private ExpressRunner expressRunner;
+    private ScriptEngine scriptEngine;
+
+    private Map<String, CompiledScript> compiledScriptMap = new HashMap<>();
 
     @Override
     public ScriptExecutor init() {
-        expressRunner = new ExpressRunner();
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        scriptEngine = scriptEngineManager.getEngineByName("groovy");
         return this;
     }
 
     @Override
     public void load(String nodeId, String script) {
         try{
-            expressRunner.loadMutilExpress(nodeId, script);
+            CompiledScript compiledScript = ((Compilable) scriptEngine).compile(script);
+            if (!compiledScriptMap.containsKey(nodeId)){
+                compiledScriptMap.put(nodeId, compiledScript);
+            }
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}]", nodeId);
             throw new ScriptLoadException(errorMsg);
         }
+
     }
 
     @Override
     public Object execute(String nodeId, int slotIndex) {
-        List<String> errorList = new ArrayList<>();
         try{
-            Slot slot = DataBus.getSlot(slotIndex);
-            DefaultContext<String, Object> context = new DefaultContext<String, Object>();
-            context.put("slot", slot);
-            return expressRunner.executeByExpressName(nodeId, context, errorList, true, false, null);
-        }catch (Exception e){
-            for (String scriptErrorMsg : errorList){
-                log.error("\n{}", scriptErrorMsg);
+            if (!compiledScriptMap.containsKey(nodeId)){
+                String errorMsg = StrUtil.format("script for node[{}] is not loaded", nodeId);
+                throw new RuntimeException(errorMsg);
             }
+
+            CompiledScript compiledScript = compiledScriptMap.get(nodeId);
+            Bindings bindings = new SimpleBindings();
+            Slot slot = DataBus.getSlot(slotIndex);
+            bindings.put("slot", slot);
+            return compiledScript.eval(bindings);
+        }catch (Exception e){
+            log.error(e.getMessage(), e);
             String errorMsg = StrUtil.format("script execute error for node[{}]", nodeId);
             throw new ScriptExecuteException(errorMsg);
         }
@@ -60,6 +69,6 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
 
     @Override
     public void cleanCache() {
-        expressRunner.clearExpressCache();
+        compiledScriptMap.clear();
     }
 }
