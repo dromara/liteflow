@@ -44,6 +44,6 @@ public class LiteflowScriptGroovyTest extends BaseTest {
     public void testScript2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("d==>s2==>b", response.getSlot().printStep());
+        Assert.assertEquals("d==>s2[条件脚本]==>a", response.getSlot().printStep());
     }
 }

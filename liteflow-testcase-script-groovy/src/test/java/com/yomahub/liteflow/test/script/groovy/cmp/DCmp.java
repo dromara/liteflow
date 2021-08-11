@@ -17,7 +17,7 @@ public class DCmp extends NodeComponent {
 	@Override
 	public void process() {
 		Slot slot = this.getSlot();
-		slot.setData("count",97);
+		slot.setData("count",198);
 		System.out.println("DCmp executed!");
 	}
 

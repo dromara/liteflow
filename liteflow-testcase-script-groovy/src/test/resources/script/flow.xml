@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1" type="script">
+        <node id="s1" name="普通脚本" type="script">
             <![CDATA[
-                a=3;
-                b=2;
+                def a=3;
+                def b=2;
                 slot.setData("s1",a*b);
             ]]>
         </node>
 
-        <node id="s2" type="cond_script">
+        <node id="s2" name="条件脚本" type="cond_script">
             <![CDATA[
                 count = slot.getData("count");
                 if(count > 100){
