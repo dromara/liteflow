@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Groovy脚本语言的执行器实现
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 public class GroovyScriptExecutor implements ScriptExecutor {
 

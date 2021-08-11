@@ -3,7 +3,7 @@ package com.yomahub.liteflow.script;
 /**
  * 脚本执行器接口
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 public interface ScriptExecutor {
 

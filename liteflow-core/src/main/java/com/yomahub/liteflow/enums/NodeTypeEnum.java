@@ -3,7 +3,7 @@ package com.yomahub.liteflow.enums;
 /**
  * 节点类型枚举
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 public enum NodeTypeEnum {
     COMMON("common","普通"),

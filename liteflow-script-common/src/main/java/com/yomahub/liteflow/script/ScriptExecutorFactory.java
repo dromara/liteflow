@@ -8,7 +8,7 @@ import java.util.ServiceLoader;
 /**
  * 脚本执行器工厂类
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 public class ScriptExecutorFactory {
 

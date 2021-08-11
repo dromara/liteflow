@@ -4,7 +4,7 @@ package com.yomahub.liteflow.script.exception;
 /**
  * 脚本运行异常
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 public class ScriptExecuteException extends RuntimeException {
 

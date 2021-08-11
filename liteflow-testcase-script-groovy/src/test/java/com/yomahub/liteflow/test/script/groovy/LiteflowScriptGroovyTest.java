@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 /**
  * 测试springboot下的脚本组件
  * @author Bryan.Zhang
- * @since 2.5.11
+ * @since 2.6.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/script/application.properties")
