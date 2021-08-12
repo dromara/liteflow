@@ -19,9 +19,12 @@ liteFlow是一个轻量，快速的组件式流程引擎框架，组件编排，
 * 框架提供自定义配置源，只需实现一个接口，即可从任何地方加载配置源
 * 支持SpringBoot的自动装配，也支持Spring的配置和非Spring的项目
 * 提供串行和并行2种模式，提供常见常见的表达式语句
+* 可以定义脚本语言节点，支持QLExpress和Groovy两种脚本，脚本语言支持即时热变更
+* 组件可以支持重试，重试次数可配置化
 * 提供无级嵌套的显式子流程模式，隐式子流程模式
 * 数据槽隔离机制，在多并发下上下文独立而稳定
 * 对系统损耗极低，可以稳定运行在核心业务大规模的微服务中
+* 自带简单的监控，能够知道每个组件的运行耗时排行
 
 ## Gitee Star趋势图
 [![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/3NHPVWVK.png)](https://giteye.net/chart/3NHPVWVK)
