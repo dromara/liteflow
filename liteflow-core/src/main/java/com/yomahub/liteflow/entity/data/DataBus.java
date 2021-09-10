@@ -38,7 +38,7 @@ public class DataBus {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		int slotSize = liteflowConfig.getSlotSize();
 		SLOTS = new AtomicReferenceArray<>(slotSize);
-		QUEUE = IntStream.range(0, slotSize - 1).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+		QUEUE = IntStream.range(0, slotSize).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
 	}
 
 	public static int offerSlot(Class<? extends Slot> slotClazz) {
