@@ -1,0 +1,52 @@
+package com.yomahub.liteflow.test.resizeSlot;
+
+import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.test.BaseTest;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
+
+/**
+ * springboot环境下slot扩容测试
+ * @author Bryan.Zhang
+ * @since 2.5.0
+ */
+@RunWith(SpringRunner.class)
+@TestPropertySource(value = "classpath:/resizeSlot/application.properties")
+@SpringBootTest(classes = ResizeSlotSpringbootTest.class)
+@EnableAutoConfiguration
+@ComponentScan({"com.yomahub.liteflow.test.resizeSlot.cmp"})
+public class ResizeSlotSpringbootTest extends BaseTest {
+
+    @Resource
+    private FlowExecutor flowExecutor;
+
+    @Test
+    public void testSpringboot() throws Exception{
+        ExecutorService pool = Executors.newCachedThreadPool();
+
+        List<Future<LiteflowResponse<DefaultSlot>>> futureList = new ArrayList<>();
+        for (int i = 0; i < 500; i++) {
+            Future<LiteflowResponse<DefaultSlot>> future = pool.submit(() -> flowExecutor.execute2Resp("chain1", "arg"));
+            futureList.add(future);
+        }
+
+        for(Future<LiteflowResponse<DefaultSlot>> future : futureList){
+            Assert.assertTrue(future.get().isSuccess());
+        }
+        System.out.println("success");
+    }
+}
