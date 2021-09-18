@@ -52,6 +52,10 @@ public class DataBus {
 	public static int offerSlot(Class<? extends Slot> slotClazz) {
 		try {
 			Slot slot = slotClazz.newInstance();
+
+			//这里有没有并发问题？
+			//没有，因为QUEUE的类型为ConcurrentLinkedQueue，并发情况下，每次取到的index不会相同
+			//当然前提是QUEUE里面的值不会重复，但是这个是由其他机制来保证的
 			Integer slotIndex = QUEUE.poll();
 
 			if (ObjectUtil.isNull(slotIndex)){
