@@ -55,4 +55,8 @@ public interface Slot {
 	void setException(Exception e);
 
 	Exception getException();
+
+	<T> void setPrivateDeliveryData(String nodeId, T t);
+
+	<T> T getPrivateDeliveryData(String nodeId);
 }

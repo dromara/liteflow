@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+import cn.hutool.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Deque;
@@ -24,23 +25,25 @@ public abstract class AbsSlot implements Slot {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
 
-	private static final String REQUEST = "request";
+	private static final String REQUEST = "_request";
 
-	private static final String RESPONSE = "response";
+	private static final String RESPONSE = "_response";
 
-	private static final String CHAINNAME = "chain_name";
+	private static final String CHAINNAME = "_chain_name";
 
-	private static final String COND_NODE_PREFIX = "cond_";
+	private static final String COND_NODE_PREFIX = "_cond_";
 
-	private static final String NODE_INPUT_PREFIX = "input_";
+	private static final String NODE_INPUT_PREFIX = "_input_";
 
-	private static final String NODE_OUTPUT_PREFIX = "output_";
+	private static final String NODE_OUTPUT_PREFIX = "_output_";
 
-	private static final String CHAIN_REQ_PREFIX = "chain_req_";
+	private static final String CHAIN_REQ_PREFIX = "_chain_req_";
 
-	private static final String REQUEST_ID = "req_id";
+	private static final String REQUEST_ID = "_req_id";
 
-	private static final String EXCEPTION = "exception";
+	private static final String EXCEPTION = "_exception";
+
+	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
 
 	private final Queue<CmpStep> executeSteps = new ConcurrentLinkedQueue<>();
 
@@ -94,6 +97,30 @@ public abstract class AbsSlot implements Slot {
 		dataMap.put(key, t);
 	}
 
+	public <T> void setPrivateDeliveryData(String nodeId, T t){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		synchronized (nodeId){
+			if (dataMap.containsKey(privateDKey)){
+				Queue<T> queue = (Queue<T>) dataMap.get(privateDKey);
+				queue.add(t);
+			}else{
+				Queue<T> queue = new ConcurrentLinkedQueue<>();
+				queue.add(t);
+				this.setData(privateDKey, queue);
+			}
+		}
+	}
+
+	public <T> T getPrivateDeliveryData(String nodeId){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		if(dataMap.containsKey(privateDKey)){
+			Queue<T> queue = (Queue<T>) dataMap.get(privateDKey);
+			return queue.poll();
+		}else{
+			return null;
+		}
+	}
+
 	public <T> void setCondResult(String key, T t){
 		dataMap.put(COND_NODE_PREFIX + key, t);
 	}
@@ -124,7 +151,7 @@ public abstract class AbsSlot implements Slot {
 				str.append("==>");
 			}
 		}
-		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(),str.toString());
+		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), str);
 		return str.toString();
 	}
 

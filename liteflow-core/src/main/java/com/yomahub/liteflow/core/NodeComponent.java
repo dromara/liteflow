@@ -183,4 +183,12 @@ public abstract class NodeComponent {
 	public void setType(NodeTypeEnum type) {
 		this.type = type;
 	}
+
+	public <T> void sendPrivateDeliveryData(String nodeId, T t){
+		this.getSlot().setPrivateDeliveryData(nodeId, t);
+	}
+
+	public <T> T getPrivateDeliveryData(){
+		return this.getSlot().getPrivateDeliveryData(this.getNodeId());
+	}
 }
