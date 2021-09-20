@@ -137,6 +137,9 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
+
+        //初始化DataBus
+        DataBus.init();
     }
 
     /**

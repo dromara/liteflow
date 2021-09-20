@@ -32,14 +32,18 @@ public class DataBus {
 	//这里为什么采用ConcurrentHashMap作为slot存放的容器？
 	//因为ConcurrentHashMap的随机取值复杂度也和数组一样为O(1)，并且没有并发问题，还有自动扩容的功能
 	//用数组的话，扩容涉及copy，线程安全问题还要自己处理
-	private static final ConcurrentHashMap<Integer, Slot> SLOTS;
+	private static ConcurrentHashMap<Integer, Slot> SLOTS;
 
-	private static final ConcurrentLinkedQueue<Integer> QUEUE;
+	private static ConcurrentLinkedQueue<Integer> QUEUE;
 
 	//当前slot的下标index的最大值
 	private static Integer currentIndexMaxValue;
 
-	static {
+	//这里原先版本中是static块，现在改成init静态方法，由FlowExecutor中的init去调用
+	//这样的改动对项目来说没有什么实际意义，但是在单元测试中，却有意义。
+	//因为单元测试中所有的一起跑，jvm是不退出的，所以如果是static块的话，跑多个testsuite只会执行一次。
+	//而由FlowExecutor中的init去调用，是会被执行多次的。保证了每个单元测试都能初始化一遍
+	public static void init() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		currentIndexMaxValue = liteflowConfig.getSlotSize();
 
