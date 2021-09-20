@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
@@ -297,13 +298,15 @@ public class FlowExecutor {
         return this.execute2Resp(chainId, param, slotClazz, null, false);
     }
 
+    private final ArrayList<Class<? extends Exception>> notFailExceptionList = ListUtil.toList(ChainEndException.class);
+
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
 
         T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
 
-        if (ObjectUtil.isNotNull(slot.getException())) {
+        if (ObjectUtil.isNotNull(slot.getException()) && !notFailExceptionList.contains(slot.getException().getClass())) {
             response.setSuccess(false);
             response.setMessage(slot.getException().getMessage());
             response.setCause(slot.getException());
