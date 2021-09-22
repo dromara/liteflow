@@ -10,6 +10,8 @@ package com.yomahub.liteflow.entity.data;
 import cn.hutool.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.lwawt.macosx.CSystemTray;
+
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Queue;
@@ -99,7 +101,7 @@ public abstract class AbsSlot implements Slot {
 
 	public <T> void setPrivateDeliveryData(String nodeId, T t){
 		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
-		synchronized (nodeId){
+		synchronized (this){
 			if (dataMap.containsKey(privateDKey)){
 				Queue<T> queue = (Queue<T>) dataMap.get(privateDKey);
 				queue.add(t);

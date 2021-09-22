@@ -58,7 +58,7 @@ public abstract class XmlFlowParser extends FlowParser {
             //先进行Spring上下文中的节点的判断
             for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
                 if (!FlowBus.containNode(componentEntry.getKey())) {
-                    FlowBus.addCommonNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+                    FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
                 }
             }
 

@@ -50,6 +50,12 @@ public abstract class NodeComponent {
 	//为何要设置这个，用this不行么，因为如果有aop去切的话，this在spring的aop里是切不到的。self对象有可能是代理过的对象
 	private NodeComponent self;
 
+	//重试次数
+	private int retryCount = 0;
+
+	//在目标异常抛出时才重试
+	private Class<? extends Exception>[] retryForExceptions = new Class[]{Exception.class};
+
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
@@ -190,5 +196,21 @@ public abstract class NodeComponent {
 
 	public <T> T getPrivateDeliveryData(){
 		return this.getSlot().getPrivateDeliveryData(this.getNodeId());
+	}
+
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
+	}
+
+	public Class<? extends Exception>[] getRetryForExceptions() {
+		return retryForExceptions;
+	}
+
+	public void setRetryForExceptions(Class<? extends Exception>[] retryForExceptions) {
+		this.retryForExceptions = retryForExceptions;
 	}
 }

@@ -11,6 +11,7 @@ package com.yomahub.liteflow.flow;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.ScriptCondComponent;
@@ -71,9 +72,9 @@ public class FlowBus {
         return nodeMap.containsKey(nodeId);
     }
 
-    public static void addCommonNode(String nodeId, Node node) {
+    public static void addSpringScanNode(String nodeId, NodeComponent nodeComponent) {
         if (containNode(nodeId)) return;
-        nodeMap.put(nodeId, node);
+        nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, NodeTypeEnum.COMMON, null, nodeId)));
     }
 
     public static void addCommonNode(String nodeId, String name, String cmpClazzStr) throws Exception {
@@ -82,8 +83,8 @@ public class FlowBus {
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
-    public static void addCommonNode(String nodeId, Class<? extends NodeComponent> cmpClazz){
-        addNode(nodeId, null, NodeTypeEnum.COMMON, cmpClazz, null);
+    public static void addCommonNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz){
+        addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
     public static void addCommonScriptNode(String nodeId, String name, String script){
@@ -106,10 +107,9 @@ public class FlowBus {
                 LOG.warn("couldn't find component class [{}] from spring context", cmpClazz.getName());
                 cmpInstance = cmpClazz.newInstance();
             }
-            cmpInstance.setNodeId(nodeId);
-            cmpInstance.setName(name);
-            cmpInstance.setSelf(cmpInstance);
-            cmpInstance.setType(type);
+
+            //进行初始化
+            cmpInstance = ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, nodeId);
 
             //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
             if (StrUtil.isNotBlank(script)){

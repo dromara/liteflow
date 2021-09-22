@@ -52,7 +52,7 @@ public abstract class JsonFlowParser extends FlowParser {
         try {
             for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
                 if (!FlowBus.containNode(componentEntry.getKey())) {
-                    FlowBus.addCommonNode(componentEntry.getKey(), new Node(componentEntry.getValue()));
+                    FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
                 }
             }
 

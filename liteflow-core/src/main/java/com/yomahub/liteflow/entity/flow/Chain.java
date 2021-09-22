@@ -26,11 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * chain对象，实现可执行器
+ *
  * @author Bryan.Zhang
  */
 public class Chain implements Executable {
@@ -69,8 +73,6 @@ public class Chain implements Executable {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
 
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-
         Slot slot = DataBus.getSlot(slotIndex);
 
         //循环chain里包含的condition，每一个condition有可能是then，也有可能是when
@@ -78,20 +80,29 @@ public class Chain implements Executable {
         for (Condition condition : conditionList) {
             if (condition instanceof ThenCondition) {
                 for (Executable executableItem : condition.getNodeList()) {
-                    //进行重试循环判断，如果重试次数为0，则只进行一次循环
-                    for (int i = 0; i <= liteflowConfig.getRetryCount(); i++) {
-                        try {
-                            if (i > 0) {
-                                LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i + 1);
-                            }
-                            executableItem.execute(slotIndex);
-                            break;
-                        } catch (ChainEndException e){
-                            //如果是ChainEndException，则无需重试
-                            throw e;
-                        } catch (Exception e) {
-                            if (i >= liteflowConfig.getRetryCount()){
+                    if (executableItem.getExecuteType().equals(ExecuteTypeEnum.CHAIN)) {
+                        executableItem.execute(slotIndex);
+                    } else {
+                        int retryCount = ((Node)executableItem).getInstance().getRetryCount();
+                        List<Class<? extends Exception>> forExceptions = Arrays.asList(((Node)executableItem).getInstance().getRetryForExceptions());
+                        for (int i = 0; i <= retryCount; i++) {
+                            try {
+                                if (i > 0) {
+                                    LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i + 1);
+                                }
+                                executableItem.execute(slotIndex);
+                                break;
+                            } catch (ChainEndException e) {
+                                //如果是ChainEndException，则无需重试
                                 throw e;
+                            } catch (Exception e) {
+                                //判断抛出的异常是不是指定异常的子类
+                                boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
+
+                                //两种情况不重试，1)抛出异常不在指定异常范围内 2)已经重试次数大于等于配置次数
+                                if (!flag || i >= retryCount){
+                                    throw e;
+                                }
                             }
                         }
                     }

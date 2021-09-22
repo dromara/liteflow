@@ -24,7 +24,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
 
     private ScriptEngine scriptEngine;
 
-    private Map<String, CompiledScript> compiledScriptMap = new HashMap<>();
+    private final Map<String, CompiledScript> compiledScriptMap = new HashMap<>();
 
     @Override
     public ScriptExecutor init() {

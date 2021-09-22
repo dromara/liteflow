@@ -30,9 +30,9 @@ public class FlowMetaSpringbootTest extends BaseTest {
     //测试动态添加元信息节点
     @Test
     public void testFlowMeta() {
-        FlowBus.addCommonNode("d", DCmp.class);
+        FlowBus.addCommonNode("d", "d组件", DCmp.class);
         LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c==>d[d组件]", response.getSlot().printStep());
     }
 }
