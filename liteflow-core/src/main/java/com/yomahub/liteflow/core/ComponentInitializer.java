@@ -3,10 +3,11 @@ package com.yomahub.liteflow.core;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
-import com.yomahub.liteflow.annotation.RetryCount;
+import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * 组件初始化器
@@ -45,10 +46,10 @@ public class ComponentInitializer {
 
         //先从组件上取@RetryCount标注，如果没有，则看全局配置，全局配置如果不配置的话，默认是0
         //默认retryForExceptions为Exception.class
-        RetryCount retryCountAnnotation = nodeComponent.getClass().getAnnotation(RetryCount.class);
-        if (ObjectUtil.isNotNull(retryCountAnnotation)) {
-            nodeComponent.setRetryCount(retryCountAnnotation.retry());
-            nodeComponent.setRetryForExceptions(retryCountAnnotation.forExceptions());
+        LiteflowRetry liteflowRetryAnnotation = AnnotationUtils.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
+        if (ObjectUtil.isNotNull(liteflowRetryAnnotation)) {
+            nodeComponent.setRetryCount(liteflowRetryAnnotation.retry());
+            nodeComponent.setRetryForExceptions(liteflowRetryAnnotation.forExceptions());
         } else {
             LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
             nodeComponent.setRetryCount(liteflowConfig.getRetryCount());

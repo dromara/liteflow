@@ -8,14 +8,17 @@
 package com.yomahub.liteflow.test.cmpRetry.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
+import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 
 @LiteflowComponent("d")
+@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
 public class DCmp extends NodeComponent {
 
 	@Override
 	public void process() {
 		System.out.println("DCmp executed!");
+		throw new RuntimeException("demo exception");
 	}
 
 }

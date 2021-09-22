@@ -11,15 +11,14 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 
-@LiteflowComponent("c")
-@LiteflowRetry(5)
-public class CCmp extends NodeComponent {
-
+@LiteflowComponent("e")
+@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
+public class ECmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("CCmp executed!");
-		throw new RuntimeException("demo exception");
+		System.out.println("ECmp executed!");
+		throw new NullPointerException("demo null exception");
 	}
 
 }

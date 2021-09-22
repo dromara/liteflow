@@ -14,12 +14,13 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RetryCount {
+@Inherited
+public @interface LiteflowRetry {
 
-    @AliasFor(value = "retry")
+    @AliasFor("retry")
     int value() default 0;
 
-    @AliasFor(value = "value")
+    @AliasFor("value")
     int retry() default 0;
 
     Class<? extends Exception>[] forExceptions() default {Exception.class};

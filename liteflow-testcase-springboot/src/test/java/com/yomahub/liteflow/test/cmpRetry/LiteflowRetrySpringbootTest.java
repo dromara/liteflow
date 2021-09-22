@@ -33,9 +33,29 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testRetry() {
+    public void testRetry1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>b==>c==>a==>d", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>b==>b", response.getSlot().printStep());
+    }
+
+    @Test
+    public void testRetry2() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().printStep());
+    }
+
+    @Test
+    public void testRetry3() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
+        Assert.assertFalse(response.isSuccess());
+    }
+
+    @Test
+    public void testRetry4() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getSlot().printStep());
     }
 }
