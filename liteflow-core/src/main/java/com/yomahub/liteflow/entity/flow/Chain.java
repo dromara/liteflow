@@ -14,6 +14,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.WhenExecuteException;
@@ -80,11 +81,14 @@ public class Chain implements Executable {
                     //进行重试循环判断，如果重试次数为0，则只进行一次循环
                     for (int i = 0; i <= liteflowConfig.getRetryCount(); i++) {
                         try {
-                            if (i > 0){
-                                LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i+1);
+                            if (i > 0) {
+                                LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i + 1);
                             }
                             executableItem.execute(slotIndex);
                             break;
+                        } catch (ChainEndException e){
+                            //如果是ChainEndException，则无需重试
+                            throw e;
                         } catch (Exception e) {
                             if (i >= liteflowConfig.getRetryCount()){
                                 throw e;
