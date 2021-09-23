@@ -15,6 +15,9 @@ public class LiteflowProperty {
     //流程定义资源地址
     private String ruleSource;
 
+    //zk配置的node节点地址
+    private String zkNode;
+
     //slot的数量
     private int slotSize;
 
@@ -108,5 +111,13 @@ public class LiteflowProperty {
 
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
+    }
+
+    public String getZkNode() {
+        return zkNode;
+    }
+
+    public void setZkNode(String zkNode) {
+        this.zkNode = zkNode;
     }
 }

@@ -62,8 +62,6 @@ public class FlowExecutor {
 
     private LiteflowConfig liteflowConfig;
 
-    private String zkNode;
-
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */
@@ -179,11 +177,11 @@ public class FlowExecutor {
             LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, pattern.getType());
             switch (pattern) {
                 case TYPE_XML:
-                    return StrUtil.isNotBlank(zkNode) ? new ZookeeperXmlFlowParser(zkNode) : new ZookeeperXmlFlowParser();
+                    return new ZookeeperXmlFlowParser(liteflowConfig.getZkNode());
                 case TYPE_JSON:
-                    return StrUtil.isNotBlank(zkNode) ? new ZookeeperJsonFlowParser(zkNode) : new ZookeeperJsonFlowParser();
+                    return new ZookeeperJsonFlowParser(liteflowConfig.getZkNode());
                 case TYPE_YML:
-                    return StrUtil.isNotBlank(zkNode) ? new ZookeeperYmlFlowParser(zkNode) : new ZookeeperYmlFlowParser();
+                    return new ZookeeperYmlFlowParser(liteflowConfig.getZkNode());
                 default:
             }
         }
@@ -372,14 +370,6 @@ public class FlowExecutor {
             }
         }
         return slot;
-    }
-
-    public String getZkNode() {
-        return zkNode;
-    }
-
-    public void setZkNode(String zkNode) {
-        this.zkNode = zkNode;
     }
 
     public LiteflowConfig getLiteflowConfig() {

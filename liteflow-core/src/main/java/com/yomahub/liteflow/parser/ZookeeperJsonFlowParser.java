@@ -21,11 +21,7 @@ public class ZookeeperJsonFlowParser extends JsonFlowParser{
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperJsonFlowParser.class);
 
-    private String nodePath = "/lite-flow/flow";
-
-    public ZookeeperJsonFlowParser() {
-
-    }
+    private final String nodePath;
 
     public ZookeeperJsonFlowParser(String node) {
         nodePath = node;

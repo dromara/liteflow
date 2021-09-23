@@ -23,11 +23,7 @@ public class ZookeeperXmlFlowParser extends XmlFlowParser{
 
 	private static final Logger LOG = LoggerFactory.getLogger(ZookeeperXmlFlowParser.class);
 
-	private String nodePath = "/lite-flow/flow";
-
-	public ZookeeperXmlFlowParser() {
-
-	}
+	private final String nodePath;
 
 	public ZookeeperXmlFlowParser(String node) {
 		nodePath = node;

@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.property;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
@@ -27,6 +28,9 @@ public class LiteflowConfig {
 
     //流程定义资源地址
     private String ruleSource;
+
+    //zk配置的node定义
+    private String zkNode;
 
     //slot的数量
     private Integer slotSize;
@@ -213,5 +217,17 @@ public class LiteflowConfig {
 
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
+    }
+
+    public String getZkNode() {
+        if (StrUtil.isBlank(zkNode)){
+            return "/lite-flow/flow";
+        }else{
+            return zkNode;
+        }
+    }
+
+    public void setZkNode(String zkNode) {
+        this.zkNode = zkNode;
     }
 }

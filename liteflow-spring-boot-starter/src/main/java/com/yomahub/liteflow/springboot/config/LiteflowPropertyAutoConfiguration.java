@@ -38,6 +38,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setEnable(property.isEnable());
         liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
         liteflowConfig.setRetryCount(property.getRetryCount());
+        liteflowConfig.setZkNode(property.getZkNode());
         return liteflowConfig;
     }
 }
