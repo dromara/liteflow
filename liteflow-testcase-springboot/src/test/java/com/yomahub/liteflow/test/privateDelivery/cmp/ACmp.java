@@ -7,13 +7,14 @@
  */
 package com.yomahub.liteflow.test.privateDelivery.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.Slot;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 
-@Component("a")
+@LiteflowComponent("a")
 public class ACmp extends NodeComponent {
 
 	@Override

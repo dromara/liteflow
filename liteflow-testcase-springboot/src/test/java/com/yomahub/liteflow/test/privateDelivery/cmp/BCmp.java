@@ -7,12 +7,13 @@
  */
 package com.yomahub.liteflow.test.privateDelivery.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-@Component("b")
+@LiteflowComponent("b")
 public class BCmp extends NodeComponent {
 
 	@Override
