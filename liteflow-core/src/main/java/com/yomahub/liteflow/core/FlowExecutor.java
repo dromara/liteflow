@@ -252,6 +252,7 @@ public class FlowExecutor {
     }
 
     public void reloadRule() {
+        FlowBus.cleanCache();
         init();
     }
 
