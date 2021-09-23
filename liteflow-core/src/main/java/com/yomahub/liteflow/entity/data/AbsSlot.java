@@ -7,12 +7,8 @@
  */
 package com.yomahub.liteflow.entity.data;
 
-import cn.hutool.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.lwawt.macosx.CSystemTray;
-
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
