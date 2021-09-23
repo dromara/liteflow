@@ -26,7 +26,7 @@ public class LFParserYmlSpringTest extends BaseTest {
 
     //测试spring场景的xml parser
     @Test
-    public void testSpring() {
+    public void testYmlParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }

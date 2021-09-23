@@ -32,7 +32,7 @@ public class LFParserYmlSpringbootTest extends BaseTest {
 
     //测试无springboot场景的yml parser
     @Test
-    public void testSpringboot() {
+    public void testYmlParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }

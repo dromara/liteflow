@@ -38,7 +38,7 @@ public class ResizeSlotSpringbootTest extends BaseTest {
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testSpringboot() throws Exception{
+    public void testResize() throws Exception{
         ExecutorService pool = Executors.newCachedThreadPool();
 
         List<Future<LiteflowResponse<DefaultSlot>>> futureList = new ArrayList<>();

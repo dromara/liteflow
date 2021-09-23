@@ -76,7 +76,7 @@ public class ZkNodeWithYmlSpringbootTest extends BaseTest {
     }
     
     @Test
-    public void test() {
+    public void testZkNodeWithYml() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }

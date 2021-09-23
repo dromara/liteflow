@@ -33,7 +33,7 @@ public class CustomParserXmlSpringbootTest extends BaseTest {
 
     //测试springboot场景的自定义json parser
     @Test
-    public void testSpringboot() {
+    public void testXmlCustomParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "args");
         Assert.assertTrue(response.isSuccess());
     }
