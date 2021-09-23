@@ -15,7 +15,6 @@ import com.yomahub.liteflow.core.NodeComponent;
 @LiteflowRetry(5)
 public class CCmp extends NodeComponent {
 
-
 	@Override
 	public void process() {
 		System.out.println("CCmp executed!");
