@@ -31,7 +31,7 @@ public class EmptyFlowTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试自定义AOP，串行场景
+    //测试空flow的情况下，liteflow是否能正常启动
     @Test
     public void testEmptyFlow() {
         //不做任何事，为的是能正常启动

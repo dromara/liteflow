@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * springboot环境下slot扩容测试
+ * springboot环境下重新加载规则测试
  * @author Bryan.Zhang
  * @since 2.5.0
  */

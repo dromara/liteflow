@@ -32,6 +32,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
+    //全局重试配置测试
     @Test
     public void testRetry1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
@@ -39,6 +40,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
         Assert.assertEquals("a==>b==>b==>b", response.getSlot().printStep());
     }
 
+    //单个组件重试配置测试
     @Test
     public void testRetry2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
@@ -46,12 +48,14 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
         Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().printStep());
     }
 
+    //单个组件指定异常，但抛出的并不是指定异常的场景测试
     @Test
     public void testRetry3() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
         Assert.assertFalse(response.isSuccess());
     }
 
+    //单个组件指定异常重试，抛出的是指定异常或者
     @Test
     public void testRetry4() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");

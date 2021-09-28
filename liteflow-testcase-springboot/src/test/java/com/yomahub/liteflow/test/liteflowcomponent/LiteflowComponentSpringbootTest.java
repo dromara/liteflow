@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 
 /**
- * 测试springboot下的enable参数
+ * 测试@LiteflowComponent标注
  * @author Bryan.Zhang
  * @since 2.5.10
  */
