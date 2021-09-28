@@ -1,44 +1,45 @@
 package com.yomahub.liteflow.test.enable;
 
+import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.Resource;
 
 /**
- * 测试springboot下的enable参数
+ * spring环境下enable参数
  *
- * @author Bryan.Zhang
- * @since 2.5.10
+ * @author qjwyss
+ * @since 2.6.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/enable/application.properties")
-@SpringBootTest(classes = LiteflowEnableSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.enable.cmp"})
-public class LiteflowEnableSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/enable/application-local.xml")
+public class LiteflowEnableSpringTest extends BaseTest {
+    @Resource
+    private FlowExecutor flowExecutor;
 
     @Autowired
     private ApplicationContext context;
 
-
     @Test
-    public void testEnable() {
+    public void testEnable() throws Exception {
         LiteflowConfig config = context.getBean(LiteflowConfig.class);
         Boolean enable = config.getEnable();
         if (enable) {
-            System.out.println("成功启动，并且打印");
+            LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+            Assert.assertTrue(response.isSuccess());
             return;
         }
+
         Assert.assertFalse(enable);
     }
 }
