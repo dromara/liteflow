@@ -1,7 +1,10 @@
 package com.yomahub.liteflow.script.qlexpress;
 
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
+import com.ql.util.express.ExpressLoader;
 import com.ql.util.express.ExpressRunner;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
@@ -36,7 +39,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
         try{
             expressRunner.loadMutilExpress(nodeId, script);
         }catch (Exception e){
-            String errorMsg = StrUtil.format("script loading error for node[{}]", nodeId);
+            String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
         }
     }
@@ -46,7 +49,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
         List<String> errorList = new ArrayList<>();
         try{
             Slot slot = DataBus.getSlot(slotIndex);
-            DefaultContext<String, Object> context = new DefaultContext<String, Object>();
+            DefaultContext<String, Object> context = new DefaultContext<>();
             context.put("slot", slot);
             return expressRunner.executeByExpressName(nodeId, context, errorList, true, false, null);
         }catch (Exception e){
@@ -61,5 +64,6 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
     @Override
     public void cleanCache() {
         expressRunner.clearExpressCache();
+        ReflectUtil.setFieldValue(expressRunner,"loader",new ExpressLoader(expressRunner));
     }
 }

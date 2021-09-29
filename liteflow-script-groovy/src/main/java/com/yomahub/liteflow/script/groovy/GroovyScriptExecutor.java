@@ -41,7 +41,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
                 compiledScriptMap.put(nodeId, compiledScript);
             }
         }catch (Exception e){
-            String errorMsg = StrUtil.format("script loading error for node[{}]", nodeId);
+            String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
         }
 
