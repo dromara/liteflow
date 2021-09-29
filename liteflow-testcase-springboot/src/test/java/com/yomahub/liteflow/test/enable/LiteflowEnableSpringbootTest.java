@@ -17,8 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 /**
  * 测试springboot下的enable参数
  *
- * @author Bryan.Zhang
- * @since 2.5.10
+ * @author qjwyss
+ * @since v2.6.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/enable/application.properties")
@@ -29,7 +29,6 @@ public class LiteflowEnableSpringbootTest extends BaseTest {
 
     @Autowired
     private ApplicationContext context;
-
 
     @Test
     public void testEnable() {
