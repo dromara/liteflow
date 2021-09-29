@@ -42,7 +42,7 @@ public class MonitorBus {
 		this.liteflowConfig = liteflowConfig;
 
 		if(liteflowConfig.getEnableLog()){
-			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod(), TimeUnit.MICROSECONDS);
+			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod(), TimeUnit.MILLISECONDS);
 		}
 	}
 
