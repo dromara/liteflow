@@ -100,13 +100,16 @@ public class FlowExecutor {
                 rulePathList.add(path);
 
                 //支持多类型的配置文件，分别解析
-                if (liteflowConfig.isSupportMultipleType()){
+                if (liteflowConfig.isSupportMultipleType()) {
                     if (ObjectUtil.isNotNull(parser)) {
                         parser.parseMain(ListUtil.toList(path));
                     } else {
                         throw new ConfigErrorException("parse error, please check liteflow config property");
                     }
                 }
+            } catch (CyclicDependencyException e){
+                LOG.error(e.getMessage());
+                throw e;
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error,cannot find the parse for path {}", path);
                 LOG.error(errorMsg, e);
@@ -130,6 +133,9 @@ public class FlowExecutor {
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
+            } catch (CyclicDependencyException e){
+                LOG.error(e.getMessage());
+                throw e;
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePathList);
                 LOG.error(errorMsg, e);

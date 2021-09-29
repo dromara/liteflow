@@ -11,6 +11,7 @@ import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Executable;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.CyclicDependencyException;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.exception.ParseException;
@@ -54,68 +55,62 @@ public abstract class XmlFlowParser extends FlowParser {
 
     //xml形式的主要解析过程
     public void parseDocument(List<Document> documentList) throws Exception {
-        try {
-            //先进行Spring上下文中的节点的判断
-            for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-                if (!FlowBus.containNode(componentEntry.getKey())) {
-                    FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
-                }
+        //先进行Spring上下文中的节点的判断
+        for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
+            if (!FlowBus.containNode(componentEntry.getKey())) {
+                FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
             }
+        }
 
-            for (Document document : documentList) {
-                Element rootElement = document.getRootElement();
-                Element nodesElement = rootElement.element("nodes");
-                // 当存在<nodes>节点定义时，解析node节点
-                if (ObjectUtil.isNotNull(nodesElement)){
-                    List<Element> nodeList = nodesElement.elements("node");
-                    String id, name, clazz, type, script;
-                    for (Element e : nodeList) {
-                        id = e.attributeValue("id");
-                        name = e.attributeValue("name");
-                        clazz = e.attributeValue("class");
-                        type = e.attributeValue("type");
+        for (Document document : documentList) {
+            Element rootElement = document.getRootElement();
+            Element nodesElement = rootElement.element("nodes");
+            // 当存在<nodes>节点定义时，解析node节点
+            if (ObjectUtil.isNotNull(nodesElement)){
+                List<Element> nodeList = nodesElement.elements("node");
+                String id, name, clazz, type, script;
+                for (Element e : nodeList) {
+                    id = e.attributeValue("id");
+                    name = e.attributeValue("name");
+                    clazz = e.attributeValue("class");
+                    type = e.attributeValue("type");
 
-                        //初始化type
-                        if (StrUtil.isBlank(type)){
-                            type = NodeTypeEnum.COMMON.getCode();
+                    //初始化type
+                    if (StrUtil.isBlank(type)){
+                        type = NodeTypeEnum.COMMON.getCode();
+                    }
+                    NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
+                    if (ObjectUtil.isNull(nodeTypeEnum)){
+                        throw new NodeTypeNotSupportException(StrUtil.format("type [{}] is not support", type));
+                    }
+
+                    //这里区分是普通java节点还是脚本节点
+                    //如果是脚本节点，又区分是普通脚本节点，还是条件脚本节点
+                    if (nodeTypeEnum.equals(NodeTypeEnum.COMMON) && StrUtil.isNotBlank(clazz)){
+                        if (!FlowBus.containNode(id)){
+                            FlowBus.addCommonNode(id, name, clazz);
                         }
-                        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
-                        if (ObjectUtil.isNull(nodeTypeEnum)){
-                            throw new NodeTypeNotSupportException(StrUtil.format("type [{}] is not support", type));
-                        }
-
-                        //这里区分是普通java节点还是脚本节点
-                        //如果是脚本节点，又区分是普通脚本节点，还是条件脚本节点
-                        if (nodeTypeEnum.equals(NodeTypeEnum.COMMON) && StrUtil.isNotBlank(clazz)){
-                            if (!FlowBus.containNode(id)){
-                                FlowBus.addCommonNode(id, name, clazz);
-                            }
-                        }else{
-                            if (!FlowBus.containNode(id)){
-                                script = e.getTextTrim();
-                                if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
-                                    FlowBus.addCommonScriptNode(id, name, script);
-                                }else if(nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
-                                    FlowBus.addCondScriptNode(id, name, script);
-                                }
+                    }else{
+                        if (!FlowBus.containNode(id)){
+                            script = e.getTextTrim();
+                            if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
+                                FlowBus.addCommonScriptNode(id, name, script);
+                            }else if(nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
+                                FlowBus.addCondScriptNode(id, name, script);
                             }
                         }
                     }
                 }
+            }
 
-                // 解析chain节点
-                List<Element> chainList = rootElement.elements("chain");
-                for (Element e : chainList) {
-                    String chainName = e.attributeValue("name");
-                    if (!FlowBus.containChain(chainName)) {
-                        parseOneChain(e, documentList);
-                    }
+            // 解析chain节点
+            List<Element> chainList = rootElement.elements("chain");
+            for (Element e : chainList) {
+                String chainName = e.attributeValue("name");
+                if (!FlowBus.containChain(chainName)) {
+                    parseOneChain(e, documentList);
                 }
             }
-        } catch (Exception e) {
-            String errorMsg = "FlowParser parser exception";
-            LOG.error(errorMsg, e);
-            throw new ParseException(errorMsg);
         }
     }
 
@@ -195,18 +190,23 @@ public abstract class XmlFlowParser extends FlowParser {
     //因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
     @SuppressWarnings("unchecked")
     private boolean hasChain(List<Document> documentList, String chainName) throws Exception {
-        for (Document document : documentList) {
-            List<Element> chainList = document.getRootElement().elements("chain");
-            for (Element ce : chainList) {
-                String ceName = ce.attributeValue("name");
-                if (ceName.equals(chainName)) {
-                    if (!FlowBus.containChain(chainName)) {
-                        parseOneChain(ce, documentList);
+        try{
+            for (Document document : documentList) {
+                List<Element> chainList = document.getRootElement().elements("chain");
+                for (Element ce : chainList) {
+                    String ceName = ce.attributeValue("name");
+                    if (ceName.equals(chainName)) {
+                        if (!FlowBus.containChain(chainName)) {
+                            parseOneChain(ce, documentList);
+                        }
+                        return true;
                     }
-                    return true;
                 }
             }
+            return false;
+        }catch (StackOverflowError e){
+            LOG.error("a cyclic dependency occurs in chain", e);
+            throw new CyclicDependencyException("a cyclic dependency occurs in chain");
         }
-        return false;
     }
 }
