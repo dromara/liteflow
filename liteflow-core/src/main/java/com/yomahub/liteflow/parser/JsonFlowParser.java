@@ -131,29 +131,31 @@ public abstract class JsonFlowParser extends FlowParser {
             condArray = condArrayStr.split(",");
             RegexEntity regexEntity;
             String itemExpression;
-            String item;
+            RegexNodeEntity item;
             //这里解析的规则，优先按照node去解析，再按照chain去解析
             for (int i = 0; i < condArray.length; i++) {
                 itemExpression = condArray[i].trim();
-                regexEntity = parseNodeStr(itemExpression);
+                regexEntity = RegexEntity.parse(itemExpression);
                 item = regexEntity.getItem();
-                if (FlowBus.containNode(item)) {
-                    Node node = FlowBus.getNode(item);
+                if (FlowBus.containNode(item.getId())) {
+                    Node node = FlowBus.copyNode(item.getId());
+                    node.setTag(regexEntity.getItem().getTag());
                     chainNodeList.add(node);
                     //这里判断是不是条件节点，条件节点会含有realItem，也就是括号里的node
                     if (regexEntity.getRealItemArray() != null) {
-                        for (String key : regexEntity.getRealItemArray()) {
-                            if (FlowBus.containNode(key)) {
-                                Node condNode = FlowBus.getNode(key);
+                        for (RegexNodeEntity realItem : regexEntity.getRealItemArray()) {
+                            if (FlowBus.containNode(realItem.getId())) {
+                                Node condNode = FlowBus.copyNode(realItem.getId());
+                                node.setTag(realItem.getTag());
                                 node.setCondNode(condNode.getId(), condNode);
-                            } else if (hasChain(flowJsonObjectList, key)) {
-                                Chain chain = FlowBus.getChain(key);
+                            } else if (hasChain(flowJsonObjectList, realItem.getId())) {
+                                Chain chain = FlowBus.getChain(realItem.getId());
                                 node.setCondNode(chain.getChainName(), chain);
                             }
                         }
                     }
-                } else if (hasChain(flowJsonObjectList, item)) {
-                    Chain chain = FlowBus.getChain(item);
+                } else if (hasChain(flowJsonObjectList, item.getId())) {
+                    Chain chain = FlowBus.getChain(item.getId());
                     chainNodeList.add(chain);
                 } else {
                     String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem());

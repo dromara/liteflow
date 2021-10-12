@@ -27,6 +27,9 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 普通组件抽象类
  * @author Bryan.Zhang
@@ -43,6 +46,10 @@ public abstract class NodeComponent {
 	private String nodeId;
 
 	private String name;
+
+	private String tag;
+
+	private Map<String, Executable> condNodeMap;
 
 	private NodeTypeEnum type;
 
@@ -90,8 +97,7 @@ public abstract class NodeComponent {
 		if (this instanceof NodeCondComponent) {
 			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if (StrUtil.isNotBlank(condNodeId)) {
-				Node thisNode = FlowBus.getNode(nodeId);
-				Executable condExecutor = thisNode.getCondNode(condNodeId);
+				Executable condExecutor = condNodeMap.get(condNodeId);
 				if (ObjectUtil.isNotNull(condExecutor)) {
 					condExecutor.execute(slotIndexTL.get());
 				}
@@ -212,5 +218,21 @@ public abstract class NodeComponent {
 
 	public void setRetryForExceptions(Class<? extends Exception>[] retryForExceptions) {
 		this.retryForExceptions = retryForExceptions;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
+	public Map<String, Executable> getCondNodeMap() {
+		return condNodeMap;
+	}
+
+	public void setCondNodeMap(Map<String, Executable> condNodeMap) {
+		this.condNodeMap = condNodeMap;
 	}
 }

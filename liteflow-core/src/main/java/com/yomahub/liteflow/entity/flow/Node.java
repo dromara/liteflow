@@ -27,13 +27,15 @@ import org.slf4j.LoggerFactory;
  * Node节点，实现可执行器
  * @author Bryan.Zhang
  */
-public class Node implements Executable{
+public class Node implements Executable,Cloneable{
 
 	private static final Logger LOG = LoggerFactory.getLogger(Node.class);
 
 	private String id;
 
 	private String name;
+
+	private String tag;
 
 	private NodeTypeEnum type;
 
@@ -107,6 +109,11 @@ public class Node implements Executable{
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
 
+				//把tag和condNodeMap赋给NodeComponent
+				//这里为什么要这么做？因为tag和condNodeMap从某种意义上来说是属于某个chain本身范围，并非全局的
+				instance.setTag(tag);
+				instance.setCondNodeMap(condNodeMap);
+
 				//执行业务逻辑的主要入口
 				instance.execute();
 
@@ -136,6 +143,15 @@ public class Node implements Executable{
 	}
 
 	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+
+	public Node copy() throws Exception{
+		return (Node) this.clone();
+	}
+
+	@Override
 	public ExecuteTypeEnum getExecuteType() {
 		return ExecuteTypeEnum.NODE;
 	}
@@ -143,5 +159,13 @@ public class Node implements Executable{
 	@Override
 	public String getExecuteName() {
 		return id;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 }

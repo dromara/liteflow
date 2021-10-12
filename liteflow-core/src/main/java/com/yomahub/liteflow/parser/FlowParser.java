@@ -32,27 +32,9 @@ public abstract class FlowParser {
 
     public abstract void parse(List<String> contentList) throws Exception ;
 
-    private static final Pattern p = Pattern.compile("[^\\)\\(]+");
+    private static final Pattern p1 = Pattern.compile("[^\\)\\(]+");
 
-    //条件节点的正则解析
-    public RegexEntity parseNodeStr(String str) {
-        List<String> list = new ArrayList<String>();
-
-        Matcher m = p.matcher(str);
-        while(m.find()){
-            list.add(m.group());
-        }
-        RegexEntity regexEntity = new RegexEntity();
-        regexEntity.setItem(list.get(0).trim());
-        if(list.size() > 1){
-            String[] realNodeArray = list.get(1).split("\\|");
-            for (int i = 0; i < realNodeArray.length; i++) {
-                realNodeArray[i] = realNodeArray[i].trim();
-            }
-            regexEntity.setRealItemArray(realNodeArray);
-        }
-        return regexEntity;
-    }
+    private static final Pattern p2 = Pattern.compile("[^\\[\\]]+");
 
     protected void buildBaseFlowConditions(List<Condition> conditionList,Condition condition){
         if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN.getType())) {
