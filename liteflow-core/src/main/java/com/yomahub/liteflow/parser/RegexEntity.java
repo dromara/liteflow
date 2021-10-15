@@ -37,7 +37,7 @@ public class RegexEntity {
 			String[] array = list.get(1).split("\\|");
 			List<RegexNodeEntity> regexNodeEntityList = new ArrayList<>();
 			for (String itemStr : array){
-				regexNodeEntityList.add(RegexNodeEntity.parse(itemStr));
+				regexNodeEntityList.add(RegexNodeEntity.parse(itemStr.trim()));
 			}
 			regexEntity.setRealItemArray(regexNodeEntityList.toArray(new RegexNodeEntity[]{}));
 		}catch (Exception ignored){}
