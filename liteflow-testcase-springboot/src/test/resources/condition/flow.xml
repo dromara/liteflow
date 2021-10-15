@@ -7,8 +7,7 @@
         <then value="chain2"/>
     </chain>
     <chain name="chain2">
-        <then value="b,a"/>
-        <then value="chain3"/>
+        <then value="b,j(a|chain3)"/>
     </chain>
 
     <chain name="chain3">

@@ -42,10 +42,15 @@ public class BaseConditionFlowTest extends BaseTest {
      * 验证了默认参数情况下 when可以加载执行
      * **/
     @Test
-    public void testBaseConditionFlow() {
+    public void testBaseConditionFlow1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a base request");
         Assert.assertTrue(response.isSuccess());
         System.out.println(response.getSlot().printStep());
+    }
+
+    @Test
+    public void testBaseConditionFlow2() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "it's a base request");
     }
 
     /*****
