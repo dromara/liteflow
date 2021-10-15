@@ -10,6 +10,7 @@ package com.yomahub.liteflow.entity.flow;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.ttl.TtlCallable;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
@@ -130,7 +131,7 @@ public class Chain implements Executable {
 
         for (int i = 0; i < condition.getNodeList().size(); i++) {
             futures.add(parallelExecutor.submit(
-                    new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch, liteflowConfig.getRetryCount())
+                    TtlCallable.get(new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch, liteflowConfig.getRetryCount()))
             ));
         }
 
