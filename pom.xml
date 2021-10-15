@@ -126,11 +126,13 @@
 						<groupId>org.slf4j</groupId>
 					</exclusion>
 				</exclusions>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-recipes</artifactId>
 				<version>${curator.version}</version>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>cn.hutool</groupId>
