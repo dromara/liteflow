@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.condition;
 
+import cn.hutool.core.collection.ListUtil;
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
@@ -51,6 +52,10 @@ public class BaseConditionFlowTest extends BaseTest {
     @Test
     public void testBaseConditionFlow2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "it's a base request");
+        Assert.assertTrue(ListUtil.toList("b==>j==>g==>f==>h","b==>j==>g==>h==>f",
+                "b==>j==>h==>g==>f","b==>j==>h==>f==>g",
+                "b==>j==>f==>h==>g","b==>j==>f==>g==>h"
+                ).contains(response.getSlot().printStep()));
     }
 
     /*****
