@@ -73,17 +73,9 @@ public abstract class NodeComponent {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		// process前置处理
-		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.beforeProcess(this.getNodeId(), slot);
-		}
-
+		self.beforeProcess(this.getNodeId(), slot);
 		self.process();
-
-		// process后置处理
-		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.afterProcess(this.getNodeId(), slot);
-		}
+		self.afterProcess(this.getNodeId(), slot);
 
 		stopWatch.stop();
 		
@@ -108,6 +100,25 @@ public abstract class NodeComponent {
 	}
 
 	public abstract void process() throws Exception;
+
+	/**
+	 * process前置处理
+	 */
+	public void beforeProcess(String nodeId, Slot slot) {
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot);
+		}
+	}
+
+	/**
+	 * process后置处理
+	 */
+	public void afterProcess(String nodeId, Slot slot) {
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot);
+		}
+	}
+
 
 	/**
 	 * 是否进入该节点
