@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author guodongqing
@@ -31,10 +29,6 @@ public abstract class FlowParser {
     public abstract void parseMain(List<String> pathList) throws Exception;
 
     public abstract void parse(List<String> contentList) throws Exception ;
-
-    private static final Pattern p1 = Pattern.compile("[^\\)\\(]+");
-
-    private static final Pattern p2 = Pattern.compile("[^\\[\\]]+");
 
     protected void buildBaseFlowConditions(List<Condition> conditionList,Condition condition){
         if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN.getType())) {
