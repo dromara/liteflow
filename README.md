@@ -10,6 +10,7 @@
 liteFlow is a lightweight , fast component-based process engine framework / rules engine , component orchestration , component reuse , to help decouple business code , so that each business fragment is an elegant component , and support hot-loading rule configuration , to achieve on-the-fly modification .
 
 ## Project home page please click：[HOME PAGE](http://yomahub.com/liteflow)
+## project documents please click: [DOCUMENTATION](https://yomahub.com/liteflow/docs)
 ## Example projects, please click：[EXAMPLE](https://gitee.com/bryan31/liteflow-example)
 
 ## Feature
