@@ -38,7 +38,7 @@ public abstract class FlowParser {
 
     protected void buildBaseFlowConditions(List<Condition> conditionList,Condition condition){
         if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN.getType())) {
-            if (conditionList.size() > 1 &&
+            if (conditionList.size() >= 1 &&
                     CollectionUtil.getLast(conditionList) instanceof ThenCondition) {
                 CollectionUtil.getLast(conditionList).getNodeList().addAll(condition.getNodeList());
             } else {
