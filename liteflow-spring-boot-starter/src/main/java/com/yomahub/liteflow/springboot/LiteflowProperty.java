@@ -41,6 +41,9 @@ public class LiteflowProperty {
     //重试次数
     private int retryCount;
 
+    //是否打印liteflow banner
+    private boolean printBanner;
+
     public boolean isEnable() {
         return enable;
     }
@@ -119,5 +122,13 @@ public class LiteflowProperty {
 
     public void setZkNode(String zkNode) {
         this.zkNode = zkNode;
+    }
+
+    public boolean isPrintBanner() {
+        return printBanner;
+    }
+
+    public void setPrintBanner(boolean printBanner) {
+        this.printBanner = printBanner;
     }
 }

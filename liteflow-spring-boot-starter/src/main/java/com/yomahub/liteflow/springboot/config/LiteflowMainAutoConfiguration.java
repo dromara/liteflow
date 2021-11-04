@@ -29,8 +29,8 @@ import org.springframework.context.annotation.Import;
 public class LiteflowMainAutoConfiguration {
 
     @Bean
-    public ComponentScanner componentScanner(){
-        return new ComponentScanner();
+    public ComponentScanner componentScanner(LiteflowConfig liteflowConfig){
+        return new ComponentScanner(liteflowConfig);
     }
 
     @Bean

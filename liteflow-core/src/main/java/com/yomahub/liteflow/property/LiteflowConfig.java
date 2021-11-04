@@ -17,6 +17,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
  * 这个类中的属性为什么不用基本类型，而用包装类型呢
  * 是因为这个类是springboot和spring的最终参数获取器，考虑到spring的场景，有些参数不是必须配置。基本类型就会出现默认值的情况。
  * 所以为了要有null值出现，这里采用包装类型
+ *
  * @author Bryan.Zhang
  */
 public class LiteflowConfig {
@@ -66,6 +67,9 @@ public class LiteflowConfig {
 
     //重试次数
     private Integer retryCount;
+
+    //是否打印liteflow banner
+    private Boolean printBanner;
 
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
@@ -220,14 +224,26 @@ public class LiteflowConfig {
     }
 
     public String getZkNode() {
-        if (StrUtil.isBlank(zkNode)){
+        if (StrUtil.isBlank(zkNode)) {
             return "/lite-flow/flow";
-        }else{
+        } else {
             return zkNode;
         }
     }
 
     public void setZkNode(String zkNode) {
         this.zkNode = zkNode;
+    }
+
+    public Boolean getPrintBanner() {
+        if (ObjectUtil.isNull(printBanner)) {
+            return Boolean.TRUE;
+        } else {
+            return printBanner;
+        }
+    }
+
+    public void setPrintBanner(Boolean printBanner) {
+        this.printBanner = printBanner;
     }
 }

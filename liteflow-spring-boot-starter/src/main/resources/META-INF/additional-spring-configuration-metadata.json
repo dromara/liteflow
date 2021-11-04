@@ -7,6 +7,12 @@
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
+      "name": "liteflow.print-banner",
+      "type": "java.lang.Boolean",
+      "description": "Whether to print liteflow banner.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.rule-source",
       "type": "java.lang.String",
       "description": "Location of the flow rule source.",
@@ -16,6 +22,12 @@
       "name": "liteflow.slot-size",
       "type": "java.lang.Integer",
       "description": "Set concurrent data slot size.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.zk-node",
+      "type": "java.lang.String",
+      "description": "Node definition for ZK configuration.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
