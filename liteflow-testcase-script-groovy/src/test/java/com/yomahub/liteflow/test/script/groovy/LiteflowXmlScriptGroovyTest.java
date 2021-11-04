@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.script.qlexpress;
+package com.yomahub.liteflow.test.script.groovy;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -20,16 +20,16 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的脚本组件
+ * 测试springboot下的脚本组件，基于xml配置
  * @author Bryan.Zhang
  * @since 2.6.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/script/application.properties")
-@SpringBootTest(classes = LiteflowScriptQLExpressTest.class)
+@TestPropertySource(value = "classpath:/json-script/application.properties")
+@SpringBootTest(classes = LiteflowXmlScriptGroovyTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.qlexpress.cmp"})
-public class LiteflowScriptQLExpressTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.groovy.cmp"})
+public class LiteflowXmlScriptGroovyTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -47,23 +47,24 @@ public class LiteflowScriptQLExpressTest extends BaseTest {
     public void testScript2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("d==>s2[条件脚本]==>b", response.getSlot().printStep());
+        Assert.assertEquals("d==>s2[条件脚本]==>a", response.getSlot().printStep());
     }
 
+    //测试脚本的热重载
     @Test
     public void testScript3() throws Exception{
         //根据配置，加载的应该是flow.xml，执行原来的规则
         LiteflowResponse<DefaultSlot> responseOld = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(responseOld.isSuccess());
-        Assert.assertEquals("d==>s2[条件脚本]==>b", responseOld.getSlot().printStep());
+        Assert.assertEquals("d==>s2[条件脚本]==>a", responseOld.getSlot().printStep());
         //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
-        String newContent = ResourceUtil.readUtf8Str("classpath: /script/flow_update.xml");
+        String newContent = ResourceUtil.readUtf8Str("classpath: /xml-script/flow_update.xml");
         //进行刷新
         FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, newContent);
 
         //重新执行chain2这个链路，结果会变
         LiteflowResponse<DefaultSlot> responseNew = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(responseNew.isSuccess());
-        Assert.assertEquals("d==>s2[条件脚本_改]==>a==>s3[普通脚本_新增]", responseNew.getSlot().printStep());
+        Assert.assertEquals("d==>s2[条件脚本_改]==>b==>s3[普通脚本_新增]", responseNew.getSlot().printStep());
     }
 }

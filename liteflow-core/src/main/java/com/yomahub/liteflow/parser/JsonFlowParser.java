@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -9,7 +10,9 @@ import com.alibaba.fastjson.parser.Feature;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.*;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
+import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import org.slf4j.Logger;
@@ -60,22 +63,37 @@ public abstract class JsonFlowParser extends FlowParser {
                 // 当存在<nodes>节点定义时，解析node节点
                 if (flowJsonObject.getJSONObject("flow").containsKey("nodes")){
                     JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
-                    String id, name, clazz, script;
+                    String id, name, clazz, script, type;
                     for (int i = 0; i < nodeArrayList.size(); i++) {
                         JSONObject nodeObject = nodeArrayList.getJSONObject(i);
                         id = nodeObject.getString("id");
                         name = nodeObject.getString("name");
                         clazz = nodeObject.getString("class");
+                        type = nodeObject.getString("type");
 
-                        //如果有class的定义，则表明是java组件，无class的定义，则表明是脚本组件
-                        if (StrUtil.isNotBlank(clazz)){
+                        //初始化type
+                        if (StrUtil.isBlank(type)){
+                            type = NodeTypeEnum.COMMON.getCode();
+                        }
+                        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
+                        if (ObjectUtil.isNull(nodeTypeEnum)){
+                            throw new NodeTypeNotSupportException(StrUtil.format("type [{}] is not support", type));
+                        }
+
+                        //这里区分是普通java节点还是脚本节点
+                        //如果是脚本节点，又区分是普通脚本节点，还是条件脚本节点
+                        if (nodeTypeEnum.equals(NodeTypeEnum.COMMON) && StrUtil.isNotBlank(clazz)){
                             if (!FlowBus.containNode(id)){
                                 FlowBus.addCommonNode(id, name, clazz);
                             }
                         }else{
                             if (!FlowBus.containNode(id)){
-                                script = nodeObject.getString("script");
-                                FlowBus.addCommonScriptNode(id, name, script);
+                                script = nodeObject.getString("value");
+                                if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
+                                    FlowBus.addCommonScriptNode(id, name, script);
+                                }else if(nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
+                                    FlowBus.addCondScriptNode(id, name, script);
+                                }
                             }
                         }
                     }
