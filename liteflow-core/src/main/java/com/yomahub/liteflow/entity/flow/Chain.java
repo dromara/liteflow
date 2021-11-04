@@ -22,10 +22,13 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 /**
  * chain对象，实现可执行器
@@ -122,27 +125,32 @@ public class Chain implements Executable {
     //  使用线程池执行when并发流程
     private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) {
         final CountDownLatch latch = new CountDownLatch(condition.getNodeList().size());
-        final List<Future<Boolean>> futures = new ArrayList<>(condition.getNodeList().size());
+        final Map<String, Future<Boolean>> futureMap = new HashMap<>();
 
         //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
         ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor();
 
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-        for (int i = 0; i < condition.getNodeList().size(); i++) {
-            futures.add(parallelExecutor.submit(
-                    TtlCallable.get(new ParallelCallable(condition.getNodeList().get(i), slotIndex, requestId, latch, liteflowConfig.getRetryCount()))
-            ));
-        }
+        condition.getNodeList().forEach(executable -> {
+            Future<Boolean> future = parallelExecutor.submit(
+                    Objects.requireNonNull(TtlCallable.get(new ParallelCallable(executable, slotIndex, requestId, latch, liteflowConfig.getRetryCount())))
+            );
+            futureMap.put(executable.getExecuteName(), future);
+        });
 
         boolean interrupted = false;
         try {
             if (!latch.await(liteflowConfig.getWhenMaxWaitSeconds(), TimeUnit.SECONDS)) {
-                for (Future<Boolean> f : futures) {
-                    f.cancel(true);
-                }
+
+                futureMap.forEach((name, f) -> {
+                    boolean flag = f.cancel(true);
+                    //如果flag为true，说明线程被成功cancel掉了，需要打出这个线程对应的执行器单元的name，说明这个线程超时了
+                    if (flag){
+                        LOG.warn("requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", requestId, name);
+                    }
+                });
                 interrupted = true;
-                LOG.warn("requestId [{}] executing async condition has reached max-wait-seconds, condition canceled.", requestId);
             }
         } catch (InterruptedException e) {
             interrupted = true;
@@ -154,15 +162,15 @@ public class Chain implements Executable {
                 throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", requestId));
             }
 
-            for (Future<Boolean> f : futures) {
+            futureMap.forEach((name, f) -> {
                 try {
                     if (!f.get()) {
-                        throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute failed. errorResume [false].", requestId));
+                        throw new WhenExecuteException(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", name, requestId));
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute failed. errorResume [false].", requestId));
+                    throw new WhenExecuteException(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", name, requestId));
                 }
-            }
+            });
         } else if (interrupted) {
             //  这里由于配置了errorResume，所以只打印warn日志
             LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", requestId);
