@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -44,11 +45,13 @@ public class DataBus {
 	//因为单元测试中所有的一起跑，jvm是不退出的，所以如果是static块的话，跑多个testsuite只会执行一次。
 	//而由FlowExecutor中的init去调用，是会被执行多次的。保证了每个单元测试都能初始化一遍
 	public static void init() {
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		currentIndexMaxValue = liteflowConfig.getSlotSize();
+		if (MapUtil.isEmpty(SLOTS)){
+			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+			currentIndexMaxValue = liteflowConfig.getSlotSize();
 
-		SLOTS = new ConcurrentHashMap<>();
-		QUEUE = IntStream.range(0, currentIndexMaxValue).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+			SLOTS = new ConcurrentHashMap<>();
+			QUEUE = IntStream.range(0, currentIndexMaxValue).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+		}
 	}
 
 	public static int offerSlot(Class<? extends Slot> slotClazz) {
