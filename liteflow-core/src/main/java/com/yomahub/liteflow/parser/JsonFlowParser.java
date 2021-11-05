@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -63,13 +64,14 @@ public abstract class JsonFlowParser extends FlowParser {
                 // 当存在<nodes>节点定义时，解析node节点
                 if (flowJsonObject.getJSONObject("flow").containsKey("nodes")){
                     JSONArray nodeArrayList = flowJsonObject.getJSONObject("flow").getJSONObject("nodes").getJSONArray("node");
-                    String id, name, clazz, script, type;
+                    String id, name, clazz, script, type, file;
                     for (int i = 0; i < nodeArrayList.size(); i++) {
                         JSONObject nodeObject = nodeArrayList.getJSONObject(i);
                         id = nodeObject.getString("id");
                         name = nodeObject.getString("name");
                         clazz = nodeObject.getString("class");
                         type = nodeObject.getString("type");
+                        file = nodeObject.getString("file");
 
                         //初始化type
                         if (StrUtil.isBlank(type)){
@@ -86,12 +88,19 @@ public abstract class JsonFlowParser extends FlowParser {
                             if (!FlowBus.containNode(id)){
                                 FlowBus.addCommonNode(id, name, clazz);
                             }
-                        }else{
+                        }else if(nodeTypeEnum.equals(NodeTypeEnum.SCRIPT) || nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
                             if (!FlowBus.containNode(id)){
-                                script = nodeObject.getString("value");
+                                //如果file字段不为空，则优先从file里面读取脚本文本
+                                if (StrUtil.isNotBlank(file)){
+                                    script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", file));
+                                }else{
+                                    script = nodeObject.getString("value");
+                                }
+
+                                //根据节点类型把脚本添加到元数据里
                                 if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
                                     FlowBus.addCommonScriptNode(id, name, script);
-                                }else if(nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
+                                }else {
                                     FlowBus.addCondScriptNode(id, name, script);
                                 }
                             }

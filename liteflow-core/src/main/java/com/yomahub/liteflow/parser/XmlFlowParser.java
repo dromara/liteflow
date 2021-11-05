@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
@@ -68,12 +69,13 @@ public abstract class XmlFlowParser extends FlowParser {
             // 当存在<nodes>节点定义时，解析node节点
             if (ObjectUtil.isNotNull(nodesElement)){
                 List<Element> nodeList = nodesElement.elements("node");
-                String id, name, clazz, type, script;
+                String id, name, clazz, type, script, file;
                 for (Element e : nodeList) {
                     id = e.attributeValue("id");
                     name = e.attributeValue("name");
                     clazz = e.attributeValue("class");
                     type = e.attributeValue("type");
+                    file = e.attributeValue("file");
 
                     //初始化type
                     if (StrUtil.isBlank(type)){
@@ -90,12 +92,19 @@ public abstract class XmlFlowParser extends FlowParser {
                         if (!FlowBus.containNode(id)){
                             FlowBus.addCommonNode(id, name, clazz);
                         }
-                    }else{
+                    }else if(nodeTypeEnum.equals(NodeTypeEnum.SCRIPT) || nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
                         if (!FlowBus.containNode(id)){
-                            script = e.getTextTrim();
+                            //如果file字段不为空，则优先从file里面读取脚本文本
+                            if (StrUtil.isNotBlank(file)){
+                                script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", file));
+                            }else{
+                                script = e.getTextTrim();
+                            }
+
+                            //根据节点类型把脚本添加到元数据里
                             if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
                                 FlowBus.addCommonScriptNode(id, name, script);
-                            }else if(nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
+                            }else {
                                 FlowBus.addCondScriptNode(id, name, script);
                             }
                         }

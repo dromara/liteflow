@@ -20,12 +20,12 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的脚本组件，基于xml配置
+ * 测试springboot下的groovy脚本组件，基于xml配置
  * @author Bryan.Zhang
  * @since 2.6.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/json-script/application.properties")
+@TestPropertySource(value = "classpath:/xml-script/application.properties")
 @SpringBootTest(classes = LiteflowXmlScriptGroovyTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.script.groovy.cmp"})
