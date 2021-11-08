@@ -8,7 +8,9 @@
 package com.yomahub.liteflow.entity.flow;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.hutool.core.util.ObjectUtil;
@@ -114,8 +116,31 @@ public class Node implements Executable,Cloneable{
 				instance.setTag(tag);
 				instance.setCondNodeMap(condNodeMap);
 
-				//执行业务逻辑的主要入口
-				instance.execute();
+				//这里开始进行重试的逻辑和主逻辑的运行
+				int retryCount = instance.getRetryCount();
+				List<Class<? extends Exception>> forExceptions = Arrays.asList(instance.getRetryForExceptions());
+				for (int i = 0; i <= retryCount; i++) {
+					try {
+						if (i > 0) {
+							LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), id, i + 1);
+						}
+						//执行业务逻辑的主要入口
+						instance.execute();
+						break;
+					} catch (ChainEndException e) {
+						//如果是ChainEndException，则无需重试
+						throw e;
+					} catch (Exception e) {
+						//判断抛出的异常是不是指定异常的子类
+						boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
+
+						//两种情况不重试，1)抛出异常不在指定异常范围内 2)已经重试次数大于等于配置次数
+						if (!flag || i >= retryCount){
+							throw e;
+						}
+					}
+				}
+
 
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 				if (instance.isEnd()) {

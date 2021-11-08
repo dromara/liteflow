@@ -78,32 +78,7 @@ public class Chain implements Executable {
         for (Condition condition : conditionList) {
             if (condition instanceof ThenCondition) {
                 for (Executable executableItem : condition.getNodeList()) {
-                    if (executableItem.getExecuteType().equals(ExecuteTypeEnum.CHAIN)) {
-                        executableItem.execute(slotIndex);
-                    } else {
-                        int retryCount = ((Node)executableItem).getInstance().getRetryCount();
-                        List<Class<? extends Exception>> forExceptions = Arrays.asList(((Node)executableItem).getInstance().getRetryForExceptions());
-                        for (int i = 0; i <= retryCount; i++) {
-                            try {
-                                if (i > 0) {
-                                    LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), executableItem.getExecuteName(), i + 1);
-                                }
-                                executableItem.execute(slotIndex);
-                                break;
-                            } catch (ChainEndException e) {
-                                //如果是ChainEndException，则无需重试
-                                throw e;
-                            } catch (Exception e) {
-                                //判断抛出的异常是不是指定异常的子类
-                                boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
-
-                                //两种情况不重试，1)抛出异常不在指定异常范围内 2)已经重试次数大于等于配置次数
-                                if (!flag || i >= retryCount){
-                                    throw e;
-                                }
-                            }
-                        }
-                    }
+                    executableItem.execute(slotIndex);
                 }
             } else if (condition instanceof WhenCondition) {
                 executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
@@ -134,7 +109,7 @@ public class Chain implements Executable {
 
         condition.getNodeList().forEach(executable -> {
             Future<Boolean> future = parallelExecutor.submit(
-                    Objects.requireNonNull(TtlCallable.get(new ParallelCallable(executable, slotIndex, requestId, latch, liteflowConfig.getRetryCount())))
+                    Objects.requireNonNull(TtlCallable.get(new ParallelCallable(executable, slotIndex, requestId, latch)))
             );
             futureMap.put(executable.getExecuteName(), future);
         });

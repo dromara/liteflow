@@ -22,37 +22,20 @@ public class ParallelCallable implements Callable<Boolean> {
 
     private final CountDownLatch latch;
 
-    private final int retryCount;
-
-    public ParallelCallable(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch, int retryCount) {
+    public ParallelCallable(Executable executableItem, Integer slotIndex, String requestId, CountDownLatch latch) {
         this.executableItem = executableItem;
         this.slotIndex = slotIndex;
         this.requestId = requestId;
         this.latch = latch;
-        this.retryCount = retryCount;
     }
 
     @Override
     public Boolean call() throws Exception {
         try {
-            boolean flag = true;
-            for (int i = 0; i <= retryCount; i++) {
-                try{
-                    if (i > 0){
-                        LOG.info("[{}]:component[{}] performs {} retry", requestId, executableItem.getExecuteName(), i+1);
-                    }
-                    executableItem.execute(slotIndex);
-                    flag = true;
-                    break;
-                }catch (Exception e){
-                    if (i >= retryCount){
-                        LOG.error("requestId [{}], item [{}] execute error", requestId, executableItem.getExecuteName());
-                        flag = false;
-                        break;
-                    }
-                }
-            }
-            return flag;
+            executableItem.execute(slotIndex);
+            return true;
+        } catch (Exception e){
+            return false;
         } finally {
             latch.countDown();
         }
