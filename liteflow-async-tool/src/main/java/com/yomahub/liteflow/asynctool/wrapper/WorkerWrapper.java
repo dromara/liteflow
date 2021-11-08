@@ -17,8 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 对每个worker及callback进行包装，一对一
- *
  * @author wuweifeng wrote on 2019-11-19.
  */
 public class WorkerWrapper<T, V> {

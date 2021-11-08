@@ -9,6 +9,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 类入口，可以根据自己情况调整core线程的数量
  * @author wuweifeng wrote on 2019-12-18
  * @version 1.0

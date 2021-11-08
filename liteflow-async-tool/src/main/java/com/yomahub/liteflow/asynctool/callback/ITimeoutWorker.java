@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.asynctool.callback;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * @author wuweifeng wrote on 2019-12-20
  * @version 1.0
  */

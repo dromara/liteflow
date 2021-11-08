@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 用于解决高并发下System.currentTimeMillis卡顿
  * @author lry
  */

@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.asynctool.worker;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 执行结果
  */
 public class WorkResult<V> {

@@ -5,8 +5,8 @@ import com.yomahub.liteflow.asynctool.wrapper.WorkerWrapper;
 import java.util.Map;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 每个最小执行单元需要实现该接口
- *
  * @author wuweifeng wrote on 2019-11-19.
  */
 @FunctionalInterface

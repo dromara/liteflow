@@ -4,6 +4,7 @@ package com.yomahub.liteflow.asynctool.callback;
 import com.yomahub.liteflow.asynctool.worker.WorkResult;
 
 /**
+ * 代码来自于asyncTool,请参考：https://gitee.com/jd-platform-opensource/asyncTool
  * 每个执行单元执行完毕后，会回调该接口</p>
  * 需要监听执行结果的，实现该接口即可
  *
