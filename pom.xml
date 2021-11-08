@@ -39,8 +39,8 @@
 	</scm>
 
     <properties>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.0.5.RELEASE</springboot.version>
 		<spring.version>5.0.9.RELEASE</spring.version>
 		<org.slf4j.version>1.7.21</org.slf4j.version>
@@ -175,16 +175,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -256,7 +246,8 @@
 		<module>liteflow-testcase-springnative</module>
 		<module>liteflow-testcase-script-qlexpress</module>
 		<module>liteflow-testcase-script-groovy</module>
-	</modules>
+        <module>liteflow-async-tool</module>
+    </modules>
 
 	<distributionManagement>
 		<snapshotRepository>
