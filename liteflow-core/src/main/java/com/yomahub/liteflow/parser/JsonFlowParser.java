@@ -135,6 +135,7 @@ public abstract class JsonFlowParser extends FlowParser {
         String group;
         String errorResume;
         Condition condition;
+        String any;
         String chainName = chainObject.getString("name");
         JSONArray conditionArray = chainObject.getJSONArray("condition");
         conditionList = new ArrayList<>();
@@ -144,6 +145,7 @@ public abstract class JsonFlowParser extends FlowParser {
             condArrayStr = condObject.getString("value");
             group = condObject.getString("group");
             errorResume = condObject.getString("errorResume");
+            any = condObject.getString("any");
             if (StrUtil.isBlank(condType) || StrUtil.isBlank(condArrayStr)) {
                 continue;
             }
@@ -152,6 +154,9 @@ public abstract class JsonFlowParser extends FlowParser {
             }
             if (StrUtil.isBlank(errorResume)) {
                 errorResume = Boolean.TRUE.toString();
+            }
+            if (StrUtil.isBlank(any)){
+                any = Boolean.FALSE.toString();
             }
             condition = new Condition();
             chainNodeList = new ArrayList<>();
@@ -191,6 +196,7 @@ public abstract class JsonFlowParser extends FlowParser {
             }
             condition.setErrorResume(errorResume.equals(Boolean.TRUE.toString()));
             condition.setGroup(group);
+            condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condType);
             condition.setNodeList(chainNodeList);
             super.buildBaseFlowConditions(conditionList, condition);

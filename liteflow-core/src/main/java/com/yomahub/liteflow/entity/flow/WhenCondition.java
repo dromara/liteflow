@@ -31,6 +31,7 @@ public class WhenCondition extends Condition{
 		super.setConditionType(condition.getConditionType());
 		super.setGroup(condition.getGroup());
 		super.setErrorResume(condition.isErrorResume());
+		super.setAny(condition.isAny());
 	}
 
 }

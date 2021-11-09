@@ -131,6 +131,7 @@ public abstract class XmlFlowParser extends FlowParser {
         String[] condArray;
         String group;
         String errorResume;
+        String any;
         Condition condition;
         Element condE;
         List<Executable> chainNodeList;
@@ -143,6 +144,7 @@ public abstract class XmlFlowParser extends FlowParser {
             condArrayStr = condE.attributeValue("value");
             errorResume = condE.attributeValue("errorResume");
             group = condE.attributeValue("group");
+            any = condE.attributeValue("any");
             if (StrUtil.isBlank(condArrayStr)) {
                 continue;
             }
@@ -151,6 +153,9 @@ public abstract class XmlFlowParser extends FlowParser {
             }
             if (StrUtil.isBlank(errorResume)) {
                 errorResume = Boolean.TRUE.toString();
+            }
+            if (StrUtil.isBlank(any)){
+                any = Boolean.FALSE.toString();
             }
             condition = new Condition();
             chainNodeList = new ArrayList<>();
@@ -190,6 +195,7 @@ public abstract class XmlFlowParser extends FlowParser {
             }
             condition.setErrorResume(errorResume.equals(Boolean.TRUE.toString()));
             condition.setGroup(group);
+            condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condE.getName());
             condition.setNodeList(chainNodeList);
             super.buildBaseFlowConditions(conditionList, condition);

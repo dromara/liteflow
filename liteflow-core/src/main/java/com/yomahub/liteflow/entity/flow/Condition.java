@@ -16,14 +16,20 @@ import java.util.List;
  * @author Bryan.Zhang
  */
 public class Condition {
-	//	增加errorResume属性，以区分当when调用链调用失败时是否继续往下执行 默认true继续执行
-	private boolean errorResume = true;
-	// 增加groupId属性，用于不同node进行同组合并
-	private String group = LocalDefaultFlowConstant.DEFAULT;
-	// condition 类型 参数:ConditionTypeEnum 包含:then when
+
+	//condition 类型 参数:ConditionTypeEnum 包含:then when
 	private String conditionType;
 
 	private List<Executable> nodeList;
+
+	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认true继续执行
+	private boolean errorResume = true;
+
+	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
+	private String group = LocalDefaultFlowConstant.DEFAULT;
+
+	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
+	private boolean any = false;
 
 	public Condition(List<Executable> nodeList) {
 		this.nodeList = nodeList;
@@ -61,5 +67,13 @@ public class Condition {
 
 	public void setConditionType(String conditionType) {
 		this.conditionType = conditionType;
+	}
+
+	public boolean isAny() {
+		return any;
+	}
+
+	public void setAny(boolean any) {
+		this.any = any;
 	}
 }
