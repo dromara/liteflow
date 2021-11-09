@@ -105,12 +105,13 @@ public class AsyncNodeSpringbootTest extends BaseTest {
         Assert.assertEquals(TestException.class, response.getCause().getClass());
     }
 
-    //d g h并行，配置了any=true，其中d耗时3秒，g耗时1秒，其他都不设耗时
+    //d g h并行，配置了any=true，其中d耗时1秒，g耗时0.5秒，其他都不设耗时
     //最终执行效果应该是h先返回，然后执行abc,最后gd
     //这里要注意的是，由于step是先加入，所以step的打印顺序并不是这样的。但是实际执行是正确的
     @Test
     public void testAsyncFlow8() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain8", "it's a base request");
         Assert.assertTrue(response.isSuccess());
+        Assert.assertTrue(response.getSlot().getData("check").toString().startsWith("habc"));
     }
 }
