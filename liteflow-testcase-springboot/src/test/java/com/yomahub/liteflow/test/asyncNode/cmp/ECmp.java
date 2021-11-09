@@ -1,6 +1,5 @@
-package com.yomahub.liteflow.test.condition.cmp1;
+package com.yomahub.liteflow.test.asyncNode.cmp;
 
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.NodeCondComponent;
 import org.springframework.stereotype.Component;
 

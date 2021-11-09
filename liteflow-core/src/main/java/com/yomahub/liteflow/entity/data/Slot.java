@@ -32,6 +32,8 @@ public interface Slot {
 
 	<T> void setResponseData(T t);
 
+	boolean hasData(String key);
+
 	<T> T getData(String key);
 
 	<T> void setData(String key, T t);

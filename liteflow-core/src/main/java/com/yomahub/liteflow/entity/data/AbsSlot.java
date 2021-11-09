@@ -87,6 +87,10 @@ public abstract class AbsSlot implements Slot {
 		dataMap.put(CHAIN_REQ_PREFIX + chainId, t);
 	}
 
+	public boolean hasData(String key){
+		return dataMap.containsKey(key);
+	}
+
 	public <T> T getData(String key){
 		return (T)dataMap.get(key);
 	}

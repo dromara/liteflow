@@ -32,7 +32,7 @@ public class UseTTLInWhenSpringbootTest extends BaseTest {
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testPrivateDelivery() throws Exception{
+    public void testUseTTLInWhen() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertEquals("hello,b", response.getSlot().getData("b"));
         Assert.assertEquals("hello,c", response.getSlot().getData("c"));

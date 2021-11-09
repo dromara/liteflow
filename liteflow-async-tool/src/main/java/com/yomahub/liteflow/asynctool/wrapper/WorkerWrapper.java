@@ -607,4 +607,8 @@ public class WorkerWrapper<T, V> {
         }
 
     }
+
+    public IWorker<T, V> getWorker() {
+        return worker;
+    }
 }

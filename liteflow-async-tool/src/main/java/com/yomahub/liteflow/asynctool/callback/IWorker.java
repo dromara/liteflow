@@ -17,7 +17,7 @@ public interface IWorker<T, V> {
      * @param object      object
      * @param allWrappers 任务包装
      */
-    V action(T object, Map<String, WorkerWrapper> allWrappers);
+    V action(T object, Map<String, WorkerWrapper> allWrappers) throws Exception;
 
     /**
      * 超时、异常时，返回的默认值

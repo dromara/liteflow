@@ -68,19 +68,18 @@ public class SeqWorkTest {
                 .worker(seqWork2)
                 .callback(callback2)
                 .param("param2")
-                .depend(workerWrapper1)
+//                .depend(workerWrapper1)
                 .build();
 
         WorkerWrapper<String, String> workerWrapper3 = new WorkerWrapper.Builder<String, String>()
                 .worker(seqWork3)
                 .callback(callback3)
                 .param("param3")
-                .depend(workerWrapper2)
+//                .depend(workerWrapper2)
                 .build();
 
         try{
-            boolean flag = Async.beginWork(2500,workerWrapper1);
-            System.out.println(workerWrapper3.getWorkResult().getResultState());
+            boolean flag = Async.beginWork(4000,workerWrapper1,workerWrapper2,workerWrapper3);
             System.out.println(flag);
         }catch (Exception e){
             e.printStackTrace();
