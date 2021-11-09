@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -146,7 +147,15 @@ public class Chain implements Executable {
         //如果any为false，那么所有任务都已经完成
         //如果any为true，那么这里拿到的是第一个完成的任务
         //这里过滤和转换一起用lumbda做了
-        List<WhenFutureObj> allCompletableWhenFutureObjList = completableFutureList.stream().filter(CompletableFuture::isDone).map(f -> {
+        List<WhenFutureObj> allCompletableWhenFutureObjList = completableFutureList.stream().filter(f -> {
+            //过滤出已经完成的，没完成的就直接终止
+            if (f.isDone()){
+                return true;
+            }else{
+                f.cancel(true);
+                return false;
+            }
+        }).map(f -> {
             try {
                 return f.get();
             } catch (InterruptedException | ExecutionException e) {
