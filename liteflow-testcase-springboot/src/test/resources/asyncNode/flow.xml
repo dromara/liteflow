@@ -37,4 +37,10 @@
         <when value="d,i" errorResume="true" group="1"/> <!-- d i 并联执行-->
         <when value="g,i,h" errorResume="false" group="2"/><!-- 此时 g i h 与 d i并联执行 并且默认异常抛出-->
     </chain>
+
+    <chain name="chain8">
+        <when value="d,g,h" any="true"/> <!-- a b c 串联执行-->
+        <then value="a,b,c"/> <!-- d g h 并联执行,任意一个执行完毕即结束-->
+    </chain>
+
 </flow>

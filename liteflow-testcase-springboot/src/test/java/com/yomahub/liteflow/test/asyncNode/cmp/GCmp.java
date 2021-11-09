@@ -9,6 +9,7 @@ public class GCmp extends NodeComponent {
 
     @Override
     public void process() throws Exception {
+        Thread.sleep(1000);
         System.out.println("Gcomp executed!");
     }
 }
