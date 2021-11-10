@@ -23,4 +23,8 @@
     <chain name="chain6">
         <then value="f(d | c | b)" />
     </chain>
+
+    <chain name="chain7">
+        <then value="g,h"/>
+    </chain>
 </flow>

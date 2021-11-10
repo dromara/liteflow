@@ -72,7 +72,7 @@ public class FlowExecutorTest extends BaseTest {
 
     //setIsEnd方法的功能点测试
     @Test
-    public void testSetIsEnd() throws Exception {
+    public void testSetIsEnd1() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain5", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("e",response.getSlot().printStep());
@@ -83,6 +83,14 @@ public class FlowExecutorTest extends BaseTest {
     public void testNodeCondComponent() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain6", 0);
         Assert.assertTrue(response.isSuccess());
+    }
+
+    //测试setIsEnd如果为true，continueError也为true，那不应该continue了
+    @Test
+    public void testSetIsEnd2() throws Exception {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain7", 10);
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("g",response.getSlot().printStep());
     }
 
 }

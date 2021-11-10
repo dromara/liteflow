@@ -107,7 +107,7 @@ public class Node implements Executable,Cloneable{
 		instance.setSlotIndex(slotIndex);
 		Slot slot = DataBus.getSlot(slotIndex);
 
-		try{
+		try {
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
 
@@ -135,7 +135,7 @@ public class Node implements Executable,Cloneable{
 						boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
 
 						//两种情况不重试，1)抛出异常不在指定异常范围内 2)已经重试次数大于等于配置次数
-						if (!flag || i >= retryCount){
+						if (!flag || i >= retryCount) {
 							throw e;
 						}
 					}
@@ -144,12 +144,14 @@ public class Node implements Executable,Cloneable{
 
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 				if (instance.isEnd()) {
-					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end",slot.getRequestId(),instance.getClass().getSimpleName());
+					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end", slot.getRequestId(), instance.getClass().getSimpleName());
 					throw new ChainEndException(errorInfo);
 				}
 			} else {
-				LOG.info("[{}]:[X]skip component[{}] execution",slot.getRequestId(),instance.getClass().getSimpleName());
+				LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getClass().getSimpleName());
 			}
+		} catch (ChainEndException e){
+			throw e;
 		} catch (Exception e) {
 			//如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			if (instance.isContinueOnError()) {
