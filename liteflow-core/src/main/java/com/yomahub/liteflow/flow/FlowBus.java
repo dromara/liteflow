@@ -25,9 +25,12 @@ import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
+import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +47,9 @@ public class FlowBus {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowBus.class);
 
-    private static final Map<String, Chain> chainMap = new HashMap<>();
+    private static final Map<String, Chain> chainMap = new CopyOnWriteHashMap<>();
 
-    private static final Map<String, Node> nodeMap = new HashMap<>();
+    private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
 
     private FlowBus() {
     }
@@ -75,12 +78,10 @@ public class FlowBus {
     }
 
     public static void addSpringScanNode(String nodeId, NodeComponent nodeComponent) {
-        if (containNode(nodeId)) return;
         nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, NodeTypeEnum.COMMON, null, nodeId)));
     }
 
     public static void addCommonNode(String nodeId, String name, String cmpClazzStr) throws Exception {
-        if (containNode(nodeId)) return;
         Class<NodeComponent> cmpClazz = (Class<NodeComponent>) Class.forName(cmpClazzStr);
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
@@ -90,17 +91,14 @@ public class FlowBus {
     }
 
     public static void addCommonScriptNode(String nodeId, String name, String script){
-        if (containNode(nodeId)) return;
         addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
     }
 
     public static void addCondScriptNode(String nodeId, String name, String script){
-        if (containNode(nodeId)) return;
         addNode(nodeId, name, NodeTypeEnum.COND_SCRIPT, ScriptCondComponent.class, script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<? extends NodeComponent> cmpClazz, String script) {
-        if (containNode(nodeId)) return;
         try {
             //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
             //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
@@ -149,6 +147,10 @@ public class FlowBus {
     public static void cleanCache() {
         chainMap.clear();
         nodeMap.clear();
+        cleanScriptCache();
+    }
+
+    public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
         try{
             ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor();
@@ -160,7 +162,6 @@ public class FlowBus {
 
     //目前这种方式刷新不完全平滑
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
-        FlowBus.cleanCache();
         if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
             new LocalXmlFlowParser().parse(content);
         } else if (type.equals(FlowParserTypeEnum.TYPE_JSON)) {

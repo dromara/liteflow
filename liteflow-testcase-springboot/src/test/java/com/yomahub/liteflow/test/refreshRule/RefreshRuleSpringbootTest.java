@@ -33,11 +33,38 @@ public class RefreshRuleSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
+    //测试普通刷新流程的场景
     @Test
-    public void testRefresh() throws Exception{
-        String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow.xml");
+    public void testRefresh1() throws Exception{
+        String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.xml");
         FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
+    }
+
+    //测试优雅刷新的场景
+    @Test
+    public void testRefresh2() throws Exception{
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000L);
+                String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.xml");
+                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+
+        for (int i = 0; i < 500; i++) {
+            LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+            Assert.assertTrue(response.isSuccess());
+            try {
+                Thread.sleep(10L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }

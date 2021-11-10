@@ -59,7 +59,6 @@ public class ZookeeperXmlFlowParser extends XmlFlowParser{
         cache.getListenable().addListener(() -> {
             String content1 = new String(cache.getCurrentData().getData());
             LOG.info("stating load flow config....");
-            FlowBus.cleanCache();
             parse(content1);
         });
 	}

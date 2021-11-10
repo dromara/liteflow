@@ -257,8 +257,9 @@ public class FlowExecutor {
         return null;
     }
 
+    //此方法就是从原有的配置源主动拉取新的进行刷新
+    //和FlowBus.refreshFlowMetaData的区别就是一个为主动拉取，一个为被动监听到新的内容进行刷新
     public void reloadRule() {
-        FlowBus.cleanCache();
         init();
     }
 

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test;
 
+import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import org.junit.AfterClass;

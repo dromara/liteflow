@@ -6,6 +6,7 @@ import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptExecuteException;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
+import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
 
     private ScriptEngine scriptEngine;
 
-    private final Map<String, CompiledScript> compiledScriptMap = new HashMap<>();
+    private final Map<String, CompiledScript> compiledScriptMap = new CopyOnWriteHashMap<>();
 
     @Override
     public ScriptExecutor init() {
@@ -37,9 +38,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
     public void load(String nodeId, String script) {
         try{
             CompiledScript compiledScript = ((Compilable) scriptEngine).compile(script);
-            if (!compiledScriptMap.containsKey(nodeId)){
-                compiledScriptMap.put(nodeId, compiledScript);
-            }
+            compiledScriptMap.put(nodeId, compiledScript);
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);

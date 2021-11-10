@@ -89,24 +89,20 @@ public abstract class XmlFlowParser extends FlowParser {
                     //这里区分是普通java节点还是脚本节点
                     //如果是脚本节点，又区分是普通脚本节点，还是条件脚本节点
                     if (nodeTypeEnum.equals(NodeTypeEnum.COMMON) && StrUtil.isNotBlank(clazz)){
-                        if (!FlowBus.containNode(id)){
-                            FlowBus.addCommonNode(id, name, clazz);
-                        }
+                        FlowBus.addCommonNode(id, name, clazz);
                     }else if(nodeTypeEnum.equals(NodeTypeEnum.SCRIPT) || nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
-                        if (!FlowBus.containNode(id)){
-                            //如果file字段不为空，则优先从file里面读取脚本文本
-                            if (StrUtil.isNotBlank(file)){
-                                script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", file));
-                            }else{
-                                script = e.getTextTrim();
-                            }
+                        //如果file字段不为空，则优先从file里面读取脚本文本
+                        if (StrUtil.isNotBlank(file)){
+                            script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", file));
+                        }else{
+                            script = e.getTextTrim();
+                        }
 
-                            //根据节点类型把脚本添加到元数据里
-                            if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
-                                FlowBus.addCommonScriptNode(id, name, script);
-                            }else {
-                                FlowBus.addCondScriptNode(id, name, script);
-                            }
+                        //根据节点类型把脚本添加到元数据里
+                        if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
+                            FlowBus.addCommonScriptNode(id, name, script);
+                        }else {
+                            FlowBus.addCondScriptNode(id, name, script);
                         }
                     }
                 }
@@ -115,10 +111,7 @@ public abstract class XmlFlowParser extends FlowParser {
             // 解析chain节点
             List<Element> chainList = rootElement.elements("chain");
             for (Element e : chainList) {
-                String chainName = e.attributeValue("name");
-                if (!FlowBus.containChain(chainName)) {
-                    parseOneChain(e, documentList);
-                }
+                parseOneChain(e, documentList);
             }
         }
     }
