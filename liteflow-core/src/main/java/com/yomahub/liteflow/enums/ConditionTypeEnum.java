@@ -2,7 +2,9 @@ package com.yomahub.liteflow.enums;
 
 public enum ConditionTypeEnum {
     TYPE_THEN("then","then"),
-    TYPE_WHEN("when","when")
+    TYPE_WHEN("when","when"),
+    TYPE_PRE("pre","pre"),
+    TYPE_FINALLY("finally","finally")
     ;
     private String type;
     private String name;

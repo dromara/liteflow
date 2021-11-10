@@ -131,14 +131,13 @@ public abstract class JsonFlowParser extends FlowParser {
         String condArrayStr;
         String[] condArray;
         List<Executable> chainNodeList;
-        List<Condition> conditionList;
+        List<Condition> conditionList = new ArrayList<>();
         String group;
         String errorResume;
         Condition condition;
         String any;
         String chainName = chainObject.getString("name");
         JSONArray conditionArray = chainObject.getJSONArray("condition");
-        conditionList = new ArrayList<>();
         for (Object o : conditionArray) {
             JSONObject condObject = (JSONObject) o;
             String condType = condObject.getString("type");
@@ -199,7 +198,7 @@ public abstract class JsonFlowParser extends FlowParser {
             condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condType);
             condition.setNodeList(chainNodeList);
-            super.buildBaseFlowConditions(conditionList, condition);
+            super.buildConditions(conditionList, condition);
         }
         FlowBus.addChain(chainName, new Chain(chainName, conditionList));
     }

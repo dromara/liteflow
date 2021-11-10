@@ -8,17 +8,14 @@
 package com.yomahub.liteflow.entity.flow;
 
 /**
- * 并行器
+ * 前置Condition
  * @author Bryan.Zhang
+ * @since 2.6.4
  */
-public class WhenCondition extends Condition{
+public class FinallyCondition extends Condition {
 
-	public WhenCondition(Condition condition) {
+	public FinallyCondition(Condition condition){
 		super(condition.getNodeList());
 		super.setConditionType(condition.getConditionType());
-		super.setGroup(condition.getGroup());
-		super.setErrorResume(condition.isErrorResume());
-		super.setAny(condition.isAny());
 	}
-
 }

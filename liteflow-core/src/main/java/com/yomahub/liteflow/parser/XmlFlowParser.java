@@ -135,10 +135,9 @@ public abstract class XmlFlowParser extends FlowParser {
         Condition condition;
         Element condE;
         List<Executable> chainNodeList;
-        List<Condition> conditionList;
+        List<Condition> conditionList = new ArrayList<>();
 
         String chainName = e.attributeValue("name");
-        conditionList = new ArrayList<>();
         for (Iterator<Element> it = e.elementIterator(); it.hasNext(); ) {
             condE = it.next();
             condArrayStr = condE.attributeValue("value");
@@ -198,7 +197,7 @@ public abstract class XmlFlowParser extends FlowParser {
             condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condE.getName());
             condition.setNodeList(chainNodeList);
-            super.buildBaseFlowConditions(conditionList, condition);
+            super.buildConditions(conditionList, condition);
         }
         FlowBus.addChain(chainName, new Chain(chainName, conditionList));
     }

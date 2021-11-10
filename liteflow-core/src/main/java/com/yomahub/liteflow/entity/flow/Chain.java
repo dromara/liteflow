@@ -16,6 +16,7 @@ import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.flow.parallel.CompletableFutureTimeout;
 import com.yomahub.liteflow.entity.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.entity.flow.parallel.WhenFutureObj;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.WhenExecuteException;
@@ -72,15 +73,31 @@ public class Chain implements Executable {
 
         Slot slot = DataBus.getSlot(slotIndex);
 
-        //循环chain里包含的condition，每一个condition有可能是then，也有可能是when
-        //when的话为异步，用闭锁进行等待，所有when结束后才能进入下一个condition
-        for (Condition condition : conditionList) {
-            if (condition instanceof ThenCondition) {
-                for (Executable executableItem : condition.getNodeList()) {
+        //先把finally的节点过滤出来
+        List<Condition> finallyConditionList = conditionList.stream().filter(condition ->
+                condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())).collect(Collectors.toList());
+
+        //循环chain里包含的condition，每一个condition分四种类型：pre,then,when,finally
+        //这里conditionList其实已经是有序的，pre一定在最前面，finally一定在最后面
+        try{
+            for (Condition condition : conditionList) {
+                if (condition instanceof PreCondition){
+                    for (Executable executableItem : condition.getNodeList()) {
+                        executableItem.execute(slotIndex);
+                    }
+                } else if (condition instanceof ThenCondition) {
+                    for (Executable executableItem : condition.getNodeList()) {
+                        executableItem.execute(slotIndex);
+                    }
+                } else if (condition instanceof WhenCondition) {
+                    executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
+                }
+            }
+        }finally {
+            for (Condition finallyCondition : finallyConditionList){
+                for(Executable executableItem : finallyCondition.getNodeList()){
                     executableItem.execute(slotIndex);
                 }
-            } else if (condition instanceof WhenCondition) {
-                executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
             }
         }
     }
