@@ -24,6 +24,7 @@ liteFlow is a lightweight , fast component-based process engine framework / rule
 * Components can support retry, each component can be customized with retry configuration and specified exceptions
 * Explicit subprocess mode with no level of nesting, implicit subprocess mode
 * Data slot isolation mechanism, context independent and stable under multiple concurrency
+* Support for elegant smooth hot refresh features
 * Very low loss to the system, can be stable in the core business of large-scale microservices
 * Simple monitoring to know the running time ranking of each component
 
