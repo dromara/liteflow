@@ -71,6 +71,7 @@ public class ComponentScanner implements BeanPostProcessor {
         return bean;
     }
 
+    //用于清楚spring上下文扫描到的组件实体
     public static void cleanCache() {
         nodeComponentMap.clear();
     }
