@@ -67,4 +67,26 @@ public class LiteflowJsonScriptFileGroovyTest extends BaseTest {
         Assert.assertTrue(responseNew.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本_改]==>b==>s3[普通脚本_新增]", responseNew.getSlot().printStep());
     }
+
+    //测试脚本&规则平滑重载刷新
+    @Test
+    public void testScript4() throws Exception{
+        new Thread(() -> {
+            try{
+                Thread.sleep(1000L);
+                //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
+                String newContent = ResourceUtil.readUtf8Str("classpath: /json-script-file/flow_update.json");
+                //进行刷新
+                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_JSON, newContent);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }).start();
+
+        for (int i = 0; i < 500; i++) {
+            LiteflowResponse<DefaultSlot> responseNew = flowExecutor.execute2Resp("chain2", "arg");
+            Assert.assertTrue(responseNew.isSuccess());
+            Thread.sleep(10L);
+        }
+    }
 }
