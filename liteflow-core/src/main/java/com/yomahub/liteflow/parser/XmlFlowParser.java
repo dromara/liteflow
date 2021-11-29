@@ -181,7 +181,7 @@ public abstract class XmlFlowParser extends FlowParser {
                     Chain chain = FlowBus.getChain(item.getId());
                     chainNodeList.add(chain);
                 } else {
-                    String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem());
+                    String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
                     throw new ExecutableItemNotFoundException(errorMsg);
                 }
             }
