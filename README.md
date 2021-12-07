@@ -6,8 +6,7 @@
 
 <h3>Your star is my motivation to keep going. If you like LiteFlow, please help me with a star in the upper right corner.</h3>
 
-**<font color="red">LiteFlow has participated in the open Source China 2021 project selection and voting. If you support this project, please vote for LiteFlow. Thank you!</font>**
-## [click here to direct voting page](https://www.oschina.net/project/top_cn_2021/?id=578)
+**[2021 China Open Source project selection, please vote LiteFlow!](https://www.oschina.net/project/top_cn_2021/?id=578)**
 
 ## Overview
 liteFlow is a lightweight , fast component-based process engine framework / rules engine , component orchestration , component reuse , to help decouple business code , so that each business fragment is an elegant component , and support hot-loading rule configuration , to achieve on-the-fly modification .
