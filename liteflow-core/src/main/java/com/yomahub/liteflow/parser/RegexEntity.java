@@ -8,9 +8,12 @@
 package com.yomahub.liteflow.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 正则实体，主要用于条件节点
@@ -35,10 +38,10 @@ public class RegexEntity {
 		regexEntity.setItem(RegexNodeEntity.parse(list.get(0)));
 		try{
 			String[] array = list.get(1).split("\\|");
-			List<RegexNodeEntity> regexNodeEntityList = new ArrayList<>();
-			for (String itemStr : array){
-				regexNodeEntityList.add(RegexNodeEntity.parse(itemStr.trim()));
-			}
+
+			List<RegexNodeEntity> regexNodeEntityList
+					= Arrays.stream(array).map(s -> RegexNodeEntity.parse(s.trim())).collect(Collectors.toList());
+
 			regexEntity.setRealItemArray(regexNodeEntityList.toArray(new RegexNodeEntity[]{}));
 		}catch (Exception ignored){}
 		return regexEntity;
