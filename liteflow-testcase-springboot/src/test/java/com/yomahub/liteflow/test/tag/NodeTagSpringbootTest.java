@@ -44,4 +44,10 @@ public class NodeTagSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>a==>a==>c==>e", response.getSlot().printStep());
     }
+
+    @Test
+    public void testTag3() throws Exception{
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
 }

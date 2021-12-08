@@ -7,4 +7,8 @@
     <chain name="chain2">
         <then value="a[1],a[2],a[3],c[2](d[5]|e[6])"/>
     </chain>
+
+    <chain name="chain3">
+        <when value="b[1],b[2],b[3]"/>
+    </chain>
 </flow>
