@@ -191,6 +191,8 @@ public abstract class JsonFlowParser extends FlowParser {
             condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condType);
             condition.setNodeList(chainNodeList);
+
+            //这里把condition组装进conditionList，根据参数有些condition要和conditionList里面的某些进行合并操作
             super.buildConditions(conditionList, condition);
         }
         FlowBus.addChain(chainName, new Chain(chainName, conditionList));

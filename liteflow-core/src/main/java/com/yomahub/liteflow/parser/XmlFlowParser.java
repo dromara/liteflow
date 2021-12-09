@@ -156,8 +156,8 @@ public abstract class XmlFlowParser extends FlowParser {
             String itemExpression;
             RegexNodeEntity item;
             //这里解析的规则，优先按照node去解析，再按照chain去解析
-            for (int i = 0; i < condArray.length; i++) {
-                itemExpression = condArray[i].trim();
+            for (String s : condArray) {
+                itemExpression = s.trim();
                 regexEntity = RegexEntity.parse(itemExpression);
                 item = regexEntity.getItem();
                 if (FlowBus.containNode(item.getId())) {
@@ -190,6 +190,8 @@ public abstract class XmlFlowParser extends FlowParser {
             condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condE.getName());
             condition.setNodeList(chainNodeList);
+
+            //这里把condition组装进conditionList，根据参数有些condition要和conditionList里面的某些进行合并操作
             super.buildConditions(conditionList, condition);
         }
         FlowBus.addChain(chainName, new Chain(chainName, conditionList));
