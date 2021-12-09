@@ -170,7 +170,7 @@ public abstract class JsonFlowParser extends FlowParser {
                         for (RegexNodeEntity realItem : regexEntity.getRealItemArray()) {
                             if (FlowBus.containNode(realItem.getId())) {
                                 Node condNode = FlowBus.copyNode(realItem.getId());
-                                node.setTag(realItem.getTag());
+                                condNode.setTag(realItem.getTag());
                                 node.setCondNode(condNode.getId(), condNode);
                             } else if (hasChain(flowJsonObjectList, realItem.getId())) {
                                 Chain chain = FlowBus.getChain(realItem.getId());

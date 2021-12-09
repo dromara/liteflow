@@ -15,8 +15,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  * springboot环境下隐私投递的测试
@@ -24,11 +22,11 @@ import java.util.function.Function;
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/tag/application.properties")
-@SpringBootTest(classes = NodeTagSpringbootTest.class)
+@TestPropertySource(value = "classpath:/tag/application-xml.properties")
+@SpringBootTest(classes = NodeTagSpringbootXmlTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.tag.cmp"})
-public class NodeTagSpringbootTest extends BaseTest {
+public class NodeTagSpringbootXmlTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
