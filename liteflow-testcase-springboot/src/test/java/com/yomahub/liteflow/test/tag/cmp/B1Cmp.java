@@ -14,14 +14,14 @@ import com.yomahub.liteflow.entity.data.Slot;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-@LiteflowComponent("b")
-public class BCmp extends NodeComponent {
+@LiteflowComponent("b1")
+public class B1Cmp extends NodeComponent {
 
 	@Override
 	public void process() {
 		Slot slot = this.getSlot();
-		ConcurrentHashSet<String> testSet = slot.getData("test");
-		testSet.add(this.getTag());
+		slot.setData("test",new ConcurrentHashSet<String>());
 	}
 }

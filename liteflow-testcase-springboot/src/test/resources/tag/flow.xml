@@ -9,6 +9,7 @@
     </chain>
 
     <chain name="chain3">
-        <when value="b[1],b[2],b[3],b"/>
+        <then value="b1"/>
+        <when value="b[1],b[2],b[3]"/>
     </chain>
 </flow>
