@@ -34,7 +34,7 @@ import java.util.Map;
  * 普通组件抽象类
  * @author Bryan.Zhang
  */
-public abstract class NodeComponent {
+public abstract class NodeComponent{
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
 
@@ -43,13 +43,13 @@ public abstract class NodeComponent {
 	@Autowired(required = false)
 	private MonitorBus monitorBus;
 
+	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
+
+	private final TransmittableThreadLocal<Map<String, Executable>> condNodeMapTL = new TransmittableThreadLocal<>();
+
 	private String nodeId;
 
 	private String name;
-
-	private String tag;
-
-	private Map<String, Executable> condNodeMap;
 
 	private NodeTypeEnum type;
 
@@ -89,7 +89,7 @@ public abstract class NodeComponent {
 		if (this instanceof NodeCondComponent) {
 			String condNodeId = slot.getCondResult(this.getClass().getName());
 			if (StrUtil.isNotBlank(condNodeId)) {
-				Executable condExecutor = condNodeMap.get(condNodeId);
+				Executable condExecutor = this.condNodeMapTL.get().get(condNodeId);
 				if (ObjectUtil.isNotNull(condExecutor)) {
 					condExecutor.execute(slotIndexTL.get());
 				}
@@ -231,19 +231,15 @@ public abstract class NodeComponent {
 		this.retryForExceptions = retryForExceptions;
 	}
 
-	public String getTag() {
-		return tag;
+	public void setTag(String tag){
+		this.tagTL.set(tag);
 	}
 
-	public void setTag(String tag) {
-		this.tag = tag;
+	public String getTag(){
+		return this.tagTL.get();
 	}
 
-	public Map<String, Executable> getCondNodeMap() {
-		return condNodeMap;
-	}
-
-	public void setCondNodeMap(Map<String, Executable> condNodeMap) {
-		this.condNodeMap = condNodeMap;
+	public void setCondNodeMap(Map<String, Executable> condNodeMap){
+		this.condNodeMapTL.set(condNodeMap);
 	}
 }
