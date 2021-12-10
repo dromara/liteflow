@@ -22,12 +22,11 @@ import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.util.ExecutorHelper;
+import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -116,7 +115,7 @@ public class Chain implements Executable {
     //这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
     private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) throws Exception{
         //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
-        ExecutorService parallelExecutor = TtlExecutors.getTtlExecutorService(ExecutorHelper.loadInstance().buildExecutor());
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor();
 
         //获得liteflow的参数
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();

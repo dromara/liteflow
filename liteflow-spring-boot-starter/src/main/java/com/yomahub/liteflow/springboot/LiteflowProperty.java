@@ -21,6 +21,9 @@ public class LiteflowProperty {
     //slot的数量
     private int slotSize;
 
+    //并行线程执行器class路径
+    private String threadExecutorClass;
+
     //异步线程最大等待描述
     private int whenMaxWaitSeconds;
 
@@ -130,5 +133,13 @@ public class LiteflowProperty {
 
     public void setPrintBanner(boolean printBanner) {
         this.printBanner = printBanner;
+    }
+
+    public String getThreadExecutorClass() {
+        return threadExecutorClass;
+    }
+
+    public void setThreadExecutorClass(String threadExecutorClass) {
+        this.threadExecutorClass = threadExecutorClass;
     }
 }

@@ -31,6 +31,12 @@
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
+      "name": "liteflow.thread-executor-class",
+      "type": "java.lang.String",
+      "description": "Multi thread pool.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.when-max-wait-seconds",
       "type": "java.lang.Integer",
       "description": "Set the async thread max wait seconds on \" when \" mode.",

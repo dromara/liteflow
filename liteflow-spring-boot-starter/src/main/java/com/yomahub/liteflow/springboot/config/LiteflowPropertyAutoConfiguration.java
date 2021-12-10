@@ -27,6 +27,7 @@ public class LiteflowPropertyAutoConfiguration {
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setRuleSource(property.getRuleSource());
         liteflowConfig.setSlotSize(property.getSlotSize());
+        liteflowConfig.setThreadExecutorClass(property.getThreadExecutorClass());
         liteflowConfig.setWhenMaxWaitSeconds(property.getWhenMaxWaitSeconds());
         liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
         liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());

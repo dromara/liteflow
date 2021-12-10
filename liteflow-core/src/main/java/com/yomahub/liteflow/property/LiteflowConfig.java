@@ -36,6 +36,9 @@ public class LiteflowConfig {
     //slot的数量
     private Integer slotSize;
 
+    //并行线程执行器class路径
+    private String threadExecutorClass;
+
     //异步线程最大等待秒数
     private Integer whenMaxWaitSeconds;
 
@@ -245,5 +248,17 @@ public class LiteflowConfig {
 
     public void setPrintBanner(Boolean printBanner) {
         this.printBanner = printBanner;
+    }
+
+    public String getThreadExecutorClass() {
+        if (StrUtil.isBlank(threadExecutorClass)){
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultExecutorBuilder";
+        }else{
+            return threadExecutorClass;
+        }
+    }
+
+    public void setThreadExecutorClass(String threadExecutorClass) {
+        this.threadExecutorClass = threadExecutorClass;
     }
 }

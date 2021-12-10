@@ -5,15 +5,15 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.util;
+package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -71,56 +71,28 @@ public class ExecutorHelper {
         }
     }
 
-    /**
-     * 返回一个线程工厂,这是一个可以定义线程名字的线程工厂,返回的线程都将被命名.
-     * 创建的线程都是非后台线程.
-     *
-     * @param name 名称.
-     * @return 线程工厂实例.
-     */
-    public ThreadFactory buildExecutorFactory(final String name) {
-        return buildExecutorFactory(name, false);
-    }
-
-    /**
-     * 返回一个线程工厂,这是一个可以定义线程名字的线程工厂,返回的线程都将被命名.
-     *
-     * @param name   名称.
-     * @param daemon 是否为后台线程.
-     * @return 线程工厂实例.
-     */
-    public ThreadFactory buildExecutorFactory(final String name, final boolean daemon) {
-        return new ThreadFactory() {
-
-            private final AtomicLong number = new AtomicLong();
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread newThread = Executors.defaultThreadFactory().newThread(r);
-                newThread.setName(name + "-" + number.getAndIncrement());
-                newThread.setDaemon(daemon);
-                return newThread;
-            }
-
-        };
-    }
-
     public ExecutorService buildExecutor() {
         if (ObjectUtil.isNull(executorService)){
             LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-            //只有在非spring的场景下liteflowConfig才会为null
-            if (ObjectUtil.isNull(liteflowConfig)){
-                liteflowConfig = new LiteflowConfig();
+
+            try{
+                assert liteflowConfig != null;
+                ExecutorBuilder executorBuilder = (ExecutorBuilder)Class.forName(liteflowConfig.getThreadExecutorClass()).newInstance();
+                executorService = executorBuilder.buildExecutor();
+            }catch (Exception e){
+                LOG.error(e.getMessage(), e);
+                throw new ThreadExecutorServiceCreateException(e.getMessage());
             }
 
-
-            executorService = new ThreadPoolExecutor(liteflowConfig.getWhenMaxWorkers(),
-                    liteflowConfig.getWhenMaxWorkers(),
-                    0L, TimeUnit.MILLISECONDS,
-                    new ArrayBlockingQueue<>(liteflowConfig.getWhenQueueLimit()),
-                    buildExecutorFactory("liteflow-when-thead", false),
-                    new ThreadPoolExecutor.AbortPolicy());
         }
         return executorService;
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 }
