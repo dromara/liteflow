@@ -278,6 +278,13 @@ public class FlowExecutor {
         this.execute(chainId, param, slotClazz, slotIndex, true);
     }
 
+    /**
+     * 无参执行器
+     * @Author LeoLee
+     * @Date 17:52 2021/12/10
+     * @param chainId 业务链id
+     * @return com.yomahub.liteflow.entity.data.DefaultSlot
+     */
     public DefaultSlot execute(String chainId) throws Exception {
         return this.execute(chainId, DefaultSlot.class, null, false);
     }
@@ -301,9 +308,15 @@ public class FlowExecutor {
 
     public <T extends Slot> T execute(String chainId, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
+        //默认param为null，在doExecute中会被过滤
         return this.execute0(chainId, null, slotClazz, slotIndex, isInnerChain);
     }
 
+    /**
+     * doExecute私有封装
+     * @Author LeoLee
+     * @Date 17:53 2021/12/10
+     */
     private <T extends Slot> T execute0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) throws Exception {
         T slot = this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
@@ -338,9 +351,15 @@ public class FlowExecutor {
 
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
+        //默认param为null，在doExecute中会被过滤
         return execute2Resp0(chainId, null, slotClazz, slotIndex, isInnerChain);
     }
 
+    /**
+     * doExecute私有封装
+     * @Author LeoLee
+     * @Date 17:54 2021/12/10
+     */
     private <T extends Slot> LiteflowResponse<T> execute2Resp0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
 
