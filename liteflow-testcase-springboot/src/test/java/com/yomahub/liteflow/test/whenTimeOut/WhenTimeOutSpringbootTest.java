@@ -1,12 +1,15 @@
 package com.yomahub.liteflow.test.whenTimeOut;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -27,12 +30,17 @@ import javax.annotation.Resource;
 @ComponentScan({"com.yomahub.liteflow.test.whenTimeOut.cmp"})
 public class WhenTimeOutSpringbootTest extends BaseTest {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
     @Resource
     private FlowExecutor flowExecutor;
 
     @Test
     public void testWhenTimeOut() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        if (!response.isSuccess()){
+            log.error(response.getMessage(),response.getCause());
+        }
         Assert.assertTrue(response.isSuccess());
     }
 }

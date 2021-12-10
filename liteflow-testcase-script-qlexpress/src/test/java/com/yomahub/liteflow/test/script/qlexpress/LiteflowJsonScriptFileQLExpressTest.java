@@ -72,7 +72,7 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
     public void testScript4() throws Exception{
         new Thread(() -> {
             try{
-                Thread.sleep(1000L);
+                Thread.sleep(2000L);
                 //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
                 String newContent = ResourceUtil.readUtf8Str("classpath: /json-script-file/flow_update.json");
                 //进行刷新
@@ -82,7 +82,7 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
             }
         }).start();
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 300; i++) {
             LiteflowResponse<DefaultSlot> responseNew = flowExecutor.execute2Resp("chain2", "arg");
             Assert.assertTrue(responseNew.isSuccess());
             Thread.sleep(10L);

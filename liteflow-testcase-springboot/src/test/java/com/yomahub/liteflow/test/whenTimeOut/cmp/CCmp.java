@@ -16,7 +16,7 @@ public class CCmp extends NodeComponent {
 	@Override
 	public void process() {
 		try {
-			Thread.sleep(8000);
+			Thread.sleep(3500);
 		}catch (Exception ignored){
 
 		}
