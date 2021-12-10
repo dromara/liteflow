@@ -278,6 +278,10 @@ public class FlowExecutor {
         this.execute(chainId, param, slotClazz, slotIndex, true);
     }
 
+    public DefaultSlot execute(String chainId) throws Exception {
+        return this.execute(chainId, DefaultSlot.class, null, false);
+    }
+
     public DefaultSlot execute(String chainId, Object param) throws Exception {
         return this.execute(chainId, param, DefaultSlot.class, null, false);
     }
@@ -292,12 +296,25 @@ public class FlowExecutor {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
             throw new NullParamException("data slot cann't accept null param");
         }
+        return this.execute0(chainId, param, slotClazz, slotIndex, isInnerChain);
+    }
+
+    public <T extends Slot> T execute(String chainId, Class<T> slotClazz,
+                                      Integer slotIndex, boolean isInnerChain) throws Exception {
+        return this.execute0(chainId, null, slotClazz, slotIndex, isInnerChain);
+    }
+
+    private <T extends Slot> T execute0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) throws Exception {
         T slot = this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
             throw slot.getException();
         } else {
             return slot;
         }
+    }
+
+    public LiteflowResponse<DefaultSlot> execute2Resp(String chainId) {
+        return this.execute2Resp(chainId, DefaultSlot.class, null, false);
     }
 
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId, Object param) {
@@ -312,11 +329,21 @@ public class FlowExecutor {
 
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
-        LiteflowResponse<T> response = new LiteflowResponse<>();
         if (null == param) {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
             throw new NullParamException("data slot cann't accept null param");
         }
+        return execute2Resp0(chainId, param, slotClazz, slotIndex, isInnerChain);
+    }
+
+    public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Class<T> slotClazz, Integer slotIndex,
+                                                             boolean isInnerChain) {
+        return execute2Resp0(chainId, null, slotClazz, slotIndex, isInnerChain);
+    }
+
+    private <T extends Slot> LiteflowResponse<T> execute2Resp0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) {
+        LiteflowResponse<T> response = new LiteflowResponse<>();
+
         T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
 
         if (ObjectUtil.isNotNull(slot.getException()) && !notFailExceptionList.contains(slot.getException().getClass())) {
@@ -356,10 +383,14 @@ public class FlowExecutor {
         }
 
         if (!isInnerChain) {
-            slot.setRequestData(param);
+            if (null != param) {
+                slot.setRequestData(param);
+            }
             slot.setChainName(chainId);
         } else {
-            slot.setChainReqData(chainId, param);
+            if (null != param) {
+                slot.setChainReqData(chainId, param);
+            }
         }
 
         Chain chain = null;
