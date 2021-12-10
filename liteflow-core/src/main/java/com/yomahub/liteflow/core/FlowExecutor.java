@@ -288,6 +288,10 @@ public class FlowExecutor {
 
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
+        if (null == param) {
+            //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
+            throw new NullParamException("data slot cann't accept null param");
+        }
         T slot = this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
             throw slot.getException();
@@ -309,7 +313,10 @@ public class FlowExecutor {
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
-
+        if (null == param) {
+            //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
+            throw new NullParamException("data slot cann't accept null param");
+        }
         T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
 
         if (ObjectUtil.isNotNull(slot.getException()) && !notFailExceptionList.contains(slot.getException().getClass())) {

@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+import com.yomahub.liteflow.exception.NullParamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Iterator;
@@ -56,10 +57,18 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setInput(String nodeId,T t){
+		if (null == t) {
+			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
+			throw new NullParamException("data slot cann't accept null param");
+		}
 		dataMap.put(NODE_INPUT_PREFIX + nodeId, t);
 	}
 
 	public <T> void setOutput(String nodeId,T t){
+		if (null == t) {
+			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
+			throw new NullParamException("data slot cann't accept null param");
+		}
 		dataMap.put(NODE_OUTPUT_PREFIX + nodeId, t);
 	}
 
