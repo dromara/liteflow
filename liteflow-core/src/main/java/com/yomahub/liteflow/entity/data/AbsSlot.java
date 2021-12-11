@@ -59,7 +59,7 @@ public abstract class AbsSlot implements Slot {
 	public <T> void setInput(String nodeId,T t){
 		if (null == t) {
 			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-			throw new NullParamException("data slot cann't accept null param");
+			throw new NullParamException("data slot can't accept null param");
 		}
 		dataMap.put(NODE_INPUT_PREFIX + nodeId, t);
 	}
@@ -67,7 +67,7 @@ public abstract class AbsSlot implements Slot {
 	public <T> void setOutput(String nodeId,T t){
 		if (null == t) {
 			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-			throw new NullParamException("data slot cann't accept null param");
+			throw new NullParamException("data slot can't accept null param");
 		}
 		dataMap.put(NODE_OUTPUT_PREFIX + nodeId, t);
 	}

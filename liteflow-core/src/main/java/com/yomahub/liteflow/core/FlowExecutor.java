@@ -306,7 +306,7 @@ public class FlowExecutor {
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
         if (null == param) {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-            throw new NullParamException("data slot cann't accept null param");
+            throw new NullParamException("data slot can't accept null param");
         }
         return this.execute0(chainId, param, slotClazz, slotIndex, isInnerChain);
     }
@@ -369,7 +369,7 @@ public class FlowExecutor {
                                                              boolean isInnerChain) {
         if (null == param) {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-            throw new NullParamException("data slot cann't accept null param");
+            throw new NullParamException("data slot can't accept null param");
         }
         return execute2Resp0(chainId, param, slotClazz, slotIndex, isInnerChain);
     }
