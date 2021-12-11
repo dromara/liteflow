@@ -72,10 +72,19 @@ public abstract class FlowParser {
 
         List<Resource> allResource = new ArrayList<>();
         for (String path : pathList) {
-            String locationPattern = path;
-            if (!locationPattern.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
-                locationPattern = ResourceUtils.CLASSPATH_URL_PREFIX + locationPattern;
+            String locationPattern;
+
+            //如果path是绝对路径且这个文件存在时，我们认为这是一个本地文件路径，而并非classpath路径
+            if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)){
+                locationPattern = ResourceUtils.FILE_URL_PREFIX + path;
+            } else {
+                if (!path.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
+                    locationPattern = ResourceUtils.CLASSPATH_URL_PREFIX + path;
+                }else{
+                    locationPattern = path;
+                }
             }
+
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources(locationPattern);
             if (ArrayUtil.isEmpty(resources)) {
