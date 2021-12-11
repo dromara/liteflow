@@ -297,6 +297,11 @@ public class FlowExecutor {
         return this.execute(chainId, param, slotClazz, null, false);
     }
 
+    /**
+     * 有param的execute方法，将会对param进行判断，若为null，抛出逻辑异常NullParamException
+     * @Author: LeoLee
+     * @Date: 2021/12/11 15:34
+     */
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
         if (null == param) {
@@ -306,6 +311,12 @@ public class FlowExecutor {
         return this.execute0(chainId, param, slotClazz, slotIndex, isInnerChain);
     }
 
+    /**
+     * 无param的execute方法，没有param参数
+     * 调用execute0时，param默认给null，之后会在doExecute方法中进行判断，如果param为null，则不进行slot数据槽设置
+     * @Author: LeoLee
+     * @Date: 2021/12/11 15:35
+     */
     public <T extends Slot> T execute(String chainId, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
         //默认param为null，在doExecute中会被过滤
@@ -314,6 +325,7 @@ public class FlowExecutor {
 
     /**
      * doExecute私有封装
+     * 为了区别无param和有param的执行方法
      * @Author LeoLee
      * @Date 17:53 2021/12/10
      */
@@ -326,6 +338,13 @@ public class FlowExecutor {
         }
     }
 
+    /**
+     * 无param执行器
+     * @Param: [chainId] 业务链id
+     * @Return: com.yomahub.liteflow.entity.data.LiteflowResponse<com.yomahub.liteflow.entity.data.DefaultSlot>
+     * @Author: LeoLee
+     * @Date: 2021/12/11 15:54
+     */
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId) {
         return this.execute2Resp(chainId, DefaultSlot.class, null, false);
     }
@@ -340,6 +359,12 @@ public class FlowExecutor {
 
     private final ArrayList<Class<? extends Exception>> notFailExceptionList = ListUtil.toList(ChainEndException.class);
 
+    /**
+     * 带param参数的execute2Resp方法，会对param进行判断
+     * 如果param为null，则抛出NullParamException
+     * @Author: LeoLee
+     * @Date: 2021/12/11 15:55
+     */
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         if (null == param) {
@@ -349,6 +374,12 @@ public class FlowExecutor {
         return execute2Resp0(chainId, param, slotClazz, slotIndex, isInnerChain);
     }
 
+    /**
+     * 无param参数的execute2Resp方法
+     * 调用doExecute方法时，param默认传递null，会在doExecute房中进行
+     * @Author: LeoLee
+     * @Date: 2021/12/11 16:10
+     */
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         //默认param为null，在doExecute中会被过滤
