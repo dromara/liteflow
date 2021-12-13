@@ -8,7 +8,6 @@
  */
 package com.yomahub.liteflow.core;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
@@ -31,8 +30,6 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
-
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -263,30 +260,14 @@ public class FlowExecutor {
         init();
     }
 
-    /**
-     * callback by implicit subflow
-     *
-     * @param chainId
-     * @param param
-     * @param slotClazz
-     * @param slotIndex
-     * @param <T>
-     * @throws Exception
-     */
+    //隐式流程的调用方法
     public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz,
                                         Integer slotIndex) throws Exception {
         this.execute(chainId, param, slotClazz, slotIndex, true);
     }
 
-    /**
-     * 无参执行器
-     * @Author LeoLee
-     * @Date 17:52 2021/12/10
-     * @param chainId 业务链id
-     * @return com.yomahub.liteflow.entity.data.DefaultSlot
-     */
     public DefaultSlot execute(String chainId) throws Exception {
-        return this.execute(chainId, DefaultSlot.class, null, false);
+        return this.execute(chainId, null, DefaultSlot.class, null, false);
     }
 
     public DefaultSlot execute(String chainId, Object param) throws Exception {
@@ -297,39 +278,8 @@ public class FlowExecutor {
         return this.execute(chainId, param, slotClazz, null, false);
     }
 
-    /**
-     * 有param的execute方法，将会对param进行判断，若为null，抛出逻辑异常NullParamException
-     * @Author: LeoLee
-     * @Date: 2021/12/11 15:34
-     */
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
-        if (ObjectUtil.isNull(param)) {
-            //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-            throw new NullParamException("data slot can't accept null param");
-        }
-        return this.execute0(chainId, param, slotClazz, slotIndex, isInnerChain);
-    }
-
-    /**
-     * 无param的execute方法，没有param参数
-     * 调用execute0时，param默认给null，之后会在doExecute方法中进行判断，如果param为null，则不进行slot数据槽设置
-     * @Author: LeoLee
-     * @Date: 2021/12/11 15:35
-     */
-    public <T extends Slot> T execute(String chainId, Class<T> slotClazz,
-                                      Integer slotIndex, boolean isInnerChain) throws Exception {
-        //默认param为null，在doExecute中会被过滤
-        return this.execute0(chainId, null, slotClazz, slotIndex, isInnerChain);
-    }
-
-    /**
-     * doExecute私有封装
-     * 为了区别无param和有param的执行方法
-     * @Author LeoLee
-     * @Date 17:53 2021/12/10
-     */
-    private <T extends Slot> T execute0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) throws Exception {
         T slot = this.doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
             throw slot.getException();
@@ -338,15 +288,8 @@ public class FlowExecutor {
         }
     }
 
-    /**
-     * 无param执行器
-     * @Param: [chainId] 业务链id
-     * @Return: com.yomahub.liteflow.entity.data.LiteflowResponse<com.yomahub.liteflow.entity.data.DefaultSlot>
-     * @Author: LeoLee
-     * @Date: 2021/12/11 15:54
-     */
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId) {
-        return this.execute2Resp(chainId, DefaultSlot.class, null, false);
+        return this.execute2Resp(chainId, null, DefaultSlot.class);
     }
 
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId, Object param) {
@@ -359,39 +302,8 @@ public class FlowExecutor {
 
     private final ArrayList<Class<? extends Exception>> notFailExceptionList = ListUtil.toList(ChainEndException.class);
 
-    /**
-     * 带param参数的execute2Resp方法，会对param进行判断
-     * 如果param为null，则抛出NullParamException
-     * @Author: LeoLee
-     * @Date: 2021/12/11 15:55
-     */
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
-        if (ObjectUtil.isNull(param)) {
-            //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
-            throw new NullParamException("data slot can't accept null param");
-        }
-        return execute2Resp0(chainId, param, slotClazz, slotIndex, isInnerChain);
-    }
-
-    /**
-     * 无param参数的execute2Resp方法
-     * 调用doExecute方法时，param默认传递null，会在doExecute房中进行
-     * @Author: LeoLee
-     * @Date: 2021/12/11 16:10
-     */
-    public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Class<T> slotClazz, Integer slotIndex,
-                                                             boolean isInnerChain) {
-        //默认param为null，在doExecute中会被过滤
-        return execute2Resp0(chainId, null, slotClazz, slotIndex, isInnerChain);
-    }
-
-    /**
-     * doExecute私有封装
-     * @Author LeoLee
-     * @Date 17:54 2021/12/10
-     */
-    private <T extends Slot> LiteflowResponse<T> execute2Resp0(String chainId, Object param, Class<T> slotClazz, Integer slotIndex, boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
 
         T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
@@ -433,14 +345,12 @@ public class FlowExecutor {
         }
 
         if (!isInnerChain) {
-            //对param进行判空，如果为null，则不进行slot设置
-            if (ObjectUtil.isNotNull(param)) {
+            if (ObjectUtil.isNotNull(param)){
                 slot.setRequestData(param);
             }
             slot.setChainName(chainId);
         } else {
-            //对param进行判空，如果为null，则不进行slot设置
-            if (ObjectUtil.isNotNull(param)) {
+            if (ObjectUtil.isNotNull(param)){
                 slot.setChainReqData(chainId, param);
             }
         }

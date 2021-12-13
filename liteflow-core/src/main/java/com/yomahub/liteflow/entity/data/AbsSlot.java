@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.entity.data;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.NullParamException;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public abstract class AbsSlot implements Slot {
 
 	private static final String RESPONSE = "_response";
 
-	private static final String CHAINNAME = "_chain_name";
+	private static final String CHAIN_NAME = "_chain_name";
 
 	private static final String COND_NODE_PREFIX = "_cond_";
 
@@ -49,7 +50,7 @@ public abstract class AbsSlot implements Slot {
 
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
-	private <T> void dataMapPut(String key, T t) {
+	private <T> void putDataMap(String key, T t) {
 		if (ObjectUtil.isNull(t)) {
 			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
 			throw new NullParamException("data slot can't accept null param");
@@ -66,11 +67,11 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setInput(String nodeId,T t){
-		dataMapPut(NODE_INPUT_PREFIX + nodeId, t);
+		putDataMap(NODE_INPUT_PREFIX + nodeId, t);
 	}
 
 	public <T> void setOutput(String nodeId,T t){
-		dataMapPut(NODE_OUTPUT_PREFIX + nodeId, t);
+		putDataMap(NODE_OUTPUT_PREFIX + nodeId, t);
 	}
 
 	public <T> T getRequestData(){
@@ -78,7 +79,7 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setRequestData(T t){
-		dataMapPut(REQUEST, t);
+		putDataMap(REQUEST, t);
 	}
 
 	public <T> T getResponseData(){
@@ -86,7 +87,7 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setResponseData(T t){
-		dataMapPut(RESPONSE, t);
+		putDataMap(RESPONSE, t);
 	}
 
 	public <T> T getChainReqData(String chainId) {
@@ -94,7 +95,7 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setChainReqData(String chainId, T t) {
-		dataMapPut(CHAIN_REQ_PREFIX + chainId, t);
+		putDataMap(CHAIN_REQ_PREFIX + chainId, t);
 	}
 
 	public boolean hasData(String key){
@@ -106,7 +107,7 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setData(String key, T t){
-		dataMapPut(key, t);
+		putDataMap(key, t);
 	}
 
 	public <T> void setPrivateDeliveryData(String nodeId, T t){
@@ -134,7 +135,7 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public <T> void setCondResult(String key, T t){
-		dataMapPut(COND_NODE_PREFIX + key, t);
+		putDataMap(COND_NODE_PREFIX + key, t);
 	}
 
 	public <T> T getCondResult(String key){
@@ -142,11 +143,11 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public void setChainName(String chainName) {
-		dataMapPut(CHAINNAME, chainName);
+		putDataMap(CHAIN_NAME, chainName);
 	}
 
 	public String getChainName() {
-		return (String)dataMap.get(CHAINNAME);
+		return (String)dataMap.get(CHAIN_NAME);
 	}
 
 	public void addStep(CmpStep step){
@@ -169,7 +170,7 @@ public abstract class AbsSlot implements Slot {
 
 	@Override
 	public void generateRequestId() {
-		dataMap.put(REQUEST_ID, new Long(System.nanoTime()).toString());
+		dataMap.put(REQUEST_ID, IdUtil.nanoId());
 	}
 
 	@Override
@@ -188,6 +189,6 @@ public abstract class AbsSlot implements Slot {
 
 	@Override
 	public void setException(Exception e) {
-		dataMapPut(EXCEPTION, e);
+		putDataMap(EXCEPTION, e);
 	}
 }
