@@ -304,7 +304,7 @@ public class FlowExecutor {
      */
     public <T extends Slot> T execute(String chainId, Object param, Class<T> slotClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
-        if (null == param) {
+        if (ObjectUtil.isNull(param)) {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
             throw new NullParamException("data slot can't accept null param");
         }
@@ -367,7 +367,7 @@ public class FlowExecutor {
      */
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
-        if (null == param) {
+        if (ObjectUtil.isNull(param)) {
             //data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
             throw new NullParamException("data slot can't accept null param");
         }
@@ -434,13 +434,13 @@ public class FlowExecutor {
 
         if (!isInnerChain) {
             //对param进行判空，如果为null，则不进行slot设置
-            if (null != param) {
+            if (ObjectUtil.isNotNull(param)) {
                 slot.setRequestData(param);
             }
             slot.setChainName(chainId);
         } else {
             //对param进行判空，如果为null，则不进行slot设置
-            if (null != param) {
+            if (ObjectUtil.isNotNull(param)) {
                 slot.setChainReqData(chainId, param);
             }
         }
