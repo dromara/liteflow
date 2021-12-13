@@ -8,7 +8,6 @@
  */
 package com.yomahub.liteflow.core;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
@@ -31,8 +30,6 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.XmlFlowParser;
 import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
-
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -263,19 +260,14 @@ public class FlowExecutor {
         init();
     }
 
-    /**
-     * callback by implicit subflow
-     *
-     * @param chainId
-     * @param param
-     * @param slotClazz
-     * @param slotIndex
-     * @param <T>
-     * @throws Exception
-     */
+    //隐式流程的调用方法
     public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz,
                                         Integer slotIndex) throws Exception {
         this.execute(chainId, param, slotClazz, slotIndex, true);
+    }
+
+    public DefaultSlot execute(String chainId) throws Exception {
+        return this.execute(chainId, null, DefaultSlot.class, null, false);
     }
 
     public DefaultSlot execute(String chainId, Object param) throws Exception {
@@ -294,6 +286,10 @@ public class FlowExecutor {
         } else {
             return slot;
         }
+    }
+
+    public LiteflowResponse<DefaultSlot> execute2Resp(String chainId) {
+        return this.execute2Resp(chainId, null, DefaultSlot.class);
     }
 
     public LiteflowResponse<DefaultSlot> execute2Resp(String chainId, Object param) {
@@ -349,10 +345,14 @@ public class FlowExecutor {
         }
 
         if (!isInnerChain) {
-            slot.setRequestData(param);
+            if (ObjectUtil.isNotNull(param)){
+                slot.setRequestData(param);
+            }
             slot.setChainName(chainId);
         } else {
-            slot.setChainReqData(chainId, param);
+            if (ObjectUtil.isNotNull(param)){
+                slot.setChainReqData(chainId, param);
+            }
         }
 
         Chain chain = null;
