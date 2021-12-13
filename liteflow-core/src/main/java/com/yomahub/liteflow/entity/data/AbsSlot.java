@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Slot的抽象类实现
  * @author Bryan.Zhang
+ * @author LeoLee
  */
 @SuppressWarnings("unchecked")
 public abstract class AbsSlot implements Slot {
