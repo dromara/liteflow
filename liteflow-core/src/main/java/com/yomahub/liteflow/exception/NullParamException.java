@@ -5,10 +5,8 @@ import java.io.Serializable;
 /**
  * null param exception
  * when param is null, dataMap (ConcurrentHashMap) cann't accept a null value
- *
- * @Author LeoLee
- * @Date 2021/12/10 16:47
- * @Version 1.0
+ * @author LeoLee
+ * @since 2.6.6
  */
 public class NullParamException extends RuntimeException implements Serializable {
 
