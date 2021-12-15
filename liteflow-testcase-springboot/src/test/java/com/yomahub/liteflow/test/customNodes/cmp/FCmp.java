@@ -10,7 +10,6 @@ package com.yomahub.liteflow.test.customNodes.cmp;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-@Component("f")
 public class FCmp extends NodeComponent {
 
 	@Override

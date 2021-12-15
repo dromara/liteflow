@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/customNodes/application.properties")
 @SpringBootTest(classes = CustomNodesSpringbootTest.class)
 @EnableAutoConfiguration
+@ComponentScan({"com.yomahub.liteflow.test.customNodes.domain"})
 public class CustomNodesSpringbootTest extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());

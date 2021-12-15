@@ -8,13 +8,20 @@
 package com.yomahub.liteflow.test.customNodes.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.test.customNodes.domain.DemoDomain;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component("e")
+import javax.annotation.Resource;
+
 public class ECmp extends NodeComponent {
+
+	@Resource
+	private DemoDomain demoDomain;
 
 	@Override
 	public void process() {
+		demoDomain.sayHi();
 		System.out.println("ECmp executed!");
 	}
 

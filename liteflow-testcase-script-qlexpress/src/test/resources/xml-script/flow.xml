@@ -19,6 +19,15 @@
                 }
             ]]>
         </node>
+
+        <!-- 定义s3的目的是验证在多个脚本节点同时存在情况下的运行情况是否正确，本身s3不会被引用到 -->
+        <node id="s3" name="普通脚本2" type="script">
+            <![CDATA[
+                a=30;
+                b=2;
+                slot.setData("s1",a*b);
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本" type="script">
+        <node id="s1" name="普通脚本1" type="script">
             <![CDATA[
                 def a=3;
                 def b=2;
@@ -17,6 +17,15 @@
                 }else{
                     return "b";
                 }
+            ]]>
+        </node>
+
+        <!-- 定义s3的目的是验证在多个脚本节点同时存在情况下的运行情况是否正确，本身s3不会被引用到 -->
+        <node id="s3" name="普通脚本2" type="script">
+            <![CDATA[
+                def a=30;
+                def b=2;
+                slot.setData("s1",a*b);
             ]]>
         </node>
     </nodes>

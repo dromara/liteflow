@@ -13,6 +13,12 @@
           "name": "条件脚本",
           "type": "cond_script",
           "value": "count = slot.getData(\"count\");if(count > 100){return \"a\";}else{return \"b\";}"
+        },
+        {
+          "id": "s3",
+          "name": "普通脚本2",
+          "type": "script",
+          "value": "def a=30;def b=2;slot.setData(\"s1\",a*b);"
         }
       ]
     },
