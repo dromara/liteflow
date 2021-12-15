@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.flow;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -102,9 +103,13 @@ public class FlowBus {
         try {
             //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
             //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
-            NodeComponent cmpInstance = SpringAware.registerOrGet(cmpClazz);
+            //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
+            NodeComponent cmpInstance = null;
+            if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
+                cmpInstance = SpringAware.registerOrGet(nodeId, cmpClazz);
+            }
+
             if (ObjectUtil.isNull(cmpInstance)) {
-                LOG.warn("couldn't find component class [{}] from spring context", cmpClazz.getName());
                 cmpInstance = cmpClazz.newInstance();
             }
 

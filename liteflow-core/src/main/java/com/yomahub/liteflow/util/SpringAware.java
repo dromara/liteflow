@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.util;
 
+import cn.hutool.core.util.ObjectUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -45,22 +46,25 @@ public class SpringAware implements ApplicationContextAware {
         }
     }
 
-    public static <T> T registerBean(Class<T> c) {
+    public static <T> T registerBean(String beanName, Class<T> c) {
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
         BeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setBeanClassName(c.getName());
-        beanFactory.registerBeanDefinition(c.getName(), beanDefinition);
-        return getBean(c.getName());
+        beanFactory.registerBeanDefinition(beanName, beanDefinition);
+        return getBean(beanName);
     }
 
-    public static <T> T registerOrGet(Class<T> clazz) {
-        T t = null;
-        try {
-            t = SpringAware.getBean(clazz);
-        } catch (NoSuchBeanDefinitionException e) {
-            if (t == null) {
-                t = SpringAware.registerBean(clazz);
-            }
+    public static <T> T registerBean(Class<T> c) {
+        return registerBean(c.getName(), c);
+    }
+
+    public static <T> T registerOrGet(String beanName, Class<T> clazz) {
+        if (ObjectUtil.isNull(applicationContext)){
+            return null;
+        }
+        T t = SpringAware.getBean(clazz);
+        if (ObjectUtil.isNull(t)) {
+            t = SpringAware.registerBean(beanName, clazz);
         }
         return t;
     }
