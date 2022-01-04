@@ -360,7 +360,7 @@ public class FlowExecutor {
             chain = FlowBus.getChain(chainId);
 
             if (ObjectUtil.isNull(chain)) {
-                String errorMsg = StrUtil.format("couldn't find chain with the id[{}]", chainId);
+                String errorMsg = StrUtil.format("[{}]:couldn't find chain with the id[{}]", slot.getRequestId(), chainId);
                 throw new ChainNotFoundException(errorMsg);
             }
 
@@ -372,6 +372,14 @@ public class FlowExecutor {
             }
             slot.setException(e);
         } finally {
+            try{
+                if (ObjectUtil.isNotNull(chain)){
+                    chain.executeFinally(slotIndex);
+                }
+            }catch (Exception e){
+                LOG.error("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
+            }
+
             if (!isInnerChain) {
                 slot.printStep();
                 DataBus.releaseSlot(slotIndex);

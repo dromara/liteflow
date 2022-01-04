@@ -18,12 +18,9 @@ public class ParallelSupplier implements Supplier<WhenFutureObj> {
 
     private final Integer slotIndex;
 
-    private final String requestId;
-
-    public ParallelSupplier(Executable executableItem, Integer slotIndex, String requestId) {
+    public ParallelSupplier(Executable executableItem, Integer slotIndex) {
         this.executableItem = executableItem;
         this.slotIndex = slotIndex;
-        this.requestId = requestId;
     }
 
     @Override

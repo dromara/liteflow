@@ -18,4 +18,9 @@
         <then value="a,d,c"/>
         <finally value="f1,f2"/>
     </chain>
+
+    <chain name="chain4">
+        <then value="a,d,c"/>
+        <finally value="f3"/>
+    </chain>
 </flow>

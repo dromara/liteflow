@@ -53,4 +53,12 @@ public class PreAndFinallySpringbootTest extends BaseTest {
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("p1==>p2==>a==>d==>f1==>f2", response.getSlot().printStep());
     }
+
+    //测试在finally节点里是否能获取exception
+    @Test
+    public void testPreAndFinally4() throws Exception{
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertTrue(response.getSlot().getData("hasEx"));
+    }
 }

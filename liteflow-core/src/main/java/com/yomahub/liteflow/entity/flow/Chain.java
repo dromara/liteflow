@@ -70,33 +70,30 @@ public class Chain implements Executable {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
 
-        Slot slot = DataBus.getSlot(slotIndex);
+        //循环chain里包含的condition，每一个condition分四种类型：pre,then,when,finally
+        //这里conditionList其实已经是有序的，pre一定在最前面，finally一定在最后面
+        for (Condition condition : conditionList) {
+            if (condition instanceof PreCondition){
+                for (Executable executableItem : condition.getNodeList()) {
+                    executableItem.execute(slotIndex);
+                }
+            } else if (condition instanceof ThenCondition) {
+                for (Executable executableItem : condition.getNodeList()) {
+                    executableItem.execute(slotIndex);
+                }
+            } else if (condition instanceof WhenCondition) {
+                executeAsyncCondition((WhenCondition) condition, slotIndex);
+            }
+        }
+    }
 
+    public void executeFinally(Integer slotIndex) throws Exception {
         //先把finally的节点过滤出来
         List<Condition> finallyConditionList = conditionList.stream().filter(condition ->
                 condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())).collect(Collectors.toList());
-
-        //循环chain里包含的condition，每一个condition分四种类型：pre,then,when,finally
-        //这里conditionList其实已经是有序的，pre一定在最前面，finally一定在最后面
-        try{
-            for (Condition condition : conditionList) {
-                if (condition instanceof PreCondition){
-                    for (Executable executableItem : condition.getNodeList()) {
-                        executableItem.execute(slotIndex);
-                    }
-                } else if (condition instanceof ThenCondition) {
-                    for (Executable executableItem : condition.getNodeList()) {
-                        executableItem.execute(slotIndex);
-                    }
-                } else if (condition instanceof WhenCondition) {
-                    executeAsyncCondition((WhenCondition) condition, slotIndex, slot.getRequestId());
-                }
-            }
-        }finally {
-            for (Condition finallyCondition : finallyConditionList){
-                for(Executable executableItem : finallyCondition.getNodeList()){
-                    executableItem.execute(slotIndex);
-                }
+        for (Condition finallyCondition : finallyConditionList){
+            for(Executable executableItem : finallyCondition.getNodeList()){
+                executableItem.execute(slotIndex);
             }
         }
     }
@@ -113,7 +110,9 @@ public class Chain implements Executable {
 
     //使用线程池执行when并发流程
     //这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
-    private void executeAsyncCondition(WhenCondition condition, Integer slotIndex, String requestId) throws Exception{
+    private void executeAsyncCondition(WhenCondition condition, Integer slotIndex) throws Exception{
+        Slot slot = DataBus.getSlot(slotIndex);
+
         //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
         ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor();
 
@@ -131,7 +130,7 @@ public class Chain implements Executable {
         List<CompletableFuture<WhenFutureObj>> completableFutureList = condition.getNodeList().stream().map(
                     executable -> CompletableFutureTimeout.completeOnTimeout(
                                     WhenFutureObj.timeOut(executable.getExecuteName()),
-                                    CompletableFuture.supplyAsync(new ParallelSupplier(executable, slotIndex, requestId), parallelExecutor),
+                                    CompletableFuture.supplyAsync(new ParallelSupplier(executable, slotIndex), parallelExecutor),
                                     liteflowConfig.getWhenMaxWaitSeconds(),
                                     TimeUnit.SECONDS
                                   )
@@ -186,24 +185,24 @@ public class Chain implements Executable {
 
         //输出超时信息
         timeOutWhenFutureObjList.forEach(whenFutureObj ->
-                LOG.warn("requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", requestId, whenFutureObj.getExecutorName()));
+                LOG.warn("requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", slot.getRequestId(), whenFutureObj.getExecutorName()));
 
         //当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
         if (!condition.isErrorResume()) {
             if (interrupted[0]) {
-                throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", requestId));
+                throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", slot.getRequestId()));
             }
 
             //循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
             for(WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList){
                 if (!whenFutureObj.isSuccess()){
-                    LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName(), requestId));
+                    LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName(), slot.getRequestId()));
                     throw whenFutureObj.getEx();
                 }
             }
         } else if (interrupted[0]) {
             //  这里由于配置了errorResume，所以只打印warn日志
-            LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", requestId);
+            LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", slot.getRequestId());
         }
     }
 }
