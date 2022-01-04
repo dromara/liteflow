@@ -19,6 +19,12 @@
           {"type": "then", "value": "b1"},
           {"type": "when", "value": "b[1],b[2],b[3]"}
         ]
+      },
+      {
+        "name": "chain4",
+        "condition": [
+          {"type": "then", "value": "f[false],g"}
+        ]
       }
     ]
   }

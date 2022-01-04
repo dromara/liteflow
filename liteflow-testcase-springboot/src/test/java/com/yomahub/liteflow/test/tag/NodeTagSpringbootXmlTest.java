@@ -56,4 +56,12 @@ public class NodeTagSpringbootXmlTest extends BaseTest {
             Assert.assertEquals(3, testSet.size());
         }
     }
+
+    //测试tag是否能在isAccess中起效
+    @Test
+    public void testTag4() throws Exception{
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("g", response.getSlot().printStep());
+    }
 }

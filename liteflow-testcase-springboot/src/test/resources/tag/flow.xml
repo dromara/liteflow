@@ -12,4 +12,8 @@
         <then value="b1"/>
         <when value="b[1],b[2],b[3]"/>
     </chain>
+
+    <chain name="chain4">
+        <then value="f[false],g"/>
+    </chain>
 </flow>

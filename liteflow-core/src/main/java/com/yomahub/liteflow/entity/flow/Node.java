@@ -108,14 +108,13 @@ public class Node implements Executable,Cloneable{
 		Slot slot = DataBus.getSlot(slotIndex);
 
 		try {
+			//把tag和condNodeMap赋给NodeComponent
+			//这里为什么要这么做？因为tag和condNodeMap从某种意义上来说是属于某个chain本身范围，并非全局的
+			instance.setTag(tag);
+			instance.setCondNodeMap(condNodeMap);
+
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
-
-				//把tag和condNodeMap赋给NodeComponent
-				//这里为什么要这么做？因为tag和condNodeMap从某种意义上来说是属于某个chain本身范围，并非全局的
-				instance.setTag(tag);
-				instance.setCondNodeMap(condNodeMap);
-
 				//这里开始进行重试的逻辑和主逻辑的运行
 				int retryCount = instance.getRetryCount();
 				List<Class<? extends Exception>> forExceptions = Arrays.asList(instance.getRetryForExceptions());
