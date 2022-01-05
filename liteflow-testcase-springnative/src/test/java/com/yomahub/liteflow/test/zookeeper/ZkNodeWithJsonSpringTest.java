@@ -67,7 +67,7 @@ public class ZkNodeWithJsonSpringTest extends BaseTest {
     public void test() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c", response.getSlot().getExecuteStepStr());
     }
     
     @AfterClass

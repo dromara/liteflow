@@ -34,9 +34,9 @@ public class LiteflowMultipleTypeSpringbootTest extends BaseTest {
     public void testConfig() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c==>b==>a", response.getSlot().getExecuteStepStr());
         response = flowExecutor.execute2Resp("chain3", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c", response.getSlot().getExecuteStepStr());
     }
 }

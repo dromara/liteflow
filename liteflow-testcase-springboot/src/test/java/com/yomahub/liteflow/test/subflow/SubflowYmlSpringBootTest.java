@@ -35,6 +35,6 @@ public class SubflowYmlSpringBootTest extends BaseTest {
     public void testExplicitSubFlowYml() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getSlot().getExecuteStepStr());
     }
 }

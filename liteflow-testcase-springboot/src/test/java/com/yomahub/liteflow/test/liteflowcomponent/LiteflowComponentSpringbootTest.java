@@ -34,6 +34,6 @@ public class LiteflowComponentSpringbootTest extends BaseTest {
     public void testConfig() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getSlot().printStep());
+        Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getSlot().getExecuteStepStr());
     }
 }

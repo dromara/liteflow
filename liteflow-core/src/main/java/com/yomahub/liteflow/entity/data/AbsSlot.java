@@ -49,6 +49,8 @@ public abstract class AbsSlot implements Slot {
 
 	private final Queue<CmpStep> executeSteps = new ConcurrentLinkedQueue<>();
 
+	private String executeStepsStr;
+
 	protected ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
 	private <T> void putDataMap(String key, T t) {
@@ -155,7 +157,7 @@ public abstract class AbsSlot implements Slot {
 		this.executeSteps.add(step);
 	}
 
-	public String printStep(){
+	public String getExecuteStepStr(){
 		StringBuffer str = new StringBuffer();
 		CmpStep cmpStep = null;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
@@ -165,8 +167,15 @@ public abstract class AbsSlot implements Slot {
 				str.append("==>");
 			}
 		}
-		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), str);
-		return str.toString();
+		this.executeStepsStr = str.toString();
+		return this.executeStepsStr;
+	}
+
+	public void printStep(){
+		if (ObjectUtil.isNull(this.executeStepsStr)){
+			this.executeStepsStr = getExecuteStepStr();
+		}
+		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
 	}
 
 	@Override

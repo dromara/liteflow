@@ -37,7 +37,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     public void testRetry1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>b", response.getSlot().printStep());
+        Assert.assertEquals("a==>b==>b==>b", response.getSlot().getExecuteStepStr());
     }
 
     //单个组件重试配置测试
@@ -45,7 +45,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     public void testRetry2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().printStep());
+        Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().getExecuteStepStr());
     }
 
     //单个组件指定异常，但抛出的并不是指定异常的场景测试
@@ -60,6 +60,6 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     public void testRetry4() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getSlot().printStep());
+        Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getSlot().getExecuteStepStr());
     }
 }

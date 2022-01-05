@@ -41,7 +41,7 @@ public class AsyncNodeSpringbootTest extends BaseTest {
     public void testAsyncFlow1() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a base request");
         Assert.assertTrue(response.isSuccess());
-        System.out.println(response.getSlot().printStep());
+        System.out.println(response.getSlot().getExecuteStepStr());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class AsyncNodeSpringbootTest extends BaseTest {
         Assert.assertTrue(ListUtil.toList("b==>j==>g==>f==>h","b==>j==>g==>h==>f",
                 "b==>j==>h==>g==>f","b==>j==>h==>f==>g",
                 "b==>j==>f==>h==>g","b==>j==>f==>g==>h"
-                ).contains(response.getSlot().printStep()));
+                ).contains(response.getSlot().getExecuteStepStr()));
     }
 
     //相同group的并行组，会合并，并且errorResume根据第一个when来，这里第一个when配置了不抛错

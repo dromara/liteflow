@@ -44,7 +44,9 @@ public interface Slot {
 
 	void addStep(CmpStep step);
 
-	String printStep();
+	String getExecuteStepStr();
+
+	void printStep();
 
 	void generateRequestId();
 

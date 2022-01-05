@@ -67,7 +67,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testIsEnd() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", 10);
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("d",response.getSlot().printStep());
+        Assert.assertEquals("d",response.getSlot().getExecuteStepStr());
     }
 
     //setIsEnd方法的功能点测试
@@ -75,7 +75,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testSetIsEnd1() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain5", 10);
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("e",response.getSlot().printStep());
+        Assert.assertEquals("e",response.getSlot().getExecuteStepStr());
     }
 
     //条件组件的功能点测试
@@ -90,7 +90,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testSetIsEnd2() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain7", 10);
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("g",response.getSlot().printStep());
+        Assert.assertEquals("g",response.getSlot().getExecuteStepStr());
     }
 
 }

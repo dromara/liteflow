@@ -54,10 +54,10 @@ public class LiteflowConfigNoSpringTest extends BaseTest {
         executor.setLiteflowConfig(config);
         executor.init();
         LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c", response0.getSlot().getExecuteStepStr());
         
         LiteflowResponse<DefaultSlot> response1 = executor.execute2Resp("chain3", "arg");
-        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().printStep());
+        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().getExecuteStepStr());
         
     }
     
@@ -75,9 +75,9 @@ public class LiteflowConfigNoSpringTest extends BaseTest {
         executor.setLiteflowConfig(config);
         executor.init();
         LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c", response0.getSlot().getExecuteStepStr());
         LiteflowResponse<DefaultSlot> response1 = executor.execute2Resp("chain3", "arg");
-        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().printStep());
+        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().getExecuteStepStr());
     }
     
     /**
@@ -94,8 +94,8 @@ public class LiteflowConfigNoSpringTest extends BaseTest {
         executor.setLiteflowConfig(config);
         executor.init();
         LiteflowResponse<DefaultSlot> response0 = executor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response0.getSlot().printStep());
+        Assert.assertEquals("a==>b==>c", response0.getSlot().getExecuteStepStr());
         LiteflowResponse<DefaultSlot> response = executor.execute2Resp("chain3", "arg");
-        Assert.assertEquals("a==>c==>f==>g", response.getSlot().printStep());
+        Assert.assertEquals("a==>c==>f==>g", response.getSlot().getExecuteStepStr());
     }
 }

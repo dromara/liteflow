@@ -39,7 +39,7 @@ public class ImplicitSubFlowTest extends BaseTest {
     public void testImplicitSubFlow() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("f==>g==>h==>m", response.getSlot().printStep());
+        Assert.assertEquals("f==>g==>h==>m", response.getSlot().getExecuteStepStr());
 
         //  传递了slotIndex，则set的size==1
         Assert.assertEquals(1, RUN_TIME_SLOT.size());
