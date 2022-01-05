@@ -144,7 +144,7 @@ public abstract class XmlFlowParser extends FlowParser {
                 group = LocalDefaultFlowConstant.DEFAULT;
             }
             if (StrUtil.isBlank(errorResume)) {
-                errorResume = Boolean.TRUE.toString();
+                errorResume = Boolean.FALSE.toString();
             }
             if (StrUtil.isBlank(any)){
                 any = Boolean.FALSE.toString();
@@ -174,6 +174,9 @@ public abstract class XmlFlowParser extends FlowParser {
                             } else if (hasChain(documentList, realItem.getId())) {
                                 Chain chain = FlowBus.getChain(realItem.getId());
                                 node.setCondNode(chain.getChainName(), chain);
+                            } else{
+                                String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
+                                throw new ExecutableItemNotFoundException(errorMsg);
                             }
                         }
                     }
@@ -185,7 +188,7 @@ public abstract class XmlFlowParser extends FlowParser {
                     throw new ExecutableItemNotFoundException(errorMsg);
                 }
             }
-            condition.setErrorResume(errorResume.equals(Boolean.TRUE.toString()));
+            condition.setErrorResume(Boolean.parseBoolean(errorResume));
             condition.setGroup(group);
             condition.setAny(any.equals(Boolean.TRUE.toString()));
             condition.setConditionType(condE.getName());

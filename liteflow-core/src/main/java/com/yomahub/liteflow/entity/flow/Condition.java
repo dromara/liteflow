@@ -22,8 +22,8 @@ public class Condition {
 
 	private List<Executable> nodeList;
 
-	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认true继续执行
-	private boolean errorResume = true;
+	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
+	private boolean errorResume = false;
 
 	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
 	private String group = LocalDefaultFlowConstant.DEFAULT;

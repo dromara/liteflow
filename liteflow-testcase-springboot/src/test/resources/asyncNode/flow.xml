@@ -11,7 +11,17 @@
     </chain>
 
     <chain name="chain3">
-        <when value="f,g,h"/>
+        <when value="g,f,h"/>
+    </chain>
+
+    <chain name="chain3-1">
+        <when value="f,g,i" group="1"/>
+        <when value="h" group="2"/>
+    </chain>
+
+    <chain name="chain3-2">
+        <when value="f,g,i" errorResume="true" group="1"/>
+        <when value="h" group="2"/>
     </chain>
 
     <chain name="chain4">

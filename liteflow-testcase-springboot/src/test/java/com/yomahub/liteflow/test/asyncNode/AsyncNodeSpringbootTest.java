@@ -44,6 +44,7 @@ public class AsyncNodeSpringbootTest extends BaseTest {
         System.out.println(response.getSlot().getExecuteStepStr());
     }
 
+    //这个和test1有点类似，只不过进一步验证了步骤
     @Test
     public void testAsyncFlow2() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "it's a base request");
@@ -51,6 +52,21 @@ public class AsyncNodeSpringbootTest extends BaseTest {
                 "b==>j==>h==>g==>f","b==>j==>h==>f==>g",
                 "b==>j==>f==>h==>g","b==>j==>f==>g==>h"
                 ).contains(response.getSlot().getExecuteStepStr()));
+    }
+
+    //测试errorResume,默认的errorResume为false，这里测试默认的
+    @Test
+    public void testAsyncFlow3_1() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3-1", "it's a base request");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals(response.getSlot().getException().getClass(), TestException.class);
+    }
+
+    //测试errorResume,默认的errorResume为false，这里设置为true
+    @Test
+    public void testAsyncFlow3_2() {
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3-2", "it's a base request");
+        Assert.assertTrue(response.isSuccess());
     }
 
     //相同group的并行组，会合并，并且errorResume根据第一个when来，这里第一个when配置了不抛错
