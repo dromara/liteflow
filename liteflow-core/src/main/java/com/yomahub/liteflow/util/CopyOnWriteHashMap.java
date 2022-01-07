@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,114 +58,129 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author pavel.bucek@oracle.com
  */
 public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
-    private volatile Map<K,V> core;
+    volatile Map<K, V> view;
 
-    volatile Map<K,V> view;
-
-    private final AtomicBoolean requiresCopyOnWrite;
-
-    public CopyOnWriteHashMap() {
-        this.core = new HashMap<K, V>();
-        this.requiresCopyOnWrite = new AtomicBoolean(false);
+    private Map<K, V> duplicate(Map<K, V> original) {
+        Map<K, V> result = new HashMap();
+        // SUBTLETY: note that original.entrySet() grabs the entire contents of the original Map in a
+        // single call. This means that if the original map is Thread-safe or another CopyOnWriteHashMap,
+        // we can safely iterate over the list of entries.
+        for (Map.Entry<K, V> entry : original.entrySet()) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
-    private CopyOnWriteHashMap(CopyOnWriteHashMap<K,V> that) {
-        this.core = that.core;
-        this.requiresCopyOnWrite = new AtomicBoolean(true);
+    public CopyOnWriteHashMap(Map<K, V> that) {
+        this.view = duplicate(that);
+    }
+
+    public CopyOnWriteHashMap() {
+        this(new HashMap<K, V>());
     }
 
     @Override
-    public CopyOnWriteHashMap<K,V> clone() {
-        try {
-            return new CopyOnWriteHashMap(this);
-        } finally {
-            requiresCopyOnWrite.set(true);
-        }
+    public CopyOnWriteHashMap<K, V> clone() {
+        return new CopyOnWriteHashMap(view);
     }
 
-    private void copy() {
-        if (requiresCopyOnWrite.compareAndSet(true, false)) {
-            core = new HashMap<K, V>(core);
-            view = null;
-        }
-    }
+    /* **********************
+     * READ-ONLY OPERATIONS
+     * **********************/
 
     @Override
     public int size() {
-        return core.size();
+        return view.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return core.isEmpty();
+        return view.isEmpty();
     }
 
     @Override
     public boolean containsKey(Object key) {
-        return core.containsKey(key);
+        return view.containsKey(key);
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return core.containsValue(value);
+        return view.containsValue(value);
     }
 
     @Override
     public V get(Object key) {
-        return core.get(key);
-    }
-
-    @Override
-    public V put(K key, V value) {
-        copy();
-        return core.put(key, value);
-    }
-
-    @Override
-    public V remove(Object key) {
-        copy();
-        return core.remove(key);
-    }
-
-    @Override
-    public void putAll(Map<? extends K, ? extends V> t) {
-        copy();
-        core.putAll(t);
-    }
-
-    @Override
-    public void clear() {
-        core = new HashMap<K, V>();
-        view = null;
-        copy();
+        return view.get(key);
     }
 
     @Override
     public Set<K> keySet() {
-        return getView().keySet();
+        return view.keySet();
     }
 
     @Override
     public Collection<V> values() {
-        return getView().values();
+        return view.values();
     }
 
     @Override
-    public Set<Entry<K,V>> entrySet() {
-        return getView().entrySet();
+    public Set<Map.Entry<K, V>> entrySet() {
+        return view.entrySet();
     }
 
     @Override
     public String toString() {
-        return core.toString();
+        return view.toString();
     }
 
-    private Map<K, V> getView() {
-        Map<K, V> result = view; // volatile read
-        if (result == null) {
-            result = Collections.unmodifiableMap(core);
-            view = result; // volatile write
+    /* **********************
+     * UPDATING OPERATIONS
+     *
+     * These operations all follow a common pattern:
+     *
+     * 1. Create a copy of the existing view.
+     * 2. Update the copy.
+     * 3. Perform a volatile write to replace the existing view.
+     *
+     * Note that if you are not concerned about lost updates, you could dispense with the synchronization
+     * entirely.
+     * **********************/
+
+    @Override
+    public V put(K key, V value) {
+        synchronized (this) {
+            Map<K, V> newCore = duplicate(view);
+            V result = newCore.put(key, value);
+            view = newCore; // volatile write
+            return result;
         }
-        return result;
+    }
+
+    @Override
+    public V remove(Object key) {
+        synchronized (this) {
+            Map<K, V> newCore = duplicate(view);
+            V result = newCore.remove(key);
+            view = newCore; // volatile write
+            return result;
+
+        }
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> t) {
+        synchronized (this) {
+            Map<K, V> newCore = duplicate(view);
+            newCore.putAll(t);
+            view = newCore; // volatile write
+        }
+    }
+
+    @Override
+    public void clear() {
+        synchronized (this) {
+            Map<K, V> newCore = new HashMap<K, V>();
+            view = newCore; // volatile write
+        }
     }
 }

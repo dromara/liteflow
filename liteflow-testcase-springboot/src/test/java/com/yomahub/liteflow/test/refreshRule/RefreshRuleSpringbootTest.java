@@ -47,7 +47,7 @@ public class RefreshRuleSpringbootTest extends BaseTest {
     public void testRefresh2() throws Exception{
         new Thread(() -> {
             try {
-                Thread.sleep(1000L);
+                Thread.sleep(3000L);
                 String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.xml");
                 FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
             } catch (Exception e) {
