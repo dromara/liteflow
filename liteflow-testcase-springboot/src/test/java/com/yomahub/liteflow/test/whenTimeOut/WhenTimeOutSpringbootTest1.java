@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.whenTimeOut;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.exception.WhenTimeoutException;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,23 +24,22 @@ import javax.annotation.Resource;
  * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/whenTimeOut/application.properties")
-@SpringBootTest(classes = WhenTimeOutSpringbootTest.class)
+@TestPropertySource(value = "classpath:/whenTimeOut/application1.properties")
+@SpringBootTest(classes = WhenTimeOutSpringbootTest1.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.whenTimeOut.cmp"})
-public class WhenTimeOutSpringbootTest extends BaseTest {
+public class WhenTimeOutSpringbootTest1 extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Resource
     private FlowExecutor flowExecutor;
 
+    //其中b和c在when情况下超时，所以抛出了WhenTimeoutException这个错
     @Test
     public void testWhenTimeOut() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
-        if (!response.isSuccess()){
-            log.error(response.getMessage(),response.getCause());
-        }
-        Assert.assertTrue(response.isSuccess());
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
     }
 }
