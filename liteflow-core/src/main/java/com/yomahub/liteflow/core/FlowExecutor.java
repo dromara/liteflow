@@ -368,7 +368,7 @@ public class FlowExecutor {
             chain.execute(slotIndex);
         } catch (Exception e) {
             if (ObjectUtil.isNotNull(chain)){
-                LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
+                LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex, e);
             }
             slot.setException(e);
         } finally {

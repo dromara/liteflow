@@ -41,6 +41,8 @@ public class Node implements Executable,Cloneable{
 
 	private NodeTypeEnum type;
 
+	private String script;
+
 	private NodeComponent instance;
 
 	private final Map<String, Executable> condNodeMap = new HashMap<>();
@@ -193,5 +195,13 @@ public class Node implements Executable,Cloneable{
 
 	public void setTag(String tag) {
 		this.tag = tag;
+	}
+
+	public String getScript() {
+		return script;
+	}
+
+	public void setScript(String script) {
+		this.script = script;
 	}
 }

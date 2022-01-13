@@ -197,7 +197,7 @@ public abstract class XmlFlowParser extends FlowParser {
             //这里把condition组装进conditionList，根据参数有些condition要和conditionList里面的某些进行合并操作
             super.buildConditions(conditionList, condition);
         }
-        FlowBus.addChain(chainName, new Chain(chainName, conditionList));
+        FlowBus.addChain(new Chain(chainName, conditionList));
     }
 
     //判断在这个FlowBus元数据里是否含有这个chain

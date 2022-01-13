@@ -42,6 +42,10 @@ public class Chain implements Executable {
 
     private List<Condition> conditionList;
 
+    public Chain(){
+
+    }
+
     public Chain(String chainName, List<Condition> conditionList) {
         this.chainName = chainName;
         this.conditionList = conditionList;

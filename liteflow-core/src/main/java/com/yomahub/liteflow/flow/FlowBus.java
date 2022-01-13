@@ -55,15 +55,12 @@ public class FlowBus {
     private FlowBus() {
     }
 
-    public static Chain getChain(String id) throws Exception {
-        if (MapUtil.isEmpty(chainMap)) {
-            throw new Exception("please config the rule first");
-        }
+    public static Chain getChain(String id){
         return chainMap.get(id);
     }
 
-    public static void addChain(String name, Chain chain) {
-        chainMap.put(name, chain);
+    public static void addChain(Chain chain) {
+        chainMap.put(chain.getChainName(), chain);
     }
 
     public static boolean containChain(String chainId) {
@@ -116,8 +113,12 @@ public class FlowBus {
             //进行初始化
             cmpInstance = ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, nodeId);
 
+            //初始化Node
+            Node node = new Node(cmpInstance);
+
             //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
             if (StrUtil.isNotBlank(script)){
+                node.setScript(script);
                 if (type.equals(NodeTypeEnum.SCRIPT)){
                     ((ScriptComponent)cmpInstance).loadScript(script);
                 }else if(type.equals(NodeTypeEnum.COND_SCRIPT)){
@@ -125,7 +126,7 @@ public class FlowBus {
                 }
             }
 
-            nodeMap.put(nodeId, new Node(cmpInstance));
+            nodeMap.put(nodeId, node);
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", cmpClazz.getName());
             LOG.error(error, e);
