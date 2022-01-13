@@ -368,7 +368,8 @@ public class FlowExecutor {
             chain.execute(slotIndex);
         } catch (Exception e) {
             if (ObjectUtil.isNotNull(chain)){
-                LOG.error("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex, e);
+                String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
+                LOG.error(errMsg, e);
             }
             slot.setException(e);
         } finally {
@@ -377,7 +378,8 @@ public class FlowExecutor {
                     chain.executeFinally(slotIndex);
                 }
             }catch (Exception e){
-                LOG.error("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
+                String errMsg = StrUtil.format("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
+                LOG.error(errMsg, e);
             }
 
             if (!isInnerChain) {
