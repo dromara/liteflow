@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.entity.flow.parallel;
 
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.exception.WhenTimeoutException;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
+
 /**
  * 并行异步CompletableFuture里的值对象
  * @author Bryan.Zhang
@@ -37,6 +41,11 @@ public class WhenFutureObj {
         result.setSuccess(false);
         result.setTimeout(true);
         result.setExecutorName(executorName);
+        result.setEx(new WhenTimeoutException(
+                StrUtil.format("Timed out when executing the component[{}],when-max-timeout-seconds config is:{}(s)",
+                        executorName,
+                        LiteflowConfigGetter.get().getWhenMaxWaitSeconds()))
+        );
         return result;
     }
 
