@@ -27,43 +27,6 @@ public abstract class FlowParser {
 
     public abstract void parse(List<String> contentList) throws Exception;
 
-    protected void buildConditions(List<Condition> conditionList, Condition condition) {
-        //这里进行合并逻辑
-        //对于then来说，相邻的2个then会合并成一个condition
-        //对于when来说，相同组的when会合并成一个condition，不同组的when还是会拆开
-        if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_PRE.getType())) {
-            conditionList.add(new PreCondition(condition));
-        } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN.getType())) {
-            if (conditionList.size() >= 1 &&
-                    CollectionUtil.getLast(conditionList) instanceof ThenCondition) {
-                CollectionUtil.getLast(conditionList).getNodeList().addAll(condition.getNodeList());
-            } else {
-                conditionList.add(new ThenCondition(condition));
-            }
-        } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_WHEN.getType())) {
-            if (conditionList.size() > 1 &&
-                    CollectionUtil.getLast(conditionList) instanceof WhenCondition &&
-                    CollectionUtil.getLast(conditionList).getGroup().equals(condition.getGroup())) {
-                CollectionUtil.getLast(conditionList).getNodeList().addAll(condition.getNodeList());
-            } else {
-                conditionList.add(new WhenCondition(condition));
-            }
-        } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())) {
-            conditionList.add(new FinallyCondition(condition));
-        }
-
-        //每一次build之后，对conditionList进行排序，pre最前面，finally最后
-        //这里为什么要排序，因为在声明的时候，哪怕有人不把pre放最前，finally放最后，但最终也要确保是正确的顺序
-        CollectionUtil.sort(conditionList, (o1, o2) -> {
-            if (o1.getConditionType().equals(ConditionTypeEnum.TYPE_PRE.getType()) || o2.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())){
-                return -1;
-            } else if (o2.getConditionType().equals(ConditionTypeEnum.TYPE_PRE.getType()) || o1.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())){
-                return 1;
-            }
-            return 0;
-        });
-    }
-
     /**
      * 根据配置的ruleSource查找匹配的资源
      */

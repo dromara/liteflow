@@ -22,11 +22,11 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.5.10
  */
-@RunWith(SpringRunner.class)
+/*@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/deadLoopChain/application.properties")
 @SpringBootTest(classes = DeadLoopChainSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.deadLoopChain.cmp"})
+@ComponentScan({"com.yomahub.liteflow.test.deadLoopChain.cmp"})*/
 public class DeadLoopChainSpringbootTest extends BaseTest {
 
     @Resource
@@ -34,7 +34,10 @@ public class DeadLoopChainSpringbootTest extends BaseTest {
 
     //死循环问题解析时自动发现，抛错
     //为了写测试用例，才配置了liteflow.parse-on-start=false参数，实际上应用不用配置延迟加载参数
-    @Test(expected = CyclicDependencyException.class)
+    //自从2.6.8之后，支持循环依赖，但是用户必须在组件里自己判断退出的条件，否则会报栈溢出
+    //所以这个测试用例暂时不打开
+    //为什么不删除呢？是因为如果用户不自己判断退出的条件。会报出栈溢出。以后希望liteflow自己能抛出相关的错。而不是抛出JDK的异常。所以暂时留着。
+    //@Test(expected = CyclicDependencyException.class)
     public void testDeadLoopChain() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
     }

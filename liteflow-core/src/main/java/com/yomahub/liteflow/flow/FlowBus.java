@@ -18,6 +18,7 @@ import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.ScriptCondComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.flow.Chain;
+import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.SerializationUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,7 +62,11 @@ public class FlowBus {
     }
 
     public static void addChain(Chain chain) {
-        chainMap.put(chain.getChainName(), chain);
+        if (chainMap.containsKey(chain.getChainName()) && CollectionUtil.isEmpty(chain.getConditionList())){
+            chainMap.get(chain.getChainName()).setConditionList(chain.getConditionList());
+        }else{
+            chainMap.put(chain.getChainName(), chain);
+        }
     }
 
     public static boolean containChain(String chainId) {

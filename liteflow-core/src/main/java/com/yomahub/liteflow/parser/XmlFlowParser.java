@@ -5,17 +5,18 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
+import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Executable;
 import com.yomahub.liteflow.entity.flow.Node;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.CyclicDependencyException;
-import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
-import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
-import com.yomahub.liteflow.exception.ParseException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import org.dom4j.Document;
@@ -28,10 +29,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 /**
  * xml形式的解析器
- *
  * @author Bryan.Zhang
  */
 public abstract class XmlFlowParser extends FlowParser {
@@ -63,6 +64,18 @@ public abstract class XmlFlowParser extends FlowParser {
             }
         }
 
+        //先在元数据里放上chain
+        //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
+        //这样就不用去像之前的版本那样回归调用
+        //同时也解决了不能循环依赖的问题
+        documentList.forEach(document -> {
+            // 解析chain节点
+            List<Element> chainList = document.getRootElement().elements("chain");
+
+            //先在元数据里放上chain
+            chainList.forEach(e -> FlowBus.addChain(new Chain(e.attributeValue("name"))));
+        });
+
         for (Document document : documentList) {
             Element rootElement = document.getRootElement();
             Element nodesElement = rootElement.element("nodes");
@@ -75,152 +88,84 @@ public abstract class XmlFlowParser extends FlowParser {
                     name = e.attributeValue("name");
                     clazz = e.attributeValue("class");
                     type = e.attributeValue("type");
+                    script = e.getTextTrim();
                     file = e.attributeValue("file");
 
                     //初始化type
                     if (StrUtil.isBlank(type)){
                         type = NodeTypeEnum.COMMON.getCode();
                     }
+
+                    //检查nodeType是不是规定的类型
                     NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
                     if (ObjectUtil.isNull(nodeTypeEnum)){
                         throw new NodeTypeNotSupportException(StrUtil.format("type [{}] is not support", type));
                     }
 
-                    //这里区分是普通java节点还是脚本节点
-                    //如果是脚本节点，又区分是普通脚本节点，还是条件脚本节点
-                    if (nodeTypeEnum.equals(NodeTypeEnum.COMMON) && StrUtil.isNotBlank(clazz)){
-                        FlowBus.addCommonNode(id, name, clazz);
-                    }else if(nodeTypeEnum.equals(NodeTypeEnum.SCRIPT) || nodeTypeEnum.equals(NodeTypeEnum.COND_SCRIPT)){
-                        //如果file字段不为空，则优先从file里面读取脚本文本
-                        if (StrUtil.isNotBlank(file)){
-                            script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", file));
-                        }else{
-                            script = e.getTextTrim();
-                        }
-
-                        //根据节点类型把脚本添加到元数据里
-                        if (nodeTypeEnum.equals(NodeTypeEnum.SCRIPT)){
-                            FlowBus.addCommonScriptNode(id, name, script);
-                        }else {
-                            FlowBus.addCondScriptNode(id, name, script);
-                        }
-                    }
+                    //进行node的build过程
+                    LiteFlowNodeBuilder.createNode().setId(id)
+                            .setName(name)
+                            .setClazz(clazz)
+                            .setType(nodeTypeEnum)
+                            .setScript(script)
+                            .setFile(file)
+                            .build();
                 }
             }
 
-            // 解析chain节点
+            //解析每一个chain
             List<Element> chainList = rootElement.elements("chain");
-            for (Element e : chainList) {
-                parseOneChain(e, documentList);
-            }
+            chainList.forEach(this::parseOneChain);
         }
     }
 
     /**
      * 解析一个chain的过程
      */
-    private void parseOneChain(Element e, List<Document> documentList) throws Exception {
-        String condArrayStr;
-        String[] condArray;
+    private void parseOneChain(Element e) {
+        String condValueStr;
         String group;
         String errorResume;
         String any;
-        Condition condition;
-        Element condE;
-        List<Executable> chainNodeList;
-        List<Condition> conditionList = new ArrayList<>();
+        ConditionTypeEnum conditionType;
 
+        //构建chainBuilder
         String chainName = e.attributeValue("name");
+        LiteFlowChainBuilder chainBuilder = LiteFlowChainBuilder.createChain().setChainName(chainName);
+
         for (Iterator<Element> it = e.elementIterator(); it.hasNext(); ) {
-            condE = it.next();
-            condArrayStr = condE.attributeValue("value");
+            Element condE = it.next();
+            conditionType = ConditionTypeEnum.getEnumByCode(condE.getName());
+            condValueStr = condE.attributeValue("value");
             errorResume = condE.attributeValue("errorResume");
             group = condE.attributeValue("group");
             any = condE.attributeValue("any");
-            if (StrUtil.isBlank(condArrayStr)) {
-                continue;
-            }
-            if (StrUtil.isBlank(group)) {
-                group = LocalDefaultFlowConstant.DEFAULT;
-            }
-            if (StrUtil.isBlank(errorResume)) {
-                errorResume = Boolean.FALSE.toString();
-            }
-            if (StrUtil.isBlank(any)){
-                any = Boolean.FALSE.toString();
-            }
-            condition = new Condition();
-            chainNodeList = new ArrayList<>();
-            condArray = condArrayStr.split(",");
-            RegexEntity regexEntity;
-            String itemExpression;
-            RegexNodeEntity item;
-            //这里解析的规则，优先按照node去解析，再按照chain去解析
-            for (String s : condArray) {
-                itemExpression = s.trim();
-                regexEntity = RegexEntity.parse(itemExpression);
-                item = regexEntity.getItem();
-                if (FlowBus.containNode(item.getId())) {
-                    Node node = FlowBus.copyNode(item.getId());
-                    node.setTag(regexEntity.getItem().getTag());
-                    chainNodeList.add(node);
-                    //这里判断是不是条件节点，条件节点会含有realItem，也就是括号里的node
-                    if (regexEntity.getRealItemArray() != null) {
-                        for (RegexNodeEntity realItem : regexEntity.getRealItemArray()) {
-                            if (FlowBus.containNode(realItem.getId())) {
-                                Node condNode = FlowBus.copyNode(realItem.getId());
-                                condNode.setTag(realItem.getTag());
-                                node.setCondNode(condNode.getId(), condNode);
-                            } else if (hasChain(documentList, realItem.getId())) {
-                                Chain chain = FlowBus.getChain(realItem.getId());
-                                node.setCondNode(chain.getChainName(), chain);
-                            } else{
-                                String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
-                                throw new ExecutableItemNotFoundException(errorMsg);
-                            }
-                        }
-                    }
-                } else if (hasChain(documentList, item.getId())) {
-                    Chain chain = FlowBus.getChain(item.getId());
-                    chainNodeList.add(chain);
-                } else {
-                    String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
-                    throw new ExecutableItemNotFoundException(errorMsg);
-                }
-            }
-            condition.setErrorResume(Boolean.parseBoolean(errorResume));
-            condition.setGroup(group);
-            condition.setAny(any.equals(Boolean.TRUE.toString()));
-            condition.setConditionType(condE.getName());
-            condition.setNodeList(chainNodeList);
 
-            //这里把condition组装进conditionList，根据参数有些condition要和conditionList里面的某些进行合并操作
-            super.buildConditions(conditionList, condition);
-        }
-        FlowBus.addChain(new Chain(chainName, conditionList));
-    }
-
-    //判断在这个FlowBus元数据里是否含有这个chain
-    //因为chain和node都是可执行器，在一个规则文件上，有可能是node，有可能是chain
-    @SuppressWarnings("unchecked")
-    private boolean hasChain(List<Document> documentList, String chainName) throws Exception {
-        try{
-            for (Document document : documentList) {
-                List<Element> chainList = document.getRootElement().elements("chain");
-                for (Element ce : chainList) {
-                    String ceName = ce.attributeValue("name");
-                    if (ceName.equals(chainName)) {
-                        if (!FlowBus.containChain(chainName)) {
-                            parseOneChain(ce, documentList);
-                        }
-                        return true;
-                    }
-                }
+            if (ObjectUtil.isNull(conditionType)){
+                throw new NotSupportConditionException("ConditionType is not supported");
             }
-            return false;
-        }catch (StackOverflowError e){
-            LOG.error("a cyclic dependency occurs in chain", e);
-            throw new CyclicDependencyException("a cyclic dependency occurs in chain");
+
+            if (StrUtil.isBlank(condValueStr)) {
+                throw new EmptyConditionValueException("Condition value cannot be empty");
+            }
+
+            //如果是when类型的话，有特殊化参数要设置，只针对于when的
+            if (conditionType.equals(ConditionTypeEnum.TYPE_WHEN)){
+                chainBuilder.setCondition(
+                        LiteFlowConditionBuilder.createWhenCondition()
+                                .setErrorResume(errorResume)
+                                .setGroup(group)
+                                .setAny(any)
+                                .setValue(condValueStr)
+                                .build()
+                ).build();
+            }else{
+                chainBuilder.setCondition(
+                        LiteFlowConditionBuilder.createCondition(conditionType)
+                                .setValue(condValueStr)
+                                .build()
+                ).build();
+            }
         }
     }
 }

@@ -37,13 +37,15 @@ public class Node implements Executable,Cloneable{
 
 	private String name;
 
-	private String tag;
+	private String clazz;
 
 	private NodeTypeEnum type;
 
 	private String script;
 
 	private NodeComponent instance;
+
+	private String tag;
 
 	private final Map<String, Executable> condNodeMap = new HashMap<>();
 
@@ -56,6 +58,7 @@ public class Node implements Executable,Cloneable{
 		this.name = instance.getName();
 		this.instance = instance;
 		this.type = instance.getType();
+		this.clazz = instance.getClass().getName();
 	}
 
 	public String getId() {
@@ -203,5 +206,13 @@ public class Node implements Executable,Cloneable{
 
 	public void setScript(String script) {
 		this.script = script;
+	}
+
+	public String getClazz() {
+		return clazz;
+	}
+
+	public void setClazz(String clazz) {
+		this.clazz = clazz;
 	}
 }

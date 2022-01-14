@@ -40,11 +40,13 @@ public class Chain implements Executable {
 
     private String chainName;
 
-    private List<Condition> conditionList;
+    private List<Condition> conditionList = new ArrayList<>();
 
-    public Chain(){
-
+    public Chain(String chainName){
+        this.chainName = chainName;
     }
+
+    public Chain(){}
 
     public Chain(String chainName, List<Condition> conditionList) {
         this.chainName = chainName;
@@ -94,7 +96,7 @@ public class Chain implements Executable {
     public void executeFinally(Integer slotIndex) throws Exception {
         //先把finally的节点过滤出来
         List<Condition> finallyConditionList = conditionList.stream().filter(condition ->
-                condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY.getType())).collect(Collectors.toList());
+                condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY)).collect(Collectors.toList());
         for (Condition finallyCondition : finallyConditionList){
             for(Executable executableItem : finallyCondition.getNodeList()){
                 executableItem.execute(slotIndex);

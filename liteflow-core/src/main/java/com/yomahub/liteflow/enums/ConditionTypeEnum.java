@@ -29,4 +29,13 @@ public enum ConditionTypeEnum {
     public void setName(String name) {
         this.name = name;
     }
+
+    public static ConditionTypeEnum getEnumByCode(String code) {
+        for (ConditionTypeEnum e : ConditionTypeEnum.values()) {
+            if (e.getType().equals(code)) {
+                return e;
+            }
+        }
+        return null;
+    }
 }

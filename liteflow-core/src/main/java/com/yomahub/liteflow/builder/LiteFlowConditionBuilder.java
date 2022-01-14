@@ -22,6 +22,10 @@ public class LiteFlowConditionBuilder {
 
     protected Condition condition;
 
+    public static LiteFlowConditionBuilder createCondition(ConditionTypeEnum conditionType){
+        return new LiteFlowConditionBuilder(conditionType);
+    }
+
     public static LiteFlowConditionBuilder createThenCondition(){
         return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_THEN);
     }
@@ -40,7 +44,7 @@ public class LiteFlowConditionBuilder {
 
     public LiteFlowConditionBuilder(ConditionTypeEnum conditionType){
         this.condition = new Condition();
-        this.condition.setConditionType(conditionType.getType());
+        this.condition.setConditionType(conditionType);
         this.condition.setNodeList(new ArrayList<>());
     }
 

@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.entity.flow;
 
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ import java.util.List;
 public class Condition {
 
 	//condition 类型 参数:ConditionTypeEnum 包含:then when
-	private String conditionType;
+	private ConditionTypeEnum conditionType;
 
 	private List<Executable> nodeList;
 
@@ -61,11 +62,11 @@ public class Condition {
 		this.group = group;
 	}
 
-	public String getConditionType() {
+	public ConditionTypeEnum getConditionType() {
 		return conditionType;
 	}
 
-	public void setConditionType(String conditionType) {
+	public void setConditionType(ConditionTypeEnum conditionType) {
 		this.conditionType = conditionType;
 	}
 
