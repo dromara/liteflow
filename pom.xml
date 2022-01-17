@@ -43,21 +43,18 @@
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.0.5.RELEASE</springboot.version>
 		<spring.version>5.0.9.RELEASE</spring.version>
-		<org.slf4j.version>1.7.21</org.slf4j.version>
-		<log4j.version>1.2.17</log4j.version>
-		<log4j-slf4j.version>1.7.5</log4j-slf4j.version>
-		<slf4j.version>1.7.13</slf4j.version>
-		<fastjson.version>1.2.70</fastjson.version>
-		<snakeyaml.version>1.19</snakeyaml.version>
+		<org.slf4j.version>1.7.32</org.slf4j.version>
+		<fastjson.version>1.2.79</fastjson.version>
+		<snakeyaml.version>1.29</snakeyaml.version>
 		<dom4j.version>1.6.1</dom4j.version>
-		<curator.version>2.12.0</curator.version>
+		<curator.version>5.1.0</curator.version>
 		<junit.version>4.12</junit.version>
-		<hutool-core.version>5.7.16</hutool-core.version>
-		<transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
+		<hutool-core.version>5.7.19</hutool-core.version>
+		<transmittable-thread-local.version>2.12.3</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
-		<qlexpress.version>3.2.0</qlexpress.version>
-		<groovy.version>3.0.7</groovy.version>
+		<qlexpress.version>3.2.7</qlexpress.version>
+		<groovy.version>3.0.8</groovy.version>
     </properties>
 
     <dependencyManagement>
@@ -66,26 +63,36 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-beans</artifactId>
 				<version>${spring.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-context</artifactId>
 				<version>${spring.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-aop</artifactId>
 				<version>${spring.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-expression</artifactId>
 				<version>${spring.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
 				<version>${spring.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
