@@ -2,17 +2,10 @@
 <flow>
     <chain name="chain1">
         <then value="a"/>
-        <!-- 100个b组件并发 -->
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
-        <when value="b,b,b,b,b,b,b,b,b,b"/>
         <then value="c"/>
+    </chain>
+    <chain name="chain2">
+        <pre value="d"/>
+        <when value="b,b,b,b,b,b,b,b,b,b"/>
     </chain>
 </flow>
