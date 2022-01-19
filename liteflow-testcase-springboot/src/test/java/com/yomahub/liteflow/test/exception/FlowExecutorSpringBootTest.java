@@ -45,8 +45,7 @@ public class FlowExecutorSpringBootTest extends BaseTest {
 
     @Test(expected = ConfigErrorException.class)
     public void testConfigErrorException() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        config.setRuleSource("");
+        flowExecutor.setLiteflowConfig(null);
         flowExecutor.init();
     }
 
