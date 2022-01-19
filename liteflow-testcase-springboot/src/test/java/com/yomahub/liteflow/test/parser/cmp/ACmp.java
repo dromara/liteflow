@@ -17,10 +17,6 @@ public class ACmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		String str = this.getSlot().getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new FlowSystemException("chain execute execption");
-		}
 		System.out.println("ACmp executed!");
 	}
 }
