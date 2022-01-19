@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境下pre节点和finally节点的测试
+ * springboot环境最普通的例子测试
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -30,9 +30,8 @@ public class BaseSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试普通的pre和finally节点
     @Test
-    public void testPreAndFinally1() throws Exception{
+    public void testBase() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
