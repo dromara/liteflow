@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.swing.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -25,8 +26,9 @@ import java.util.concurrent.ExecutorService;
 @Import(SpringAware.class)
 public class LiteflowExecutorAutoConfiguration {
 
+    //这里参数加上这2个为了先行注入
     @Bean("whenExecutors")
-    public ExecutorService executorService(LiteflowConfig liteflowConfig) {
+    public ExecutorService executorService(SpringAware springAware, LiteflowConfig liteflowConfig) {
         return ExecutorHelper.loadInstance().buildExecutor();
     }
 
