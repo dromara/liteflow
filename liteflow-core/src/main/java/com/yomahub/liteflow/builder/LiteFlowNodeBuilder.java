@@ -20,8 +20,29 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder();
     }
 
+    public static LiteFlowNodeBuilder createCommonNode(){
+        return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
+    }
+
+    public static LiteFlowNodeBuilder createCommonCondNode(){
+        return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
+    }
+
+    public static LiteFlowNodeBuilder createScriptNode(){
+        return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
+    }
+
+    public static LiteFlowNodeBuilder createScriptCondNode(){
+        return new LiteFlowNodeBuilder(NodeTypeEnum.COND_SCRIPT);
+    }
+
     public LiteFlowNodeBuilder() {
         this.node = new Node();
+    }
+
+    public LiteFlowNodeBuilder(NodeTypeEnum type) {
+        this.node = new Node();
+        this.node.setType(type);
     }
 
     public LiteFlowNodeBuilder setId(String nodeId) {
