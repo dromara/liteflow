@@ -8,6 +8,8 @@ import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.test.customThreadPool.CustomThreadExecutor1;
+import com.yomahub.liteflow.test.customThreadPool.CustomThreadExecutor2;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,13 +73,19 @@ public class BuilderSpringbootTest extends BaseTest {
 
 
         LiteFlowChainBuilder.createChain().setChainName("chain2").setCondition(
-                LiteFlowConditionBuilder.createThenCondition().setValue("c,d").build()
+                LiteFlowConditionBuilder.createWhenCondition().setValue("c,d").build()
         ).build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
-                LiteFlowConditionBuilder.createThenCondition().setValue("a,b").build()
+                LiteFlowConditionBuilder
+                        .createWhenCondition()
+                        .setAny(true)
+                        .setThreadExecutorClass(CustomThreadExecutor2.class.getName())
+                        .setValue("a,b").build()
         ).setCondition(
-                LiteFlowConditionBuilder.createWhenCondition().setValue("e(f|g|chain2)").build()
+                LiteFlowConditionBuilder.createWhenCondition()
+                        .setThreadExecutorClass(CustomThreadExecutor1.class.getName())
+                        .setValue("e(f|g|chain2)").build()
         ).build();
 
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");

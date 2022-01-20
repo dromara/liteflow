@@ -19,6 +19,7 @@ public class WhenCondition extends Condition{
 		super.setGroup(condition.getGroup());
 		super.setErrorResume(condition.isErrorResume());
 		super.setAny(condition.isAny());
+		super.setThreadExecutorClass(condition.getThreadExecutorClass());
 	}
 
 }
