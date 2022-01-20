@@ -31,7 +31,7 @@ public class MonitorSpringbootTest extends BaseTest {
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testBase() throws Exception{
+    public void testMonitor() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
 
