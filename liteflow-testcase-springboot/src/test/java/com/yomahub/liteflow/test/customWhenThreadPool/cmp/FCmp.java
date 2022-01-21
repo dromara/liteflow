@@ -10,13 +10,13 @@ package com.yomahub.liteflow.test.customWhenThreadPool.cmp;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-@Component("e")
-public class ECmp extends NodeComponent {
+@Component("f")
+public class FCmp extends NodeComponent {
 
 	@Override
 	public void process() {
 		this.getSlot().setData("threadName", Thread.currentThread().getName());
-		System.out.println("ECmp executed!");
+		System.out.println("FCmp executed!");
 	}
 
 }

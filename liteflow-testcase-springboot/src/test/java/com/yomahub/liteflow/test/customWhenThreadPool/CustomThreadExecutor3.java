@@ -1,15 +1,13 @@
 package com.yomahub.liteflow.test.customWhenThreadPool;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.thread.ExecutorBuilder;
 import com.yomahub.liteflow.util.SpringAware;
 
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ExecutorService;
 
-public class CustomThreadExecutor2 implements ExecutorBuilder {
+public class CustomThreadExecutor3 implements ExecutorBuilder {
     @Override
     public ExecutorService buildExecutor() {
         LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
@@ -21,6 +19,6 @@ public class CustomThreadExecutor2 implements ExecutorBuilder {
                 liteflowConfig.getWhenMaxWorkers(),
                 liteflowConfig.getWhenMaxWorkers(),
                 liteflowConfig.getWhenQueueLimit(),
-                "customer-when-2-thead-");
+                "customer-when-3-thead-");
     }
 }

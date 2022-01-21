@@ -34,7 +34,12 @@ public class ExecutorHelper {
 
     private ExecutorService executorService;
 
-    private Map<String, ExecutorService> executorServiceMap;
+    /**
+     * 此处使用Map缓存线程池信息
+     * key - 线程池构建者的Class全类名
+     * value - 线程池对象
+     * */
+    private final Map<String, ExecutorService> executorServiceMap;
 
     private ExecutorHelper() {
         executorServiceMap = Maps.newConcurrentMap();
@@ -80,6 +85,7 @@ public class ExecutorHelper {
         }
     }
 
+    /** 构建全局默认线程池 */
     public ExecutorService buildExecutor() {
         if (ObjectUtil.isNull(executorService)) {
             LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
@@ -89,6 +95,15 @@ public class ExecutorHelper {
         return executorService;
     }
 
+    /**
+     * <p>
+     * 构建线程池执行器 - 支持多个when公用一个线程池
+     * </p>
+     * @author sikadai
+     * @date 2022/1/21 23:00
+     * @param threadExecutorClass : 线程池构建者的Class全类名
+     * @return java.util.concurrent.ExecutorService
+     */
     public ExecutorService buildExecutor(String threadExecutorClass) {
         try {
             if (StrUtil.isBlank(threadExecutorClass)) {
@@ -108,6 +123,16 @@ public class ExecutorHelper {
         }
     }
 
+    /**
+     * <p>
+     * 根据线程执行构建者Class类名获取ExecutorBuilder实例
+     * </p>
+     *
+     * @author sikadai
+     * @date 2022/1/21 23:04
+     * @param threadExecutorClass
+     * @return com.yomahub.liteflow.thread.ExecutorBuilder
+     */
     private ExecutorBuilder getExecutorBuilder(String threadExecutorClass) throws Exception {
         return (ExecutorBuilder) Class.forName(threadExecutorClass).newInstance();
     }

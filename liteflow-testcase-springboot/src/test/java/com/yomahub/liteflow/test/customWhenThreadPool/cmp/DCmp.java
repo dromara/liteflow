@@ -15,6 +15,7 @@ public class DCmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		this.getSlot().setData("threadName", Thread.currentThread().getName());
 		System.out.println("DCmp executed!");
 	}
 

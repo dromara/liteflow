@@ -15,6 +15,7 @@ public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		this.getSlot().setData("threadName", Thread.currentThread().getName());
 		System.out.println("CCmp executed!");
 	}
 
