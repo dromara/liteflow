@@ -8,8 +8,6 @@ import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.customThreadPool.CustomThreadExecutor1;
-import com.yomahub.liteflow.test.customThreadPool.CustomThreadExecutor2;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +32,7 @@ public class BuilderSpringbootTest extends BaseTest {
 
     //基于普通组件的builder模式测试
     @Test
-    public void testBuilder() throws Exception{
+    public void testBuilder() throws Exception {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
                 .setType(NodeTypeEnum.COMMON)
@@ -79,12 +77,9 @@ public class BuilderSpringbootTest extends BaseTest {
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
                 LiteFlowConditionBuilder
                         .createWhenCondition()
-                        .setAny(true)
-                        .setThreadExecutorClass(CustomThreadExecutor2.class.getName())
                         .setValue("a,b").build()
         ).setCondition(
                 LiteFlowConditionBuilder.createWhenCondition()
-                        .setThreadExecutorClass(CustomThreadExecutor1.class.getName())
                         .setValue("e(f|g|chain2)").build()
         ).build();
 

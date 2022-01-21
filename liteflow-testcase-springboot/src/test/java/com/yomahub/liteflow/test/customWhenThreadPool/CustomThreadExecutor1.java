@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.customThreadPool;
+package com.yomahub.liteflow.test.customWhenThreadPool;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.ttl.threadpool.TtlExecutors;
@@ -9,7 +9,8 @@ import com.yomahub.liteflow.util.SpringAware;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CustomThreadExecutor2 implements ExecutorBuilder {
+public class CustomThreadExecutor1 implements ExecutorBuilder {
+
     @Override
     public ExecutorService buildExecutor() {
         LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
@@ -27,7 +28,7 @@ public class CustomThreadExecutor2 implements ExecutorBuilder {
                     @Override
                     public Thread newThread(Runnable r) {
                         Thread newThread = Executors.defaultThreadFactory().newThread(r);
-                        newThread.setName("Customer-when-222thead-" + number.getAndIncrement());
+                        newThread.setName("Customer-when-1-thead-" + number.getAndIncrement());
                         newThread.setDaemon(false);
                         return newThread;
                     }
