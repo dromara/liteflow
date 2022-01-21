@@ -2,7 +2,6 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -11,23 +10,18 @@ import com.alibaba.fastjson.parser.Feature;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.flow.*;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.EmptyConditionValueException;
-import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.exception.NotSupportConditionException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
-import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Json格式解析器
@@ -136,6 +130,7 @@ public abstract class JsonFlowParser extends FlowParser {
         String group;
         String errorResume;
         String any;
+        String threadExecutorClass;
 
         //构建chainBuilder
         String chainName = chainObject.getString("name");
@@ -148,6 +143,7 @@ public abstract class JsonFlowParser extends FlowParser {
             errorResume = condObject.getString("errorResume");
             group = condObject.getString("group");
             any = condObject.getString("any");
+            threadExecutorClass = condObject.getString("threadExecutorClass");
 
             if (ObjectUtil.isNull(conditionType)){
                 throw new NotSupportConditionException("ConditionType is not supported");
@@ -165,6 +161,7 @@ public abstract class JsonFlowParser extends FlowParser {
                                 .setErrorResume(errorResume)
                                 .setGroup(group)
                                 .setAny(any)
+                                .setThreadExecutorClass(threadExecutorClass)
                                 .setValue(condValueStr)
                                 .build()
                 ).build();

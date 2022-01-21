@@ -48,4 +48,13 @@ public class LiteFlowWhenConditionBuilder extends LiteFlowConditionBuilder{
         }
         return setAny(Boolean.parseBoolean(any));
     }
+
+
+    public LiteFlowWhenConditionBuilder setThreadExecutorClass(String executorServiceName){
+        if (StrUtil.isBlank(executorServiceName)) {
+            return this;
+        }
+        this.condition.setThreadExecutorClass(executorServiceName);
+        return this;
+    }
 }
