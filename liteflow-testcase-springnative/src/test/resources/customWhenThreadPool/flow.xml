@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain">
+        <when value="a,b"/>
+    </chain>
+    <chain name="chain1">
+        <when value="c,d" threadExecutorClass="com.yomahub.liteflow.test.customWhenThreadPool.CustomThreadExecutor1"/>
+    </chain>
+    <chain name="chain2">
+        <when value="e,f" threadExecutorClass="com.yomahub.liteflow.test.customWhenThreadPool.CustomThreadExecutor2"/>
+    </chain>
+</flow>
