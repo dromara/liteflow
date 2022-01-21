@@ -5,14 +5,11 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.parser.cmp;
+package com.yomahub.liteflow.test.builder.cmp;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.exception.FlowSystemException;
 import org.springframework.stereotype.Component;
 
-@Component("a")
 public class ACmp extends NodeComponent {
 
 	@Override

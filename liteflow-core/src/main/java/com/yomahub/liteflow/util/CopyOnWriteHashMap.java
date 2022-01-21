@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -56,27 +58,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Paul.Sandoz@Oracle.Com
  * @author pavel.bucek@oracle.com
+ * @author Bryan.Zhang
  */
-public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
-    volatile Map<K, V> view;
+public class CopyOnWriteHashMap<K,V> extends ConcurrentHashMap<K,V> {
 
-    private Map<K, V> duplicate(Map<K, V> original) {
-        Map<K, V> result = new HashMap();
+    volatile ConcurrentHashMap<K, V> view;
+
+    private ConcurrentHashMap<K, V> duplicate(ConcurrentHashMap<K, V> original) {
         // SUBTLETY: note that original.entrySet() grabs the entire contents of the original Map in a
         // single call. This means that if the original map is Thread-safe or another CopyOnWriteHashMap,
         // we can safely iterate over the list of entries.
-        for (Map.Entry<K, V> entry : original.entrySet()) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
+        return new ConcurrentHashMap<>(original);
     }
 
-    public CopyOnWriteHashMap(Map<K, V> that) {
+    public CopyOnWriteHashMap(ConcurrentHashMap<K, V> that) {
         this.view = duplicate(that);
     }
 
     public CopyOnWriteHashMap() {
-        this(new HashMap<K, V>());
+        this(new ConcurrentHashMap<>());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     }
 
     @Override
-    public Set<K> keySet() {
+    public KeySetView<K,V> keySet() {
         return view.keySet();
     }
 
@@ -149,7 +149,7 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     @Override
     public V put(K key, V value) {
         synchronized (this) {
-            Map<K, V> newCore = duplicate(view);
+            ConcurrentHashMap<K, V> newCore = duplicate(view);
             V result = newCore.put(key, value);
             view = newCore; // volatile write
             return result;
@@ -159,18 +159,17 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     @Override
     public V remove(Object key) {
         synchronized (this) {
-            Map<K, V> newCore = duplicate(view);
+            ConcurrentHashMap<K, V> newCore = duplicate(view);
             V result = newCore.remove(key);
             view = newCore; // volatile write
             return result;
-
         }
     }
 
     @Override
     public void putAll(Map<? extends K, ? extends V> t) {
         synchronized (this) {
-            Map<K, V> newCore = duplicate(view);
+            ConcurrentHashMap<K, V> newCore = duplicate(view);
             newCore.putAll(t);
             view = newCore; // volatile write
         }
@@ -179,8 +178,7 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     @Override
     public void clear() {
         synchronized (this) {
-            Map<K, V> newCore = new HashMap<K, V>();
-            view = newCore; // volatile write
+            view = new ConcurrentHashMap<>(); // volatile write
         }
     }
 }

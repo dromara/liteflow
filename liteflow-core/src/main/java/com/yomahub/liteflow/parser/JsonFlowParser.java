@@ -78,7 +78,7 @@ public abstract class JsonFlowParser extends FlowParser {
             //先在元数据里放上chain
             chainArray.forEach(o -> {
                 JSONObject innerJsonObject = (JSONObject)o;
-                FlowBus.addChain(new Chain(innerJsonObject.getString("name")));
+                FlowBus.addChain(innerJsonObject.getString("name"));
             });
         });
 

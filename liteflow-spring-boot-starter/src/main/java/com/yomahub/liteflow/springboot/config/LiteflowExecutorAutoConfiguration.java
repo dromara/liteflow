@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.swing.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -25,15 +26,16 @@ import java.util.concurrent.ExecutorService;
 @Import(SpringAware.class)
 public class LiteflowExecutorAutoConfiguration {
 
+    //这里参数加上这2个为了先行注入
     @Bean("whenExecutors")
-    public ExecutorService executorService(LiteflowConfig liteflowConfig) {
+    public ExecutorService executorService(SpringAware springAware, LiteflowConfig liteflowConfig) {
         return ExecutorHelper.loadInstance().buildExecutor();
     }
 
     //为什么要注释掉这个@Bean？
     //LiteFlowExecutorPoolShutdown这个类会在spring上下文移除这个bean的时候执行，也就是应用被停止或者kill的时候
     //这个类主要用于卸载掉线程池，会等待线程池中的线程执行完，再卸载掉，相当于一个钩子
-    //但这段代码在实际中并没有太多用户，就算结束掉应用进程时很多公司也会优雅停机。就显得这段代码很鸡肋
+    //但这段代码在实际中并没有太多用处，就算结束掉应用进程时很多公司也会优雅停机。就显得这段代码很鸡肋
     //之所以注释掉，是因为在单元测试中，每一个testcase结束时都会调这个方法。
     //当异步线程配置超时的时候。由于这个方法会去关闭掉线程池，会导致单元测试在所有一起运行时(单个运行没有问题)会出错
     //按理说这个方法会等待线程池里的全部线程执行完再销毁，但是事实上在单元测试中的确会报错。具体原因还没深究，由于这个类比较鸡肋，就干脆不注册了。

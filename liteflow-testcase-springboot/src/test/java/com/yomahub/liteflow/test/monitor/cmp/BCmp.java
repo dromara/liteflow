@@ -5,18 +5,24 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.parser.cmp;
+package com.yomahub.liteflow.test.monitor.cmp;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.exception.FlowSystemException;
 import org.springframework.stereotype.Component;
 
-@Component("a")
-public class ACmp extends NodeComponent {
+import java.util.Random;
+
+@Component("b")
+public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("ACmp executed!");
+		try {
+			Thread.sleep(new Random().nextInt(2000));
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		System.out.println("BCmp executed!");
 	}
+
 }

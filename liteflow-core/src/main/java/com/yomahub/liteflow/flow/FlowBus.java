@@ -34,6 +34,7 @@ import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.util.SpringAware;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SerializationUtils;
@@ -61,12 +62,16 @@ public class FlowBus {
         return chainMap.get(id);
     }
 
-    public static void addChain(Chain chain) {
-        if (chainMap.containsKey(chain.getChainName()) && CollectionUtil.isEmpty(chain.getConditionList())){
-            chainMap.get(chain.getChainName()).setConditionList(chain.getConditionList());
-        }else{
-            chainMap.put(chain.getChainName(), chain);
+    //这一方法主要用于第一阶段chain的预装载
+    public static void addChain(String chainName){
+        if (!chainMap.containsKey(chainName)){
+            chainMap.put(chainName, new Chain(chainName));
         }
+    }
+
+    //这个方法主要用于第二阶段的替换chain
+    public static void addChain(Chain chain) {
+        chainMap.put(chain.getChainName(), chain);
     }
 
     public static boolean containChain(String chainId) {
@@ -172,7 +177,6 @@ public class FlowBus {
         }catch (ScriptSpiException ignored){}
     }
 
-    //目前这种方式刷新不完全平滑
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
         if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
             new LocalXmlFlowParser().parse(content);

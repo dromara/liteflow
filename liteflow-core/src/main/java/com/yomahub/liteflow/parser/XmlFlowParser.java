@@ -73,7 +73,7 @@ public abstract class XmlFlowParser extends FlowParser {
             List<Element> chainList = document.getRootElement().elements("chain");
 
             //先在元数据里放上chain
-            chainList.forEach(e -> FlowBus.addChain(new Chain(e.attributeValue("name"))));
+            chainList.forEach(e -> FlowBus.addChain(e.attributeValue("name")));
         });
 
         for (Document document : documentList) {

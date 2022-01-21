@@ -22,10 +22,9 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/parser/application-xml.properties")
-@SpringBootTest(classes = LFParserXmlSpringbootTest.class)
+@SpringBootTest(classes = XmlParserSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
-public class LFParserXmlSpringbootTest extends BaseTest {
+public class XmlParserSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

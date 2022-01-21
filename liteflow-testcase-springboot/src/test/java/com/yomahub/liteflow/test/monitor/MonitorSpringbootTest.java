@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.base;
+package com.yomahub.liteflow.test.monitor;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
@@ -21,19 +21,21 @@ import javax.annotation.Resource;
  * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/base/application.properties")
-@SpringBootTest(classes = BaseSpringbootTest.class)
+@TestPropertySource(value = "classpath:/monitor/application.properties")
+@SpringBootTest(classes = MonitorSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.base.cmp"})
-public class BaseSpringbootTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.monitor.cmp"})
+public class MonitorSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
     @Test
-    public void testBase() throws Exception{
+    public void testMonitor() throws Exception{
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
+
+        Thread.sleep(20000);
     }
 
 }

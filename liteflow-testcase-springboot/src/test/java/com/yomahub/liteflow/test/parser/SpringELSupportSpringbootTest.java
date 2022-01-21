@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.base;
+package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
@@ -9,31 +9,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-/**
- * springboot环境最普通的例子测试
- * @author Bryan.Zhang
- * @since 2.6.4
- */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/base/application.properties")
-@SpringBootTest(classes = BaseSpringbootTest.class)
+@TestPropertySource(value = "classpath:/parser/application-springEL.properties")
+@SpringBootTest(classes = SpringELSupportSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.base.cmp"})
-public class BaseSpringbootTest extends BaseTest {
+public class SpringELSupportSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
+    //测试springEL的解析情况
     @Test
-    public void testBase() throws Exception{
+    public void testSpringELParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
-
 }

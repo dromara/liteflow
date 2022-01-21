@@ -22,10 +22,9 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/parser/application-json.properties")
-@SpringBootTest(classes = LFParserJsonSpringbootTest.class)
+@SpringBootTest(classes = JsonParserSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
-public class LFParserJsonSpringbootTest extends BaseTest {
+public class JsonParserSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

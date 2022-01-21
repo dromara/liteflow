@@ -35,13 +35,9 @@ public class LiteflowMainAutoConfiguration {
 
     @Bean
     public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
-        if (StrUtil.isNotBlank(liteflowConfig.getRuleSource())) {
-            FlowExecutor flowExecutor = new FlowExecutor();
-            flowExecutor.setLiteflowConfig(liteflowConfig);
-            return flowExecutor;
-        } else {
-            return null;
-        }
+        FlowExecutor flowExecutor = new FlowExecutor();
+        flowExecutor.setLiteflowConfig(liteflowConfig);
+        return flowExecutor;
     }
 
     @Bean

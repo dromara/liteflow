@@ -64,9 +64,14 @@ public class FlowExecutor {
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */
     public void init() {
-        if (ObjectUtil.isNull(liteflowConfig) || StrUtil.isBlank(liteflowConfig.getRuleSource())) {
+        if (ObjectUtil.isNull(liteflowConfig)) {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
+
+        if (StrUtil.isBlank(liteflowConfig.getRuleSource())){
+            return;
+        }
+
         List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
         FlowParser parser = null;
