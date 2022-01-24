@@ -1,12 +1,8 @@
 package com.yomahub.liteflow.test.customWhenThreadPool;
 
-import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
-import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
