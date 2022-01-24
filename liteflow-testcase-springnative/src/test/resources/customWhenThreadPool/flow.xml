@@ -7,6 +7,6 @@
         <when value="c,d" threadExecutorClass="com.yomahub.liteflow.test.customWhenThreadPool.CustomThreadExecutor1"/>
     </chain>
     <chain name="chain2">
-        <when value="e,f" threadExecutorClass="com.yomahub.liteflow.test.customWhenThreadPool.CustomThreadExecutor2"/>
+        <when value="e,f" threadExecutorClass="com.yomahub.liteflow.test.customWhenThreadPool.CustomThreadExecutor1"/>
     </chain>
 </flow>

@@ -38,7 +38,7 @@ public class ExecutorHelper {
      * 此处使用Map缓存线程池信息
      * key - 线程池构建者的Class全类名
      * value - 线程池对象
-     * */
+     */
     private final Map<String, ExecutorService> executorServiceMap;
 
     private ExecutorHelper() {
@@ -85,12 +85,14 @@ public class ExecutorHelper {
         }
     }
 
-    /** 构建全局默认线程池 */
+    /**
+     * 构建全局默认线程池
+     */
     public ExecutorService buildExecutor() {
         if (ObjectUtil.isNull(executorService)) {
             LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
             assert liteflowConfig != null;
-            executorService = buildExecutor(liteflowConfig.getThreadExecutorClass());
+            executorService = getExecutorBuilder(liteflowConfig.getThreadExecutorClass()).buildExecutor();
         }
         return executorService;
     }
@@ -99,27 +101,23 @@ public class ExecutorHelper {
      * <p>
      * 构建线程池执行器 - 支持多个when公用一个线程池
      * </p>
-     * @author sikadai
-     * @date 2022/1/21 23:00
+     *
      * @param threadExecutorClass : 线程池构建者的Class全类名
      * @return java.util.concurrent.ExecutorService
+     * @author sikadai
+     * @date 2022/1/21 23:00
      */
     public ExecutorService buildExecutor(String threadExecutorClass) {
-        try {
-            if (StrUtil.isBlank(threadExecutorClass)) {
-                return buildExecutor();
-            }
-            ExecutorService executorServiceFromCache = executorServiceMap.get(threadExecutorClass);
-            if (executorServiceFromCache != null) {
-                return executorServiceFromCache;
-            } else {
-                ExecutorService executorService = getExecutorBuilder(threadExecutorClass).buildExecutor();
-                executorServiceMap.put(threadExecutorClass, executorService);
-                return executorService;
-            }
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            throw new ThreadExecutorServiceCreateException(e.getMessage());
+        if (StrUtil.isBlank(threadExecutorClass)) {
+            return buildExecutor();
+        }
+        ExecutorService executorServiceFromCache = executorServiceMap.get(threadExecutorClass);
+        if (executorServiceFromCache != null) {
+            return executorServiceFromCache;
+        } else {
+            ExecutorService executorService = getExecutorBuilder(threadExecutorClass).buildExecutor();
+            executorServiceMap.put(threadExecutorClass, executorService);
+            return executorService;
         }
     }
 
@@ -128,13 +126,19 @@ public class ExecutorHelper {
      * 根据线程执行构建者Class类名获取ExecutorBuilder实例
      * </p>
      *
-     * @author sikadai
-     * @date 2022/1/21 23:04
      * @param threadExecutorClass
      * @return com.yomahub.liteflow.thread.ExecutorBuilder
+     * @author sikadai
+     * @date 2022/1/21 23:04
      */
-    private ExecutorBuilder getExecutorBuilder(String threadExecutorClass) throws Exception {
-        return (ExecutorBuilder) Class.forName(threadExecutorClass).newInstance();
+    private ExecutorBuilder getExecutorBuilder(String threadExecutorClass) {
+        try {
+            return (ExecutorBuilder) Class.forName(threadExecutorClass).newInstance();
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new ThreadExecutorServiceCreateException(e.getMessage());
+        }
+
     }
 
     public ExecutorService getExecutorService() {
