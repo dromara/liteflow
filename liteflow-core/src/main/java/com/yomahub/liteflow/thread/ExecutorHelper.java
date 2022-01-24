@@ -8,12 +8,13 @@
  */
 package com.yomahub.liteflow.thread;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.util.SpringAware;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +32,6 @@ public class ExecutorHelper {
     private final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
 
     private static ExecutorHelper executorHelper;
-
-    private ExecutorService executorService;
 
     /**
      * 此处使用Map缓存线程池信息
@@ -89,12 +88,12 @@ public class ExecutorHelper {
      * 构建全局默认线程池
      */
     public ExecutorService buildExecutor() {
-        if (ObjectUtil.isNull(executorService)) {
-            LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
-            assert liteflowConfig != null;
-            executorService = getExecutorBuilder(liteflowConfig.getThreadExecutorClass()).buildExecutor();
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        if (!executorServiceMap.containsKey(liteflowConfig.getThreadExecutorClass())) {
+            ExecutorService executorService = getExecutorBuilder(liteflowConfig.getThreadExecutorClass()).buildExecutor();
+            executorServiceMap.put(liteflowConfig.getThreadExecutorClass(), executorService);
         }
-        return executorService;
+        return executorServiceMap.get(liteflowConfig.getThreadExecutorClass());
     }
 
     /**
@@ -138,14 +137,11 @@ public class ExecutorHelper {
             LOG.error(e.getMessage(), e);
             throw new ThreadExecutorServiceCreateException(e.getMessage());
         }
-
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
+    public void clearExecutorServiceMap(){
+        if (MapUtil.isNotEmpty(executorServiceMap)){
+            executorServiceMap.clear();
+        }
     }
 }
