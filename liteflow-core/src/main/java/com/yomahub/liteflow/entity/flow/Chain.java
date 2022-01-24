@@ -10,7 +10,6 @@ package com.yomahub.liteflow.entity.flow;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.flow.parallel.CompletableFutureTimeout;
@@ -120,7 +119,7 @@ public class Chain implements Executable {
         Slot slot = DataBus.getSlot(slotIndex);
 
         //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
-        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor();
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor(condition.getThreadExecutorClass());
 
         //获得liteflow的参数
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();

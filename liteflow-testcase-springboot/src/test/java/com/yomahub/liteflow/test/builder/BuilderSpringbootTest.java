@@ -32,7 +32,7 @@ public class BuilderSpringbootTest extends BaseTest {
 
     //基于普通组件的builder模式测试
     @Test
-    public void testBuilder() throws Exception{
+    public void testBuilder() throws Exception {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
                 .setType(NodeTypeEnum.COMMON)
@@ -71,13 +71,16 @@ public class BuilderSpringbootTest extends BaseTest {
 
 
         LiteFlowChainBuilder.createChain().setChainName("chain2").setCondition(
-                LiteFlowConditionBuilder.createThenCondition().setValue("c,d").build()
+                LiteFlowConditionBuilder.createWhenCondition().setValue("c,d").build()
         ).build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
-                LiteFlowConditionBuilder.createThenCondition().setValue("a,b").build()
+                LiteFlowConditionBuilder
+                        .createWhenCondition()
+                        .setValue("a,b").build()
         ).setCondition(
-                LiteFlowConditionBuilder.createWhenCondition().setValue("e(f|g|chain2)").build()
+                LiteFlowConditionBuilder.createWhenCondition()
+                        .setValue("e(f|g|chain2)").build()
         ).build();
 
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");

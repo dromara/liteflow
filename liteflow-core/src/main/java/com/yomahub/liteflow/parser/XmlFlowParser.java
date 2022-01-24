@@ -2,18 +2,12 @@ package com.yomahub.liteflow.parser;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.flow.Condition;
-import com.yomahub.liteflow.entity.flow.Executable;
-import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
@@ -25,11 +19,9 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 /**
  * xml形式的解析器
@@ -127,6 +119,7 @@ public abstract class XmlFlowParser extends FlowParser {
         String group;
         String errorResume;
         String any;
+        String threadExecutorClass;
         ConditionTypeEnum conditionType;
 
         //构建chainBuilder
@@ -140,6 +133,7 @@ public abstract class XmlFlowParser extends FlowParser {
             errorResume = condE.attributeValue("errorResume");
             group = condE.attributeValue("group");
             any = condE.attributeValue("any");
+            threadExecutorClass = condE.attributeValue("threadExecutorClass");
 
             if (ObjectUtil.isNull(conditionType)){
                 throw new NotSupportConditionException("ConditionType is not supported");
@@ -156,6 +150,7 @@ public abstract class XmlFlowParser extends FlowParser {
                                 .setErrorResume(errorResume)
                                 .setGroup(group)
                                 .setAny(any)
+                                .setThreadExecutorClass(threadExecutorClass)
                                 .setValue(condValueStr)
                                 .build()
                 ).build();

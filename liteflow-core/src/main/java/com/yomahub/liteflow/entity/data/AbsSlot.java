@@ -127,6 +127,15 @@ public abstract class AbsSlot implements Slot {
 		}
 	}
 
+	public <T> Queue<T> getPrivateDeliveryQueue(String nodeId){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		if(dataMap.containsKey(privateDKey)){
+			return (Queue<T>) dataMap.get(privateDKey);
+		}else{
+			return null;
+		}
+	}
+
 	public <T> T getPrivateDeliveryData(String nodeId){
 		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
 		if(dataMap.containsKey(privateDKey)){

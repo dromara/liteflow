@@ -13,14 +13,16 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+@Component("b")
 @LiteflowComponent("b")
 public class BCmp extends NodeComponent {
 
-	@Override
-	public void process() {
-		System.out.println("BCmp executed!");
-		Integer value = this.getPrivateDeliveryData();
-		Set<Integer> testSet = this.getSlot().getData("testSet");
-		testSet.add(value);
-	}
+    @Override
+    public void process() {
+        System.out.println("BCmp executed!");
+        Integer value = this.getPrivateDeliveryData();
+        Set<Integer> testSet = this.getSlot().getData("testSet");
+        testSet.add(value);
+    }
 }
+

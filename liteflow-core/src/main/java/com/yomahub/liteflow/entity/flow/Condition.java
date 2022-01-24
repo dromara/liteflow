@@ -31,6 +31,8 @@ public class Condition {
 
 	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
 	private boolean any = false;
+	// when单独的线程池名称
+	private String threadExecutorClass;
 
 	public Condition(List<Executable> nodeList) {
 		this.nodeList = nodeList;
@@ -76,5 +78,13 @@ public class Condition {
 
 	public void setAny(boolean any) {
 		this.any = any;
+	}
+
+	public String getThreadExecutorClass() {
+		return threadExecutorClass;
+	}
+
+	public void setThreadExecutorClass(String threadExecutorClass) {
+		this.threadExecutorClass = threadExecutorClass;
 	}
 }

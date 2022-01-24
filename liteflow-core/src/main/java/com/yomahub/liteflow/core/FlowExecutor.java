@@ -13,6 +13,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.parser.*;
@@ -269,6 +270,11 @@ public class FlowExecutor {
     public <T extends Slot> void invoke(String chainId, Object param, Class<T> slotClazz,
                                         Integer slotIndex) throws Exception {
         this.execute(chainId, param, slotClazz, slotIndex, true);
+    }
+
+    public <T extends Slot> void invoke(String nodeId, Integer slotIndex) throws Exception {
+        Node node = FlowBus.getNode(nodeId);
+        node.execute(slotIndex);
     }
 
     public DefaultSlot execute(String chainId) throws Exception {
