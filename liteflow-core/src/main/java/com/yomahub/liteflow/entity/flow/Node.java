@@ -8,9 +8,7 @@
 package com.yomahub.liteflow.entity.flow;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import cn.hutool.core.util.ObjectUtil;
@@ -18,6 +16,8 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.executor.NodeExecutor;
+import com.yomahub.liteflow.entity.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
@@ -121,31 +121,9 @@ public class Node implements Executable,Cloneable{
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
 				//这里开始进行重试的逻辑和主逻辑的运行
-				int retryCount = instance.getRetryCount();
-				List<Class<? extends Exception>> forExceptions = Arrays.asList(instance.getRetryForExceptions());
-				for (int i = 0; i <= retryCount; i++) {
-					try {
-						if (i > 0) {
-							LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), id, i + 1);
-						}
-						//执行业务逻辑的主要入口
-						instance.execute();
-						break;
-					} catch (ChainEndException e) {
-						//如果是ChainEndException，则无需重试
-						throw e;
-					} catch (Exception e) {
-						//判断抛出的异常是不是指定异常的子类
-						boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
-
-						//两种情况不重试，1)抛出异常不在指定异常范围内 2)已经重试次数大于等于配置次数
-						if (!flag || i >= retryCount) {
-							throw e;
-						}
-					}
-				}
-
-
+				NodeExecutor nodeExecutor = NodeExecutorHelper.loadInstance().buildNodeExecutor(instance.getNodeExecutorClass());
+				// 调用节点执行器进行执行
+				nodeExecutor.execute(instance);
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 				if (instance.isEnd()) {
 					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end", slot.getRequestId(), instance.getClass().getSimpleName());

@@ -9,7 +9,6 @@
 package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
@@ -31,8 +30,6 @@ public class ExecutorHelper {
 
     private final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
 
-    private static ExecutorHelper executorHelper;
-
     /**
      * 此处使用Map缓存线程池信息
      * key - 线程池构建者的Class全类名
@@ -44,11 +41,15 @@ public class ExecutorHelper {
         executorServiceMap = Maps.newConcurrentMap();
     }
 
+    /**
+     * 使用静态内部类实现单例模式
+     */
+    private static class Holder {
+        static final ExecutorHelper INSTANCE = new ExecutorHelper();
+    }
+
     public static ExecutorHelper loadInstance() {
-        if (ObjectUtil.isNull(executorHelper)) {
-            executorHelper = new ExecutorHelper();
-        }
-        return executorHelper;
+        return Holder.INSTANCE;
     }
 
     /**

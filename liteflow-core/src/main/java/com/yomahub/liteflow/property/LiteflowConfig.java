@@ -70,6 +70,8 @@ public class LiteflowConfig {
 
     //重试次数
     private Integer retryCount;
+    // 节点执行器的类全名
+    private String nodeExecutorClass;
 
     //是否打印liteflow banner
     private Boolean printBanner;
@@ -260,5 +262,13 @@ public class LiteflowConfig {
 
     public void setThreadExecutorClass(String threadExecutorClass) {
         this.threadExecutorClass = threadExecutorClass;
+    }
+
+    public String getNodeExecutorClass() {
+        return nodeExecutorClass;
+    }
+
+    public void setNodeExecutorClass(String nodeExecutorClass) {
+        this.nodeExecutorClass = nodeExecutorClass;
     }
 }

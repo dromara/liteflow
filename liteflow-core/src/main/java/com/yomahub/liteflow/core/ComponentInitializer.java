@@ -53,6 +53,7 @@ public class ComponentInitializer {
         } else {
             LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
             nodeComponent.setRetryCount(liteflowConfig.getRetryCount());
+            nodeComponent.setNodeExecutorClass(liteflowConfig.getNodeExecutorClass());
         }
 
         return nodeComponent;

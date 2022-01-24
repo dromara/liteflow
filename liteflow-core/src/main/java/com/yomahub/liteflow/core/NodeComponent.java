@@ -11,6 +11,8 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.entity.executor.NodeExecutor;
+import com.yomahub.liteflow.entity.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +23,10 @@ import com.yomahub.liteflow.entity.data.CmpStepType;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.flow.Executable;
-import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.spring.ComponentScanner;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -62,6 +61,10 @@ public abstract class NodeComponent{
 
 	//在目标异常抛出时才重试
 	private Class<? extends Exception>[] retryForExceptions = new Class[]{Exception.class};
+
+	/** 节点执行器的类全名 */
+	private String nodeExecutorClass = DefaultNodeExecutor.class.getName();
+
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
@@ -229,6 +232,14 @@ public abstract class NodeComponent{
 
 	public void setRetryForExceptions(Class<? extends Exception>[] retryForExceptions) {
 		this.retryForExceptions = retryForExceptions;
+	}
+
+	public String getNodeExecutorClass() {
+		return nodeExecutorClass;
+	}
+
+	public void setNodeExecutorClass(String nodeExecutorClass) {
+		this.nodeExecutorClass = nodeExecutorClass;
 	}
 
 	public void setTag(String tag){
