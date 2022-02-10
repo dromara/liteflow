@@ -47,6 +47,9 @@ public class LiteflowProperty {
     //是否打印liteflow banner
     private boolean printBanner;
 
+    // 节点执行器class全名
+    private String nodeExecutorClass;
+
     public boolean isEnable() {
         return enable;
     }
@@ -141,5 +144,13 @@ public class LiteflowProperty {
 
     public void setThreadExecutorClass(String threadExecutorClass) {
         this.threadExecutorClass = threadExecutorClass;
+    }
+
+    public String getNodeExecutorClass() {
+        return nodeExecutorClass;
+    }
+
+    public void setNodeExecutorClass(String nodeExecutorClass) {
+        this.nodeExecutorClass = nodeExecutorClass;
     }
 }

@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,7 +17,7 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的组件重试
+ * 测试springboot下的节点执行器
  * @author Bryan.Zhang
  * @since 2.5.10
  */

@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
+import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -47,14 +48,25 @@ public class ComponentInitializer {
         //先从组件上取@RetryCount标注，如果没有，则看全局配置，全局配置如果不配置的话，默认是0
         //默认retryForExceptions为Exception.class
         LiteflowRetry liteflowRetryAnnotation = AnnotationUtils.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         if (ObjectUtil.isNotNull(liteflowRetryAnnotation)) {
             nodeComponent.setRetryCount(liteflowRetryAnnotation.retry());
             nodeComponent.setRetryForExceptions(liteflowRetryAnnotation.forExceptions());
         } else {
-            LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
             nodeComponent.setRetryCount(liteflowConfig.getRetryCount());
         }
+        nodeComponent.setNodeExecutorClass(buildNodeExecutorClass(liteflowConfig));
 
         return nodeComponent;
+    }
+
+    private Class<? extends NodeExecutor> buildNodeExecutorClass(LiteflowConfig liteflowConfig) {
+        Class<?> nodeExecutorClass;
+        try {
+            nodeExecutorClass = Class.forName(liteflowConfig.getNodeExecutorClass());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return (Class<? extends NodeExecutor>) nodeExecutorClass;
     }
 }
