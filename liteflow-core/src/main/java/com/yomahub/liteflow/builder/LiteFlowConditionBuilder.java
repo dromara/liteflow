@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Node;
@@ -10,6 +11,7 @@ import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.RegexEntity;
 import com.yomahub.liteflow.parser.RegexNodeEntity;
+import com.yomahub.liteflow.util.SpringAware;
 
 import java.util.ArrayList;
 
@@ -85,6 +87,13 @@ public class LiteFlowConditionBuilder {
                 Chain chain = FlowBus.getChain(item.getId());
                 this.condition.getNodeList().add(chain);
             } else {
+                //元数据没有的话，从spring上下文再取一遍，这部分是为了防止标有@Lazy懒加载的组件
+                NodeComponent nodeComponent =  SpringAware.getBean(item.getId());
+                if (ObjectUtil.isNotNull(nodeComponent)){
+                    FlowBus.addSpringScanNode(item.getId(), nodeComponent);
+                    return setValue(value);
+                }
+
                 String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
                 throw new ExecutableItemNotFoundException(errorMsg);
             }
