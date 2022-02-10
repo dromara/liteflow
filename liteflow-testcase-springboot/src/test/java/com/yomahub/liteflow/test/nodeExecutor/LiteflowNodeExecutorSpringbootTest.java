@@ -35,10 +35,10 @@ public class LiteflowNodeExecutorSpringbootTest extends BaseTest {
 
     // 默认执行器测试
     @Test
-    public void testDefaultExecutor() {
+    public void testCustomerDefaultNodeExecutor() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(DefaultNodeExecutor.class, response.getSlot().getData("defaultNodeExecutor"));
+        Assert.assertEquals(CustomerDefaultNodeExecutor.class, response.getSlot().getData("customerDefaultNodeExecutor"));
         Assert.assertEquals("a", response.getSlot().getExecuteStepStr());
     }
 
@@ -47,7 +47,7 @@ public class LiteflowNodeExecutorSpringbootTest extends BaseTest {
     public void testDefaultExecutorForRetry() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(DefaultNodeExecutor.class, response.getSlot().getData("defaultNodeExecutor"));
+        Assert.assertEquals(CustomerDefaultNodeExecutor.class, response.getSlot().getData("customerDefaultNodeExecutor"));
         Assert.assertEquals("b==>b==>b", response.getSlot().getExecuteStepStr());
     }
 

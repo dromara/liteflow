@@ -13,8 +13,6 @@ import com.yomahub.liteflow.entity.data.Slot;
 public class DefaultNodeExecutor extends NodeExecutor {
     @Override
     public void execute(NodeComponent instance) throws Exception {
-        Slot slot = DataBus.getSlot(instance.getSlotIndex());
-        slot.setData("defaultNodeExecutor", DefaultNodeExecutor.class);
         super.execute(instance);
     }
 }
