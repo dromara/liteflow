@@ -12,6 +12,6 @@ public class BaseTest {
     public static void cleanScanCache(){
         ComponentScanner.cleanCache();
         FlowBus.cleanCache();
-        ExecutorHelper.loadInstance().setExecutorService(null);
+        ExecutorHelper.loadInstance().clearExecutorServiceMap();
     }
 }

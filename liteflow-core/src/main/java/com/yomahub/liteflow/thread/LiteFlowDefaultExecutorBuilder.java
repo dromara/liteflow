@@ -21,21 +21,10 @@ public class LiteFlowDefaultExecutorBuilder implements ExecutorBuilder{
         if (ObjectUtil.isNull(liteflowConfig)){
             liteflowConfig = new LiteflowConfig();
         }
-
-        return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(liteflowConfig.getWhenMaxWorkers(),
+        return buildDefaultExecutor(
                 liteflowConfig.getWhenMaxWorkers(),
-                0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(liteflowConfig.getWhenQueueLimit()),
-                new ThreadFactory() {
-                    private final AtomicLong number = new AtomicLong();
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread newThread = Executors.defaultThreadFactory().newThread(r);
-                        newThread.setName("lf-when-thead-" + number.getAndIncrement());
-                        newThread.setDaemon(false);
-                        return newThread;
-                    }
-                },
-                new ThreadPoolExecutor.AbortPolicy()));
+                liteflowConfig.getWhenMaxWorkers(),
+                liteflowConfig.getWhenQueueLimit(),
+                "lf-when-thead-");
     }
 }

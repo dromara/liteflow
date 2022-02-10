@@ -41,6 +41,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setRetryCount(property.getRetryCount());
         liteflowConfig.setZkNode(property.getZkNode());
         liteflowConfig.setPrintBanner(property.isPrintBanner());
+        liteflowConfig.setNodeExecutorClass(property.getNodeExecutorClass());
         return liteflowConfig;
     }
 }
