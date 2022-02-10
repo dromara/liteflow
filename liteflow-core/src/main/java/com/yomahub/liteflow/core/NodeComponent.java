@@ -63,7 +63,7 @@ public abstract class NodeComponent{
 	private Class<? extends Exception>[] retryForExceptions = new Class[]{Exception.class};
 
 	/** 节点执行器的类全名 */
-	private String nodeExecutorClass = DefaultNodeExecutor.class.getName();
+	private Class<? extends NodeExecutor> nodeExecutorClass = DefaultNodeExecutor.class;
 
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
@@ -234,11 +234,11 @@ public abstract class NodeComponent{
 		this.retryForExceptions = retryForExceptions;
 	}
 
-	public String getNodeExecutorClass() {
+	public Class<? extends NodeExecutor> getNodeExecutorClass() {
 		return nodeExecutorClass;
 	}
 
-	public void setNodeExecutorClass(String nodeExecutorClass) {
+	public void setNodeExecutorClass(Class<? extends NodeExecutor> nodeExecutorClass) {
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
 

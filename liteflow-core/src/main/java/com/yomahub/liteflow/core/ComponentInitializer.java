@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
+import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -54,8 +55,18 @@ public class ComponentInitializer {
         } else {
             nodeComponent.setRetryCount(liteflowConfig.getRetryCount());
         }
-        nodeComponent.setNodeExecutorClass(liteflowConfig.getNodeExecutorClass());
+        nodeComponent.setNodeExecutorClass(buildNodeExecutorClass(liteflowConfig));
 
         return nodeComponent;
+    }
+
+    private Class<? extends NodeExecutor> buildNodeExecutorClass(LiteflowConfig liteflowConfig) {
+        Class<?> nodeExecutorClass;
+        try {
+            nodeExecutorClass = Class.forName(liteflowConfig.getNodeExecutorClass());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return (Class<? extends NodeExecutor>) nodeExecutorClass;
     }
 }

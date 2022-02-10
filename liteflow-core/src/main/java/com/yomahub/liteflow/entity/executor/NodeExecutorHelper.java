@@ -18,7 +18,7 @@ public class NodeExecutorHelper {
      * key - 节点执行器类Class全名
      * value - 节点执行器对象
      */
-    private final Map<String, NodeExecutor> nodeExecutorMap;
+    private final Map<Class<? extends NodeExecutor>, NodeExecutor> nodeExecutorMap;
 
     private NodeExecutorHelper() {
         nodeExecutorMap = Maps.newConcurrentMap();
@@ -49,11 +49,11 @@ public class NodeExecutorHelper {
      * @param nodeExecutorClass : 节点执行器的Class
      * @return
      */
-    public NodeExecutor buildNodeExecutor(String nodeExecutorClass) {
+    public NodeExecutor buildNodeExecutor(Class<? extends NodeExecutor> nodeExecutorClass) {
         // 高频操作-采取apache判空操作-效率高于hotool的isBlank将近3倍
-        if (StringUtils.isBlank(nodeExecutorClass)) {
+        if (nodeExecutorClass == null) {
             // 此处使用默认的节点执行器进行执行
-            nodeExecutorClass = DefaultNodeExecutor.class.getName();
+            nodeExecutorClass = DefaultNodeExecutor.class;
         }
         NodeExecutor nodeExecutor = nodeExecutorMap.get(nodeExecutorClass);
         // 此处无需使用同步锁进行同步-因为即使同时创建了两个实例，但是添加到缓存中的只会存在一个且不会存在并发问题-具体是由ConcurrentMap保证
