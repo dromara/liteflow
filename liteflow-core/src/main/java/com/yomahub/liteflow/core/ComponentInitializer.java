@@ -47,14 +47,14 @@ public class ComponentInitializer {
         //先从组件上取@RetryCount标注，如果没有，则看全局配置，全局配置如果不配置的话，默认是0
         //默认retryForExceptions为Exception.class
         LiteflowRetry liteflowRetryAnnotation = AnnotationUtils.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         if (ObjectUtil.isNotNull(liteflowRetryAnnotation)) {
             nodeComponent.setRetryCount(liteflowRetryAnnotation.retry());
             nodeComponent.setRetryForExceptions(liteflowRetryAnnotation.forExceptions());
         } else {
-            LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
             nodeComponent.setRetryCount(liteflowConfig.getRetryCount());
-            nodeComponent.setNodeExecutorClass(liteflowConfig.getNodeExecutorClass());
         }
+        nodeComponent.setNodeExecutorClass(liteflowConfig.getNodeExecutorClass());
 
         return nodeComponent;
     }
