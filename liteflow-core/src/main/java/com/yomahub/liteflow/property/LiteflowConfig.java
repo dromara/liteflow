@@ -265,7 +265,11 @@ public class LiteflowConfig {
     }
 
     public String getNodeExecutorClass() {
-        return nodeExecutorClass;
+        if (StrUtil.isBlank(nodeExecutorClass)){
+            return "com.yomahub.liteflow.entity.executor.DefaultNodeExecutor";
+        }else{
+            return nodeExecutorClass;
+        }
     }
 
     public void setNodeExecutorClass(String nodeExecutorClass) {

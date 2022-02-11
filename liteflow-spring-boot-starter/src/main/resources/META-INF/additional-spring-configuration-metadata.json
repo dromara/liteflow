@@ -79,6 +79,13 @@
       "defaultValue": 0
     },
     {
+      "name": "liteflow.node-executor-class",
+      "type": "java.lang.String",
+      "description": "Executor class of node.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 0
+    },
+    {
       "name": "liteflow.monitor.enable-log",
       "type": "java.lang.Boolean",
       "description": "Enable monitor log.",

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.entity.executor;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
@@ -50,14 +51,14 @@ public class NodeExecutorHelper {
      * @return
      */
     public NodeExecutor buildNodeExecutor(Class<? extends NodeExecutor> nodeExecutorClass) {
-        // 高频操作-采取apache判空操作-效率高于hotool的isBlank将近3倍
-        if (nodeExecutorClass == null) {
+        // 高频操作-采取apache判空操作-效率高于hutool的isBlank将近3倍
+        if (ObjectUtil.isNull(nodeExecutorClass)) {
             // 此处使用默认的节点执行器进行执行
             nodeExecutorClass = DefaultNodeExecutor.class;
         }
         NodeExecutor nodeExecutor = nodeExecutorMap.get(nodeExecutorClass);
         // 此处无需使用同步锁进行同步-因为即使同时创建了两个实例，但是添加到缓存中的只会存在一个且不会存在并发问题-具体是由ConcurrentMap保证
-        if (nodeExecutor == null) {
+        if (ObjectUtil.isNull(nodeExecutor)) {
             // 获取重试执行器实例
             nodeExecutor = ReflectUtil.newInstance(nodeExecutorClass);
             // 缓存
