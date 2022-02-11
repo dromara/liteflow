@@ -53,7 +53,7 @@ public class ExecutorHelper {
     }
 
     /**
-     * 使用默认的等待时间1分钟，来关闭目标线程组。
+     *
      * <p>
      *
      * @param pool 需要关闭的线程组.
@@ -63,6 +63,7 @@ public class ExecutorHelper {
     }
 
     /**
+     * <p>
      * 关闭ExecutorService的线程管理者
      * <p>
      *
@@ -85,9 +86,7 @@ public class ExecutorHelper {
         }
     }
 
-    /**
-     * 构建全局默认线程池
-     */
+    //构建全局默认线程池
     public ExecutorService buildExecutor() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         if (!executorServiceMap.containsKey(liteflowConfig.getThreadExecutorClass())) {
@@ -97,16 +96,7 @@ public class ExecutorHelper {
         return executorServiceMap.get(liteflowConfig.getThreadExecutorClass());
     }
 
-    /**
-     * <p>
-     * 构建线程池执行器 - 支持多个when公用一个线程池
-     * </p>
-     *
-     * @param threadExecutorClass : 线程池构建者的Class全类名
-     * @return java.util.concurrent.ExecutorService
-     * @author sikadai
-     * @date 2022/1/21 23:00
-     */
+    //构建线程池执行器 - 支持多个when公用一个线程池
     public ExecutorService buildExecutor(String threadExecutorClass) {
         if (StrUtil.isBlank(threadExecutorClass)) {
             return buildExecutor();

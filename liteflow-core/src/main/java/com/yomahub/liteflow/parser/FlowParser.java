@@ -27,9 +27,7 @@ public abstract class FlowParser {
 
     public abstract void parse(List<String> contentList) throws Exception;
 
-    /**
-     * 根据配置的ruleSource查找匹配的资源
-     */
+    //根据配置的ruleSource查找匹配的资源
     protected Resource[] matchRuleResources(final List<String> pathList) throws IOException {
         Assert.notEmpty(pathList, "rule source must not be null");
 
