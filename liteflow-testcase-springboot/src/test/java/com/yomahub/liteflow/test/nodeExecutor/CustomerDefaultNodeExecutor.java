@@ -16,5 +16,4 @@ public class CustomerDefaultNodeExecutor extends NodeExecutor {
         slot.setData("customerDefaultNodeExecutor", this.getClass());
         super.execute(instance);
     }
-
 }
