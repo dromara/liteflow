@@ -311,15 +311,13 @@ public class FlowExecutor {
         return this.execute2Resp(chainId, param, slotClazz, null, false);
     }
 
-    private final ArrayList<Class<? extends Exception>> notFailExceptionList = ListUtil.toList(ChainEndException.class);
-
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
 
         T slot = doExecute(chainId, param, slotClazz, slotIndex, isInnerChain);
 
-        if (ObjectUtil.isNotNull(slot.getException()) && !notFailExceptionList.contains(slot.getException().getClass())) {
+        if (ObjectUtil.isNotNull(slot.getException())) {
             response.setSuccess(false);
             response.setMessage(slot.getException().getMessage());
             response.setCause(slot.getException());
@@ -377,6 +375,11 @@ public class FlowExecutor {
 
             // 执行chain
             chain.execute(slotIndex);
+        } catch (ChainEndException e) {
+            if (ObjectUtil.isNotNull(chain)){
+                String warnMsg = StrUtil.format("[{}]:chain[{}] execute end on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
+                LOG.warn(warnMsg);
+            }
         } catch (Exception e) {
             if (ObjectUtil.isNotNull(chain)){
                 String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
