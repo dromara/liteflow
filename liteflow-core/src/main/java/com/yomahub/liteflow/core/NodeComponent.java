@@ -104,18 +104,14 @@ public abstract class NodeComponent{
 
 	public abstract void process() throws Exception;
 
-	/**
-	 * process前置处理
-	 */
+	//process前置处理
 	public void beforeProcess(String nodeId, Slot slot) {
 		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
 			ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot);
 		}
 	}
 
-	/**
-	 * process后置处理
-	 */
+	//process后置处理
 	public void afterProcess(String nodeId, Slot slot) {
 		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
 			ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot);
@@ -123,26 +119,17 @@ public abstract class NodeComponent{
 	}
 
 
-	/**
-	 * 是否进入该节点
-	 * @return boolean
-	 */
+	//是否进入该节点
 	public boolean isAccess(){
 		return true;
 	}
 
-	/**
-	 * 出错是否继续执行(这个只适用于串行流程，并行节点不起作用)
-	 * @return boolean
-	 */
+	//出错是否继续执行(这个只适用于串行流程，并行节点不起作用)
 	public boolean isContinueOnError() {
 		return false;
 	}
 
-	/**
-	 * 是否结束整个流程(不往下继续执行)
-	 * @return boolean
-	 */
+	//是否结束整个流程(不往下继续执行)
 	public boolean isEnd() {
 		Boolean isEnd = isEndTL.get();
 		if(ObjectUtil.isNull(isEnd)){

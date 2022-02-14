@@ -15,18 +15,7 @@ public interface ExecutorBuilder {
 
     ExecutorService buildExecutor();
 
-    /**
-     * <p>
-     * 构建默认的线程池对象
-     * </p>
-     * @author sikadai
-     * @date 2022/1/21 23:07
-     * @param corePoolSize : 核心线程池数量
-     * @param maximumPoolSize : 最大线程池数量
-     * @param queueCapacity : 队列的容量
-     * @param threadName  : 线程吃名称
-     * @return java.util.concurrent.ExecutorService
-     */
+    //构建默认的线程池对象
     default ExecutorService buildDefaultExecutor(int corePoolSize, int maximumPoolSize, int queueCapacity, String threadName) {
         return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize,
                 maximumPoolSize,

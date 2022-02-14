@@ -14,17 +14,12 @@ import java.util.List;
  * 节点执行器 - 自定的执行策略需要实现该类
  *
  * @author sikadai
- * @date 2022/1/24 17:00
+ * @since 2.6.9
  */
 public abstract class NodeExecutor {
     protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    /**
-     * 执行器执行入口-若需要更大维度的执行方式可以重写该方法
-     *
-     * @param instance : 执行的节点实例
-     * @throws Exception
-     */
+    //执行器执行入口-若需要更大维度的执行方式可以重写该方法
     public void execute(NodeComponent instance) throws Exception {
         int retryCount = instance.getRetryCount();
         List<Class<? extends Exception>> forExceptions = Arrays.asList(instance.getRetryForExceptions());
@@ -52,14 +47,7 @@ public abstract class NodeExecutor {
         }
     }
 
-    /**
-     * 执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
-     *
-     * @param instance          : 执行的节点实例
-     * @param currentRetryCount : 当前重试的次数
-     * @throws Exception
-     */
-
+    //执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
     protected void retry(NodeComponent instance, int currentRetryCount) throws Exception {
         Slot slot = DataBus.getSlot(instance.getSlotIndex());
         LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), instance.getNodeId(), currentRetryCount + 1);

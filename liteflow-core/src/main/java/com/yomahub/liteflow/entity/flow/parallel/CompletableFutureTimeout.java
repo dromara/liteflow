@@ -23,9 +23,6 @@ import java.util.function.Function;
  * @since 2.6.4
  */
 public class CompletableFutureTimeout {
-    /**
-     * Singleton delay scheduler, used only for starting and * cancelling tasks.
-     */
     static final class Delayer {
         static ScheduledFuture<?> delay(Runnable command, long delay, TimeUnit unit) {
             return delayer.schedule(command, delay, unit);
@@ -57,17 +54,13 @@ public class CompletableFutureTimeout {
         return result;
     }
 
-    /**
-     * 哪个先完成 就apply哪一个结果 这是一个关键的API,exceptionally出现异常后返回默认值
-     */
+    //哪个先完成 就apply哪一个结果 这是一个关键的API,exceptionally出现异常后返回默认值
     public static <T> CompletableFuture<T> completeOnTimeout(T t, CompletableFuture<T> future, long timeout, TimeUnit unit) {
         final CompletableFuture<T> timeoutFuture = timeoutAfter(timeout, unit);
         return future.applyToEither(timeoutFuture, Function.identity()).exceptionally((throwable) -> t);
     }
 
-    /**
-     * 哪个先完成 就apply哪一个结果 这是一个关键的API，不设置默认值，超时后抛出异常
-     */
+    //哪个先完成 就apply哪一个结果 这是一个关键的API，不设置默认值，超时后抛出异常
     public static <T> CompletableFuture<T> orTimeout(T t, CompletableFuture<T> future, long timeout, TimeUnit unit) {
         final CompletableFuture<T> timeoutFuture = timeoutAfter(timeout, unit);
         return future.applyToEither(timeoutFuture, Function.identity()).exceptionally((throwable) -> t);

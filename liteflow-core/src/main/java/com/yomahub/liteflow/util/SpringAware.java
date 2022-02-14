@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.util;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -47,11 +48,15 @@ public class SpringAware implements ApplicationContextAware {
     }
 
     public static <T> T registerBean(String beanName, Class<T> c) {
-        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
-        BeanDefinition beanDefinition = new GenericBeanDefinition();
-        beanDefinition.setBeanClassName(c.getName());
-        beanFactory.registerBeanDefinition(beanName, beanDefinition);
-        return getBean(beanName);
+        try{
+            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
+            BeanDefinition beanDefinition = new GenericBeanDefinition();
+            beanDefinition.setBeanClassName(c.getName());
+            beanFactory.registerBeanDefinition(beanName, beanDefinition);
+            return getBean(beanName);
+        }catch (Exception e){
+            return ReflectUtil.newInstance(c);
+        }
     }
 
     public static <T> T registerBean(Class<T> c) {
