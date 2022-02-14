@@ -13,24 +13,21 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import com.yomahub.liteflow.entity.data.DataBus;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.parser.LocalXmlFlowParser;
-import com.yomahub.liteflow.parser.XmlFlowParser;
-import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -384,15 +381,6 @@ public class FlowExecutor {
             }
             slot.setException(e);
         } finally {
-            try{
-                if (ObjectUtil.isNotNull(chain)){
-                    chain.executeFinally(slotIndex);
-                }
-            }catch (Exception e){
-                String errMsg = StrUtil.format("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
-                LOG.error(errMsg, e);
-            }
-
             if (!isInnerChain) {
                 slot.printStep();
                 DataBus.releaseSlot(slotIndex);
