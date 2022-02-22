@@ -8,7 +8,7 @@ import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.spi.factory.LiteflowComponentSupportFactory;
+import com.yomahub.liteflow.spi.holder.LiteflowComponentSupportHolder;
 
 /**
  * 组件初始化器
@@ -35,7 +35,7 @@ public class ComponentInitializer {
         //@LiteflowComponent标注只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
         nodeComponent.setName(desc);
         if (nodeComponent.getType().equals(NodeTypeEnum.COMMON) && StrUtil.isBlank(nodeComponent.getName())){
-            String name = LiteflowComponentSupportFactory.loadLiteflowComponentSupport().getCmpName(nodeComponent);
+            String name = LiteflowComponentSupportHolder.loadLiteflowComponentSupport().getCmpName(nodeComponent);
             nodeComponent.setName(name);
         }
 

@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.parser;
 
-import com.yomahub.liteflow.spi.factory.PathContentParserFactory;
+import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class LocalYmlFlowParser extends YmlFlowParser {
 
     @Override
     public void parseMain(List<String> pathList) throws Exception {
-        List<String> contentList = PathContentParserFactory.loadContextAware().parseContent(pathList);
+        List<String> contentList = PathContentParserHolder.loadContextAware().parseContent(pathList);
         parse(contentList);
     }
 

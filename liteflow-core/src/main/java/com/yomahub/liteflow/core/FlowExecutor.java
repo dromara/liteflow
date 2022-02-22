@@ -18,7 +18,7 @@ import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,11 +175,11 @@ public class FlowExecutor {
             Class<?> c = Class.forName(path);
             switch (pattern) {
                 case TYPE_XML:
-                    return (XmlFlowParser) ContextAwareFactory.loadContextAware().registerBean(c);
+                    return (XmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 case TYPE_JSON:
-                    return (JsonFlowParser) ContextAwareFactory.loadContextAware().registerBean(c);
+                    return (JsonFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 case TYPE_YML:
-                    return (YmlFlowParser) ContextAwareFactory.loadContextAware().registerBean(c);
+                    return (YmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 default:
             }
         } else if (isZKConfig(path)) {

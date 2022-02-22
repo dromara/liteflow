@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.spi.factory;
+package com.yomahub.liteflow.spi.holder;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.spi.LiteflowComponentSupport;
@@ -12,7 +12,7 @@ import java.util.ServiceLoader;
  * @author Bryan.Zhang
  * @since 2.6.11
  */
-public class LiteflowComponentSupportFactory {
+public class LiteflowComponentSupportHolder {
 
     private static LiteflowComponentSupport liteflowComponentSupport;
 

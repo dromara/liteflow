@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.property;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 /**
  * liteflow的配置获取器
@@ -12,7 +12,7 @@ public class LiteflowConfigGetter {
 
     public static LiteflowConfig get(){
         if (ObjectUtil.isNull(liteflowConfig)){
-            liteflowConfig = ContextAwareFactory.loadContextAware().getBean(LiteflowConfig.class);
+            liteflowConfig = ContextAwareHolder.loadContextAware().getBean(LiteflowConfig.class);
             //这里liteflowConfig不可能为null
             //如果在springboot环境，由于自动装配，所以不可能为null
             //在spring环境，如果xml没配置，在FlowExecutor的init时候就已经报错了

@@ -28,7 +28,7 @@ import com.yomahub.liteflow.parser.LocalYmlFlowParser;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
-import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,7 @@ public class FlowBus {
             //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
             NodeComponent cmpInstance = null;
             if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
-                cmpInstance = ContextAwareFactory.loadContextAware().registerOrGet(nodeId, cmpClazz);
+                cmpInstance = ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
             }
 
             if (ObjectUtil.isNull(cmpInstance)) {

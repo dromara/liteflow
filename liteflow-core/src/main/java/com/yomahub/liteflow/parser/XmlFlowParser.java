@@ -11,7 +11,7 @@ import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spi.factory.ContextCmpInitFactory;
+import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -49,7 +49,7 @@ public abstract class XmlFlowParser implements FlowParser {
         //在相应的环境下进行节点的初始化工作
         //在spring体系下会获得spring扫描后的节点，接入元数据
         //在非spring体系下是一个空实现，等于不做此步骤
-        ContextCmpInitFactory.loadContextCmpInit().initCmp();
+        ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
         //先在元数据里放上chain
         //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析

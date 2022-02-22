@@ -14,8 +14,8 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.entity.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.spi.factory.CmpAroundAspectFactory;
-import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
+import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public abstract class NodeComponent{
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
-		monitorBus = ContextAwareFactory.loadContextAware().getBean(MonitorBus.class);
+		monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
 	}
 
 	public void execute() throws Exception{
@@ -82,9 +82,9 @@ public abstract class NodeComponent{
 
 		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		//非spring环境下，全局切面为空实现
-		CmpAroundAspectFactory.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
 		self.process();
-		CmpAroundAspectFactory.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
 
 		stopWatch.stop();
 		

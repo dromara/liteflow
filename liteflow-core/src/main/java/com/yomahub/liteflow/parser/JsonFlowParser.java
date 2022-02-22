@@ -16,7 +16,7 @@ import com.yomahub.liteflow.exception.EmptyConditionValueException;
 import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.exception.NotSupportConditionException;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spi.factory.ContextCmpInitFactory;
+import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -56,7 +56,7 @@ public abstract class JsonFlowParser implements FlowParser {
         //在相应的环境下进行节点的初始化工作
         //在spring体系下会获得spring扫描后的节点，接入元数据
         //在非spring体系下是一个空实现，等于不做此步骤
-        ContextCmpInitFactory.loadContextCmpInit().initCmp();
+        ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
         //先在元数据里放上chain
         //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析

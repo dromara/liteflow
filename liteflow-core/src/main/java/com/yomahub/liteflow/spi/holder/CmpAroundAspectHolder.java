@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.spi.factory;
+package com.yomahub.liteflow.spi.holder;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
@@ -13,7 +13,7 @@ import java.util.ServiceLoader;
  * @author Bryan.Zhang
  * @since 2.6.11
  */
-public class CmpAroundAspectFactory {
+public class CmpAroundAspectHolder {
 
     private static CmpAroundAspect cmpAroundAspect;
 

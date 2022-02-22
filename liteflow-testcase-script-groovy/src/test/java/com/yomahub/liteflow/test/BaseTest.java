@@ -2,7 +2,7 @@ package com.yomahub.liteflow.test;
 
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.spi.factory.SpiFactoryCleaner;
+import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.junit.AfterClass;

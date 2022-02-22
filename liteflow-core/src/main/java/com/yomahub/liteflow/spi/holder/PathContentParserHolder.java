@@ -1,7 +1,6 @@
-package com.yomahub.liteflow.spi.factory;
+package com.yomahub.liteflow.spi.holder;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.PathContentParser;
 
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
 
-public class PathContentParserFactory {
+public class PathContentParserHolder {
 
     private static PathContentParser pathContentParser;
 
