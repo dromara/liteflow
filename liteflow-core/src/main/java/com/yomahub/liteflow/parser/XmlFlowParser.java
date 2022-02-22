@@ -7,27 +7,24 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spring.ComponentScanner;
+import com.yomahub.liteflow.spi.factory.ContextCmpInitFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 /**
  * xml形式的解析器
  * @author Bryan.Zhang
  */
-public abstract class XmlFlowParser extends FlowParser {
+public abstract class XmlFlowParser implements FlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
 
@@ -49,12 +46,10 @@ public abstract class XmlFlowParser extends FlowParser {
 
     //xml形式的主要解析过程
     public void parseDocument(List<Document> documentList) throws Exception {
-        //先进行Spring上下文中的节点的判断
-        for (Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-            if (!FlowBus.containNode(componentEntry.getKey())) {
-                FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
-            }
-        }
+        //在相应的环境下进行节点的初始化工作
+        //在spring体系下会获得spring扫描后的节点，接入元数据
+        //在非spring体系下是一个空实现，等于不做此步骤
+        ContextCmpInitFactory.loadContextCmpInit().initCmp();
 
         //先在元数据里放上chain
         //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析

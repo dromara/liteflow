@@ -12,9 +12,6 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.Slot;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @LiteflowComponent("b")
 public class BCmp extends NodeComponent {
 

@@ -11,14 +11,14 @@ package com.yomahub.liteflow.spring;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 组件扫描类，只要是NodeComponent的实现类，都可以被这个扫描器扫到

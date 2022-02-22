@@ -9,7 +9,6 @@ package com.yomahub.liteflow.test.privateDelivery.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
-import org.springframework.stereotype.Component;
 
 @LiteflowComponent("c")
 public class CCmp extends NodeComponent {

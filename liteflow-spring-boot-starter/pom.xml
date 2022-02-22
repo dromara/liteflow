@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-core</artifactId>
+            <artifactId>liteflow-spring</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

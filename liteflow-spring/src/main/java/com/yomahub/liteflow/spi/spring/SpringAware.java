@@ -1,9 +1,9 @@
-package com.yomahub.liteflow.util;
+package com.yomahub.liteflow.spi.spring;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.yomahub.liteflow.spi.ContextAware;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContextAware;
  * 基于代码形式的spring上下文工具类
  * @author Bryan.Zhang
  */
-public class SpringAware implements ApplicationContextAware {
+public class SpringAware implements ApplicationContextAware, ContextAware {
 
     private static ApplicationContext applicationContext = null;
 
@@ -29,7 +29,7 @@ public class SpringAware implements ApplicationContextAware {
         return applicationContext;
     }
 
-    public static <T> T getBean(String name) {
+    public <T> T getBean(String name) {
         try{
             T t = (T) applicationContext.getBean(name);
             return t;
@@ -38,7 +38,7 @@ public class SpringAware implements ApplicationContextAware {
         }
     }
 
-    public static <T> T getBean(Class<T> clazz) {
+    public <T> T getBean(Class<T> clazz) {
         try{
             T t = applicationContext.getBean(clazz);
             return t;
@@ -47,7 +47,7 @@ public class SpringAware implements ApplicationContextAware {
         }
     }
 
-    public static <T> T registerBean(String beanName, Class<T> c) {
+    public <T> T registerBean(String beanName, Class<T> c) {
         try{
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
             BeanDefinition beanDefinition = new GenericBeanDefinition();
@@ -59,18 +59,23 @@ public class SpringAware implements ApplicationContextAware {
         }
     }
 
-    public static <T> T registerBean(Class<T> c) {
+    public <T> T registerBean(Class<T> c) {
         return registerBean(c.getName(), c);
     }
 
-    public static <T> T registerOrGet(String beanName, Class<T> clazz) {
+    public <T> T registerOrGet(String beanName, Class<T> clazz) {
         if (ObjectUtil.isNull(applicationContext)){
             return null;
         }
-        T t = SpringAware.getBean(clazz);
+        T t = getBean(clazz);
         if (ObjectUtil.isNull(t)) {
-            t = SpringAware.registerBean(beanName, clazz);
+            t = registerBean(beanName, clazz);
         }
         return t;
+    }
+
+    @Override
+    public int priority() {
+        return 1;
     }
 }

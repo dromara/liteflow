@@ -1,8 +1,7 @@
 package com.yomahub.liteflow.annotation;
 
-import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
-
+import org.springframework.core.annotation.AliasFor;
 import java.lang.annotation.*;
 
 /**

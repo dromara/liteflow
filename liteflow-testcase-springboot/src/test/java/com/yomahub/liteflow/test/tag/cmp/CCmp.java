@@ -8,7 +8,6 @@
 package com.yomahub.liteflow.test.tag.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.NodeCondComponent;
 
 @LiteflowComponent("c")

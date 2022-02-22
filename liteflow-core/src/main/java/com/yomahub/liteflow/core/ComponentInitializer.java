@@ -2,13 +2,13 @@ package com.yomahub.liteflow.core;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import org.springframework.core.annotation.AnnotationUtils;
+import com.yomahub.liteflow.spi.factory.LiteflowComponentSupportFactory;
 
 /**
  * 组件初始化器
@@ -31,23 +31,17 @@ public class ComponentInitializer {
         nodeComponent.setSelf(nodeComponent);
         nodeComponent.setType(type);
 
-        //先取传进来的name值(配置文件中配置的)，再看有没有配置LiteflowComponent标注
+        //先取传进来的name值(配置文件中配置的)，再看有没有配置@LiteflowComponent标注
+        //@LiteflowComponent标注只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
         nodeComponent.setName(desc);
         if (nodeComponent.getType().equals(NodeTypeEnum.COMMON) && StrUtil.isBlank(nodeComponent.getName())){
-            //判断NodeComponent是否是标识了@LiteflowComponent的标注
-            //如果标注了，那么要从中取到name字段
-            LiteflowComponent liteflowComponent = nodeComponent.getClass().getAnnotation(LiteflowComponent.class);
-            if (ObjectUtil.isNotNull(liteflowComponent)) {
-                String name = liteflowComponent.name();
-                if (StrUtil.isNotBlank(name)) {
-                    nodeComponent.setName(name);
-                }
-            }
+            String name = LiteflowComponentSupportFactory.loadLiteflowComponentSupport().getCmpName(nodeComponent);
+            nodeComponent.setName(name);
         }
 
         //先从组件上取@RetryCount标注，如果没有，则看全局配置，全局配置如果不配置的话，默认是0
         //默认retryForExceptions为Exception.class
-        LiteflowRetry liteflowRetryAnnotation = AnnotationUtils.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
+        LiteflowRetry liteflowRetryAnnotation = AnnoUtil.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         if (ObjectUtil.isNotNull(liteflowRetryAnnotation)) {
             nodeComponent.setRetryCount(liteflowRetryAnnotation.retry());

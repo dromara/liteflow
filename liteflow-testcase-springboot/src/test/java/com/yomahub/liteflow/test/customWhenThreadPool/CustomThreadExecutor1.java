@@ -1,19 +1,17 @@
 package com.yomahub.liteflow.test.customWhenThreadPool;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
 import com.yomahub.liteflow.thread.ExecutorBuilder;
-import com.yomahub.liteflow.util.SpringAware;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class CustomThreadExecutor1 implements ExecutorBuilder {
 
     @Override
     public ExecutorService buildExecutor() {
-        LiteflowConfig liteflowConfig = SpringAware.getBean(LiteflowConfig.class);
+        LiteflowConfig liteflowConfig = ContextAwareFactory.loadContextAware().getBean(LiteflowConfig.class);
         //只有在非spring的场景下liteflowConfig才会为null
         if (ObjectUtil.isNull(liteflowConfig)) {
             liteflowConfig = new LiteflowConfig();

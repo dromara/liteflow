@@ -18,29 +18,21 @@ import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.ScriptCondComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.flow.Condition;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
-import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
+import com.yomahub.liteflow.spi.factory.ContextAwareFactory;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import com.yomahub.liteflow.util.SpringAware;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SerializationUtils;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -114,7 +106,7 @@ public class FlowBus {
             //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
             NodeComponent cmpInstance = null;
             if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
-                cmpInstance = SpringAware.registerOrGet(nodeId, cmpClazz);
+                cmpInstance = ContextAwareFactory.loadContextAware().registerOrGet(nodeId, cmpClazz);
             }
 
             if (ObjectUtil.isNull(cmpInstance)) {
