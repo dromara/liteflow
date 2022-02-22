@@ -60,6 +60,13 @@ public class FlowExecutor {
 
     private LiteflowConfig liteflowConfig;
 
+    public FlowExecutor() {
+    }
+
+    public FlowExecutor(LiteflowConfig liteflowConfig){
+        this.liteflowConfig = liteflowConfig;
+    }
+
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */

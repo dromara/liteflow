@@ -34,9 +34,7 @@ public class LiteflowMainAutoConfiguration {
 
     @Bean
     public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
-        FlowExecutor flowExecutor = new FlowExecutor();
-        flowExecutor.setLiteflowConfig(liteflowConfig);
-        return flowExecutor;
+        return new FlowExecutor(liteflowConfig);
     }
 
     @Bean
