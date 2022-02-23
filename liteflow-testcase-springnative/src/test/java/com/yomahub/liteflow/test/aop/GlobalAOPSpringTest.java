@@ -5,16 +5,11 @@ import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.aop.aspect.CmpAspect;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -23,13 +18,10 @@ import javax.annotation.Resource;
  * 切面场景单元测试
  * @author Bryan.Zhang
  */
+
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/aop/application.properties")
-@SpringBootTest(classes = LFGlobalAOPTest.class)
-@EnableAutoConfiguration
-@Import(CmpAspect.class)
-@ComponentScan({"com.yomahub.liteflow.test.aop.cmp1","com.yomahub.liteflow.test.aop.cmp2"})
-public class LFGlobalAOPTest extends BaseTest {
+@ContextConfiguration("classpath:/aop/application-global.xml")
+public class GlobalAOPSpringTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

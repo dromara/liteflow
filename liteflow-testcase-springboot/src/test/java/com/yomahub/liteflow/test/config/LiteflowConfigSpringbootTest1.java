@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,20 +25,17 @@ import javax.annotation.Resource;
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/config/application-local.properties")
-@SpringBootTest(classes = LiteflowConfigSpringbootTest.class)
+@TestPropertySource(value = "classpath:/config/application1.properties")
+@SpringBootTest(classes = LiteflowConfigSpringbootTest1.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.config.cmp"})
-public class LiteflowConfigSpringbootTest extends BaseTest {
+public class LiteflowConfigSpringbootTest1 extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
     
-    @Autowired
-    private ApplicationContext context;
-    
     @Test
     public void testConfig() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
+        LiteflowConfig config = LiteflowConfigGetter.get();
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("config/flow.yml", config.getRuleSource());

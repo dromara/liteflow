@@ -67,6 +67,12 @@ public class FlowExecutor {
         this.liteflowConfig = liteflowConfig;
     }
 
+    public static FlowExecutor loadInstance(LiteflowConfig liteflowConfig){
+        FlowExecutor flowExecutor = new FlowExecutor(liteflowConfig);
+        flowExecutor.init();
+        return flowExecutor;
+    }
+
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */

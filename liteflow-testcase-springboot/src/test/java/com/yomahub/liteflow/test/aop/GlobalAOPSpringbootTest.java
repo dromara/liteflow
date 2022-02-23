@@ -3,8 +3,10 @@ package com.yomahub.liteflow.test.aop;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.aop.aspect.CustomAspect;
+import com.yomahub.liteflow.test.aop.aspect.CmpAspect;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,32 +25,42 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/aop/application.properties")
-@SpringBootTest(classes = LFCustomAOPTest.class)
+@SpringBootTest(classes = GlobalAOPSpringbootTest.class)
 @EnableAutoConfiguration
-@Import(CustomAspect.class)
+@Import(CmpAspect.class)
 @ComponentScan({"com.yomahub.liteflow.test.aop.cmp1","com.yomahub.liteflow.test.aop.cmp2"})
-public class LFCustomAOPTest extends BaseTest {
+public class GlobalAOPSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试自定义AOP，串行场景
+    //测试全局AOP，串行场景
     @Test
-    public void testCustomAopS() {
+    public void testGlobalAopS() {
         LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("before_after", response.getSlot().getData("a"));
         Assert.assertEquals("before_after", response.getSlot().getData("b"));
         Assert.assertEquals("before_after", response.getSlot().getData("c"));
+        Assert.assertEquals("before_after", response.getSlot().getData("d"));
+        Assert.assertEquals("before_after", response.getSlot().getData("e"));
     }
 
-    //测试自定义AOP，并行场景
+    //测试全局AOP，并行场景
     @Test
-    public void testCustomAopP() {
+    public void testGlobalAopP() {
         LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain2", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("before_after", response.getSlot().getData("a"));
         Assert.assertEquals("before_after", response.getSlot().getData("b"));
         Assert.assertEquals("before_after", response.getSlot().getData("c"));
+        Assert.assertEquals("before_after", response.getSlot().getData("d"));
+        Assert.assertEquals("before_after", response.getSlot().getData("e"));
+    }
+
+    @AfterClass
+    public static void cleanScanCache(){
+        BaseTest.cleanScanCache();
+        ComponentScanner.cmpAroundAspect = null;
     }
 }

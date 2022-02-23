@@ -7,15 +7,13 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class BaseTest {
+public class BaseCommonTest {
 
     @Test
     public void testBase(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("base/flow.xml");
-        FlowExecutor executor = new FlowExecutor();
-        executor.setLiteflowConfig(config);
-        executor.init();
+        FlowExecutor executor = FlowExecutor.loadInstance(config);
         LiteflowResponse<DefaultSlot> response = executor.execute2Resp("chain1", "test0");
         Assert.assertTrue(response.isSuccess());
     }
