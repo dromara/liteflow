@@ -69,7 +69,6 @@ public abstract class NodeComponent{
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
-		monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
 	}
 
 	public void execute() throws Exception{
@@ -230,5 +229,13 @@ public abstract class NodeComponent{
 
 	public void setCondNodeMap(Map<String, Executable> condNodeMap){
 		this.condNodeMapTL.set(condNodeMap);
+	}
+
+	public MonitorBus getMonitorBus() {
+		return monitorBus;
+	}
+
+	public void setMonitorBus(MonitorBus monitorBus) {
+		this.monitorBus = monitorBus;
 	}
 }

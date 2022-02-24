@@ -6,8 +6,10 @@ import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.LiteflowComponentSupportHolder;
 
 /**
@@ -30,6 +32,12 @@ public class ComponentInitializer {
         nodeComponent.setNodeId(nodeId);
         nodeComponent.setSelf(nodeComponent);
         nodeComponent.setType(type);
+
+        //设置MonitorBus，如果没有就不注入
+        MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
+        if(ObjectUtil.isNotNull(monitorBus)){
+            nodeComponent.setMonitorBus(monitorBus);
+        }
 
         //先取传进来的name值(配置文件中配置的)，再看有没有配置@LiteflowComponent标注
         //@LiteflowComponent标注只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
