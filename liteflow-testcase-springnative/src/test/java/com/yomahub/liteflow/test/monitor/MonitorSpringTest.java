@@ -10,10 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -24,11 +21,8 @@ import javax.annotation.Resource;
  * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/monitor/application.properties")
-@SpringBootTest(classes = MonitorSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.monitor.cmp"})
-public class MonitorSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/monitor/application.xml")
+public class MonitorSpringTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
