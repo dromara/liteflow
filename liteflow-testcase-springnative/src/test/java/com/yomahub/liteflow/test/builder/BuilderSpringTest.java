@@ -11,20 +11,16 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
 //基于builder模式的单元测试
-//这里只是最基本的builder模式的测试，只是为了验证在springboot模式下的正常性
-//更详细的builder模式测试用例会单独拉testcase去做
+//这里只是最基本的builder模式的测试，只是为了验证在spring模式下的正常性
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BuilderSpringbootTest.class)
-@EnableAutoConfiguration
-public class BuilderSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/builder/application.xml")
+public class BuilderSpringTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

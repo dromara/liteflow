@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.test.enable;
 
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,13 +29,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ComponentScan({"com.yomahub.liteflow.test.enable.cmp"})
 public class LiteflowEnableSpringbootTest extends BaseTest {
 
-    @Autowired
-    private ApplicationContext context;
-
-
     @Test
     public void testEnable() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
+        LiteflowConfig config = LiteflowConfigGetter.get();
         Boolean enable = config.getEnable();
         if (enable) {
             System.out.println("成功启动，并且打印");

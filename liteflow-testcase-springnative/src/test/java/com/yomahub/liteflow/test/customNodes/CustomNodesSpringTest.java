@@ -9,25 +9,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
 /**
- * springboot环境下自定义声明节点的测试
+ * spring环境下自定义声明节点的测试
  * @author Bryan.Zhang
  * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/customNodes/application.properties")
-@SpringBootTest(classes = CustomNodesSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.customNodes.domain"})
-public class CustomNodesSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/customNodes/application.xml")
+public class CustomNodesSpringTest extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

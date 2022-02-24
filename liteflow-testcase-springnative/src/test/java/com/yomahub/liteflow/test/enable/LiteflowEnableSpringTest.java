@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,12 +28,9 @@ public class LiteflowEnableSpringTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    @Autowired
-    private ApplicationContext context;
-
     @Test
     public void testEnable() throws Exception {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
+        LiteflowConfig config = LiteflowConfigGetter.get();
         Boolean enable = config.getEnable();
         if (enable) {
             LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
