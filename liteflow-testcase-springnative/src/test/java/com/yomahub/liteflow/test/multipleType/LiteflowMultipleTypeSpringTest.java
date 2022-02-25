@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 
 /**
- * 测试springboot下混合格式规则的场景
+ * 测试spring下混合格式规则的场景
  * @author Bryan.Zhang
  * @since 2.5.10
  */

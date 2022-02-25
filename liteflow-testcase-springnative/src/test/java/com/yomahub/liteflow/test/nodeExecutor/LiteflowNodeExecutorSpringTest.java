@@ -14,14 +14,14 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的组件重试
+ * 测试spring下的组件重试
  *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:/nodeExecutor/application.xml")
-public class LiteflowNodeExecutorSpringbootTest extends BaseTest {
+public class LiteflowNodeExecutorSpringTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

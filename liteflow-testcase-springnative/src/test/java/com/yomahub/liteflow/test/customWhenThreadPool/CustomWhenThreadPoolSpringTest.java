@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境下异步线程超时日志打印测试
+ * spring环境下异步线程超时日志打印测试
  *
  * @author Bryan.Zhang
  * @since 2.6.4

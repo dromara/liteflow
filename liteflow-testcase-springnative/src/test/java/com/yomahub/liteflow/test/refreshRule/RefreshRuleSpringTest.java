@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境下重新加载规则测试
+ * spring环境下重新加载规则测试
  * @author Bryan.Zhang
  * @since 2.6.4
  */
