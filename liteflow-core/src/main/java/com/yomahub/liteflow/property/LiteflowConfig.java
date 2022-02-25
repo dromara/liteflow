@@ -170,7 +170,7 @@ public class LiteflowConfig {
 
     public Integer getWhenMaxWorkers() {
         if (ObjectUtil.isNull(whenMaxWorkers)) {
-            return Runtime.getRuntime().availableProcessors() * 2;
+            return 16;
         } else {
             return whenMaxWorkers;
         }
