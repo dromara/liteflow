@@ -206,7 +206,7 @@ public class LiteflowConfig {
 
     public Boolean isSupportMultipleType() {
         if (ObjectUtil.isNull(supportMultipleType)) {
-            return true;
+            return false;
         } else {
             return supportMultipleType;
         }
