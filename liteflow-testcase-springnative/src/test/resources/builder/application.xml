@@ -12,6 +12,6 @@
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig"/>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
-        <property name="liteflowConfig" ref="liteflowConfig"/>
+        <constructor-arg name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 </beans>
