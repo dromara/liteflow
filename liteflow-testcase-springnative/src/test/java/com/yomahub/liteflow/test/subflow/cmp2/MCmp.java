@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.subflow.cmp2;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowTest.RUN_TIME_SLOT;
+import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringTest.RUN_TIME_SLOT;
 
 
 @Component("m")

@@ -5,16 +5,12 @@ import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.exception.MultipleParsersException;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -25,11 +21,8 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/subflow/application-subInDifferentConfig1.properties")
-@SpringBootTest(classes = SubflowInDifferentConfigTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.subflow.cmp1","com.yomahub.liteflow.test.subflow.cmp2"})
-public class SubflowInDifferentConfigTest extends BaseTest {
+@ContextConfiguration("classpath:/subflow/application-subInDifferentConfig1.xml")
+public class SubflowInDifferentConfigSpringTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
@@ -41,13 +34,10 @@ public class SubflowInDifferentConfigTest extends BaseTest {
         Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getSlot().getExecuteStepStr());
     }
 
-    @Autowired
-    private ApplicationContext context;
-
     //主要测试有不同的配置类型后会不会报出既定的错误
     @Test(expected = MultipleParsersException.class)
     public void testExplicitSubFlow2() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
+        LiteflowConfig config = LiteflowConfigGetter.get();
         config.setRuleSource("subflow/flow-main.xml,subflow/flow-sub1.xml,subflow/flow-sub2.yml");
         flowExecutor.init();
     }

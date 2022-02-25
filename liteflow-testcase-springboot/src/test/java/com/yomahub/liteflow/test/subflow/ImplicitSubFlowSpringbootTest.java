@@ -7,7 +7,10 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -21,8 +24,11 @@ import java.util.Set;
  * @author justin.xu
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/subflow/application-implicit.xml")
-public class ImplicitSubFlowTest extends BaseTest {
+@TestPropertySource(value = "classpath:/subflow/application-implicit.properties")
+@SpringBootTest(classes = ImplicitSubFlowSpringbootTest.class)
+@EnableAutoConfiguration
+@ComponentScan({"com.yomahub.liteflow.test.subflow.cmp2"})
+public class ImplicitSubFlowSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
