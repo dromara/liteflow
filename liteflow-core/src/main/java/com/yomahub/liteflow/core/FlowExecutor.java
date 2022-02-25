@@ -60,17 +60,18 @@ public class FlowExecutor {
 
     private LiteflowConfig liteflowConfig;
 
-    public FlowExecutor() {
+    public FlowExecutor(){
     }
 
     public FlowExecutor(LiteflowConfig liteflowConfig){
         this.liteflowConfig = liteflowConfig;
+        if (liteflowConfig.isParseOnStart()){
+            this.init();
+        }
     }
 
     public static FlowExecutor loadInstance(LiteflowConfig liteflowConfig){
-        FlowExecutor flowExecutor = new FlowExecutor(liteflowConfig);
-        flowExecutor.init();
-        return flowExecutor;
+        return new FlowExecutor(liteflowConfig);
     }
 
     /**
@@ -358,7 +359,7 @@ public class FlowExecutor {
 
         T slot = DataBus.getSlot(slotIndex);
         if (ObjectUtil.isNull(slot)) {
-            throw new NoAvailableSlotException("the slot is not exist");
+            throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
         }
 
         if (StrUtil.isBlank(slot.getRequestId())) {
