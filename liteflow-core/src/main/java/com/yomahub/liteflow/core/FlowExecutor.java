@@ -61,6 +61,8 @@ public class FlowExecutor {
     private LiteflowConfig liteflowConfig;
 
     public FlowExecutor(){
+        //初始化DataBus
+        DataBus.init();
     }
 
     public FlowExecutor(LiteflowConfig liteflowConfig){
@@ -68,6 +70,8 @@ public class FlowExecutor {
         if (liteflowConfig.isParseOnStart()){
             this.init();
         }
+        //初始化DataBus
+        DataBus.init();
     }
 
     public static FlowExecutor loadInstance(LiteflowConfig liteflowConfig){
@@ -159,9 +163,6 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
-
-        //初始化DataBus
-        DataBus.init();
     }
 
     /**

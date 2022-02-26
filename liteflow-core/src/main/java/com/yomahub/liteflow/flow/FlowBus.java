@@ -177,10 +177,5 @@ public class FlowBus {
         } else if (type.equals(FlowParserTypeEnum.TYPE_YML)) {
             new LocalYmlFlowParser().parse(content);
         }
-
-        //这里是一个防御性策略，在parse-on-start参数为false的时候
-        //启动时马上刷新流程规则，这时DataBus还未init，所以这时需要init一下
-        //在DataBus里对init有判断，所以init不会执行多遍
-        DataBus.init();
     }
 }
