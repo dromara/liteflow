@@ -3,17 +3,11 @@ package com.yomahub.liteflow.test.component;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.ReflectionUtils;
-
-import javax.annotation.Resource;
 import java.lang.reflect.UndeclaredThrowableException;
 
 /**
@@ -22,13 +16,16 @@ import java.lang.reflect.UndeclaredThrowableException;
  *
  * @author donguo.tao
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/component/application.xml")
-public class ComponentSpringTest extends BaseTest {
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentSpringTest.class);
+public class FlowExecutorTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+    private static FlowExecutor flowExecutor;
+
+    @BeforeClass
+    public static void init(){
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("component/flow.xml");
+        flowExecutor = FlowExecutor.loadInstance(config);
+    }
 
     //isAccess方法的功能测试
     @Test
@@ -40,16 +37,16 @@ public class ComponentSpringTest extends BaseTest {
 
     //组件抛错的功能点测试
     @Test(expected = ArithmeticException.class)
-    public void testComponentException() throws Exception {
+    public void testComponentException() throws Throwable {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", 0);
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("/ by zero", response.getMessage());
-        ReflectionUtils.rethrowException(response.getCause());
+        throw response.getCause();
     }
 
     //isContinueOnError方法的功能点测试
     @Test
-    public void testIsContinueOnError() throws Exception {
+    public void testIsContinueOnError() throws Throwable {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", 0);
         Assert.assertTrue(response.isSuccess());
         Assert.assertNull(response.getCause());
@@ -85,5 +82,4 @@ public class ComponentSpringTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g",response.getSlot().getExecuteStepStr());
     }
-
 }

@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.component;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,11 +27,11 @@ import java.lang.reflect.UndeclaredThrowableException;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/component/application.properties")
-@SpringBootTest(classes = FlowExecutorTest.class)
+@SpringBootTest(classes = FlowExecutorSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.component.cmp1","com.yomahub.liteflow.test.component.cmp2"})
-public class FlowExecutorTest extends BaseTest {
-    private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorTest.class);
+public class FlowExecutorSpringbootTest extends BaseTest {
+    private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorSpringbootTest.class);
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -55,11 +54,11 @@ public class FlowExecutorTest extends BaseTest {
     }
 
     //isContinueOnError方法的功能点测试
-    @Test(expected = UndeclaredThrowableException.class)
+    @Test
     public void testIsContinueOnError() throws Exception {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", 0);
         Assert.assertTrue(response.isSuccess());
-        ReflectionUtils.rethrowException(response.getCause());
+        Assert.assertNull(response.getCause());
     }
 
     //isEnd方法的功能点测试
