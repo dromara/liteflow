@@ -18,6 +18,7 @@ import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ public class FlowExecutor {
 
     public FlowExecutor(LiteflowConfig liteflowConfig){
         this.liteflowConfig = liteflowConfig;
+        //把liteFlowConfig设到LiteFlowGetter中去
+        LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
         if (liteflowConfig.isParseOnStart()){
             this.init();
         }
@@ -425,5 +428,6 @@ public class FlowExecutor {
 
     public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
         this.liteflowConfig = liteflowConfig;
+        LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
     }
 }

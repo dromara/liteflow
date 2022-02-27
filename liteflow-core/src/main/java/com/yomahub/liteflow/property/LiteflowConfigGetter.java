@@ -28,4 +28,8 @@ public class LiteflowConfigGetter {
     public static void clean(){
         liteflowConfig = null;
     }
+
+    public static void setLiteflowConfig(LiteflowConfig liteflowConfig){
+        LiteflowConfigGetter.liteflowConfig = liteflowConfig;
+    }
 }
