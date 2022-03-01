@@ -182,7 +182,7 @@ public class LiteflowConfig {
 
     public Integer getWhenQueueLimit() {
         if (ObjectUtil.isNull(whenQueueLimit)) {
-            return 100;
+            return 512;
         } else {
             return whenQueueLimit;
         }
