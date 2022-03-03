@@ -3,10 +3,9 @@ package com.yomahub.liteflow.test.customWhenThreadPool;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.thread.ExecutorBuilder;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
 public class CustomThreadExecutor2 implements ExecutorBuilder {
     @Override
