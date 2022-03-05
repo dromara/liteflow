@@ -32,6 +32,7 @@ public class LiteflowMainAutoConfiguration {
         return new ComponentScanner(liteflowConfig);
     }
 
+    //实例化FlowExecutor
     @Bean
     public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
         FlowExecutor flowExecutor = new FlowExecutor();
@@ -39,6 +40,7 @@ public class LiteflowMainAutoConfiguration {
         return flowExecutor;
     }
 
+    //FlowExecutor的初始化工作，和实例化分开来
     @Bean
     @ConditionalOnProperty(prefix = "liteflow", name = "parse-on-start", havingValue = "true")
     public LiteflowExecutorInit liteflowExecutorInit(FlowExecutor flowExecutor) {
