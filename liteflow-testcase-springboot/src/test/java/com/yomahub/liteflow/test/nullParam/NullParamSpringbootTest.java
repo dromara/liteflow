@@ -21,10 +21,10 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/nullParam/application.properties")
-@SpringBootTest(classes = NullParamTest.class)
+@SpringBootTest(classes = NullParamSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.nullParam.cmp"})
-public class NullParamTest {
+public class NullParamSpringbootTest {
 
     @Autowired
     private FlowExecutor flowExecutor;
