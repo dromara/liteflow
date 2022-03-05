@@ -1,24 +1,25 @@
 package com.yomahub.liteflow.test.emptyflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.Resource;
 
 /**
  * 切面场景单元测试
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/emptyFlow/application.xml")
 public class EmptyFlowTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+    private static FlowExecutor flowExecutor;
+
+    @BeforeClass
+    public static void init(){
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("emptyflow/flow.xml");
+        flowExecutor = FlowExecutor.loadInstance(config);
+    }
 
     //测试空flow的情况下，liteflow是否能正常启动
     @Test
