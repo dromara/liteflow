@@ -3,6 +3,7 @@ package com.yomahub.liteflow.spi.local;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
 
@@ -31,7 +32,10 @@ public class LocalPathContentParser implements PathContentParser {
                     path = CLASSPATH_URL_PREFIX + path;
                 }
             }
-            contentList.add(ResourceUtil.readUtf8Str(path));
+            String content = ResourceUtil.readUtf8Str(path);
+            if (StrUtil.isNotBlank(content)){
+                contentList.add(ResourceUtil.readUtf8Str(path));
+            }
         }
 
         return contentList;
