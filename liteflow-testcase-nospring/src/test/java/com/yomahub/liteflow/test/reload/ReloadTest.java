@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.reload;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -22,7 +23,7 @@ public class ReloadTest extends BaseTest {
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("reload/flow.xml");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //用reloadRule去重新加载，这里如果配置是放在本地。如果想修改，则要去修改target下面的flow.xml

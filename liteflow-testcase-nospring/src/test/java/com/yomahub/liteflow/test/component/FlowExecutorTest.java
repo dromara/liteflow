@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.component;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -24,7 +25,7 @@ public class FlowExecutorTest extends BaseTest {
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("component/flow.xml");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //isAccess方法的功能测试

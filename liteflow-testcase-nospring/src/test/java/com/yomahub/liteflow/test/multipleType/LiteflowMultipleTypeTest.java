@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.multipleType;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -23,7 +24,7 @@ public class LiteflowMultipleTypeTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("multipleType/flow.xml,multipleType/flow.yml");
         config.setSupportMultipleType(true);
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     @Test

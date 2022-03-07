@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.flowmeta;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -20,7 +21,7 @@ public class FlowMetaTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("flowmeta/flow.xml");
         config.setParseOnStart(false);
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //测试动态添加元信息节点

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.refreshRule;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
@@ -25,7 +26,7 @@ public class RefreshRuleTest extends BaseTest {
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("refreshRule/flow.xml");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //测试普通刷新流程的场景

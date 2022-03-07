@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.nullParam;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -22,7 +23,7 @@ public class NullParamTest {
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("nullParam/flow.xml");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     /**

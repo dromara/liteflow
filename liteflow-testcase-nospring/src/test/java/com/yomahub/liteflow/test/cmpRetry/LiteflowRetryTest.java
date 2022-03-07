@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.cmpRetry;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -28,7 +29,7 @@ public class LiteflowRetryTest extends BaseTest {
         config.setRuleSource("cmpRetry/flow.xml");
         config.setRetryCount(3);
         config.setSlotSize(512);
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //全局重试配置测试

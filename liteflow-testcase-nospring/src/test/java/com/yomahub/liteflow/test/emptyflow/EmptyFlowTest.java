@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.emptyflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.BeforeClass;
@@ -18,7 +19,7 @@ public class EmptyFlowTest extends BaseTest {
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("emptyflow/flow.xml");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     //测试空flow的情况下，liteflow是否能正常启动

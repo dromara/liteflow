@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.nodeExecutor;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -26,7 +27,7 @@ public class LiteflowNodeExecutorTest extends BaseTest {
         config.setRetryCount(3);
         config.setSlotSize(512);
         config.setNodeExecutorClass("com.yomahub.liteflow.test.nodeExecutor.CustomerDefaultNodeExecutor");
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     // 默认执行器测试

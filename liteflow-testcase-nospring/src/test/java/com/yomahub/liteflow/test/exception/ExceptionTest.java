@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
@@ -28,7 +29,7 @@ public class ExceptionTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("exception/flow.xml");
         config.setWhenMaxWaitSeconds(1);
-        flowExecutor = FlowExecutor.loadInstance(config);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
     @Test(expected = FlowExecutorNotInitException.class)
