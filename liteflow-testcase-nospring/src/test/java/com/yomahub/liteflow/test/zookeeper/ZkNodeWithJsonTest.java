@@ -2,8 +2,10 @@ package com.yomahub.liteflow.test.zookeeper;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
@@ -13,31 +15,23 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.Resource;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * spring环境下的zk配置源功能测试
+ * springboot环境下的zk配置源功能测试
  * ZK节点存储数据的格式为json文件
  * @author zendwang
  * @since 2.5.0
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/zookeeper/application-json.xml")
-public class ZkNodeWithJsonSpringTest extends BaseTest {
+public class ZkNodeWithJsonTest extends BaseTest {
     
     private static final String ZK_NODE_PATH = "/lite-flow/flow";
-    
+
     private static TestingServer zkServer;
-    
-    @Resource
-    private FlowExecutor flowExecutor;
-    
+
+    private static FlowExecutor flowExecutor;
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         zkServer = new TestingServer(21810);
@@ -50,7 +44,7 @@ public class ZkNodeWithJsonSpringTest extends BaseTest {
                 public byte[] serialize(final Object o) throws ZkMarshallingError {
                     return o.toString().getBytes(Charset.forName("UTF-8"));
                 }
-                
+
                 @Override
                 public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
                     return new String(bytes, Charset.forName("UTF-8"));
@@ -62,13 +56,16 @@ public class ZkNodeWithJsonSpringTest extends BaseTest {
             latch.countDown();
         }).start();
         latch.await();
+
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("json:127.0.0.1:21810");
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
     
     @Test
-    public void test() {
+    public void testZkNodeWithJson() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getSlot().getExecuteStepStr());
     }
     
     @AfterClass

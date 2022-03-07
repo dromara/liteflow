@@ -1,21 +1,5 @@
 {
   "flow": {
-    "nodes": {
-      "node": [
-        {
-          "id": "a",
-          "class": "com.yomahub.liteflow.test.config.cmp.ACmp"
-        },
-        {
-          "id": "b",
-          "class": "com.yomahub.liteflow.test.config.cmp.BCmp"
-        },
-        {
-          "id": "c",
-          "class": "com.yomahub.liteflow.test.config.cmp.CCmp"
-        }
-      ]
-    },
     "chain": [
       {
         "name": "chain1",
