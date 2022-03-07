@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * springboot环境下的zk配置源功能测试
+ * 非spring环境下的zk配置源功能测试
  * ZK节点存储数据的格式为yml文件
  * @author zendwang
  * @since 2.5.0

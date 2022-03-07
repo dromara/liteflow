@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * springboot下的yml parser测试用例
+ * 非spring下的yml parser测试用例
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -26,7 +26,7 @@ public class YmlParserTest extends BaseTest {
         flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
-    //测试无springboot场景的yml parser
+    //测试无spring场景的yml parser
     @Test
     public void testYmlParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");

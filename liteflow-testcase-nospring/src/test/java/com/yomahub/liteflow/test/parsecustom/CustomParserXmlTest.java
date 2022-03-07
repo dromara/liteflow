@@ -26,7 +26,7 @@ public class CustomParserXmlTest extends BaseTest {
         flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
-    //测试springboot场景的自定义json parser
+    //测试非spring场景的自定义json parser
     @Test
     public void testXmlCustomParser() {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "args");

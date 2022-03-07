@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * springboot环境下slot扩容测试
+ * 非spring环境下slot扩容测试
  * @author Bryan.Zhang
  * @since 2.5.0
  */

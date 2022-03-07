@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * 测试springboot下混合格式规则的场景
+ * 测试非spring下混合格式规则的场景
  * @author Bryan.Zhang
  * @since 2.5.10
  */

@@ -12,7 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * springboot环境下参数单元测试
+ * 非spring环境下参数单元测试
  * @author zendwang
  * @since 2.5.0
  */

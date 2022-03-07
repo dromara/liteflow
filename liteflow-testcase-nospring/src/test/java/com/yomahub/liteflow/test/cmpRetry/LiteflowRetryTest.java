@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的节点执行器
+ * 测试非spring下的节点执行器
  * @author Bryan.Zhang
  * @since 2.5.10
  */
