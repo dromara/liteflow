@@ -92,20 +92,19 @@ public class Chain implements Executable {
 
     // 执行pre节点
     public void executePre(Integer slotIndex) throws Exception {
-        //先把pre的节点过滤出来
-        List<Condition> preConditionList =filterCondition(ConditionTypeEnum.TYPE_PRE);
-        for (Condition finallyCondition : preConditionList){
-            for(Executable executableItem : finallyCondition.getNodeList()){
-                executableItem.execute(slotIndex);
-            }
-        }
+        doExecuteForPointConditionType(slotIndex, ConditionTypeEnum.TYPE_PRE);
     }
 
     public void executeFinally(Integer slotIndex) throws Exception {
-        //先把finally的节点过滤出来
-        List<Condition> finallyConditionList =filterCondition(ConditionTypeEnum.TYPE_FINALLY);
-        for (Condition finallyCondition : finallyConditionList){
-            for(Executable executableItem : finallyCondition.getNodeList()){
+        doExecuteForPointConditionType(slotIndex, ConditionTypeEnum.TYPE_FINALLY);
+    }
+
+    // 执行指定的conditionType的节点
+    private void doExecuteForPointConditionType(Integer slotIndex, ConditionTypeEnum conditionTypeEnum)  throws Exception {
+        //先把指定condition类型的节点过滤出来
+        List<Condition> conditions =filterCondition(conditionTypeEnum);
+        for (Condition condition : conditions){
+            for(Executable executableItem : condition.getNodeList()){
                 executableItem.execute(slotIndex);
             }
         }
