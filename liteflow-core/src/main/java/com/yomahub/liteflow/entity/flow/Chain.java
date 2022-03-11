@@ -79,17 +79,6 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
-        try {
-            executeBody(slotIndex);
-        } finally {
-            executeFinally(slotIndex);
-        }
-    }
-
-    // 执行主体的逻辑
-    private void executeBody(Integer slotIndex) throws Exception {
-        //循环chain里包含的condition，每一个condition分四种类型：pre,then,when,finally
-        //这里conditionList其实已经是有序的，pre一定在最前面，finally一定在最后面
         for (Condition condition : conditionList) {
             if (condition instanceof PreCondition){
                 for (Executable executableItem : condition.getNodeList()) {

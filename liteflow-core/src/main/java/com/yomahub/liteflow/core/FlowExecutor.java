@@ -398,6 +398,15 @@ public class FlowExecutor {
             }
             slot.setException(e);
         } finally {
+            try{
+                if (ObjectUtil.isNotNull(chain)){
+                    chain.executeFinally(slotIndex);
+                }
+            }catch (Exception e){
+                String errMsg = StrUtil.format("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
+                LOG.error(errMsg, e);
+            }
+
             if (!isInnerChain) {
                 slot.printStep();
                 DataBus.releaseSlot(slotIndex);
