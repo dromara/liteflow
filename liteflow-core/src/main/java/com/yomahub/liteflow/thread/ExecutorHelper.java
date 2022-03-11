@@ -117,7 +117,7 @@ public class ExecutorHelper {
      * 根据线程执行构建者Class类名获取ExecutorBuilder实例
      * </p>
      *
-     * @param threadExecutorClass
+     * @param threadExecutorClass 线程执行class全量名
      * @return com.yomahub.liteflow.thread.ExecutorBuilder
      * @author sikadai
      * @date 2022/1/21 23:04
