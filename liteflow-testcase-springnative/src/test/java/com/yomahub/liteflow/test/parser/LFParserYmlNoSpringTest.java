@@ -18,11 +18,9 @@ public class LFParserYmlNoSpringTest extends BaseTest {
     //测试无spring场景的yml parser
     @Test
     public void testNoSpring() {
-        FlowExecutor executor = new FlowExecutor();
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setRuleSource("parser/flow.yml");
-        executor.setLiteflowConfig(liteflowConfig);
-        executor.init();
+        FlowExecutor executor = new FlowExecutor(liteflowConfig);
         LiteflowResponse<DefaultSlot> response = executor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }

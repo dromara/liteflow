@@ -20,9 +20,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testMethodExecute2Resp() {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
-        FlowExecutor executor = new FlowExecutor();
-        executor.setLiteflowConfig(config);
-        executor.init();
+        FlowExecutor executor = new FlowExecutor(config);
         LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test0", CustomSlot.class);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("custom", response.getSlot().getName());
@@ -32,9 +30,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testMethodExecute2RespWithException() throws Exception{
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow0.json");
-        FlowExecutor executor = new FlowExecutor();
-        executor.setLiteflowConfig(config);
-        executor.init();
+        FlowExecutor executor = new FlowExecutor(config);
         LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test1", CustomSlot.class);
         Assert.assertFalse(response.isSuccess());
         ReflectionUtils.rethrowException(response.getCause());
@@ -44,9 +40,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testMethodExecute() throws Exception {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
-        FlowExecutor executor = new FlowExecutor();
-        executor.setLiteflowConfig(config);
-        executor.init();
+        FlowExecutor executor = new FlowExecutor(config);
         CustomSlot slot = executor.execute("chain1", "test0", CustomSlot.class);
         Assert.assertEquals("custom", slot.getName());
     }
@@ -55,9 +49,7 @@ public class FlowExecutorTest extends BaseTest {
     public void testMethodExecuteWithException() throws Exception {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow0.json");
-        FlowExecutor executor = new FlowExecutor();
-        executor.setLiteflowConfig(config);
-        executor.init();
+        FlowExecutor executor = new FlowExecutor(config);
         executor.execute("chain1", "test1", CustomSlot.class);
     }
 }

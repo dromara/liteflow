@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
  */
 public class LiteflowExecutorInit implements InitializingBean {
 
-    private FlowExecutor flowExecutor;
+    private final FlowExecutor flowExecutor;
 
     public LiteflowExecutorInit(FlowExecutor flowExecutor) {
         this.flowExecutor = flowExecutor;

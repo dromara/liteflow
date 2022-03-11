@@ -253,7 +253,9 @@
 		<module>liteflow-testcase-springnative</module>
 		<module>liteflow-testcase-script-qlexpress</module>
 		<module>liteflow-testcase-script-groovy</module>
-    </modules>
+		<module>liteflow-testcase-nospring</module>
+		<module>liteflow-spring</module>
+	</modules>
 
 	<distributionManagement>
 		<snapshotRepository>

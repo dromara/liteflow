@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境下异步线程超时日志打印测试
+ * springboot环境下自定义声明节点的测试
  * @author Bryan.Zhang
  * @since 2.6.4
  */

@@ -9,7 +9,7 @@
 
     <context:component-scan base-package="com.yomahub.liteflow.test.nullParam.cmp" />
 
-    <bean id="springAware" class="com.yomahub.liteflow.util.SpringAware"/>
+    <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
 
     <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
 
@@ -18,6 +18,6 @@
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
-        <property name="liteflowConfig" ref="liteflowConfig"/>
+        <constructor-arg name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 </beans>

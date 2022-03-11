@@ -14,9 +14,10 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.entity.executor.NodeExecutor;
 import com.yomahub.liteflow.entity.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.yomahub.liteflow.entity.data.CmpStep;
 import com.yomahub.liteflow.entity.data.CmpStepType;
@@ -25,7 +26,6 @@ import com.yomahub.liteflow.entity.data.Slot;
 import com.yomahub.liteflow.entity.flow.Executable;
 import com.yomahub.liteflow.entity.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
-import com.yomahub.liteflow.spring.ComponentScanner;
 
 import java.util.Map;
 
@@ -39,7 +39,6 @@ public abstract class NodeComponent{
 
 	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
-	@Autowired(required = false)
 	private MonitorBus monitorBus;
 
 	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
@@ -69,16 +68,22 @@ public abstract class NodeComponent{
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
+	public NodeComponent() {
+	}
+
 	public void execute() throws Exception{
 		Slot slot = this.getSlot();
 		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
 		slot.addStep(new CmpStep(nodeId, name, CmpStepType.SINGLE));
+
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		self.beforeProcess(this.getNodeId(), slot);
+		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
+		//非spring环境下，全局切面为空实现
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
 		self.process();
-		self.afterProcess(this.getNodeId(), slot);
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
 
 		stopWatch.stop();
 		
@@ -103,21 +108,6 @@ public abstract class NodeComponent{
 	}
 
 	public abstract void process() throws Exception;
-
-	//process前置处理
-	public void beforeProcess(String nodeId, Slot slot) {
-		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot);
-		}
-	}
-
-	//process后置处理
-	public void afterProcess(String nodeId, Slot slot) {
-		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot);
-		}
-	}
-
 
 	//是否进入该节点
 	public boolean isAccess(){
@@ -239,5 +229,13 @@ public abstract class NodeComponent{
 
 	public void setCondNodeMap(Map<String, Executable> condNodeMap){
 		this.condNodeMapTL.set(condNodeMap);
+	}
+
+	public MonitorBus getMonitorBus() {
+		return monitorBus;
+	}
+
+	public void setMonitorBus(MonitorBus monitorBus) {
+		this.monitorBus = monitorBus;
 	}
 }

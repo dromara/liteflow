@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-core</artifactId>
+            <artifactId>liteflow-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -55,6 +55,12 @@
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.13</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

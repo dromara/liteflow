@@ -1,0 +1,2 @@
+# 无Spring的实现
+com.yomahub.liteflow.spi.local.LocalContextAware

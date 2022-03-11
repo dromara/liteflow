@@ -24,7 +24,8 @@ import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.util.SpringAware;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,26 @@ public class FlowExecutor {
     private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
 
     private LiteflowConfig liteflowConfig;
+
+    public FlowExecutor(){
+        //初始化DataBus
+        DataBus.init();
+    }
+
+    public FlowExecutor(LiteflowConfig liteflowConfig){
+        this.liteflowConfig = liteflowConfig;
+        //把liteFlowConfig设到LiteFlowGetter中去
+        LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
+        if (liteflowConfig.isParseOnStart()){
+            this.init();
+        }
+        //初始化DataBus
+        DataBus.init();
+    }
+
+    public static FlowExecutor loadInstance(LiteflowConfig liteflowConfig){
+        return new FlowExecutor(liteflowConfig);
+    }
 
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
@@ -142,9 +163,6 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
-
-        //初始化DataBus
-        DataBus.init();
     }
 
     /**
@@ -172,11 +190,11 @@ public class FlowExecutor {
             Class<?> c = Class.forName(path);
             switch (pattern) {
                 case TYPE_XML:
-                    return (XmlFlowParser) SpringAware.registerBean(c);
+                    return (XmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 case TYPE_JSON:
-                    return (JsonFlowParser) SpringAware.registerBean(c);
+                    return (JsonFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 case TYPE_YML:
-                    return (YmlFlowParser) SpringAware.registerBean(c);
+                    return (YmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 default:
             }
         } else if (isZKConfig(path)) {
@@ -342,7 +360,7 @@ public class FlowExecutor {
 
         T slot = DataBus.getSlot(slotIndex);
         if (ObjectUtil.isNull(slot)) {
-            throw new NoAvailableSlotException("the slot is not exist");
+            throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
         }
 
         if (StrUtil.isBlank(slot.getRequestId())) {
@@ -398,5 +416,6 @@ public class FlowExecutor {
 
     public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
         this.liteflowConfig = liteflowConfig;
+        LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
     }
 }

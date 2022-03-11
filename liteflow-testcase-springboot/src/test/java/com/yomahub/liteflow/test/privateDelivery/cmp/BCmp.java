@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-@Component("b")
 @LiteflowComponent("b")
 public class BCmp extends NodeComponent {
 

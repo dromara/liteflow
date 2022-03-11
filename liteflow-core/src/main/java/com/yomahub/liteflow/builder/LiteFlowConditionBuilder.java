@@ -11,7 +11,7 @@ import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.RegexEntity;
 import com.yomahub.liteflow.parser.RegexNodeEntity;
-import com.yomahub.liteflow.util.SpringAware;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.ArrayList;
 
@@ -87,15 +87,17 @@ public class LiteFlowConditionBuilder {
                 Chain chain = FlowBus.getChain(item.getId());
                 this.condition.getNodeList().add(chain);
             } else {
-                //元数据没有的话，从spring上下文再取一遍，这部分是为了防止标有@Lazy懒加载的组件
-                NodeComponent nodeComponent =  SpringAware.getBean(item.getId());
+                //元数据没有的话，从spring上下文再取一遍
+                //这部分有2个目的
+                //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用代码的形式加载chain这种情况。
+                NodeComponent nodeComponent =  ContextAwareHolder.loadContextAware().getBean(item.getId());
                 if (ObjectUtil.isNotNull(nodeComponent)){
                     FlowBus.addSpringScanNode(item.getId(), nodeComponent);
-                    return setValue(value);
+                    setValue(item.getId());
+                } else{
+                    String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
+                    throw new ExecutableItemNotFoundException(errorMsg);
                 }
-
-                String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
-                throw new ExecutableItemNotFoundException(errorMsg);
             }
         }
         return this;

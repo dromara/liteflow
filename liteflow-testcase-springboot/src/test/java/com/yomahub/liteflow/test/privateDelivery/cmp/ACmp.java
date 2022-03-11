@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 
-@Component("a")
 @LiteflowComponent("a")
 public class ACmp extends NodeComponent {
 

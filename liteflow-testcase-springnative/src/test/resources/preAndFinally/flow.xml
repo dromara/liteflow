@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        <pre value="p1,p2"/>
+        <then value="a,b,c"/>
+        <finally value="f1,f2"/>
+    </chain>
+
+    <chain name="chain2">
+        <then value="a"/>
+        <pre value="p1,p2"/>
+        <finally value="f1,f2"/>
+        <then value="b,c"/>
+    </chain>
+
+    <chain name="chain3">
+        <pre value="p1,p2"/>
+        <then value="a,d,c"/>
+        <finally value="f1,f2"/>
+    </chain>
+
+    <chain name="chain4">
+        <then value="a,d,c"/>
+        <finally value="f3"/>
+    </chain>
+</flow>

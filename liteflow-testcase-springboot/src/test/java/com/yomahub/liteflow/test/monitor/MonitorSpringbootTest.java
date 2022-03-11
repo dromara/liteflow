@@ -3,7 +3,10 @@ package com.yomahub.liteflow.test.monitor;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.monitor.MonitorBus;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +38,13 @@ public class MonitorSpringbootTest extends BaseTest {
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
 
-        Thread.sleep(20000);
+        Thread.sleep(10000);
+    }
+
+    @AfterClass
+    public static void clean(){
+        MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
+        monitorBus.closeScheduler();
     }
 
 }

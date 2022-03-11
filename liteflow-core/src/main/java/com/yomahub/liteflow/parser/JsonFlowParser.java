@@ -10,17 +10,15 @@ import com.alibaba.fastjson.parser.Feature;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.EmptyConditionValueException;
 import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
 import com.yomahub.liteflow.exception.NotSupportConditionException;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.spring.ComponentScanner;
+import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**
@@ -29,7 +27,7 @@ import java.util.*;
  * @author guodongqing
  * @since 2.5.0
  */
-public abstract class JsonFlowParser extends FlowParser {
+public abstract class JsonFlowParser implements FlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(JsonFlowParser.class);
 
@@ -55,11 +53,10 @@ public abstract class JsonFlowParser extends FlowParser {
 
     //json格式，解析过程
     public void parseJsonObject(List<JSONObject> flowJsonObjectList) throws Exception {
-        for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-            if (!FlowBus.containNode(componentEntry.getKey())) {
-                FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
-            }
-        }
+        //在相应的环境下进行节点的初始化工作
+        //在spring体系下会获得spring扫描后的节点，接入元数据
+        //在非spring体系下是一个空实现，等于不做此步骤
+        ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
         //先在元数据里放上chain
         //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
