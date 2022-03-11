@@ -1,16 +1,12 @@
 package com.yomahub.liteflow.test.emptyflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.aop.aspect.CustomAspect;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,10 +19,10 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/emptyFlow/application.properties")
-@SpringBootTest(classes = EmptyFlowTest.class)
+@SpringBootTest(classes = EmptyFlowSpringbootTest.class)
 @EnableAutoConfiguration
 @Import(CustomAspect.class)
-public class EmptyFlowTest extends BaseTest {
+public class EmptyFlowSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

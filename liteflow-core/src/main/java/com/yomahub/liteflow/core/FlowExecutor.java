@@ -74,10 +74,6 @@ public class FlowExecutor {
         DataBus.init();
     }
 
-    public static FlowExecutor loadInstance(LiteflowConfig liteflowConfig){
-        return new FlowExecutor(liteflowConfig);
-    }
-
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */

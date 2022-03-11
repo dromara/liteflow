@@ -41,6 +41,6 @@ public class LiteflowConfigSpringTest extends BaseTest {
         Assert.assertEquals(300000L, config.getPeriod().longValue());
         Assert.assertFalse(config.getEnableLog());
         Assert.assertEquals(Runtime.getRuntime().availableProcessors() * 2, config.getWhenMaxWorkers().longValue());
-        Assert.assertEquals(100, config.getWhenQueueLimit().longValue());
+        Assert.assertEquals(512, config.getWhenQueueLimit().longValue());
     }
 }

@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境下自定义声明节点的测试
+ * 不通过spring扫描的方式，通过在配置文件里定义nodes的方式
  * @author Bryan.Zhang
  * @since 2.6.4
  */

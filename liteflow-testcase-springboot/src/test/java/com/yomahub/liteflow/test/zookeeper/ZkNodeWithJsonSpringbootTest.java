@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.zookeeper;
 
+import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
@@ -48,7 +49,7 @@ public class ZkNodeWithJsonSpringbootTest extends BaseTest {
         zkServer = new TestingServer(21810);
         CountDownLatch latch = new CountDownLatch(1);
         new Thread(() -> {
-            String data = "{\"flow\":{\"chain\":[{\"name\":\"chain1\",\"condition\":[{\"type\":\"then\",\"value\":\"a,b,c\"}]}]}}";
+            String data = ResourceUtil.readUtf8Str("zookeeper/flow.json");
             ZkClient zkClient = new ZkClient("127.0.0.1:21810");
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
