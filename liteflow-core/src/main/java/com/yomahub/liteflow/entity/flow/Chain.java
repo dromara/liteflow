@@ -80,11 +80,7 @@ public class Chain implements Executable {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
         for (Condition condition : conditionList) {
-            if (condition instanceof PreCondition){
-                for (Executable executableItem : condition.getNodeList()) {
-                    executableItem.execute(slotIndex);
-                }
-            } else if (condition instanceof ThenCondition) {
+            if (condition instanceof ThenCondition) {
                 for (Executable executableItem : condition.getNodeList()) {
                     executableItem.execute(slotIndex);
                 }
@@ -94,15 +90,32 @@ public class Chain implements Executable {
         }
     }
 
+    // 执行pre节点
+    public void executePre(Integer slotIndex) throws Exception {
+        //先把pre的节点过滤出来
+        List<Condition> preConditionList =filterCondition(ConditionTypeEnum.TYPE_PRE);
+        for (Condition finallyCondition : preConditionList){
+            for(Executable executableItem : finallyCondition.getNodeList()){
+                executableItem.execute(slotIndex);
+            }
+        }
+    }
+
     public void executeFinally(Integer slotIndex) throws Exception {
         //先把finally的节点过滤出来
-        List<Condition> finallyConditionList = conditionList.stream().filter(condition ->
-                condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY)).collect(Collectors.toList());
+        List<Condition> finallyConditionList =filterCondition(ConditionTypeEnum.TYPE_FINALLY);
         for (Condition finallyCondition : finallyConditionList){
             for(Executable executableItem : finallyCondition.getNodeList()){
                 executableItem.execute(slotIndex);
             }
         }
+    }
+
+    // 根据节点condition类型过去出节点列表
+    private List<Condition> filterCondition(ConditionTypeEnum conditionTypeEnum) {
+        assert conditionTypeEnum != null;
+        return  conditionList.stream().filter(condition ->
+                condition.getConditionType().equals(conditionTypeEnum)).collect(Collectors.toList());
     }
 
     @Override

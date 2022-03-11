@@ -383,7 +383,8 @@ public class FlowExecutor {
                 String errorMsg = StrUtil.format("[{}]:couldn't find chain with the id[{}]", slot.getRequestId(), chainId);
                 throw new ChainNotFoundException(errorMsg);
             }
-
+            // 执行前置
+            chain.executePre(slotIndex);
             // 执行chain
             chain.execute(slotIndex);
         } catch (ChainEndException e) {
