@@ -13,9 +13,15 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import com.yomahub.liteflow.entity.data.DataBus;
+import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -23,15 +29,6 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yomahub.liteflow.entity.flow.Chain;
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.parser.LocalXmlFlowParser;
-import com.yomahub.liteflow.parser.XmlFlowParser;
-import com.yomahub.liteflow.parser.ZookeeperXmlFlowParser;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -386,7 +383,8 @@ public class FlowExecutor {
                 String errorMsg = StrUtil.format("[{}]:couldn't find chain with the id[{}]", slot.getRequestId(), chainId);
                 throw new ChainNotFoundException(errorMsg);
             }
-
+            // 执行前置
+            chain.executePre(slotIndex);
             // 执行chain
             chain.execute(slotIndex);
         } catch (ChainEndException e) {

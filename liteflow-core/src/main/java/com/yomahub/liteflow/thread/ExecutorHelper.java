@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,14 +117,15 @@ public class ExecutorHelper {
      * 根据线程执行构建者Class类名获取ExecutorBuilder实例
      * </p>
      *
-     * @param threadExecutorClass
+     * @param threadExecutorClass 线程执行class全量名
      * @return com.yomahub.liteflow.thread.ExecutorBuilder
      * @author sikadai
      * @date 2022/1/21 23:04
      */
     private ExecutorBuilder getExecutorBuilder(String threadExecutorClass) {
         try {
-            return (ExecutorBuilder) Class.forName(threadExecutorClass).newInstance();
+            Class<ExecutorBuilder> executorClass  = (Class<ExecutorBuilder>) Class.forName(threadExecutorClass);
+            return ContextAwareHolder.loadContextAware().registerBean(executorClass);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ThreadExecutorServiceCreateException(e.getMessage());

@@ -24,8 +24,13 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.*;
-import java.util.concurrent.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -74,15 +79,8 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
-
-        //循环chain里包含的condition，每一个condition分四种类型：pre,then,when,finally
-        //这里conditionList其实已经是有序的，pre一定在最前面，finally一定在最后面
         for (Condition condition : conditionList) {
-            if (condition instanceof PreCondition){
-                for (Executable executableItem : condition.getNodeList()) {
-                    executableItem.execute(slotIndex);
-                }
-            } else if (condition instanceof ThenCondition) {
+            if (condition instanceof ThenCondition) {
                 for (Executable executableItem : condition.getNodeList()) {
                     executableItem.execute(slotIndex);
                 }
@@ -92,15 +90,31 @@ public class Chain implements Executable {
         }
     }
 
+    // 执行pre节点
+    public void executePre(Integer slotIndex) throws Exception {
+        doExecuteForPointConditionType(slotIndex, ConditionTypeEnum.TYPE_PRE);
+    }
+
     public void executeFinally(Integer slotIndex) throws Exception {
-        //先把finally的节点过滤出来
-        List<Condition> finallyConditionList = conditionList.stream().filter(condition ->
-                condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY)).collect(Collectors.toList());
-        for (Condition finallyCondition : finallyConditionList){
-            for(Executable executableItem : finallyCondition.getNodeList()){
+        doExecuteForPointConditionType(slotIndex, ConditionTypeEnum.TYPE_FINALLY);
+    }
+
+    // 执行指定的conditionType的节点
+    private void doExecuteForPointConditionType(Integer slotIndex, ConditionTypeEnum conditionTypeEnum)  throws Exception {
+        //先把指定condition类型的节点过滤出来
+        List<Condition> conditions =filterCondition(conditionTypeEnum);
+        for (Condition condition : conditions){
+            for(Executable executableItem : condition.getNodeList()){
                 executableItem.execute(slotIndex);
             }
         }
+    }
+
+    // 根据节点condition类型过去出节点列表
+    private List<Condition> filterCondition(ConditionTypeEnum conditionTypeEnum) {
+        assert conditionTypeEnum != null;
+        return  conditionList.stream().filter(condition ->
+                condition.getConditionType().equals(conditionTypeEnum)).collect(Collectors.toList());
     }
 
     @Override
