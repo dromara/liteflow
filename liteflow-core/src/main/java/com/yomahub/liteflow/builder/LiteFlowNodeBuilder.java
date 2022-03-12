@@ -1,13 +1,16 @@
 package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NodeBuildException;
+import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.FlowBus;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +73,19 @@ public class LiteFlowNodeBuilder {
 
     public LiteFlowNodeBuilder setType(NodeTypeEnum type) {
         this.node.setType(type);
+        return this;
+    }
+
+    // 设置类型的编码
+    public LiteFlowNodeBuilder setTypeCode(String nodeTypeCode) {
+       if (StringUtils.isBlank(nodeTypeCode)) {
+            throw new NullParamException("nodeTypeCode is blank");
+        }
+        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(nodeTypeCode);
+        if (ObjectUtil.isNull(nodeTypeEnum)) {
+            throw new NullParamException(StrUtil.format("nodeTypeCode[{}] is error", nodeTypeCode));
+        }
+        setType(nodeTypeEnum);
         return this;
     }
 

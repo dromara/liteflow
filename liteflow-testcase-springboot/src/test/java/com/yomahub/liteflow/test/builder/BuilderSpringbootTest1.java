@@ -95,40 +95,40 @@ public class BuilderSpringbootTest1 extends BaseTest {
 
     //基于普通组件的builder模式测试
     @Test
-    public void testBuilderForClass() throws Exception {
+    public void testBuilderForClassAndCode() throws Exception {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(ACmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("b")
                 .setName("组件B")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(BCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("c")
                 .setName("组件C")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(CCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("d")
                 .setName("组件D")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(DCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("e")
                 .setName("组件E")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(ECmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("f")
                 .setName("组件F")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(FCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("g")
                 .setName("组件G")
-                .setType(NodeTypeEnum.COMMON)
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
                 .setNodeComponentClazz(GCmp.class)
                 .build();
 
