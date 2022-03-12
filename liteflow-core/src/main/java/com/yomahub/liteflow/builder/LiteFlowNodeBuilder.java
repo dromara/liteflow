@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.data.DataBus;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -57,6 +58,13 @@ public class LiteFlowNodeBuilder {
 
     public LiteFlowNodeBuilder setClazz(String clazz) {
         this.node.setClazz(clazz);
+        return this;
+    }
+
+    // 设置节点组件的class
+    public LiteFlowNodeBuilder setNodeComponentClazz(Class<? extends NodeComponent> nodeComponentClass) {
+        assert nodeComponentClass != null;
+        setClazz(nodeComponentClass.getName());
         return this;
     }
 
