@@ -167,8 +167,8 @@ public abstract class AbsSlot implements Slot {
 	}
 
 	public String getExecuteStepStr(){
-		StringBuffer str = new StringBuffer();
-		CmpStep cmpStep = null;
+		StringBuilder str = new StringBuilder();
+		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
 			str.append(cmpStep);
