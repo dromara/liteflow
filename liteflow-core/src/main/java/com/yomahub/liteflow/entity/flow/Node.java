@@ -157,7 +157,9 @@ public class Node implements Executable,Cloneable{
 	}
 
 	public Node copy() throws Exception{
-		return (Node) this.clone();
+		Node node = (Node) this.clone();
+		node.condNodeMap = new HashMap<>();
+		return node;
 	}
 
 	@Override
