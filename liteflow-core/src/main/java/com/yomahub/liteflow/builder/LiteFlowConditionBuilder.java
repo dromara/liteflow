@@ -1,10 +1,12 @@
 package com.yomahub.liteflow.builder;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.entity.flow.Chain;
 import com.yomahub.liteflow.entity.flow.Condition;
+import com.yomahub.liteflow.entity.data.ExecutableEntity;
 import com.yomahub.liteflow.entity.flow.Node;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.ExecutableItemNotFoundException;
@@ -14,6 +16,7 @@ import com.yomahub.liteflow.parser.RegexNodeEntity;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Condition基于代码形式的组装器
@@ -58,49 +61,85 @@ public class LiteFlowConditionBuilder {
 
         RegexEntity regexEntity;
         String itemExpression;
-        RegexNodeEntity item;
         for (String s : condArray) {
             itemExpression = s.trim();
             regexEntity = RegexEntity.parse(itemExpression);
-            item = regexEntity.getItem();
-            if (FlowBus.containNode(item.getId())) {
-                Node node = FlowBus.copyNode(item.getId());
-                node.setTag(regexEntity.getItem().getTag());
-                this.condition.getNodeList().add(node);
-                //这里判断是不是条件节点，条件节点会含有realItem，也就是括号里的node
-                if (ObjectUtil.isNotNull(regexEntity.getRealItemArray())) {
-                    for (RegexNodeEntity realItem : regexEntity.getRealItemArray()) {
-                        if (FlowBus.containNode(realItem.getId())) {
-                            Node condNode = FlowBus.copyNode(realItem.getId());
-                            condNode.setTag(realItem.getTag());
-                            node.setCondNode(condNode.getId(), condNode);
-                        } else if (hasChain(realItem.getId())) {
-                            Chain chain = FlowBus.getChain(realItem.getId());
-                            node.setCondNode(chain.getChainName(), chain);
-                        } else{
-                            String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
-                            throw new ExecutableItemNotFoundException(errorMsg);
-                        }
-                    }
-                }
-            } else if (hasChain(item.getId())) {
-                Chain chain = FlowBus.getChain(item.getId());
-                this.condition.getNodeList().add(chain);
-            } else {
-                //元数据没有的话，从spring上下文再取一遍
-                //这部分有2个目的
-                //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用代码的形式加载chain这种情况。
-                NodeComponent nodeComponent =  ContextAwareHolder.loadContextAware().getBean(item.getId());
-                if (ObjectUtil.isNotNull(nodeComponent)){
-                    FlowBus.addSpringScanNode(item.getId(), nodeComponent);
-                    setValue(item.getId());
-                } else{
-                    String errorMsg = StrUtil.format("executable node[{}] is not found!", regexEntity.getItem().getId());
-                    throw new ExecutableItemNotFoundException(errorMsg);
-                }
+            // 先转化为执行实体对象
+            ExecutableEntity executableEntity = convertExecutableEntity(regexEntity);
+            // 构建节点或流程
+            setExecutable(executableEntity);
+        }
+        return this;
+    }
+
+    // 将正则表达式实体转化为执行实体
+    private ExecutableEntity convertExecutableEntity(RegexEntity regexEntity) {
+        RegexNodeEntity item = regexEntity.getItem();
+        ExecutableEntity executableEntity = new ExecutableEntity(item.getId(), item.getTag());
+        if (ObjectUtil.isNotNull(regexEntity.getRealItemArray())) {
+            for (RegexNodeEntity realItem : regexEntity.getRealItemArray()) {
+                executableEntity.addNodeCondComponent(new ExecutableEntity(realItem.getId(), realItem.getTag()));
+            }
+        }
+        return executableEntity;
+    }
+
+    // 设置执行节点或流程列表
+    public LiteFlowConditionBuilder setExecutables(List<ExecutableEntity> executableEntities) {
+        if (CollUtil.isEmpty(executableEntities)) {
+            return this;
+        }
+        for (ExecutableEntity conditionNodeEntity : executableEntities) {
+            setExecutable(conditionNodeEntity);
+        }
+        return this;
+    }
+
+    // 设置执行节点或者流程
+    public LiteFlowConditionBuilder setExecutable(ExecutableEntity executableEntity) {
+        if (FlowBus.containNode(executableEntity.getId())) {
+            Node node = FlowBus.copyNode(executableEntity.getId());
+            node.setTag(executableEntity.getTag());
+            this.condition.getNodeList().add(node);
+            // 构建条件节点-通过是否包含条件节点列表-解析条件节点会含有realItem，也就是括号里的node
+            buildCondNode(node, executableEntity.getNodeCondComponents());
+        } else if (hasChain(executableEntity.getId())) {
+            Chain chain = FlowBus.getChain(executableEntity.getId());
+            this.condition.getNodeList().add(chain);
+        } else {
+            //元数据没有的话，从spring上下文再取一遍
+            //这部分有2个目的
+            //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用代码的形式加载chain这种情况。
+            NodeComponent nodeComponent =  ContextAwareHolder.loadContextAware().getBean(executableEntity.getId());
+            if (ObjectUtil.isNotNull(nodeComponent)){
+                FlowBus.addSpringScanNode(executableEntity.getId(), nodeComponent);
+                setExecutable(executableEntity);
+            } else{
+                String errorMsg = StrUtil.format("executable node[{}] is not found!", executableEntity.getId());
+                throw new ExecutableItemNotFoundException(errorMsg);
             }
         }
         return this;
+    }
+
+    // 构建条件节点
+    private void buildCondNode(Node node, List<ExecutableEntity> executableEntities) {
+        if (CollUtil.isEmpty(executableEntities)) {
+            return;
+        }
+        for (ExecutableEntity realItem : executableEntities) {
+            if (FlowBus.containNode(realItem.getId())) {
+                Node condNode = FlowBus.copyNode(realItem.getId());
+                condNode.setTag(realItem.getTag());
+                node.setCondNode(condNode.getId(), condNode);
+            } else if (hasChain(realItem.getId())) {
+                Chain chain = FlowBus.getChain(realItem.getId());
+                node.setCondNode(chain.getChainName(), chain);
+            } else{
+                String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
+                throw new ExecutableItemNotFoundException(errorMsg);
+            }
+        }
     }
 
     public Condition build(){

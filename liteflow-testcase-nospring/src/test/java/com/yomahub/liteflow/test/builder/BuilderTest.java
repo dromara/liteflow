@@ -7,6 +7,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.entity.data.DefaultSlot;
 import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.entity.data.ExecutableEntity;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
@@ -139,6 +140,74 @@ public class BuilderTest extends BaseTest {
         ).setCondition(
                 LiteFlowConditionBuilder.createWhenCondition()
                         .setValue("e(f|g|chain2)").build()
+        ).build();
+
+        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
+    }
+
+    //基于普通组件的builder模式测试
+    @Test
+    public void testBuilderForConditionNode() throws Exception {
+        LiteFlowNodeBuilder.createNode().setId("a")
+                .setName("组件A")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(ACmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("b")
+                .setName("组件B")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(BCmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("c")
+                .setName("组件C")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(CCmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("d")
+                .setName("组件D")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(DCmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("e")
+                .setName("组件E")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(ECmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("f")
+                .setName("组件F")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(FCmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("g")
+                .setName("组件G")
+                .setTypeCode(NodeTypeEnum.COMMON.getCode())
+                .setNodeComponentClazz(GCmp.class)
+                .build();
+
+
+        LiteFlowChainBuilder.createChain().setChainName("chain2").setCondition(
+                LiteFlowConditionBuilder.createThenCondition()
+                        .setExecutable(new ExecutableEntity().setId("c"))
+                        .setExecutable(new ExecutableEntity().setId("d"))
+                        .build()
+        ).build();
+
+        LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
+                LiteFlowConditionBuilder
+                        .createWhenCondition()
+                        .setExecutable(new ExecutableEntity().setId("a").setTag("hello"))
+                        .setExecutable(new ExecutableEntity().setId("b"))
+                        .build()
+        ).setCondition(
+                LiteFlowConditionBuilder.createWhenCondition()
+                        .setExecutable(
+                                new ExecutableEntity().setId("e")
+                                        .addNodeCondComponent(new ExecutableEntity().setId("f").setTag("FHello"))
+                                        .addNodeCondComponent(new ExecutableEntity().setId("g"))
+                                        .addNodeCondComponent(new ExecutableEntity().setId("chain2")
+                                        )).build()
         ).build();
 
         LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
