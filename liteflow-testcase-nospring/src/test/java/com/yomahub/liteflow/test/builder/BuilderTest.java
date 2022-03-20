@@ -72,7 +72,7 @@ public class BuilderTest extends BaseTest {
 
 
         LiteFlowChainBuilder.createChain().setChainName("chain2").setCondition(
-                LiteFlowConditionBuilder.createWhenCondition().setValue("c,d").build()
+                LiteFlowConditionBuilder.createThenCondition().setValue("c,d").build()
         ).build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
