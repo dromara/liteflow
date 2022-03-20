@@ -52,6 +52,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
             BeanDefinition beanDefinition = new GenericBeanDefinition();
             beanDefinition.setBeanClassName(c.getName());
+            beanFactory.setAllowBeanDefinitionOverriding(true);
             beanFactory.registerBeanDefinition(beanName, beanDefinition);
             return getBean(beanName);
         }catch (Exception e){
