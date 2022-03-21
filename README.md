@@ -28,12 +28,6 @@ liteFlow is a lightweight , fast component-based process engine framework / rule
 * Very low loss to the system, can be stable in the core business of large-scale microservices
 * Simple monitoring to know the running time ranking of each component
 
-## Gitee Star Chart
-[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/3NHPVWVK.png)](https://giteye.net/chart/3NHPVWVK)
-
-## List of Contributors
-[![Giteye chart](https://chart.giteye.net/gitee/dromara/liteFlow/DHU59WRM.png)](https://giteye.net/chart/DHU59WRM)
-
 **WECHAT OFFICIAL ACCOUNT**
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group
