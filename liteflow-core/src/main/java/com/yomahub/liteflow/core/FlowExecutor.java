@@ -45,9 +45,9 @@ public class FlowExecutor {
 
     private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
 
-    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.xml$";
-    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.json$";
-    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w_\\-\\@\\/\\*]+\\.yml$";
+    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.xml$";
+    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.json$";
+    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
 
     private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
     private static final String FORMATE_JSON_CONFIG_REGEX = "json:.+";
