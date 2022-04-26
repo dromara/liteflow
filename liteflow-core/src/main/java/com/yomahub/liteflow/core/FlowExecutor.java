@@ -283,6 +283,11 @@ public class FlowExecutor {
         this.execute(chainId, param, slotClazz, slotIndex, true);
     }
 
+    public <T extends Slot> LiteflowResponse<T> invoke2Resp(String chainId, Object param, Class<T> slotClazz,
+                       Integer slotIndex){
+        return this.execute2Resp(chainId, param, slotClazz, slotIndex, true);
+    }
+
     public <T extends Slot> void invoke(String nodeId, Integer slotIndex) throws Exception {
         Node node = FlowBus.getNode(nodeId);
         node.execute(slotIndex);
