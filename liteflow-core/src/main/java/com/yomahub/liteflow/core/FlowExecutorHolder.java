@@ -22,6 +22,10 @@ public class FlowExecutorHolder {
         return flowExecutor;
     }
 
+    public static void setHolder(FlowExecutor flowExecutor){
+        FlowExecutorHolder.flowExecutor = flowExecutor;
+    }
+
     public static void clean(){
         flowExecutor = null;
     }

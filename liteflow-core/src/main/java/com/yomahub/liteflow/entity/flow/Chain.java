@@ -133,13 +133,13 @@ public class Chain implements Executable {
         Slot slot = DataBus.getSlot(slotIndex);
 
         //此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
-        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutor(condition.getThreadExecutorClass());
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(condition.getThreadExecutorClass());
 
         //获得liteflow的参数
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
         //定义是否中断参数
-        //这里为什么要定义成数组呢，因为后面lumbda要用到，根据final不能修改引用的原则，这里用了数组对象
+        //这里为什么要定义成数组呢，因为后面lambda要用到，根据final不能修改引用的原则，这里用了数组对象
         final boolean[] interrupted = {false};
 
         //这里主要是做了封装CompletableFuture对象，用lumbda表达式做了很多事情，这句代码要仔细理清

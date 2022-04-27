@@ -26,6 +26,7 @@ import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 流程规则主要执行器类
@@ -58,7 +61,9 @@ public class FlowExecutor {
 
     private LiteflowConfig liteflowConfig;
 
-    public FlowExecutor(){
+    public FlowExecutor() {
+        //设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
+        FlowExecutorHolder.setHolder(this);
         //初始化DataBus
         DataBus.init();
     }
@@ -67,6 +72,8 @@ public class FlowExecutor {
         this.liteflowConfig = liteflowConfig;
         //把liteFlowConfig设到LiteFlowGetter中去
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
+        //设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
+        FlowExecutorHolder.setHolder(this);
         if (liteflowConfig.isParseOnStart()){
             this.init();
         }
@@ -327,6 +334,12 @@ public class FlowExecutor {
         return this.execute2Resp(chainId, param, slotClazz, null, false);
     }
 
+    public <T extends Slot> Future<LiteflowResponse<T>> execute2Future(String chainId, Object param, Class<T> slotClazz) {
+        return ExecutorHelper.loadInstance().buildMainExecutor(liteflowConfig.getMainExecutorClass()).submit(()
+                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, slotClazz, null, false));
+
+    }
+
     public <T extends Slot> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> slotClazz, Integer slotIndex,
                                                              boolean isInnerChain) {
         LiteflowResponse<T> response = new LiteflowResponse<>();
@@ -427,6 +440,7 @@ public class FlowExecutor {
 
     public void setLiteflowConfig(LiteflowConfig liteflowConfig) {
         this.liteflowConfig = liteflowConfig;
+        //把liteFlowConfig设到LiteFlowGetter中去
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
     }
 }

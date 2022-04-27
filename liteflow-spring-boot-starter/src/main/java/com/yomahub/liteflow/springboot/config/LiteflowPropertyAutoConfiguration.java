@@ -42,6 +42,8 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setZkNode(property.getZkNode());
         liteflowConfig.setPrintBanner(property.isPrintBanner());
         liteflowConfig.setNodeExecutorClass(property.getNodeExecutorClass());
+        liteflowConfig.setMainExecutorWorks(property.getMainExecutorWorks());
+        liteflowConfig.setMainExecutorClass(property.getMainExecutorClass());
         return liteflowConfig;
     }
 }

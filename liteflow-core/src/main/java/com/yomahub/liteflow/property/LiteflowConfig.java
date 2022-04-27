@@ -76,6 +76,12 @@ public class LiteflowConfig {
     //是否打印liteflow banner
     private Boolean printBanner;
 
+    //FlowExecutor的execute2Future的线程数
+    private Integer mainExecutorWorks;
+
+    //FlowExecutor的execute2Future的自定义线程池
+    private String mainExecutorClass;
+
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
             return true;
@@ -254,7 +260,7 @@ public class LiteflowConfig {
 
     public String getThreadExecutorClass() {
         if (StrUtil.isBlank(threadExecutorClass)){
-            return "com.yomahub.liteflow.thread.LiteFlowDefaultExecutorBuilder";
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultWhenExecutorBuilder";
         }else{
             return threadExecutorClass;
         }
@@ -274,5 +280,29 @@ public class LiteflowConfig {
 
     public void setNodeExecutorClass(String nodeExecutorClass) {
         this.nodeExecutorClass = nodeExecutorClass;
+    }
+
+    public Integer getMainExecutorWorks() {
+        if (ObjectUtil.isNull(mainExecutorWorks)){
+            return 64;
+        }else{
+            return mainExecutorWorks;
+        }
+    }
+
+    public void setMainExecutorWorks(Integer mainExecutorWorks) {
+        this.mainExecutorWorks = mainExecutorWorks;
+    }
+
+    public String getMainExecutorClass() {
+        if (StrUtil.isBlank(mainExecutorClass)){
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultMainExecutorBuilder";
+        }else{
+            return mainExecutorClass;
+        }
+    }
+
+    public void setMainExecutorClass(String mainExecutorClass) {
+        this.mainExecutorClass = mainExecutorClass;
     }
 }

@@ -50,6 +50,12 @@ public class LiteflowProperty {
     // 节点执行器class全名
     private String nodeExecutorClass;
 
+    //FlowExecutor的execute2Future的线程数
+    private int mainExecutorWorks;
+
+    //FlowExecutor的execute2Future的自定义线程池
+    private String mainExecutorClass;
+
     public boolean isEnable() {
         return enable;
     }
@@ -152,5 +158,21 @@ public class LiteflowProperty {
 
     public void setNodeExecutorClass(String nodeExecutorClass) {
         this.nodeExecutorClass = nodeExecutorClass;
+    }
+
+    public int getMainExecutorWorks() {
+        return mainExecutorWorks;
+    }
+
+    public void setMainExecutorWorks(int mainExecutorWorks) {
+        this.mainExecutorWorks = mainExecutorWorks;
+    }
+
+    public String getMainExecutorClass() {
+        return mainExecutorClass;
+    }
+
+    public void setMainExecutorClass(String mainExecutorClass) {
+        this.mainExecutorClass = mainExecutorClass;
     }
 }

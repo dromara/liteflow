@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
@@ -87,46 +88,49 @@ public class ExecutorHelper {
         }
     }
 
-    //构建全局默认线程池
-    public ExecutorService buildExecutor() {
+    //构建默认when线程池
+    public ExecutorService buildWhenExecutor() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-        if (!executorServiceMap.containsKey(liteflowConfig.getThreadExecutorClass())) {
-            ExecutorService executorService = getExecutorBuilder(liteflowConfig.getThreadExecutorClass()).buildExecutor();
-            executorServiceMap.put(liteflowConfig.getThreadExecutorClass(), executorService);
-        }
-        return executorServiceMap.get(liteflowConfig.getThreadExecutorClass());
+        return buildWhenExecutor(liteflowConfig.getThreadExecutorClass());
     }
 
-    //构建线程池执行器 - 支持多个when公用一个线程池
-    public ExecutorService buildExecutor(String threadExecutorClass) {
-        if (StrUtil.isBlank(threadExecutorClass)) {
-            return buildExecutor();
+    //构建when线程池 - 支持多个when公用一个线程池
+    public ExecutorService buildWhenExecutor(String clazz) {
+        if (StrUtil.isBlank(clazz)) {
+            return buildWhenExecutor();
         }
-        ExecutorService executorServiceFromCache = executorServiceMap.get(threadExecutorClass);
-        if (executorServiceFromCache != null) {
-            return executorServiceFromCache;
-        } else {
-            ExecutorService executorService = getExecutorBuilder(threadExecutorClass).buildExecutor();
-            executorServiceMap.put(threadExecutorClass, executorService);
-            return executorService;
+        return getExecutorService(clazz);
+    }
+
+    //构建默认的FlowExecutor线程池，用于execute2Future方法
+    public ExecutorService buildMainExecutor(){
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        return buildMainExecutor(liteflowConfig.getMainExecutorClass());
+    }
+
+    public ExecutorService buildMainExecutor(String clazz){
+        if (StrUtil.isBlank(clazz)) {
+            return buildMainExecutor();
         }
+        return getExecutorService(clazz);
     }
 
     /**
-     * <p>
-     * 根据线程执行构建者Class类名获取ExecutorBuilder实例
-     * </p>
-     *
-     * @param threadExecutorClass 线程执行class全量名
-     * @return com.yomahub.liteflow.thread.ExecutorBuilder
-     * @author sikadai
-     * @date 2022/1/21 23:04
+     * 根据线程执行构建者Class类名获取ExecutorService实例
      */
-    private ExecutorBuilder getExecutorBuilder(String threadExecutorClass) {
-        try {
-            Class<ExecutorBuilder> executorClass  = (Class<ExecutorBuilder>) Class.forName(threadExecutorClass);
-            return ContextAwareHolder.loadContextAware().registerBean(executorClass);
-        } catch (Exception e) {
+    private ExecutorService getExecutorService(String clazz) {
+        try{
+            ExecutorService executorServiceFromCache = executorServiceMap.get(clazz);
+            if (ObjectUtil.isNotNull(executorServiceFromCache)) {
+                return executorServiceFromCache;
+            } else {
+                Class<ExecutorBuilder> executorClass  = (Class<ExecutorBuilder>) Class.forName(clazz);
+                ExecutorBuilder executorBuilder = ContextAwareHolder.loadContextAware().registerBean(executorClass);
+                ExecutorService executorService = executorBuilder.buildExecutor();
+                executorServiceMap.put(clazz, executorService);
+                return executorService;
+            }
+        }catch (Exception e){
             LOG.error(e.getMessage(), e);
             throw new ThreadExecutorServiceCreateException(e.getMessage());
         }

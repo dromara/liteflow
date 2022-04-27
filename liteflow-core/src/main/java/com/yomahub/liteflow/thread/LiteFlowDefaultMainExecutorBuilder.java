@@ -4,14 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
-/**
- * LiteFlow默认的并行多线程执行器实现
- * @author Bryan.Zhang
- * @since 2.6.6
- */
-public class LiteFlowDefaultExecutorBuilder implements ExecutorBuilder{
+public class LiteFlowDefaultMainExecutorBuilder implements ExecutorBuilder{
     @Override
     public ExecutorService buildExecutor() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
@@ -20,9 +15,9 @@ public class LiteFlowDefaultExecutorBuilder implements ExecutorBuilder{
             liteflowConfig = new LiteflowConfig();
         }
         return buildDefaultExecutor(
-                liteflowConfig.getWhenMaxWorkers(),
-                liteflowConfig.getWhenMaxWorkers(),
-                liteflowConfig.getWhenQueueLimit(),
-                "lf-when-thead-");
+                liteflowConfig.getMainExecutorWorks(),
+                liteflowConfig.getMainExecutorWorks(),
+                200,
+                "lf-main-thead-");
     }
 }
