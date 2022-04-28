@@ -178,4 +178,15 @@ public class FlowBus {
             new LocalYmlFlowParser().parse(content);
         }
     }
+
+    public static boolean removeChain(String chainId){
+        if (containChain(chainId)){
+            chainMap.remove(chainId);
+            return true;
+        }else{
+            String errMsg = StrUtil.format("cannot find the chain[{}]", chainId);
+            LOG.error(errMsg);
+            return false;
+        }
+    }
 }
