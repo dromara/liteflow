@@ -31,9 +31,21 @@
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
+      "name": "liteflow.main-executor-works",
+      "type": "java.lang.Integer",
+      "description": "Max thread count for main executor,only for FlowExecutor.execute2Future.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.main-executor-class",
+      "type": "java.lang.String",
+      "description": "Custom thread pool implement for main executor.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.thread-executor-class",
       "type": "java.lang.String",
-      "description": "Multi thread pool.",
+      "description": "Custom thread pool implement for when executor.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
