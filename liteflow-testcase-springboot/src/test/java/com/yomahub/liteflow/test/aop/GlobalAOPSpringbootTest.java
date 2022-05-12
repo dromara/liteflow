@@ -58,6 +58,16 @@ public class GlobalAOPSpringbootTest extends BaseTest {
         Assert.assertEquals("before_after", response.getSlot().getData("e"));
     }
 
+    @Test
+    public void testGlobalAopException() {
+        LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain3", "it's a request");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals("before_after", response.getSlot().getData("a"));
+        Assert.assertEquals("before_after", response.getSlot().getData("b"));
+        Assert.assertEquals("before_after", response.getSlot().getData("c"));
+        Assert.assertEquals("before_after", response.getSlot().getData("f"));
+    }
+
     @AfterClass
     public static void cleanScanCache(){
         BaseTest.cleanScanCache();

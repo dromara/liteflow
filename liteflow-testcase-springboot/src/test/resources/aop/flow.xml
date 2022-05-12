@@ -8,4 +8,8 @@
         <then value="a,b,c"/>
         <when value="d,e"/>
     </chain>
+
+    <chain name="chain3">
+        <then value="a,b,c,f"/>
+    </chain>
 </flow>

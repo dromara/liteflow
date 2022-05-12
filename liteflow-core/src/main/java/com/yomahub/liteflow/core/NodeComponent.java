@@ -82,8 +82,11 @@ public abstract class NodeComponent{
 		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		//非spring环境下，全局切面为空实现
 		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
-		self.process();
-		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
+		try{
+			self.process();
+		} finally {
+			CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
+		}
 
 		stopWatch.stop();
 		
