@@ -31,6 +31,11 @@ public class LocalContextAware implements ContextAware {
     }
 
     @Override
+    public <T> T registerBean(String beanName, Object bean) {
+        return (T)bean;
+    }
+
+    @Override
     public <T> T registerOrGet(String beanName, Class<T> clazz) {
         return registerBean(beanName, clazz);
     }

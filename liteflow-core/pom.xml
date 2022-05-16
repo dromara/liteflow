@@ -61,5 +61,9 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>transmittable-thread-local</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+		</dependency>
 	</dependencies>
 </project>

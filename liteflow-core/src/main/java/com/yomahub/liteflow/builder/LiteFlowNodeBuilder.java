@@ -64,6 +64,12 @@ public class LiteFlowNodeBuilder {
         return this;
     }
 
+    public LiteFlowNodeBuilder setClazz(Class<?> clazz){
+        assert clazz != null;
+        setClazz(clazz.getName());
+        return this;
+    }
+
     // 设置节点组件的class
     public LiteFlowNodeBuilder setNodeComponentClazz(Class<? extends NodeComponent> nodeComponentClass) {
         assert nodeComponentClass != null;

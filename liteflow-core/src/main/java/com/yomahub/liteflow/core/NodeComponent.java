@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public abstract class NodeComponent{
 
-	private static final Logger LOG = LoggerFactory.getLogger(NodeComponent.class);
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 

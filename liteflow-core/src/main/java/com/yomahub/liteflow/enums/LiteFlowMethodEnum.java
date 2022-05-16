@@ -1,0 +1,26 @@
+package com.yomahub.liteflow.enums;
+
+public enum LiteFlowMethodEnum {
+    PROCESS("process"),
+    PROCESS_COND("processCond"),
+    IS_ACCESS("isAccess"),
+
+    IS_END("isEnd"),
+    IS_CONTINUE_ON_ERROR("isContinueOnError"),
+
+    GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass");
+
+    private String methodName;
+
+    LiteFlowMethodEnum(String methodName){
+        this.methodName = methodName;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+}

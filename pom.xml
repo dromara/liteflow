@@ -55,6 +55,7 @@
 		<zkclient.version>0.10</zkclient.version>
 		<qlexpress.version>3.2.7</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
+		<bytebuddy.version>1.11.13</bytebuddy.version>
     </properties>
 
     <dependencyManagement>
@@ -177,6 +178,11 @@
 				<artifactId>groovy-jsr223</artifactId>
 				<version>${groovy.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy</artifactId>
+				<version>${bytebuddy.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -255,7 +261,8 @@
 		<module>liteflow-testcase-script-groovy</module>
 		<module>liteflow-testcase-nospring</module>
 		<module>liteflow-spring</module>
-	</modules>
+        <module>liteflow-testcase-declare-component</module>
+    </modules>
 
 	<distributionManagement>
 		<snapshotRepository>

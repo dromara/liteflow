@@ -28,8 +28,11 @@ import com.yomahub.liteflow.parser.LocalYmlFlowParser;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
+import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.spi.local.LocalContextAware;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
+import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +85,13 @@ public class FlowBus {
         nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, NodeTypeEnum.COMMON, null, nodeId)));
     }
 
-    public static void addCommonNode(String nodeId, String name, String cmpClazzStr) throws Exception {
-        Class<NodeComponent> cmpClazz = (Class<NodeComponent>) Class.forName(cmpClazzStr);
+    public static void addCommonNode(String nodeId, String name, String cmpClazzStr){
+        Class<?> cmpClazz;
+        try{
+            cmpClazz = Class.forName(cmpClazzStr);
+        }catch (Exception e){
+            throw new ComponentCannotRegisterException(e.getMessage());
+        }
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
@@ -99,18 +107,36 @@ public class FlowBus {
         addNode(nodeId, name, NodeTypeEnum.COND_SCRIPT, ScriptCondComponent.class, script);
     }
 
-    private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<? extends NodeComponent> cmpClazz, String script) {
+    private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
         try {
-            //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
-            //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
-            //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
+            //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
+            //如果不是声明式的，就用传统的方式进行判断
             NodeComponent cmpInstance = null;
-            if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
-                cmpInstance = ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
-            }
+            if (LiteFlowProxyUtil.isMarkedCmp(cmpClazz)){
+                //这里的逻辑要仔细看下
+                //如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
+                //由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
+                //所以spring体系下，无需再对这个bean做二次代理
+                //但是在非spring体系下，这个bean依旧是原来那个bean，所以需要对这个bean做一次代理
+                //这里用ContextAware的spi机制来判断是否spring体系
+                ContextAware contextAware = ContextAwareHolder.loadContextAware();
+                Object bean = ContextAwareHolder.loadContextAware().registerBean(nodeId, cmpClazz);
+                if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())){
+                    cmpInstance = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
+                }else {
+                    cmpInstance = (NodeComponent) bean;
+                }
+            }else{
+                //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
+                //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
+                //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
+                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
+                    cmpInstance = (NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
+                }
 
-            if (ObjectUtil.isNull(cmpInstance)) {
-                cmpInstance = cmpClazz.newInstance();
+                if (ObjectUtil.isNull(cmpInstance)) {
+                    cmpInstance = (NodeComponent) cmpClazz.newInstance();
+                }
             }
 
             //进行初始化

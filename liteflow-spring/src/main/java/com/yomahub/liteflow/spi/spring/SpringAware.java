@@ -4,11 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.yomahub.liteflow.spi.ContextAware;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * 基于代码形式的spring上下文工具类
@@ -62,6 +64,14 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
 
     public <T> T registerBean(Class<T> c) {
         return registerBean(c.getName(), c);
+    }
+
+    @Override
+    public <T> T registerBean(String beanName, Object bean) {
+        ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
+        DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) configurableApplicationContext.getAutowireCapableBeanFactory();
+        defaultListableBeanFactory.registerSingleton(beanName,bean);
+        return (T) configurableApplicationContext.getBean(beanName);
     }
 
     public <T> T registerOrGet(String beanName, Class<T> clazz) {
