@@ -1,5 +1,5 @@
 <p align="center">
-<a href="http://yomahub.com/liteflow/">
+<a href="https://liteflow.yomahub.com/">
     <img src="static/img/logo-main.png" alt="logo">
 </a>
 </p>
