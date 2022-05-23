@@ -7,8 +7,7 @@
  */
 package com.yomahub.liteflow.monitor;
 
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.monitor.CompStatistics;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.BoundedPriorityBlockingQueue;
 import org.slf4j.Logger;

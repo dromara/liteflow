@@ -4,7 +4,7 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

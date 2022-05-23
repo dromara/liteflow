@@ -7,7 +7,7 @@
  */
 package com.yomahub.liteflow.aop;
 
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 /**
  * 全局组件拦截器接口

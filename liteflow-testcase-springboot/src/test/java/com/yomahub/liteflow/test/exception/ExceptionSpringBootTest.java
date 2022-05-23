@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultSlot;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;

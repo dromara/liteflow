@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.entity.flow.parallel;
+package com.yomahub.liteflow.flow.parallel;
 
 import java.util.concurrent.*;
 import java.util.function.Function;

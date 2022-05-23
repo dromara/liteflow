@@ -5,9 +5,10 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.flow;
+package com.yomahub.liteflow.flow.condition;
 
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 
 import java.util.List;

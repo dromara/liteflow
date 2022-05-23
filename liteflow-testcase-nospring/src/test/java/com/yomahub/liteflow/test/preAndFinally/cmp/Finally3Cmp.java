@@ -9,7 +9,7 @@ package com.yomahub.liteflow.test.preAndFinally.cmp;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 public class Finally3Cmp extends NodeComponent {
 

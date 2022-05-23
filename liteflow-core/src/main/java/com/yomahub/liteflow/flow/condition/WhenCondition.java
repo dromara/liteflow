@@ -5,13 +5,13 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.flow;
+package com.yomahub.liteflow.flow.condition;
 
 /**
  * 并行器
  * @author Bryan.Zhang
  */
-public class WhenCondition extends Condition{
+public class WhenCondition extends Condition {
 
 	public WhenCondition(Condition condition) {
 		super(condition.getNodeList());

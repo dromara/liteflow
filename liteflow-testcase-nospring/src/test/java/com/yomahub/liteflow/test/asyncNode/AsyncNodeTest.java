@@ -3,16 +3,14 @@ package com.yomahub.liteflow.test.asyncNode;
 import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultSlot;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.asyncNode.exception.TestException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.annotation.Resource;
 
 /**
  * 测试隐式调用子流程

@@ -2,8 +2,8 @@ package com.yomahub.liteflow.test.asyncNode;
 
 import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultSlot;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.asyncNode.exception.TestException;
 import org.junit.Assert;

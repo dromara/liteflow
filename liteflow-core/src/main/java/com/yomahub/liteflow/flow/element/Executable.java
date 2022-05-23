@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.entity.flow;
+package com.yomahub.liteflow.flow.element;
 
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 

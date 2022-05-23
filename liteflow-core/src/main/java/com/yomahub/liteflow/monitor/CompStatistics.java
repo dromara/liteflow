@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.monitor;
+package com.yomahub.liteflow.monitor;
 
 /**
  * 统计类

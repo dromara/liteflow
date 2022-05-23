@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.subflow.cmp2;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
+import com.yomahub.liteflow.slot.DefaultSlot;
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowTest.RUN_TIME_SLOT;
 
 

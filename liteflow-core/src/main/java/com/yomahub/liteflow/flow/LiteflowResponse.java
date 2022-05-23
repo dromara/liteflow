@@ -1,4 +1,6 @@
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.flow;
+
+import com.yomahub.liteflow.slot.Slot;
 
 import java.io.Serializable;
 

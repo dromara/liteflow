@@ -1,9 +1,7 @@
 package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.DataBus;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * 执行器初始化类

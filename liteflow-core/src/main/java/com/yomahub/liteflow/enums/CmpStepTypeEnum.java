@@ -5,13 +5,13 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.enums;
 
 /**
  * 组件步骤类型
  * @author Bryan.Zhang
  */
-public enum CmpStepType {
+public enum CmpStepTypeEnum {
 	START,
 	END,
 	SINGLE;

@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.spi.local;
 
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 
 /**

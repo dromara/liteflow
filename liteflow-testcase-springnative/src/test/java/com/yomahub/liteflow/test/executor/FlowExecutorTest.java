@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.executor;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;

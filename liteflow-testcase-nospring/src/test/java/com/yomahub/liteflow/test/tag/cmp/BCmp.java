@@ -9,7 +9,7 @@ package com.yomahub.liteflow.test.tag.cmp;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 public class BCmp extends NodeComponent {
 

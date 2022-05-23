@@ -6,19 +6,22 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.flow;
+package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.entity.flow.parallel.CompletableFutureTimeout;
-import com.yomahub.liteflow.entity.flow.parallel.ParallelSupplier;
-import com.yomahub.liteflow.entity.flow.parallel.WhenFutureObj;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
+import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
+import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.WhenExecuteException;
+import com.yomahub.liteflow.flow.condition.Condition;
+import com.yomahub.liteflow.flow.condition.ThenCondition;
+import com.yomahub.liteflow.flow.condition.WhenCondition;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.thread.ExecutorHelper;

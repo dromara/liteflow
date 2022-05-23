@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.slot;
 
 /**
  * 默认Slot的实现类

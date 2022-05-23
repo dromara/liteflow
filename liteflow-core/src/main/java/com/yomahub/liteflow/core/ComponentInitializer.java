@@ -4,7 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
-import com.yomahub.liteflow.entity.executor.NodeExecutor;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;

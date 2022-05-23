@@ -1,11 +1,8 @@
 package com.yomahub.liteflow.test.bannerPrint;
 
-import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.entity.data.DefaultSlot;
-import com.yomahub.liteflow.entity.data.LiteflowResponse;
-import com.yomahub.liteflow.enums.FlowParserTypeEnum;
-import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.slot.DefaultSlot;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;

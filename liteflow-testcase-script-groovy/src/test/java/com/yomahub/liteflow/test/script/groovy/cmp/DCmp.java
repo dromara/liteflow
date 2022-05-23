@@ -9,7 +9,7 @@ package com.yomahub.liteflow.test.script.groovy.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 @LiteflowComponent("d")
 public class DCmp extends NodeComponent {

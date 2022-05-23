@@ -6,12 +6,11 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.data;
-
-import java.text.MessageFormat;
+package com.yomahub.liteflow.flow.entity;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 
 /**
  * 组件步骤对象
@@ -23,9 +22,9 @@ public class CmpStep {
 
     private String nodeName;
 
-    private CmpStepType stepType;
+    private CmpStepTypeEnum stepType;
 
-    public CmpStep(String nodeId, String nodeName, CmpStepType stepType) {
+    public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
         this.nodeId = nodeId;
         this.nodeName = nodeName;
         this.stepType = stepType;
@@ -39,11 +38,11 @@ public class CmpStep {
         this.nodeId = nodeId;
     }
 
-    public CmpStepType getStepType() {
+    public CmpStepTypeEnum getStepType() {
         return stepType;
     }
 
-    public void setStepType(CmpStepType stepType) {
+    public void setStepType(CmpStepTypeEnum stepType) {
         this.stepType = stepType;
     }
 
@@ -57,7 +56,7 @@ public class CmpStep {
 
     @Override
     public String toString() {
-        if (stepType.equals(CmpStepType.SINGLE)) {
+        if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
         	if (StrUtil.isBlank(nodeName)){
 				return StrUtil.format("{}", nodeId);
 			}else{

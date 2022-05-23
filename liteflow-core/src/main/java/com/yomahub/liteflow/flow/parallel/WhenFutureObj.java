@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.entity.flow.parallel;
+package com.yomahub.liteflow.flow.parallel;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.WhenTimeoutException;

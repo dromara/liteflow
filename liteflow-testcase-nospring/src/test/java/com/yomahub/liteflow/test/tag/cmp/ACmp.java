@@ -8,7 +8,7 @@
 package com.yomahub.liteflow.test.tag.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 public class ACmp extends NodeComponent {
 

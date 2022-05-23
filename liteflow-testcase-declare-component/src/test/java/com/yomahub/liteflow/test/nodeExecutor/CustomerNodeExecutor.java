@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.nodeExecutor;
 
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.entity.executor.NodeExecutor;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
 
 /**
  * 自定义节点执行器

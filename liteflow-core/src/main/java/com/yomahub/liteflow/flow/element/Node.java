@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.flow;
+package com.yomahub.liteflow.flow.element;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -14,10 +14,10 @@ import java.util.Map;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.DataBus;
-import com.yomahub.liteflow.entity.data.Slot;
-import com.yomahub.liteflow.entity.executor.NodeExecutor;
-import com.yomahub.liteflow.entity.executor.NodeExecutorHelper;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
+import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;

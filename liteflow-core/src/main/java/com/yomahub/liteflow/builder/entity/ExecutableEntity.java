@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.builder.entity;
 
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;

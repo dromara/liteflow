@@ -1,11 +1,8 @@
 package com.yomahub.liteflow.test.asyncNode.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeCondComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 
 @Component("h")

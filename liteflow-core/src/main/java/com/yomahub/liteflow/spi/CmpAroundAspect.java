@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.spi;
 
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 /**
  * 组件全局切面spi接口

@@ -11,7 +11,7 @@ package com.yomahub.liteflow.test.nodeExecutor.cmp;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.executor.NodeExecutor;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutorAndCustomRetry;
 
 @LiteflowComponent("d")

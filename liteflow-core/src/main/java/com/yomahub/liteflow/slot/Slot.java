@@ -5,7 +5,9 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.entity.data;
+package com.yomahub.liteflow.slot;
+
+import com.yomahub.liteflow.flow.entity.CmpStep;
 
 /**
  * Slot的接口

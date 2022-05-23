@@ -10,7 +10,7 @@ package com.yomahub.liteflow.test.tag.cmp;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 
 @LiteflowComponent("b1")
 public class B1Cmp extends NodeComponent {

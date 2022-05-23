@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.spi.spring;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.entity.data.Slot;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 import com.yomahub.liteflow.spring.ComponentScanner;
 
