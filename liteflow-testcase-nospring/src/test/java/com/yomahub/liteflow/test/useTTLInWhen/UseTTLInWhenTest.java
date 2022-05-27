@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.useTTLInWhen;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -28,11 +28,11 @@ public class UseTTLInWhenTest extends BaseTest {
 
     @Test
     public void testUseTTLInWhen() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("hello,b", response.getSlot().getData("b"));
-        Assert.assertEquals("hello,c", response.getSlot().getData("c"));
-        Assert.assertEquals("hello,d", response.getSlot().getData("d"));
-        Assert.assertEquals("hello,e", response.getSlot().getData("e"));
-        Assert.assertEquals("hello,f", response.getSlot().getData("f"));
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        Assert.assertEquals("hello,b", response.getContextBean().getData("b"));
+        Assert.assertEquals("hello,c", response.getContextBean().getData("c"));
+        Assert.assertEquals("hello,d", response.getContextBean().getData("d"));
+        Assert.assertEquals("hello,e", response.getContextBean().getData("e"));
+        Assert.assertEquals("hello,f", response.getContextBean().getData("f"));
     }
 }

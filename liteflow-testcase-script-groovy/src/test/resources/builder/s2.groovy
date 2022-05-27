@@ -1,4 +1,4 @@
-Integer count = slot.getData("count")
+Integer count = context.getData("count")
 if(count > 100){
     return "a"
 }else{

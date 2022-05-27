@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.useTTLInWhen.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.useTTLInWhen.TestTL;
 
 public class BCmp extends NodeComponent {
@@ -15,7 +16,8 @@ public class BCmp extends NodeComponent {
 	@Override
 	public void process() {
 		String value = TestTL.get();
-		this.getSlot().setData(this.getNodeId(),value+",b");
+		DefaultContext context = this.getContextBean();
+		context.setData(this.getNodeId(),value+",b");
 		System.out.println("BCmp executed!");
 	}
 

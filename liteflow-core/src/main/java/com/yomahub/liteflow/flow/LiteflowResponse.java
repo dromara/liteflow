@@ -8,7 +8,7 @@ import java.io.Serializable;
  * 执行结果封装类
  * @author zend.wang
  */
-public class LiteflowResponse<T extends Slot> implements Serializable {
+public class LiteflowResponse<T> implements Serializable {
     
     private static final long serialVersionUID = -2792556188993845048L;
     
@@ -18,12 +18,12 @@ public class LiteflowResponse<T extends Slot> implements Serializable {
     
     private Throwable cause;
     
-    private T slot;
+    private Slot<T> slot;
     
     public LiteflowResponse() {
       this(null);
     }
-    public LiteflowResponse(T slot) {
+    public LiteflowResponse(Slot<T> slot) {
         this.success = true;
         this.message = "";
         this.slot = slot;
@@ -53,11 +53,15 @@ public class LiteflowResponse<T extends Slot> implements Serializable {
         this.cause = cause;
     }
     
-    public T getSlot() {
+    public Slot<T> getSlot() {
         return slot;
     }
     
-    public void setSlot(final T slot) {
+    public void setSlot(Slot<T> slot) {
         this.slot = slot;
+    }
+
+    public T getContextBean(){
+        return getSlot().getContextBean();
     }
 }

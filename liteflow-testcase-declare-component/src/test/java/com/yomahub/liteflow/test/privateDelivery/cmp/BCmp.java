@@ -12,6 +12,7 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 
 import java.util.Set;
 
@@ -23,7 +24,8 @@ public class BCmp{
     public void process(NodeComponent bindCmp) {
         System.out.println("BCmp executed!");
         Integer value = bindCmp.getPrivateDeliveryData();
-        Set<Integer> testSet = bindCmp.getSlot().getData("testSet");
+        DefaultContext context = bindCmp.getContextBean();
+        Set<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }
 }

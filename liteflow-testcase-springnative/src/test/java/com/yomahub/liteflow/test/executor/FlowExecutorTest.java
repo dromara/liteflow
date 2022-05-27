@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.executor;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,9 +22,9 @@ public class FlowExecutorTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor(config);
-        LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test0", CustomSlot.class);
+        LiteflowResponse<CustomContext> response = executor.execute2Resp("chain1", "test0", CustomContext.class);
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("custom", response.getSlot().getName());
+        Assert.assertEquals("custom", response.getContextBean().getName());
     }
     
     @Test(expected=RuntimeException.class)
@@ -31,7 +32,7 @@ public class FlowExecutorTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow0.json");
         FlowExecutor executor = new FlowExecutor(config);
-        LiteflowResponse<CustomSlot> response = executor.execute2Resp("chain1", "test1", CustomSlot.class);
+        LiteflowResponse<CustomContext> response = executor.execute2Resp("chain1", "test1", CustomContext.class);
         Assert.assertFalse(response.isSuccess());
         ReflectionUtils.rethrowException(response.getCause());
     }
@@ -41,8 +42,8 @@ public class FlowExecutorTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor(config);
-        CustomSlot slot = executor.execute("chain1", "test0", CustomSlot.class);
-        Assert.assertEquals("custom", slot.getName());
+        Slot<CustomContext> slot = executor.execute("chain1", "test0", CustomContext.class);
+        Assert.assertEquals("custom", slot.getContextBean().getName());
     }
     
     @Test(expected=RuntimeException.class)
@@ -50,6 +51,6 @@ public class FlowExecutorTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow0.json");
         FlowExecutor executor = new FlowExecutor(config);
-        executor.execute("chain1", "test1", CustomSlot.class);
+        executor.execute("chain1", "test1", CustomContext.class);
     }
 }

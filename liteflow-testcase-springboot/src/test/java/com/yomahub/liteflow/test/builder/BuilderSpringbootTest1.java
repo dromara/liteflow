@@ -4,10 +4,10 @@ import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.builder.entity.ExecutableEntity;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp1.ACmp;
 import com.yomahub.liteflow.test.builder.cmp1.BCmp;
@@ -89,7 +89,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
     }
@@ -147,7 +147,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
     }
@@ -216,7 +216,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                                         )).build()
         ).build();
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
     }

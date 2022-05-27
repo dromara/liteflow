@@ -1,4 +1,4 @@
-count = slot.getData("count");
+count = context.getData("count");
 if(count > 150){
     return "b";
 }else{

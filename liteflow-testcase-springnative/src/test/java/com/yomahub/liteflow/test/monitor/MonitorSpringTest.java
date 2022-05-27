@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.monitor;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.monitor.MonitorBus;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.AfterClass;
@@ -29,7 +29,7 @@ public class MonitorSpringTest extends BaseTest {
 
     @Test
     public void testMonitor() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
 
         Thread.sleep(10000);

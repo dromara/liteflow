@@ -9,7 +9,7 @@ import com.yomahub.liteflow.slot.Slot;
  */
 public interface CmpAroundAspect extends SpiPriority {
 
-    void beforeProcess(String nodeId, Slot slot);
+    void beforeProcess(String nodeId, Slot<?> slot);
 
-    void afterProcess(String nodeId, Slot slot);
+    void afterProcess(String nodeId, Slot<?> slot);
 }

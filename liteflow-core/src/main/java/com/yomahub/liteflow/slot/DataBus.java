@@ -9,6 +9,7 @@ package com.yomahub.liteflow.slot;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class DataBus {
 	//这里为什么采用ConcurrentHashMap作为slot存放的容器？
 	//因为ConcurrentHashMap的随机取值复杂度也和数组一样为O(1)，并且没有并发问题，还有自动扩容的功能
 	//用数组的话，扩容涉及copy，线程安全问题还要自己处理
-	private static ConcurrentHashMap<Integer, Slot> SLOTS;
+	private static ConcurrentHashMap<Integer, Slot<?>> SLOTS;
 
 	private static ConcurrentLinkedQueue<Integer> QUEUE;
 
@@ -54,9 +55,10 @@ public class DataBus {
 		}
 	}
 
-	public static int offerSlot(Class<? extends Slot> slotClazz) {
+	public static <T> int offerSlot(Class<T> contextClazz) {
 		try {
-			Slot slot = slotClazz.newInstance();
+			T contextBean = ReflectUtil.newInstance(contextClazz);
+			Slot<T> slot = new Slot<>(contextBean);
 
 			//这里有没有并发问题？
 			//没有，因为QUEUE的类型为ConcurrentLinkedQueue，并发情况下，每次取到的index不会相同
@@ -92,9 +94,13 @@ public class DataBus {
 		return -1;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends Slot> T getSlot(int slotIndex){
-		return (T)SLOTS.get(slotIndex);
+	public static <T> Slot<T> getSlot(int slotIndex){
+		return (Slot<T>) SLOTS.get(slotIndex);
+	}
+
+	public static <T> T getContextBean(int slotIndex){
+		Slot<T> slot = getSlot(slotIndex);
+		return slot.getContextBean();
 	}
 
 	public static void releaseSlot(int slotIndex){

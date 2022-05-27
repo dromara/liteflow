@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.subflow.cmp2;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +21,6 @@ public class GCmp extends NodeComponent {
 
         System.out.println("Gcmp executed!");
 
-        flowExecutor.invoke("chain4", "it's implicit subflow.", DefaultSlot.class, this.getSlotIndex());
+        flowExecutor.invoke("chain4", "it's implicit subflow.", this.getSlotIndex());
     }
 }

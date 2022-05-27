@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.privateDelivery.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -20,7 +21,8 @@ public class BCmp extends NodeComponent {
     public void process() {
         System.out.println("BCmp executed!");
         Integer value = this.getPrivateDeliveryData();
-        Set<Integer> testSet = this.getSlot().getData("testSet");
+        DefaultContext context = this.getContextBean();
+        Set<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }
 }

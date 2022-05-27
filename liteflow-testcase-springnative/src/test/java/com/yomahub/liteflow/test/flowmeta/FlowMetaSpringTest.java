@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.flowmeta;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.flowmeta.cmp2.DCmp;
 import org.junit.Assert;
@@ -25,7 +25,7 @@ public class FlowMetaSpringTest extends BaseTest {
     @Test
     public void testFlowMeta() {
         FlowBus.addCommonNode("d", "d组件", DCmp.class);
-        LiteflowResponse<DefaultSlot> response= flowExecutor.execute2Resp("chain1", "it's a request");
+        LiteflowResponse<DefaultContext> response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>d[d组件]", response.getSlot().getExecuteStepStr());
     }

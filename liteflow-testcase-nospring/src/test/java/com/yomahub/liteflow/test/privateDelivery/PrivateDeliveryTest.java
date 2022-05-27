@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.privateDelivery;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,8 +29,8 @@ public class PrivateDeliveryTest extends BaseTest {
 
     @Test
     public void testPrivateDelivery() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
-        Set<Integer> set = response.getSlot().getData("testSet");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        Set<Integer> set = response.getContextBean().getData("testSet");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(100, set.size());
     }

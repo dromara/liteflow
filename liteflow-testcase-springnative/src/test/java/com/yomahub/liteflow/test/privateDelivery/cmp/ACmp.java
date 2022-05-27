@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.privateDelivery.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 
 import java.util.HashSet;
@@ -19,8 +20,8 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("ACmp executed!");
-		Slot slot = getSlot();
-		slot.setData("testSet", new HashSet<>());
+		DefaultContext context = this.getContextBean();
+		context.setData("testSet", new HashSet<>());
 
 		for (int i = 0; i < 100; i++) {
 			this.sendPrivateDeliveryData("b",i+1);

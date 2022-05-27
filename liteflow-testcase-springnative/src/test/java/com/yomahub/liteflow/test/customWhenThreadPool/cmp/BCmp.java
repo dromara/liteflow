@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.customWhenThreadPool.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("b")
@@ -15,7 +16,8 @@ public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		this.getSlot().setData("threadName", Thread.currentThread().getName());
+		DefaultContext context = this.getContextBean();
+		context.setData("threadName", Thread.currentThread().getName());
 		System.out.println("BCmp executed!");
 	}
 

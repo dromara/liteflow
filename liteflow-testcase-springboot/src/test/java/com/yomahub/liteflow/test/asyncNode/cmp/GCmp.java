@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.asyncNode.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +12,14 @@ public class GCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
         Thread.sleep(500);
-        Slot slot = this.getSlot();
+        DefaultContext context = this.getContextBean();
         synchronized (NodeComponent.class){
-            if (slot.hasData("check")){
-                String str = slot.getData("check");
+            if (context.hasData("check")){
+                String str = context.getData("check");
                 str += this.getNodeId();
-                slot.setData("check", str);
+                context.setData("check", str);
             }else{
-                slot.setData("check", this.getNodeId());
+                context.setData("check", this.getNodeId());
             }
         }
         System.out.println("Gcomp executed!");

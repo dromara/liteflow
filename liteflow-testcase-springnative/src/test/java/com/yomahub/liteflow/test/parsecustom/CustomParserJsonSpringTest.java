@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.parsecustom;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class CustomParserJsonSpringTest extends BaseTest {
     //测试spring场景的自定义json parser
     @Test
     public void testJsonCustomParser() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "args");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "args");
         Assert.assertTrue(response.isSuccess());
     }
 }

@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.script.groovy.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 
 @LiteflowComponent("d")
@@ -16,8 +17,8 @@ public class DCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		Slot slot = this.getSlot();
-		slot.setData("count",198);
+		DefaultContext context = this.getContextBean();
+		context.setData("count",198);
 		System.out.println("DCmp executed!");
 	}
 

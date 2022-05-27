@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.nullParam;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class NullParamTest {
      */
     @Test
     public void testNullParam() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
     }
 

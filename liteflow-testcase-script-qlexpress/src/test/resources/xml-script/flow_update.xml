@@ -5,13 +5,13 @@
             <![CDATA[
                 a=3;
                 b=2;
-                slot.setData("s1",a*b);
+                context.setData("s1",a*b);
             ]]>
         </node>
 
         <node id="s2" name="条件脚本_改" type="cond_script">
             <![CDATA[
-                count = slot.getData("count");
+                count = context.getData("count");
                 if(count > 150){
                     return "b";
                 }else{
@@ -25,7 +25,7 @@
                 a=3;
                 b=2;
                 c=10;
-                slot.setData("s1",a*b+c);
+                context.setData("s1",a*b+c);
             ]]>
         </node>
     </nodes>

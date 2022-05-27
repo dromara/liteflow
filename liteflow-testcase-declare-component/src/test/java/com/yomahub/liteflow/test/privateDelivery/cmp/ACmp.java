@@ -11,6 +11,7 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
@@ -23,8 +24,8 @@ public class ACmp{
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("ACmp executed!");
-		Slot slot = bindCmp.getSlot();
-		slot.setData("testSet", new HashSet<>());
+		DefaultContext context = bindCmp.getContextBean();
+		context.setData("testSet", new HashSet<>());
 
 		for (int i = 0; i < 100; i++) {
 			bindCmp.sendPrivateDeliveryData("b",i+1);

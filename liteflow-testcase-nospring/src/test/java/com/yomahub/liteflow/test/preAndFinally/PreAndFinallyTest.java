@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.preAndFinally;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,7 +29,7 @@ public class PreAndFinallyTest extends BaseTest {
     //测试普通的pre和finally节点
     @Test
     public void testPreAndFinally1() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("p1==>p2==>a==>b==>c==>f1==>f2",response.getSlot().getExecuteStepStr());
     }
@@ -37,7 +37,7 @@ public class PreAndFinallyTest extends BaseTest {
     //测试pre和finally节点不放在开头和结尾的情况
     @Test
     public void testPreAndFinally2() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("p1==>p2==>a==>b==>c==>f1==>f2",response.getSlot().getExecuteStepStr());
     }
@@ -45,7 +45,7 @@ public class PreAndFinallyTest extends BaseTest {
     //测试有节点报错是否还执行finally节点的情况，其中d节点会报错，但依旧执行f1,f2节点
     @Test
     public void testPreAndFinally3() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("p1==>p2==>a==>d==>f1==>f2", response.getSlot().getExecuteStepStr());
     }
@@ -53,8 +53,8 @@ public class PreAndFinallyTest extends BaseTest {
     //测试在finally节点里是否能获取exception
     @Test
     public void testPreAndFinally4() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertTrue(response.getSlot().getData("hasEx"));
+        Assert.assertTrue(response.getContextBean().getData("hasEx"));
     }
 }

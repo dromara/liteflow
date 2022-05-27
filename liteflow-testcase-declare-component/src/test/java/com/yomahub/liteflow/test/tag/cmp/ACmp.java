@@ -11,6 +11,7 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
@@ -22,13 +23,13 @@ public class ACmp{
 	public void process(NodeComponent bindCmp) {
 		String testKey = "test";
 
-		Slot slot = bindCmp.getSlot();
-		if (slot.getData(testKey) == null){
-			slot.setData(testKey,bindCmp.getTag());
+		DefaultContext context = bindCmp.getContextBean();
+		if (context.getData(testKey) == null){
+			context.setData(testKey,bindCmp.getTag());
 		}else{
-			String s = slot.getData(testKey);
+			String s = context.getData(testKey);
 			s += bindCmp.getTag();
-			slot.setData(testKey, s);
+			context.setData(testKey, s);
 		}
 	}
 }

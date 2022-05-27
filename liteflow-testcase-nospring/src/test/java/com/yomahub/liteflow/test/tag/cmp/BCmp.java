@@ -9,14 +9,15 @@ package com.yomahub.liteflow.test.tag.cmp;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 
 public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		Slot slot = this.getSlot();
-		ConcurrentHashSet<String> testSet = slot.getData("test");
+		DefaultContext context = this.getContextBean();
+		ConcurrentHashSet<String> testSet = context.getData("test");
 		testSet.add(this.getTag());
 	}
 }

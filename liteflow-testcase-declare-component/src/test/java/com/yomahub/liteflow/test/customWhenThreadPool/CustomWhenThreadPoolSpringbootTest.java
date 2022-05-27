@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.customWhenThreadPool;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,9 +40,9 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
      */
     @Test
     public void testGlobalThreadPool() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertTrue(response.getSlot().getData("threadName").toString().startsWith("lf-when-thead"));
+        Assert.assertTrue(response.getContextBean().getData("threadName").toString().startsWith("lf-when-thead"));
     }
 
     /**
@@ -50,9 +50,9 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
      */
     @Test
     public void testGlobalAndCustomWhenThreadPool() {
-        LiteflowResponse<DefaultSlot> response1 = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response1 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response1.isSuccess());
-        Assert.assertTrue(response1.getSlot().getData("threadName").toString().startsWith("customer-when-1-thead"));
+        Assert.assertTrue(response1.getContextBean().getData("threadName").toString().startsWith("customer-when-1-thead"));
     }
 
 
@@ -64,9 +64,9 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
         // 使用when - thread1
         testGlobalAndCustomWhenThreadPool();
         // chain配置同一个thead1
-        LiteflowResponse<DefaultSlot> response2 = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse<DefaultContext> response2 = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertTrue(response2.getSlot().getData("threadName").toString().startsWith("customer-when-1-thead"));
+        Assert.assertTrue(response2.getContextBean().getData("threadName").toString().startsWith("customer-when-1-thead"));
 
     }
 }

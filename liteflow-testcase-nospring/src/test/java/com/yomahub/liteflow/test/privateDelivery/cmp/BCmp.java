@@ -8,6 +8,8 @@
 package com.yomahub.liteflow.test.privateDelivery.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.slot.Slot;
 
 import java.util.Set;
 
@@ -15,9 +17,10 @@ public class BCmp extends NodeComponent {
 
     @Override
     public void process() {
+        DefaultContext context = this.getContextBean();
         System.out.println("BCmp executed!");
         Integer value = this.getPrivateDeliveryData();
-        Set<Integer> testSet = this.getSlot().getData("testSet");
+        Set<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }
 }

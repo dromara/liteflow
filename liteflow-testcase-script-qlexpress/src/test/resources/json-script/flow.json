@@ -6,19 +6,19 @@
           "id": "s1",
           "name": "普通脚本",
           "type": "script",
-          "value": "a=3;b=2;slot.setData(\"s1\",a*b);"
+          "value": "a=3;b=2;context.setData(\"s1\",a*b);"
         },
         {
           "id": "s2",
           "name": "条件脚本",
           "type": "cond_script",
-          "value": "count = slot.getData(\"count\");if(count > 100){return \"a\";}else{return \"b\";}"
+          "value": "count = context.getData(\"count\");if(count > 100){return \"a\";}else{return \"b\";}"
         },
         {
           "id": "s3",
           "name": "普通脚本2",
           "type": "script",
-          "value": "a=30;b=2;slot.setData(\"s1\",a*b);"
+          "value": "a=30;b=2;context.setData(\"s1\",a*b);"
         }
       ]
     },

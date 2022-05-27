@@ -55,8 +55,8 @@ public class GroovyScriptExecutor implements ScriptExecutor {
 
             CompiledScript compiledScript = compiledScriptMap.get(nodeId);
             Bindings bindings = new SimpleBindings();
-            Slot slot = DataBus.getSlot(slotIndex);
-            bindings.put("slot", slot);
+            Object contextBean = DataBus.getContextBean(slotIndex);
+            bindings.put("context", contextBean);
             return compiledScript.eval(bindings);
         }catch (Exception e){
             log.error(e.getMessage(), e);

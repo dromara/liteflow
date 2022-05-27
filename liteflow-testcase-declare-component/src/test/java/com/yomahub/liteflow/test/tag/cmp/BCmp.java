@@ -12,6 +12,7 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
@@ -21,8 +22,8 @@ public class BCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		Slot slot = bindCmp.getSlot();
-		ConcurrentHashSet<String> testSet = slot.getData("test");
+		DefaultContext context = bindCmp.getContextBean();
+		ConcurrentHashSet<String> testSet = context.getData("test");
 		testSet.add(bindCmp.getTag());
 	}
 }

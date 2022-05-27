@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.component;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -30,7 +30,7 @@ public class FlowExecutorTest extends BaseTest {
     //isAccess方法的功能测试
     @Test
     public void testIsAccess() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", 101);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", 101);
         Assert.assertTrue(response.isSuccess());
         Assert.assertNotNull(response.getSlot().getResponseData());
     }
@@ -38,7 +38,7 @@ public class FlowExecutorTest extends BaseTest {
     //组件抛错的功能点测试
     @Test(expected = ArithmeticException.class)
     public void testComponentException() throws Throwable {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", 0);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", 0);
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("/ by zero", response.getMessage());
         throw response.getCause();
@@ -47,7 +47,7 @@ public class FlowExecutorTest extends BaseTest {
     //isContinueOnError方法的功能点测试
     @Test
     public void testIsContinueOnError() throws Throwable {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", 0);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", 0);
         Assert.assertTrue(response.isSuccess());
         Assert.assertNull(response.getCause());
     }
@@ -55,7 +55,7 @@ public class FlowExecutorTest extends BaseTest {
     //isEnd方法的功能点测试
     @Test
     public void testIsEnd() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", 10);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("d",response.getSlot().getExecuteStepStr());
     }
@@ -63,7 +63,7 @@ public class FlowExecutorTest extends BaseTest {
     //setIsEnd方法的功能点测试
     @Test
     public void testSetIsEnd1() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain5", 10);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain5", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("e",response.getSlot().getExecuteStepStr());
     }
@@ -71,14 +71,14 @@ public class FlowExecutorTest extends BaseTest {
     //条件组件的功能点测试
     @Test
     public void testNodeCondComponent() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain6", 0);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain6", 0);
         Assert.assertTrue(response.isSuccess());
     }
 
     //测试setIsEnd如果为true，continueError也为true，那不应该continue了
     @Test
     public void testSetIsEnd2() throws Exception {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain7", 10);
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain7", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g",response.getSlot().getExecuteStepStr());
     }

@@ -11,6 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
@@ -21,11 +22,12 @@ public class Finally3Cmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) throws Exception{
-		Slot slot = bindCmp.getSlot();
+		Slot<DefaultContext> slot = bindCmp.getSlot();
+		DefaultContext context = slot.getContextBean();
 		if (ObjectUtil.isNull(slot.getException())){
-			slot.setData("hasEx", false);
+			context.setData("hasEx", false);
 		}else{
-			slot.setData("hasEx", true);
+			context.setData("hasEx", true);
 		}
 		System.out.println("Finally3Cmp executed!");
 	}

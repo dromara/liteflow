@@ -4,9 +4,9 @@ import cn.hutool.core.util.ReflectUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -41,13 +41,13 @@ public class ResizeSlotTest extends BaseTest {
         try{
             ExecutorService pool = Executors.newCachedThreadPool();
 
-            List<Future<LiteflowResponse<DefaultSlot>>> futureList = new ArrayList<>();
+            List<Future<LiteflowResponse<DefaultContext>>> futureList = new ArrayList<>();
             for (int i = 0; i < 100; i++) {
-                Future<LiteflowResponse<DefaultSlot>> future = pool.submit(() -> flowExecutor.execute2Resp("chain1", "arg"));
+                Future<LiteflowResponse<DefaultContext>> future = pool.submit(() -> flowExecutor.execute2Resp("chain1", "arg"));
                 futureList.add(future);
             }
 
-            for(Future<LiteflowResponse<DefaultSlot>> future : futureList){
+            for(Future<LiteflowResponse<DefaultContext>> future : futureList){
                 Assert.assertTrue(future.get().isSuccess());
             }
 

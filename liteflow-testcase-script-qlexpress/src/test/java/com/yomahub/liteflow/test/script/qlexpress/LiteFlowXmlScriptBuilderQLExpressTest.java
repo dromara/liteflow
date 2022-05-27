@@ -4,9 +4,9 @@ import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class LiteFlowXmlScriptBuilderQLExpressTest extends BaseTest {
                 .setId("s1")
                 .setName("普通脚本S1")
                 .setType(NodeTypeEnum.SCRIPT)
-                .setScript("a=3;b=2;slot.setData(\"s1\",a*b);")
+                .setScript("a=3;b=2;context.setData(\"s1\",a*b);")
                 .build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1")
@@ -55,9 +55,9 @@ public class LiteFlowXmlScriptBuilderQLExpressTest extends BaseTest {
                 .build();
 
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1","arg1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1","arg1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Integer.valueOf(6), response.getSlot().getData("s1"));
+        Assert.assertEquals(Integer.valueOf(6), response.getContextBean().getData("s1"));
     }
 
     //测试通过builder方式运行普通script节点，以file的方式运行
@@ -89,7 +89,7 @@ public class LiteFlowXmlScriptBuilderQLExpressTest extends BaseTest {
                 .build();
 
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2","arg1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2","arg1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>b[组件B]", response.getSlot().getExecuteStepStr());
     }

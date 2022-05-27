@@ -71,7 +71,7 @@ public abstract class NodeComponent{
 	}
 
 	public void execute() throws Exception{
-		Slot slot = this.getSlot();
+		Slot<?> slot = this.getSlot();
 		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
 		slot.addStep(new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE));
 
@@ -153,8 +153,13 @@ public abstract class NodeComponent{
 		this.slotIndexTL.remove();
 	}
 
-	public <T extends Slot> T getSlot(){
+	public <T> Slot<T> getSlot(){
 		return DataBus.getSlot(this.slotIndexTL.get());
+	}
+
+	public <T> T getContextBean(){
+		Slot<T> slot = this.getSlot();
+		return slot.getContextBean();
 	}
 
 	public String getNodeId() {

@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.tag.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 
 @LiteflowComponent("a")
@@ -17,14 +18,13 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		String testKey = "test";
-
-		Slot slot = this.getSlot();
-		if (slot.getData(testKey) == null){
-			slot.setData(testKey,this.getTag());
+		DefaultContext context = this.getContextBean();
+		if (context.getData(testKey) == null){
+			context.setData(testKey,this.getTag());
 		}else{
-			String s = slot.getData(testKey);
+			String s = context.getData(testKey);
 			s += this.getTag();
-			slot.setData(testKey, s);
+			context.setData(testKey, s);
 		}
 	}
 }

@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.useTTLInWhen.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.useTTLInWhen.TestTL;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,8 @@ public class ECmp extends NodeComponent {
 	@Override
 	public void process() {
 		String value = TestTL.get();
-		this.getSlot().setData(this.getNodeId(),value+",e");
+		DefaultContext context = this.getContextBean();
+		context.setData(this.getNodeId(),value+",e");
 		System.out.println("ECmp executed!");
 	}
 

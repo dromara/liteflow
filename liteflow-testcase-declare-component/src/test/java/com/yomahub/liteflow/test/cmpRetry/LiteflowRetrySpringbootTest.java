@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.cmpRetry;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     //全局重试配置测试
     @Test
     public void testRetry1() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>b==>b", response.getSlot().getExecuteStepStr());
     }
@@ -42,7 +42,7 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     //单个组件重试配置测试
     @Test
     public void testRetry2() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().getExecuteStepStr());
     }
@@ -50,14 +50,14 @@ public class LiteflowRetrySpringbootTest extends BaseTest {
     //单个组件指定异常，但抛出的并不是指定异常的场景测试
     @Test
     public void testRetry3() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
         Assert.assertFalse(response.isSuccess());
     }
 
     //单个组件指定异常重试，抛出的是指定异常或者
     @Test
     public void testRetry4() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getSlot().getExecuteStepStr());
     }

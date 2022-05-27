@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.test.config;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class LiteflowConfigSpringbootTest1 extends BaseTest {
     @Test
     public void testConfig() {
         LiteflowConfig config = LiteflowConfigGetter.get();
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("config/flow.yml", config.getRuleSource());
         Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());

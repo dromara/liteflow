@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.preAndFinally.cmp;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import org.springframework.stereotype.Component;
 
@@ -17,11 +18,12 @@ public class Finally3Cmp extends NodeComponent {
 
 	@Override
 	public void process() throws Exception{
-		Slot slot = this.getSlot();
+		Slot<DefaultContext> slot = this.getSlot();
+		DefaultContext context = slot.getContextBean();
 		if (ObjectUtil.isNull(slot.getException())){
-			slot.setData("hasEx", false);
+			context.setData("hasEx", false);
 		}else{
-			slot.setData("hasEx", true);
+			context.setData("hasEx", true);
 		}
 		System.out.println("Finally3Cmp executed!");
 	}

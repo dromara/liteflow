@@ -9,7 +9,9 @@ package com.yomahub.liteflow.test.executor.cmp;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.test.executor.CustomSlot;
+import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.test.executor.CustomContext;
 import org.springframework.stereotype.Component;
 
 @Component("c")
@@ -17,14 +19,16 @@ public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		if(this.getSlot() instanceof CustomSlot) {
-			CustomSlot slot = this.getSlot();
+		Object bean = this.getContextBean();
+		if(bean instanceof CustomContext) {
+			Slot<CustomContext> slot = this.getSlot();
+			CustomContext context = slot.getContextBean();
 			String str = slot.getRequestData();
 			if(StrUtil.isNotBlank(str) && str.equals("test0")) {
-				slot.setName("custom");
+				context.setName("custom");
 			}
 			if(StrUtil.isNotBlank(str) && str.equals("test1")) {
-				slot.setName("custom");
+				context.setName("custom");
 				throw new RuntimeException("customException");
 			}
 		}

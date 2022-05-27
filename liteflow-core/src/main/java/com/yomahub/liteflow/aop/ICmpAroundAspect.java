@@ -14,9 +14,9 @@ import com.yomahub.liteflow.slot.Slot;
  * 实现这个接口并注入到spring上下文即可
  * @author Bryan.Zhang
  */
-public interface ICmpAroundAspect {
+public interface ICmpAroundAspect<T> {
 
-    void beforeProcess(String nodeId, Slot slot);
+    void beforeProcess(String nodeId, T contextBean);
 
-    void afterProcess(String nodeId, Slot slot);
+    void afterProcess(String nodeId, T contextBean);
 }

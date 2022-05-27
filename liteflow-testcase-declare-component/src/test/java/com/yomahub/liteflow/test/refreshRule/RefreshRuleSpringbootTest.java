@@ -2,10 +2,10 @@ package com.yomahub.liteflow.test.refreshRule;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class RefreshRuleSpringbootTest extends BaseTest {
     public void testRefresh1() throws Exception{
         String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.xml");
         FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 
@@ -57,7 +57,7 @@ public class RefreshRuleSpringbootTest extends BaseTest {
         }).start();
 
         for (int i = 0; i < 500; i++) {
-            LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+            LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
             Assert.assertTrue(response.isSuccess());
             try {
                 Thread.sleep(10L);

@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.test.subflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.exception.MultipleParsersException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class SubflowInDifferentConfigSpringTest extends BaseTest {
     //是否按照流程定义配置执行
     @Test
     public void testExplicitSubFlow1() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "it's a request");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getSlot().getExecuteStepStr());
     }

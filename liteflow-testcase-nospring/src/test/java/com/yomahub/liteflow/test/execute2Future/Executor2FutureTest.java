@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.execute2Future;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,8 +29,8 @@ public class Executor2FutureTest extends BaseTest {
 
     @Test
     public void testFuture() throws Exception{
-        Future<LiteflowResponse<DefaultSlot>> future = flowExecutor.execute2Future("chain1", "arg", DefaultSlot.class);
-        LiteflowResponse<DefaultSlot> response = future.get();
+        Future<LiteflowResponse<DefaultContext>> future = flowExecutor.execute2Future("chain1", "arg", DefaultContext.class);
+        LiteflowResponse<DefaultContext> response = future.get();
         Assert.assertTrue(response.isSuccess());
     }
 

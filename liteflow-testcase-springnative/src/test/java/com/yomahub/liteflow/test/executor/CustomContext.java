@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.executor;
 
-import com.yomahub.liteflow.slot.AbsSlot;
-
-public class CustomSlot extends AbsSlot {
+public class CustomContext {
     private String name;
     
     public String getName() {

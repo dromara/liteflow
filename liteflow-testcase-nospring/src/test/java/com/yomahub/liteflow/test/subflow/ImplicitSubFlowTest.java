@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.subflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,7 +34,7 @@ public class ImplicitSubFlowTest extends BaseTest {
     //这里GCmp中隐式的调用chain4，从而执行了h，m
     @Test
     public void testImplicitSubFlow() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "it's a request");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("f==>g==>h==>m", response.getSlot().getExecuteStepStr());
 

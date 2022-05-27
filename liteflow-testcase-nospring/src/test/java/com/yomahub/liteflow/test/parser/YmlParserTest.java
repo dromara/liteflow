@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,7 +29,7 @@ public class YmlParserTest extends BaseTest {
     //测试无spring场景的yml parser
     @Test
     public void testYmlParser() {
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

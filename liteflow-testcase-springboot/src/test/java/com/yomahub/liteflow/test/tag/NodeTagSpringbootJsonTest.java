@@ -2,8 +2,8 @@ package com.yomahub.liteflow.test.tag;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,14 +33,14 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
 
     @Test
     public void testTag1() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("123",response.getSlot().getData("test"));
+        Assert.assertEquals("123",response.getContextBean().getData("test"));
     }
 
     @Test
     public void testTag2() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>a==>a==>c==>e", response.getSlot().getExecuteStepStr());
     }
@@ -50,9 +50,9 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
     @Test
     public void testTag3() throws Exception{
         for (int i = 0; i < 50; i++) {
-            LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain3", "arg");
+            LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
             Assert.assertTrue(response.isSuccess());
-            ConcurrentHashSet<String> testSet = response.getSlot().getData("test");
+            ConcurrentHashSet<String> testSet = response.getContextBean().getData("test");
             Assert.assertEquals(3, testSet.size());
         }
     }
@@ -60,7 +60,7 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
     //测试tag是否能在isAccess中起效
     @Test
     public void testTag4() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain4", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g", response.getSlot().getExecuteStepStr());
     }

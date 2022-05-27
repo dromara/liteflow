@@ -7,62 +7,205 @@
  */
 package com.yomahub.liteflow.slot;
 
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Slot的接口
+ * Slot的抽象类实现
  * @author Bryan.Zhang
+ * @author LeoLee
  */
-public interface Slot {
-	<T> T getInput(String nodeId);
+@SuppressWarnings("unchecked")
+public class Slot<O>{
 
-	<T> T getOutput(String nodeId);
+	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
 
-	<T> void setInput(String nodeId,T t);
+	private static final String REQUEST = "_request";
 
-	<T> void setOutput(String nodeId,T t);
+	private static final String RESPONSE = "_response";
 
-	<T> T getRequestData();
+	private static final String CHAIN_NAME = "_chain_name";
 
-	<T> void setRequestData(T t);
+	private static final String COND_NODE_PREFIX = "_cond_";
 
-	<T> T getResponseData();
+	private static final String NODE_INPUT_PREFIX = "_input_";
 
-	<T> void setChainReqData(String chainId, T t);
+	private static final String NODE_OUTPUT_PREFIX = "_output_";
 
-	<T> T getChainReqData(String chainId);
+	private static final String CHAIN_REQ_PREFIX = "_chain_req_";
 
-	<T> void setResponseData(T t);
+	private static final String REQUEST_ID = "_req_id";
 
-	boolean hasData(String key);
+	private static final String EXCEPTION = "_exception";
 
-	<T> T getData(String key);
+	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
 
-	<T> void setData(String key, T t);
+	private final Queue<CmpStep> executeSteps = new ConcurrentLinkedQueue<>();
 
-	<T> void setCondResult(String key, T t);
+	private String executeStepsStr;
 
-	<T> T getCondResult(String key);
+	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
-	void addStep(CmpStep step);
+	private O contextBean;
 
-	String getExecuteStepStr();
+	public Slot() {
+	}
 
-	void printStep();
+	public Slot(O contextBean) {
+		this.contextBean = contextBean;
+	}
 
-	void generateRequestId();
+	private <T> void putMetaDataMap(String key, T t) {
+		if (ObjectUtil.isNull(t)) {
+			//data slot is a ConcurrentHashMap, so null value will trigger NullPointerException
+			throw new NullParamException("data slot can't accept null param");
+		}
+		metaDataMap.put(key, t);
+	}
 
-	String getRequestId();
+	public <T> T getInput(String nodeId){
+		return (T) metaDataMap.get(NODE_INPUT_PREFIX + nodeId);
+	}
 
-	void setChainName(String chainName);
+	public <T> T getOutput(String nodeId){
+		return (T) metaDataMap.get(NODE_OUTPUT_PREFIX + nodeId);
+	}
 
-	String getChainName();
+	public <T> void setInput(String nodeId,T t){
+		putMetaDataMap(NODE_INPUT_PREFIX + nodeId, t);
+	}
 
-	void setException(Exception e);
+	public <T> void setOutput(String nodeId,T t){
+		putMetaDataMap(NODE_OUTPUT_PREFIX + nodeId, t);
+	}
 
-	Exception getException();
+	public <T> T getRequestData(){
+		return (T) metaDataMap.get(REQUEST);
+	}
 
-	<T> void setPrivateDeliveryData(String nodeId, T t);
+	public <T> void setRequestData(T t){
+		putMetaDataMap(REQUEST, t);
+	}
 
-	<T> T getPrivateDeliveryData(String nodeId);
+	public <T> T getResponseData(){
+		return (T) metaDataMap.get(RESPONSE);
+	}
+
+	public <T> void setResponseData(T t){
+		putMetaDataMap(RESPONSE, t);
+	}
+
+	public <T> T getChainReqData(String chainId) {
+		return (T) metaDataMap.get(CHAIN_REQ_PREFIX + chainId);
+	}
+
+	public <T> void setChainReqData(String chainId, T t) {
+		putMetaDataMap(CHAIN_REQ_PREFIX + chainId, t);
+	}
+
+	public <T> void setPrivateDeliveryData(String nodeId, T t){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		synchronized (this){
+			if (metaDataMap.containsKey(privateDKey)){
+				Queue<T> queue = (Queue<T>) metaDataMap.get(privateDKey);
+				queue.add(t);
+			}else{
+				Queue<T> queue = new ConcurrentLinkedQueue<>();
+				queue.add(t);
+				this.putMetaDataMap(privateDKey, queue);
+			}
+		}
+	}
+
+	public <T> Queue<T> getPrivateDeliveryQueue(String nodeId){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		if(metaDataMap.containsKey(privateDKey)){
+			return (Queue<T>) metaDataMap.get(privateDKey);
+		}else{
+			return null;
+		}
+	}
+
+	public <T> T getPrivateDeliveryData(String nodeId){
+		String privateDKey = PRIVATE_DELIVERY_PREFIX + nodeId;
+		if(metaDataMap.containsKey(privateDKey)){
+			Queue<T> queue = (Queue<T>) metaDataMap.get(privateDKey);
+			return queue.poll();
+		}else{
+			return null;
+		}
+	}
+
+	public <T> void setCondResult(String key, T t){
+		putMetaDataMap(COND_NODE_PREFIX + key, t);
+	}
+
+	public <T> T getCondResult(String key){
+		return (T) metaDataMap.get(COND_NODE_PREFIX + key);
+	}
+
+	public void setChainName(String chainName) {
+		putMetaDataMap(CHAIN_NAME, chainName);
+	}
+
+	public String getChainName() {
+		return (String) metaDataMap.get(CHAIN_NAME);
+	}
+
+	public void addStep(CmpStep step){
+		this.executeSteps.add(step);
+	}
+
+	public String getExecuteStepStr(){
+		StringBuilder str = new StringBuilder();
+		CmpStep cmpStep;
+		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
+			cmpStep = it.next();
+			str.append(cmpStep);
+			if(it.hasNext()){
+				str.append("==>");
+			}
+		}
+		this.executeStepsStr = str.toString();
+		return this.executeStepsStr;
+	}
+
+	public void printStep(){
+		if (ObjectUtil.isNull(this.executeStepsStr)){
+			this.executeStepsStr = getExecuteStepStr();
+		}
+		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
+	}
+
+	public void generateRequestId() {
+		metaDataMap.put(REQUEST_ID, IdUtil.fastSimpleUUID());
+	}
+
+	public String getRequestId() {
+		return (String) metaDataMap.get(REQUEST_ID);
+	}
+
+	public Queue<CmpStep> getExecuteSteps() {
+		return executeSteps;
+	}
+
+	public Exception getException() {
+		return (Exception) this.metaDataMap.get(EXCEPTION);
+	}
+
+	public void setException(Exception e) {
+		putMetaDataMap(EXCEPTION, e);
+	}
+
+	public O getContextBean() {
+		return contextBean;
+	}
 }

@@ -3,8 +3,8 @@ package com.yomahub.liteflow.test.builder;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class BuilderSpringTest2 extends BaseTest {
                 LiteFlowConditionBuilder.createThenCondition().setValue("h,i,j").build()
         ).build();
 
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("h==>i==>j", response.getSlot().getExecuteStepStr());
     }

@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.useTTLInWhen.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.useTTLInWhen.TestTL;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +17,9 @@ public class FCmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		DefaultContext context = this.getContextBean();
 		String value = TestTL.get();
-		this.getSlot().setData(this.getNodeId(),value+",f");
+		context.setData(this.getNodeId(),value+",f");
 		System.out.println("FCmp executed!");
 	}
 

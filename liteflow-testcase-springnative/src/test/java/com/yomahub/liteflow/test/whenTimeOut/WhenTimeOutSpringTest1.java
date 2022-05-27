@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.whenTimeOut;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.slot.DefaultSlot;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.exception.WhenTimeoutException;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class WhenTimeOutSpringTest1 extends BaseTest {
     //其中b和c在when情况下超时，所以抛出了WhenTimeoutException这个错
     @Test
     public void testWhenTimeOut() throws Exception{
-        LiteflowResponse<DefaultSlot> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
     }

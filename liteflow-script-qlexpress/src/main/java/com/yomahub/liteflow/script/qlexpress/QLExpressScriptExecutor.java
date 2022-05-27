@@ -59,9 +59,9 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             }
 
             InstructionSet instructionSet = compiledScriptMap.get(nodeId);
-            Slot slot = DataBus.getSlot(slotIndex);
+            Object contextBean = DataBus.getContextBean(slotIndex);
             DefaultContext<String, Object> context = new DefaultContext<>();
-            context.put("slot", slot);
+            context.put("context", contextBean);
             return expressRunner.execute(instructionSet, context, errorList, true, false, null);
         }catch (Exception e){
             for (String scriptErrorMsg : errorList){
