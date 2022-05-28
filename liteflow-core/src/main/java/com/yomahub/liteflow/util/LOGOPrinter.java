@@ -19,8 +19,9 @@ public class LOGOPrinter {
 		str.append("		| |    | |  | | |  _| _____| |_  | |  | | | \\ \\ /\\ / / \n");
 		str.append("		| |___ | |  | | | |__|_____|  _| | |__| |_| |\\ V  V /  \n");
 		str.append("		|_____|___| |_| |_____|    |_|   |_____\\___/  \\_/\\_/   \n\n");
-		str.append("		做最轻量级，最实用的微流程框架\n");
-		str.append("		To be the most lightweight and the most practical micro-process framework\n");
+		str.append("		Version: v2.7.0\n");
+		str.append("		轻量且强大的规则引擎框架。\n");
+		str.append("		Small but powerful rules engine.\n");
 		str.append("================================================================================================\n");
 		LOG.info(str.toString());
 	}
