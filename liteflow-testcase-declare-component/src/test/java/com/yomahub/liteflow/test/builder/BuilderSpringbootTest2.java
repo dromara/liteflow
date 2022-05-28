@@ -36,6 +36,6 @@ public class BuilderSpringbootTest2 extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("h==>i==>j", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("h==>i==>j", response.getExecuteStepStr());
     }
 }

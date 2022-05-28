@@ -36,7 +36,7 @@ public class LiteflowNodeExecutorTest extends BaseTest {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(CustomerDefaultNodeExecutor.class, response.getContextBean().getData("customerDefaultNodeExecutor"));
-        Assert.assertEquals("a", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a", response.getExecuteStepStr());
     }
 
     //默认执行器测试+全局重试配置测试
@@ -45,7 +45,7 @@ public class LiteflowNodeExecutorTest extends BaseTest {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(CustomerDefaultNodeExecutor.class, response.getContextBean().getData("customerDefaultNodeExecutor"));
-        Assert.assertEquals("b==>b==>b", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("b==>b==>b", response.getExecuteStepStr());
     }
 
     //自定义执行器测试
@@ -53,7 +53,7 @@ public class LiteflowNodeExecutorTest extends BaseTest {
     public void testCustomerExecutor() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("c", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("c", response.getExecuteStepStr());
     }
 
     //自定义执行器测试+全局重试配置测试
@@ -62,6 +62,6 @@ public class LiteflowNodeExecutorTest extends BaseTest {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals(CustomerNodeExecutorAndCustomRetry.class, response.getContextBean().getData("retryLogic"));
-        Assert.assertEquals("d==>d==>d==>d==>d==>d", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("d==>d==>d==>d==>d==>d", response.getExecuteStepStr());
     }
 }

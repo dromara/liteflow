@@ -68,7 +68,7 @@ public class ZkNodeWithYmlSpringTest extends BaseTest {
     public void test() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
     }
     
     @AfterClass

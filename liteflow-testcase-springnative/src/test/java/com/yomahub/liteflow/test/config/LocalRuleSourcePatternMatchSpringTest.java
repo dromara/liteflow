@@ -32,8 +32,8 @@ public class LocalRuleSourcePatternMatchSpringTest extends BaseTest {
     @Test
     public void testLocalJsonRuleSourcePatternMatch() {
         LiteflowResponse<DefaultContext> response0 = executor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response0.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c", response0.getExecuteStepStr());
         LiteflowResponse<DefaultContext> response1 = executor.execute2Resp("chain3", "arg");
-        Assert.assertEquals("a==>c==>f==>g", response1.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>c==>f==>g", response1.getExecuteStepStr());
     }
 }

@@ -85,7 +85,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
 
     //基于普通组件的builder模式测试
@@ -143,7 +143,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
 
 
@@ -212,6 +212,6 @@ public class BuilderSpringbootTest1 extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
 }

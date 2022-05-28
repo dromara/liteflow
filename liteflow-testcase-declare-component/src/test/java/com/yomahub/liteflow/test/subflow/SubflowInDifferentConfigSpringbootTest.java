@@ -38,7 +38,7 @@ public class SubflowInDifferentConfigSpringbootTest extends BaseTest {
     public void testExplicitSubFlow1() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
     }
 
     @Autowired

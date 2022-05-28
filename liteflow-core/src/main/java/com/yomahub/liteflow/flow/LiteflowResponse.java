@@ -1,8 +1,10 @@
 package com.yomahub.liteflow.flow;
 
+import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
 
 import java.io.Serializable;
+import java.util.Queue;
 
 /**
  * 执行结果封装类
@@ -63,5 +65,13 @@ public class LiteflowResponse<T> implements Serializable {
 
     public T getContextBean(){
         return getSlot().getContextBean();
+    }
+
+    public Queue<CmpStep> getExecuteSteps(){
+        return getSlot().getExecuteSteps();
+    }
+
+    public String getExecuteStepStr(){
+        return getSlot().getExecuteStepStr();
     }
 }

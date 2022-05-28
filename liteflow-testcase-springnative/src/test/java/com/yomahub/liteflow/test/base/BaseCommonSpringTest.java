@@ -23,6 +23,6 @@ public class BaseCommonSpringTest extends BaseTest {
     public void testBaseCommon(){
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
     }
 }

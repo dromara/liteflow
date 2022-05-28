@@ -34,7 +34,7 @@ public class LiteflowRetryTest extends BaseTest {
     public void testRetry1() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>b", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>b==>b", response.getExecuteStepStr());
     }
 
     //单个组件重试配置测试
@@ -42,7 +42,7 @@ public class LiteflowRetryTest extends BaseTest {
     public void testRetry2() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("c==>c==>c==>c==>c==>c", response.getExecuteStepStr());
     }
 
     //单个组件指定异常，但抛出的并不是指定异常的场景测试
@@ -57,6 +57,6 @@ public class LiteflowRetryTest extends BaseTest {
     public void testRetry4() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("e==>e==>e==>e==>e==>e", response.getExecuteStepStr());
     }
 }

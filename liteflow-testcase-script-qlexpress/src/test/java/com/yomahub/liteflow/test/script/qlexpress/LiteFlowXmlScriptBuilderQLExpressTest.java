@@ -91,6 +91,6 @@ public class LiteFlowXmlScriptBuilderQLExpressTest extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2","arg1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>b[组件B]", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>b[组件B]", response.getExecuteStepStr());
     }
 }

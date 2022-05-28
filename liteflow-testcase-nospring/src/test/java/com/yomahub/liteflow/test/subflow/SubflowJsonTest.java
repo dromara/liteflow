@@ -32,6 +32,6 @@ public class SubflowJsonTest extends BaseTest {
     public void testExplicitSubFlow() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
     }
 }

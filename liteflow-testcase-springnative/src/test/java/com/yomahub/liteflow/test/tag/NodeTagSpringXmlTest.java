@@ -36,7 +36,7 @@ public class NodeTagSpringXmlTest extends BaseTest {
     public void testTag2() throws Exception{
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>a==>a==>c==>e", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
     }
 
     //测试多线程when情况下的tag取值是否正确
@@ -56,6 +56,6 @@ public class NodeTagSpringXmlTest extends BaseTest {
     public void testTag4() throws Exception{
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("g", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("g", response.getExecuteStepStr());
     }
 }

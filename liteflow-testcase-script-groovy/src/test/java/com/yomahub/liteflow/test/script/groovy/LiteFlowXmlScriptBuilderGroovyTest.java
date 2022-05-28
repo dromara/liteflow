@@ -91,6 +91,6 @@ public class LiteFlowXmlScriptBuilderGroovyTest extends BaseTest {
 
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2","arg1");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getSlot().getExecuteStepStr());
+        Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
     }
 }

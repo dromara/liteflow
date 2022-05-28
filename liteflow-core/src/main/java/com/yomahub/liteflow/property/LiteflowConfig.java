@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.property;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.sun.org.apache.xpath.internal.operations.Bool;
@@ -81,6 +82,9 @@ public class LiteflowConfig {
 
     //FlowExecutor的execute2Future的自定义线程池
     private String mainExecutorClass;
+
+    //是否打印执行中的日志
+    private Boolean printExecutionLog;
 
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
@@ -304,5 +308,17 @@ public class LiteflowConfig {
 
     public void setMainExecutorClass(String mainExecutorClass) {
         this.mainExecutorClass = mainExecutorClass;
+    }
+
+    public Boolean getPrintExecutionLog() {
+        if (ObjectUtil.isNull(printExecutionLog)){
+            return Boolean.TRUE;
+        }else{
+            return printExecutionLog;
+        }
+    }
+
+    public void setPrintExecutionLog(Boolean printExecutionLog) {
+        this.printExecutionLog = printExecutionLog;
     }
 }

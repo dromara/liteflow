@@ -41,7 +41,7 @@ public class AsyncNodeSpringbootTest extends BaseTest {
     public void testAsyncFlow1() {
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "it's a base request");
         Assert.assertTrue(response.isSuccess());
-        System.out.println(response.getSlot().getExecuteStepStr());
+        System.out.println(response.getExecuteStepStr());
     }
 
     //这个和test1有点类似，只不过进一步验证了步骤
@@ -51,7 +51,7 @@ public class AsyncNodeSpringbootTest extends BaseTest {
         Assert.assertTrue(ListUtil.toList("b==>j==>g==>f==>h","b==>j==>g==>h==>f",
                 "b==>j==>h==>g==>f","b==>j==>h==>f==>g",
                 "b==>j==>f==>h==>g","b==>j==>f==>g==>h"
-                ).contains(response.getSlot().getExecuteStepStr()));
+                ).contains(response.getExecuteStepStr()));
     }
 
     //测试errorResume,默认的errorResume为false，这里测试默认的
