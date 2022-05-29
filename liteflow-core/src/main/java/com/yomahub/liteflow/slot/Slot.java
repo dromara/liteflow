@@ -164,12 +164,16 @@ public class Slot<O>{
 		this.executeSteps.add(step);
 	}
 
-	public String getExecuteStepStr(){
+	public String getExecuteStepStr(boolean withTimeSpent){
 		StringBuilder str = new StringBuilder();
 		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
-			str.append(cmpStep);
+			if (withTimeSpent){
+				str.append(cmpStep.buildStringWithTime());
+			}else{
+				str.append(cmpStep.buildString());
+			}
 			if(it.hasNext()){
 				str.append("==>");
 			}
@@ -178,9 +182,13 @@ public class Slot<O>{
 		return this.executeStepsStr;
 	}
 
+	public String getExecuteStepStr(){
+		return getExecuteStepStr(false);
+	}
+
 	public void printStep(){
 		if (ObjectUtil.isNull(this.executeStepsStr)){
-			this.executeStepsStr = getExecuteStepStr();
+			this.executeStepsStr = getExecuteStepStr(true);
 		}
 		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
 	}

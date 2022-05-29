@@ -24,6 +24,12 @@ public class CmpStep {
 
     private CmpStepTypeEnum stepType;
 
+    //消耗的时间，毫秒为单位
+    private Long timeSpent;
+
+    //是否成功
+    private boolean success;
+
     public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
         this.nodeId = nodeId;
         this.nodeName = nodeName;
@@ -54,8 +60,23 @@ public class CmpStep {
         this.nodeName = nodeName;
     }
 
-    @Override
-    public String toString() {
+    public Long getTimeSpent() {
+        return timeSpent;
+    }
+
+    public void setTimeSpent(Long timeSpent) {
+        this.timeSpent = timeSpent;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String buildString() {
         if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
         	if (StrUtil.isBlank(nodeName)){
 				return StrUtil.format("{}", nodeId);
@@ -63,11 +84,29 @@ public class CmpStep {
 				return StrUtil.format("{}[{}]", nodeId, nodeName);
 			}
         } else {
-        	if (StrUtil.isBlank(nodeName)){
-				return StrUtil.format("{}({})", nodeId, stepType);
-			}else{
-				return StrUtil.format("{}[{}]({})", nodeId, nodeName, stepType);
-			}
+        	//目前没有其他的类型
+            return null;
+        }
+    }
+
+    public String buildStringWithTime() {
+        if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
+            if (StrUtil.isBlank(nodeName)){
+                if (timeSpent != null){
+                    return StrUtil.format("{}<{}>", nodeId, timeSpent);
+                }else{
+                    return StrUtil.format("{}", nodeId);
+                }
+            }else{
+                if (timeSpent != null){
+                    return StrUtil.format("{}[{}]<{}>", nodeId, nodeName, timeSpent);
+                }else{
+                    return StrUtil.format("{}[{}]", nodeId, nodeName);
+                }
+            }
+        } else {
+            //目前没有其他的类型
+            return null;
         }
     }
 

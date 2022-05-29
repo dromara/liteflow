@@ -77,7 +77,8 @@ public abstract class NodeComponent{
 		Slot<?> slot = this.getSlot();
 
 		//在元数据里加入step信息
-		slot.addStep(new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE));
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -87,13 +88,22 @@ public abstract class NodeComponent{
 		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
 		try{
 			self.process();
+			cmpStep.setSuccess(true);
+		} catch (Exception e){
+			cmpStep.setSuccess(false);
+			throw e;
 		} finally {
 			CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
 		}
 
 		stopWatch.stop();
-		
+
 		final long timeSpent = stopWatch.getTotalTimeMillis();
+		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
+
+		//往CmpStep中放入时间消耗信息
+		cmpStep.setTimeSpent(timeSpent);
+
 		// 性能统计
 		if (ObjectUtil.isNotNull(monitorBus)) {
 			CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
@@ -110,7 +120,7 @@ public abstract class NodeComponent{
 			}
 		}
 
-		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
+
 	}
 
 	public abstract void process() throws Exception;
