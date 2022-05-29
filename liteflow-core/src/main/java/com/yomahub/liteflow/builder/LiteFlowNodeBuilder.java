@@ -49,17 +49,26 @@ public class LiteFlowNodeBuilder {
     }
 
     public LiteFlowNodeBuilder setId(String nodeId) {
-        this.node.setId(nodeId);
+        if (StrUtil.isBlank(nodeId)){
+            return this;
+        }
+        this.node.setId(nodeId.trim());
         return this;
     }
 
     public LiteFlowNodeBuilder setName(String name) {
-        this.node.setName(name);
+        if (StrUtil.isBlank(name)){
+            return this;
+        }
+        this.node.setName(name.trim());
         return this;
     }
 
     public LiteFlowNodeBuilder setClazz(String clazz) {
-        this.node.setClazz(clazz);
+        if (StrUtil.isBlank(clazz)){
+            return this;
+        }
+        this.node.setClazz(clazz.trim());
         return this;
     }
 
@@ -103,7 +112,7 @@ public class LiteFlowNodeBuilder {
         if (StrUtil.isBlank(filePath)){
             return this;
         }
-        String script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", filePath));
+        String script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", filePath.trim()));
         return setScript(script);
     }
 
