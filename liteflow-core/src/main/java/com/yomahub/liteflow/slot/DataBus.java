@@ -58,7 +58,8 @@ public class DataBus {
 
 	public static <T> int offerSlot(Class<T> contextClazz) {
 		try {
-			T contextBean = ReflectUtil.newInstance(contextClazz);
+			//这里用这个方法，是为了兼容当没有无参构造方法所报的错
+			T contextBean = ReflectUtil.newInstanceIfPossible(contextClazz);
 			Slot<T> slot = new Slot<>(contextBean);
 
 			//这里有没有并发问题？
