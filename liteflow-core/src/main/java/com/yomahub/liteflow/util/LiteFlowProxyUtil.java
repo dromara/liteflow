@@ -25,7 +25,7 @@ public class LiteFlowProxyUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(LiteFlowProxyUtil.class);
 
-    //判断一个bean是否是解耦式组件
+    //判断一个bean是否是声明式组件
     public static boolean isMarkedCmp(Class<?> clazz){
         //判断bean是否标记了@LiteflowCmpDefine或者@LiteflowCondCmpDefine这2个标注之一
         boolean flag1 = clazz.getAnnotation(LiteflowCmpDefine.class) != null
