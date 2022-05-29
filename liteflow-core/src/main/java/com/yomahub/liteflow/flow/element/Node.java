@@ -127,7 +127,7 @@ public class Node implements Executable,Cloneable{
 			if (instance.isAccess()) {
 				//根据配置判断是否打印执行中的日志
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
-					LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
+					LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),instance.getClass().getSimpleName());
 				}
 
 				//这里开始进行重试的逻辑和主逻辑的运行
