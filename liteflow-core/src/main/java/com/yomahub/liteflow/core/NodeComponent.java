@@ -91,23 +91,22 @@ public abstract class NodeComponent{
 			cmpStep.setSuccess(true);
 		} catch (Exception e){
 			cmpStep.setSuccess(false);
+			cmpStep.setException(e);
 			throw e;
 		} finally {
+			stopWatch.stop();
+			final long timeSpent = stopWatch.getTotalTimeMillis();
+			LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
+
+			//往CmpStep中放入时间消耗信息
+			cmpStep.setTimeSpent(timeSpent);
 			CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
-		}
 
-		stopWatch.stop();
-
-		final long timeSpent = stopWatch.getTotalTimeMillis();
-		LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
-
-		//往CmpStep中放入时间消耗信息
-		cmpStep.setTimeSpent(timeSpent);
-
-		// 性能统计
-		if (ObjectUtil.isNotNull(monitorBus)) {
-			CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
-			monitorBus.addStatistics(statistics);
+			// 性能统计
+			if (ObjectUtil.isNotNull(monitorBus)) {
+				CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
+				monitorBus.addStatistics(statistics);
+			}
 		}
 
 		if (this instanceof NodeCondComponent) {
