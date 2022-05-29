@@ -4,7 +4,10 @@ import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 执行结果封装类
@@ -67,8 +70,8 @@ public class LiteflowResponse<T> implements Serializable {
         return getSlot().getContextBean();
     }
 
-    public Queue<CmpStep> getExecuteSteps(){
-        return getSlot().getExecuteSteps();
+    public Map<String, CmpStep> getExecuteSteps(){
+        return getSlot().getExecuteSteps().stream().collect(Collectors.toMap(CmpStep::getNodeId, cmpStep -> cmpStep));
     }
 
     public String getExecuteStepStr(){
