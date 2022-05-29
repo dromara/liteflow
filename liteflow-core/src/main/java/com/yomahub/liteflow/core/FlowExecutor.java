@@ -132,8 +132,8 @@ public class FlowExecutor {
                 LOG.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
-                String errorMsg = StrUtil.format("init flow executor cause error,cannot find the parse for path {}", path);
-                LOG.error(errorMsg, e);
+                String errorMsg = StrUtil.format("init flow executor cause error for path {},reason:{}", path, e.getMessage());
+                LOG.error(e.getMessage(), e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
@@ -158,8 +158,8 @@ public class FlowExecutor {
                 LOG.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
-                String errorMsg = StrUtil.format("init flow executor cause error,can not parse rule file {}", rulePathList);
-                LOG.error(errorMsg, e);
+                String errorMsg = StrUtil.format("init flow executor cause error for path {},reason: {}", rulePathList, e.getMessage());
+                LOG.error(e.getMessage(), e);
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
