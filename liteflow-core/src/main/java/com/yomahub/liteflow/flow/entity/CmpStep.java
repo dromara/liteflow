@@ -30,6 +30,10 @@ public class CmpStep {
     //是否成功
     private boolean success;
 
+    //有exception，success一定为false
+    //但是success为false，不一定有exception，因为有可能没执行到，或者没执行结束(any)
+    private Exception exception;
+
     public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
         this.nodeId = nodeId;
         this.nodeName = nodeName;
@@ -74,6 +78,14 @@ public class CmpStep {
 
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 
     public String buildString() {
