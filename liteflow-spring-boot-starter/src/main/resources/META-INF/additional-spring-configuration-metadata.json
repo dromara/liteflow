@@ -98,6 +98,13 @@
       "defaultValue": 0
     },
     {
+      "name": "liteflow.print-execution-log",
+      "type": "java.lang.Boolean",
+      "description": "Whether to print logs during execution.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 0
+    },
+    {
       "name": "liteflow.monitor.enable-log",
       "type": "java.lang.Boolean",
       "description": "Enable monitor log.",

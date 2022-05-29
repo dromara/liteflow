@@ -11,9 +11,12 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
@@ -118,8 +121,15 @@ public class Node implements Executable,Cloneable{
 			instance.setTag(tag);
 			instance.setCondNodeMap(condNodeMap);
 
+			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+
 			//判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
+				//根据配置判断是否打印执行中的日志
+				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+					LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
+				}
+
 				//这里开始进行重试的逻辑和主逻辑的运行
 				NodeExecutor nodeExecutor = NodeExecutorHelper.loadInstance().buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
@@ -130,7 +140,9 @@ public class Node implements Executable,Cloneable{
 					throw new ChainEndException(errorInfo);
 				}
 			} else {
-				LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getClass().getSimpleName());
+				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+					LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getClass().getSimpleName());
+				}
 			}
 		} catch (ChainEndException e){
 			throw e;

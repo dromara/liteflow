@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
@@ -344,7 +345,9 @@ public class FlowExecutor {
 
         if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
             slotIndex = DataBus.offerSlot(contextBeanClazz);
-            LOG.info("slot[{}] offered", slotIndex);
+            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+                LOG.info("slot[{}] offered", slotIndex);
+            }
         }
 
         if (slotIndex == -1) {
@@ -358,7 +361,9 @@ public class FlowExecutor {
 
         if (StrUtil.isBlank(slot.getRequestId())) {
             slot.generateRequestId();
-            LOG.info("requestId[{}] has generated", slot.getRequestId());
+            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+                LOG.info("requestId[{}] has generated", slot.getRequestId());
+            }
         }
 
         if (!isInnerChain) {

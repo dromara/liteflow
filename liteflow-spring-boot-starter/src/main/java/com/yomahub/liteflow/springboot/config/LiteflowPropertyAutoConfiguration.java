@@ -44,6 +44,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setNodeExecutorClass(property.getNodeExecutorClass());
         liteflowConfig.setMainExecutorWorks(property.getMainExecutorWorks());
         liteflowConfig.setMainExecutorClass(property.getMainExecutorClass());
+        liteflowConfig.setPrintExecutionLog(property.isPrintExecutionLog());
         return liteflowConfig;
     }
 }

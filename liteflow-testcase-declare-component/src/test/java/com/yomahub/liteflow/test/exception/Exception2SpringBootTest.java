@@ -31,29 +31,13 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/exception/application.properties")
-@SpringBootTest(classes = ExceptionSpringBootTest.class)
+@SpringBootTest(classes = Exception2SpringBootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.exception.cmp"})
-public class ExceptionSpringBootTest extends BaseTest {
+public class Exception2SpringBootTest extends BaseTest {
     
     @Resource
     private FlowExecutor flowExecutor;
-
-    @Autowired
-    private ApplicationContext context;
-
-    @Test(expected = ConfigErrorException.class)
-    public void testConfigErrorException() {
-        flowExecutor.setLiteflowConfig(null);
-        flowExecutor.init();
-    }
-
-    @Test(expected = FlowExecutorNotInitException.class)
-    public void testFlowExecutorNotInitException() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        config.setRuleSource("error/flow.txt");
-        flowExecutor.init();
-    }
 
     @Test(expected = ChainNotFoundException.class)
     public void testChainNotFoundException() throws Exception {

@@ -8,12 +8,15 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +75,8 @@ public abstract class NodeComponent{
 
 	public void execute() throws Exception{
 		Slot<?> slot = this.getSlot();
-		LOG.info("[{}]:[O]start component[{}] execution",slot.getRequestId(),this.getClass().getSimpleName());
+
+		//在元数据里加入step信息
 		slot.addStep(new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE));
 
 		StopWatch stopWatch = new StopWatch();

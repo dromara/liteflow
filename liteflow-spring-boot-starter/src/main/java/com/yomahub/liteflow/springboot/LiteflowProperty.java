@@ -56,6 +56,9 @@ public class LiteflowProperty {
     //FlowExecutor的execute2Future的自定义线程池
     private String mainExecutorClass;
 
+    //是否打印执行过程中的日志
+    private boolean printExecutionLog;
+
     public boolean isEnable() {
         return enable;
     }
@@ -174,5 +177,13 @@ public class LiteflowProperty {
 
     public void setMainExecutorClass(String mainExecutorClass) {
         this.mainExecutorClass = mainExecutorClass;
+    }
+
+    public boolean isPrintExecutionLog() {
+        return printExecutionLog;
+    }
+
+    public void setPrintExecutionLog(boolean printExecutionLog) {
+        this.printExecutionLog = printExecutionLog;
     }
 }
