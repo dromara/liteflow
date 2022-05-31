@@ -83,11 +83,14 @@ public abstract class NodeComponent{
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
-		//非spring环境下，全局切面为空实现
-		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.getNodeId(), slot);
+
 		try{
+			//前置处理
+			this.beforeProcess(this.getNodeId(), slot);
+
+			//主要的处理逻辑
 			self.process();
+
 			cmpStep.setSuccess(true);
 		} catch (Exception e){
 			cmpStep.setSuccess(false);
@@ -100,7 +103,9 @@ public abstract class NodeComponent{
 
 			//往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
-			CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.getNodeId(), slot);
+
+			//后置处理
+			this.afterProcess(this.getNodeId(), slot);
 
 			// 性能统计
 			if (ObjectUtil.isNotNull(monitorBus)) {
@@ -122,7 +127,17 @@ public abstract class NodeComponent{
 
 	}
 
+	public <T> void beforeProcess(String nodeId, Slot<T> slot){
+		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
+		//非spring环境下，全局切面为空实现
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, slot);
+	}
+
 	public abstract void process() throws Exception;
+
+	public <T> void afterProcess(String nodeId, Slot<T> slot){
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, slot);
+	}
 
 	//是否进入该节点
 	public boolean isAccess(){
