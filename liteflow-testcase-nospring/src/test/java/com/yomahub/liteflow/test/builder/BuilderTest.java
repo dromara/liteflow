@@ -196,7 +196,7 @@ public class BuilderTest extends BaseTest {
 
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
                 LiteFlowConditionBuilder
-                        .createWhenCondition()
+                        .createThenCondition()
                         .setExecutable(new ExecutableEntity().setId("a").setTag("hello"))
                         .setExecutable(new ExecutableEntity().setId("b"))
                         .build()
