@@ -292,7 +292,7 @@ public class FlowExecutor {
         return this.execute(chainId, param, contextBeanClazz, null, false);
     }
 
-    public <T> T execute(String chainId, Object param, Class<T> contextBeanClazz,
+    private <T> T execute(String chainId, Object param, Class<T> contextBeanClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
         Slot<T> slot = this.doExecute(chainId, param, contextBeanClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
