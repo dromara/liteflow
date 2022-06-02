@@ -273,4 +273,12 @@ public abstract class NodeComponent{
 	public void setMonitorBus(MonitorBus monitorBus) {
 		this.monitorBus = monitorBus;
 	}
+
+	public <T> T getRequestData(){
+		return getSlot().getRequestData();
+	}
+
+	public String getChainName(){
+		return getSlot().getChainName();
+	}
 }
