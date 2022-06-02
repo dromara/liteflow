@@ -6,7 +6,7 @@ import java.util.Objects;
 public class FCondCmp extends NodeCondComponent {
     @Override
     public String processCond() {
-        Integer requestData = this.getSlot().getRequestData();
+        Integer requestData = this.getRequestData();
         if (Objects.isNull(requestData)){
             return "d";
         } else if(requestData == 0){

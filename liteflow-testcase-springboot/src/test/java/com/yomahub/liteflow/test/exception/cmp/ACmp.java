@@ -20,7 +20,7 @@ public class ACmp extends NodeComponent {
 	
 	@Override
 	public void process() {
-		String str = this.getSlot().getRequestData();
+		String str = this.getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
 			throw new RuntimeException("chain execute execption");
 		}

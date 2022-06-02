@@ -24,7 +24,7 @@ public class BCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) throws InterruptedException {
-		String str = bindCmp.getSlot().getRequestData();
+		String str = bindCmp.getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("when")) {
 			try {
 				LOG.info("Bcomp sleep begin");

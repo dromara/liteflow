@@ -15,7 +15,7 @@ public class BCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) {
         System.out.println("BComp executed!");
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         Integer divisor = 130;
         Integer result = divisor / requestData;
         bindCmp.getSlot().setResponseData(result);
@@ -23,7 +23,7 @@ public class BCmp{
 
     @LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
     public boolean isAccess(NodeComponent bindCmp) {
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         if (Objects.nonNull(requestData)){
             return true;
         }

@@ -20,7 +20,7 @@ public class ACmp{
 
     @LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
     public boolean isAccess(NodeComponent bindCmp) {
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         if (Objects.nonNull(requestData) && requestData > 100){
             return true;
         }

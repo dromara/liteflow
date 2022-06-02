@@ -18,7 +18,7 @@ public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() throws InterruptedException {
-		String str = this.getSlot().getRequestData();
+		String str = this.getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("when")) {
 			try {
 				LOG.info("Bcomp sleep begin");

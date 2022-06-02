@@ -15,7 +15,7 @@ public class CCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) {
         System.out.println("CComp executed!");
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         Integer divisor = 130;
         Integer result = divisor / requestData;
         bindCmp.getSlot().setResponseData(result);
@@ -24,7 +24,7 @@ public class CCmp{
 
     @LiteflowMethod(LiteFlowMethodEnum.IS_CONTINUE_ON_ERROR)
     public boolean isContinueOnError(NodeComponent bindCmp) {
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         if (Objects.nonNull(requestData)){
             return true;
         }

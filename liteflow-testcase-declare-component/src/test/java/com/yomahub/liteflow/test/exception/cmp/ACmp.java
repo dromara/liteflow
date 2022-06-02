@@ -24,7 +24,7 @@ public class ACmp{
 	
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		String str = bindCmp.getSlot().getRequestData();
+		String str = bindCmp.getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
 			throw new RuntimeException("chain execute execption");
 		}

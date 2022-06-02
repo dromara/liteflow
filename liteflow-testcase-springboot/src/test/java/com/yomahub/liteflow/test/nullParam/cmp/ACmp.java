@@ -16,7 +16,7 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("ACmp executed!");
-		System.out.println("get request data:" + this.getSlot().getRequestData());
+		System.out.println("get request data:" + this.getRequestData());
 		this.getSlot().setInput("BCmp", "param for BCmp");
 	}
 }

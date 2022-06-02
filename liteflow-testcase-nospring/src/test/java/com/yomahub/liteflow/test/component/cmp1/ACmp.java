@@ -14,7 +14,7 @@ public class ACmp extends NodeComponent {
 
     @Override
     public boolean isAccess() {
-        Integer requestData = this.getSlot().getRequestData();
+        Integer requestData = this.getRequestData();
         if (Objects.nonNull(requestData) && requestData > 100){
             return true;
         }

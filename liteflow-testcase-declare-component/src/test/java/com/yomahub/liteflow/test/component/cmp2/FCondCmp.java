@@ -15,7 +15,7 @@ import java.util.Objects;
 public class FCondCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS_COND)
     public String processCond(NodeComponent bindCmp) {
-        Integer requestData = bindCmp.getSlot().getRequestData();
+        Integer requestData = bindCmp.getRequestData();
         if (Objects.isNull(requestData)){
             return "d";
         } else if(requestData == 0){

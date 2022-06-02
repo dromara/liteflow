@@ -11,7 +11,7 @@ public class CCmp extends NodeComponent {
     @Override
     public void process() {
         System.out.println("CComp executed!");
-        Integer requestData = this.getSlot().getRequestData();
+        Integer requestData = this.getRequestData();
         Integer divisor = 130;
         Integer result = divisor / requestData;
         this.getSlot().setResponseData(result);
@@ -20,7 +20,7 @@ public class CCmp extends NodeComponent {
 
     @Override
     public boolean isContinueOnError() {
-        Integer requestData = this.getSlot().getRequestData();
+        Integer requestData = this.getRequestData();
         if (Objects.nonNull(requestData)){
             return true;
         }
