@@ -280,25 +280,25 @@ public class FlowExecutor {
         node.execute(slotIndex);
     }
 
-    public Slot<DefaultContext> execute(String chainId) throws Exception {
+    public DefaultContext execute(String chainId) throws Exception {
         return this.execute(chainId, null, DefaultContext.class, null, false);
     }
 
-    public Slot<DefaultContext> execute(String chainId, Object param) throws Exception {
+    public DefaultContext execute(String chainId, Object param) throws Exception {
         return this.execute(chainId, param, DefaultContext.class, null, false);
     }
 
-    public <T> Slot<T> execute(String chainId, Object param, Class<T> contextBeanClazz) throws Exception {
+    public <T> T execute(String chainId, Object param, Class<T> contextBeanClazz) throws Exception {
         return this.execute(chainId, param, contextBeanClazz, null, false);
     }
 
-    public <T> Slot<T> execute(String chainId, Object param, Class<T> contextBeanClazz,
+    public <T> T execute(String chainId, Object param, Class<T> contextBeanClazz,
                                       Integer slotIndex, boolean isInnerChain) throws Exception {
         Slot<T> slot = this.doExecute(chainId, param, contextBeanClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
             throw slot.getException();
         } else {
-            return slot;
+            return slot.getContextBean();
         }
     }
 

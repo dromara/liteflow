@@ -42,8 +42,8 @@ public class FlowExecutorTest extends BaseTest {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("executor/flow.json");
         FlowExecutor executor = new FlowExecutor(config);
-        Slot<CustomContext> slot = executor.execute("chain1", "test0", CustomContext.class);
-        Assert.assertEquals("custom", slot.getContextBean().getName());
+        CustomContext context = executor.execute("chain1", "test0", CustomContext.class);
+        Assert.assertEquals("custom", context.getName());
     }
     
     @Test(expected=RuntimeException.class)
