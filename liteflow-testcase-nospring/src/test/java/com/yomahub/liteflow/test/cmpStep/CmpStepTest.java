@@ -22,7 +22,7 @@ public class CmpStepTest extends BaseTest{
     }
 
     @Test
-    public void testStep(){
+    public void testStep1(){
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertTrue(response.getExecuteSteps().get("a").isSuccess());
@@ -32,5 +32,12 @@ public class CmpStepTest extends BaseTest{
         Assert.assertTrue(response.getExecuteSteps().get("c").getTimeSpent() >= 2000);
         Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("c").getException().getClass());
         Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("d").getException().getClass());
+    }
+
+    @Test
+    public void testStep2() throws Exception{
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b", response.getExecuteStepStrWithoutTime());
     }
 }

@@ -8,12 +8,18 @@
 package com.yomahub.liteflow.test.cmpStep.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import org.springframework.stereotype.Component;
 
-public class ACmp extends NodeComponent {
+@Component("e")
+public class ECmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
-		Thread.sleep(5000L);
-		System.out.println("ACmp executed!");
+	public void process() {
+		System.out.println("ECmp executed!");
+	}
+
+	@Override
+	public boolean isAccess() {
+		return false;
 	}
 }

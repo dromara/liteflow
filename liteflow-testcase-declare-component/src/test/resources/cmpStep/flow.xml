@@ -4,4 +4,9 @@
         <then value="a,b"/>
         <when value="c,d"/>
     </chain>
+
+    <chain name="chain2">
+        <when value="e,a" any="true"/>
+        <then value="b"/>
+    </chain>
 </flow>

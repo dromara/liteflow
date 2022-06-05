@@ -43,4 +43,10 @@ public class CmpStepSpringbootTest extends BaseTest {
         Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("d").getException().getClass());
     }
 
+    @Test
+    public void testStep2() throws Exception{
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b", response.getExecuteStepStrWithoutTime());
+    }
 }

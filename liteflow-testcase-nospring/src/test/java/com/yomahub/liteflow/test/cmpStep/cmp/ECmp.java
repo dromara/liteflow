@@ -9,11 +9,15 @@ package com.yomahub.liteflow.test.cmpStep.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
 
-public class ACmp extends NodeComponent {
+public class ECmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
-		Thread.sleep(5000L);
-		System.out.println("ACmp executed!");
+	public void process() {
+		System.out.println("ECmp executed!");
+	}
+
+	@Override
+	public boolean isAccess() {
+		return false;
 	}
 }

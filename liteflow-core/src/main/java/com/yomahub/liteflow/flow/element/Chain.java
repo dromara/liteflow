@@ -34,6 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -149,14 +150,19 @@ public class Chain implements Executable {
         //1.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
         //2.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
         //3.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
-        List<CompletableFuture<WhenFutureObj>> completableFutureList = condition.getNodeList().stream().map(
-                    executable -> CompletableFutureTimeout.completeOnTimeout(
+        List<CompletableFuture<WhenFutureObj>> completableFutureList = condition.getNodeList().stream().filter(executable -> {
+            try {
+                return executable.isAccess(slotIndex);
+            }catch (Exception e){
+                LOG.error("there was an error when executing the when component isAccess",e);
+                return false;
+            }
+        }).map(executable -> CompletableFutureTimeout.completeOnTimeout(
                                     WhenFutureObj.timeOut(executable.getExecuteName()),
                                     CompletableFuture.supplyAsync(new ParallelSupplier(executable, slotIndex), parallelExecutor),
                                     liteflowConfig.getWhenMaxWaitSeconds(),
                                     TimeUnit.SECONDS
-                                  )
-                    ).collect(Collectors.toList());
+                                  )).collect(Collectors.toList());
 
 
         CompletableFuture<?> resultCompletableFuture;

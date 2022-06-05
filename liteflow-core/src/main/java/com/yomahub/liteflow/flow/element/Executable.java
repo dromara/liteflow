@@ -12,6 +12,10 @@ public interface Executable{
 
     void execute(Integer slotIndex) throws Exception;
 
+    default boolean isAccess(Integer slotIndex) throws Exception{
+        return true;
+    }
+
     ExecuteTypeEnum getExecuteType();
 
     String getExecuteName();

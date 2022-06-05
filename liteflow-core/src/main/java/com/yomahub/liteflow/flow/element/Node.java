@@ -111,9 +111,8 @@ public class Node implements Executable,Cloneable{
 		if (ObjectUtil.isNull(instance)) {
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
-		//每次执行node前，把分配的slot index信息放入threadLocal里
 		instance.setSlotIndex(slotIndex);
-		Slot slot = DataBus.getSlot(slotIndex);
+		Slot<?> slot = DataBus.getSlot(slotIndex);
 
 		try {
 			//把tag和condNodeMap赋给NodeComponent
@@ -161,6 +160,16 @@ public class Node implements Executable,Cloneable{
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
 		}
+	}
+
+	//在同步场景并不会单独执行这方法，同步场景会在execute里面去判断isAccess。
+	//但是在异步场景的any=true情况下，如果isAccess返回了false，那么异步的any有可能会认为这个组件先执行完。就会导致不正常
+	//增加这个方法是为了在异步的时候，先去过滤掉isAccess为false的异步组件。然后再异步执行。
+	//详情见这个issue:https://gitee.com/dromara/liteFlow/issues/I4XRBA
+	@Override
+	public boolean isAccess(Integer slotIndex) throws Exception {
+		instance.setSlotIndex(slotIndex);
+		return instance.isAccess();
 	}
 
 	@Override

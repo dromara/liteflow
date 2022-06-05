@@ -13,13 +13,17 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
-@Component("a")
+@Component("e")
 @LiteflowCmpDefine
-public class ACmp{
+public class ECmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-	public void process(NodeComponent bindCmp) throws Exception{
-		Thread.sleep(5000L);
-		System.out.println("ACmp executed!");
+	public void process(NodeComponent bindCmp) {
+		System.out.println("ECmp executed!");
+	}
+
+	@LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
+	public boolean isAccess(NodeComponent bindCmp) {
+		return false;
 	}
 }

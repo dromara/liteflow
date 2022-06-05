@@ -16,9 +16,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境最普通的例子测试
+ * springboot环境step的测试例子
  * @author Bryan.Zhang
- * @since 2.6.4
+ * @since 2.7.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/cmpStep/application.properties")
@@ -33,7 +33,7 @@ public class CmpStepSpringbootTest extends BaseTest {
     //ab串行
     //cd并行，都抛错,其中c耗时2秒
     @Test
-    public void testStep() throws Exception{
+    public void testStep1() throws Exception{
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertTrue(response.getExecuteSteps().get("a").isSuccess());
@@ -43,6 +43,13 @@ public class CmpStepSpringbootTest extends BaseTest {
         Assert.assertTrue(response.getExecuteSteps().get("c").getTimeSpent() >= 2000);
         Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("c").getException().getClass());
         Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("d").getException().getClass());
+    }
+
+    @Test
+    public void testStep2() throws Exception{
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b", response.getExecuteStepStrWithoutTime());
     }
 
 }
