@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.privateDelivery;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -30,7 +31,7 @@ public class PrivateDeliveryTest extends BaseTest {
     @Test
     public void testPrivateDelivery() throws Exception{
         LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
-        Set<Integer> set = response.getContextBean().getData("testSet");
+        ConcurrentHashSet<Integer> set = response.getContextBean().getData("testSet");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(100, set.size());
     }

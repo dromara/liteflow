@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.test.privateDelivery.cmp;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
@@ -25,7 +26,7 @@ public class ACmp{
 	public void process(NodeComponent bindCmp) {
 		System.out.println("ACmp executed!");
 		DefaultContext context = bindCmp.getContextBean();
-		context.setData("testSet", new HashSet<>());
+		context.setData("testSet", new ConcurrentHashSet<>());
 
 		for (int i = 0; i < 100; i++) {
 			bindCmp.sendPrivateDeliveryData("b",i+1);

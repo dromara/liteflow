@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.test.privateDelivery.cmp;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
@@ -20,7 +21,7 @@ public class BCmp extends NodeComponent {
         DefaultContext context = this.getContextBean();
         System.out.println("BCmp executed!");
         Integer value = this.getPrivateDeliveryData();
-        Set<Integer> testSet = context.getData("testSet");
+        ConcurrentHashSet<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }
 }
