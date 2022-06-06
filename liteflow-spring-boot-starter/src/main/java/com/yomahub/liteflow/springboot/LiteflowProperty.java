@@ -21,6 +21,12 @@ public class LiteflowProperty {
     //slot的数量
     private int slotSize;
 
+    //FlowExecutor的execute2Future的线程数
+    private int mainExecutorWorks;
+
+    //FlowExecutor的execute2Future的自定义线程池
+    private String mainExecutorClass;
+
     //并行线程执行器class路径
     private String threadExecutorClass;
 
@@ -50,11 +56,9 @@ public class LiteflowProperty {
     // 节点执行器class全名
     private String nodeExecutorClass;
 
-    //FlowExecutor的execute2Future的线程数
-    private int mainExecutorWorks;
 
-    //FlowExecutor的execute2Future的自定义线程池
-    private String mainExecutorClass;
+
+
 
     //是否打印执行过程中的日志
     private boolean printExecutionLog;

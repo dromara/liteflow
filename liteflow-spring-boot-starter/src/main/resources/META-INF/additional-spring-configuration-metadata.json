@@ -1,52 +1,60 @@
 {
   "properties": [
     {
+      "name": "liteflow.rule-source",
+      "type": "java.lang.String",
+      "description": "Location of the flow rule source.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "config/flow.xml"
+    },
+    {
       "name": "liteflow.enable",
       "type": "java.lang.Boolean",
       "description": "Whether to turn on liteflow.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": true
     },
     {
       "name": "liteflow.print-banner",
       "type": "java.lang.Boolean",
       "description": "Whether to print liteflow banner.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
-    },
-    {
-      "name": "liteflow.rule-source",
-      "type": "java.lang.String",
-      "description": "Location of the flow rule source.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
-    },
-    {
-      "name": "liteflow.slot-size",
-      "type": "java.lang.Integer",
-      "description": "Set concurrent data slot size.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": true
     },
     {
       "name": "liteflow.zk-node",
       "type": "java.lang.String",
       "description": "Node definition for ZK configuration.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "/lite-flow/flow"
+    },
+    {
+      "name": "liteflow.slot-size",
+      "type": "java.lang.Integer",
+      "description": "Set concurrent data slot size.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 1024
     },
     {
       "name": "liteflow.main-executor-works",
       "type": "java.lang.Integer",
       "description": "Max thread count for main executor,only for FlowExecutor.execute2Future.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 64
     },
     {
       "name": "liteflow.main-executor-class",
       "type": "java.lang.String",
       "description": "Custom thread pool implement for main executor.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultMainExecutorBuilder"
     },
     {
       "name": "liteflow.thread-executor-class",
       "type": "java.lang.String",
       "description": "Custom thread pool implement for when executor.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultWhenExecutorBuilder"
     },
     {
       "name": "liteflow.when-max-wait-seconds",
@@ -60,7 +68,7 @@
       "type": "java.lang.Integer",
       "description": "Set the async thread pool worker max-size on \" when \" mode.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 4
+      "defaultValue": 16
     },
     {
       "name": "liteflow.when-queue-limit",
@@ -77,13 +85,6 @@
       "defaultValue": true
     },
     {
-      "name": "liteflow.support-multiple-type",
-      "type": "java.lang.Boolean",
-      "description": "Whether to support multiple types of configuration.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": false
-    },
-    {
       "name": "liteflow.retry-count",
       "type": "java.lang.Integer",
       "description": "Number of component retries.",
@@ -91,18 +92,25 @@
       "defaultValue": 0
     },
     {
+      "name": "liteflow.support-multiple-type",
+      "type": "java.lang.Boolean",
+      "description": "Whether to support multiple types of configuration.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
       "name": "liteflow.node-executor-class",
       "type": "java.lang.String",
       "description": "Executor class of node.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 0
+      "defaultValue": "com.yomahub.liteflow.flow.executor.DefaultNodeExecutor"
     },
     {
       "name": "liteflow.print-execution-log",
       "type": "java.lang.Boolean",
       "description": "Whether to print logs during execution.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 0
+      "defaultValue": true
     },
     {
       "name": "liteflow.monitor.enable-log",
