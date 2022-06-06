@@ -8,7 +8,15 @@ public enum LiteFlowMethodEnum {
     IS_END("isEnd"),
     IS_CONTINUE_ON_ERROR("isContinueOnError"),
 
-    GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass");
+    GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass"),
+
+    ON_SUCCESS("onSuccess"),
+
+    ON_ERROR("onError"),
+
+    BEFORE_PROCESS("beforeProcess"),
+
+    AFTER_PROCESS("afterProcess");
 
     private String methodName;
 
