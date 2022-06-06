@@ -7,12 +7,14 @@ import com.yomahub.liteflow.slot.Slot;
 
 public class CmpAspect implements ICmpAroundAspect<DefaultContext> {
     @Override
-    public void beforeProcess(String nodeId, DefaultContext contextBean) {
-        contextBean.setData(nodeId, "before");
+    public void beforeProcess(String nodeId, Slot<DefaultContext> slot) {
+        DefaultContext context = slot.getContextBean();
+        context.setData(nodeId, "before");
     }
 
     @Override
-    public void afterProcess(String nodeId, DefaultContext contextBean) {
-        contextBean.setData(nodeId, StrUtil.format("{}_{}", contextBean.getData(nodeId), "after"));
+    public void afterProcess(String nodeId, Slot<DefaultContext> slot) {
+        DefaultContext context = slot.getContextBean();
+        context.setData(nodeId, StrUtil.format("{}_{}", context.getData(nodeId), "after"));
     }
 }

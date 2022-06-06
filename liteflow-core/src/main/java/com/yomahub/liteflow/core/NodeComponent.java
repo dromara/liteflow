@@ -86,15 +86,29 @@ public abstract class NodeComponent{
 
 		try{
 			//前置处理
-			this.beforeProcess(this.getNodeId(), slot);
+			self.beforeProcess(this.getNodeId(), slot);
 
 			//主要的处理逻辑
 			self.process();
 
+			//成功后回调方法
+			self.onSuccess();
+
+			//步骤状态设为true
 			cmpStep.setSuccess(true);
 		} catch (Exception e){
+			//步骤状态设为false，并加入异常
 			cmpStep.setSuccess(false);
 			cmpStep.setException(e);
+
+			//执行失败后回调方法
+			//这里要注意，失败方法本身抛出错误，只打出堆栈，往外抛出的还是主要的异常
+			try{
+				self.onError();
+			}catch (Exception ex){
+				String errMsg = StrUtil.format("[{}]:componnet[{}] onError method happens exception",slot.getRequestId(),this.getClass().getSimpleName());
+				LOG.error(errMsg, ex);
+			}
 			throw e;
 		} finally {
 			stopWatch.stop();
@@ -105,7 +119,7 @@ public abstract class NodeComponent{
 			cmpStep.setTimeSpent(timeSpent);
 
 			//后置处理
-			this.afterProcess(this.getNodeId(), slot);
+			self.afterProcess(this.getNodeId(), slot);
 
 			// 性能统计
 			if (ObjectUtil.isNotNull(monitorBus)) {
@@ -134,6 +148,14 @@ public abstract class NodeComponent{
 	}
 
 	public abstract void process() throws Exception;
+
+	public void onSuccess() throws Exception{
+		//如果需要在成功后回调某一个方法，请覆盖这个方法
+	}
+
+	public void onError() throws Exception{
+		//如果需要在抛错后回调某一段逻辑，请覆盖这个方法
+	}
 
 	public <T> void afterProcess(String nodeId, Slot<T> slot){
 		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, slot);

@@ -14,14 +14,14 @@ public class SpringCmpAroundAspect implements CmpAroundAspect {
     @Override
     public void beforeProcess(String nodeId, Slot<?> slot) {
         if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-            ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot.getContextBean());
+            ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot);
         }
     }
 
     @Override
     public void afterProcess(String nodeId, Slot<?> slot) {
         if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-            ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot.getContextBean());
+            ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot);
         }
     }
 

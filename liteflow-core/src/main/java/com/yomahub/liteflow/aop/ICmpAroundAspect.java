@@ -16,7 +16,7 @@ import com.yomahub.liteflow.slot.Slot;
  */
 public interface ICmpAroundAspect<T> {
 
-    void beforeProcess(String nodeId, T contextBean);
+    void beforeProcess(String nodeId, Slot<T> slot);
 
-    void afterProcess(String nodeId, T contextBean);
+    void afterProcess(String nodeId, Slot<T> slot);
 }
