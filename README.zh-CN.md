@@ -40,4 +40,4 @@ liteFlow是一个轻量，快速的组件式流程引擎框架/规则引擎，�
 
 开源不易，支持就请赞助LiteFlow
 
-<img src="static/img/zanshang.jpeg" alt="zanshang" width="258" />
+<img src="static/img/support.png" alt="support" width="258" />

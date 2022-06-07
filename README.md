@@ -40,4 +40,4 @@ Since the community group is over 200 people, you need to be invited to join the
 
 Open source is not easy, please sponsor LiteFlow if you support it
 
-<img src="static/img/zanshang.jpeg" alt="zanshang" width="258" />
+<img src="static/img/support.png" alt="support" width="258" />
