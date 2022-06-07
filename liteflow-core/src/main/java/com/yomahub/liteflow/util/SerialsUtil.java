@@ -55,9 +55,6 @@ public class SerialsUtil {
 
     /**
      * 生成一个12位随机数
-     *
-     * @param seed 种子
-     * @return
      */
     public static String randomNum12(long seed) {
         // 被除数
@@ -67,9 +64,6 @@ public class SerialsUtil {
 
     /**
      * 生成一个8位随机数
-     *
-     * @param seed 种子
-     * @return
      */
     public static String randomNum8(long seed) {
         // 被除数
@@ -153,10 +147,6 @@ public class SerialsUtil {
         return jg;
     }
 
-    /**
-     * 32位
-     * @return
-     */
     public static String getUUID() {
         UUID uuid = UUID.randomUUID();
         String str = uuid.toString();
