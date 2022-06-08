@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.liteflowComponent;
+package com.yomahub.liteflow.test.liteflowcomponent;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -24,7 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(value = "classpath:/liteflowComponent/application.properties")
 @SpringBootTest(classes = LiteflowComponentSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.liteflowComponent.cmp"})
+@ComponentScan({"com.yomahub.liteflow.test.liteflowcomponent.cmp"})
 public class LiteflowComponentSpringbootTest extends BaseTest {
 
     @Autowired
