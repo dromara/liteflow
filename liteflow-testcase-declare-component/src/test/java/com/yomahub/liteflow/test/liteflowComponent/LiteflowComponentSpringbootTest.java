@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.liteflowcomponent;
+package com.yomahub.liteflow.test.liteflowComponent;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
