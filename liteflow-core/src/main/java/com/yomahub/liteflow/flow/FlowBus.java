@@ -16,11 +16,12 @@ import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.ScriptCondComponent;
-import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
@@ -39,6 +40,7 @@ import java.util.Map;
 
 /**
  * 流程元数据类
+ *
  * @author Bryan.Zhang
  */
 public class FlowBus {
@@ -52,14 +54,16 @@ public class FlowBus {
     private FlowBus() {
     }
 
-    public static Chain getChain(String id){
+    public static Chain getChain(String id) {
         return chainMap.get(id);
     }
 
     //这一方法主要用于第一阶段chain的预装载
-    public static void addChain(String chainName){
-        if (!chainMap.containsKey(chainName)){
+    public static void addChain(String chainName) {
+        if (!chainMap.containsKey(chainName)) {
             chainMap.put(chainName, new Chain(chainName));
+        } else {
+            throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
         }
     }
 
@@ -84,25 +88,25 @@ public class FlowBus {
         nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, NodeTypeEnum.COMMON, null, nodeId)));
     }
 
-    public static void addCommonNode(String nodeId, String name, String cmpClazzStr){
+    public static void addCommonNode(String nodeId, String name, String cmpClazzStr) {
         Class<?> cmpClazz;
-        try{
+        try {
             cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ComponentCannotRegisterException(e.getMessage());
         }
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
-    public static void addCommonNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz){
+    public static void addCommonNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz) {
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
-    public static void addCommonScriptNode(String nodeId, String name, String script){
+    public static void addCommonScriptNode(String nodeId, String name, String script) {
         addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
     }
 
-    public static void addCondScriptNode(String nodeId, String name, String script){
+    public static void addCondScriptNode(String nodeId, String name, String script) {
         addNode(nodeId, name, NodeTypeEnum.COND_SCRIPT, ScriptCondComponent.class, script);
     }
 
@@ -111,7 +115,7 @@ public class FlowBus {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             //如果不是声明式的，就用传统的方式进行判断
             NodeComponent cmpInstance = null;
-            if (LiteFlowProxyUtil.isMarkedCmp(cmpClazz)){
+            if (LiteFlowProxyUtil.isMarkedCmp(cmpClazz)) {
                 //这里的逻辑要仔细看下
                 //如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
                 //由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
@@ -120,16 +124,16 @@ public class FlowBus {
                 //这里用ContextAware的spi机制来判断是否spring体系
                 ContextAware contextAware = ContextAwareHolder.loadContextAware();
                 Object bean = ContextAwareHolder.loadContextAware().registerBean(nodeId, cmpClazz);
-                if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())){
+                if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())) {
                     cmpInstance = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
-                }else {
+                } else {
                     cmpInstance = (NodeComponent) bean;
                 }
-            }else{
+            } else {
                 //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
                 //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                 //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
-                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
+                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)) {
                     cmpInstance = (NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
                 }
 
@@ -145,12 +149,12 @@ public class FlowBus {
             Node node = new Node(cmpInstance);
 
             //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
-            if (StrUtil.isNotBlank(script)){
+            if (StrUtil.isNotBlank(script)) {
                 node.setScript(script);
-                if (type.equals(NodeTypeEnum.SCRIPT)){
-                    ((ScriptComponent)cmpInstance).loadScript(script);
-                }else if(type.equals(NodeTypeEnum.COND_SCRIPT)){
-                    ((ScriptCondComponent)cmpInstance).loadScript(script);
+                if (type.equals(NodeTypeEnum.SCRIPT)) {
+                    ((ScriptComponent) cmpInstance).loadScript(script);
+                } else if (type.equals(NodeTypeEnum.COND_SCRIPT)) {
+                    ((ScriptCondComponent) cmpInstance).loadScript(script);
                 }
             }
 
@@ -170,10 +174,10 @@ public class FlowBus {
     //那condNodeMap共用有关系么，原则上没有关系。但是从设计理念上，以后应该要分开
     //tag和condNodeMap这2个属性不属于全局概念，属于每个chain范围的属性
     public static Node copyNode(String nodeId) {
-        try{
+        try {
             Node node = nodeMap.get(nodeId);
             return node.copy();
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
@@ -186,12 +190,13 @@ public class FlowBus {
 
     public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
-        try{
+        try {
             ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor();
-            if (ObjectUtil.isNotNull(scriptExecutor)){
+            if (ObjectUtil.isNotNull(scriptExecutor)) {
                 scriptExecutor.cleanCache();
             }
-        }catch (ScriptSpiException ignored){}
+        } catch (ScriptSpiException ignored) {
+        }
     }
 
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
@@ -204,11 +209,11 @@ public class FlowBus {
         }
     }
 
-    public static boolean removeChain(String chainId){
-        if (containChain(chainId)){
+    public static boolean removeChain(String chainId) {
+        if (containChain(chainId)) {
             chainMap.remove(chainId);
             return true;
-        }else{
+        } else {
             String errMsg = StrUtil.format("cannot find the chain[{}]", chainId);
             LOG.error(errMsg);
             return false;
