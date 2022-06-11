@@ -47,6 +47,7 @@ public abstract class XmlFlowParser extends BaseFlowParser {
         parse(ListUtil.toList(content));
     }
 
+    @Override
     public void parse(List<String> contentList) throws Exception {
         if (CollectionUtil.isEmpty(contentList)) {
             return;
