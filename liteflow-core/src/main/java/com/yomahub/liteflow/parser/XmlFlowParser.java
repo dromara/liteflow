@@ -3,13 +3,10 @@ package com.yomahub.liteflow.parser;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
-import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.builder.prop.ChainPropBean;
+import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.dom4j.Document;
@@ -17,14 +14,32 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.List;
 
+import static com.yomahub.liteflow.common.ChainConstant.ANY;
+import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
+import static com.yomahub.liteflow.common.ChainConstant.ERROR_RESUME;
+import static com.yomahub.liteflow.common.ChainConstant.FILE;
+import static com.yomahub.liteflow.common.ChainConstant.GROUP;
+import static com.yomahub.liteflow.common.ChainConstant.ID;
+import static com.yomahub.liteflow.common.ChainConstant.NAME;
+import static com.yomahub.liteflow.common.ChainConstant.NODE;
+import static com.yomahub.liteflow.common.ChainConstant.NODES;
+import static com.yomahub.liteflow.common.ChainConstant.THREAD_EXECUTOR_CLASS;
+import static com.yomahub.liteflow.common.ChainConstant.TYPE;
+import static com.yomahub.liteflow.common.ChainConstant.VALUE;
+import static com.yomahub.liteflow.common.ChainConstant._CLASS;
+
+;
+
 /**
  * xml形式的解析器
+ *
  * @author Bryan.Zhang
  */
-public abstract class XmlFlowParser implements FlowParser {
+public abstract class XmlFlowParser extends BaseFlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
 
@@ -57,51 +72,42 @@ public abstract class XmlFlowParser implements FlowParser {
         //同时也解决了不能循环依赖的问题
         documentList.forEach(document -> {
             // 解析chain节点
-            List<Element> chainList = document.getRootElement().elements("chain");
+            List<Element> chainList = document.getRootElement().elements(CHAIN);
 
             //先在元数据里放上chain
-            chainList.forEach(e -> FlowBus.addChain(e.attributeValue("name")));
+            chainList.forEach(e -> FlowBus.addChain(e.attributeValue(NAME)));
         });
 
         for (Document document : documentList) {
             Element rootElement = document.getRootElement();
-            Element nodesElement = rootElement.element("nodes");
+            Element nodesElement = rootElement.element(NODES);
             // 当存在<nodes>节点定义时，解析node节点
-            if (ObjectUtil.isNotNull(nodesElement)){
-                List<Element> nodeList = nodesElement.elements("node");
+            if (ObjectUtil.isNotNull(nodesElement)) {
+                List<Element> nodeList = nodesElement.elements(NODE);
                 String id, name, clazz, type, script, file;
                 for (Element e : nodeList) {
-                    id = e.attributeValue("id");
-                    name = e.attributeValue("name");
-                    clazz = e.attributeValue("class");
-                    type = e.attributeValue("type");
+                    id = e.attributeValue(ID);
+                    name = e.attributeValue(NAME);
+                    clazz = e.attributeValue(_CLASS);
+                    type = e.attributeValue(TYPE);
                     script = e.getTextTrim();
-                    file = e.attributeValue("file");
+                    file = e.attributeValue(FILE);
 
-                    //初始化type
-                    if (StrUtil.isBlank(type)){
-                        type = NodeTypeEnum.COMMON.getCode();
-                    }
-
-                    //检查nodeType是不是规定的类型
-                    NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
-                    if (ObjectUtil.isNull(nodeTypeEnum)){
-                        throw new NodeTypeNotSupportException(StrUtil.format("type [{}] is not support", type));
-                    }
-
-                    //进行node的build过程
-                    LiteFlowNodeBuilder.createNode().setId(id)
+                    // 构建 node
+                    NodePropBean nodePropBean = new NodePropBean()
+                            .setId(id)
                             .setName(name)
                             .setClazz(clazz)
-                            .setType(nodeTypeEnum)
                             .setScript(script)
-                            .setFile(file)
-                            .build();
+                            .setType(type)
+                            .setFile(file);
+
+                    buildNode(nodePropBean);
                 }
             }
 
             //解析每一个chain
-            List<Element> chainList = rootElement.elements("chain");
+            List<Element> chainList = rootElement.elements(CHAIN);
             chainList.forEach(this::parseOneChain);
         }
     }
@@ -118,44 +124,29 @@ public abstract class XmlFlowParser implements FlowParser {
         ConditionTypeEnum conditionType;
 
         //构建chainBuilder
-        String chainName = e.attributeValue("name");
+        String chainName = e.attributeValue(NAME);
         LiteFlowChainBuilder chainBuilder = LiteFlowChainBuilder.createChain().setChainName(chainName);
 
         for (Iterator<Element> it = e.elementIterator(); it.hasNext(); ) {
             Element condE = it.next();
             conditionType = ConditionTypeEnum.getEnumByCode(condE.getName());
-            condValueStr = condE.attributeValue("value");
-            errorResume = condE.attributeValue("errorResume");
-            group = condE.attributeValue("group");
-            any = condE.attributeValue("any");
-            threadExecutorClass = condE.attributeValue("threadExecutorClass");
+            condValueStr = condE.attributeValue(VALUE);
+            errorResume = condE.attributeValue(ERROR_RESUME);
+            group = condE.attributeValue(GROUP);
+            any = condE.attributeValue(ANY);
+            threadExecutorClass = condE.attributeValue(THREAD_EXECUTOR_CLASS);
 
-            if (ObjectUtil.isNull(conditionType)){
-                throw new NotSupportConditionException("ConditionType is not supported");
-            }
+            ChainPropBean chainPropBean = new ChainPropBean()
+                    .setCondValueStr(condValueStr)
+                    .setGroup(group)
+                    .setErrorResume(errorResume)
+                    .setAny(any)
+                    .setThreadExecutorClass(threadExecutorClass)
+                    .setConditionType(conditionType);
 
-            if (StrUtil.isBlank(condValueStr)) {
-                throw new EmptyConditionValueException("Condition value cannot be empty");
-            }
-
-            //如果是when类型的话，有特殊化参数要设置，只针对于when的
-            if (conditionType.equals(ConditionTypeEnum.TYPE_WHEN)){
-                chainBuilder.setCondition(
-                        LiteFlowConditionBuilder.createWhenCondition()
-                                .setErrorResume(errorResume)
-                                .setGroup(group)
-                                .setAny(any)
-                                .setThreadExecutorClass(threadExecutorClass)
-                                .setValue(condValueStr)
-                                .build()
-                ).build();
-            }else{
-                chainBuilder.setCondition(
-                        LiteFlowConditionBuilder.createCondition(conditionType)
-                                .setValue(condValueStr)
-                                .build()
-                ).build();
-            }
+            // 构建 chain
+            buildChain(chainPropBean, chainBuilder);
         }
     }
+
 }
