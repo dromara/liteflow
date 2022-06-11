@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
+import com.yomahub.liteflow.builder.prop.ChainPropBean;
+import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
@@ -92,7 +94,15 @@ public abstract class XmlFlowParser extends BaseFlowParser {
                     file = e.attributeValue(FILE);
 
                     // 构建 node
-                    buildNode(id, name, clazz, script, type, file);
+                    NodePropBean nodePropBean = new NodePropBean()
+                            .setId(id)
+                            .setName(name)
+                            .setClazz(clazz)
+                            .setScript(script)
+                            .setType(type)
+                            .setFile(file);
+
+                    buildNode(nodePropBean);
                 }
             }
 
@@ -126,8 +136,16 @@ public abstract class XmlFlowParser extends BaseFlowParser {
             any = condE.attributeValue(ANY);
             threadExecutorClass = condE.attributeValue(THREAD_EXECUTOR_CLASS);
 
+            ChainPropBean chainPropBean = new ChainPropBean()
+                    .setCondValueStr(condValueStr)
+                    .setGroup(group)
+                    .setErrorResume(errorResume)
+                    .setAny(any)
+                    .setThreadExecutorClass(threadExecutorClass)
+                    .setConditionType(conditionType);
+
             // 构建 chain
-            buildChain(condValueStr, group, errorResume, any, threadExecutorClass, conditionType, chainBuilder);
+            buildChain(chainPropBean, chainBuilder);
         }
     }
 
