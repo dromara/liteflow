@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.liteflowComponent.cmp;
+package com.yomahub.liteflow.test.lfCmpAnno.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
@@ -13,12 +13,13 @@ import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
-@LiteflowComponent(id = "a", name = "A组件")
+@LiteflowComponent(id = "b", name = "B组件")
 @LiteflowCmpDefine
-public class ACmp{
+public class BCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		System.out.println("ACmp executed!");
+		System.out.println("BCmp executed!");
 	}
+
 }
