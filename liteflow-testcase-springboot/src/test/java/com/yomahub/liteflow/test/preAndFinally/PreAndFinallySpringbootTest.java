@@ -61,4 +61,12 @@ public class PreAndFinallySpringbootTest extends BaseTest {
         Assert.assertFalse(response.isSuccess());
         Assert.assertTrue(response.getContextBean().getData("hasEx"));
     }
+
+    //测试嵌套结构pre和finally是否在各自的chain里打出
+    @Test
+    public void testPreAndFinally5() throws Exception{
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain5", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("p1==>p2==>p1==>p2==>a==>b==>c==>f1==>f2==>f1", response.getExecuteStepStrWithoutTime());
+    }
 }

@@ -10,6 +10,8 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.exception.ChainEndException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
@@ -73,19 +75,36 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
-        for (Condition condition : conditionList) {
-            condition.execute(slotIndex);
+        try {
+            //执行前置
+            this.executePre(slotIndex);
+            //执行主体Condition
+            for (Condition condition : conditionList) {
+                condition.execute(slotIndex);
+            }
+        }catch (ChainEndException e){
+            //这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
+            //是属于正常逻辑，所以会在FlowExecutor中判断。这里不作为异常处理
+            throw e;
+        }catch (Exception e){
+            //这里事先取到exception set到slot里，为了方便finally取到exception
+            Slot<?> slot = DataBus.getSlot(slotIndex);
+            slot.setException(e);
+            throw e;
+        }finally {
+            //执行后置
+            this.executeFinally(slotIndex);
         }
     }
 
     // 执行pre节点
-    public void executePre(Integer slotIndex) throws Exception {
+    private void executePre(Integer slotIndex) throws Exception {
         for (Condition condition : this.preConditionList){
             condition.execute(slotIndex);
         }
     }
 
-    public void executeFinally(Integer slotIndex) throws Exception {
+    private void executeFinally(Integer slotIndex) throws Exception {
         for (Condition condition : this.finallyConditionList){
             condition.execute(slotIndex);
         }
