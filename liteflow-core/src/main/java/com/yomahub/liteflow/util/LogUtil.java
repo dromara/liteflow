@@ -61,11 +61,4 @@ public class LogUtil {
         }
     }
 
-
-    public static void main(String[] args) {
-
-//        String a = StringUtils.replace("{}sda{}{}{}","{}","");
-//        int i1 = StringUtils.ordinalIndexOf("1{}sda{}{}{}", "{}", 0);
-
-    }
 }
