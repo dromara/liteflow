@@ -25,6 +25,7 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +127,7 @@ public class Node implements Executable,Cloneable{
 			if (instance.isAccess()) {
 				//根据配置判断是否打印执行中的日志
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
-					LOG.info("[{}]:[O]start component[{}] [{}] execution",slot.getRequestId(),instance.getClass().getSimpleName(),instance.getName());
+					LogUtil.info(LOG,"[{}]:[O]start component[{}][{}] execution",slot.getRequestId(),instance.getClass().getSimpleName(),instance.getName());
 				}
 
 				//这里开始进行重试的逻辑和主逻辑的运行
@@ -140,7 +141,7 @@ public class Node implements Executable,Cloneable{
 				}
 			} else {
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
-					LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getClass().getSimpleName());
+					LogUtil.info(LOG,"[{}]:[X]skip component[{}][{}] execution", slot.getRequestId(), instance.getClass().getSimpleName(),instance.getName());
 				}
 			}
 		} catch (ChainEndException e){
