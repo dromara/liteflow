@@ -25,7 +25,6 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
-import com.yomahub.liteflow.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +126,7 @@ public class Node implements Executable,Cloneable{
 			if (instance.isAccess()) {
 				//根据配置判断是否打印执行中的日志
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
-					LogUtil.info(LOG,"[{}]:[O]start component[{}][{}] execution",slot.getRequestId(),instance.getClass().getSimpleName(),instance.getName());
+					LOG.info("[{}]:[O]start component[{}][{}] execution",slot.getRequestId(),instance.getClass().getSimpleName(),instance.getDisplayName());
 				}
 
 				//这里开始进行重试的逻辑和主逻辑的运行
@@ -136,12 +135,12 @@ public class Node implements Executable,Cloneable{
 				nodeExecutor.execute(instance);
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 				if (instance.isEnd()) {
-					String errorInfo = StrUtil.format("[{}]:component[{}] lead the chain to end", slot.getRequestId(), instance.getClass().getSimpleName());
+					String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(), instance.getClass().getSimpleName(),instance.getDisplayName());
 					throw new ChainEndException(errorInfo);
 				}
 			} else {
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
-					LogUtil.info(LOG,"[{}]:[X]skip component[{}][{}] execution", slot.getRequestId(), instance.getClass().getSimpleName(),instance.getName());
+					LOG.info("[{}]:[X]skip component[{}][{}] execution", slot.getRequestId(), instance.getClass().getSimpleName(),instance.getDisplayName());
 				}
 			}
 		} catch (ChainEndException e){
