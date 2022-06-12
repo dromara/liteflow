@@ -385,8 +385,6 @@ public class FlowExecutor {
                 String errorMsg = StrUtil.format("[{}]:couldn't find chain with the id[{}]", slot.getRequestId(), chainId);
                 throw new ChainNotFoundException(errorMsg);
             }
-            // 执行前置
-            chain.executePre(slotIndex);
             // 执行chain
             chain.execute(slotIndex);
         } catch (ChainEndException e) {
@@ -401,15 +399,6 @@ public class FlowExecutor {
             }
             slot.setException(e);
         } finally {
-            try{
-                if (ObjectUtil.isNotNull(chain)){
-                    chain.executeFinally(slotIndex);
-                }
-            }catch (Exception e){
-                String errMsg = StrUtil.format("[{}]:an exception occurred during the finally Component execution in chain[{}]", slot.getRequestId(), chain.getChainName());
-                LOG.error(errMsg, e);
-            }
-
             if (!isInnerChain) {
                 slot.printStep();
                 DataBus.releaseSlot(slotIndex);

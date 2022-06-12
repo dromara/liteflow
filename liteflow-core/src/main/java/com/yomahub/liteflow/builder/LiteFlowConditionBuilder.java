@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.*;
 import com.yomahub.liteflow.builder.entity.ExecutableEntity;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -28,29 +28,38 @@ public class LiteFlowConditionBuilder {
     protected Condition condition;
 
     public static LiteFlowConditionBuilder createCondition(ConditionTypeEnum conditionType){
-        return new LiteFlowConditionBuilder(conditionType);
+        switch (conditionType){
+            case TYPE_THEN:
+                return createThenCondition();
+            case TYPE_WHEN:
+                return createWhenCondition();
+            case TYPE_PRE:
+                return createPreCondition();
+            case TYPE_FINALLY:
+                return createFinallyCondition();
+            default:
+                return null;
+        }
     }
 
     public static LiteFlowConditionBuilder createThenCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_THEN);
+        return new LiteFlowConditionBuilder(new ThenCondition());
     }
 
     public static LiteFlowWhenConditionBuilder createWhenCondition(){
-        return new LiteFlowWhenConditionBuilder(ConditionTypeEnum.TYPE_WHEN);
+        return new LiteFlowWhenConditionBuilder(new WhenCondition());
     }
 
     public static LiteFlowConditionBuilder createPreCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_PRE);
+        return new LiteFlowConditionBuilder(new PreCondition());
     }
 
     public static LiteFlowConditionBuilder createFinallyCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_FINALLY);
+        return new LiteFlowConditionBuilder(new FinallyCondition());
     }
 
-    public LiteFlowConditionBuilder(ConditionTypeEnum conditionType){
-        this.condition = new Condition();
-        this.condition.setConditionType(conditionType);
-        this.condition.setNodeList(new ArrayList<>());
+    public LiteFlowConditionBuilder(Condition condition){
+        this.condition = condition;
     }
 
     public LiteFlowConditionBuilder setValue(String value){
