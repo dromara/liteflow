@@ -82,7 +82,7 @@ public class LiteFlowChainBuilder {
                 this.conditionList.add(condition);
             }
         } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_WHEN)) {
-            if (this.conditionList.size() > 1 &&
+            if (this.conditionList.size() >= 1 &&
                     CollectionUtil.getLast(this.conditionList) instanceof WhenCondition &&
                     CollectionUtil.getLast(this.conditionList).getGroup().equals(condition.getGroup())) {
                 CollectionUtil.getLast(this.conditionList).getNodeList().addAll(condition.getNodeList());
