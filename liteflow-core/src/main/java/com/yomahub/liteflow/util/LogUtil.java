@@ -13,6 +13,8 @@ import java.util.Objects;
  */
 public class LogUtil {
 
+    private static final String EMPTY = "";
+
     /**
      * 日志输出，过滤掉null值的占位符
      * @param logger
@@ -31,7 +33,7 @@ public class LogUtil {
                 int index = StringUtils.ordinalIndexOf(result.toString(), placeholderEnum.getValue(), i+1-replaceCount);
                 if(index > 0){
                     replaceCount++;
-                    result.replace(index,index + placeholderEnum.getValue().length(),"");
+                    result.replace(index,index + placeholderEnum.getValue().length(),EMPTY);
                 }
             }
         }
