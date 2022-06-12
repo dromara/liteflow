@@ -3,6 +3,7 @@ package com.yomahub.liteflow.builder;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.flow.element.condition.Condition;
 
 /**
  * WhenCondition基于代码形式的组装器
@@ -12,8 +13,8 @@ import com.yomahub.liteflow.enums.ConditionTypeEnum;
  */
 public class LiteFlowWhenConditionBuilder extends LiteFlowConditionBuilder{
 
-    public LiteFlowWhenConditionBuilder(ConditionTypeEnum conditionType) {
-        super(conditionType);
+    public LiteFlowWhenConditionBuilder(Condition condition) {
+        super(condition);
     }
 
     public LiteFlowWhenConditionBuilder setErrorResume(boolean errorResume){

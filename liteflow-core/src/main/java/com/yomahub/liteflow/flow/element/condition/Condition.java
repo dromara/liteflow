@@ -5,24 +5,25 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.flow.condition;
+package com.yomahub.liteflow.flow.element.condition;
 
+import cn.hutool.core.collection.CollUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
+import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 里面包含了when或者then
  * @author Bryan.Zhang
  */
-public class Condition {
+public abstract class Condition implements Executable{
 
-	//condition 类型 参数:ConditionTypeEnum 包含:then when
-	private ConditionTypeEnum conditionType;
-
-	private List<Executable> nodeList;
+	private List<Executable> nodeList = new ArrayList<>();
 
 	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
 	private boolean errorResume = false;
@@ -32,13 +33,18 @@ public class Condition {
 
 	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
 	private boolean any = false;
+
 	// when单独的线程池名称
 	private String threadExecutorClass;
 
-	public Condition(List<Executable> nodeList) {
-		this.nodeList = nodeList;
+	@Override
+	public ExecuteTypeEnum getExecuteType() {
+		return ExecuteTypeEnum.CONDITION;
 	}
-	public Condition() {
+
+	@Override
+	public String getExecuteName() {
+		return this.getExecuteType().name();
 	}
 
 	public List<Executable> getNodeList() {
@@ -65,13 +71,7 @@ public class Condition {
 		this.group = group;
 	}
 
-	public ConditionTypeEnum getConditionType() {
-		return conditionType;
-	}
-
-	public void setConditionType(ConditionTypeEnum conditionType) {
-		this.conditionType = conditionType;
-	}
+	public abstract ConditionTypeEnum getConditionType();
 
 	public boolean isAny() {
 		return any;
