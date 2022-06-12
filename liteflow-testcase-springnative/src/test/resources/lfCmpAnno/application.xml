@@ -7,14 +7,14 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-    <context:component-scan base-package="com.yomahub.liteflow.test.liteflowcomponent.cmp" />
+    <context:component-scan base-package="com.yomahub.liteflow.test.lfCmpAnno.cmp" />
 
     <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
 
     <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
-        <property name="ruleSource" value="liteflowcomponent/flow.xml"/>
+        <property name="ruleSource" value="lfCmpAnno/flow.xml"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

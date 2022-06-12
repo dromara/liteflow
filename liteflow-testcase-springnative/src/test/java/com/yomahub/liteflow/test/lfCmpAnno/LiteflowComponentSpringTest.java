@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.liteflowcomponent;
+package com.yomahub.liteflow.test.lfCmpAnno;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.5.10
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/liteflowcomponent/application.xml")
+@ContextConfiguration("classpath:/lfCmpAnno/application.xml")
 public class LiteflowComponentSpringTest extends BaseTest {
 
     @Autowired
