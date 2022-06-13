@@ -32,7 +32,6 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.local.LocalContextAware;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +156,7 @@ public class FlowBus {
 
             nodeMap.put(nodeId, node);
         } catch (Exception e) {
-            String error = StrUtil.format("component[{}][{}] register error", cmpClazz.getName(), StringUtils.isEmpty(name)?nodeId:nodeId+"("+name+")");
+            String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
             LOG.error(error, e);
             throw new ComponentCannotRegisterException(error);
         }

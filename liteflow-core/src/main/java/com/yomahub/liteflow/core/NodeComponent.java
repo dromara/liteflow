@@ -8,20 +8,15 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.slot.DataBus;
@@ -107,14 +102,14 @@ public abstract class NodeComponent{
 			try{
 				self.onError();
 			}catch (Exception ex){
-				String errMsg = StrUtil.format("[{}]:componnet[{}] onError method happens exception",slot.getRequestId(),this.getClass().getSimpleName());
+				String errMsg = StrUtil.format("[{}]:component[{}] onError method happens exception",slot.getRequestId(),this.getDisplayName());
 				LOG.error(errMsg, ex);
 			}
 			throw e;
 		} finally {
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
-			LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
+			LOG.debug("[{}]:component[{}] finished in {} milliseconds",slot.getRequestId(),this.getDisplayName(),timeSpent);
 
 			//往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
@@ -306,10 +301,10 @@ public abstract class NodeComponent{
 	}
 
 	public String getDisplayName(){
-		if(StringUtils.isEmpty(this.name)){
+		if(StrUtil.isEmpty(this.name)){
 			return this.nodeId;
 		}else {
-			return this.nodeId + "(" + this.name + ")";
+			return StrUtil.format("{}({})", this.nodeId, this.name);
 		}
 	}
 }
