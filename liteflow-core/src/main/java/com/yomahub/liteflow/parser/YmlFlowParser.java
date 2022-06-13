@@ -20,6 +20,7 @@ public abstract class YmlFlowParser extends JsonFlowParser{
 
     private final Logger LOG = LoggerFactory.getLogger(YmlFlowParser.class);
 
+    @Override
     public void parse(String content) throws Exception{
         parse(ListUtil.toList(content));
     }

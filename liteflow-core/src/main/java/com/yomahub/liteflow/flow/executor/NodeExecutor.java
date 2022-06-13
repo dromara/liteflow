@@ -50,7 +50,7 @@ public abstract class NodeExecutor {
     //执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
     protected void retry(NodeComponent instance, int currentRetryCount) throws Exception {
         Slot slot = DataBus.getSlot(instance.getSlotIndex());
-        LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), instance.getNodeId(), currentRetryCount + 1);
+        LOG.info("[{}]:component[{}][{}] performs {} retry", slot.getRequestId(), instance.getNodeId(),instance.getDisplayName(), currentRetryCount + 1);
         //执行业务逻辑的主要入口
         instance.execute();
     }

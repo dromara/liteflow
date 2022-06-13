@@ -18,6 +18,7 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -302,5 +303,13 @@ public abstract class NodeComponent{
 
 	public String getChainName(){
 		return getSlot().getChainName();
+	}
+
+	public String getDisplayName(){
+		if(StringUtils.isEmpty(this.name)){
+			return this.nodeId;
+		}else {
+			return this.nodeId + "(" + this.name + ")";
+		}
 	}
 }
