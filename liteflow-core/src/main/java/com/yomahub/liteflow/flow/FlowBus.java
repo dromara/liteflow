@@ -189,6 +189,10 @@ public class FlowBus {
         cleanScriptCache();
     }
 
+    public static void cleanChainMap(){
+        chainMap.clear();
+    }
+
     public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
         try {
@@ -201,6 +205,9 @@ public class FlowBus {
     }
 
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
+        // 刷新前清空缓存
+        cleanChainMap();
+
         if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
             new LocalXmlFlowParser().parse(content);
         } else if (type.equals(FlowParserTypeEnum.TYPE_JSON)) {

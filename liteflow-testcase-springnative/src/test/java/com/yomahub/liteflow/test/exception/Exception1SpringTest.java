@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,17 +30,11 @@ public class Exception1SpringTest extends BaseTest {
     /**
      * 验证 chain 节点重复的异常
      */
-    @Test(expected = FlowExecutorNotInitException.class)
+    @Test(expected = ChainDuplicateException.class)
     public void testChainDuplicateException() {
-        try {
-            LiteflowConfig config = LiteflowConfigGetter.get();
-            config.setRuleSource("exception/flow-exception.xml");
-            flowExecutor.init();
-        } catch (Exception ex) {
-            // 这里需要 catch 是因为，异常是往上抛的，最后被包装成了 FlowExecutorNotInitException
-            Assert.assertTrue(ex.getMessage().contains("[chain name duplicate]"));
-            throw ex;
-        }
+        LiteflowConfig config = LiteflowConfigGetter.get();
+        config.setRuleSource("exception/flow-exception.xml");
+        flowExecutor.init();
     }
 
     @Test(expected = ConfigErrorException.class)

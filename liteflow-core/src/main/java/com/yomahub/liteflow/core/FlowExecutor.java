@@ -65,13 +65,13 @@ public class FlowExecutor {
         DataBus.init();
     }
 
-    public FlowExecutor(LiteflowConfig liteflowConfig){
+    public FlowExecutor(LiteflowConfig liteflowConfig) {
         this.liteflowConfig = liteflowConfig;
         //把liteFlowConfig设到LiteFlowGetter中去
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
         //设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
         FlowExecutorHolder.setHolder(this);
-        if (liteflowConfig.isParseOnStart()){
+        if (liteflowConfig.isParseOnStart()) {
             this.init();
         }
         //初始化DataBus
@@ -86,9 +86,11 @@ public class FlowExecutor {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
 
-        if (StrUtil.isBlank(liteflowConfig.getRuleSource())){
+        if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
             return;
         }
+        // 初始化前清空缓存
+        FlowBus.cleanChainMap();
 
         List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
@@ -128,7 +130,7 @@ public class FlowExecutor {
                         throw new ConfigErrorException("parse error, please check liteflow config property");
                     }
                 }
-            } catch (CyclicDependencyException e){
+            } catch (CyclicDependencyException e) {
                 LOG.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
@@ -139,22 +141,25 @@ public class FlowExecutor {
         }
 
         //单类型的配置文件，需要一起解析
-        if (!liteflowConfig.isSupportMultipleType()){
+        if (!liteflowConfig.isSupportMultipleType()) {
             //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
-            if (parserNameSet.size() > 1){
+            if (parserNameSet.size() > 1) {
                 String errorMsg = "cannot have multiple different parsers";
                 LOG.error(errorMsg);
                 throw new MultipleParsersException(errorMsg);
             }
 
             //进行多个配置文件的一起解析
-            try{
+            try {
                 if (ObjectUtil.isNotNull(parser)) {
                     parser.parseMain(rulePathList);
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
-            } catch (CyclicDependencyException e){
+            } catch (CyclicDependencyException e) {
+                LOG.error(e.getMessage());
+                throw e;
+            } catch (ChainDuplicateException e) {
                 LOG.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
@@ -270,7 +275,7 @@ public class FlowExecutor {
         this.execute(chainId, param, null, slotIndex, true);
     }
 
-    public <T> LiteflowResponse<T> invoke2Resp(String chainId, Object param, Integer slotIndex){
+    public <T> LiteflowResponse<T> invoke2Resp(String chainId, Object param, Integer slotIndex) {
         return this.execute2Resp(chainId, param, null, slotIndex, true);
     }
 
@@ -293,7 +298,7 @@ public class FlowExecutor {
     }
 
     private <T> T execute(String chainId, Object param, Class<T> contextBeanClazz,
-                                      Integer slotIndex, boolean isInnerChain) throws Exception {
+                          Integer slotIndex, boolean isInnerChain) throws Exception {
         Slot<T> slot = this.doExecute(chainId, param, contextBeanClazz, slotIndex, isInnerChain);
         if (ObjectUtil.isNotNull(slot.getException())) {
             throw slot.getException();
@@ -338,14 +343,14 @@ public class FlowExecutor {
     }
 
     private <T> Slot<T> doExecute(String chainId, Object param, Class<T> contextBeanClazz, Integer slotIndex,
-                                         boolean isInnerChain) {
+                                  boolean isInnerChain) {
         if (FlowBus.needInit()) {
             init();
         }
 
         if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
             slotIndex = DataBus.offerSlot(contextBeanClazz);
-            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
                 LOG.info("slot[{}] offered", slotIndex);
             }
         }
@@ -361,18 +366,18 @@ public class FlowExecutor {
 
         if (StrUtil.isBlank(slot.getRequestId())) {
             slot.generateRequestId();
-            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+            if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
                 LOG.info("requestId[{}] has generated", slot.getRequestId());
             }
         }
 
         if (!isInnerChain) {
-            if (ObjectUtil.isNotNull(param)){
+            if (ObjectUtil.isNotNull(param)) {
                 slot.setRequestData(param);
             }
             slot.setChainName(chainId);
         } else {
-            if (ObjectUtil.isNotNull(param)){
+            if (ObjectUtil.isNotNull(param)) {
                 slot.setChainReqData(chainId, param);
             }
         }
@@ -388,12 +393,12 @@ public class FlowExecutor {
             // 执行chain
             chain.execute(slotIndex);
         } catch (ChainEndException e) {
-            if (ObjectUtil.isNotNull(chain)){
+            if (ObjectUtil.isNotNull(chain)) {
                 String warnMsg = StrUtil.format("[{}]:chain[{}] execute end on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
                 LOG.warn(warnMsg);
             }
         } catch (Exception e) {
-            if (ObjectUtil.isNotNull(chain)){
+            if (ObjectUtil.isNotNull(chain)) {
                 String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
                 LOG.error(errMsg, e);
             }
