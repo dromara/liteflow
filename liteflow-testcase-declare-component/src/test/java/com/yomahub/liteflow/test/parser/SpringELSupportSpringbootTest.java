@@ -26,7 +26,7 @@ public class SpringELSupportSpringbootTest extends BaseTest {
     //测试springEL的解析情况
     @Test
     public void testSpringELParser() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain11", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

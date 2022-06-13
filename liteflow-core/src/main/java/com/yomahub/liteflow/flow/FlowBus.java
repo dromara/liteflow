@@ -18,7 +18,6 @@ import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.ScriptCondComponent;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
@@ -63,8 +62,6 @@ public class FlowBus {
     public static void addChain(String chainName) {
         if (!chainMap.containsKey(chainName)) {
             chainMap.put(chainName, new Chain(chainName));
-        } else {
-            throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
         }
     }
 
@@ -161,7 +158,7 @@ public class FlowBus {
 
             nodeMap.put(nodeId, node);
         } catch (Exception e) {
-            String error = StrUtil.format("component[{}][{}] register error", cmpClazz.getName(), StringUtils.isEmpty(name)?nodeId:nodeId+"("+name+")");
+            String error = StrUtil.format("component[{}][{}] register error", cmpClazz.getName(), StringUtils.isEmpty(name) ? nodeId : nodeId + "(" + name + ")");
             LOG.error(error, e);
             throw new ComponentCannotRegisterException(error);
         }
@@ -189,10 +186,6 @@ public class FlowBus {
         cleanScriptCache();
     }
 
-    public static void cleanChainMap(){
-        chainMap.clear();
-    }
-
     public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
         try {
@@ -205,8 +198,6 @@ public class FlowBus {
     }
 
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
-        // 刷新前清空缓存
-        cleanChainMap();
 
         if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
             new LocalXmlFlowParser().parse(content);

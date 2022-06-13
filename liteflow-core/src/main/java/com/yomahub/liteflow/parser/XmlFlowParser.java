@@ -7,6 +7,7 @@ import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.prop.ChainPropBean;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.dom4j.Document;
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.yomahub.liteflow.common.ChainConstant.ANY;
 import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
@@ -42,6 +45,8 @@ import static com.yomahub.liteflow.common.ChainConstant._CLASS;
 public abstract class XmlFlowParser extends BaseFlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
+
+    private final Set<String> CHAIN_NAME_SET = new CopyOnWriteArraySet<>();
 
     public void parse(String content) throws Exception {
         parse(ListUtil.toList(content));
@@ -76,8 +81,19 @@ public abstract class XmlFlowParser extends BaseFlowParser {
             List<Element> chainList = document.getRootElement().elements(CHAIN);
 
             //先在元数据里放上chain
-            chainList.forEach(e -> FlowBus.addChain(e.attributeValue(NAME)));
+            chainList.forEach(e -> {
+
+                // 校验加载的 chainName 是否有重复的
+                String chainName = e.attributeValue(NAME);
+                if (!CHAIN_NAME_SET.add(chainName)) {
+                    throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
+                }
+
+                FlowBus.addChain(chainName);
+            });
         });
+        // 清空
+        CHAIN_NAME_SET.clear();
 
         for (Document document : documentList) {
             Element rootElement = document.getRootElement();

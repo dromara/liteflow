@@ -89,8 +89,6 @@ public class FlowExecutor {
         if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
             return;
         }
-        // 初始化前清空缓存
-        FlowBus.cleanChainMap();
 
         List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
 
