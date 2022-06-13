@@ -9,12 +9,15 @@ import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.prop.ChainPropBean;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.yomahub.liteflow.common.ChainConstant.ANY;
 import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
@@ -41,6 +44,8 @@ import static com.yomahub.liteflow.common.ChainConstant._CLASS;
 public abstract class JsonFlowParser extends BaseFlowParser {
 
 	private final Logger LOG = LoggerFactory.getLogger(JsonFlowParser.class);
+
+	private final Set<String> CHAIN_NAME_SET = new CopyOnWriteArraySet<>();
 
 	public void parse(String content) throws Exception {
 		parse(ListUtil.toList(content));
@@ -80,9 +85,18 @@ public abstract class JsonFlowParser extends BaseFlowParser {
 			//先在元数据里放上chain
 			chainArray.forEach(o -> {
 				JSONObject innerJsonObject = (JSONObject) o;
+
+				// 校验加载的 chainName 是否有重复的
+				String chainName = innerJsonObject.getString(NAME);
+				if (!CHAIN_NAME_SET.add(chainName)) {
+					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
+				}
+
 				FlowBus.addChain(innerJsonObject.getString(NAME));
 			});
 		});
+		// 清空
+		CHAIN_NAME_SET.clear();
 
 		for (JSONObject flowJsonObject : flowJsonObjectList) {
 			// 当存在<nodes>节点定义时，解析node节点

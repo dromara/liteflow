@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -25,6 +26,16 @@ public class Exception1SpringTest extends BaseTest {
     
     @Resource
     private FlowExecutor flowExecutor;
+
+    /**
+     * 验证 chain 节点重复的异常
+     */
+    @Test(expected = ChainDuplicateException.class)
+    public void testChainDuplicateException() {
+        LiteflowConfig config = LiteflowConfigGetter.get();
+        config.setRuleSource("exception/flow-exception.xml");
+        flowExecutor.init();
+    }
 
     @Test(expected = ConfigErrorException.class)
     public void testConfigErrorException() {
