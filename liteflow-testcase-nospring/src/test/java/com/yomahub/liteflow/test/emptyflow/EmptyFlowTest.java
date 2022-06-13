@@ -18,7 +18,7 @@ public class EmptyFlowTest extends BaseTest {
     @BeforeClass
     public static void init(){
         LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("emptyflow/flow.xml");
+        config.setRuleSource("emptyFlow/flow.xml");
         flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
 
