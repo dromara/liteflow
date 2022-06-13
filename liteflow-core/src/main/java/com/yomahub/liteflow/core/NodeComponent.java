@@ -300,6 +300,10 @@ public abstract class NodeComponent{
 		return getSlot().getRequestData();
 	}
 
+	public <T> T getSubChainReqData(){
+		return getSlot().getChainReqData(this.getChainName());
+	}
+
 	public String getChainName(){
 		return getSlot().getChainName();
 	}

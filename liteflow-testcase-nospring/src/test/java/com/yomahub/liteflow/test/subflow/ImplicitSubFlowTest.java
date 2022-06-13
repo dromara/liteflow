@@ -42,5 +42,7 @@ public class ImplicitSubFlowTest extends BaseTest {
         Assert.assertEquals(1, RUN_TIME_SLOT.size());
         //  set中第一次设置的requestId和response中的requestId一致
         Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
+        //requestData的取值正确
+        Assert.assertEquals("it's implicit subflow.", response.getContextBean().getData("innerRequest"));
     }
 }

@@ -28,6 +28,7 @@ import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -83,14 +84,26 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
-        for (Condition condition : conditionList) {
-            if (condition instanceof ThenCondition) {
-                for (Executable executableItem : condition.getNodeList()) {
-                    executableItem.execute(slotIndex);
+        Slot<?> slot = DataBus.getSlot(slotIndex);
+        try{
+            //在子流程或者隐式流程里，slot需要取到的chainName是当前流程，所以这不再是set，而是push
+            //其底层结构是一个stack
+            slot.pushChainName(chainName);
+
+            //循环condition进行执行
+            for (Condition condition : conditionList) {
+                if (condition instanceof ThenCondition) {
+                    for (Executable executableItem : condition.getNodeList()) {
+                        executableItem.execute(slotIndex);
+                    }
+                } else if (condition instanceof WhenCondition) {
+                    executeAsyncCondition((WhenCondition) condition, slotIndex);
                 }
-            } else if (condition instanceof WhenCondition) {
-                executeAsyncCondition((WhenCondition) condition, slotIndex);
             }
+        }finally {
+            //流程结束后，需要把当前的chainName从stack结构中移出
+            //里面的逻辑判断了当只剩根chainName的时候，不移除
+            slot.popChainName();
         }
     }
 

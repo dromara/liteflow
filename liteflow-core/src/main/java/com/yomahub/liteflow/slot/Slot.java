@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -61,6 +62,10 @@ public class Slot<O>{
 
 	public Slot(O contextBean) {
 		this.contextBean = contextBean;
+	}
+
+	private boolean hasMetaData(String key){
+		return metaDataMap.containsKey(key);
 	}
 
 	private <T> void putMetaDataMap(String key, T t) {
@@ -152,12 +157,33 @@ public class Slot<O>{
 		return (T) metaDataMap.get(COND_NODE_PREFIX + key);
 	}
 
-	public void setChainName(String chainName) {
-		putMetaDataMap(CHAIN_NAME, chainName);
+	public void pushChainName(String chainName) {
+		if (this.hasMetaData(CHAIN_NAME)){
+			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
+			stack.push(chainName);
+		}else{
+			Stack<String> stack = new Stack<>();
+			stack.push(chainName);
+			this.putMetaDataMap(CHAIN_NAME, stack);
+		}
+	}
+
+	public void popChainName(){
+		if (this.hasMetaData(CHAIN_NAME)){
+			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
+			if (stack.size() > 1){
+				stack.pop();
+			}
+		}
 	}
 
 	public String getChainName() {
-		return (String) metaDataMap.get(CHAIN_NAME);
+		try{
+			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
+			return stack.peek();
+		}catch (Exception e){
+			return null;
+		}
 	}
 
 	public void addStep(CmpStep step){
