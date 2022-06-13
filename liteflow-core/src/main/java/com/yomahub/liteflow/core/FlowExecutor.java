@@ -370,7 +370,6 @@ public class FlowExecutor {
             if (ObjectUtil.isNotNull(param)){
                 slot.setRequestData(param);
             }
-            slot.setChainName(chainId);
         } else {
             if (ObjectUtil.isNotNull(param)){
                 slot.setChainReqData(chainId, param);

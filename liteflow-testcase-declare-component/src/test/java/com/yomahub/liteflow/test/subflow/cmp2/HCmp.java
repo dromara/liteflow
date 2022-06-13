@@ -4,6 +4,7 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringbootTest.RUN_TIME_SLOT;
@@ -14,6 +15,9 @@ import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringbootTest.RU
 public class HCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
+        String requestData = bindCmp.getSubChainReqData();
+        DefaultContext context = bindCmp.getContextBean();
+        context.setData("innerRequest", requestData);
 
         RUN_TIME_SLOT.add(bindCmp.getSlot().getRequestId());
 

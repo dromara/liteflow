@@ -11,9 +11,9 @@ import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringbootTest.RU
 public class HCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
+        String requestData = this.getSubChainReqData();
         DefaultContext context = this.getContextBean();
-        String str = context.getData("innerRequestData");
-        System.out.println(str);
+        context.setData("innerRequest", requestData);
 
         RUN_TIME_SLOT.add(this.getSlot().getRequestId());
 
