@@ -85,8 +85,8 @@ public abstract class JsonFlowParser extends BaseFlowParser {
 			//先在元数据里放上chain
 			chainArray.forEach(o -> {
 				JSONObject innerJsonObject = (JSONObject) o;
-
-				// 校验加载的 chainName 是否有重复的
+				//校验加载的 chainName 是否有重复的
+				//TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
 				String chainName = innerJsonObject.getString(NAME);
 				if (!CHAIN_NAME_SET.add(chainName)) {
 					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
