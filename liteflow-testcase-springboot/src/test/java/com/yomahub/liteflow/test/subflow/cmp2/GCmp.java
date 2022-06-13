@@ -21,6 +21,8 @@ public class GCmp extends NodeComponent {
 
         System.out.println("Gcmp executed!");
 
+
+
         flowExecutor.invoke("chain4", "it's implicit subflow.", this.getSlotIndex());
     }
 }

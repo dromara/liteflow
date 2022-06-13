@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.subflow.cmp2;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringbootTest.RUN_TIME_SLOT;
@@ -12,6 +13,9 @@ public class FCmp extends NodeComponent {
     public void process() throws Exception {
 
         RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+
+        DefaultContext context = this.getContextBean();
+        context.setData("innerRequestData", "inner request");
 
         System.out.println("Fcomp executed!");
     }
