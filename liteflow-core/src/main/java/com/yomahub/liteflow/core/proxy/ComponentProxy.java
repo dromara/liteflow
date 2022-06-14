@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.core.proxy;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -100,15 +101,16 @@ public class ComponentProxy {
             //获取当前调用方法，是否在被代理的对象方法里面(根据@LiteFlowMethod这个标注去判断)
             //如果在里面，则返回那个LiteFlowMethodBean，不在则返回null
             LiteFlowMethodBean liteFlowMethodBean = liteFlowMethodBeanList.stream().filter(
-                    liteFlowMethodBean1 -> liteFlowMethodBean1.getMethod().getName().equals(method.getName())
+                    liteFlowMethodBean1 -> liteFlowMethodBean1.getMethodName().equals(method.getName())
             ).findFirst().orElse(null);
 
             //如果被代理的对象里有此标注标的方法，则调用此被代理的对象里的方法，如果没有，则调用父类里的方法
-            if (liteFlowMethodBean != null){
+            //beforeProcess和afterProcess这2个方法除外
+            if (!ListUtil.toList("beforeProcess","afterProcess").contains(liteFlowMethodBean.getMethodName())) {
                 //进行检查，检查被代理的bean里是否有且仅有NodeComponent这个类型的参数
                 boolean checkFlag = liteFlowMethodBean.getMethod().getParameterTypes().length == 1
                         && Arrays.asList(liteFlowMethodBean.getMethod().getParameterTypes()).contains(NodeComponent.class);
-                if (!checkFlag){
+                if (!checkFlag) {
                     String errMsg = StrUtil.format("Method[{}.{}] must have NodeComponent parameter(and only one parameter)", bean.getClass().getName(), liteFlowMethodBean.getMethod().getName());
                     LOG.error(errMsg);
                     throw new ComponentMethodDefineErrorException(errMsg);
@@ -120,9 +122,12 @@ public class ComponentProxy {
                     InvocationTargetException targetEx = (InvocationTargetException)e;
                     throw targetEx.getTargetException();
                 }
-            }else{
-                //理论上来说这句应该执行不到，因为前面在设置拦截对象类型的时候，已经根据当前bean所覆盖的方法进行了动态判断
-                return method.invoke(proxy, args);
+            }
+            try{
+                return liteFlowMethodBean.getMethod().invoke(bean, args);
+            }catch (Exception e){
+                InvocationTargetException targetEx = (InvocationTargetException)e;
+                throw targetEx.getTargetException();
             }
         }
     }
