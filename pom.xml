@@ -46,7 +46,7 @@
 		<org.slf4j.version>1.7.32</org.slf4j.version>
 		<fastjson.version>1.2.79</fastjson.version>
 		<snakeyaml.version>1.29</snakeyaml.version>
-		<dom4j.version>1.6.1</dom4j.version>
+		<dom4j.version>2.1.3</dom4j.version>
 		<curator.version>5.1.0</curator.version>
 		<junit.version>4.12</junit.version>
 		<hutool-core.version>5.7.19</hutool-core.version>
@@ -111,7 +111,7 @@
 				<version>${snakeyaml.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>dom4j</groupId>
+				<groupId>org.dom4j</groupId>
 				<artifactId>dom4j</artifactId>
 				<version>${dom4j.version}</version>
 			</dependency>
