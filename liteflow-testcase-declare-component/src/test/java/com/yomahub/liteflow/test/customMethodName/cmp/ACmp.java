@@ -43,4 +43,15 @@ public class ACmp{
 	public void onAcmpSuccess(NodeComponent bindCmp){
 		System.out.println("Acmp success");
 	}
+
+	@LiteflowMethod(LiteFlowMethodEnum.ON_ERROR)
+	public void onAcmpError(NodeComponent bindCmp){
+		System.out.println("Acmp error");
+	}
+
+	@LiteflowMethod(LiteFlowMethodEnum.IS_END)
+	public boolean isAcmpEnd(NodeComponent bindCmp) {
+		System.out.println("Acmp end config");
+		return false;
+	}
 }
