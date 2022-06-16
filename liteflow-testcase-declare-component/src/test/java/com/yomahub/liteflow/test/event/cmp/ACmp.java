@@ -20,14 +20,14 @@ public class ACmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("test","");
 		System.out.println("ACmp executed!");
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_SUCCESS)
 	public void onSuccess(NodeComponent bindCmp) throws Exception {
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		String str = context.getData("test");
 		str += bindCmp.getNodeId();
 		context.setData("test", str);

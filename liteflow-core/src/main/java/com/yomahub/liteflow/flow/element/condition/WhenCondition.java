@@ -49,7 +49,7 @@ public class WhenCondition extends Condition {
 	//使用线程池执行when并发流程
 	//这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception{
-		Slot<?> slot = DataBus.getSlot(slotIndex);
+		Slot slot = DataBus.getSlot(slotIndex);
 
 		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
 		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());

@@ -30,7 +30,7 @@ public class WhenTimeOutTest2 extends BaseTest {
     //其中d,e,f都sleep 4秒，其中def是不同的组，超时设置5秒
     @Test
     public void testWhenTimeOut() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

@@ -32,10 +32,10 @@ public class LiteflowConfigSpringbootTest2 extends BaseTest {
     //测试通配符
     @Test
     public void testRuleSourceMatch() {
-        LiteflowResponse<DefaultContext> response0 = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response0 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertEquals("a==>b==>c", response0.getExecuteStepStr());
 
-        LiteflowResponse<DefaultContext> response1 = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response1 = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertEquals("a==>c==>b==>d", response1.getExecuteStepStr());
     }
 }

@@ -20,7 +20,7 @@ public class DCmp extends NodeComponent {
 
 	@Override
 	public void onError() throws Exception {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		context.setData("error","error:"+this.getNodeId());
 	}
 }

@@ -34,7 +34,7 @@ public class LiteflowConfigSpringbootTest1 extends BaseTest {
     @Test
     public void testConfig() {
         LiteflowConfig config = LiteflowConfigGetter.get();
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("config/flow.yml", config.getRuleSource());
         Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());

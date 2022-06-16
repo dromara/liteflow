@@ -9,7 +9,7 @@ public class HCmp extends NodeComponent {
 
     @Override
     public void process() throws Exception {
-        DefaultContext context = this.getContextBean();
+        DefaultContext context = this.getFirstContextBean();
         synchronized (NodeComponent.class){
             if (context.hasData("check")){
                 String str = context.getData("check");

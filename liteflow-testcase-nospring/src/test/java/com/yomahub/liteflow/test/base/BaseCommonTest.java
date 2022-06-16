@@ -23,7 +23,7 @@ public class BaseCommonTest extends BaseTest{
 
     @Test
     public void testBase(){
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "test0");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "test0");
         Assert.assertTrue(response.isSuccess());
     }
 }

@@ -22,8 +22,8 @@ public class Finally3Cmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) throws Exception{
-		Slot<DefaultContext> slot = bindCmp.getSlot();
-		DefaultContext context = slot.getContextBean();
+		Slot slot = bindCmp.getSlot();
+		DefaultContext context = slot.getFirstContextBean();
 		if (ObjectUtil.isNull(slot.getException())){
 			context.setData("hasEx", false);
 		}else{

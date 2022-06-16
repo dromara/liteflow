@@ -12,7 +12,7 @@ public class HCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
         String requestData = this.getSubChainReqData();
-        DefaultContext context = this.getContextBean();
+        DefaultContext context = this.getFirstContextBean();
         context.setData("innerRequest", requestData);
 
         RUN_TIME_SLOT.add(this.getSlot().getRequestId());

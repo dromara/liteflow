@@ -33,14 +33,15 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
 
     @Test
     public void testTag1() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("123",response.getContextBean().getData("test"));
+        Assert.assertEquals("123",context.getData("test"));
     }
 
     @Test
     public void testTag2() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
     }
@@ -50,9 +51,10 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
     @Test
     public void testTag3() throws Exception{
         for (int i = 0; i < 50; i++) {
-            LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
+            LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+            DefaultContext context = response.getFirstContextBean();
             Assert.assertTrue(response.isSuccess());
-            ConcurrentHashSet<String> testSet = response.getContextBean().getData("test");
+            ConcurrentHashSet<String> testSet = context.getData("test");
             Assert.assertEquals(3, testSet.size());
         }
     }
@@ -60,7 +62,7 @@ public class NodeTagSpringbootJsonTest extends BaseTest {
     //测试tag是否能在isAccess中起效
     @Test
     public void testTag4() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g", response.getExecuteStepStr());
     }

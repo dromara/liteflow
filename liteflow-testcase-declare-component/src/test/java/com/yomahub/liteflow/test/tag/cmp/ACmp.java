@@ -23,7 +23,7 @@ public class ACmp{
 	public void process(NodeComponent bindCmp) {
 		String testKey = "test";
 
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		if (context.getData(testKey) == null){
 			context.setData(testKey,bindCmp.getTag());
 		}else{

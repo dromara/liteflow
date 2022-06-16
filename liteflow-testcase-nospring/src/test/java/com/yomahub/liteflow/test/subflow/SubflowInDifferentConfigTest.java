@@ -31,7 +31,7 @@ public class SubflowInDifferentConfigTest extends BaseTest {
     //是否按照流程定义配置执行
     @Test
     public void testExplicitSubFlow1() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "it's a request");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
     }

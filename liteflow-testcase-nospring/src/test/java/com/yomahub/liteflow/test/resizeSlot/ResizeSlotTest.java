@@ -41,13 +41,13 @@ public class ResizeSlotTest extends BaseTest {
         try{
             ExecutorService pool = Executors.newCachedThreadPool();
 
-            List<Future<LiteflowResponse<DefaultContext>>> futureList = new ArrayList<>();
+            List<Future<LiteflowResponse>> futureList = new ArrayList<>();
             for (int i = 0; i < 100; i++) {
-                Future<LiteflowResponse<DefaultContext>> future = pool.submit(() -> flowExecutor.execute2Resp("chain1", "arg"));
+                Future<LiteflowResponse> future = pool.submit(() -> flowExecutor.execute2Resp("chain1", "arg"));
                 futureList.add(future);
             }
 
-            for(Future<LiteflowResponse<DefaultContext>> future : futureList){
+            for(Future<LiteflowResponse> future : futureList){
                 Assert.assertTrue(future.get().isSuccess());
             }
 

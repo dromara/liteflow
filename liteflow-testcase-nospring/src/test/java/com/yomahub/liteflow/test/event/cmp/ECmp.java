@@ -20,7 +20,7 @@ public class ECmp extends NodeComponent {
 
 	@Override
 	public void onError() throws Exception {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		context.setData("error","error:"+this.getNodeId());
 		throw new IllegalAccessException("错误事件回调本身抛出异常");
 	}

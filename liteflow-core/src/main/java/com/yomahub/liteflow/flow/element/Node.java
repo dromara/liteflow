@@ -112,7 +112,7 @@ public class Node implements Executable,Cloneable{
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
 		instance.setSlotIndex(slotIndex);
-		Slot<?> slot = DataBus.getSlot(slotIndex);
+		Slot slot = DataBus.getSlot(slotIndex);
 
 		try {
 			//把tag和condNodeMap赋给NodeComponent

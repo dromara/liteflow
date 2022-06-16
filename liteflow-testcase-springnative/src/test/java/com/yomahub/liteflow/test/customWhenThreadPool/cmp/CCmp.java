@@ -16,7 +16,7 @@ public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		context.setData("threadName", Thread.currentThread().getName());
 		System.out.println("CCmp executed!");
 	}

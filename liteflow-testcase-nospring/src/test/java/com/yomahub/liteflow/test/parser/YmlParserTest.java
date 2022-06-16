@@ -29,7 +29,7 @@ public class YmlParserTest extends BaseTest {
     //测试无spring场景的yml parser
     @Test
     public void testYmlParser() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

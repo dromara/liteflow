@@ -19,10 +19,10 @@ public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		Object bean = this.getContextBean();
+		Object bean = this.getFirstContextBean();
 		if(bean instanceof CustomContext) {
-			Slot<CustomContext> slot = this.getSlot();
-			CustomContext context = slot.getContextBean();
+			Slot slot = this.getSlot();
+			CustomContext context = slot.getFirstContextBean();
 			String str = slot.getRequestData();
 			if(StrUtil.isNotBlank(str) && str.equals("test0")) {
 				context.setName("custom");

@@ -22,10 +22,10 @@ public class RemoveChainSpringTest extends BaseTest {
 
     @Test
     public void testRemoveChain(){
-        LiteflowResponse<DefaultContext> response1 = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response1.isSuccess());
         FlowBus.removeChain("chain1");
-        LiteflowResponse<DefaultContext> response2 = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertFalse(response2.isSuccess());
     }
 }

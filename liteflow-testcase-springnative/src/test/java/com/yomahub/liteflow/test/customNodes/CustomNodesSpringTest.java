@@ -30,7 +30,7 @@ public class CustomNodesSpringTest extends BaseTest {
 
     @Test
     public void testCustomNodes() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());

@@ -24,28 +24,31 @@ public class EventTest extends BaseTest{
     //测试组件成功事件
     @Test
     public void testEvent1() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("abc", response.getContextBean().getData("test"));
+        Assert.assertEquals("abc", context.getData("test"));
     }
 
     //测试组件失败事件
     @Test
     public void testEvent2() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals(NullPointerException.class, response.getCause().getClass());
-        Assert.assertEquals("ab", response.getContextBean().getData("test"));
-        Assert.assertEquals("error:d", response.getContextBean().getData("error"));
+        Assert.assertEquals("ab", context.getData("test"));
+        Assert.assertEquals("error:d", context.getData("error"));
     }
 
     //测试组件失败事件本身抛出异常
     @Test
     public void testEvent3() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals(NullPointerException.class, response.getCause().getClass());
-        Assert.assertEquals("a", response.getContextBean().getData("test"));
-        Assert.assertEquals("error:e", response.getContextBean().getData("error"));
+        Assert.assertEquals("a", context.getData("test"));
+        Assert.assertEquals("error:e", context.getData("error"));
     }
 }

@@ -34,7 +34,7 @@ public class NullParamSpringbootTest {
      */
     @Test
     public void testNullParam() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
     }
 

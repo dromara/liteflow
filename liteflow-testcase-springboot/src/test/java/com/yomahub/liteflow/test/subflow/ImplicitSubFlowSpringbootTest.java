@@ -37,7 +37,8 @@ public class ImplicitSubFlowSpringbootTest extends BaseTest {
     //这里GCmp中隐式的调用chain4，从而执行了h，m
     @Test
     public void testImplicitSubFlow() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", "it's a request");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a request");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("f==>g==>h==>m", response.getExecuteStepStr());
 
@@ -46,6 +47,6 @@ public class ImplicitSubFlowSpringbootTest extends BaseTest {
         //  set中第一次设置的requestId和response中的requestId一致
         Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
         //requestData的取值正确
-        Assert.assertEquals("it's implicit subflow.", response.getContextBean().getData("innerRequest"));
+        Assert.assertEquals("it's implicit subflow.", context.getData("innerRequest"));
     }
 }

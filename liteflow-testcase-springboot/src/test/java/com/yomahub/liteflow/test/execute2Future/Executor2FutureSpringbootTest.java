@@ -33,8 +33,8 @@ public class Executor2FutureSpringbootTest extends BaseTest {
 
     @Test
     public void testFuture() throws Exception{
-        Future<LiteflowResponse<DefaultContext>> future = flowExecutor.execute2Future("chain1", "arg", DefaultContext.class);
-        LiteflowResponse<DefaultContext> response = future.get();
+        Future<LiteflowResponse> future = flowExecutor.execute2Future("chain1", "arg", DefaultContext.class);
+        LiteflowResponse response = future.get();
         Assert.assertTrue(response.isSuccess());
     }
 

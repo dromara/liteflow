@@ -64,7 +64,7 @@ public class ZkNodeWithXmlTest extends BaseTest {
     
     @Test
     public void testZkNodeWithXml() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
     

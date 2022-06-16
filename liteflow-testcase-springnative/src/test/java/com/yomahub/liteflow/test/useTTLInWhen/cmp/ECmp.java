@@ -17,7 +17,7 @@ public class ECmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
 		context.setData(this.getNodeId(),value+",e");
 		System.out.println("ECmp executed!");

@@ -21,7 +21,7 @@ public class LFParserXmlNoSpringTest extends BaseTest {
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setRuleSource("parser/flow.xml");
         FlowExecutor executor = new FlowExecutor(liteflowConfig);
-        LiteflowResponse<DefaultContext> response = executor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = executor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

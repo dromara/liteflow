@@ -38,7 +38,7 @@ public class RefreshRuleSpringbootTest extends BaseTest {
     public void testRefresh1() throws Exception{
         String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.xml");
         FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 
@@ -57,7 +57,7 @@ public class RefreshRuleSpringbootTest extends BaseTest {
         }).start();
 
         for (int i = 0; i < 500; i++) {
-            LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+            LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
             Assert.assertTrue(response.isSuccess());
             try {
                 Thread.sleep(10L);

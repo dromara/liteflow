@@ -21,7 +21,7 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("ACmp executed!");
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		context.setData("testSet", new ConcurrentHashSet<>());
 
 		for (int i = 0; i < 100; i++) {

@@ -11,6 +11,7 @@ public class NodeBuildException extends RuntimeException {
         this.message = message;
     }
 
+    @Override
     public String getMessage() {
         return message;
     }

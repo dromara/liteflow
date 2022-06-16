@@ -18,8 +18,8 @@ public class Finally3Cmp extends NodeComponent {
 
 	@Override
 	public void process() throws Exception{
-		Slot<DefaultContext> slot = this.getSlot();
-		DefaultContext context = slot.getContextBean();
+		Slot slot = this.getSlot();
+		DefaultContext context = slot.getFirstContextBean();
 		if (ObjectUtil.isNull(slot.getException())){
 			context.setData("hasEx", false);
 		}else{

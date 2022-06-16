@@ -40,9 +40,10 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
      */
     @Test
     public void testGlobalThreadPool() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertTrue(response.getContextBean().getData("threadName").toString().startsWith("lf-when-thead"));
+        Assert.assertTrue(context.getData("threadName").toString().startsWith("lf-when-thead"));
     }
 
     /**
@@ -50,9 +51,10 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
      */
     @Test
     public void testGlobalAndCustomWhenThreadPool() {
-        LiteflowResponse<DefaultContext> response1 = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response1.getFirstContextBean();
         Assert.assertTrue(response1.isSuccess());
-        Assert.assertTrue(response1.getContextBean().getData("threadName").toString().startsWith("customer-when-1-thead"));
+        Assert.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
     }
 
 
@@ -64,9 +66,10 @@ public class CustomWhenThreadPoolSpringbootTest extends BaseTest {
         // 使用when - thread1
         testGlobalAndCustomWhenThreadPool();
         // chain配置同一个thead1
-        LiteflowResponse<DefaultContext> response2 = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response2 = flowExecutor.execute2Resp("chain2", "arg");
+        DefaultContext context = response2.getFirstContextBean();
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertTrue(response2.getContextBean().getData("threadName").toString().startsWith("customer-when-1-thead"));
+        Assert.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
 
     }
 }

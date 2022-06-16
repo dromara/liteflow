@@ -22,7 +22,7 @@ public class BCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		ConcurrentHashSet<String> testSet = context.getData("test");
 		testSet.add(bindCmp.getTag());
 	}

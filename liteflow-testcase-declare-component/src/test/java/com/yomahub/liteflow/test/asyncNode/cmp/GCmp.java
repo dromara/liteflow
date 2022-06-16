@@ -16,7 +16,7 @@ public class GCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
         Thread.sleep(500);
-        DefaultContext context = bindCmp.getContextBean();
+        DefaultContext context = bindCmp.getFirstContextBean();
         synchronized (NodeComponent.class){
             if (context.hasData("check")){
                 String str = context.getData("check");

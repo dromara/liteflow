@@ -16,7 +16,7 @@ public class ICmp {
 
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
-        DefaultContext context = bindCmp.getContextBean();
+        DefaultContext context = bindCmp.getFirstContextBean();
         if (context.hasData("count")){
             Integer count = context.getData("count");
             context.setData("count", ++count);

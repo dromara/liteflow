@@ -29,7 +29,7 @@ public class CustomParserJsonTest extends BaseTest {
     //测试非spring场景的自定义json parser
     @Test
     public void testJsonCustomParser() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "args");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "args");
         Assert.assertTrue(response.isSuccess());
     }
 }

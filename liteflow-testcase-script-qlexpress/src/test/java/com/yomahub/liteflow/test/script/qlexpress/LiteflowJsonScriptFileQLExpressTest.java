@@ -37,15 +37,16 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
     //测试普通脚本节点
     @Test
     public void testScript1() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Integer.valueOf(6), response.getContextBean().getData("s1"));
+        Assert.assertEquals(Integer.valueOf(6), context.getData("s1"));
     }
 
     //测试条件脚本节点
     @Test
     public void testScript2() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本]==>b", response.getExecuteStepStr());
     }
@@ -53,7 +54,7 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
     @Test
     public void testScript3() throws Exception{
         //根据配置，加载的应该是flow.xml，执行原来的规则
-        LiteflowResponse<DefaultContext> responseOld = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse responseOld = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(responseOld.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本]==>b", responseOld.getExecuteStepStr());
         //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
@@ -62,7 +63,7 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
         FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_JSON, newContent);
 
         //重新执行chain2这个链路，结果会变
-        LiteflowResponse<DefaultContext> responseNew = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse responseNew = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(responseNew.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本_改]==>a==>s3[普通脚本_新增]", responseNew.getExecuteStepStr());
     }
@@ -83,7 +84,7 @@ public class LiteflowJsonScriptFileQLExpressTest extends BaseTest {
         }).start();
 
         for (int i = 0; i < 300; i++) {
-            LiteflowResponse<DefaultContext> responseNew = flowExecutor.execute2Resp("chain2", "arg");
+            LiteflowResponse responseNew = flowExecutor.execute2Resp("chain2", "arg");
             Assert.assertTrue(responseNew.isSuccess());
             Thread.sleep(10L);
         }

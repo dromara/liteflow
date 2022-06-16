@@ -80,7 +80,7 @@ public class BuilderSpringTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
     }
 
@@ -138,7 +138,7 @@ public class BuilderSpringTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
     }
 
@@ -205,7 +205,7 @@ public class BuilderSpringTest1 extends BaseTest {
                                 )).build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
     }
 }

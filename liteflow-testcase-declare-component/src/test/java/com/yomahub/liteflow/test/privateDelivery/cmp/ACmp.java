@@ -25,7 +25,7 @@ public class ACmp{
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("ACmp executed!");
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("testSet", new ConcurrentHashSet<>());
 
 		for (int i = 0; i < 100; i++) {

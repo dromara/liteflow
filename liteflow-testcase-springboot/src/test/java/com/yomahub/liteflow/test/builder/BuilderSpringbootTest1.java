@@ -89,7 +89,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
@@ -147,7 +147,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                         .setValue("e(f|g|chain2)").build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
@@ -216,7 +216,7 @@ public class BuilderSpringbootTest1 extends BaseTest {
                                         )).build()
         ).build();
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }

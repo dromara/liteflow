@@ -31,7 +31,7 @@ public class LiteflowEnableSpringTest extends BaseTest {
         LiteflowConfig config = LiteflowConfigGetter.get();
         Boolean enable = config.getEnable();
         if (enable) {
-            LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+            LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
             Assert.assertTrue(response.isSuccess());
             return;
         }

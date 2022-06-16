@@ -70,7 +70,7 @@ public abstract class NodeComponent{
 	}
 
 	public void execute() throws Exception{
-		Slot<?> slot = this.getSlot();
+		Slot slot = this.getSlot();
 
 		//在元数据里加入step信息
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
@@ -137,7 +137,7 @@ public abstract class NodeComponent{
 
 	}
 
-	public <T> void beforeProcess(String nodeId, Slot<T> slot){
+	public <T> void beforeProcess(String nodeId, Slot slot){
 		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		//非spring环境下，全局切面为空实现
 		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, slot);
@@ -153,7 +153,7 @@ public abstract class NodeComponent{
 		//如果需要在抛错后回调某一段逻辑，请覆盖这个方法
 	}
 
-	public <T> void afterProcess(String nodeId, Slot<T> slot){
+	public <T> void afterProcess(String nodeId, Slot slot){
 		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, slot);
 	}
 
@@ -199,13 +199,16 @@ public abstract class NodeComponent{
 		this.slotIndexTL.remove();
 	}
 
-	public <T> Slot<T> getSlot(){
+	public Slot getSlot(){
 		return DataBus.getSlot(this.slotIndexTL.get());
 	}
 
-	public <T> T getContextBean(){
-		Slot<T> slot = this.getSlot();
-		return slot.getContextBean();
+	public <T> T getFirstContextBean(){
+		return this.getSlot().getFirstContextBean();
+	}
+
+	public <T> T getContextBean(Class<T> contextBeanClazz){
+		return this.getSlot().getContextBean(contextBeanClazz);
 	}
 
 	public String getNodeId() {

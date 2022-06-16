@@ -17,7 +17,7 @@ public class FCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
 		context.setData(this.getNodeId(),value+",f");
 		System.out.println("FCmp executed!");

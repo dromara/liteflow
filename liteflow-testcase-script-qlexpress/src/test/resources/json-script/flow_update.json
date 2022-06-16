@@ -6,19 +6,19 @@
           "id": "s1",
           "name": "普通脚本",
           "type": "script",
-          "value": "a=3;b=2;context.setData(\"s1\",a*b);"
+          "value": "a=3;b=2;defaultContext.setData(\"s1\",a*b);"
         },
         {
           "id": "s2",
           "name": "条件脚本_改",
           "type": "cond_script",
-          "value": "count = context.getData(\"count\");if(count > 150){return \"b\";}else{return \"a\";}"
+          "value": "count = defaultContext.getData(\"count\");if(count > 150){return \"b\";}else{return \"a\";}"
         },
         {
           "id": "s3",
           "name": "普通脚本_新增",
           "type": "script",
-          "value": "a=3;b=2;c=10;context.setData(\"s1\",a*b+c);"
+          "value": "a=3;b=2;c=10;defaultContext.setData(\"s1\",a*b+c);"
         }
       ]
     },

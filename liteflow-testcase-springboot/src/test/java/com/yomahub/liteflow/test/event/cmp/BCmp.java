@@ -21,7 +21,7 @@ public class BCmp extends NodeComponent {
 
 	@Override
 	public void onSuccess() throws Exception {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		String str = context.getData("test");
 		str += this.getNodeId();
 		context.setData("test", str);

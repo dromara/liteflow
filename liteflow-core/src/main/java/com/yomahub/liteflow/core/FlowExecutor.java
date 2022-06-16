@@ -9,10 +9,7 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.*;
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -270,10 +267,13 @@ public class FlowExecutor {
 
     //隐式流程的调用方法
     public void invoke(String chainId, Object param, Integer slotIndex) throws Exception {
-        this.execute(chainId, param, null, slotIndex, true);
+        LiteflowResponse response = this.execute2Resp(chainId, param, null, slotIndex, true);
+        if (!response.isSuccess()){
+            throw response.getCause();
+        }
     }
 
-    public <T> LiteflowResponse<T> invoke2Resp(String chainId, Object param, Integer slotIndex) {
+    public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
         return this.execute2Resp(chainId, param, null, slotIndex, true);
     }
 
@@ -283,51 +283,42 @@ public class FlowExecutor {
         node.execute(slotIndex);
     }
 
-    public DefaultContext execute(String chainId) throws Exception {
-        return this.execute(chainId, null, DefaultContext.class, null, false);
-    }
-
-    public DefaultContext execute(String chainId, Object param) throws Exception {
-        return this.execute(chainId, param, DefaultContext.class, null, false);
-    }
-
-    public <T> T execute(String chainId, Object param, Class<T> contextBeanClazz) throws Exception {
-        return this.execute(chainId, param, contextBeanClazz, null, false);
-    }
-
-    private <T> T execute(String chainId, Object param, Class<T> contextBeanClazz,
-                          Integer slotIndex, boolean isInnerChain) throws Exception {
-        Slot<T> slot = this.doExecute(chainId, param, contextBeanClazz, slotIndex, isInnerChain);
-        if (ObjectUtil.isNotNull(slot.getException())) {
-            throw slot.getException();
-        } else {
-            return slot.getContextBean();
-        }
-    }
-
-    public LiteflowResponse<DefaultContext> execute2Resp(String chainId) {
+    //调用一个流程并返回LiteflowResponse，上下文为默认的DefaultContext，初始参数为null
+    public LiteflowResponse execute2Resp(String chainId) {
         return this.execute2Resp(chainId, null, DefaultContext.class);
     }
 
-    public LiteflowResponse<DefaultContext> execute2Resp(String chainId, Object param) {
+    //调用一个流程并返回LiteflowResponse，上下文为默认的DefaultContext
+    public LiteflowResponse execute2Resp(String chainId, Object param) {
         return this.execute2Resp(chainId, param, DefaultContext.class);
     }
 
-    public <T> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> contextBeanClazz) {
-        return this.execute2Resp(chainId, param, contextBeanClazz, null, false);
+    //调用一个流程并返回LiteflowResponse，允许多上下文的传入
+    public LiteflowResponse execute2Resp(String chainId, Object param, Class<?>... contextBeanClazzArray) {
+        return this.execute2Resp(chainId, param, contextBeanClazzArray, null, false);
     }
 
-    public <T> Future<LiteflowResponse<T>> execute2Future(String chainId, Object param, Class<T> contextBeanClazz) {
+    //调用一个流程并返回Future<LiteflowResponse>，允许多上下文的传入
+    public Future<LiteflowResponse> execute2Future(String chainId, Object param, Class<?>... contextBeanClazzArray) {
         return ExecutorHelper.loadInstance().buildMainExecutor(liteflowConfig.getMainExecutorClass()).submit(()
-                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazz, null, false));
-
+                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazzArray, null, false));
     }
 
-    public <T> LiteflowResponse<T> execute2Resp(String chainId, Object param, Class<T> contextBeanClazz,
-                                                Integer slotIndex, boolean isInnerChain) {
-        LiteflowResponse<T> response = new LiteflowResponse<>();
+    //调用一个流程，返回默认的上下文，适用于简单的调用
+    public DefaultContext execute(String chainId, Object param) throws Exception{
+        LiteflowResponse response = this.execute2Resp(chainId, param, DefaultContext.class);
+        if (!response.isSuccess()){
+            throw response.getCause();
+        }else{
+            return response.getFirstContextBean();
+        }
+    }
 
-        Slot<T> slot = doExecute(chainId, param, contextBeanClazz, slotIndex, isInnerChain);
+    private LiteflowResponse execute2Resp(String chainId, Object param, Class<?>[] contextBeanClazzArray,
+                                                Integer slotIndex, boolean isInnerChain) {
+        LiteflowResponse response = new LiteflowResponse();
+
+        Slot slot = doExecute(chainId, param, contextBeanClazzArray, slotIndex, isInnerChain);
 
         if (ObjectUtil.isNotNull(slot.getException())) {
             response.setSuccess(false);
@@ -340,14 +331,14 @@ public class FlowExecutor {
         return response;
     }
 
-    private <T> Slot<T> doExecute(String chainId, Object param, Class<T> contextBeanClazz, Integer slotIndex,
+    private Slot doExecute(String chainId, Object param, Class<?>[] contextBeanClazzArray, Integer slotIndex,
                                   boolean isInnerChain) {
         if (FlowBus.needInit()) {
             init();
         }
 
         if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
-            slotIndex = DataBus.offerSlot(contextBeanClazz);
+            slotIndex = DataBus.offerSlot(ListUtil.toList(contextBeanClazzArray));
             if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
                 LOG.info("slot[{}] offered", slotIndex);
             }
@@ -357,7 +348,7 @@ public class FlowExecutor {
             throw new NoAvailableSlotException("there is no available slot");
         }
 
-        Slot<T> slot = DataBus.getSlot(slotIndex);
+        Slot slot = DataBus.getSlot(slotIndex);
         if (ObjectUtil.isNull(slot)) {
             throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
         }

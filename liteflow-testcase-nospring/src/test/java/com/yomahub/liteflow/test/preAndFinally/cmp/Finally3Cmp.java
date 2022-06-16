@@ -16,11 +16,12 @@ public class Finally3Cmp extends NodeComponent {
 
 	@Override
 	public void process() throws Exception{
-		Slot<DefaultContext> slot = this.getSlot();
+		Slot slot = this.getSlot();
+		DefaultContext context = slot.getFirstContextBean();
 		if (ObjectUtil.isNull(slot.getException())){
-			slot.getContextBean().setData("hasEx", false);
+			context.setData("hasEx", false);
 		}else{
-			slot.getContextBean().setData("hasEx", true);
+			context.setData("hasEx", true);
 		}
 		System.out.println("Finally3Cmp executed!");
 	}

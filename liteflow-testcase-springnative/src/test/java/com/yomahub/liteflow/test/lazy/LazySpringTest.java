@@ -21,7 +21,7 @@ public class LazySpringTest extends BaseTest {
 
     @Test
     public void testLazy() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

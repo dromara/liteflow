@@ -32,7 +32,7 @@ public class ComponentSpringTest extends BaseTest {
     //isAccess方法的功能测试
     @Test
     public void testIsAccess() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", 101);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", 101);
         Assert.assertTrue(response.isSuccess());
         Assert.assertNotNull(response.getSlot().getResponseData());
     }
@@ -40,7 +40,7 @@ public class ComponentSpringTest extends BaseTest {
     //组件抛错的功能点测试
     @Test(expected = ArithmeticException.class)
     public void testComponentException() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", 0);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", 0);
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("/ by zero", response.getMessage());
         ReflectionUtils.rethrowException(response.getCause());
@@ -49,7 +49,7 @@ public class ComponentSpringTest extends BaseTest {
     //isContinueOnError方法的功能点测试
     @Test
     public void testIsContinueOnError() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain3", 0);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", 0);
         Assert.assertTrue(response.isSuccess());
         Assert.assertNull(response.getCause());
     }
@@ -57,7 +57,7 @@ public class ComponentSpringTest extends BaseTest {
     //isEnd方法的功能点测试
     @Test
     public void testIsEnd() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", 10);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("d",response.getExecuteStepStr());
     }
@@ -65,7 +65,7 @@ public class ComponentSpringTest extends BaseTest {
     //setIsEnd方法的功能点测试
     @Test
     public void testSetIsEnd1() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain5", 10);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("e",response.getExecuteStepStr());
     }
@@ -73,14 +73,14 @@ public class ComponentSpringTest extends BaseTest {
     //条件组件的功能点测试
     @Test
     public void testNodeCondComponent() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain6", 0);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", 0);
         Assert.assertTrue(response.isSuccess());
     }
 
     //测试setIsEnd如果为true，continueError也为true，那不应该continue了
     @Test
     public void testSetIsEnd2() throws Exception {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain7", 10);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", 10);
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g",response.getExecuteStepStr());
     }

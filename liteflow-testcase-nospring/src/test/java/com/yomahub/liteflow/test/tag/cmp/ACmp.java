@@ -17,7 +17,7 @@ public class ACmp extends NodeComponent {
 	public void process() {
 		String testKey = "test";
 
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		if (context.getData(testKey) == null){
 			context.setData(testKey,this.getTag());
 		}else{

@@ -32,7 +32,7 @@ public class BannerPrintSpringbootTest extends BaseTest {
 
     @Test
     public void testRefresh() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

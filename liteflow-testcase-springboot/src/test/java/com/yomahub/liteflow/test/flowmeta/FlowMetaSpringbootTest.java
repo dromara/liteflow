@@ -31,7 +31,7 @@ public class FlowMetaSpringbootTest extends BaseTest {
     @Test
     public void testFlowMeta() {
         FlowBus.addCommonNode("d", "d组件", DCmp.class);
-        LiteflowResponse<DefaultContext> response= flowExecutor.execute2Resp("chain1", "it's a request");
+        LiteflowResponse response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
     }

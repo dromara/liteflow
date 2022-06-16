@@ -47,7 +47,7 @@ public class LiteFlowXmlScriptBuilderGroovyTest extends BaseTest {
                 .setId("s1")
                 .setName("普通脚本S1")
                 .setType(NodeTypeEnum.SCRIPT)
-                .setScript("Integer a=3;Integer b=2;context.setData(\"s1\",a*b)")
+                .setScript("Integer a=3;Integer b=2;defaultContext.setData(\"s1\",a*b)")
                 .build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1")
@@ -55,9 +55,10 @@ public class LiteFlowXmlScriptBuilderGroovyTest extends BaseTest {
                         .build();
 
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1","arg1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1","arg1");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Integer.valueOf(6), response.getContextBean().getData("s1"));
+        Assert.assertEquals(Integer.valueOf(6), context.getData("s1"));
     }
 
     //测试通过builder方式运行普通script节点，以file的方式运行
@@ -89,7 +90,8 @@ public class LiteFlowXmlScriptBuilderGroovyTest extends BaseTest {
                 .build();
 
 
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2","arg1");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2","arg1");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
     }

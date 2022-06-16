@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class ACmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) {
-        DefaultContext context = bindCmp.getContextBean();
+        DefaultContext context = bindCmp.getFirstContextBean();
         synchronized (NodeComponent.class){
             if (context.hasData("check")){
                 String str = context.getData("check");

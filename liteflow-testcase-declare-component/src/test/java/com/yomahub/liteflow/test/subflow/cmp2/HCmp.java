@@ -16,7 +16,7 @@ public class HCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
         String requestData = bindCmp.getSubChainReqData();
-        DefaultContext context = bindCmp.getContextBean();
+        DefaultContext context = bindCmp.getFirstContextBean();
         context.setData("innerRequest", requestData);
 
         RUN_TIME_SLOT.add(bindCmp.getSlot().getRequestId());

@@ -10,7 +10,7 @@ public class GCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
         Thread.sleep(500);
-        DefaultContext context = this.getContextBean();
+        DefaultContext context = this.getFirstContextBean();
         synchronized (NodeComponent.class){
             if (context.hasData("check")){
                 String str = context.getData("check");

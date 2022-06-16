@@ -19,7 +19,7 @@ public class CustomAspect {
     @Around("cut()")
     public Object around(ProceedingJoinPoint jp) throws Throwable {
         NodeComponent cmp = (NodeComponent) jp.getThis();
-        DefaultContext context = cmp.getContextBean();
+        DefaultContext context = cmp.getFirstContextBean();
         context.setData(cmp.getNodeId(), "before");
         Object returnObj = jp.proceed();
         context.setData(cmp.getNodeId(), StrUtil.format("{}_{}", context.getData(cmp.getNodeId()), "after"));

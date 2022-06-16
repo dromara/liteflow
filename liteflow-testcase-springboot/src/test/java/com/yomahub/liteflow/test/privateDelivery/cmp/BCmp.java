@@ -22,7 +22,7 @@ public class BCmp extends NodeComponent {
     public void process() {
         System.out.println("BCmp executed!");
         Integer value = this.getPrivateDeliveryData();
-        DefaultContext context = this.getContextBean();
+        DefaultContext context = this.getFirstContextBean();
         ConcurrentHashSet<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }

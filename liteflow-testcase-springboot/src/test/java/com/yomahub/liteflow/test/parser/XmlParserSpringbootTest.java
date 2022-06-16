@@ -31,7 +31,7 @@ public class XmlParserSpringbootTest extends BaseTest {
     //测试无springboot场景的xml parser
     @Test
     public void testXmlParser() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

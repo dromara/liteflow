@@ -16,7 +16,7 @@ public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		ConcurrentHashSet<String> testSet = context.getData("test");
 		testSet.add(this.getTag());
 	}

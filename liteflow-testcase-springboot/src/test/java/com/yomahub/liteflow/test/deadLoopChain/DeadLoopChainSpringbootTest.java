@@ -30,6 +30,6 @@ public class DeadLoopChainSpringbootTest extends BaseTest {
     //为什么不删除呢？是因为如果用户不自己判断退出的条件。会报出栈溢出。以后希望liteflow自己能抛出相关的错。而不是抛出JDK的异常。所以暂时留着。
     //@Test(expected = CyclicDependencyException.class)
     public void testDeadLoopChain() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
     }
 }

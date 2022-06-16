@@ -21,7 +21,7 @@ public class BaseCommonSpringTest extends BaseTest {
 
     @Test
     public void testBaseCommon(){
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
     }

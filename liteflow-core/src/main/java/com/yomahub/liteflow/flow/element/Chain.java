@@ -72,7 +72,7 @@ public class Chain implements Executable {
         if (CollUtil.isEmpty(conditionList)) {
             throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
         }
-        Slot<?> slot = DataBus.getSlot(slotIndex);
+        Slot slot = DataBus.getSlot(slotIndex);
         try {
             //在子流程或者隐式流程里，slot需要取到的chainName是当前流程，所以这不再是set，而是push
             //其底层结构是一个stack

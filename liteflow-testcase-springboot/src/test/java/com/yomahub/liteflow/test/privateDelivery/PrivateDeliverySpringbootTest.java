@@ -34,8 +34,8 @@ public class PrivateDeliverySpringbootTest extends BaseTest {
 
     @Test
     public void testPrivateDelivery() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getContextBean();
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
         ConcurrentHashSet<Integer> set = context.getData("testSet");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(100, set.size());

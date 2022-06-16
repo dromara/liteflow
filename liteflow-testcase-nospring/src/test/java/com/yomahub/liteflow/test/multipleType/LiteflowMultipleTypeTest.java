@@ -29,7 +29,7 @@ public class LiteflowMultipleTypeTest extends BaseTest {
 
     @Test
     public void testMultipleType() {
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>b==>a", response.getExecuteStepStr());
         response = flowExecutor.execute2Resp("chain3", "arg");

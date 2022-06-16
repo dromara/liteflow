@@ -29,35 +29,38 @@ public class GlobalAOPSpringTest extends BaseTest {
     //测试全局AOP，串行场景
     @Test
     public void testGlobalAopS() {
-        LiteflowResponse<DefaultContext> response= flowExecutor.execute2Resp("chain1", "it's a request");
+        LiteflowResponse response= flowExecutor.execute2Resp("chain1", "it's a request");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("before_after", response.getContextBean().getData("a"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("b"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("c"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("d"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("e"));
+        Assert.assertEquals("before_after", context.getData("a"));
+        Assert.assertEquals("before_after", context.getData("b"));
+        Assert.assertEquals("before_after", context.getData("c"));
+        Assert.assertEquals("before_after", context.getData("d"));
+        Assert.assertEquals("before_after", context.getData("e"));
     }
 
     //测试全局AOP，并行场景
     @Test
     public void testGlobalAopP() {
-        LiteflowResponse<DefaultContext> response= flowExecutor.execute2Resp("chain2", "it's a request");
+        LiteflowResponse response= flowExecutor.execute2Resp("chain2", "it's a request");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("before_after", response.getContextBean().getData("a"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("b"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("c"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("d"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("e"));
+        Assert.assertEquals("before_after", context.getData("a"));
+        Assert.assertEquals("before_after", context.getData("b"));
+        Assert.assertEquals("before_after", context.getData("c"));
+        Assert.assertEquals("before_after", context.getData("d"));
+        Assert.assertEquals("before_after", context.getData("e"));
     }
 
     @Test
     public void testGlobalAopException() {
-        LiteflowResponse<DefaultContext> response= flowExecutor.execute2Resp("chain3", "it's a request");
+        LiteflowResponse response= flowExecutor.execute2Resp("chain3", "it's a request");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("before_after", response.getContextBean().getData("a"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("b"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("c"));
-        Assert.assertEquals("before_after", response.getContextBean().getData("f"));
+        Assert.assertEquals("before_after", context.getData("a"));
+        Assert.assertEquals("before_after", context.getData("b"));
+        Assert.assertEquals("before_after", context.getData("c"));
+        Assert.assertEquals("before_after", context.getData("f"));
     }
 
     @AfterClass

@@ -1,4 +1,4 @@
-Integer count = context.getData("count")
+Integer count = defaultContext.getData("count")
 if(count > 100){
     return "a"
 }else{

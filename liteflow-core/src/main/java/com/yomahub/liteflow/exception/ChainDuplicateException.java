@@ -18,6 +18,7 @@ public class ChainDuplicateException extends RuntimeException {
         this.message = message;
     }
 
+    @Override
     public String getMessage() {
         return message;
     }

@@ -25,7 +25,7 @@ public class CCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_SUCCESS)
 	public void onSuccess(NodeComponent bindCmp) throws Exception {
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		String str = context.getData("test");
 		str += bindCmp.getNodeId();
 		context.setData("test", str);

@@ -25,7 +25,7 @@ public class BCmp{
     public void process(NodeComponent bindCmp) {
         System.out.println("BCmp executed!");
         Integer value = bindCmp.getPrivateDeliveryData();
-        DefaultContext context = bindCmp.getContextBean();
+        DefaultContext context = bindCmp.getFirstContextBean();
         ConcurrentHashSet<Integer> testSet = context.getData("testSet");
         testSet.add(value);
     }

@@ -12,7 +12,7 @@ import com.yomahub.liteflow.flow.executor.NodeExecutor;
 public class CustomerNodeExecutor extends NodeExecutor {
     @Override
     public void execute(NodeComponent instance) throws Exception {
-        DefaultContext context = instance.getContextBean();
+        DefaultContext context = instance.getFirstContextBean();
         LOG.info("使用customerNodeExecutor进行执行");
         context.setData("customerNodeExecutor", this.getClass());
         super.execute(instance);

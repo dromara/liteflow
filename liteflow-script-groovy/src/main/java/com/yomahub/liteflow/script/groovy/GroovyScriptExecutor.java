@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.*;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Groovy脚本语言的执行器实现
@@ -55,8 +56,15 @@ public class GroovyScriptExecutor implements ScriptExecutor {
 
             CompiledScript compiledScript = compiledScriptMap.get(nodeId);
             Bindings bindings = new SimpleBindings();
-            Object contextBean = DataBus.getContextBean(slotIndex);
-            bindings.put("context", contextBean);
+
+            //往脚本语言绑定表里循环增加绑定上下文的key
+            //key的规则为自定义上下文的simpleName
+            //比如你的自定义上下文为AbcContext，那么key就为:abcContext
+            //这里不统一放一个map的原因是考虑到有些用户会调用上下文里的方法，而不是参数，所以脚本语言的绑定表里也是放多个上下文
+            DataBus.getContextBeanList(slotIndex).forEach(o -> {
+                String key = StrUtil.lowerFirst(o.getClass().getSimpleName());
+                bindings.put(key, o);
+            });
             return compiledScript.eval(bindings);
         }catch (Exception e){
             log.error(e.getMessage(), e);

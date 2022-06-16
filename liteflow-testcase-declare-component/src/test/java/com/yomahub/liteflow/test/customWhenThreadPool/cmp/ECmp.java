@@ -20,7 +20,7 @@ public class ECmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("threadName", Thread.currentThread().getName());
 		System.out.println("ECmp executed!");
 	}

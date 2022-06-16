@@ -48,7 +48,7 @@ public class Exception2SpringTest extends BaseTest {
 
     @Test
     public void testGetSlotFromResponseWhenException() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain4", "test");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "test");
         Assert.assertFalse(response.isSuccess());
         Assert.assertNotNull(response.getCause());
         Assert.assertNotNull(response.getSlot());

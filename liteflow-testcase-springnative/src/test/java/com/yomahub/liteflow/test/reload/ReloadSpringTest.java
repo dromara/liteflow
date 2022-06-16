@@ -29,7 +29,7 @@ public class ReloadSpringTest extends BaseTest {
     @Test
     public void testReload() throws Exception{
         flowExecutor.reloadRule();
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }

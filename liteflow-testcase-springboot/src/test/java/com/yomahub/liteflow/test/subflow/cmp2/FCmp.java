@@ -14,7 +14,7 @@ public class FCmp extends NodeComponent {
 
         RUN_TIME_SLOT.add(this.getSlot().getRequestId());
 
-        DefaultContext context = this.getContextBean();
+        DefaultContext context = this.getFirstContextBean();
         context.setData("innerRequestData", "inner request");
 
         System.out.println("Fcomp executed!");

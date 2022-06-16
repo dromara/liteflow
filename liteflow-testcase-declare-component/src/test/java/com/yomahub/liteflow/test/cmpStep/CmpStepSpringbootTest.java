@@ -32,7 +32,7 @@ public class CmpStepSpringbootTest extends BaseTest {
 
     @Test
     public void testStep() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain1", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertTrue(response.getExecuteSteps().get("a").isSuccess());
         Assert.assertTrue(response.getExecuteSteps().get("b").isSuccess());
@@ -45,7 +45,7 @@ public class CmpStepSpringbootTest extends BaseTest {
 
     @Test
     public void testStep2() throws Exception{
-        LiteflowResponse<DefaultContext> response = flowExecutor.execute2Resp("chain2", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b", response.getExecuteStepStrWithoutTime());
     }

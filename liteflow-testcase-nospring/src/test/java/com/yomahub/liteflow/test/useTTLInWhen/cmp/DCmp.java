@@ -16,7 +16,7 @@ public class DCmp extends NodeComponent {
 	@Override
 	public void process() {
 		String value = TestTL.get();
-		DefaultContext context = this.getContextBean();
+		DefaultContext context = this.getFirstContextBean();
 		context.setData(this.getNodeId(),value+",d");
 		System.out.println("DCmp executed!");
 	}

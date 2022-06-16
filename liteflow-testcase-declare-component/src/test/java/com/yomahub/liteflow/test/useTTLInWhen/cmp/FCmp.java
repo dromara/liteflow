@@ -22,7 +22,7 @@ public class FCmp{
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		String value = TestTL.get();
-		DefaultContext context = bindCmp.getContextBean();
+		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData(bindCmp.getNodeId(),value+",f");
 		System.out.println("FCmp executed!");
 	}
