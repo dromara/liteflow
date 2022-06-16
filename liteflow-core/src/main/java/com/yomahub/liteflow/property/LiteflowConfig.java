@@ -8,10 +8,8 @@
  */
 package com.yomahub.liteflow.property;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
  * liteflow的配置实体类
@@ -73,6 +71,9 @@ public class LiteflowConfig {
     private Integer retryCount;
     // 节点执行器的类全名
     private String nodeExecutorClass;
+
+    // requestId 生成器
+    private String requestIdGeneratorClass;
 
     //是否打印liteflow banner
     private Boolean printBanner;
@@ -284,6 +285,17 @@ public class LiteflowConfig {
 
     public void setNodeExecutorClass(String nodeExecutorClass) {
         this.nodeExecutorClass = nodeExecutorClass;
+    }
+
+    public String getRequestIdGeneratorClass() {
+        if(StrUtil.isBlank(this.requestIdGeneratorClass)){
+            return "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator";
+        }
+        return requestIdGeneratorClass;
+    }
+
+    public void setRequestIdGeneratorClass(String requestIdGeneratorClass) {
+        this.requestIdGeneratorClass = requestIdGeneratorClass;
     }
 
     public Integer getMainExecutorWorks() {
