@@ -146,14 +146,8 @@ public class LiteFlowNodeBuilder {
         if (StrUtil.isBlank(this.node.getId())) {
             errorList.add("id is blank");
         }
-        if (StrUtil.isBlank(this.node.getName())) {
-            errorList.add("name is blank");
-        }
         if (Objects.isNull(this.node.getType())) {
             errorList.add("type is null");
-        }
-        if (StrUtil.isBlank(this.node.getClazz())) {
-            errorList.add("clazz is blank");
         }
         if (CollUtil.isNotEmpty(errorList)) {
             throw new NodeBuildException(CollUtil.join(errorList, ",", "[", "]"));

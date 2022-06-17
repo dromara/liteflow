@@ -83,9 +83,6 @@ public class LiteFlowChainBuilder {
         if (StrUtil.isBlank(this.chain.getChainName())) {
             errorList.add("name is blank");
         }
-        if (CollUtil.isEmpty(this.chain.getConditionList())) {
-            errorList.add("conditionList is empty");
-        }
         if (CollUtil.isNotEmpty(errorList)) {
             throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
         }
