@@ -1,16 +1,22 @@
 package com.yomahub.liteflow.builder;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.condition.*;
+import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.ThenCondition;
+import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Chain基于代码形式的组装器
+ *
  * @author Bryan.Zhang
  * @since 2.6.8
  */
@@ -30,11 +36,11 @@ public class LiteFlowChainBuilder {
     //后置处理Condition，用来区别主体的Condition
     private final List<Condition> finallyConditionList;
 
-    public static LiteFlowChainBuilder createChain(){
+    public static LiteFlowChainBuilder createChain() {
         return new LiteFlowChainBuilder();
     }
 
-    public LiteFlowChainBuilder(){
+    public LiteFlowChainBuilder() {
         chain = new Chain();
         conditionList = new ArrayList<>();
         preConditionList = new ArrayList<>();
@@ -44,26 +50,45 @@ public class LiteFlowChainBuilder {
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
     //2.6.8之后取消了递归的模式，两段式组装，先把带有chainName的chain对象放进去，第二段再组装chain里面的condition
     //所以这里setChainName的时候需要判断下
-    public LiteFlowChainBuilder setChainName(String chainName){
-        if (FlowBus.containChain(chainName)){
+    public LiteFlowChainBuilder setChainName(String chainName) {
+        if (FlowBus.containChain(chainName)) {
             this.chain = FlowBus.getChain(chainName);
-        }else{
+        } else {
             this.chain.setChainName(chainName);
         }
         return this;
     }
 
-    public LiteFlowChainBuilder setCondition(Condition condition){
+    public LiteFlowChainBuilder setCondition(Condition condition) {
         //这里把condition组装进conditionList，
         buildConditions(condition);
         return this;
     }
 
-    public void build(){
+    public void build() {
         this.chain.setConditionList(this.conditionList);
         this.chain.setPreConditionList(this.preConditionList);
         this.chain.setFinallyConditionList(this.finallyConditionList);
+
+        checkBuild();
+
         FlowBus.addChain(this.chain);
+    }
+
+    /**
+     * build 前简单校验
+     */
+    private void checkBuild() {
+        List<String> errorList = Lists.newArrayList();
+        if (StrUtil.isBlank(this.chain.getChainName())) {
+            errorList.add("name is blank");
+        }
+        if (CollUtil.isEmpty(this.chain.getConditionList())) {
+            errorList.add("conditionList is empty");
+        }
+        if (CollUtil.isNotEmpty(errorList)) {
+            throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
+        }
     }
 
     private void buildConditions(Condition condition) {
@@ -72,7 +97,7 @@ public class LiteFlowChainBuilder {
         //对于when来说，相同组的when会合并成一个condition，不同组的when还是会拆开
         if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_PRE)) {
             this.preConditionList.add(condition);
-        }else if(condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY)) {
+        } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_FINALLY)) {
             this.finallyConditionList.add(condition);
         } else if (condition.getConditionType().equals(ConditionTypeEnum.TYPE_THEN)) {
             if (this.conditionList.size() >= 1 &&
