@@ -49,13 +49,30 @@ public class FlowExecutor {
     private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
 
     private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.xml$";
+
+    private static final String LOCAL_EL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.xml$";
     private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.json$";
+
+    private static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.json$";
     private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
 
+    private static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\el.\\.yml$";
+
     private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
+
+    private static final String FORMATE_EL_XML_CONFIG_REGEX = "el_xml:.+";
+
     private static final String FORMATE_JSON_CONFIG_REGEX = "json:.+";
+
+    private static final String FORMATE_EL_JSON_CONFIG_REGEX = "el_json:.+";
+
     private static final String FORMATE_YML_CONFIG_REGEX = "yml:.+";
+
+    private static final String FORMATE_EL_YML_CONFIG_REGEX = "el_yml:.+";
+
     private static final String PREFIX_FORMATE_CONFIG_REGEX = "xml:|json:|yml:";
+
+    private static final String PREFIX_EL_FORMATE_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
 
     private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
 
@@ -100,36 +117,30 @@ public class FlowExecutor {
         List<String> rulePathList = new ArrayList<>();
         for (String path : sourceRulePathList) {
             try {
+                //根据path获得pattern类型
                 FlowParserTypeEnum pattern = matchFormatConfig(path);
-                if (ObjectUtil.isNotNull(pattern)) {
-                    path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
-                    switch (pattern) {
-                        case TYPE_XML:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        case TYPE_JSON:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        case TYPE_YML:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        default:
-                            String errorMsg = StrUtil.format("can't support the format {}", path);
-                            throw new ErrorSupportPathException(errorMsg);
-                    }
+                if (pattern == null){
+                    String errorMsg = StrUtil.format("can't support the path:{}", path);
+                    throw new ErrorSupportPathException(errorMsg);
                 }
+
+                path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
+
+                //获得parser
+                parser = matchFormatParser(path, pattern);
+
+                if (parser == null){
+                    String errorMsg = StrUtil.format("can't find the parser for path:{}", path);
+                    throw new ErrorSupportPathException(errorMsg);
+                }
+
+                parserNameSet.add(parser.getClass().getName());
+
                 rulePathList.add(path);
 
                 //支持多类型的配置文件，分别解析
                 if (BooleanUtil.isTrue(liteflowConfig.isSupportMultipleType())) {
-                    if (ObjectUtil.isNotNull(parser)) {
-                        parser.parseMain(ListUtil.toList(path));
-                    } else {
-                        throw new ConfigErrorException("parse error, please check liteflow config property");
-                    }
+                    parser.parseMain(ListUtil.toList(path));
                 }
             } catch (CyclicDependencyException e) {
                 LOG.error(e.getMessage());
@@ -152,7 +163,7 @@ public class FlowExecutor {
 
             //进行多个配置文件的一起解析
             try {
-                if (ObjectUtil.isNotNull(parser)) {
+                if (parser != null) {
                     parser.parseMain(rulePathList);
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
@@ -248,7 +259,16 @@ public class FlowExecutor {
             return FlowParserTypeEnum.TYPE_JSON;
         } else if (ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
             return FlowParserTypeEnum.TYPE_YML;
+        } else if (ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_EL_XML_CONFIG_REGEX, path)) {
+            return FlowParserTypeEnum.TYPE_EL_XML;
+        } else if (ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_EL_JSON_CONFIG_REGEX, path)) {
+            return FlowParserTypeEnum.TYPE_EL_JSON;
+        } else if (ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_EL_YML_CONFIG_REGEX, path)) {
+            return FlowParserTypeEnum.TYPE_EL_YML;
         } else if (isClassConfig(path)) {
+            //其实整个这个判断块代码可以不要，因为如果是自定义配置源的话，标准写法也要在前面加xml:/json:/yml:这种
+            //但是这块可能是考虑到有些人忘加了，所以再来判断下。如果写了标准的话，是不会走到这块来的
+            //不过el形式的已经不支持这块了，需要标准写法，这点注意
             try {
                 Class<?> clazz = Class.forName(path);
                 if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {

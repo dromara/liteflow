@@ -262,6 +262,7 @@
 		<module>liteflow-testcase-nospring</module>
 		<module>liteflow-spring</module>
         <module>liteflow-testcase-declare-component</module>
+        <module>liteflow-testcase-el-springboot</module>
     </modules>
 
 	<distributionManagement>
