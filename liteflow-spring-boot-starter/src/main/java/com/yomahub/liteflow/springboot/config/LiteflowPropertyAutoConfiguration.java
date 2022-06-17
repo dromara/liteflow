@@ -3,7 +3,6 @@ package com.yomahub.liteflow.springboot.config;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.springboot.LiteflowMonitorProperty;
 import com.yomahub.liteflow.springboot.LiteflowProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

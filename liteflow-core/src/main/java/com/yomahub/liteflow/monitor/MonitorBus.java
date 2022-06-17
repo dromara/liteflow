@@ -7,8 +7,9 @@
  */
 package com.yomahub.liteflow.monitor;
 
-import com.yomahub.liteflow.slot.DataBus;
+import cn.hutool.core.util.BooleanUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.util.BoundedPriorityBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class MonitorBus {
 	public MonitorBus(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
 
-		if(liteflowConfig.getEnableLog()){
+		if(BooleanUtil.isTrue(liteflowConfig.getEnableLog())){
 			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod(), TimeUnit.MILLISECONDS);
 		}
 	}
