@@ -10,7 +10,7 @@
 liteFlow是一个轻量，快速的组件式流程引擎框架/规则引擎，组件编排，组件复用，帮助解耦业务代码，让每一个业务片段都是一个优雅的组件，并支持热加载规则配置，实现即时修改。
 
 ## 官网链接：[https://liteflow.yomahub.com](https://liteflow.yomahub.com/)
-## 文档链接：[https://liteflow.yomahub.com/docs](https://liteflow.yomahub.com/docs/)
+## 文档链接：[https://liteflow.yomahub.com/pages/967466/](https://liteflow.yomahub.com/pages/967466/)
 ## 示例工程：[https://gitee.com/bryan31/liteflow-example](https://gitee.com/bryan31/liteflow-example)
 
 ## 特性
