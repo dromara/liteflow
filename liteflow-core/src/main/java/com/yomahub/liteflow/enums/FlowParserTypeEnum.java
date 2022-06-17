@@ -5,10 +5,13 @@ package com.yomahub.liteflow.enums;
  * @since 2.5.0
  */
 public enum FlowParserTypeEnum {
-    TYPE_XML("xml","xml"),
-    TYPE_YML("yml","yml"),
-    TYPE_JSON("json","json")
-            ;
+    TYPE_XML("xml", "xml"),
+    TYPE_YML("yml", "yml"),
+    TYPE_JSON("json", "json"),
+    TYPE_EL_XML("el_xml", "el_xml"),
+    TYPE_EL_JSON("el_json", "el_json"),
+    TYPE_EL_YML("el_yml", "el_yml")
+    ;
     private String type;
     private String name;
 
