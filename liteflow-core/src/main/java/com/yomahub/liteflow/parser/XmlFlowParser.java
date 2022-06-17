@@ -15,12 +15,10 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import static com.yomahub.liteflow.common.ChainConstant.ANY;
 import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
 import static com.yomahub.liteflow.common.ChainConstant.ERROR_RESUME;
@@ -46,7 +44,7 @@ public abstract class XmlFlowParser extends BaseFlowParser {
 
     private final Logger LOG = LoggerFactory.getLogger(XmlFlowParser.class);
 
-    private final Set<String> CHAIN_NAME_SET = new CopyOnWriteArraySet<>();
+    private final Set<String> CHAIN_NAME_SET = new HashSet<>();
 
     public void parse(String content) throws Exception {
         parse(ListUtil.toList(content));

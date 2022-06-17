@@ -55,8 +55,7 @@ public abstract class BaseFlowParser implements FlowParser {
 	 * @param chainPropBean 构建 chain 的中间属性
 	 * @param chainBuilder  chainBuilder
 	 */
-	public void buildChain(ChainPropBean chainPropBean
-			, LiteFlowChainBuilder chainBuilder) {
+	public void buildChain(ChainPropBean chainPropBean, LiteFlowChainBuilder chainBuilder) {
 		String condValueStr = chainPropBean.getCondValueStr();
 		String group = chainPropBean.getGroup();
 		String errorResume = chainPropBean.getErrorResume();

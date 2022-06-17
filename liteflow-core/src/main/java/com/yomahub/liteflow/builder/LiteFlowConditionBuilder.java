@@ -109,16 +109,16 @@ public class LiteFlowConditionBuilder {
         if (FlowBus.containNode(executableEntity.getId())) {
             Node node = FlowBus.copyNode(executableEntity.getId());
             node.setTag(executableEntity.getTag());
-            this.condition.getNodeList().add(node);
+            this.condition.getExecutableList().add(node);
             // 构建条件节点-通过是否包含条件节点列表-解析条件节点会含有realItem，也就是括号里的node
             buildCondNode(node, executableEntity.getNodeCondComponents());
         } else if (hasChain(executableEntity.getId())) {
             Chain chain = FlowBus.getChain(executableEntity.getId());
-            this.condition.getNodeList().add(chain);
+            this.condition.getExecutableList().add(chain);
         } else {
             //元数据没有的话，从spring上下文再取一遍
             //这部分有2个目的
-            //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用代码的形式加载chain这种情况。
+            //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用动态代码的形式加载组件这种情况。
             NodeComponent nodeComponent =  ContextAwareHolder.loadContextAware().getBean(executableEntity.getId());
             if (ObjectUtil.isNotNull(nodeComponent)){
                 FlowBus.addSpringScanNode(executableEntity.getId(), nodeComponent);

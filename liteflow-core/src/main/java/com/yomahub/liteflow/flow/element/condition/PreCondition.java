@@ -19,7 +19,7 @@ public class PreCondition extends Condition {
 
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
-		for(Executable executableItem : this.getNodeList()){
+		for(Executable executableItem : this.getExecutableList()){
 			executableItem.execute(slotIndex);
 		}
 	}

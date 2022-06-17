@@ -7,10 +7,8 @@
  */
 package com.yomahub.liteflow.flow.element.condition;
 
-import cn.hutool.core.collection.CollUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
-import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 
@@ -18,12 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 里面包含了when或者then
+ * Condition的抽象类
  * @author Bryan.Zhang
  */
 public abstract class Condition implements Executable{
 
-	private List<Executable> nodeList = new ArrayList<>();
+	//可执行元素的集合
+	private List<Executable> executableList = new ArrayList<>();
 
 	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
 	private boolean errorResume = false;
@@ -47,12 +46,12 @@ public abstract class Condition implements Executable{
 		return this.getExecuteType().name();
 	}
 
-	public List<Executable> getNodeList() {
-		return nodeList;
+	public List<Executable> getExecutableList() {
+		return executableList;
 	}
 
-	public void setNodeList(List<Executable> nodeList) {
-		this.nodeList = nodeList;
+	public void setExecutableList(List<Executable> executableList) {
+		this.executableList = executableList;
 	}
 
 	public boolean isErrorResume() {
