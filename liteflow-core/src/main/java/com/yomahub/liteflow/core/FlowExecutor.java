@@ -9,27 +9,33 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * 流程规则主要执行器类
@@ -68,7 +74,7 @@ public class FlowExecutor {
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
         //设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
         FlowExecutorHolder.setHolder(this);
-        if (liteflowConfig.isParseOnStart()) {
+        if (BooleanUtil.isTrue(liteflowConfig.isParseOnStart())) {
             this.init();
         }
         //初始化DataBus
@@ -118,7 +124,7 @@ public class FlowExecutor {
                 rulePathList.add(path);
 
                 //支持多类型的配置文件，分别解析
-                if (liteflowConfig.isSupportMultipleType()) {
+                if (BooleanUtil.isTrue(liteflowConfig.isSupportMultipleType())) {
                     if (ObjectUtil.isNotNull(parser)) {
                         parser.parseMain(ListUtil.toList(path));
                     } else {
@@ -136,7 +142,7 @@ public class FlowExecutor {
         }
 
         //单类型的配置文件，需要一起解析
-        if (!liteflowConfig.isSupportMultipleType()) {
+        if (BooleanUtil.isFalse(liteflowConfig.isSupportMultipleType())) {
             //检查Parser是否只有一个，因为多个不同的parser会造成子流程的混乱
             if (parserNameSet.size() > 1) {
                 String errorMsg = "cannot have multiple different parsers";
