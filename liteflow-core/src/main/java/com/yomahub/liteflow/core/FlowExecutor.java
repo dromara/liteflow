@@ -90,7 +90,7 @@ public class FlowExecutor {
             return;
         }
 
-        List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
+        List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split("[,;]"));
 
         FlowParser parser = null;
         Set<String> parserNameSet = new HashSet<>();
