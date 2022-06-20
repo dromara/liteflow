@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- https://blog.csdn.net/gavin_john/article/details/51532756 -->
+<!ELEMENT flow (nodes?, chain?)>
+
+<!ELEMENT nodes (node+)>
+
+<!ELEMENT chain (then+,when+)>
+<!ATTLIST chain
+        name CDATA #IMPLIED
+        >
+
+<!ELEMENT node (#PCDATA)>
+<!ATTLIST node
+        id CDATA #REQUIRED
+        class CDATA #REQUIRED
+        >
+
+<!ELEMENT then (#PCDATA)>
+<!ATTLIST then
+        value CDATA #REQUIRED
+        >
+
+<!ELEMENT when (#PCDATA)>
+<!ATTLIST when
+        value CDATA #REQUIRED
+        errorResume CDATA #IMPLIED
+        group CDATA #IMPLIED
+        any CDATA #IMPLIED
+        >
