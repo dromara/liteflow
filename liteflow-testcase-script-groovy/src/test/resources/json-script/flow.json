@@ -11,7 +11,7 @@
         {
           "id": "s2",
           "name": "条件脚本",
-          "type": "cond_script",
+          "type": "switch_script",
           "value": "count = defaultContext.getData(\"count\");if(count > 100){return \"a\";}else{return \"b\";}"
         },
         {

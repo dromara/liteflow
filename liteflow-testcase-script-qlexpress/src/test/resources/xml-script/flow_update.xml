@@ -9,7 +9,7 @@
             ]]>
         </node>
 
-        <node id="s2" name="条件脚本_改" type="cond_script">
+        <node id="s2" name="条件脚本_改" type="switch_script">
             <![CDATA[
                 count = defaultContext.getData("count");
                 if(count > 150){
