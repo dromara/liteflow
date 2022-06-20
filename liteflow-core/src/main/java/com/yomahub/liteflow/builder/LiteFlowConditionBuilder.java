@@ -93,25 +93,18 @@ public class LiteFlowConditionBuilder {
         return executableEntity;
     }
 
-    // 设置执行节点或流程列表
-    public LiteFlowConditionBuilder setExecutables(List<ExecutableEntity> executableEntities) {
-        if (CollUtil.isEmpty(executableEntities)) {
-            return this;
-        }
-        for (ExecutableEntity conditionNodeEntity : executableEntities) {
-            setExecutable(conditionNodeEntity);
-        }
-        return this;
-    }
-
     // 设置执行节点或者流程
     public LiteFlowConditionBuilder setExecutable(ExecutableEntity executableEntity) {
         if (FlowBus.containNode(executableEntity.getId())) {
             Node node = FlowBus.copyNode(executableEntity.getId());
             node.setTag(executableEntity.getTag());
-            this.condition.getExecutableList().add(node);
-            // 构建条件节点-通过是否包含条件节点列表-解析条件节点会含有realItem，也就是括号里的node
-            buildCondNode(node, executableEntity.getNodeCondComponents());
+
+            //如果没有条件节点，说明是普通组件，如果有条件节点，就去构建SwitchCondition
+            if (CollUtil.isEmpty(executableEntity.getNodeCondComponents())) {
+                this.condition.getExecutableList().add(node);
+            }else{
+                buildCondNode(node, executableEntity.getNodeCondComponents());
+            }
         } else if (hasChain(executableEntity.getId())) {
             Chain chain = FlowBus.getChain(executableEntity.getId());
             this.condition.getExecutableList().add(chain);
@@ -136,19 +129,24 @@ public class LiteFlowConditionBuilder {
         if (CollUtil.isEmpty(executableEntities)) {
             return;
         }
+
+        SwitchCondition switchCondition = new SwitchCondition();
+        switchCondition.setSwitchNode(node);
+
         for (ExecutableEntity realItem : executableEntities) {
             if (FlowBus.containNode(realItem.getId())) {
-                Node condNode = FlowBus.copyNode(realItem.getId());
-                condNode.setTag(realItem.getTag());
-                node.setCondNode(condNode.getId(), condNode);
+                Node targetNode = FlowBus.copyNode(realItem.getId());
+                targetNode.setTag(realItem.getTag());
+                switchCondition.addTargetNode(targetNode);
             } else if (hasChain(realItem.getId())) {
                 Chain chain = FlowBus.getChain(realItem.getId());
-                node.setCondNode(chain.getChainName(), chain);
+                switchCondition.addTargetNode(chain);
             } else{
                 String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
                 throw new ExecutableItemNotFoundException(errorMsg);
             }
         }
+        this.condition.getExecutableList().add(switchCondition);
     }
 
     public Condition build(){

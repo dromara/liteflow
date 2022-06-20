@@ -32,16 +32,16 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
     }
 
-    public static LiteFlowNodeBuilder createCommonCondNode() {
-        return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
-    }
+    /*public static LiteFlowNodeBuilder createCommonCondNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
+    }*/
 
     public static LiteFlowNodeBuilder createScriptNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
     }
 
-    public static LiteFlowNodeBuilder createScriptCondNode() {
-        return new LiteFlowNodeBuilder(NodeTypeEnum.COND_SCRIPT);
+    public static LiteFlowNodeBuilder createScriptSwitchNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH_SCRIPT);
     }
 
     public LiteFlowNodeBuilder() {
@@ -128,8 +128,8 @@ public class LiteFlowNodeBuilder {
                 FlowBus.addCommonNode(this.node.getId(), this.node.getName(), this.node.getClazz());
             } else if (this.node.getType().equals(NodeTypeEnum.SCRIPT)) {
                 FlowBus.addCommonScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.COND_SCRIPT)) {
-                FlowBus.addCondScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
+            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH_SCRIPT)) {
+                FlowBus.addSwitchScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             }
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}]", this.node.getId());

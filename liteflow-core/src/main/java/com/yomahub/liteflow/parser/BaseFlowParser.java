@@ -45,7 +45,14 @@ public abstract class BaseFlowParser implements FlowParser {
 		}
 
 		//进行node的build过程
-		LiteFlowNodeBuilder.createNode().setId(id).setName(name).setClazz(clazz).setType(nodeTypeEnum).setScript(script).setFile(file).build();
+		LiteFlowNodeBuilder.createNode()
+				.setId(id)
+				.setName(name)
+				.setClazz(clazz)
+				.setType(nodeTypeEnum)
+				.setScript(script)
+				.setFile(file)
+				.build();
 	}
 
 

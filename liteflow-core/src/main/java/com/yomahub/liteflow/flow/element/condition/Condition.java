@@ -54,6 +54,10 @@ public abstract class Condition implements Executable{
 		this.executableList = executableList;
 	}
 
+	public void addExecutable(Executable executable) {
+		this.executableList.add(executable);
+	}
+
 	public boolean isErrorResume() {
 		return errorResume;
 	}

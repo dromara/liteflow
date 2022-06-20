@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.exception.FlowSystemException;
@@ -52,5 +53,12 @@ public class Exception2SpringTest extends BaseTest {
         Assert.assertFalse(response.isSuccess());
         Assert.assertNotNull(response.getCause());
         Assert.assertNotNull(response.getSlot());
+    }
+
+    @Test(expected = NoSwitchTargetNodeException.class)
+    public void testNoTargetFindException() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "test");
+        Assert.assertFalse(response.isSuccess());
+        throw response.getCause();
     }
 }

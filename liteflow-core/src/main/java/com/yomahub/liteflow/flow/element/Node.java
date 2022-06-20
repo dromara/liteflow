@@ -8,8 +8,6 @@
 package com.yomahub.liteflow.flow.element;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -49,8 +47,6 @@ public class Node implements Executable,Cloneable{
 	private NodeComponent instance;
 
 	private String tag;
-
-	private final Map<String, Executable> condNodeMap = new HashMap<>();
 
 	public Node(){
 
@@ -96,14 +92,6 @@ public class Node implements Executable,Cloneable{
 		this.instance = instance;
 	}
 
-	public Executable getCondNode(String nodeId){
-		return this.condNodeMap.get(nodeId);
-	}
-
-	public void setCondNode(String nodeId, Executable condNode){
-		this.condNodeMap.put(nodeId, condNode);
-	}
-
 	//node的执行主要逻辑
 	//所有的可执行节点，其实最终都会落到node上来，因为chain中包含的也是node
 	@Override
@@ -111,14 +99,12 @@ public class Node implements Executable,Cloneable{
 		if (ObjectUtil.isNull(instance)) {
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
-		instance.setSlotIndex(slotIndex);
-		Slot slot = DataBus.getSlot(slotIndex);
 
+		Slot slot = DataBus.getSlot(slotIndex);
 		try {
-			//把tag和condNodeMap赋给NodeComponent
-			//这里为什么要这么做？因为tag和condNodeMap从某种意义上来说是属于某个chain本身范围，并非全局的
+			//把线程属性赋值给组件对象
+			instance.setSlotIndex(slotIndex);
 			instance.setTag(tag);
-			instance.setCondNodeMap(condNodeMap);
 
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
@@ -135,7 +121,7 @@ public class Node implements Executable,Cloneable{
 				nodeExecutor.execute(instance);
 				//如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 				if (instance.isEnd()) {
-					String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(), instance.getClass().getSimpleName(),instance.getDisplayName());
+					String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(), instance.getDisplayName());
 					throw new ChainEndException(errorInfo);
 				}
 			} else {

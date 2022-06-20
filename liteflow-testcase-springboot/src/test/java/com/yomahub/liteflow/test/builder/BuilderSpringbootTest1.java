@@ -81,12 +81,9 @@ public class BuilderSpringbootTest1 extends BaseTest {
         ).build();
 
         LiteFlowChainBuilder.createChain().setChainName("chain1").setCondition(
-                LiteFlowConditionBuilder
-                        .createThenCondition()
-                        .setValue("a,b").build()
+                LiteFlowConditionBuilder.createThenCondition().setValue("a,b").build()
         ).setCondition(
-                LiteFlowConditionBuilder.createWhenCondition()
-                        .setValue("e(f|g|chain2)").build()
+                LiteFlowConditionBuilder.createWhenCondition().setValue("e(f|g|chain2)").build()
         ).build();
 
         LiteflowResponse response = flowExecutor.execute2Resp("chain1");
