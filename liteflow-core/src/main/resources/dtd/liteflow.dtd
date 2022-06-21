@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!ELEMENT flow (nodes* |chain*)+>
+
+<!ELEMENT nodes (node+)>
+
+<!ELEMENT chain (then* | when* | pre* | finally*)+>
+<!ATTLIST chain
+        name CDATA #REQUIRED
+        >
+
+<!ELEMENT node (#PCDATA)>
+<!ATTLIST node
+        id CDATA #REQUIRED
+        class CDATA #IMPLIED
+        name CDATA #IMPLIED
+        type CDATA #IMPLIED
+        file CDATA #IMPLIED
+
+        >
+
+<!ELEMENT then (#PCDATA)>
+<!ATTLIST then
+        value CDATA #REQUIRED
+        >
+
+<!ELEMENT finally (#PCDATA)>
+<!ATTLIST finally
+        value CDATA #REQUIRED
+        >
+
+<!ELEMENT pre (#PCDATA)>
+<!ATTLIST pre
+        value CDATA #REQUIRED
+        >
+
+<!ELEMENT when (#PCDATA)>
+<!ATTLIST when
+        value CDATA #REQUIRED
+        errorResume CDATA #IMPLIED
+        group CDATA #IMPLIED
+        any CDATA #IMPLIED
+        threadExecutorClass CDATA #IMPLIED
+        >
