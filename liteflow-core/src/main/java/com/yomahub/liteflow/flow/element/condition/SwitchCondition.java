@@ -43,7 +43,7 @@ public class SwitchCondition extends Condition{
                 }
             }
         }else{
-            throw new SwitchTypeErrorException("switch instance must be NodeCondComponent");
+            throw new SwitchTypeErrorException("switch instance must be NodeSwitchComponent");
         }
     }
 

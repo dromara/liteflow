@@ -95,19 +95,6 @@ public class LiteFlowNodeBuilder {
         return this;
     }
 
-    // 设置类型的编码
-    public LiteFlowNodeBuilder setTypeCode(String nodeTypeCode) {
-        if (StringUtils.isBlank(nodeTypeCode)) {
-            throw new NullParamException("nodeTypeCode is blank");
-        }
-        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(nodeTypeCode);
-        if (ObjectUtil.isNull(nodeTypeEnum)) {
-            throw new NullParamException(StrUtil.format("nodeTypeCode[{}] is error", nodeTypeCode));
-        }
-        setType(nodeTypeEnum);
-        return this;
-    }
-
     public LiteFlowNodeBuilder setScript(String script) {
         this.node.setScript(script);
         return this;
