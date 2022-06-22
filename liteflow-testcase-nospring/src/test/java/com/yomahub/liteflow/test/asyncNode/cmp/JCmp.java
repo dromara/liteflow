@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.test.asyncNode.cmp;
 
-import com.yomahub.liteflow.core.NodeCondComponent;
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 
 
-public class JCmp extends NodeCondComponent {
+public class JCmp extends NodeSwitchComponent {
 
     @Override
     public String processCond() throws Exception {

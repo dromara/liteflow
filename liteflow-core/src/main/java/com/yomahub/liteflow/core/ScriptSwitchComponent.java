@@ -7,7 +7,7 @@ import com.yomahub.liteflow.script.ScriptExecutorFactory;
  * @author Bryan.Zhang
  * @since 2.6.0
  */
-public class ScriptCondComponent extends NodeCondComponent{
+public class ScriptSwitchComponent extends NodeSwitchComponent {
 
     @Override
     public String processCond() throws Exception {

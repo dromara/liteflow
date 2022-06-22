@@ -103,7 +103,7 @@ public class LiteFlowConditionBuilder {
             if (CollUtil.isEmpty(executableEntity.getNodeCondComponents())) {
                 this.condition.getExecutableList().add(node);
             }else{
-                buildCondNode(node, executableEntity.getNodeCondComponents());
+                buildSwitchNode(node, executableEntity.getNodeCondComponents());
             }
         } else if (hasChain(executableEntity.getId())) {
             Chain chain = FlowBus.getChain(executableEntity.getId());
@@ -125,7 +125,7 @@ public class LiteFlowConditionBuilder {
     }
 
     // 构建条件节点
-    private void buildCondNode(Node node, List<ExecutableEntity> executableEntities) {
+    private void buildSwitchNode(Node node, List<ExecutableEntity> executableEntities) {
         if (CollUtil.isEmpty(executableEntities)) {
             return;
         }

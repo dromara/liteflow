@@ -7,9 +7,9 @@
  */
 package com.yomahub.liteflow.test.builder.cmp;
 
-import com.yomahub.liteflow.core.NodeCondComponent;
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 
-public class ECmp extends NodeCondComponent {
+public class ECmp extends NodeSwitchComponent {
 
 	@Override
 	public String processCond() throws Exception {

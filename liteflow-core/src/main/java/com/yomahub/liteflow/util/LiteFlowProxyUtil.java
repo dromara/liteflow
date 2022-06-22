@@ -4,10 +4,10 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
-import com.yomahub.liteflow.annotation.LiteflowCondCmpDefine;
+import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeCondComponent;
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.core.proxy.ComponentProxy;
 import com.yomahub.liteflow.exception.ComponentProxyErrorException;
 import org.slf4j.Logger;
@@ -26,17 +26,17 @@ public class LiteFlowProxyUtil {
     private static final Logger LOG = LoggerFactory.getLogger(LiteFlowProxyUtil.class);
 
     //判断一个bean是否是声明式组件
-    public static boolean isMarkedCmp(Class<?> clazz){
+    public static boolean isDeclareCmp(Class<?> clazz){
         //判断bean是否标记了@LiteflowCmpDefine或者@LiteflowCondCmpDefine这2个标注之一
         boolean flag1 = clazz.getAnnotation(LiteflowCmpDefine.class) != null
-                || clazz.getAnnotation(LiteflowCondCmpDefine.class) != null;
+                || clazz.getAnnotation(LiteflowSwitchCmpDefine.class) != null;
 
         if (!flag1){
             return false;
         }
 
         //看超类是否是NodeComponent和NodeCondComponent中的一个，如果不是，则说明满足条件。是的话，也不满足
-        boolean flag2 = !ListUtil.toList(NodeComponent.class, NodeCondComponent.class).contains(clazz.getSuperclass());
+        boolean flag2 = !ListUtil.toList(NodeComponent.class, NodeSwitchComponent.class).contains(clazz.getSuperclass());
 
         if (!flag2){
             return false;
@@ -61,7 +61,7 @@ public class LiteFlowProxyUtil {
     public static NodeComponent proxy2NodeComponent(Object bean, String nodeId){
         try{
             LiteflowCmpDefine liteflowCmpDefine = bean.getClass().getAnnotation(LiteflowCmpDefine.class);
-            LiteflowCondCmpDefine liteflowCondCmpDefine = bean.getClass().getAnnotation(LiteflowCondCmpDefine.class);
+            LiteflowSwitchCmpDefine liteflowSwitchCmpDefine = bean.getClass().getAnnotation(LiteflowSwitchCmpDefine.class);
 
             ComponentProxy proxy;
             if (ObjectUtil.isNotNull(liteflowCmpDefine)){
@@ -69,9 +69,9 @@ public class LiteFlowProxyUtil {
                 return (NodeComponent) proxy.getProxy();
             }
 
-            if (ObjectUtil.isNotNull(liteflowCondCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeCondComponent.class);
-                return (NodeCondComponent) proxy.getProxy();
+            if (ObjectUtil.isNotNull(liteflowSwitchCmpDefine)){
+                proxy = new ComponentProxy(nodeId, bean, NodeSwitchComponent.class);
+                return (NodeSwitchComponent) proxy.getProxy();
             }
 
             throw new RuntimeException();

@@ -1,13 +1,9 @@
 package com.yomahub.liteflow.test.component.cmp2;
 
-import com.yomahub.liteflow.core.NodeCondComponent;
-import org.springframework.stereotype.Component;
-
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 import java.util.Objects;
 
-
-@Component("f")
-public class FCondCmp extends NodeCondComponent {
+public class FSwitchCmp extends NodeSwitchComponent {
     @Override
     public String processCond() {
         Integer requestData = this.getRequestData();

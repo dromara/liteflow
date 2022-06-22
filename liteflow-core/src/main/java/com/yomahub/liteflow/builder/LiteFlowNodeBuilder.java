@@ -32,9 +32,9 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
     }
 
-    /*public static LiteFlowNodeBuilder createCommonCondNode() {
+    public static LiteFlowNodeBuilder createCommonCondNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
-    }*/
+    }
 
     public static LiteFlowNodeBuilder createScriptNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
@@ -126,6 +126,8 @@ public class LiteFlowNodeBuilder {
         try {
             if (this.node.getType().equals(NodeTypeEnum.COMMON)) {
                 FlowBus.addCommonNode(this.node.getId(), this.node.getName(), this.node.getClazz());
+            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH)) {
+                FlowBus.addSwitchNode(this.node.getId(), this.node.getName(), this.node.getClazz());
             } else if (this.node.getType().equals(NodeTypeEnum.SCRIPT)) {
                 FlowBus.addCommonScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             } else if (this.node.getType().equals(NodeTypeEnum.SWITCH_SCRIPT)) {

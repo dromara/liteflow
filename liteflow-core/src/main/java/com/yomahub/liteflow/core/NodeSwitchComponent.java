@@ -11,7 +11,7 @@ package com.yomahub.liteflow.core;
  * 条件路由节点抽象类
  * @author Bryan.Zhang
  */
-public abstract class NodeCondComponent extends NodeComponent {
+public abstract class NodeSwitchComponent extends NodeComponent {
 
 	@Override
 	public void process() throws Exception {

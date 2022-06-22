@@ -59,7 +59,7 @@ public class ComponentScanner implements BeanPostProcessor {
 
         //判断是不是声明式组件
         //如果是，就缓存到类属性的map中
-        if (LiteFlowProxyUtil.isMarkedCmp(bean.getClass())){
+        if (LiteFlowProxyUtil.isDeclareCmp(bean.getClass())){
             LOG.info("proxy component[{}] has been found", beanName);
             NodeComponent nodeComponent = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
             nodeComponentMap.put(beanName, nodeComponent);

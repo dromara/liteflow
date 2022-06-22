@@ -7,15 +7,11 @@
  */
 package com.yomahub.liteflow.test.exception.cmp;
 
-import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeCondComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 import org.springframework.stereotype.Component;
 
 @Component("e")
-public class ECmp extends NodeCondComponent {
+public class ECmp extends NodeSwitchComponent {
 
 	@Override
 	public String processCond() throws Exception {

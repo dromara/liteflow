@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow.element.condition;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -25,7 +26,7 @@ public class SwitchCondition extends Condition{
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
-//        if (this.getSwitchNode().getType().equals(NodeTypeEnum.COMMON)){
+        if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
             //先执行switch节点
             this.getSwitchNode().execute(slotIndex);
 
@@ -41,9 +42,9 @@ public class SwitchCondition extends Condition{
                     throw new NoSwitchTargetNodeException(errorInfo);
                 }
             }
-//        }else{
-//            throw new SwitchTypeErrorException("switch instance must be NodeCondComponent");
-//        }
+        }else{
+            throw new SwitchTypeErrorException("switch instance must be NodeCondComponent");
+        }
     }
 
     @Override
