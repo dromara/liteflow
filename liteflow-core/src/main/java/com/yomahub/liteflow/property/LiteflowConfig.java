@@ -72,6 +72,9 @@ public class LiteflowConfig {
     // 节点执行器的类全名
     private String nodeExecutorClass;
 
+    // requestId 生成器
+    private String requestIdGeneratorClass;
+
     //是否打印liteflow banner
     private Boolean printBanner;
 
@@ -282,6 +285,17 @@ public class LiteflowConfig {
 
     public void setNodeExecutorClass(String nodeExecutorClass) {
         this.nodeExecutorClass = nodeExecutorClass;
+    }
+
+    public String getRequestIdGeneratorClass() {
+        if(StrUtil.isBlank(this.requestIdGeneratorClass)){
+            return "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator";
+        }
+        return requestIdGeneratorClass;
+    }
+
+    public void setRequestIdGeneratorClass(String requestIdGeneratorClass) {
+        this.requestIdGeneratorClass = requestIdGeneratorClass;
     }
 
     public Integer getMainExecutorWorks() {

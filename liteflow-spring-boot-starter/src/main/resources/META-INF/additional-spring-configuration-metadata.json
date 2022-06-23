@@ -1,6 +1,13 @@
 {
   "properties": [
     {
+      "name": "liteflow.request-id-generator-class",
+      "type": "java.lang.String",
+      "description": "Custom requestId builder.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator"
+    },
+    {
       "name": "liteflow.rule-source",
       "type": "java.lang.String",
       "description": "Location of the flow rule source.",

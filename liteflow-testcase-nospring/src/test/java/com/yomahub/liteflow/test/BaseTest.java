@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test;
 
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.id.IdGeneratorHelper;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
 import com.yomahub.liteflow.thread.ExecutorHelper;
@@ -16,5 +17,6 @@ public class BaseTest {
         SpiFactoryCleaner.clean();
         LiteflowConfigGetter.clean();
         FlowExecutorHolder.clean();
+        IdGeneratorHelper.getInstance().clear();
     }
 }
