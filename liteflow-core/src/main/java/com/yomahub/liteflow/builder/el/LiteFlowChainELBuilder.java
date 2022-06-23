@@ -24,9 +24,8 @@ import java.util.function.Consumer;
 /**
  * Chain基于代码形式的组装器
  * EL表达式规则专属组装器
- *
  * @author Bryan.Zhang
- * @since 2.6.8
+ * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
 
@@ -46,7 +45,8 @@ public class LiteFlowChainELBuilder {
     //后置处理Condition，用来区别主体的Condition
     private final List<Condition> finallyConditionList;
 
-    private ExpressRunner expressRunner;
+    //EL解析引擎
+    private final ExpressRunner expressRunner;
 
     public static LiteFlowChainELBuilder createChain() {
         return new LiteFlowChainELBuilder();
