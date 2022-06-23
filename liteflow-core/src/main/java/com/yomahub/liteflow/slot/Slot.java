@@ -38,7 +38,7 @@ public class Slot{
 
 	private static final String CHAIN_NAME = "_chain_name";
 
-	private static final String COND_NODE_PREFIX = "_cond_";
+	private static final String SWITCH_NODE_PREFIX = "_switch_";
 
 	private static final String NODE_INPUT_PREFIX = "_input_";
 
@@ -152,12 +152,12 @@ public class Slot{
 		}
 	}
 
-	public <T> void setCondResult(String key, T t){
-		putMetaDataMap(COND_NODE_PREFIX + key, t);
+	public <T> void setSwitchResult(String key, T t){
+		putMetaDataMap(SWITCH_NODE_PREFIX + key, t);
 	}
 
-	public <T> T getCondResult(String key){
-		return (T) metaDataMap.get(COND_NODE_PREFIX + key);
+	public <T> T getSwitchResult(String key){
+		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
 	}
 
 	public void pushChainName(String chainName) {

@@ -21,6 +21,8 @@ import java.util.List;
  */
 public abstract class Condition implements Executable{
 
+	private String id;
+
 	//可执行元素的集合
 	private List<Executable> executableList = new ArrayList<>();
 
@@ -90,5 +92,13 @@ public abstract class Condition implements Executable{
 
 	public void setThreadExecutorClass(String threadExecutorClass) {
 		this.threadExecutorClass = threadExecutorClass;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

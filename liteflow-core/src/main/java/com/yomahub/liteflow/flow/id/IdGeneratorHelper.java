@@ -25,6 +25,8 @@ public class IdGeneratorHelper {
 
     public static IdGeneratorHelper getInstance() {
         if (Objects.isNull(INSTANCE)) {
+            //这里加同步锁是为了避免启动后第一次多并发获取requestId而造成重复初始化的场景
+            //并非每次都会执行这个同步锁，所以不存在性能问题
             synchronized (IdGeneratorHelper.class) {
                 if (Objects.isNull(INSTANCE)) {
                     INSTANCE = new IdGeneratorHelper();

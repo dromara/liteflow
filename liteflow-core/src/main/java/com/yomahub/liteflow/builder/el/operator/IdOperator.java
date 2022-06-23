@@ -3,21 +3,21 @@ package com.yomahub.liteflow.builder.el.operator;
 import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
 import com.yomahub.liteflow.exception.ELParseException;
-import com.yomahub.liteflow.flow.element.condition.WhenCondition;
+import com.yomahub.liteflow.flow.element.condition.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EL规则中的any的操作符
+ * EL规则中的id的操作符,只有condition可加id
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class AnyOperator extends Operator {
+public class IdOperator extends Operator {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public WhenCondition executeInner(Object[] objects) throws Exception {
+    public Condition executeInner(Object[] objects) throws Exception {
         try{
             if (ArrayUtil.isEmpty(objects)){
                 throw new Exception();
@@ -28,25 +28,25 @@ public class AnyOperator extends Operator {
                 throw new Exception();
             }
 
-            WhenCondition whenCondition;
-            if (objects[0] instanceof WhenCondition){
-                whenCondition = (WhenCondition) objects[0];
+            Condition condition;
+            if (objects[0] instanceof Condition){
+                condition = (Condition) objects[0];
             }else{
-                LOG.error("The caller must be when condition item!");
+                LOG.error("The caller must be condition item!");
                 throw new Exception();
             }
 
-            boolean any = false;
-            if (objects[1] instanceof Boolean){
-                any = Boolean.parseBoolean(objects[1].toString());
+            String id;
+            if (objects[1] instanceof String){
+                id = objects[1].toString();
             }else{
-                LOG.error("the parameter must be boolean type!");
+                LOG.error("the parameter must be String type!");
                 throw new Exception();
             }
 
-            whenCondition.setAny(any);
+            condition.setId(id);
 
-            return whenCondition;
+            return condition;
 
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");

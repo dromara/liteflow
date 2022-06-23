@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
+import com.yomahub.liteflow.exception.SwitchTargetCannotBePreOrFinallyException;
 import com.yomahub.liteflow.exception.SwitchTypeErrorException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
@@ -22,7 +23,7 @@ import java.util.Map;
  */
 public class SwitchCondition extends Condition{
 
-    private final Map<String, Executable> targetNodeMap = new HashMap<>();
+    private final Map<String, Executable> targetMap = new HashMap<>();
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
@@ -32,11 +33,16 @@ public class SwitchCondition extends Condition{
 
             //根据switch节点执行出来的结果选择
             Slot slot = DataBus.getSlot(slotIndex);
-            String targetId = slot.getCondResult(this.getSwitchNode().getInstance().getClass().getName());
+            String targetId = slot.getSwitchResult(this.getSwitchNode().getInstance().getClass().getName());
             if (StrUtil.isNotBlank(targetId)) {
-                Executable condExecutor = targetNodeMap.get(targetId);
-                if (ObjectUtil.isNotNull(condExecutor)) {
-                    condExecutor.execute(slotIndex);
+                Executable targetExecutor = targetMap.get(targetId);
+                if (ObjectUtil.isNotNull(targetExecutor)) {
+                    //switch的目标不能是Pre节点或者Finally节点
+                    if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition){
+                        String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
+                        throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
+                    }
+                    targetExecutor.execute(slotIndex);
                 }else{
                     String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}]", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
                     throw new NoSwitchTargetNodeException(errorInfo);
@@ -52,8 +58,8 @@ public class SwitchCondition extends Condition{
         return ConditionTypeEnum.TYPE_SWITCH;
     }
 
-    public void addTargetNode(Executable executable){
-        this.targetNodeMap.put(executable.getExecuteName(), executable);
+    public void addTargetItem(Executable executable){
+        this.targetMap.put(executable.getExecuteName(), executable);
     }
 
     public void setSwitchNode(Node switchNode) {

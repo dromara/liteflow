@@ -16,7 +16,7 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 	@Override
 	public void process() throws Exception {
 		String nodeId = this.processCond();
-		this.getSlot().setCondResult(this.getClass().getName(), nodeId);
+		this.getSlot().setSwitchResult(this.getClass().getName(), nodeId);
 	}
 
 	//用以返回路由节点的beanId

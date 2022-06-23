@@ -15,7 +15,6 @@ import com.yomahub.liteflow.parser.RegexEntity;
 import com.yomahub.liteflow.parser.RegexNodeEntity;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -137,10 +136,10 @@ public class LiteFlowConditionBuilder {
             if (FlowBus.containNode(realItem.getId())) {
                 Node targetNode = FlowBus.copyNode(realItem.getId());
                 targetNode.setTag(realItem.getTag());
-                switchCondition.addTargetNode(targetNode);
+                switchCondition.addTargetItem(targetNode);
             } else if (hasChain(realItem.getId())) {
                 Chain chain = FlowBus.getChain(realItem.getId());
-                switchCondition.addTargetNode(chain);
+                switchCondition.addTargetItem(chain);
             } else{
                 String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
                 throw new ExecutableItemNotFoundException(errorMsg);

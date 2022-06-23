@@ -13,5 +13,4 @@ public class DefaultRequestIdGenerator implements RequestIdGenerator {
     public String generate() {
         return IdUtil.fastSimpleUUID();
     }
-
 }

@@ -40,6 +40,9 @@ public class IgnoreErrorOperator extends Operator {
             boolean ignoreError = false;
             if (objects[1] instanceof Boolean){
                 ignoreError = Boolean.parseBoolean(objects[1].toString());
+            }else{
+                LOG.error("the parameter must be boolean type!");
+                throw new Exception();
             }
 
             condition.setErrorResume(ignoreError);

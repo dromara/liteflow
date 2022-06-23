@@ -39,6 +39,9 @@ public class ThreadPoolOperator extends Operator {
             String threadPoolClazz = null;
             if (objects[1] instanceof String){
                 threadPoolClazz = objects[1].toString();
+            }else{
+                LOG.error("the parameter must be String type!");
+                throw new Exception();
             }
 
             whenCondition.setThreadExecutorClass(threadPoolClazz);

@@ -40,6 +40,9 @@ public class TagOperator extends Operator {
             String tag = null;
             if (objects[1] instanceof String){
                 tag = objects[1].toString();
+            }else{
+                LOG.error("the parameter must be String type!");
+                throw new Exception();
             }
 
             node.setTag(tag);
