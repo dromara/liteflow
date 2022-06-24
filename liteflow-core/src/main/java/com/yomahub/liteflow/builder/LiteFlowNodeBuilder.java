@@ -83,13 +83,6 @@ public class LiteFlowNodeBuilder {
         return this;
     }
 
-    // 设置节点组件的class
-    public LiteFlowNodeBuilder setNodeComponentClazz(Class<? extends NodeComponent> nodeComponentClass) {
-        assert nodeComponentClass != null;
-        setClazz(nodeComponentClass.getName());
-        return this;
-    }
-
     public LiteFlowNodeBuilder setType(NodeTypeEnum type) {
         this.node.setType(type);
         return this;

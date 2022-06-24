@@ -205,6 +205,10 @@ public class FlowBus {
         return nodeMap;
     }
 
+    public static Map<String, Chain> getChainMap(){
+        return chainMap;
+    }
+
     public static void cleanCache() {
         chainMap.clear();
         nodeMap.clear();

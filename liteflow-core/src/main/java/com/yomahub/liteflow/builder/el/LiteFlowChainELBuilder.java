@@ -88,9 +88,17 @@ public class LiteFlowChainELBuilder {
     public LiteFlowChainELBuilder setEL(String elStr) {
         List<String> errorList = new ArrayList<>();
         try{
-            //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
             DefaultContext<String, Object> context = new DefaultContext<>();
+
+            //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
             FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.copyNode(nodeId)));
+
+            //往上下文里放入所有的chain，是的el表达式可以直接引用到chain
+            FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainName(), chain));
+
+            //解析el成为一个Condition
+            //为什么这里只是一个Condition，而不是一个List<Condition>呢
+            //这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
             Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, false, true);
 
             //从condition的第一层嵌套结构里拿出Pre和Finally节点
