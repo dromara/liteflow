@@ -72,9 +72,9 @@ public class FlowExecutor {
 
     private static final String FORMATE_EL_YML_CONFIG_REGEX = "el_yml:.+";
 
-    private static final String PREFIX_FORMATE_CONFIG_REGEX = "xml:|json:|yml:";
+    private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:";
 
-    private static final String PREFIX_EL_FORMATE_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
+    private static final String PREFIX_EL_FORMAT_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
 
     private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
 
@@ -133,7 +133,12 @@ public class FlowExecutor {
                     throw new ErrorSupportPathException(errorMsg);
                 }
 
-                path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
+                if (pattern.getType().startsWith("el")){
+                    path = ReUtil.replaceAll(path, PREFIX_EL_FORMAT_CONFIG_REGEX, "");
+                }else{
+                    path = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "");
+                }
+
 
                 //获得parser
                 parser = matchFormatParser(path, pattern);
