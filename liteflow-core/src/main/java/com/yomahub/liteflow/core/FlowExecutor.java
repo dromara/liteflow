@@ -28,6 +28,7 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +108,13 @@ public class FlowExecutor {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
 
+        //在相应的环境下进行节点的初始化工作
+        //在spring体系下会获得spring扫描后的节点，接入元数据
+        //在非spring体系下是一个空实现，等于不做此步骤
+        ContextCmpInitHolder.loadContextCmpInit().initCmp();
+
+        //如果没有配置规则文件路径，就停止初始化。
+        //规则文件路径不是一定要有，因为liteflow分基于规则和基于代码两种，有可能是动态代码构建的
         if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
             return;
         }
