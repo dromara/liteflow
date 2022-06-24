@@ -24,7 +24,7 @@ public class ToOperator extends Operator {
                 throw new Exception();
             }
 
-            if (objects.length != 2){
+            if (objects.length <= 2){
                 LOG.error("parameter error");
                 throw new Exception();
             }

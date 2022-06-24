@@ -68,6 +68,7 @@ public class LiteFlowChainELBuilder {
         expressRunner.addFunctionAndClassMethod("to", Object.class, new ToOperator());
         expressRunner.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
         expressRunner.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
+        expressRunner.addFunctionAndClassMethod("id", Object.class, new IdOperator());
         expressRunner.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
         expressRunner.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
     }
@@ -90,7 +91,7 @@ public class LiteFlowChainELBuilder {
             //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
             DefaultContext<String, Object> context = new DefaultContext<>();
             FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.copyNode(nodeId)));
-            Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, false, false);
+            Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, false, true);
 
             //从condition的第一层嵌套结构里拿出Pre和Finally节点
             //为什么只寻找第一层，而不往下寻找了呢？

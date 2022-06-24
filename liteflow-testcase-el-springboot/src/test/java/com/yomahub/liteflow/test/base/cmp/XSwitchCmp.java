@@ -7,15 +7,14 @@
  */
 package com.yomahub.liteflow.test.base.cmp;
 
-import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.NodeSwitchComponent;
 import org.springframework.stereotype.Component;
 
-@Component("d")
-public class DCmp extends NodeComponent {
+@Component("x")
+public class XSwitchCmp extends NodeSwitchComponent {
 
 	@Override
-	public void process() {
-		System.out.println("DCmp executed!");
+	public String processCond() throws Exception {
+		return "w01";
 	}
-
 }

@@ -145,7 +145,7 @@ public class WhenCondition extends Condition {
 			//循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
 			for(WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList){
 				if (!whenFutureObj.isSuccess()){
-					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName(), slot.getRequestId()));
+					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].",slot.getRequestId(), whenFutureObj.getExecutorName()));
 					throw whenFutureObj.getEx();
 				}
 			}

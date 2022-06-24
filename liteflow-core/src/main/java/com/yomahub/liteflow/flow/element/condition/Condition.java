@@ -45,7 +45,7 @@ public abstract class Condition implements Executable{
 
 	@Override
 	public String getExecuteName() {
-		return this.getExecuteType().name();
+		return this.id;
 	}
 
 	public List<Executable> getExecutableList() {

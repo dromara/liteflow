@@ -10,12 +10,12 @@ package com.yomahub.liteflow.test.base.cmp;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-@Component("d")
-public class DCmp extends NodeComponent {
+@Component("k")
+public class KCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("DCmp executed!");
+		System.out.println("KCmp executed!");
 	}
 
 }
