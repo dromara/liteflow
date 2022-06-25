@@ -9,6 +9,7 @@ import com.ql.util.express.ExpressRunner;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.ELParseException;
+import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
@@ -86,6 +87,11 @@ public class LiteFlowChainELBuilder {
     }
 
     public LiteFlowChainELBuilder setEL(String elStr) {
+        if (StrUtil.isBlank(elStr)){
+            String errMsg = StrUtil.format("no conditionList in this chain[{}]", chain.getChainName());
+            throw new FlowSystemException(errMsg);
+        }
+
         List<String> errorList = new ArrayList<>();
         try{
             DefaultContext<String, Object> context = new DefaultContext<>();
