@@ -9,7 +9,7 @@ import java.util.List;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public abstract class ClassJsonFlowELParser extends JsonFlowParser {
+public abstract class ClassJsonFlowELParser extends JsonFlowELParser {
 	@Override
 	public void parseMain(List<String> pathList) throws Exception {
 		String content = parseCustom();
