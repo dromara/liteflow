@@ -4,6 +4,7 @@ import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.exception.ELParseException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +46,13 @@ public class TagOperator extends Operator {
                 throw new Exception();
             }
 
-            node.setTag(tag);
+            //这里为什么要clone一个呢？
+            //因为tag是跟着chain走的。而在el上下文里的放的都是同一个node，如果多个同样的node tag不同，则这里必须copy
+            Node copyNode = FlowBus.copyNode(node.getId());
 
-            return node;
+            copyNode.setTag(tag);
+
+            return copyNode;
 
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");

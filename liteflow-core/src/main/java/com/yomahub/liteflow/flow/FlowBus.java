@@ -22,6 +22,9 @@ import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
+import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
+import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
+import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
@@ -232,6 +235,12 @@ public class FlowBus {
             new LocalJsonFlowParser().parse(content);
         } else if (type.equals(FlowParserTypeEnum.TYPE_YML)) {
             new LocalYmlFlowParser().parse(content);
+        } else if (type.equals(FlowParserTypeEnum.TYPE_EL_XML)) {
+            new LocalXmlFlowELParser().parse(content);
+        } else if (type.equals(FlowParserTypeEnum.TYPE_EL_JSON)) {
+            new LocalJsonFlowELParser().parse(content);
+        } else if (type.equals(FlowParserTypeEnum.TYPE_EL_YML)) {
+            new LocalYmlFlowELParser().parse(content);
         }
     }
 

@@ -29,7 +29,7 @@ public class LiteflowRequestIdSpringbootTest extends BaseTest {
     public void testRequestId() throws Exception {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(response.getSlot().getRequestId(), "1");
+        Assert.assertEquals("1", response.getSlot().getRequestId());
     }
 
 }

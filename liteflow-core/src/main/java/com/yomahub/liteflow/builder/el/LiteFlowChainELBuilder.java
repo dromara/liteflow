@@ -96,11 +96,12 @@ public class LiteFlowChainELBuilder {
         try{
             DefaultContext<String, Object> context = new DefaultContext<>();
 
-            //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
-            FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.copyNode(nodeId)));
-
+            //这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
             //往上下文里放入所有的chain，是的el表达式可以直接引用到chain
             FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainName(), chain));
+
+            //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
+            FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
 
             //解析el成为一个Condition
             //为什么这里只是一个Condition，而不是一个List<Condition>呢
