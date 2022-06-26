@@ -27,6 +27,7 @@ public abstract class JsonFlowParser extends BaseJsonFlowParser {
 	/**
 	 * 解析一个chain的过程
 	 */
+	@Override
 	public void parseOneChain(JSONObject chainObject) {
 		ParserHelper.parseOneChain(chainObject);
 	}

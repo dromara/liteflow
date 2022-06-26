@@ -53,5 +53,6 @@ public abstract class BaseZookeeperJsonFlowParser extends BaseJsonFlowParser {
 	 *
 	 * @param chainObject chain 节点
 	 */
+	@Override
 	public abstract void parseOneChain(JSONObject chainObject);
 }
