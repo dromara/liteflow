@@ -1,4 +1,6 @@
-package com.yomahub.liteflow.parser;
+package com.yomahub.liteflow.parser.base;
+
+import org.dom4j.Element;
 
 import java.util.*;
 
