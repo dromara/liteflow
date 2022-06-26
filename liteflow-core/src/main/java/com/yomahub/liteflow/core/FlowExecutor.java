@@ -14,25 +14,27 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.parser.*;
+import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.parser.FlowParser;
+import com.yomahub.liteflow.parser.factory.FlowParserProvider;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * 流程规则主要执行器类
@@ -43,18 +45,7 @@ public class FlowExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
 
-    private static final String ZK_CONFIG_REGEX = "[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
-
-    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.xml$";
-    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.json$";
-    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
-
-    private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
-    private static final String FORMATE_JSON_CONFIG_REGEX = "json:.+";
-    private static final String FORMATE_YML_CONFIG_REGEX = "yml:.+";
     private static final String PREFIX_FORMATE_CONFIG_REGEX = "xml:|json:|yml:";
-
-    private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
 
     private LiteflowConfig liteflowConfig;
 
@@ -90,6 +81,7 @@ public class FlowExecutor {
             return;
         }
 
+        // 获取配置文件地址，','或者';'分割
         List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split("[,;]"));
 
         FlowParser parser = null;
@@ -97,36 +89,16 @@ public class FlowExecutor {
         List<String> rulePathList = new ArrayList<>();
         for (String path : sourceRulePathList) {
             try {
-                FlowParserTypeEnum pattern = matchFormatConfig(path);
-                if (ObjectUtil.isNotNull(pattern)) {
-                    path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
-                    switch (pattern) {
-                        case TYPE_XML:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_XML);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        case TYPE_JSON:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_JSON);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        case TYPE_YML:
-                            parser = matchFormatParser(path, FlowParserTypeEnum.TYPE_YML);
-                            parserNameSet.add(parser.getClass().getName());
-                            break;
-                        default:
-                            String errorMsg = StrUtil.format("can't support the format {}", path);
-                            throw new ErrorSupportPathException(errorMsg);
-                    }
-                }
+                // 查找对应的解析器
+                parser = FlowParserProvider.lookup(path);
+                parserNameSet.add(parser.getClass().getName());
+                // 替换掉zk配置的前缀
+                path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
                 rulePathList.add(path);
 
                 //支持多类型的配置文件，分别解析
                 if (liteflowConfig.isSupportMultipleType()) {
-                    if (ObjectUtil.isNotNull(parser)) {
-                        parser.parseMain(ListUtil.toList(path));
-                    } else {
-                        throw new ConfigErrorException("parse error, please check liteflow config property");
-                    }
+                    parser.parseMain(ListUtil.toList(path));
                 }
             } catch (CyclicDependencyException e){
                 LOG.error(e.getMessage());
@@ -163,100 +135,6 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
-    }
-
-    /**
-     * 匹配路径配置，生成对应的解析器
-     */
-    private FlowParser matchFormatParser(String path, FlowParserTypeEnum pattern) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        boolean isLocalFile = isLocalConfig(path);
-        if (isLocalFile) {
-            LOG.info("flow info loaded from local file,path={},format type={}", path, pattern.getType());
-            switch (pattern) {
-                case TYPE_XML:
-                    return new LocalXmlFlowParser();
-                case TYPE_JSON:
-                    return new LocalJsonFlowParser();
-                case TYPE_YML:
-                    return new LocalYmlFlowParser();
-                default:
-            }
-        } else if (isClassConfig(path)) {
-            LOG.info("flow info loaded from class config,class={},format type={}", path, pattern.getType());
-            Class<?> c = Class.forName(path);
-            switch (pattern) {
-                case TYPE_XML:
-                    return (XmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
-                case TYPE_JSON:
-                    return (JsonFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
-                case TYPE_YML:
-                    return (YmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
-                default:
-            }
-        } else if (isZKConfig(path)) {
-            LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, pattern.getType());
-            switch (pattern) {
-                case TYPE_XML:
-                    return new ZookeeperXmlFlowParser(liteflowConfig.getZkNode());
-                case TYPE_JSON:
-                    return new ZookeeperJsonFlowParser(liteflowConfig.getZkNode());
-                case TYPE_YML:
-                    return new ZookeeperYmlFlowParser(liteflowConfig.getZkNode());
-                default:
-            }
-        }
-        LOG.info("load flow info error, path={}, pattern={}", path, pattern.getType());
-        return null;
-    }
-
-    /**
-     * 判定是否为本地文件
-     */
-    private boolean isLocalConfig(String path) {
-        return ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path);
-    }
-
-    /**
-     * 判定是否为自定义class配置
-     */
-    private boolean isClassConfig(String path) {
-        return ReUtil.isMatch(CLASS_CONFIG_REGEX, path);
-    }
-
-    /**
-     * 判定是否为zk配置
-     */
-    private boolean isZKConfig(String path) {
-        return ReUtil.isMatch(ZK_CONFIG_REGEX, path);
-    }
-
-    /**
-     * 匹配文本格式，支持xml，json和yml
-     */
-    private FlowParserTypeEnum matchFormatConfig(String path) {
-        if (ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_XML_CONFIG_REGEX, path)) {
-            return FlowParserTypeEnum.TYPE_XML;
-        } else if (ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_JSON_CONFIG_REGEX, path)) {
-            return FlowParserTypeEnum.TYPE_JSON;
-        } else if (ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path) || ReUtil.isMatch(FORMATE_YML_CONFIG_REGEX, path)) {
-            return FlowParserTypeEnum.TYPE_YML;
-        } else if (isClassConfig(path)) {
-            try {
-                Class<?> clazz = Class.forName(path);
-                if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
-                    return FlowParserTypeEnum.TYPE_XML;
-                } else if (ClassJsonFlowParser.class.isAssignableFrom(clazz)) {
-                    return FlowParserTypeEnum.TYPE_JSON;
-                } else if (ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
-                    return FlowParserTypeEnum.TYPE_YML;
-                }
-            } catch (ClassNotFoundException e) {
-                LOG.error(e.getMessage());
-            }
-        }
-        return null;
     }
 
     //此方法就是从原有的配置源主动拉取新的进行刷新
