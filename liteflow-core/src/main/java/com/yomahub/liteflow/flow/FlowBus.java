@@ -12,10 +12,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.ComponentInitializer;
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.ScriptComponent;
-import com.yomahub.liteflow.core.ScriptCondComponent;
+import com.yomahub.liteflow.core.*;
+import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
@@ -81,7 +79,18 @@ public class FlowBus {
     }
 
     public static void addSpringScanNode(String nodeId, NodeComponent nodeComponent) {
-        nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, NodeTypeEnum.COMMON, null, nodeId)));
+        NodeTypeEnum type = null;
+        if (nodeComponent instanceof NodeSwitchComponent){
+            type = NodeTypeEnum.SWITCH;
+        } else if(nodeComponent instanceof NodeComponent){
+            type = NodeTypeEnum.COMMON;
+        }
+
+        if (type == null){
+            throw new NullNodeTypeException(StrUtil.format("node type is null for node[{}]", nodeId));
+        }
+
+        nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, type, null, nodeId)));
     }
 
     public static void addCommonNode(String nodeId, String name, String cmpClazzStr){
@@ -94,16 +103,30 @@ public class FlowBus {
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
     }
 
-    public static void addCommonNode(String nodeId, String name, Class<? extends NodeComponent> cmpClazz){
+    public static void addCommonNode(String nodeId, String name, Class<?> cmpClazz){
         addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
+    }
+
+    public static void addSwitchNode(String nodeId, String name, String cmpClazzStr){
+        Class<?> cmpClazz;
+        try{
+            cmpClazz = Class.forName(cmpClazzStr);
+        }catch (Exception e){
+            throw new ComponentCannotRegisterException(e.getMessage());
+        }
+        addNode(nodeId, name, NodeTypeEnum.SWITCH, cmpClazz, null);
+    }
+
+    public static void addSwitchNode(String nodeId, String name, Class<?> cmpClazz){
+        addNode(nodeId, name, NodeTypeEnum.SWITCH, cmpClazz, null);
     }
 
     public static void addCommonScriptNode(String nodeId, String name, String script){
         addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
     }
 
-    public static void addCondScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.COND_SCRIPT, ScriptCondComponent.class, script);
+    public static void addSwitchScriptNode(String nodeId, String name, String script){
+        addNode(nodeId, name, NodeTypeEnum.SWITCH_SCRIPT, ScriptSwitchComponent.class, script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
@@ -111,7 +134,7 @@ public class FlowBus {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             //如果不是声明式的，就用传统的方式进行判断
             NodeComponent cmpInstance = null;
-            if (LiteFlowProxyUtil.isMarkedCmp(cmpClazz)){
+            if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)){
                 //这里的逻辑要仔细看下
                 //如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
                 //由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
@@ -129,7 +152,7 @@ public class FlowBus {
                 //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
                 //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                 //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
-                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.COND_SCRIPT).contains(type)){
+                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.SWITCH_SCRIPT).contains(type)){
                     cmpInstance = (NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
                 }
 
@@ -149,8 +172,8 @@ public class FlowBus {
                 node.setScript(script);
                 if (type.equals(NodeTypeEnum.SCRIPT)){
                     ((ScriptComponent)cmpInstance).loadScript(script);
-                }else if(type.equals(NodeTypeEnum.COND_SCRIPT)){
-                    ((ScriptCondComponent)cmpInstance).loadScript(script);
+                }else if(type.equals(NodeTypeEnum.SWITCH_SCRIPT)){
+                    ((ScriptSwitchComponent)cmpInstance).loadScript(script);
                 }
             }
 
@@ -176,6 +199,14 @@ public class FlowBus {
         }catch (Exception e){
             return null;
         }
+    }
+
+    public static Map<String, Node> getNodeMap(){
+        return nodeMap;
+    }
+
+    public static Map<String, Chain> getChainMap(){
+        return chainMap;
     }
 
     public static void cleanCache() {

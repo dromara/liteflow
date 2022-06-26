@@ -21,12 +21,14 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.parser.*;
+import com.yomahub.liteflow.parser.el.*;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,7 @@ public class FlowExecutor {
     private static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.json$";
     private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
 
-    private static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\el.\\.yml$";
+    private static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.yml$";
 
     private static final String FORMATE_XML_CONFIG_REGEX = "xml:.+";
 
@@ -70,9 +72,9 @@ public class FlowExecutor {
 
     private static final String FORMATE_EL_YML_CONFIG_REGEX = "el_yml:.+";
 
-    private static final String PREFIX_FORMATE_CONFIG_REGEX = "xml:|json:|yml:";
+    private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:";
 
-    private static final String PREFIX_EL_FORMATE_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
+    private static final String PREFIX_EL_FORMAT_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
 
     private static final String CLASS_CONFIG_REGEX = "^\\w+(\\.\\w+)*$";
 
@@ -106,6 +108,13 @@ public class FlowExecutor {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
 
+        //在相应的环境下进行节点的初始化工作
+        //在spring体系下会获得spring扫描后的节点，接入元数据
+        //在非spring体系下是一个空实现，等于不做此步骤
+        ContextCmpInitHolder.loadContextCmpInit().initCmp();
+
+        //如果没有配置规则文件路径，就停止初始化。
+        //规则文件路径不是一定要有，因为liteflow分基于规则和基于代码两种，有可能是动态代码构建的
         if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
             return;
         }
@@ -124,7 +133,12 @@ public class FlowExecutor {
                     throw new ErrorSupportPathException(errorMsg);
                 }
 
-                path = ReUtil.replaceAll(path, PREFIX_FORMATE_CONFIG_REGEX, "");
+                if (pattern.getType().startsWith("el")){
+                    path = ReUtil.replaceAll(path, PREFIX_EL_FORMAT_CONFIG_REGEX, "");
+                }else{
+                    path = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "");
+                }
+
 
                 //获得parser
                 parser = matchFormatParser(path, pattern);
@@ -196,6 +210,12 @@ public class FlowExecutor {
                     return new LocalJsonFlowParser();
                 case TYPE_YML:
                     return new LocalYmlFlowParser();
+                case TYPE_EL_XML:
+                    return new LocalXmlFlowELParser();
+                case TYPE_EL_JSON:
+                    return new LocalJsonFlowELParser();
+                case TYPE_EL_YML:
+                    return new LocalYmlFlowELParser();
                 default:
             }
         } else if (isClassConfig(path)) {
@@ -208,6 +228,12 @@ public class FlowExecutor {
                     return (JsonFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 case TYPE_YML:
                     return (YmlFlowParser) ContextAwareHolder.loadContextAware().registerBean(c);
+                case TYPE_EL_XML:
+                    return (XmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
+                case TYPE_EL_JSON:
+                    return (JsonFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
+                case TYPE_EL_YML:
+                    return (YmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
                 default:
             }
         } else if (isZKConfig(path)) {
@@ -219,6 +245,12 @@ public class FlowExecutor {
                     return new ZookeeperJsonFlowParser(liteflowConfig.getZkNode());
                 case TYPE_YML:
                     return new ZookeeperYmlFlowParser(liteflowConfig.getZkNode());
+                case TYPE_EL_XML:
+                    return new ZookeeperXmlFlowELParser(liteflowConfig.getZkNode());
+                case TYPE_EL_JSON:
+                    return new ZookeeperJsonFlowELParser(liteflowConfig.getZkNode());
+                case TYPE_EL_YML:
+                    return new ZookeeperYmlFlowELParser(liteflowConfig.getZkNode());
                 default:
             }
         }
@@ -232,7 +264,10 @@ public class FlowExecutor {
     private boolean isLocalConfig(String path) {
         return ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)
                 || ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path);
+                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path)
+                || ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path)
+                || ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path)
+                || ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path);
     }
 
     /**
@@ -268,7 +303,6 @@ public class FlowExecutor {
         } else if (isClassConfig(path)) {
             //其实整个这个判断块代码可以不要，因为如果是自定义配置源的话，标准写法也要在前面加xml:/json:/yml:这种
             //但是这块可能是考虑到有些人忘加了，所以再来判断下。如果写了标准的话，是不会走到这块来的
-            //不过el形式的已经不支持这块了，需要标准写法，这点注意
             try {
                 Class<?> clazz = Class.forName(path);
                 if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
@@ -277,6 +311,12 @@ public class FlowExecutor {
                     return FlowParserTypeEnum.TYPE_JSON;
                 } else if (ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
                     return FlowParserTypeEnum.TYPE_YML;
+                } else if (ClassXmlFlowELParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_EL_XML;
+                } else if (ClassJsonFlowELParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_EL_JSON;
+                } else if (ClassYmlFlowELParser.class.isAssignableFrom(clazz)) {
+                    return FlowParserTypeEnum.TYPE_EL_YML;
                 }
             } catch (ClassNotFoundException e) {
                 LOG.error(e.getMessage());

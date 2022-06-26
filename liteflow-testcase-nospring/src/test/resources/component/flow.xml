@@ -6,7 +6,7 @@
         <node id="c" class="com.yomahub.liteflow.test.component.cmp1.CCmp"/>
         <node id="d" class="com.yomahub.liteflow.test.component.cmp1.DCmp"/>
         <node id="e" class="com.yomahub.liteflow.test.component.cmp1.ECmp"/>
-        <node id="f" class="com.yomahub.liteflow.test.component.cmp2.FCondCmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.component.cmp2.FSwitchCmp"/>
         <node id="g" class="com.yomahub.liteflow.test.component.cmp1.GCmp"/>
         <node id="h" class="com.yomahub.liteflow.test.component.cmp1.HCmp"/>
     </nodes>

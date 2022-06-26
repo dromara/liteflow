@@ -65,11 +65,6 @@ public abstract class XmlFlowParser extends BaseFlowParser {
 
     //xml形式的主要解析过程
     public void parseDocument(List<Document> documentList) throws Exception {
-        //在相应的环境下进行节点的初始化工作
-        //在spring体系下会获得spring扫描后的节点，接入元数据
-        //在非spring体系下是一个空实现，等于不做此步骤
-        ContextCmpInitHolder.loadContextCmpInit().initCmp();
-
         //先在元数据里放上chain
         //先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
         //这样就不用去像之前的版本那样回归调用

@@ -33,15 +33,15 @@ public class LiteFlowNodeBuilder {
     }
 
     public static LiteFlowNodeBuilder createCommonCondNode() {
-        return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
+        return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
     }
 
     public static LiteFlowNodeBuilder createScriptNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
     }
 
-    public static LiteFlowNodeBuilder createScriptCondNode() {
-        return new LiteFlowNodeBuilder(NodeTypeEnum.COND_SCRIPT);
+    public static LiteFlowNodeBuilder createScriptSwitchNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH_SCRIPT);
     }
 
     public LiteFlowNodeBuilder() {
@@ -83,28 +83,8 @@ public class LiteFlowNodeBuilder {
         return this;
     }
 
-    // 设置节点组件的class
-    public LiteFlowNodeBuilder setNodeComponentClazz(Class<? extends NodeComponent> nodeComponentClass) {
-        assert nodeComponentClass != null;
-        setClazz(nodeComponentClass.getName());
-        return this;
-    }
-
     public LiteFlowNodeBuilder setType(NodeTypeEnum type) {
         this.node.setType(type);
-        return this;
-    }
-
-    // 设置类型的编码
-    public LiteFlowNodeBuilder setTypeCode(String nodeTypeCode) {
-        if (StringUtils.isBlank(nodeTypeCode)) {
-            throw new NullParamException("nodeTypeCode is blank");
-        }
-        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(nodeTypeCode);
-        if (ObjectUtil.isNull(nodeTypeEnum)) {
-            throw new NullParamException(StrUtil.format("nodeTypeCode[{}] is error", nodeTypeCode));
-        }
-        setType(nodeTypeEnum);
         return this;
     }
 
@@ -126,10 +106,12 @@ public class LiteFlowNodeBuilder {
         try {
             if (this.node.getType().equals(NodeTypeEnum.COMMON)) {
                 FlowBus.addCommonNode(this.node.getId(), this.node.getName(), this.node.getClazz());
+            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH)) {
+                FlowBus.addSwitchNode(this.node.getId(), this.node.getName(), this.node.getClazz());
             } else if (this.node.getType().equals(NodeTypeEnum.SCRIPT)) {
                 FlowBus.addCommonScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.COND_SCRIPT)) {
-                FlowBus.addCondScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
+            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH_SCRIPT)) {
+                FlowBus.addSwitchScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             }
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}]", this.node.getId());

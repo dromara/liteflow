@@ -35,13 +35,7 @@ public abstract class NodeComponent{
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
-
 	private MonitorBus monitorBus;
-
-	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
-
-	private final TransmittableThreadLocal<Map<String, Executable>> condNodeMapTL = new TransmittableThreadLocal<>();
 
 	private String nodeId;
 
@@ -62,9 +56,16 @@ public abstract class NodeComponent{
 	/** 节点执行器的类全名 */
 	private Class<? extends NodeExecutor> nodeExecutorClass = DefaultNodeExecutor.class;
 
+	/********************以下的属性为线程附加属性，并非不变属性********************/
+
+	//当前slot的index
+	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
+
+	//tag标签
+	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
 	}
@@ -123,18 +124,6 @@ public abstract class NodeComponent{
 				monitorBus.addStatistics(statistics);
 			}
 		}
-
-		if (this instanceof NodeCondComponent) {
-			String condNodeId = slot.getCondResult(this.getClass().getName());
-			if (StrUtil.isNotBlank(condNodeId)) {
-				Executable condExecutor = this.condNodeMapTL.get().get(condNodeId);
-				if (ObjectUtil.isNotNull(condExecutor)) {
-					condExecutor.execute(slotIndexTL.get());
-				}
-			}
-		}
-
-
 	}
 
 	public <T> void beforeProcess(String nodeId, Slot slot){
@@ -281,10 +270,6 @@ public abstract class NodeComponent{
 
 	public String getTag(){
 		return this.tagTL.get();
-	}
-
-	public void setCondNodeMap(Map<String, Executable> condNodeMap){
-		this.condNodeMapTL.set(condNodeMap);
 	}
 
 	public MonitorBus getMonitorBus() {

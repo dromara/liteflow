@@ -7,20 +7,20 @@
  */
 package com.yomahub.liteflow.slot;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
+import com.yomahub.liteflow.flow.id.IdGeneratorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Predicate;
 
 /**
  * Slot的抽象类实现
@@ -38,7 +38,7 @@ public class Slot{
 
 	private static final String CHAIN_NAME = "_chain_name";
 
-	private static final String COND_NODE_PREFIX = "_cond_";
+	private static final String SWITCH_NODE_PREFIX = "_switch_";
 
 	private static final String NODE_INPUT_PREFIX = "_input_";
 
@@ -152,12 +152,12 @@ public class Slot{
 		}
 	}
 
-	public <T> void setCondResult(String key, T t){
-		putMetaDataMap(COND_NODE_PREFIX + key, t);
+	public <T> void setSwitchResult(String key, T t){
+		putMetaDataMap(SWITCH_NODE_PREFIX + key, t);
 	}
 
-	public <T> T getCondResult(String key){
-		return (T) metaDataMap.get(COND_NODE_PREFIX + key);
+	public <T> T getSwitchResult(String key){
+		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
 	}
 
 	public void pushChainName(String chainName) {
@@ -223,7 +223,7 @@ public class Slot{
 	}
 
 	public void generateRequestId() {
-		metaDataMap.put(REQUEST_ID, IdUtil.fastSimpleUUID());
+		metaDataMap.put(REQUEST_ID, IdGeneratorHelper.getInstance().generate());
 	}
 
 	public String getRequestId() {

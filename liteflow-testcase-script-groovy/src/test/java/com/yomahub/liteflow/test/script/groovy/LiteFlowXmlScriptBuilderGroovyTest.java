@@ -71,7 +71,7 @@ public class LiteFlowXmlScriptBuilderGroovyTest extends BaseTest {
                 .build();
         LiteFlowNodeBuilder.createNode().setId("s2")
                 .setName("条件脚本S2")
-                .setType(NodeTypeEnum.COND_SCRIPT)
+                .setType(NodeTypeEnum.SWITCH_SCRIPT)
                 .setFile("builder/s2.groovy")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("a")

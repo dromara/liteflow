@@ -7,8 +7,10 @@ package com.yomahub.liteflow.enums;
  */
 public enum NodeTypeEnum {
     COMMON("common","普通"),
+
+    SWITCH("switch", "条件"),
     SCRIPT("script","脚本"),
-    COND_SCRIPT("cond_script","条件脚本")
+    SWITCH_SCRIPT("switch_script","条件脚本")
     ;
     private String code;
     private String name;

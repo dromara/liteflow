@@ -11,7 +11,7 @@
         {
           "id": "s2",
           "name": "条件脚本",
-          "type": "cond_script",
+          "type": "switch_script",
           "file": "json-script-file/s2.ql"
         }
       ]

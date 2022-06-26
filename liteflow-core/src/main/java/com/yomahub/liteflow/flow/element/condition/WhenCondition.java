@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
 import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -62,10 +64,14 @@ public class WhenCondition extends Condition {
 		final boolean[] interrupted = {false};
 
 		//这里主要是做了封装CompletableFuture对象，用lumbda表达式做了很多事情，这句代码要仔细理清
-		//1.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
-		//2.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
-		//3.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
-		List<CompletableFuture<WhenFutureObj>> completableFutureList = this.getExecutableList().stream().filter(executable -> {
+		//1.先进行过滤，前置和后置组件过滤掉，因为在EL Chain处理的时候已经提出来了
+		//2.过滤isAccess为false的情况，因为不过滤这个的话，如果加上了any，那么isAccess为false那就是最快的了
+		//3.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
+		//4.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
+		//5.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
+		List<CompletableFuture<WhenFutureObj>> completableFutureList = this.getExecutableList().stream().filter(executable ->
+				!(executable instanceof PreCondition) && !(executable instanceof FinallyCondition)
+		).filter(executable -> {
 			try {
 				return executable.isAccess(slotIndex);
 			}catch (Exception e){
@@ -139,7 +145,7 @@ public class WhenCondition extends Condition {
 			//循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
 			for(WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList){
 				if (!whenFutureObj.isSuccess()){
-					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName(), slot.getRequestId()));
+					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].",slot.getRequestId(), whenFutureObj.getExecutorName()));
 					throw whenFutureObj.getEx();
 				}
 			}

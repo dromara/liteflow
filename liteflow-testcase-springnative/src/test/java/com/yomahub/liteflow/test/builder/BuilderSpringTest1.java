@@ -52,7 +52,7 @@ public class BuilderSpringTest1 extends BaseTest {
                 .build();
         LiteFlowNodeBuilder.createNode().setId("e")
                 .setName("组件E")
-                .setType(NodeTypeEnum.COMMON)
+                .setType(NodeTypeEnum.SWITCH)
                 .setClazz("com.yomahub.liteflow.test.builder.cmp1.ECmp")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("f")
@@ -90,38 +90,38 @@ public class BuilderSpringTest1 extends BaseTest {
     public void testBuilderForClassAndCode() throws Exception {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(ACmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(ACmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("b")
                 .setName("组件B")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(BCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(BCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("c")
                 .setName("组件C")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(CCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(CCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("d")
                 .setName("组件D")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(DCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(DCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("e")
                 .setName("组件E")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(ECmp.class)
+                .setType(NodeTypeEnum.SWITCH)
+                .setClazz(ECmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("f")
                 .setName("组件F")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(FCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(FCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("g")
                 .setName("组件G")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(GCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(GCmp.class)
                 .build();
 
 
@@ -147,38 +147,38 @@ public class BuilderSpringTest1 extends BaseTest {
     public void testBuilderForConditionNode() throws Exception {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(ACmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(ACmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("b")
                 .setName("组件B")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(BCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(BCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("c")
                 .setName("组件C")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(CCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(CCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("d")
                 .setName("组件D")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(DCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(DCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("e")
                 .setName("组件E")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(ECmp.class)
+                .setType(NodeTypeEnum.SWITCH)
+                .setClazz(ECmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("f")
                 .setName("组件F")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(FCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(FCmp.class)
                 .build();
         LiteFlowNodeBuilder.createNode().setId("g")
                 .setName("组件G")
-                .setTypeCode(NodeTypeEnum.COMMON.getCode())
-                .setNodeComponentClazz(GCmp.class)
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(GCmp.class)
                 .build();
 
 
