@@ -15,5 +15,6 @@
 
     <modules>
         <module>liteflow-testcase-el-springboot</module>
+        <module>liteflow-testcase-el-declare-springboot</module>
     </modules>
 </project>
