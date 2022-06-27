@@ -3,28 +3,29 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>liteflow</artifactId>
+        <artifactId>liteflow-testcase-old</artifactId>
         <groupId>com.yomahub</groupId>
         <version>2.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>liteflow-testcase-script-qlexpress</artifactId>
+    <artifactId>liteflow-testcase-nospring</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-spring-boot-starter</artifactId>
+            <artifactId>liteflow-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
@@ -34,21 +35,12 @@
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-script-qlexpress</artifactId>
-            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${springboot.version}</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -59,4 +51,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

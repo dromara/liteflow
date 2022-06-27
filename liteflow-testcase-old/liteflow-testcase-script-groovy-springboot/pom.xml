@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>liteflow</artifactId>
+        <artifactId>liteflow-testcase-old</artifactId>
         <groupId>com.yomahub</groupId>
         <version>2.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>liteflow-testcase-springboot</artifactId>
+    <artifactId>liteflow-testcase-script-groovy-springboot</artifactId>
 
     <dependencies>
         <dependency>
@@ -25,14 +25,23 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-groovy</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

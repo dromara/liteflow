@@ -289,14 +289,9 @@
 		<module>liteflow-script-qlexpress</module>
 		<module>liteflow-script-common</module>
 		<module>liteflow-script-groovy</module>
-		<module>liteflow-testcase-springboot</module>
-		<module>liteflow-testcase-springnative</module>
-		<module>liteflow-testcase-script-qlexpress</module>
-		<module>liteflow-testcase-script-groovy</module>
-		<module>liteflow-testcase-nospring</module>
 		<module>liteflow-spring</module>
-		<module>liteflow-testcase-declare-component</module>
-		<module>liteflow-testcase-el-springboot</module>
+		<module>liteflow-testcase-old</module>
+		<module>liteflow-testcase-el</module>
 	</modules>
 
 	<distributionManagement>
