@@ -35,5 +35,4 @@ public class LiteflowRequestIdSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("1", response.getSlot().getRequestId());
     }
-
 }
