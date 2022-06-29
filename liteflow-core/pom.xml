@@ -72,6 +72,12 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>QLExpress</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-lang</artifactId>
+					<groupId>commons-lang</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 </project>
