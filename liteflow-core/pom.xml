@@ -51,6 +51,10 @@
 					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>commons-lang</artifactId>
+					<groupId>commons-lang</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
