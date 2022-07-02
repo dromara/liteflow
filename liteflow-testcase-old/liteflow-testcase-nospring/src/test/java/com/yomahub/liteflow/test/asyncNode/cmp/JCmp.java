@@ -6,7 +6,7 @@ import com.yomahub.liteflow.core.NodeSwitchComponent;
 public class JCmp extends NodeSwitchComponent {
 
     @Override
-    public String processCond() throws Exception {
+    public String processSwitch() throws Exception {
         System.out.println("Jcomp executed!");
         return "chain3";
     }

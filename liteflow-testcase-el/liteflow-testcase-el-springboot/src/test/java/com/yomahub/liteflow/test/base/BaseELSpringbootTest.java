@@ -56,4 +56,10 @@ public class BaseELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
     }
 
+    //用变量来声明短流程
+    @Test
+    public void testBase5() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
 }

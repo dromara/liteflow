@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class ESwitchCmp extends NodeSwitchComponent {
 
 	@Override
-	public String processCond() throws Exception {
+	public String processSwitch() throws Exception {
 		return "d";
 	}
 }

@@ -17,8 +17,8 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 @LiteflowSwitchCmpDefine
 public class CCmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_COND)
-	public String processCond(NodeComponent bindCmp) throws Exception {
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		if(bindCmp.getTag().equals("2")){
 			return "e";
 		}else{

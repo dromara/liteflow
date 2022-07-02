@@ -9,7 +9,7 @@ import java.util.Objects;
 @Component("f")
 public class FSwitchCmp extends NodeSwitchComponent {
     @Override
-    public String processCond() {
+    public String processSwitch() {
         Integer requestData = this.getRequestData();
         if (Objects.isNull(requestData)){
             return "d";

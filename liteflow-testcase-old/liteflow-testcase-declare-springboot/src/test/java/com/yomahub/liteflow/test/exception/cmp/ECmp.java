@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 @LiteflowSwitchCmpDefine
 public class ECmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_COND)
-	public String processCond(NodeComponent bindCmp) throws Exception {
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "a";
 	}
 }

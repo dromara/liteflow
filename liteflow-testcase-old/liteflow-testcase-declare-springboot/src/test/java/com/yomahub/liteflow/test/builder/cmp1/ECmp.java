@@ -15,8 +15,8 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 @LiteflowSwitchCmpDefine
 public class ECmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_COND)
-	public String processCond(NodeComponent bindCmp) throws Exception {
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		System.out.println("ECmp executed!");
 		return "chain2";
 	}

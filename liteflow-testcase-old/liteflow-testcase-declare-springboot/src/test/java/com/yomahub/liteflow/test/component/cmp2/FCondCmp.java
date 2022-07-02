@@ -12,8 +12,8 @@ import java.util.Objects;
 @Component("f")
 @LiteflowSwitchCmpDefine
 public class FCondCmp{
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS_COND)
-    public String processCond(NodeComponent bindCmp) {
+    @LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+    public String processSwitch(NodeComponent bindCmp) {
         Integer requestData = bindCmp.getRequestData();
         if (Objects.isNull(requestData)){
             return "d";

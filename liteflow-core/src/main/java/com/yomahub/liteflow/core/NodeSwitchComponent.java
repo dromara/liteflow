@@ -15,11 +15,11 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 
 	@Override
 	public void process() throws Exception {
-		String nodeId = this.processCond();
+		String nodeId = this.processSwitch();
 		this.getSlot().setSwitchResult(this.getClass().getName(), nodeId);
 	}
 
 	//用以返回路由节点的beanId
-	public abstract String processCond() throws Exception;
+	public abstract String processSwitch() throws Exception;
 
 }

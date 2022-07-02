@@ -12,7 +12,7 @@ import com.yomahub.liteflow.core.NodeSwitchComponent;
 public class ECmp extends NodeSwitchComponent {
 
 	@Override
-	public String processCond() throws Exception {
+	public String processSwitch() throws Exception {
 		System.out.println("ECmp executed!");
 		return "chain2";
 	}

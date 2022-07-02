@@ -12,7 +12,7 @@ import com.yomahub.liteflow.core.NodeSwitchComponent;
 public class CCmp extends NodeSwitchComponent {
 
 	@Override
-	public String processCond() throws Exception {
+	public String processSwitch() throws Exception {
 		if(this.getTag().equals("2")){
 			return "e";
 		}else{

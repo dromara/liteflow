@@ -37,4 +37,17 @@
             z
         )
     </chain>
+
+    <chain name="chain5">
+        t1 = THEN(c, WHEN(j,k));
+        w1 = WHEN(q, THEN(p, r)).id("w01");
+        t2 = THEN(h, i);
+
+        THEN(
+            a,b,
+            WHEN(t1, d, t2 ),
+            SWITCH(x).to(m, n, w1),
+            z
+        );
+    </chain>
 </flow>

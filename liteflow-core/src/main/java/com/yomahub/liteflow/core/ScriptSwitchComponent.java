@@ -10,7 +10,7 @@ import com.yomahub.liteflow.script.ScriptExecutorFactory;
 public class ScriptSwitchComponent extends NodeSwitchComponent {
 
     @Override
-    public String processCond() throws Exception {
+    public String processSwitch() throws Exception {
         return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(getNodeId(), getSlotIndex());
     }
 
