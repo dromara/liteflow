@@ -1,9 +1,5 @@
 package com.yomahub.liteflow.test.subflow.cmp2;
-
-import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.slot.DefaultContext;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowTest.RUN_TIME_SLOT;
 
@@ -17,8 +13,6 @@ public class GCmp extends NodeComponent {
 
         System.out.println("Gcmp executed!");
 
-        FlowExecutor flowExecutor = FlowExecutorHolder.loadInstance();
-
-        flowExecutor.invoke("chain4", "it's implicit subflow.", this.getSlotIndex());
+        this.invoke("chain4", "it's implicit subflow.");
     }
 }

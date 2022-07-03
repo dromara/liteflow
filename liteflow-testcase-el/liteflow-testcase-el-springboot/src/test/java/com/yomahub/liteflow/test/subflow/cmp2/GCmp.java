@@ -23,6 +23,6 @@ public class GCmp extends NodeComponent {
 
 
 
-        flowExecutor.invoke("chain4", "it's implicit subflow.", this.getSlotIndex());
+        this.invoke("chain4", "it's implicit subflow.");
     }
 }

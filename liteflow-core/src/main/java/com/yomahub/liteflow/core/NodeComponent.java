@@ -11,6 +11,7 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -298,5 +299,13 @@ public abstract class NodeComponent{
 		}else {
 			return StrUtil.format("{}({})", this.nodeId, this.name);
 		}
+	}
+
+	public void invoke(String chainId, Object param) throws Exception {
+		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
+	}
+
+	public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
+		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
 	}
 }

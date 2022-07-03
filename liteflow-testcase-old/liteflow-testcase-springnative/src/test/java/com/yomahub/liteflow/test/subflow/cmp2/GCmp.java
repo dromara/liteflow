@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.subflow.cmp2;
 
-import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.NodeComponent;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringTest.RUN_TIME_SLOT;
@@ -11,9 +9,6 @@ import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowSpringTest.RUN_TI
 @Component("g")
 public class GCmp extends NodeComponent {
 
-    @Autowired
-    private FlowExecutor flowExecutor;
-
     @Override
     public void process() throws Exception {
 
@@ -21,6 +16,6 @@ public class GCmp extends NodeComponent {
 
         System.out.println("Gcmp executed!");
 
-        flowExecutor.invoke("chain4", "it's implicit subflow.", this.getSlotIndex());
+        this.invoke("chain4", "it's implicit subflow.");
     }
 }
