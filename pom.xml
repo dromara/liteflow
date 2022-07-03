@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.yomahub</groupId>
-    <artifactId>liteflow</artifactId>
-    <packaging>pom</packaging>
-    <version>2.7.3</version>
+	<artifactId>liteflow</artifactId>
+	<packaging>pom</packaging>
+	<version>2.8.0</version>
 	<name>liteflow</name>
 	<description>a lightweight and practical micro-process framework</description>
 	<url>https://github.com/bryan31/liteflow</url>
@@ -38,7 +38,7 @@
 		<url>git@github.com:bryan31/liteflow.git</url>
 	</scm>
 
-    <properties>
+	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.0.5.RELEASE</springboot.version>
@@ -46,21 +46,23 @@
 		<org.slf4j.version>1.7.32</org.slf4j.version>
 		<fastjson.version>1.2.79</fastjson.version>
 		<snakeyaml.version>1.29</snakeyaml.version>
-		<dom4j.version>1.6.1</dom4j.version>
+		<dom4j.version>2.1.3</dom4j.version>
 		<curator.version>5.1.0</curator.version>
 		<junit.version>4.12</junit.version>
 		<hutool-core.version>5.7.19</hutool-core.version>
 		<transmittable-thread-local.version>2.12.3</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
-		<qlexpress.version>3.2.7</qlexpress.version>
+		<qlexpress.version>3.3.0</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>
-    </properties>
+		<aspectjweaver.version>1.8.13</aspectjweaver.version>
+		<logback-classic.version>1.2.3</logback-classic.version>
+	</properties>
 
-    <dependencyManagement>
+	<dependencyManagement>
 		<dependencies>
-	        <dependency>
+			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-beans</artifactId>
 				<version>${spring.version}</version>
@@ -111,15 +113,15 @@
 				<version>${snakeyaml.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>dom4j</groupId>
+				<groupId>org.dom4j</groupId>
 				<artifactId>dom4j</artifactId>
 				<version>${dom4j.version}</version>
 			</dependency>
 			<dependency>
-	            <groupId>junit</groupId>
-	            <artifactId>junit</artifactId>
-	            <version>${junit.version}</version>
-	        </dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-framework</artifactId>
@@ -183,11 +185,43 @@
 				<artifactId>byte-buddy</artifactId>
 				<version>${bytebuddy.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjweaver</artifactId>
+				<version>${aspectjweaver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback-classic.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-test</artifactId>
+				<version>${springboot.version}</version>
+				<scope>test</scope>
+				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-autoconfigure</artifactId>
+				<version>${springboot.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-configuration-processor</artifactId>
+				<version>${springboot.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-    <build>
-        <plugins>
+	<build>
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -246,23 +280,19 @@
 					</execution>
 				</executions>
 			</plugin>
-        </plugins>
-    </build>
+		</plugins>
+	</build>
 
-    <modules>
-        <module>liteflow-core</module>
-        <module>liteflow-spring-boot-starter</module>
+	<modules>
+		<module>liteflow-core</module>
+		<module>liteflow-spring-boot-starter</module>
 		<module>liteflow-script-qlexpress</module>
 		<module>liteflow-script-common</module>
 		<module>liteflow-script-groovy</module>
-		<module>liteflow-testcase-springboot</module>
-		<module>liteflow-testcase-springnative</module>
-		<module>liteflow-testcase-script-qlexpress</module>
-		<module>liteflow-testcase-script-groovy</module>
-		<module>liteflow-testcase-nospring</module>
 		<module>liteflow-spring</module>
-        <module>liteflow-testcase-declare-component</module>
-    </modules>
+		<module>liteflow-testcase-old</module>
+		<module>liteflow-testcase-el</module>
+	</modules>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -275,3 +305,4 @@
 		</repository>
 	</distributionManagement>
 </project>
+

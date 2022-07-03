@@ -56,9 +56,8 @@ public class LiteflowProperty {
     // 节点执行器class全名
     private String nodeExecutorClass;
 
-
-
-
+    // requestId 生成器
+    private String requestIdGeneratorClass;
 
     //是否打印执行过程中的日志
     private boolean printExecutionLog;
@@ -189,5 +188,13 @@ public class LiteflowProperty {
 
     public void setPrintExecutionLog(boolean printExecutionLog) {
         this.printExecutionLog = printExecutionLog;
+    }
+
+    public String getRequestIdGeneratorClass() {
+        return requestIdGeneratorClass;
+    }
+
+    public void setRequestIdGeneratorClass(String requestIdGeneratorClass) {
+        this.requestIdGeneratorClass = requestIdGeneratorClass;
     }
 }

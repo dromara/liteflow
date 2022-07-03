@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * 执行结果封装类
  * @author zend.wang
  */
-public class LiteflowResponse<T> implements Serializable {
+public class LiteflowResponse implements Serializable {
     
     private static final long serialVersionUID = -2792556188993845048L;
     
@@ -21,14 +21,14 @@ public class LiteflowResponse<T> implements Serializable {
     
     private String message;
     
-    private Throwable cause;
+    private Exception cause;
     
-    private Slot<T> slot;
+    private Slot slot;
     
     public LiteflowResponse() {
       this(null);
     }
-    public LiteflowResponse(Slot<T> slot) {
+    public LiteflowResponse(Slot slot) {
         this.success = true;
         this.message = "";
         this.slot = slot;
@@ -50,35 +50,43 @@ public class LiteflowResponse<T> implements Serializable {
         this.message = message;
     }
     
-    public Throwable getCause() {
+    public Exception getCause() {
         return cause;
     }
     
-    public void setCause(final Throwable cause) {
+    public void setCause(final Exception cause) {
         this.cause = cause;
     }
     
-    public Slot<T> getSlot() {
+    public Slot getSlot() {
         return slot;
     }
     
-    public void setSlot(Slot<T> slot) {
+    public void setSlot(Slot slot) {
         this.slot = slot;
     }
 
-    public T getContextBean(){
-        return getSlot().getContextBean();
+    public <T> T getFirstContextBean(){
+        return this.getSlot().getFirstContextBean();
+    }
+
+    public <T> T getContextBean(Class<T> contextBeanClazz){
+        return this.getSlot().getContextBean(contextBeanClazz);
     }
 
     public Map<String, CmpStep> getExecuteSteps(){
-        return getSlot().getExecuteSteps().stream().collect(Collectors.toMap(CmpStep::getNodeId, cmpStep -> cmpStep));
+        return this.getSlot().getExecuteSteps().stream().collect(Collectors.toMap(CmpStep::getNodeId, cmpStep -> cmpStep));
     }
 
     public String getExecuteStepStr(){
-        return getSlot().getExecuteStepStr();
+        return this.getSlot().getExecuteStepStr();
     }
 
     public String getExecuteStepStrWithoutTime(){
-        return getSlot().getExecuteStepStr(false);
+        return this.getSlot().getExecuteStepStr(false);
+    }
+
+    public String getRequestId(){
+        return this.getSlot().getRequestId();
     }
 }

@@ -59,10 +59,4 @@ public class CompletableFutureTimeout {
         final CompletableFuture<T> timeoutFuture = timeoutAfter(timeout, unit);
         return future.applyToEither(timeoutFuture, Function.identity()).exceptionally((throwable) -> t);
     }
-
-    //哪个先完成 就apply哪一个结果 这是一个关键的API，不设置默认值，超时后抛出异常
-    public static <T> CompletableFuture<T> orTimeout(T t, CompletableFuture<T> future, long timeout, TimeUnit unit) {
-        final CompletableFuture<T> timeoutFuture = timeoutAfter(timeout, unit);
-        return future.applyToEither(timeoutFuture, Function.identity()).exceptionally((throwable) -> t);
-    }
 }

@@ -10,6 +10,7 @@ package com.yomahub.liteflow.spring;
 
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -59,7 +60,7 @@ public class ComponentScanner implements BeanPostProcessor {
 
         //判断是不是声明式组件
         //如果是，就缓存到类属性的map中
-        if (LiteFlowProxyUtil.isMarkedCmp(bean.getClass())){
+        if (LiteFlowProxyUtil.isDeclareCmp(bean.getClass())){
             LOG.info("proxy component[{}] has been found", beanName);
             NodeComponent nodeComponent = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
             nodeComponentMap.put(beanName, nodeComponent);

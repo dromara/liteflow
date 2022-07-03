@@ -8,10 +8,8 @@
  */
 package com.yomahub.liteflow.property;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
  * liteflow的配置实体类
@@ -74,6 +72,9 @@ public class LiteflowConfig {
     // 节点执行器的类全名
     private String nodeExecutorClass;
 
+    // requestId 生成器
+    private String requestIdGeneratorClass;
+
     //是否打印liteflow banner
     private Boolean printBanner;
 
@@ -88,7 +89,7 @@ public class LiteflowConfig {
 
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
-            return true;
+            return Boolean.TRUE;
         } else {
             return enable;
         }
@@ -168,7 +169,7 @@ public class LiteflowConfig {
 
     public Boolean getEnableLog() {
         if (ObjectUtil.isNull(enableLog)) {
-            return false;
+            return Boolean.FALSE;
         } else {
             return enableLog;
         }
@@ -204,7 +205,7 @@ public class LiteflowConfig {
 
     public Boolean isParseOnStart() {
         if (ObjectUtil.isNull(parseOnStart)) {
-            return true;
+            return Boolean.TRUE;
         } else {
             return parseOnStart;
         }
@@ -216,7 +217,7 @@ public class LiteflowConfig {
 
     public Boolean isSupportMultipleType() {
         if (ObjectUtil.isNull(supportMultipleType)) {
-            return false;
+            return Boolean.FALSE;
         } else {
             return supportMultipleType;
         }
@@ -226,7 +227,7 @@ public class LiteflowConfig {
         this.supportMultipleType = supportMultipleType;
     }
 
-    public int getRetryCount() {
+    public Integer getRetryCount() {
         if (ObjectUtil.isNull(retryCount) || retryCount < 0) {
             return 0;
         } else {
@@ -234,7 +235,7 @@ public class LiteflowConfig {
         }
     }
 
-    public void setRetryCount(int retryCount) {
+    public void setRetryCount(Integer retryCount) {
         this.retryCount = retryCount;
     }
 
@@ -284,6 +285,17 @@ public class LiteflowConfig {
 
     public void setNodeExecutorClass(String nodeExecutorClass) {
         this.nodeExecutorClass = nodeExecutorClass;
+    }
+
+    public String getRequestIdGeneratorClass() {
+        if(StrUtil.isBlank(this.requestIdGeneratorClass)){
+            return "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator";
+        }
+        return requestIdGeneratorClass;
+    }
+
+    public void setRequestIdGeneratorClass(String requestIdGeneratorClass) {
+        this.requestIdGeneratorClass = requestIdGeneratorClass;
     }
 
     public Integer getMainExecutorWorks() {

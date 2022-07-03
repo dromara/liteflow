@@ -19,7 +19,7 @@ public class ScriptComponent extends NodeComponent{
     }
 
     public void loadScript(String script) {
-        log.info("load script for component[{}]", getNodeId());
+        log.info("load script for component[{}]", getDisplayName());
         ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
     }
 }
