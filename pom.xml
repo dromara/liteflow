@@ -5,7 +5,7 @@
 	<groupId>com.yomahub</groupId>
 	<artifactId>liteflow</artifactId>
 	<packaging>pom</packaging>
-	<version>2.8.0</version>
+	<version>${revision}</version>
 	<name>liteflow</name>
 	<description>a lightweight and practical micro-process framework</description>
 	<url>https://github.com/bryan31/liteflow</url>
@@ -39,6 +39,9 @@
 	</scm>
 
 	<properties>
+		<revision>2.8.0</revision>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.0.5.RELEASE</springboot.version>
@@ -276,6 +279,32 @@
 						<phase>verify</phase>
 						<goals>
 							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- version number -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.2.7</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
 						</goals>
 					</execution>
 				</executions>

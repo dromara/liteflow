@@ -81,3 +81,5 @@ atlassian-ide-plugin.xml
 */logs
 
 /payClear-timer/.tern-project
+
+.flattened-pom.xml
