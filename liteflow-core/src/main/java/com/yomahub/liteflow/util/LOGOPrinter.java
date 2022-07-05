@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 public class LOGOPrinter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LOGOPrinter.class);
+	/**
+	 * LiteFlow 当前版本号
+	 */
+	public static final String VERSION_NO = "v2.8.0";
 
 	public static void print() {
 		StringBuilder str = new StringBuilder("\n");
@@ -19,7 +23,7 @@ public class LOGOPrinter {
 		str.append("		| |    | |  | | |  _| _____| |_  | |  | | | \\ \\ /\\ / / \n");
 		str.append("		| |___ | |  | | | |__|_____|  _| | |__| |_| |\\ V  V /  \n");
 		str.append("		|_____|___| |_| |_____|    |_|   |_____\\___/  \\_/\\_/   \n\n");
-		str.append("		Version: v2.8.0\n");
+		str.append("		Version: " + VERSION_NO + "n");
 		str.append("		轻量且强大的规则引擎框架。\n");
 		str.append("		Small but powerful rules engine.\n");
 		str.append("================================================================================================\n");
