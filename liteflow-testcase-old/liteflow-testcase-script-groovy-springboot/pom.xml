@@ -39,6 +39,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-groovy</artifactId>
             <version>${project.version}</version>

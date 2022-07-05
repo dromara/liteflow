@@ -97,7 +97,7 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
 				<version>${spring.version}</version>
-				<scope>provided</scope>
+				<scope>test</scope>
 				<optional>true</optional>
 			</dependency>
 			<dependency>
@@ -124,6 +124,7 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junit.version}</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
@@ -139,12 +140,14 @@
 						<groupId>org.slf4j</groupId>
 					</exclusion>
 				</exclusions>
+				<scope>provided</scope>
 				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-recipes</artifactId>
 				<version>${curator.version}</version>
+				<scope>provided</scope>
 				<optional>true</optional>
 			</dependency>
 			<dependency>
@@ -161,11 +164,14 @@
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-test</artifactId>
 				<version>${curator-test.version}</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.101tec</groupId>
 				<artifactId>zkclient</artifactId>
 				<version>${zkclient.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 
 			<dependency>
@@ -193,6 +199,8 @@
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjweaver</artifactId>
 				<version>${aspectjweaver.version}</version>
+				<scope>provided</scope>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>ch.qos.logback</groupId>

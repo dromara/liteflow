@@ -11,7 +11,6 @@ package com.yomahub.liteflow.thread;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Maps;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -40,7 +39,7 @@ public class ExecutorHelper {
     private final Map<String, ExecutorService> executorServiceMap;
 
     private ExecutorHelper() {
-        executorServiceMap = Maps.newConcurrentMap();
+        executorServiceMap = MapUtil.newConcurrentHashMap();
     }
 
     /**

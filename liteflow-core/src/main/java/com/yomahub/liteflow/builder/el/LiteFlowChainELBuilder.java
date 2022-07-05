@@ -1,13 +1,10 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.yomahub.liteflow.builder.el.operator.*;
-import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -16,11 +13,8 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Chain基于代码形式的组装器
@@ -145,7 +139,7 @@ public class LiteFlowChainELBuilder {
      * build 前简单校验
      */
     private void checkBuild() {
-        List<String> errorList = Lists.newArrayList();
+        List<String> errorList = new ArrayList<>();
         if (StrUtil.isBlank(this.chain.getChainName())) {
             errorList.add("name is blank");
         }

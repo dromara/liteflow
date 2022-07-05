@@ -13,7 +13,6 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -120,7 +119,7 @@ public class FlowExecutor {
             return;
         }
 
-        List<String> sourceRulePathList = Lists.newArrayList(liteflowConfig.getRuleSource().split(",|;"));
+        List<String> sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource().split(",|;"));
 
         FlowParser parser = null;
         Set<String> parserNameSet = new HashSet<>();

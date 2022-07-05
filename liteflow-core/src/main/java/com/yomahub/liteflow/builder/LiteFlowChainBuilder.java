@@ -2,8 +2,8 @@ package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
@@ -79,7 +79,7 @@ public class LiteFlowChainBuilder {
      * build 前简单校验
      */
     private void checkBuild() {
-        List<String> errorList = Lists.newArrayList();
+        List<String> errorList = new ArrayList<>();
         if (StrUtil.isBlank(this.chain.getChainName())) {
             errorList.add("name is blank");
         }

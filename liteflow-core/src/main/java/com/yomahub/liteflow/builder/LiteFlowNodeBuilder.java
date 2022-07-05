@@ -3,7 +3,6 @@ package com.yomahub.liteflow.builder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NodeBuildException;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -11,6 +10,7 @@ import com.yomahub.liteflow.flow.element.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -120,7 +120,7 @@ public class LiteFlowNodeBuilder {
      * build 前简单校验
      */
     private void checkBuild() {
-        List<String> errorList = Lists.newArrayList();
+        List<String> errorList = new ArrayList<>();
         if (StrUtil.isBlank(this.node.getId())) {
             errorList.add("id is blank");
         }
