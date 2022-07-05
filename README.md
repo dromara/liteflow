@@ -7,7 +7,13 @@
 <h3>Your star is my motivation to keep going. If you like LiteFlow, please help me with a star in the upper right corner.</h3>
 
 ## Overview
-liteFlow is a lightweight , fast component-based process engine framework / rules engine , component orchestration , component reuse , to help decouple business code , so that each business fragment is an elegant component , and support hot-loading rule configuration , to achieve on-the-fly modification .
+LiteFlow is a lightweight and powerful rules engine framework, which can be used in the field of complex componenzed business orchestration. DSL rules drive the whole complex business, and can achieve smooth refresh hot deployment, supporting the embedding of multiple scripting language rules. Help the system become more silky and flexible.
+
+LiteFlow was officially open source in 2020 and won the title of "the Most Popular Open Source software" in China in 2021. Gitee-GVP award in 2022. Is an open source project in rapid development.
+
+LiteFlow is a community-driven project. We take community building very seriously. We have a community of more than 800 users who can respond to any problems or suggestions they encounter.
+
+You can find out how to join the community on the official website!
 
 ## Website url: [Click here to access the official website](https://liteflow.yomahub.com/)
 ## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/pages/5816c5/)
@@ -31,6 +37,23 @@ liteFlow is a lightweight , fast component-based process engine framework / rule
 * **Stable and reliable:** has been iterating for more than 2 years, running stably on the core systems of major companies.
 * **Excellent performance:** the framework itself consumes little extra performance, depending on the efficiency of your component execution.
 * **Built-in simple monitoring:** Built-in a command line monitoring framework, you can know the running time ranking of each component.
+
+## What scenarios apply
+
+LiteFlow is a choreographed rules engine that is best at decoupling your systems. If you have a complex system with bloated code, the LiteFlow framework is a great solution.
+
+LiteFlow uses regular expressions to drive the engine that you define. Have you ever thought about how to write multithreaded process choreography like the following?
+
+<img src="static/img/flow_e1.svg" style="zoom: 80%">
+<img src="static/img/flow_e2.svg" style="zoom: 80%">
+
+All this takes advantage of LiteFlow effortlessly! The framework has a very low threshold to learn the expression language, but it can accomplish extremely high complexity of the choreography.
+
+LiteFlow has an extremely detailed and easy-to-understand documentation system that can help you solve more than 95% of your problems when using the framework.
+
+To date, LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
+
+LiteFlow looks forward to your understanding!
 
 **WECHAT OFFICIAL ACCOUNT**
 
