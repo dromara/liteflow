@@ -47,13 +47,13 @@ LiteFlow uses regular expressions to drive the engine that you define. Have you 
 <img src="static/img/flow_e1.svg" style="zoom: 80%">
 <img src="static/img/flow_e2.svg" style="zoom: 80%">
 
-All this takes advantage of LiteFlow effortlessly! The framework has a very low threshold to learn the expression language, but it can accomplish extremely high complexity of the choreography.
+These processes can be easily solved with LiteFlow! The framework has a very low threshold to learn the expression language, but it can accomplish extremely high complexity of the choreography.
 
-LiteFlow has an extremely detailed and easy-to-understand documentation system that can help you solve more than 95% of your problems when using the framework.
+LiteFlow has an extremely detailed and easy-to-understand documentation， it can help you solve more than 95% of your problems when using the framework.
 
-To date, LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
+Right now LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
-LiteFlow looks forward to your understanding!
+Looking forward to your use！
 
 **WECHAT OFFICIAL ACCOUNT**
 
