@@ -17,7 +17,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration("classpath:/aop/application-global.xml")
+@ContextConfiguration("classpath:/aop/application-custom.xml")
 public class CustomAOPSpringTest extends BaseTest {
 
     @Resource
