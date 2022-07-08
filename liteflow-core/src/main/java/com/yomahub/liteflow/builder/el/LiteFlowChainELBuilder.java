@@ -100,7 +100,7 @@ public class LiteFlowChainELBuilder {
             //解析el成为一个Condition
             //为什么这里只是一个Condition，而不是一个List<Condition>呢
             //这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-            Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, false, true);
+            Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, true, true);
 
             //从condition的第一层嵌套结构里拿出Pre和Finally节点
             //为什么只寻找第一层，而不往下寻找了呢？
