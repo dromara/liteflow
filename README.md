@@ -4,6 +4,8 @@
 </a>
 </p>
 
+[中文](README.zh-CN.md)
+
 <h3>Your star is my motivation to keep going. If you like LiteFlow, please help me with a star in the upper right corner.</h3>
 
 ## Overview
