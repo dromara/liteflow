@@ -7,4 +7,8 @@
     <chain name="chain2">
         THEN(WHEN(e, a).any(true), b)
     </chain>
+
+    <chain name="chain3">
+        THEN(a, b, a, a, b)
+    </chain>
 </flow>
