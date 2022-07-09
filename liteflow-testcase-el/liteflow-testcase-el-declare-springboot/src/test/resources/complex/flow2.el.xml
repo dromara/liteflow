@@ -17,7 +17,7 @@
                 ).id("t3")
             ),
             Z
-        )
+        );
     </chain>
 
     <chain name="chain2_2">

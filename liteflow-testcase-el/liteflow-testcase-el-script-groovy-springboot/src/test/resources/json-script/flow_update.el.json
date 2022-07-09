@@ -25,11 +25,11 @@
     "chain": [
       {
         "name": "chain1",
-        "value": "THEN(a, b, c, s1)"
+        "value": "THEN(a, b, c, s1);"
       },
       {
         "name": "chain2",
-        "value": "THEN(d, SWITCH(s2).to(a, b), s3)"
+        "value": "THEN(d, SWITCH(s2).to(a, b), s3);"
       }
     ]
   }

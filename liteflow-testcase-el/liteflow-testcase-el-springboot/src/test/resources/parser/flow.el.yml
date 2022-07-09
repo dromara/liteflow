@@ -17,6 +17,6 @@ flow:
         class: com.yomahub.liteflow.test.parser.cmp.GCmp
   chain:
     - name: chain1
-      value: "THEN(a, c, WHEN(b, d, SWITCH(e).to(f, g)), chain2)"
+      value: "THEN(a, c, WHEN(b, d, SWITCH(e).to(f, g)), chain2);"
     - name: chain2
-      value: "THEN(c, g, f)"
+      value: "THEN(c, g, f);"

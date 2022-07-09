@@ -15,7 +15,7 @@
                 )
             ),
             Z
-        )
+        );
     </chain>
 
     <chain name="chain1_2">
