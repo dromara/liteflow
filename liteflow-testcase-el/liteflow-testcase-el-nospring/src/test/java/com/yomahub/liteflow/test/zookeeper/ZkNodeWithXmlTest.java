@@ -37,7 +37,7 @@ public class ZkNodeWithXmlTest extends BaseTest {
         zkServer = new TestingServer(21810);
         CountDownLatch latch = new CountDownLatch(1);
         new Thread(() -> {
-            String data = ResourceUtil.readUtf8Str("zookeeper/flow.el.xml");
+            String data = ResourceUtil.readUtf8Str("zookeeper/flow.xml");
             ZkClient zkClient = new ZkClient("127.0.0.1:21810");
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
@@ -58,7 +58,7 @@ public class ZkNodeWithXmlTest extends BaseTest {
         latch.await();
 
         LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("xml:127.0.0.1:21810");
+        config.setRuleSource("el_xml:127.0.0.1:21810");
         flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
     
