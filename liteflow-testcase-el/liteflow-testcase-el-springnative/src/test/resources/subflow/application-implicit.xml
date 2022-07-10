@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <context:component-scan base-package="com.yomahub.liteflow.test.subflow.cmp2" />
+
+    <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
+
+    <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
+
+    <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
+        <property name="ruleSource" value="subflow/flow-implicit.el.xml"/>
+    </bean>
+
+    <!-- 隐式流程的话，这里一定要用property -->
+    <!-- 为什么隐式流程不能用constructor-arg? -->
+    <!-- 因为隐式流程的用法，是在组件里引入flowExecutor，在spring native体系中，spring scanner扫到的时候，flowExecutor还未装配好，还没在spring上下文中 -->
+    <!-- 用 constructor-arg 的话，除了隐式流程不能用以外，其他都能用 -->
+    <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
+        <property name="liteflowConfig" ref="liteflowConfig"/>
+    </bean>
+</beans>
