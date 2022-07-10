@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.nodeExecutor.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.nodeExecutor.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.nodeExecutor.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.nodeExecutor.cmp.DCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a);
+    </chain>
+
+    <chain name="chain2">
+        THEN(b);
+    </chain>
+
+    <chain name="chain3">
+        THEN(c);
+    </chain>
+
+    <chain name="chain4">
+        THEN(d);
+    </chain>
+</flow>

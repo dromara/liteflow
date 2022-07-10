@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.preAndFinally.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.preAndFinally.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.preAndFinally.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.preAndFinally.cmp.DCmp"/>
+        <node id="f1" class="com.yomahub.liteflow.test.preAndFinally.cmp.Finally1Cmp"/>
+        <node id="f2" class="com.yomahub.liteflow.test.preAndFinally.cmp.Finally2Cmp"/>
+        <node id="f3" class="com.yomahub.liteflow.test.preAndFinally.cmp.Finally3Cmp"/>
+        <node id="p1" class="com.yomahub.liteflow.test.preAndFinally.cmp.Pre1Cmp"/>
+        <node id="p2" class="com.yomahub.liteflow.test.preAndFinally.cmp.Pre2Cmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(PRE(p1, p2), THEN(a, b, c), FINALLY(f1, f2));
+    </chain>
+
+    <chain name="chain2">
+        THEN(a, PRE(p1, p2), FINALLY(f1, f2), THEN(b, c));
+    </chain>
+
+    <chain name="chain3">
+        THEN(PRE(p1, p2), THEN(a, d, c), FINALLY(f1, f2));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, d, c, FINALLY(f3));
+    </chain>
+
+    <chain name="chain5">
+        THEN(PRE(p1, p2), chain1, FINALLY(f1));
+    </chain>
+</flow>

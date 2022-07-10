@@ -1,0 +1,26 @@
+{
+  "flow": {
+    "nodes": {
+      "node": [
+        {
+          "id": "a",
+          "class": "com.yomahub.liteflow.test.zookeeper.cmp.ACmp"
+        },
+        {
+          "id": "b",
+          "class": "com.yomahub.liteflow.test.zookeeper.cmp.BCmp"
+        },
+        {
+          "id": "c",
+          "class": "com.yomahub.liteflow.test.zookeeper.cmp.CCmp"
+        }
+      ]
+    },
+    "chain": [
+      {
+        "name": "chain1",
+        "value": "THEN(a, b, c);"
+      }
+    ]
+  }
+}

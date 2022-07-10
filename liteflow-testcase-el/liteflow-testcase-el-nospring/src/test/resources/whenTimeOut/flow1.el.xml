@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.whenTimeOut.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.whenTimeOut.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.whenTimeOut.cmp.CCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        WHEN(a, b, c);
+    </chain>
+</flow>
