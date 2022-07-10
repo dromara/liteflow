@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="d" class="com.yomahub.liteflow.test.whenTimeOut.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.whenTimeOut.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.whenTimeOut.cmp.FCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(WHEN(d), WHEN(e), WHEN(f));
+    </chain>
+</flow>

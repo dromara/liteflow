@@ -16,6 +16,7 @@
 
     <modules>
         <module>liteflow-testcase-el-springboot</module>
+        <module>liteflow-testcase-el-nospring</module>
         <module>liteflow-testcase-el-declare-springboot</module>
         <module>liteflow-testcase-el-script-groovy-springboot</module>
         <module>liteflow-testcase-el-script-qlexpress-springboot</module>

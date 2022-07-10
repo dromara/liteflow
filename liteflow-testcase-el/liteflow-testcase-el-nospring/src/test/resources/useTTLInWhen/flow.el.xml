@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.useTTLInWhen.cmp.FCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, WHEN(b, c, d, e, f));
+    </chain>
+</flow>
