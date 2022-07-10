@@ -2,11 +2,11 @@
 <flow>
 
     <nodes>
-        <node id="a" class="com.yomahub.liteflow.test.cmpStep.cmp.ACmp"/>
-        <node id="b" class="com.yomahub.liteflow.test.cmpStep.cmp.BCmp"/>
-        <node id="c" class="com.yomahub.liteflow.test.cmpStep.cmp.CCmp"/>
-        <node id="d" class="com.yomahub.liteflow.test.cmpStep.cmp.DCmp"/>
-        <node id="e" class="com.yomahub.liteflow.test.cmpStep.cmp.ECmp"/>
+        <node id="a" class="com.yomahub.liteflow.test.cmpRetry.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.cmpRetry.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.cmpRetry.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.cmpRetry.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.cmpRetry.cmp.ECmp"/>
     </nodes>
 
     <chain name="chain1">

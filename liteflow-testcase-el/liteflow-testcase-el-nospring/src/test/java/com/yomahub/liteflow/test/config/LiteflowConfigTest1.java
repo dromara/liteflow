@@ -31,7 +31,7 @@ public class LiteflowConfigTest1 extends BaseTest {
         LiteflowConfig config = LiteflowConfigGetter.get();
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("config/flow.xml", config.getRuleSource());
+        Assert.assertEquals("config/flow.el.xml", config.getRuleSource());
         Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());
         Assert.assertEquals(200, config.getQueueLimit().intValue());
         Assert.assertEquals(300000L, config.getDelay().longValue());

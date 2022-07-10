@@ -35,7 +35,7 @@ public class Exception1Test extends BaseTest {
     @Test(expected = ChainDuplicateException.class)
     public void testChainDuplicateException() {
         LiteflowConfig config = LiteflowConfigGetter.get();
-        config.setRuleSource("exception/flow-exception.xml");
+        config.setRuleSource("exception/flow-exception.el.xml");
         flowExecutor.init();
     }
 
