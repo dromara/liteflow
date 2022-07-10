@@ -1,4 +1,4 @@
 flow:
   chain:
     - name: chain3
-      value: "THEN(e, d)"
+      value: "THEN(e, d);"
