@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.privateDelivery.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.privateDelivery.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.privateDelivery.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.privateDelivery.cmp.DCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(
+            a,
+            WHEN(
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b,
+                b,b,b,b,b,b,b,b,b,b
+            ),
+            c
+        );
+    </chain>
+</flow>

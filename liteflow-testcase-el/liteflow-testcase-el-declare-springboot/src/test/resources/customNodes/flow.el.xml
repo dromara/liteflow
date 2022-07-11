@@ -10,10 +10,10 @@
     </nodes>
 
     <chain name="chain1">
-        WHEN(a, b, c)
+        WHEN(a, b, c);
     </chain>
 
     <chain name="chain2">
-        WHEN(d, e, f)
+        WHEN(d, e, f);
     </chain>
 </flow>

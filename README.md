@@ -4,6 +4,8 @@
 </a>
 </p>
 
+[中文](README.zh-CN.md)
+
 <h3>Your star is my motivation to keep going. If you like LiteFlow, please help me with a star in the upper right corner.</h3>
 
 ## Overview
@@ -17,7 +19,9 @@ You can find out how to join the community on the official website!
 
 ## Website url: [Click here to access the official website](https://liteflow.yomahub.com/)
 ## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/pages/5816c5/)
-## Example projects: [Click here to enter the sample project](https://gitee.com/bryan31/liteflow-example)
+## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
+
+** LiteFlow has more than 650 test cases in the source code, including most scenarios, you can see the test cases in the source code.**
 
 ## Feature
 * **Component definition unified:** All logic is a component, for all logic to provide a unified component implementation, small size, large energy.

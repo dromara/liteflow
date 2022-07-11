@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.exception.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.exception.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.exception.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.exception.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.exception.cmp.ECmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a, WHEN(b, c).ignoreError(false));
+    </chain>
+
+    <chain name="chain4">
+        THEN(c, d);
+    </chain>
+
+    <chain name="chain5">
+        SWITCH(e).to(b, c);
+    </chain>
+
+</flow>

@@ -13,7 +13,7 @@ public class LOGOPrinter {
 	/**
 	 * LiteFlow 当前版本号
 	 */
-	private static final String VERSION_NO = "v2.8.0";
+	private static final String VERSION_NO = "v2.8.1";
 
 	public static void print() {
 		StringBuilder str = new StringBuilder("\n");
