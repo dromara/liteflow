@@ -386,22 +386,23 @@ public class ParserHelper {
 		//构建chainBuilder
 		String chainName = e.attributeValue(NAME);
 		String text = e.getText();
-		String el = Util.replaceNotesAndTrim(text);
+		String el = RegexUtil.removeComments(text);
 		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainName(chainName);
 		chainELBuilder.setEL(el).build();
 	}
 
-	private static class Util{
+	private static class RegexUtil{
 		// java 注释的正则表达式
-		private static String REGEX_NOTE = "/\\*((?!\\*/).|[\\r\\n])*?\\*/|[ \\t]*//.*";
+		private static final String REGEX_NOTE = "/\\*((?!\\*/).|[\\r\\n])*?\\*/|[ \\t]*//.*";
 
 		/**
-		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释
+		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释，
+		 * 会压缩字符串，移除空格和换行符
 		 *
 		 * @param elStr el 表达式
 		 * @return 移除注释后的 el 表达式
 		 */
-		private static String replaceNotesAndTrim(String elStr) {
+		private static String removeComments(String elStr) {
 			if (StrUtil.isBlank(elStr)) {
 				return elStr;
 			}
