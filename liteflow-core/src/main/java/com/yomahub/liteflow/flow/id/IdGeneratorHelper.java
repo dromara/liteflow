@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.flow.id;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.RequestIdGeneratorException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -20,7 +19,14 @@ public class IdGeneratorHelper {
     private volatile static IdGeneratorHelper INSTANCE;
 
     private IdGeneratorHelper() {
-
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
+        try {
+            Class<RequestIdGenerator> idGenerateClass = (Class<RequestIdGenerator>) Class.forName(requestIdGeneratorClass);
+            requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
+        } catch (Exception e) {
+            throw new RequestIdGeneratorException(e.getMessage());
+        }
     }
 
     public static IdGeneratorHelper getInstance() {
@@ -30,17 +36,6 @@ public class IdGeneratorHelper {
             synchronized (IdGeneratorHelper.class) {
                 if (Objects.isNull(INSTANCE)) {
                     INSTANCE = new IdGeneratorHelper();
-                    LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-                    String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
-                    if (StrUtil.isBlank(requestIdGeneratorClass)) {
-                        requestIdGenerator = new DefaultRequestIdGenerator();
-                    }
-                    try {
-                        Class<RequestIdGenerator> idGenerateClass = (Class<RequestIdGenerator>) Class.forName(requestIdGeneratorClass);
-                        requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
-                    } catch (Exception e) {
-                        throw new RequestIdGeneratorException(e.getMessage());
-                    }
                 }
             }
         }
