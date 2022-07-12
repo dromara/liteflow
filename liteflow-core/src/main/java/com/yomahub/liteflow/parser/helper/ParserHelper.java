@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.helper;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
 
@@ -383,8 +385,39 @@ public class ParserHelper {
 	public static void parseOneChainEl(Element e) {
 		//构建chainBuilder
 		String chainName = e.attributeValue(NAME);
-		String el = e.getTextTrim();
+		String text = e.getText();
+		String el = RegexUtil.removeComments(text);
 		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainName(chainName);
 		chainELBuilder.setEL(el).build();
 	}
+
+	private static class RegexUtil{
+		// java 注释的正则表达式
+		private static final String REGEX_COMMENT = "/\\*((?!\\*/).|[\\r\\n])*?\\*/|[ \\t]*//.*";
+
+		/**
+		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释，
+		 * 会压缩字符串，移除空格和换行符
+		 *
+		 * @param elStr el 表达式
+		 * @return 移除注释后的 el 表达式
+		 */
+		private static String removeComments(String elStr) {
+			if (StrUtil.isBlank(elStr)) {
+				return elStr;
+			}
+
+			String text = Pattern.compile(REGEX_COMMENT)
+					.matcher(elStr)
+					// 移除注释
+					.replaceAll(CharSequenceUtil.EMPTY)
+					// 移除字符串中的空格
+					.replaceAll(CharSequenceUtil.SPACE, CharSequenceUtil.EMPTY);
+
+			// 移除所有换行符
+			return StrUtil.removeAllLineBreaks(text);
+		}
+	}
+
+
 }
