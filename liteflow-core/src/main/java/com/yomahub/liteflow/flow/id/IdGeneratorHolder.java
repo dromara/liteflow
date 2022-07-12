@@ -51,9 +51,4 @@ public class IdGeneratorHolder {
     public void setRequestIdGenerator(RequestIdGenerator requestIdGenerator) {
         this.requestIdGenerator = requestIdGenerator;
     }
-
-    public void clear(){
-        INSTANCE = null;
-    }
-
 }
