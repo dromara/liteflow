@@ -393,7 +393,7 @@ public class ParserHelper {
 
 	private static class RegexUtil{
 		// java 注释的正则表达式
-		private static final String REGEX_NOTE = "/\\*((?!\\*/).|[\\r\\n])*?\\*/|[ \\t]*//.*";
+		private static final String REGEX_COMMENT = "/\\*((?!\\*/).|[\\r\\n])*?\\*/|[ \\t]*//.*";
 
 		/**
 		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释，
@@ -407,7 +407,7 @@ public class ParserHelper {
 				return elStr;
 			}
 
-			String text = Pattern.compile(REGEX_NOTE)
+			String text = Pattern.compile(REGEX_COMMENT)
 					.matcher(elStr)
 					// 移除注释
 					.replaceAll(CharSequenceUtil.EMPTY)
