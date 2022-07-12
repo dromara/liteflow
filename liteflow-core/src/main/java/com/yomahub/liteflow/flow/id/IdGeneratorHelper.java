@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 public class IdGeneratorHelper {
 
-    private static RequestIdGenerator requestIdGenerator;
+    private RequestIdGenerator requestIdGenerator;
 
     private volatile static IdGeneratorHelper INSTANCE;
 
@@ -23,7 +23,7 @@ public class IdGeneratorHelper {
         String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
         try {
             Class<RequestIdGenerator> idGenerateClass = (Class<RequestIdGenerator>) Class.forName(requestIdGeneratorClass);
-            requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
+            this.requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
         } catch (Exception e) {
             throw new RequestIdGeneratorException(e.getMessage());
         }
@@ -44,7 +44,7 @@ public class IdGeneratorHelper {
     }
 
     public String generate() {
-        return requestIdGenerator.generate();
+        return this.requestIdGenerator.generate();
     }
 
     public void clear(){
