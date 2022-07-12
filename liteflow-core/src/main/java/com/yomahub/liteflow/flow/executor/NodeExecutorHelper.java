@@ -32,8 +32,7 @@ public class NodeExecutorHelper {
     }
 
     public NodeExecutor buildNodeExecutor(Class<? extends NodeExecutor> nodeExecutorClass) {
-        // 高频操作-采取apache判空操作-效率高于hutool的isBlank将近3倍
-        if (ObjectUtil.isNull(nodeExecutorClass)) {
+        if (nodeExecutorClass == null) {
             // 此处使用默认的节点执行器进行执行
             nodeExecutorClass = DefaultNodeExecutor.class;
         }
