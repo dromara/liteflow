@@ -11,7 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
-import com.yomahub.liteflow.flow.id.IdGeneratorHelper;
+import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,7 +223,7 @@ public class Slot{
 	}
 
 	public void generateRequestId() {
-		metaDataMap.put(REQUEST_ID, IdGeneratorHelper.getInstance().generate());
+		metaDataMap.put(REQUEST_ID, IdGeneratorHolder.getInstance().generate());
 	}
 
 	public String getRequestId() {
