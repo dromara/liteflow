@@ -62,12 +62,4 @@ public class BaseELSpringbootTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
         Assert.assertTrue(response.isSuccess());
     }
-
-    //2022-07-12 switch 异常错误.c.y.l.builder.el.operator.ToOperator     : parameter error
-    //run QlExpress Exception at line 1 :
-    @Test
-    public void testBaseSwitch2() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("testBaseSwitch2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
 }

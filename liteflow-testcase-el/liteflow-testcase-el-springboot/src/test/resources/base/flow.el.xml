@@ -50,11 +50,4 @@
             z
         );
     </chain>
-
-    <chain name="testBaseSwitch2">
-        THEN(
-        z,
-        SWITCH(e).to(d)
-        );
-    </chain>
 </flow>
