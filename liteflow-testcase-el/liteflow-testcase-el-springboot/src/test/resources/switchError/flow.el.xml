@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
-    <chain name="testBase1">
+    <chain name="chain1">
         THEN(
             a,
-            SWITCH(e).to(d)
+            SWITCH(e).to(d),
             b
         );
     </chain>

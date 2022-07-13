@@ -32,8 +32,8 @@ public class SwitchELSpringbootTest extends BaseTest {
     //run QlExpress Exception at line 1 :
     // switch().to(): 只有一个node时出错
     @Test
-    public void testBase1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("testBase1", "arg");
+    public void testSwitchError() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
 }
