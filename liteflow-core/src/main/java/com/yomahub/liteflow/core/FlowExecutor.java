@@ -19,6 +19,7 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.parser.base.FlowParser;
 import com.yomahub.liteflow.parser.el.*;
@@ -112,6 +113,9 @@ public class FlowExecutor {
         //在spring体系下会获得spring扫描后的节点，接入元数据
         //在非spring体系下是一个空实现，等于不做此步骤
         ContextCmpInitHolder.loadContextCmpInit().initCmp();
+
+        //进行id生成器的初始化
+        IdGeneratorHolder.init();
 
         //如果没有配置规则文件路径，就停止初始化。
         //规则文件路径不是一定要有，因为liteflow分基于规则和基于代码两种，有可能是动态代码构建的
