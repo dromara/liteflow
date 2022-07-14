@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <chain name="chain1">
-        THEN(a, b, WHEN(c, d));
+        THEN(a.tag("A"), b.tag("B"), WHEN(c.tag("C"), d.tag("D")));
     </chain>
 
     <chain name="chain2">
@@ -9,6 +9,6 @@
     </chain>
 
     <chain name="chain3">
-        THEN(a, b, a, a, b);
+        THEN(a.tag("a1"), b, a.tag("a2"), a.tag("a3"), b);
     </chain>
 </flow>

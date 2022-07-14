@@ -14,8 +14,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * springboot环境step的测试例子
@@ -62,6 +66,14 @@ public class CmpStepELSpringbootTest extends BaseTest {
         Assert.assertEquals(2, stepMap.size());
         Queue<CmpStep> queue = response.getExecuteStepQueue();
         Assert.assertEquals(5, queue.size());
+
+        Set<String> tagSet = new HashSet<>();
+        response.getExecuteStepQueue().stream().filter(
+                cmpStep -> cmpStep.getNodeId().equals("a")
+        ).forEach(cmpStep -> tagSet.add(cmpStep.getTag()));
+
+        Assert.assertEquals(3, tagSet.size());
+
     }
 
 }
