@@ -76,6 +76,7 @@ public abstract class NodeComponent{
 
 		//在元数据里加入step信息
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		cmpStep.setTag(tagTL.get());
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
