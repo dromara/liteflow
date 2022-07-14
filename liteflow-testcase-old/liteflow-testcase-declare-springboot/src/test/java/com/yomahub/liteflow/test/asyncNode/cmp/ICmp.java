@@ -17,11 +17,13 @@ public class ICmp {
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
         DefaultContext context = bindCmp.getFirstContextBean();
-        if (context.hasData("count")){
-            Integer count = context.getData("count");
-            context.setData("count", ++count);
-        } else{
-            context.setData("count", 1);
+        synchronized (ICmp.class){
+            if (context.hasData("count")){
+                Integer count = context.getData("count");
+                context.setData("count", ++count);
+            } else{
+                context.setData("count", 1);
+            }
         }
         System.out.println("Icomp executed! throw Exception!");
         throw new TestException();

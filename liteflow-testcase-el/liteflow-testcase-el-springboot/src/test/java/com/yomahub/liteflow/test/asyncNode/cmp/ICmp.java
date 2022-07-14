@@ -12,11 +12,13 @@ public class ICmp extends NodeComponent {
     @Override
     public void process() throws Exception {
         DefaultContext context = this.getFirstContextBean();
-        if (context.hasData("count")){
-            Integer count = context.getData("count");
-            context.setData("count", ++count);
-        } else{
-            context.setData("count", 1);
+        synchronized (ICmp.class){
+            if (context.hasData("count")){
+                Integer count = context.getData("count");
+                context.setData("count", ++count);
+            } else{
+                context.setData("count", 1);
+            }
         }
         System.out.println("Icomp executed! throw Exception!");
         throw new TestException();
