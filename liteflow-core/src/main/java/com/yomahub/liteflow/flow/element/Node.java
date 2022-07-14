@@ -135,10 +135,10 @@ public class Node implements Executable,Cloneable{
 			//如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			if (instance.isContinueOnError()) {
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on", slot.getRequestId(),id);
-				LOG.error(errorMsg,e);
+				LOG.error(errorMsg);
 			} else {
 				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,error:{2}",slot.getRequestId(),id,e.getMessage());
-				LOG.error(errorMsg,e);
+				LOG.error(errorMsg);
 				throw e;
 			}
 		} finally {

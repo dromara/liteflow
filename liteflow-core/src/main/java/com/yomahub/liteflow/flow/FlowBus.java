@@ -183,7 +183,7 @@ public class FlowBus {
             nodeMap.put(nodeId, node);
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
-            LOG.error(error, e);
+            LOG.error(error);
             throw new ComponentCannotRegisterException(error);
         }
     }

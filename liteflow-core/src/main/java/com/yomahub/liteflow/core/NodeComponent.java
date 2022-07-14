@@ -106,7 +106,7 @@ public abstract class NodeComponent{
 				self.onError();
 			}catch (Exception ex){
 				String errMsg = StrUtil.format("[{}]:component[{}] onError method happens exception",slot.getRequestId(),this.getDisplayName());
-				LOG.error(errMsg, ex);
+				LOG.error(errMsg);
 			}
 			throw e;
 		} finally {
