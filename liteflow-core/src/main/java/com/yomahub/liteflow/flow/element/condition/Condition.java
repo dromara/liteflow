@@ -43,16 +43,6 @@ public abstract class Condition implements Executable{
 	private String currChainName;
 
 	@Override
-	public void execute(Integer slotIndex) throws Exception {
-		String currChainName = this.getCurrChainName();
-		//设置当前ChainName
-		this.getExecutableList().forEach(executable -> executable.setCurrChainName(currChainName));
-		executeCondition(slotIndex);
-	}
-
-	protected abstract void executeCondition(Integer slotIndex) throws Exception;
-
-	@Override
 	public ExecuteTypeEnum getExecuteType() {
 		return ExecuteTypeEnum.CONDITION;
 	}

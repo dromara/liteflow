@@ -1,33 +1,29 @@
 package com.yomahub.liteflow.test.getChainName;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.Resource;
 
 /**
- * springboot环境获取ChainName的测试
+ * nospring环境获取ChainName的测试
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/getChainName/application.properties")
-@SpringBootTest(classes = GetChainNameELSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.getChainName.cmp"})
-public class GetChainNameELSpringbootTest extends BaseTest {
+public class GetChainNameELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+    private static FlowExecutor flowExecutor;
+
+    @BeforeClass
+    public static void init(){
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("getChainName/flow.el.xml");
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
+    }
 
     @Test
     public void testGetChainName1() throws Exception{

@@ -21,12 +21,13 @@ public class ThenCondition extends Condition {
 	}
 
 	@Override
-	public void executeCondition(Integer slotIndex) throws Exception {
+	public void execute(Integer slotIndex) throws Exception {
 		for (Executable executableItem : this.getExecutableList()) {
 			//前置和后置组不执行，因为在build的时候会抽出来放在chain里面
 			if (executableItem instanceof PreCondition || executableItem instanceof FinallyCondition){
 				continue;
 			}
+			executableItem.setCurrChainName(this.getCurrChainName());
 			executableItem.execute(slotIndex);
 		}
 	}

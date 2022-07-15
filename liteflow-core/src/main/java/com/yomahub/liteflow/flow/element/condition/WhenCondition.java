@@ -37,7 +37,7 @@ public class WhenCondition extends Condition {
 
 
 	@Override
-	public void executeCondition(Integer slotIndex) throws Exception {
+	public void execute(Integer slotIndex) throws Exception {
 		executeAsyncCondition(slotIndex);
 	}
 
@@ -50,6 +50,8 @@ public class WhenCondition extends Condition {
 	//这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception{
 		Slot slot = DataBus.getSlot(slotIndex);
+
+		String currChainName = this.getCurrChainName();
 
 		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
 		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());
@@ -78,7 +80,7 @@ public class WhenCondition extends Condition {
 			}
 		}).map(executable -> CompletableFutureTimeout.completeOnTimeout(
 				WhenFutureObj.timeOut(executable.getExecuteName()),
-				CompletableFuture.supplyAsync(new ParallelSupplier(executable, slotIndex), parallelExecutor),
+				CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
 				liteflowConfig.getWhenMaxWaitSeconds(),
 				TimeUnit.SECONDS
 		)).collect(Collectors.toList());

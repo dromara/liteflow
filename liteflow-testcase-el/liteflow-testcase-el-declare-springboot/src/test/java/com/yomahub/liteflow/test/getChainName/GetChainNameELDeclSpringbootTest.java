@@ -21,10 +21,10 @@ import javax.annotation.Resource;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/getChainName/application.properties")
-@SpringBootTest(classes = GetChainNameELSpringbootTest.class)
+@SpringBootTest(classes = GetChainNameELDeclSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.getChainName.cmp"})
-public class GetChainNameELSpringbootTest extends BaseTest {
+public class GetChainNameELDeclSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

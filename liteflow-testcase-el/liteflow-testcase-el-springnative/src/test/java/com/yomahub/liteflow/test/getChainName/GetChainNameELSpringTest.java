@@ -7,24 +7,18 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
 /**
- * springboot环境获取ChainName的测试
+ * spring环境获取ChainName的测试
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/getChainName/application.properties")
-@SpringBootTest(classes = GetChainNameELSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.getChainName.cmp"})
-public class GetChainNameELSpringbootTest extends BaseTest {
+@ContextConfiguration("classpath:/getChainName/application.xml")
+public class GetChainNameELSpringTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

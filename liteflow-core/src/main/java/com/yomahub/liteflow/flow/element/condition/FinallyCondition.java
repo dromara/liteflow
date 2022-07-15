@@ -18,8 +18,9 @@ import com.yomahub.liteflow.flow.element.Executable;
 public class FinallyCondition extends Condition {
 
 	@Override
-	public void executeCondition(Integer slotIndex) throws Exception {
+	public void execute(Integer slotIndex) throws Exception {
 		for(Executable executableItem : this.getExecutableList()){
+			executableItem.setCurrChainName(this.getCurrChainName());
 			executableItem.execute(slotIndex);
 		}
 	}
