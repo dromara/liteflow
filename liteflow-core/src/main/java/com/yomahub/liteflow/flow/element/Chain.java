@@ -74,13 +74,13 @@ public class Chain implements Executable {
         }
         Slot slot = DataBus.getSlot(slotIndex);
         try {
-            //在子流程或者隐式流程里，slot需要取到的chainName是当前流程，所以这不再是set，而是push
-            //其底层结构是一个stack
-            slot.pushChainName(chainName);
+            //设置主ChainName
+            slot.setChainName(chainName);
             //执行前置
             this.executePre(slotIndex);
             //执行主体Condition
             for (Condition condition : conditionList) {
+                condition.setCurrChainName(chainName);
                 condition.execute(slotIndex);
             }
         }catch (ChainEndException e){
@@ -94,9 +94,6 @@ public class Chain implements Executable {
         }finally {
             //执行后置
             this.executeFinally(slotIndex);
-            //流程结束后，需要把当前的chainName从stack结构中移出
-            //里面的逻辑判断了当只剩根chainName的时候，不移除
-            slot.popChainName();
         }
     }
 

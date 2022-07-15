@@ -160,33 +160,14 @@ public class Slot{
 		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
 	}
 
-	public void pushChainName(String chainName) {
-		if (this.hasMetaData(CHAIN_NAME)){
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			stack.push(chainName);
-		}else{
-			Stack<String> stack = new Stack<>();
-			stack.push(chainName);
-			this.putMetaDataMap(CHAIN_NAME, stack);
-		}
-	}
-
-	public void popChainName(){
-		if (this.hasMetaData(CHAIN_NAME)){
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			if (stack.size() > 1){
-				stack.pop();
-			}
+	public void setChainName(String chainName) {
+		if (!hasMetaData(CHAIN_NAME)){
+			this.putMetaDataMap(CHAIN_NAME, chainName);
 		}
 	}
 
 	public String getChainName() {
-		try{
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			return stack.peek();
-		}catch (Exception e){
-			return null;
-		}
+		return (String) metaDataMap.get(CHAIN_NAME);
 	}
 
 	public void addStep(CmpStep step){

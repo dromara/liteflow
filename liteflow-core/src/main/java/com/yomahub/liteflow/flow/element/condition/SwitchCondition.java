@@ -26,7 +26,7 @@ public class SwitchCondition extends Condition{
     private final Map<String, Executable> targetMap = new HashMap<>();
 
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
             //先执行switch节点
             this.getSwitchNode().execute(slotIndex);
@@ -42,6 +42,7 @@ public class SwitchCondition extends Condition{
                         String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
                         throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
                     }
+                    targetExecutor.setCurrChainName(this.getCurrChainName());
                     targetExecutor.execute(slotIndex);
                 }else{
                     String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}]", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());

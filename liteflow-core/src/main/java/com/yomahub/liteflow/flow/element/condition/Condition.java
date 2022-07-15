@@ -38,6 +38,20 @@ public abstract class Condition implements Executable{
 	// when单独的线程池名称
 	private String threadExecutorClass;
 
+	//当前所在的ChainName
+	//如果对于子流程来说，那这个就是子流程所在的Chain
+	private String currChainName;
+
+	@Override
+	public void execute(Integer slotIndex) throws Exception {
+		String currChainName = this.getCurrChainName();
+		//设置当前ChainName
+		this.getExecutableList().forEach(executable -> executable.setCurrChainName(currChainName));
+		executeCondition(slotIndex);
+	}
+
+	protected abstract void executeCondition(Integer slotIndex) throws Exception;
+
 	@Override
 	public ExecuteTypeEnum getExecuteType() {
 		return ExecuteTypeEnum.CONDITION;
@@ -100,5 +114,14 @@ public abstract class Condition implements Executable{
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getCurrChainName() {
+		return currChainName;
+	}
+
+	@Override
+	public void setCurrChainName(String currChainName) {
+		this.currChainName = currChainName;
 	}
 }

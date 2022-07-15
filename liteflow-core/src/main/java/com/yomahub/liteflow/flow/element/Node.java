@@ -145,6 +145,8 @@ public class Node implements Executable,Cloneable{
 			//移除threadLocal里的信息
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
+			instance.removeTag();
+			instance.removeCurrChainName();
 		}
 	}
 
@@ -199,5 +201,10 @@ public class Node implements Executable,Cloneable{
 
 	public void setClazz(String clazz) {
 		this.clazz = clazz;
+	}
+
+	@Override
+	public void setCurrChainName(String currentChainName) {
+		instance.setCurrChainName(currentChainName);
 	}
 }
