@@ -17,6 +17,7 @@ import java.util.List;
  */
 public class LocalXmlFlowParser extends XmlFlowParser{
 
+	@Override
 	public void parseMain(List<String> pathList) throws Exception {
 		List<String> contentList = PathContentParserHolder.loadContextAware().parseContent(pathList);
 		parse(contentList);

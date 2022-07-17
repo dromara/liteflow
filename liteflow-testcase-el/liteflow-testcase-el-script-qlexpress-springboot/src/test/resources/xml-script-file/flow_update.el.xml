@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本" type="script" file="xml-script-file/s1.ql"/>
+        <node id="s2" name="条件脚本_改" type="switch_script" file="xml-script-file/s2_update.ql"/>
+        <node id="s3" name="普通脚本_新增" type="script" file="xml-script-file/s3.ql"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,s1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(d,SWITCH(s2).to(a,b), s3);
+    </chain>
+</flow>

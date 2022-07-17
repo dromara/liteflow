@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.flow.executor;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.google.common.collect.Maps;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.Map;
@@ -17,7 +17,7 @@ public class NodeExecutorHelper {
     private final Map<Class<? extends NodeExecutor>, NodeExecutor> nodeExecutorMap;
 
     private NodeExecutorHelper() {
-        nodeExecutorMap = Maps.newConcurrentMap();
+        nodeExecutorMap = MapUtil.newConcurrentHashMap();
     }
 
     //使用静态内部类实现单例模式

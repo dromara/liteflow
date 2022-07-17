@@ -16,9 +16,11 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,7 +37,7 @@ public class DataBus {
 	//这里为什么采用ConcurrentHashMap作为slot存放的容器？
 	//因为ConcurrentHashMap的随机取值复杂度也和数组一样为O(1)，并且没有并发问题，还有自动扩容的功能
 	//用数组的话，扩容涉及copy，线程安全问题还要自己处理
-	private static ConcurrentHashMap<Integer, Slot<?>> SLOTS;
+	private static ConcurrentHashMap<Integer, Slot> SLOTS;
 
 	private static ConcurrentLinkedQueue<Integer> QUEUE;
 
@@ -56,11 +58,14 @@ public class DataBus {
 		}
 	}
 
-	public static <T> int offerSlot(Class<T> contextClazz) {
+	public static int offerSlot(List<Class<?>> contextClazzList) {
 		try {
-			//这里用这个方法，是为了兼容当没有无参构造方法所报的错
-			T contextBean = ReflectUtil.newInstanceIfPossible(contextClazz);
-			Slot<T> slot = new Slot<>(contextBean);
+			//把classList通过反射初始化成对象列表
+			//这里用newInstanceIfPossible这个方法，是为了兼容当没有无参构造方法所报的错
+			List<Object> contextBeanList = contextClazzList.stream()
+					.map((Function<Class<?>, Object>) ReflectUtil::newInstanceIfPossible).collect(Collectors.toList());
+
+			Slot slot = new Slot(contextBeanList);
 
 			//这里有没有并发问题？
 			//没有，因为QUEUE的类型为ConcurrentLinkedQueue，并发情况下，每次取到的index不会相同
@@ -96,13 +101,13 @@ public class DataBus {
 		return -1;
 	}
 
-	public static <T> Slot<T> getSlot(int slotIndex){
-		return (Slot<T>) SLOTS.get(slotIndex);
+	public static Slot getSlot(int slotIndex){
+		return SLOTS.get(slotIndex);
 	}
 
-	public static <T> T getContextBean(int slotIndex){
-		Slot<T> slot = getSlot(slotIndex);
-		return slot.getContextBean();
+	public static List<Object> getContextBeanList(int slotIndex){
+		Slot slot = getSlot(slotIndex);
+		return slot.getContextBeanList();
 	}
 
 	public static void releaseSlot(int slotIndex){

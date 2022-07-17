@@ -8,19 +8,16 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.slot.DataBus;
@@ -39,13 +36,7 @@ public abstract class NodeComponent{
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
-
 	private MonitorBus monitorBus;
-
-	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
-
-	private final TransmittableThreadLocal<Map<String, Executable>> condNodeMapTL = new TransmittableThreadLocal<>();
 
 	private String nodeId;
 
@@ -66,15 +57,22 @@ public abstract class NodeComponent{
 	/** 节点执行器的类全名 */
 	private Class<? extends NodeExecutor> nodeExecutorClass = DefaultNodeExecutor.class;
 
+	/********************以下的属性为线程附加属性，并非不变属性********************/
+
+	//当前slot的index
+	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
+
+	//tag标签
+	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
 	}
 
 	public void execute() throws Exception{
-		Slot<?> slot = this.getSlot();
+		Slot slot = this.getSlot();
 
 		//在元数据里加入step信息
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
@@ -106,14 +104,14 @@ public abstract class NodeComponent{
 			try{
 				self.onError();
 			}catch (Exception ex){
-				String errMsg = StrUtil.format("[{}]:componnet[{}] onError method happens exception",slot.getRequestId(),this.getClass().getSimpleName());
+				String errMsg = StrUtil.format("[{}]:component[{}] onError method happens exception",slot.getRequestId(),this.getDisplayName());
 				LOG.error(errMsg, ex);
 			}
 			throw e;
 		} finally {
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
-			LOG.debug("[{}]:componnet[{}] finished in {} milliseconds",slot.getRequestId(),this.getClass().getSimpleName(),timeSpent);
+			LOG.debug("[{}]:component[{}] finished in {} milliseconds",slot.getRequestId(),this.getDisplayName(),timeSpent);
 
 			//往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
@@ -127,21 +125,9 @@ public abstract class NodeComponent{
 				monitorBus.addStatistics(statistics);
 			}
 		}
-
-		if (this instanceof NodeCondComponent) {
-			String condNodeId = slot.getCondResult(this.getClass().getName());
-			if (StrUtil.isNotBlank(condNodeId)) {
-				Executable condExecutor = this.condNodeMapTL.get().get(condNodeId);
-				if (ObjectUtil.isNotNull(condExecutor)) {
-					condExecutor.execute(slotIndexTL.get());
-				}
-			}
-		}
-
-
 	}
 
-	public <T> void beforeProcess(String nodeId, Slot<T> slot){
+	public <T> void beforeProcess(String nodeId, Slot slot){
 		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		//非spring环境下，全局切面为空实现
 		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, slot);
@@ -157,7 +143,7 @@ public abstract class NodeComponent{
 		//如果需要在抛错后回调某一段逻辑，请覆盖这个方法
 	}
 
-	public <T> void afterProcess(String nodeId, Slot<T> slot){
+	public <T> void afterProcess(String nodeId, Slot slot){
 		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, slot);
 	}
 
@@ -203,13 +189,16 @@ public abstract class NodeComponent{
 		this.slotIndexTL.remove();
 	}
 
-	public <T> Slot<T> getSlot(){
+	public Slot getSlot(){
 		return DataBus.getSlot(this.slotIndexTL.get());
 	}
 
-	public <T> T getContextBean(){
-		Slot<T> slot = this.getSlot();
-		return slot.getContextBean();
+	public <T> T getFirstContextBean(){
+		return this.getSlot().getFirstContextBean();
+	}
+
+	public <T> T getContextBean(Class<T> contextBeanClazz){
+		return this.getSlot().getContextBean(contextBeanClazz);
 	}
 
 	public String getNodeId() {
@@ -284,10 +273,6 @@ public abstract class NodeComponent{
 		return this.tagTL.get();
 	}
 
-	public void setCondNodeMap(Map<String, Executable> condNodeMap){
-		this.condNodeMapTL.set(condNodeMap);
-	}
-
 	public MonitorBus getMonitorBus() {
 		return monitorBus;
 	}
@@ -306,5 +291,21 @@ public abstract class NodeComponent{
 
 	public String getChainName(){
 		return getSlot().getChainName();
+	}
+
+	public String getDisplayName(){
+		if(StrUtil.isEmpty(this.name)){
+			return this.nodeId;
+		}else {
+			return StrUtil.format("{}({})", this.nodeId, this.name);
+		}
+	}
+
+	public void invoke(String chainId, Object param) throws Exception {
+		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
+	}
+
+	public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
+		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
 	}
 }

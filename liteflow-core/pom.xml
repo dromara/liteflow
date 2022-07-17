@@ -9,7 +9,8 @@
     <parent>
 		<groupId>com.yomahub</groupId>
 		<artifactId>liteflow</artifactId>
-		<version>2.7.3</version>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
@@ -36,7 +37,7 @@
 			<artifactId>snakeyaml</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>dom4j</groupId>
+			<groupId>org.dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 		</dependency>
 		<dependency>
@@ -51,6 +52,10 @@
 					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>commons-lang</artifactId>
+					<groupId>commons-lang</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -64,6 +69,10 @@
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
 			<artifactId>byte-buddy</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>QLExpress</artifactId>
 		</dependency>
 	</dependencies>
 </project>

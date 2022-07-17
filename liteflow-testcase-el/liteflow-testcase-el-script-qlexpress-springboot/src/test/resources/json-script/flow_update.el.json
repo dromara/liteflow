@@ -1,0 +1,36 @@
+{
+  "flow": {
+    "nodes": {
+      "node": [
+        {
+          "id": "s1",
+          "name": "普通脚本",
+          "type": "script",
+          "value": "a=3;b=2;defaultContext.setData(\"s1\",a*b);"
+        },
+        {
+          "id": "s2",
+          "name": "条件脚本_改",
+          "type": "switch_script",
+          "value": "count = defaultContext.getData(\"count\");if(count > 150){return \"b\";}else{return \"a\";}"
+        },
+        {
+          "id": "s3",
+          "name": "普通脚本_新增",
+          "type": "script",
+          "value": "a=3;b=2;c=10;defaultContext.setData(\"s1\",a*b+c);"
+        }
+      ]
+    },
+    "chain": [
+      {
+        "name": "chain1",
+        "value": "THEN(a,b,c,s1);"
+      },
+      {
+        "name": "chain2",
+        "value": "THEN(d,SWITCH(s2).to(a,b), s3);"
+      }
+    ]
+  }
+}

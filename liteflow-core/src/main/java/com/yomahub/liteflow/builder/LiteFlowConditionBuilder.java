@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.*;
 import com.yomahub.liteflow.builder.entity.ExecutableEntity;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -15,7 +15,6 @@ import com.yomahub.liteflow.parser.RegexEntity;
 import com.yomahub.liteflow.parser.RegexNodeEntity;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,29 +27,38 @@ public class LiteFlowConditionBuilder {
     protected Condition condition;
 
     public static LiteFlowConditionBuilder createCondition(ConditionTypeEnum conditionType){
-        return new LiteFlowConditionBuilder(conditionType);
+        switch (conditionType){
+            case TYPE_THEN:
+                return createThenCondition();
+            case TYPE_WHEN:
+                return createWhenCondition();
+            case TYPE_PRE:
+                return createPreCondition();
+            case TYPE_FINALLY:
+                return createFinallyCondition();
+            default:
+                return null;
+        }
     }
 
     public static LiteFlowConditionBuilder createThenCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_THEN);
+        return new LiteFlowConditionBuilder(new ThenCondition());
     }
 
     public static LiteFlowWhenConditionBuilder createWhenCondition(){
-        return new LiteFlowWhenConditionBuilder(ConditionTypeEnum.TYPE_WHEN);
+        return new LiteFlowWhenConditionBuilder(new WhenCondition());
     }
 
     public static LiteFlowConditionBuilder createPreCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_PRE);
+        return new LiteFlowConditionBuilder(new PreCondition());
     }
 
     public static LiteFlowConditionBuilder createFinallyCondition(){
-        return new LiteFlowConditionBuilder(ConditionTypeEnum.TYPE_FINALLY);
+        return new LiteFlowConditionBuilder(new FinallyCondition());
     }
 
-    public LiteFlowConditionBuilder(ConditionTypeEnum conditionType){
-        this.condition = new Condition();
-        this.condition.setConditionType(conditionType);
-        this.condition.setNodeList(new ArrayList<>());
+    public LiteFlowConditionBuilder(Condition condition){
+        this.condition = condition;
     }
 
     public LiteFlowConditionBuilder setValue(String value){
@@ -84,32 +92,25 @@ public class LiteFlowConditionBuilder {
         return executableEntity;
     }
 
-    // 设置执行节点或流程列表
-    public LiteFlowConditionBuilder setExecutables(List<ExecutableEntity> executableEntities) {
-        if (CollUtil.isEmpty(executableEntities)) {
-            return this;
-        }
-        for (ExecutableEntity conditionNodeEntity : executableEntities) {
-            setExecutable(conditionNodeEntity);
-        }
-        return this;
-    }
-
     // 设置执行节点或者流程
     public LiteFlowConditionBuilder setExecutable(ExecutableEntity executableEntity) {
         if (FlowBus.containNode(executableEntity.getId())) {
             Node node = FlowBus.copyNode(executableEntity.getId());
             node.setTag(executableEntity.getTag());
-            this.condition.getNodeList().add(node);
-            // 构建条件节点-通过是否包含条件节点列表-解析条件节点会含有realItem，也就是括号里的node
-            buildCondNode(node, executableEntity.getNodeCondComponents());
+
+            //如果没有条件节点，说明是普通组件，如果有条件节点，就去构建SwitchCondition
+            if (CollUtil.isEmpty(executableEntity.getNodeCondComponents())) {
+                this.condition.getExecutableList().add(node);
+            }else{
+                buildSwitchNode(node, executableEntity.getNodeCondComponents());
+            }
         } else if (hasChain(executableEntity.getId())) {
             Chain chain = FlowBus.getChain(executableEntity.getId());
-            this.condition.getNodeList().add(chain);
+            this.condition.getExecutableList().add(chain);
         } else {
             //元数据没有的话，从spring上下文再取一遍
             //这部分有2个目的
-            //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用代码的形式加载chain这种情况。
+            //一是为了防止标有@Lazy懒加载的组件，二是spring负责扫描，而用动态代码的形式加载组件这种情况。
             NodeComponent nodeComponent =  ContextAwareHolder.loadContextAware().getBean(executableEntity.getId());
             if (ObjectUtil.isNotNull(nodeComponent)){
                 FlowBus.addSpringScanNode(executableEntity.getId(), nodeComponent);
@@ -123,23 +124,28 @@ public class LiteFlowConditionBuilder {
     }
 
     // 构建条件节点
-    private void buildCondNode(Node node, List<ExecutableEntity> executableEntities) {
+    private void buildSwitchNode(Node node, List<ExecutableEntity> executableEntities) {
         if (CollUtil.isEmpty(executableEntities)) {
             return;
         }
+
+        SwitchCondition switchCondition = new SwitchCondition();
+        switchCondition.setSwitchNode(node);
+
         for (ExecutableEntity realItem : executableEntities) {
             if (FlowBus.containNode(realItem.getId())) {
-                Node condNode = FlowBus.copyNode(realItem.getId());
-                condNode.setTag(realItem.getTag());
-                node.setCondNode(condNode.getId(), condNode);
+                Node targetNode = FlowBus.copyNode(realItem.getId());
+                targetNode.setTag(realItem.getTag());
+                switchCondition.addTargetItem(targetNode);
             } else if (hasChain(realItem.getId())) {
                 Chain chain = FlowBus.getChain(realItem.getId());
-                node.setCondNode(chain.getChainName(), chain);
+                switchCondition.addTargetItem(chain);
             } else{
                 String errorMsg = StrUtil.format("executable node[{}] is not found!", realItem.getId());
                 throw new ExecutableItemNotFoundException(errorMsg);
             }
         }
+        this.condition.getExecutableList().add(switchCondition);
     }
 
     public Condition build(){

@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.builder.entity;
 
 import cn.hutool.core.collection.CollUtil;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,7 +57,7 @@ public class ExecutableEntity {
 
     public ExecutableEntity addNodeCondComponent(ExecutableEntity conditionNodeEntity) {
         if (CollUtil.isEmpty(this.nodeCondComponents)) {
-            this.nodeCondComponents = Lists.newArrayList();
+            this.nodeCondComponents = new ArrayList<>();
         }
         this.nodeCondComponents.add(conditionNodeEntity);
         return this;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <chain name="chain21">
+        THEN(a, c, WHEN(b, d, SWITCH(e).to(f, g)), chain2)
+    </chain>
+</flow>

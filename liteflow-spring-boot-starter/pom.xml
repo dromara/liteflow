@@ -10,7 +10,8 @@
     <parent>
         <artifactId>liteflow</artifactId>
         <groupId>com.yomahub</groupId>
-        <version>2.7.3</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
@@ -22,13 +23,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${springboot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>${springboot.version}</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 

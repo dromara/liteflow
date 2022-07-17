@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本" type="script">
+            <![CDATA[
+                a=3;
+                b=2;
+                defaultContext.setData("s1",a*b);
+            ]]>
+        </node>
+
+        <node id="s2" name="条件脚本" type="switch_script">
+            <![CDATA[
+                count = defaultContext.getData("count");
+                if(count > 100){
+                    return "a";
+                }else{
+                    return "b";
+                }
+            ]]>
+        </node>
+
+        <!-- 定义s3的目的是验证在多个脚本节点同时存在情况下的运行情况是否正确，本身s3不会被引用到 -->
+        <node id="s3" name="普通脚本2" type="script">
+            <![CDATA[
+                a=30;
+                b=2;
+                defaultContext.setData("s1",a*b);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,s1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(d,SWITCH(s2).to(a,b));
+    </chain>
+</flow>

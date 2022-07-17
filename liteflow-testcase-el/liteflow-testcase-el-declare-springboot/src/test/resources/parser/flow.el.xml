@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.parser.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.parser.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.parser.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.parser.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.parser.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.parser.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.parser.cmp.GCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, c, WHEN(b, d, SWITCH(e).to(f,g)), chain2);
+    </chain>
+
+    <chain name="chain2">
+        THEN(c, g, f);
+    </chain>
+</flow>

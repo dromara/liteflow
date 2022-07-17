@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本" type="script">
+            <![CDATA[
+                a=3;
+                b=2;
+                defaultContext.setData("s1",a*b);
+            ]]>
+        </node>
+
+        <node id="s2" name="条件脚本_改" type="switch_script">
+            <![CDATA[
+                count = defaultContext.getData("count");
+                if(count > 150){
+                    return "b";
+                }else{
+                    return "a";
+                }
+            ]]>
+        </node>
+
+        <node id="s3" name="普通脚本_新增" type="script">
+            <![CDATA[
+                a=3;
+                b=2;
+                c=10;
+                defaultContext.setData("s1",a*b+c);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,s1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(d,SWITCH(s2).to(a,b), s3);
+    </chain>
+</flow>
