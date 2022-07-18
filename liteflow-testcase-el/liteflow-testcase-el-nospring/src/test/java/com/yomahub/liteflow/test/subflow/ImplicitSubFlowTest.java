@@ -34,7 +34,7 @@ public class ImplicitSubFlowTest extends BaseTest {
 
     //这里GCmp中隐式的调用chain4，从而执行了h，m
     @Test
-    public void testImplicitSubFlow() {
+    public void testImplicitSubFlow1() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a request");
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
@@ -46,5 +46,18 @@ public class ImplicitSubFlowTest extends BaseTest {
         Assert.assertTrue(RUN_TIME_SLOT.contains(response.getSlot().getRequestId()));
         //requestData的取值正确
         Assert.assertEquals("it's implicit subflow.", context.getData("innerRequest"));
+    }
+
+    //在p里多线程调用q 10次，每个q取到的参数都是不同的。
+    @Test
+    public void testImplicitSubFlow2() {
+        LiteflowResponse response = flowExecutor.execute2Resp("c1", "it's a request");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+
+        Set<String> set = context.getData("test");
+
+        //requestData的取值正确
+        Assert.assertEquals(10, set.size());
     }
 }
