@@ -21,7 +21,7 @@ You can find out how to join the community on the official website!
 ## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/pages/5816c5/)
 ## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
-** LiteFlow has more than 650 test cases in the source code, including most scenarios, you can see the test cases in the source code.**
+** LiteFlow has more than 860 test cases in the source code, including most scenarios, you can see the test cases in the source code.**
 
 ## Feature
 * **Component definition unified:** All logic is a component, for all logic to provide a unified component implementation, small size, large energy.
