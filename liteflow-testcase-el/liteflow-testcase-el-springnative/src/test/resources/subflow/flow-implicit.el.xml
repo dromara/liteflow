@@ -7,4 +7,12 @@
     <chain name="chain4">
         THEN(h, m)
     </chain>
+
+    <chain name="c1">
+        THEN(p);
+    </chain>
+
+    <chain name="c2">
+        THEN(q);
+    </chain>
 </flow>

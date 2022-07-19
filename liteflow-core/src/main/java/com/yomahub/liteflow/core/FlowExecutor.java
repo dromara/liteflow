@@ -187,10 +187,11 @@ public class FlowExecutor {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
             } catch (CyclicDependencyException e) {
+                LOG.error(e.getMessage(), e);
                 LOG.error(e.getMessage());
                 throw e;
             } catch (ChainDuplicateException e) {
-                LOG.error(e.getMessage());
+                LOG.error(e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error for path {},reason: {}", rulePathList, e.getMessage());
@@ -459,6 +460,8 @@ public class FlowExecutor {
             if (ObjectUtil.isNotNull(chain)) {
                 String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
                 LOG.error(errMsg, e);
+            }else{
+                LOG.error(e.getMessage(), e);
             }
             slot.setException(e);
         } finally {

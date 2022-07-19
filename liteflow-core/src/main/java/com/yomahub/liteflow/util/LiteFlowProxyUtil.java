@@ -77,7 +77,7 @@ public class LiteFlowProxyUtil {
             throw new RuntimeException();
         }catch (Exception e){
             String errMsg = StrUtil.format("Error while proxying bean[{}]",bean.getClass().getName());
-            LOG.error(errMsg, e);
+            LOG.error(errMsg);
             throw new ComponentProxyErrorException(errMsg);
         }
     }

@@ -29,6 +29,7 @@ public class SwitchCondition extends Condition{
     public void execute(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
             //先执行switch节点
+            this.getSwitchNode().setCurrChainName(this.getCurrChainName());
             this.getSwitchNode().execute(slotIndex);
 
             //根据switch节点执行出来的结果选择
@@ -42,6 +43,7 @@ public class SwitchCondition extends Condition{
                         String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
                         throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
                     }
+                    targetExecutor.setCurrChainName(this.getCurrChainName());
                     targetExecutor.execute(slotIndex);
                 }else{
                     String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}]", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());

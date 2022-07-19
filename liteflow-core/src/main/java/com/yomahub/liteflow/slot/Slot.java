@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.slot;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
@@ -112,11 +113,23 @@ public class Slot{
 	}
 
 	public <T> T getChainReqData(String chainId) {
-		return (T) metaDataMap.get(CHAIN_REQ_PREFIX + chainId);
+		String key = CHAIN_REQ_PREFIX + chainId;
+		if (hasMetaData(key)){
+			Queue<Object> queue = (Queue<Object>) metaDataMap.get(key);
+			return (T)queue.poll();
+		}else{
+			return null;
+		}
 	}
 
 	public <T> void setChainReqData(String chainId, T t) {
-		putMetaDataMap(CHAIN_REQ_PREFIX + chainId, t);
+		String key = CHAIN_REQ_PREFIX + chainId;
+		if (hasMetaData(key)){
+			Queue<Object> queue = (Queue<Object>) metaDataMap.get(key);
+			queue.offer(t);
+		}else{
+			putMetaDataMap(key, new ConcurrentLinkedQueue<>(ListUtil.toList(t)));
+		}
 	}
 
 	public <T> void setPrivateDeliveryData(String nodeId, T t){
@@ -160,33 +173,14 @@ public class Slot{
 		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
 	}
 
-	public void pushChainName(String chainName) {
-		if (this.hasMetaData(CHAIN_NAME)){
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			stack.push(chainName);
-		}else{
-			Stack<String> stack = new Stack<>();
-			stack.push(chainName);
-			this.putMetaDataMap(CHAIN_NAME, stack);
-		}
-	}
-
-	public void popChainName(){
-		if (this.hasMetaData(CHAIN_NAME)){
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			if (stack.size() > 1){
-				stack.pop();
-			}
+	public void setChainName(String chainName) {
+		if (!hasMetaData(CHAIN_NAME)){
+			this.putMetaDataMap(CHAIN_NAME, chainName);
 		}
 	}
 
 	public String getChainName() {
-		try{
-			Stack<String> stack = (Stack<String>)metaDataMap.get(CHAIN_NAME);
-			return stack.peek();
-		}catch (Exception e){
-			return null;
-		}
+		return (String) metaDataMap.get(CHAIN_NAME);
 	}
 
 	public void addStep(CmpStep step){

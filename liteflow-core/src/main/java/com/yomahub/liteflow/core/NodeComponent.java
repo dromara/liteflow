@@ -68,6 +68,9 @@ public abstract class NodeComponent{
 	//tag标签
 	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
 
+	//当前流程名字
+	private final TransmittableThreadLocal<String> currChainNameTL = new TransmittableThreadLocal<>();
+
 	public NodeComponent() {
 	}
 
@@ -106,7 +109,7 @@ public abstract class NodeComponent{
 				self.onError();
 			}catch (Exception ex){
 				String errMsg = StrUtil.format("[{}]:component[{}] onError method happens exception",slot.getRequestId(),this.getDisplayName());
-				LOG.error(errMsg, ex);
+				LOG.error(errMsg);
 			}
 			throw e;
 		} finally {
@@ -274,6 +277,10 @@ public abstract class NodeComponent{
 		return this.tagTL.get();
 	}
 
+	public void removeTag(){
+		this.tagTL.remove();
+	}
+
 	public MonitorBus getMonitorBus() {
 		return monitorBus;
 	}
@@ -287,7 +294,7 @@ public abstract class NodeComponent{
 	}
 
 	public <T> T getSubChainReqData(){
-		return getSlot().getChainReqData(this.getChainName());
+		return getSlot().getChainReqData(this.getCurrChainName());
 	}
 
 	public String getChainName(){
@@ -300,6 +307,18 @@ public abstract class NodeComponent{
 		}else {
 			return StrUtil.format("{}({})", this.nodeId, this.name);
 		}
+	}
+
+	public void setCurrChainName(String currChainName){
+		this.currChainNameTL.set(currChainName);
+	}
+
+	public String getCurrChainName(){
+		return this.currChainNameTL.get();
+	}
+
+	public void removeCurrChainName(){
+		this.currChainNameTL.remove();
 	}
 
 	public void invoke(String chainId, Object param) throws Exception {

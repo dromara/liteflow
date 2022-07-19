@@ -28,7 +28,7 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder(NodeTypeEnum.COMMON);
     }
 
-    public static LiteFlowNodeBuilder createCommonCondNode() {
+    public static LiteFlowNodeBuilder createSwitchNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
     }
 

@@ -130,7 +130,7 @@ public class ExecutorHelper {
                 return executorService;
             }
         }catch (Exception e){
-            LOG.error(e.getMessage(), e);
+            LOG.error(e.getMessage());
             throw new ThreadExecutorServiceCreateException(e.getMessage());
         }
     }
