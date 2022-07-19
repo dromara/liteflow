@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.requestId;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.id.IdGeneratorHelper;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;

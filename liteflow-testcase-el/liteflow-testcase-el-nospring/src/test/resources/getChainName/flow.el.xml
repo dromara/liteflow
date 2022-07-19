@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.getChainName.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.getChainName.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.getChainName.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.getChainName.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.getChainName.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.getChainName.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.getChainName.cmp.GCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.getChainName.cmp.HCmp"/>
+        <node id="j" class="com.yomahub.liteflow.test.getChainName.cmp.JCmp"/>
+        <node id="k" class="com.yomahub.liteflow.test.getChainName.cmp.KCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        WHEN(sub1, sub2, sub3, sub4);
+    </chain>
+
+    <chain name="sub1">
+        THEN(a);
+    </chain>
+
+    <chain name="sub2">
+        THEN(b);
+    </chain>
+
+    <chain name="sub3">
+        THEN(c);
+    </chain>
+
+    <chain name="sub4">
+        THEN(d);
+    </chain>
+
+    <chain name="sub5">
+        THEN(e, f);
+    </chain>
+
+    <chain name="sub6">
+        SWITCH(h).to(j, k);
+    </chain>
+
+    <chain name="chain2">
+        THEN(
+            g,
+            WHEN(sub1, WHEN(sub2, sub3)),
+            sub4, sub5, e, sub6
+        );
+    </chain>
+</flow>

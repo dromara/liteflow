@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.subflow.cmp1.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.subflow.cmp1.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.subflow.cmp1.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.subflow.cmp1.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.subflow.cmp1.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.subflow.cmp2.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.subflow.cmp2.GCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.subflow.cmp2.HCmp"/>
+        <node id="m" class="com.yomahub.liteflow.test.subflow.cmp2.MCmp"/>
+    </nodes>
+    <chain name="chain1">
+        THEN(a, b, chain2);
+    </chain>
+</flow>

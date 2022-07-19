@@ -22,6 +22,8 @@ public class CmpStep {
 
     private String nodeName;
 
+    private String tag;
+
     private CmpStepTypeEnum stepType;
 
     //消耗的时间，毫秒为单位
@@ -137,5 +139,13 @@ public class CmpStep {
                 }
             }
         }
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 }

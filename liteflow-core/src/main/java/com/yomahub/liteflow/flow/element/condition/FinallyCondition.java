@@ -20,6 +20,7 @@ public class FinallyCondition extends Condition {
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
 		for(Executable executableItem : this.getExecutableList()){
+			executableItem.setCurrChainName(this.getCurrChainName());
 			executableItem.execute(slotIndex);
 		}
 	}

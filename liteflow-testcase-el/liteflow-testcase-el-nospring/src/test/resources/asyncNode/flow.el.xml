@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.asyncNode.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.asyncNode.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.asyncNode.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.asyncNode.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.asyncNode.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.asyncNode.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.asyncNode.cmp.GCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.asyncNode.cmp.HCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.asyncNode.cmp.ICmp"/>
+        <node id="j" class="com.yomahub.liteflow.test.asyncNode.cmp.JCmp"/>
+    </nodes>
+    <!-- base test -->
+    <chain name="chain1">
+        THEN(
+        a,b,c,
+        WHEN(d, SWITCH(e).to(f,g)),
+        chain2
+        );
+    </chain>
+
+
+    <chain name="chain2">
+        THEN(b, SWITCH(j).to(a, chain3));
+    </chain>
+
+    <chain name="chain3">
+        WHEN(g, f, h);
+    </chain>
+
+    <chain name="chain3-1">
+        THEN(WHEN(f, g, i), WHEN(h));
+    </chain>
+
+    <chain name="chain3-2">
+        THEN(WHEN(f, g, i).ignoreError(true), WHEN(h));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, b, c, WHEN(d, i, g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain5">
+        THEN(a, b, c, WHEN(d, i, g, i, h));
+    </chain>
+
+    <chain name="chain6">
+        THEN(a, b, c, WHEN(d, i), WHEN(g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain7">
+        THEN(a, b, c, WHEN(d, i).ignoreError(true), WHEN(g, i, h));
+    </chain>
+
+    <chain name="chain8">
+        THEN(WHEN(d, g, h).any(true), THEN(a, b, c));
+    </chain>
+
+</flow>

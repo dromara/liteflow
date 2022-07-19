@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        // 单行注释
+        THEN(
+            // 单行注释
+            a,
+            b,
+            WHEN(
+                /**
+                * 多行注释
+                **/
+                c,
+                b
+            )
+        );
+    </chain>
+</flow>

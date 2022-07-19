@@ -10,7 +10,6 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
 import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
@@ -26,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +50,8 @@ public class WhenCondition extends Condition {
 	//这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception{
 		Slot slot = DataBus.getSlot(slotIndex);
+
+		String currChainName = this.getCurrChainName();
 
 		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
 		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());
@@ -80,7 +80,7 @@ public class WhenCondition extends Condition {
 			}
 		}).map(executable -> CompletableFutureTimeout.completeOnTimeout(
 				WhenFutureObj.timeOut(executable.getExecuteName()),
-				CompletableFuture.supplyAsync(new ParallelSupplier(executable, slotIndex), parallelExecutor),
+				CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
 				liteflowConfig.getWhenMaxWaitSeconds(),
 				TimeUnit.SECONDS
 		)).collect(Collectors.toList());

@@ -4,7 +4,7 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 
 /**
  * 可执行器接口
- * 目前实现这个接口的有2个，node和chain
+ * 目前实现这个接口的有3个，Chain，Condition，Node
  *
  * @author Bryan.Zhang
  */
@@ -19,4 +19,8 @@ public interface Executable{
     ExecuteTypeEnum getExecuteType();
 
     String getExecuteName();
+
+    default void setCurrChainName(String currentChainName){
+
+    }
 }

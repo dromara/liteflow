@@ -34,7 +34,7 @@ public class LocalPathContentParser implements PathContentParser {
             }
             String content = ResourceUtil.readUtf8Str(path);
             if (StrUtil.isNotBlank(content)){
-                contentList.add(ResourceUtil.readUtf8Str(path));
+                contentList.add(content);
             }
         }
 

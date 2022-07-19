@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.execute2Future.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.execute2Future.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.execute2Future.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.execute2Future.cmp.DCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, WHEN(c, d));
+    </chain>
+
+</flow>

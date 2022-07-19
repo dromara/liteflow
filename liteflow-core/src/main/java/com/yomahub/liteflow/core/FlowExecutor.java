@@ -18,6 +18,8 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.parser.*;
 import com.yomahub.liteflow.parser.base.FlowParser;
 import com.yomahub.liteflow.parser.factory.FlowParserProvider;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -82,6 +84,9 @@ public class FlowExecutor {
         //在非spring体系下是一个空实现，等于不做此步骤
         ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
+        //进行id生成器的初始化
+        IdGeneratorHolder.init();
+
         //如果没有配置规则文件路径，就停止初始化。
         //规则文件路径不是一定要有，因为liteflow分基于规则和基于代码两种，有可能是动态代码构建的
         if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
@@ -133,10 +138,11 @@ public class FlowExecutor {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
             } catch (CyclicDependencyException e) {
+                LOG.error(e.getMessage(), e);
                 LOG.error(e.getMessage());
                 throw e;
             } catch (ChainDuplicateException e) {
-                LOG.error(e.getMessage());
+                LOG.error(e.getMessage(), e);
                 throw e;
             } catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error for path {},reason: {}", rulePathList, e.getMessage());
@@ -276,6 +282,8 @@ public class FlowExecutor {
             if (ObjectUtil.isNotNull(chain)) {
                 String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
                 LOG.error(errMsg, e);
+            }else{
+                LOG.error(e.getMessage(), e);
             }
             slot.setException(e);
         } finally {
