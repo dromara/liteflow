@@ -48,7 +48,7 @@ public class FlowParserProvider {
 
     private static final String FORMAT_YML_CONFIG_REGEX = "yml:.+";
 
-    private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:el_xml:|el_json:|el_yml:";
+    private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
 
     private static final String CLASS_CONFIG_REGEX = "^(xml:|json:|yml:|el_xml:|el_json:|el_yml:)?\\w+(\\.\\w+)*$";
 
