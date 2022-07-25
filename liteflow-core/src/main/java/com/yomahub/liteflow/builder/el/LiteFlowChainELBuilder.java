@@ -66,6 +66,7 @@ public class LiteFlowChainELBuilder {
         expressRunner.addFunctionAndClassMethod("id", Object.class, new IdOperator());
         expressRunner.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
         expressRunner.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
+        expressRunner.addFunction("node", new NodeOperator());
     }
 
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser

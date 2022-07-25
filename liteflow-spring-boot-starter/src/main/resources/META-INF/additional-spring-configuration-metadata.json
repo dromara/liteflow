@@ -120,6 +120,13 @@
       "defaultValue": true
     },
     {
+      "name": "liteflow.substitute-cmp-class",
+      "type": "java.lang.String",
+      "description": "substitute component class.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": ""
+    },
+    {
       "name": "liteflow.monitor.enable-log",
       "type": "java.lang.Boolean",
       "description": "Enable monitor log.",

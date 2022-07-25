@@ -62,6 +62,9 @@ public class LiteflowProperty {
     //是否打印执行过程中的日志
     private boolean printExecutionLog;
 
+    //替补组件的class路径
+    private String substituteCmpClass;
+
     public boolean isEnable() {
         return enable;
     }
@@ -196,5 +199,13 @@ public class LiteflowProperty {
 
     public void setRequestIdGeneratorClass(String requestIdGeneratorClass) {
         this.requestIdGeneratorClass = requestIdGeneratorClass;
+    }
+
+    public String getSubstituteCmpClass() {
+        return substituteCmpClass;
+    }
+
+    public void setSubstituteCmpClass(String substituteCmpClass) {
+        this.substituteCmpClass = substituteCmpClass;
     }
 }

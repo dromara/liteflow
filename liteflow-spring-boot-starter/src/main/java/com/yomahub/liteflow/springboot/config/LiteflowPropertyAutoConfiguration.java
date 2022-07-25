@@ -45,6 +45,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setMainExecutorWorks(property.getMainExecutorWorks());
         liteflowConfig.setMainExecutorClass(property.getMainExecutorClass());
         liteflowConfig.setPrintExecutionLog(property.isPrintExecutionLog());
+        liteflowConfig.setSubstituteCmpClass(property.getSubstituteCmpClass());
         return liteflowConfig;
     }
 }

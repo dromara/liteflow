@@ -87,6 +87,9 @@ public class LiteflowConfig {
     //是否打印执行中的日志
     private Boolean printExecutionLog;
 
+    //替补组件class路径
+    private String substituteCmpClass;
+
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
             return Boolean.TRUE;
@@ -332,5 +335,13 @@ public class LiteflowConfig {
 
     public void setPrintExecutionLog(Boolean printExecutionLog) {
         this.printExecutionLog = printExecutionLog;
+    }
+
+    public String getSubstituteCmpClass() {
+        return substituteCmpClass;
+    }
+
+    public void setSubstituteCmpClass(String substituteCmpClass) {
+        this.substituteCmpClass = substituteCmpClass;
     }
 }
