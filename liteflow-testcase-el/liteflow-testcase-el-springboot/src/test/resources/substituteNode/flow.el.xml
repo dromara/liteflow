@@ -7,4 +7,8 @@
     <chain name="chain2">
         THEN(node("a"), node("b"), node("93-nodeTEST"));
     </chain>
+
+    <chain name="chain3">
+        THEN(a, b, node("88-ffc"));
+    </chain>
 </flow>

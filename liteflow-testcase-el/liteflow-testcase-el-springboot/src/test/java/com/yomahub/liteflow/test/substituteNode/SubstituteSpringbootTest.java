@@ -41,4 +41,11 @@ public class SubstituteSpringbootTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assert.assertTrue(response.isSuccess());
     }
+
+    //测试特殊命名的节点
+    @Test
+    public void testSub3() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
 }
