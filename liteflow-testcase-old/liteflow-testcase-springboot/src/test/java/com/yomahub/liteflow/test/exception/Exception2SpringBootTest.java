@@ -76,7 +76,7 @@ public class Exception2SpringBootTest extends BaseTest {
     public void testInvokeCustomStatefulException() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain6", "custom-stateful-exception");
         Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(300, response.getCode());
+        Assert.assertEquals("300", response.getCode());
         Assert.assertNotNull(response.getCause());
         Assert.assertTrue(response.getCause() instanceof LiteFlowException);
         Assert.assertNotNull(response.getSlot());
@@ -86,6 +86,6 @@ public class Exception2SpringBootTest extends BaseTest {
     public void testNotInvokeCustomStatefulException() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain6", "test");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(0, response.getCode());
+        Assert.assertNull(response.getCode());
     }
 }

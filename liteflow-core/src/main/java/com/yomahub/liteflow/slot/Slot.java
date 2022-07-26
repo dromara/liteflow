@@ -122,7 +122,7 @@ public class Slot{
 		}
 	}
 
-	public <T> void setChainReqData(String chainId, T t) {
+	public synchronized <T> void setChainReqData(String chainId, T t) {
 		String key = CHAIN_REQ_PREFIX + chainId;
 		if (hasMetaData(key)){
 			Queue<Object> queue = (Queue<Object>) metaDataMap.get(key);

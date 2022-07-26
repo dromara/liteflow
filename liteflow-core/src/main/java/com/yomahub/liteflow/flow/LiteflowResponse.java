@@ -19,7 +19,7 @@ public class LiteflowResponse implements Serializable {
     
     private boolean success;
 
-    private int code;
+    private String code;
 
     private String message;
     
@@ -35,11 +35,9 @@ public class LiteflowResponse implements Serializable {
             this.success = false;
             this.cause = slot.getException();
             this.message = this.cause.getMessage();
-            this.code = this.cause instanceof LiteFlowException ? ((LiteFlowException)this.cause).getCode() : -1;
+            this.code = this.cause instanceof LiteFlowException ? ((LiteFlowException)this.cause).getCode() : null;
         } else {
             this.success = true;
-            this.code = 0;
-            this.message = "";
         }
         this.slot = slot;
     }
@@ -60,11 +58,11 @@ public class LiteflowResponse implements Serializable {
         this.message = message;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 
-    public void setCode(int code) {
+    public void setCode(String code) {
         this.code = code;
     }
 

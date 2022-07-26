@@ -27,7 +27,7 @@ public class FCmp {
 	public void process(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
 		if(StrUtil.isNotBlank(str) && str.equals("custom-stateful-exception")) {
-			throw new CustomStatefulException(300, "chain execute custom stateful execption");
+			throw new CustomStatefulException("300", "chain execute custom stateful execption");
 		}
 		LOG.info("Fcomp executed!");
 	}

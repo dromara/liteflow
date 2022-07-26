@@ -209,8 +209,7 @@ public class FlowExecutor {
     private LiteflowResponse execute2Resp(String chainId, Object param, Class<?>[] contextBeanClazzArray,
                                           Integer slotIndex, boolean isInnerChain) {
         Slot slot = doExecute(chainId, param, contextBeanClazzArray, slotIndex, isInnerChain);
-        LiteflowResponse response = new LiteflowResponse(slot);
-        return response;
+        return new LiteflowResponse(slot);
     }
 
     private Slot doExecute(String chainId, Object param, Class<?>[] contextBeanClazzArray, Integer slotIndex,
