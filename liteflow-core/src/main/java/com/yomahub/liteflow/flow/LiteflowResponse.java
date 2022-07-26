@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow;
 
+import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
 
@@ -7,9 +8,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 执行结果封装类
@@ -20,7 +18,9 @@ public class LiteflowResponse implements Serializable {
     private static final long serialVersionUID = -2792556188993845048L;
     
     private boolean success;
-    
+
+    private int code;
+
     private String message;
     
     private Exception cause;
@@ -31,8 +31,16 @@ public class LiteflowResponse implements Serializable {
       this(null);
     }
     public LiteflowResponse(Slot slot) {
-        this.success = true;
-        this.message = "";
+        if (slot != null && slot.getException() != null) {
+            this.success = false;
+            this.cause = slot.getException();
+            this.message = this.cause.getMessage();
+            this.code = this.cause instanceof LiteFlowException ? ((LiteFlowException)this.cause).getCode() : -1;
+        } else {
+            this.success = true;
+            this.code = 0;
+            this.message = "";
+        }
         this.slot = slot;
     }
     
@@ -51,7 +59,15 @@ public class LiteflowResponse implements Serializable {
     public void setMessage(final String message) {
         this.message = message;
     }
-    
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
     public Exception getCause() {
         return cause;
     }
@@ -59,7 +75,7 @@ public class LiteflowResponse implements Serializable {
     public void setCause(final Exception cause) {
         this.cause = cause;
     }
-    
+
     public Slot getSlot() {
         return slot;
     }

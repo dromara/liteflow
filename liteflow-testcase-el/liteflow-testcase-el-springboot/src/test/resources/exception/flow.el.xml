@@ -16,4 +16,8 @@
         SWITCH(e).to(b, c);
     </chain>
 
+    <chain name="chain6">
+        THEN(f, g);
+    </chain>
+
 </flow>
