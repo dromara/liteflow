@@ -6,6 +6,8 @@
         <node id="c" class="com.yomahub.liteflow.test.exception.cmp.CCmp"/>
         <node id="d" class="com.yomahub.liteflow.test.exception.cmp.DCmp"/>
         <node id="e" class="com.yomahub.liteflow.test.exception.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.exception.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.exception.cmp.GCmp"/>
     </nodes>
 
     <chain name="chain1">
@@ -25,5 +27,9 @@
 
     <chain name="chain5">
         <then value="e(b|c)"/>
+    </chain>
+
+    <chain name="chain6">
+        <then value="f,g"/>
     </chain>
 </flow>

@@ -18,4 +18,8 @@
     <chain name="chain5">
         <then value="e(b|c)"/>
     </chain>
+
+    <chain name="chain6">
+        <then value="f,g"/>
+    </chain>
 </flow>

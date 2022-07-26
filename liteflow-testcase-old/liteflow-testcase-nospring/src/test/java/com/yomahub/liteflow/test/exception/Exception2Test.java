@@ -2,11 +2,8 @@ package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.exception.ChainNotFoundException;
-import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
-import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DefaultContext;
@@ -63,5 +60,22 @@ public class Exception2Test extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "test");
         Assert.assertFalse(response.isSuccess());
         throw response.getCause();
+    }
+
+    @Test
+    public void testInvokeCustomStatefulException() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", "custom-stateful-exception");
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertEquals(300, response.getCode());
+        Assert.assertNotNull(response.getCause());
+        Assert.assertTrue(response.getCause() instanceof LiteFlowException);
+        Assert.assertNotNull(response.getSlot());
+    }
+
+    @Test
+    public void testNotInvokeCustomStatefulException() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", "test");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals(0, response.getCode());
     }
 }
