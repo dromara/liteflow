@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.script.groovy;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
@@ -47,7 +48,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public Object execute(String nodeId, int slotIndex) {
+    public Object execute(String currChainName, String nodeId, int slotIndex) {
         try{
             if (!compiledScriptMap.containsKey(nodeId)){
                 String errorMsg = StrUtil.format("script for node[{}] is not loaded", nodeId);
@@ -65,6 +66,17 @@ public class GroovyScriptExecutor implements ScriptExecutor {
                 String key = StrUtil.lowerFirst(o.getClass().getSimpleName());
                 bindings.put(key, o);
             });
+
+            //放入主Chain的流程参数
+            Slot slot = DataBus.getSlot(slotIndex);
+            bindings.put("requestData", slot.getRequestData());
+
+            //如果有隐试流程，则放入隐式流程的流程参数
+            Object subRequestData = slot.getChainReqData(currChainName);
+            if (ObjectUtil.isNotNull(subRequestData)){
+                bindings.put("subRequestData", subRequestData);
+            }
+
             return compiledScript.eval(bindings);
         }catch (Exception e){
             log.error(e.getMessage(), e);

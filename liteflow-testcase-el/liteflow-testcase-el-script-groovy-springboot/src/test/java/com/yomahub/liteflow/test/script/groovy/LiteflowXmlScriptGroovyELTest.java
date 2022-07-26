@@ -68,4 +68,13 @@ public class LiteflowXmlScriptGroovyELTest extends BaseTest {
         Assert.assertTrue(responseNew.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本_改]==>b==>s3[普通脚本_新增]", responseNew.getExecuteStepStr());
     }
+
+    //测试脚本中的requestData的引用
+    @Test
+    public void testScript4() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("s4:arg", context.getData("s4"));
+    }
 }

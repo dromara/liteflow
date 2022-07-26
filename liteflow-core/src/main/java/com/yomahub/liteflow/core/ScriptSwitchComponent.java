@@ -11,7 +11,7 @@ public class ScriptSwitchComponent extends NodeSwitchComponent {
 
     @Override
     public String processSwitch() throws Exception {
-        return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(getNodeId(), getSlotIndex());
+        return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
     }
 
     public void loadScript(String script) {

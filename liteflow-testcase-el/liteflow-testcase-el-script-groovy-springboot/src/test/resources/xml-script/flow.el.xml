@@ -28,6 +28,14 @@
                 defaultContext.setData("s1",a*b);
             ]]>
         </node>
+
+        <node id="s4" name="普通脚本3" type="script">
+            <![CDATA[
+                def a=30;
+                def b=2;
+                defaultContext.setData("s4","s4:" + requestData);
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">
@@ -36,5 +44,9 @@
 
     <chain name="chain2">
         THEN(d, SWITCH(s2).to(a,b));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, s4);
     </chain>
 </flow>

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.script.qlexpress;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
@@ -50,7 +51,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public Object execute(String nodeId, int slotIndex) {
+    public Object execute(String currChainName, String nodeId, int slotIndex) {
         List<String> errorList = new ArrayList<>();
         try{
             if (!compiledScriptMap.containsKey(nodeId)){
@@ -69,6 +70,16 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
                 String key = StrUtil.lowerFirst(o.getClass().getSimpleName());
                 context.put(key, o);
             });
+
+            //放入主Chain的流程参数
+            Slot slot = DataBus.getSlot(slotIndex);
+            context.put("requestData", slot.getRequestData());
+
+            //如果有隐试流程，则放入隐式流程的流程参数
+            Object subRequestData = slot.getChainReqData(currChainName);
+            if (ObjectUtil.isNotNull(subRequestData)){
+                context.put("subRequestData", subRequestData);
+            }
 
             return expressRunner.execute(instructionSet, context, errorList, true, false, null);
         }catch (Exception e){

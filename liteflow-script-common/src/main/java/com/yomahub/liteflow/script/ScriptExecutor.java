@@ -11,7 +11,7 @@ public interface ScriptExecutor {
 
     void load(String nodeId, String script);
 
-    Object execute(String nodeId, int slotIndex);
+    Object execute(String currChainName, String nodeId, int slotIndex);
 
     void cleanCache();
 }

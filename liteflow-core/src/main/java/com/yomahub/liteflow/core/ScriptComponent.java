@@ -15,7 +15,7 @@ public class ScriptComponent extends NodeComponent{
 
     @Override
     public void process() throws Exception {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(getNodeId(), getSlotIndex());
+        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
     }
 
     public void loadScript(String script) {
