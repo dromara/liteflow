@@ -16,11 +16,12 @@ import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -53,7 +54,7 @@ public class Slot{
 
 	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
 
-	private final Queue<CmpStep> executeSteps = new ConcurrentLinkedQueue<>();
+	private final Deque<CmpStep> executeSteps = new ConcurrentLinkedDeque<>();
 
 	private String executeStepsStr;
 
@@ -224,7 +225,7 @@ public class Slot{
 		return (String) metaDataMap.get(REQUEST_ID);
 	}
 
-	public Queue<CmpStep> getExecuteSteps() {
+	public Deque<CmpStep> getExecuteSteps() {
 		return executeSteps;
 	}
 
