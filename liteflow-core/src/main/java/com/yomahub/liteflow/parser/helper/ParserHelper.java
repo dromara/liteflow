@@ -214,7 +214,7 @@ public class ParserHelper {
 
 			//解析每一个chain
 			List<Element> chainList = rootElement.elements(CHAIN);
-			chainList.forEach(parseOneChainConsumer::accept);
+			chainList.forEach(parseOneChainConsumer);
 		}
 	}
 
@@ -409,15 +409,13 @@ public class ParserHelper {
 
 			String text = Pattern.compile(REGEX_COMMENT)
 					.matcher(elStr)
-					// 移除注释
+					//移除注释
 					.replaceAll(CharSequenceUtil.EMPTY)
-					// 移除字符串中的空格
+					//移除字符串中的空格
 					.replaceAll(CharSequenceUtil.SPACE, CharSequenceUtil.EMPTY);
 
 			// 移除所有换行符
 			return StrUtil.removeAllLineBreaks(text);
 		}
 	}
-
-
 }
