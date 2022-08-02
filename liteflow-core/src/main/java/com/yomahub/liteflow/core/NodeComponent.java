@@ -325,7 +325,7 @@ public abstract class NodeComponent{
 		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
 	}
 
-	public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
+	public LiteflowResponse invoke2Resp(String chainId, Object param) {
 		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
 	}
 }
