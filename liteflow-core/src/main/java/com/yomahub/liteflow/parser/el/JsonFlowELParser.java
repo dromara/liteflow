@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.el;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.parser.base.BaseJsonFlowParser;
 import com.yomahub.liteflow.parser.helper.ParserHelper;
@@ -21,7 +22,7 @@ public abstract class JsonFlowELParser extends BaseJsonFlowParser {
 	 * @param chainObject chain 节点
 	 */
 	@Override
-	public void parseOneChain(JSONObject chainObject) {
+	public void parseOneChain(JsonNode chainObject) {
 		ParserHelper.parseOneChainEl(chainObject);
 	}
 

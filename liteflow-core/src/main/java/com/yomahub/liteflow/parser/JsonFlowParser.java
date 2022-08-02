@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.prop.ChainPropBean;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -28,7 +29,7 @@ public abstract class JsonFlowParser extends BaseJsonFlowParser {
 	 * 解析一个chain的过程
 	 */
 	@Override
-	public void parseOneChain(JSONObject chainObject) {
+	public void parseOneChain(JsonNode chainObject) {
 		ParserHelper.parseOneChain(chainObject);
 	}
 

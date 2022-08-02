@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.base;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.ZookeeperJsonFlowParser;
 import com.yomahub.liteflow.parser.helper.ZkParserHelper;
 import org.apache.curator.framework.CuratorFramework;
@@ -54,5 +55,5 @@ public abstract class BaseZookeeperJsonFlowParser extends BaseJsonFlowParser {
 	 * @param chainObject chain 节点
 	 */
 	@Override
-	public abstract void parseOneChain(JSONObject chainObject);
+	public abstract void parseOneChain(JsonNode chainObject);
 }
