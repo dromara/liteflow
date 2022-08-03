@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.parser;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.base.BaseZookeeperJsonFlowParser;
 import com.yomahub.liteflow.parser.helper.ParserHelper;

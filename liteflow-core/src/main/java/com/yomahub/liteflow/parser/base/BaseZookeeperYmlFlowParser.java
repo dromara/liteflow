@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.parser.base;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.helper.ZkParserHelper;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
@@ -43,9 +43,9 @@ public abstract class BaseZookeeperYmlFlowParser extends BaseYmlFlowParser{
 
 		zkParserHelper.checkContent(content);
 
-		JSONObject ruleObject = convertToJson(content);
+		JsonNode ruleObject = convertToJson(content);
 
-		parse(ruleObject.toJSONString());
+		parse(ruleObject.asText());
 
 		zkParserHelper.listenZkNode(client);
 	}
@@ -56,5 +56,5 @@ public abstract class BaseZookeeperYmlFlowParser extends BaseYmlFlowParser{
 	 * @param chain chain
 	 */
 	@Override
-	public abstract void parseOneChain(JSONObject chain);
+	public abstract void parseOneChain(JsonNode chain);
 }

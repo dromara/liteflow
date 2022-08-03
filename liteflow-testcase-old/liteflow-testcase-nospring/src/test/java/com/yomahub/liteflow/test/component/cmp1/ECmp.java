@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.component.cmp1;
 
-import com.alibaba.fastjson.JSON;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
 
@@ -17,6 +17,6 @@ public class ECmp extends NodeComponent {
             //执行到某个条件时，手动结束流程。
             this.setIsEnd(true);
         }
-        System.out.println("EComp responseData responseData=" + JSON.toJSONString(responseData));
+        System.out.println("EComp responseData responseData=" + JsonUtil.toJsonString(responseData));
     }
 }

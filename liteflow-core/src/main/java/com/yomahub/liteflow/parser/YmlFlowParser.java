@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.parser;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.base.BaseYmlFlowParser;
 import com.yomahub.liteflow.parser.helper.ParserHelper;
 
@@ -15,7 +15,7 @@ public abstract class YmlFlowParser extends BaseYmlFlowParser {
      * 解析一个chain的过程
      */
     @Override
-    public void parseOneChain(JSONObject chainObject) {
+    public void parseOneChain(JsonNode chainObject) {
         ParserHelper.parseOneChain(chainObject);
     }
 

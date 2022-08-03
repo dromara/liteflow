@@ -2,8 +2,6 @@ package com.yomahub.liteflow.parser.base;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.Feature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.helper.ParserHelper;
 import com.yomahub.liteflow.util.JsonUtil;
