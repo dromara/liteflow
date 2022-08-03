@@ -3,6 +3,7 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.proxy.ComponentProxy;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
@@ -12,6 +13,7 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +36,9 @@ public class SwitchCondition extends Condition{
 
             //根据switch节点执行出来的结果选择
             Slot slot = DataBus.getSlot(slotIndex);
-            String targetId = slot.getSwitchResult(this.getSwitchNode().getInstance().getClass().getName());
+            //这里可能会有spring代理过的bean，所以拿到user原始的class
+            Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getSwitchNode().getInstance().getClass());
+            String targetId = slot.getSwitchResult(originalClass.getName());
             if (StrUtil.isNotBlank(targetId)) {
                 Executable targetExecutor = targetMap.get(targetId);
                 if (ObjectUtil.isNotNull(targetExecutor)) {
