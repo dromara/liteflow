@@ -20,11 +20,13 @@ import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -250,8 +252,8 @@ public class ParserHelper {
 					JsonNode nodeObject = nodeIterator.next();
 					id = nodeObject.get(ID).textValue();
 					name = nodeObject.hasNonNull(NAME) ? nodeObject.get(NAME).textValue() : "";
-					clazz = nodeObject.hasNonNull(_CLASS) ? nodeObject.get(NAME).textValue() : "";;
-					type = nodeObject.hasNonNull(TYPE) ? nodeObject.get(TYPE).textValue() : "";
+					clazz = nodeObject.hasNonNull(_CLASS) ? nodeObject.get(_CLASS).textValue() : "";;
+					type = nodeObject.hasNonNull(TYPE) ? nodeObject.get(TYPE).textValue() : null;
 					script = nodeObject.hasNonNull(VALUE) ? nodeObject.get(VALUE).textValue() : "";
 					file = nodeObject.hasNonNull(FILE) ? nodeObject.get(FILE).textValue() : "";
 
@@ -299,10 +301,10 @@ public class ParserHelper {
 			JsonNode condNode = iterator.next();
 			conditionType = ConditionTypeEnum.getEnumByCode(condNode.get(TYPE).textValue());
 			condValueStr = condNode.get(VALUE).textValue();
-			errorResume = condNode.get(ERROR_RESUME).textValue();
-			group = condNode.get(GROUP).textValue();
-			any = condNode.get(ANY).textValue();
-			threadExecutorClass = condNode.get(THREAD_EXECUTOR_CLASS).textValue();
+			errorResume = condNode.hasNonNull(ERROR_RESUME) ? condNode.get(ERROR_RESUME).textValue() : "";
+			group = condNode.hasNonNull(GROUP) ? condNode.get(GROUP).textValue() : "";
+			any = condNode.hasNonNull(ANY) ? condNode.get(ANY).textValue() : "";
+			threadExecutorClass =  condNode.hasNonNull(THREAD_EXECUTOR_CLASS) ? condNode.get(THREAD_EXECUTOR_CLASS).textValue() : "";
 
 			ChainPropBean chainPropBean = new ChainPropBean()
 					.setCondValueStr(condValueStr)

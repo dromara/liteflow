@@ -36,8 +36,8 @@ public class JsonUtil {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            String errMsg = StrUtil.format("Error while writing value as string[{}]",object.getClass().getName());
-            LOG.error(errMsg);
+            String errMsg = StrUtil.format("Error while writing value as string[{}],reason: {}", object.getClass().getName(), e.getMessage());
+            LOG.error(e.getMessage(), e);
             throw new JsonProcessException(errMsg);
         }
     }
@@ -49,8 +49,8 @@ public class JsonUtil {
         try {
             return objectMapper.readTree(text);
         } catch (IOException e) {
-            String errMsg = StrUtil.format("Error while parsing text [{}]",text);
-            LOG.error(errMsg);
+            String errMsg = StrUtil.format("Error while parsing text [{}],reason: {}", text, e.getMessage());
+            LOG.error(e.getMessage(), e);
             throw new JsonProcessException(errMsg);
         }
     }

@@ -45,7 +45,7 @@ public abstract class BaseZookeeperYmlFlowParser extends BaseYmlFlowParser{
 
 		JsonNode ruleObject = convertToJson(content);
 
-		parse(ruleObject.asText());
+		parse(ruleObject.toString());
 
 		zkParserHelper.listenZkNode(client);
 	}
