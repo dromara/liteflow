@@ -2,9 +2,9 @@ package com.yomahub.liteflow.parser.base;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.Feature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.parser.helper.ParserHelper;
+import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.List;
 import java.util.Set;
@@ -30,13 +30,12 @@ public abstract class BaseJsonFlowParser implements FlowParser {
 			return;
 		}
 
-		List<JSONObject> jsonObjectList = ListUtil.toList();
+		List<JsonNode> jsonObjectList = ListUtil.toList();
 		for (String content : contentList) {
-			//把字符串原生转换为json对象，如果不加第二个参数OrderedField，会无序
-			JSONObject flowJsonObject = JSONObject.parseObject(content, Feature.OrderedField);
-			jsonObjectList.add(flowJsonObject);
+			JsonNode flowJsonNode = JsonUtil.parseObject(content);
+			jsonObjectList.add(flowJsonNode);
 		}
-		ParserHelper.parseJsonObject(jsonObjectList, CHAIN_NAME_SET, this::parseOneChain);
+		ParserHelper.parseJsonNode(jsonObjectList, CHAIN_NAME_SET, this::parseOneChain);
 	}
 
 	/**
@@ -44,6 +43,6 @@ public abstract class BaseJsonFlowParser implements FlowParser {
 	 *
 	 * @param chainObject chain 节点
 	 */
-	public abstract void parseOneChain(JSONObject chainObject);
+	public abstract void parseOneChain(JsonNode chainObject);
 
 }

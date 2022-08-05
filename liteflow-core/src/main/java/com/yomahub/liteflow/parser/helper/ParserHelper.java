@@ -5,8 +5,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
@@ -21,11 +20,13 @@ import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -218,51 +219,43 @@ public class ParserHelper {
 		}
 	}
 
-	/**
-	 * json 形式的主要解析过程
-	 *
-	 * @param flowJsonObjectList    flowJsonObjectList
-	 * @param chainNameSet          用于去重
-	 * @param parseOneChainConsumer parseOneChain 函数
-	 */
-	public static void parseJsonObject(List<JSONObject> flowJsonObjectList, Set<String> chainNameSet, Consumer<JSONObject> parseOneChainConsumer) {
+	public static void parseJsonNode(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet, Consumer<JsonNode> parseOneChainConsumer) {
 		//先在元数据里放上chain
 		//先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
 		//这样就不用去像之前的版本那样回归调用
 		//同时也解决了不能循环依赖的问题
 		flowJsonObjectList.forEach(jsonObject -> {
 			// 解析chain节点
-			JSONArray chainArray = jsonObject.getJSONObject(FLOW).getJSONArray(CHAIN);
-
+			Iterator<JsonNode> iterator = jsonObject.get(FLOW).get(CHAIN).elements();
 			//先在元数据里放上chain
-			chainArray.forEach(o -> {
-				JSONObject innerJsonObject = (JSONObject) o;
+			while (iterator.hasNext()) {
+				JsonNode innerJsonObject = iterator.next();
 				//校验加载的 chainName 是否有重复的
 				// TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				String chainName = innerJsonObject.getString(NAME);
+				String chainName = innerJsonObject.get(NAME).textValue();
 				if (!chainNameSet.add(chainName)) {
 					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
 				}
 
-				FlowBus.addChain(innerJsonObject.getString(NAME));
-			});
+				FlowBus.addChain(innerJsonObject.get(NAME).textValue());
+			}
 		});
 		// 清空
 		chainNameSet.clear();
 
-		for (JSONObject flowJsonObject : flowJsonObjectList) {
+		for (JsonNode flowJsonNode : flowJsonObjectList) {
 			// 当存在<nodes>节点定义时，解析node节点
-			if (flowJsonObject.getJSONObject(FLOW).containsKey(NODES)) {
-				JSONArray nodeArrayList = flowJsonObject.getJSONObject(FLOW).getJSONObject(NODES).getJSONArray(NODE);
+			if (flowJsonNode.get(FLOW).has(NODES)) {
+				Iterator<JsonNode> nodeIterator = flowJsonNode.get(FLOW).get(NODES).get(NODE).elements();
 				String id, name, clazz, script, type, file;
-				for (int i = 0; i < nodeArrayList.size(); i++) {
-					JSONObject nodeObject = nodeArrayList.getJSONObject(i);
-					id = nodeObject.getString(ID);
-					name = nodeObject.getString(NAME);
-					clazz = nodeObject.getString(_CLASS);
-					type = nodeObject.getString(TYPE);
-					script = nodeObject.getString(VALUE);
-					file = nodeObject.getString(FILE);
+				while ((nodeIterator.hasNext())) {
+					JsonNode nodeObject = nodeIterator.next();
+					id = nodeObject.get(ID).textValue();
+					name = nodeObject.hasNonNull(NAME) ? nodeObject.get(NAME).textValue() : "";
+					clazz = nodeObject.hasNonNull(_CLASS) ? nodeObject.get(_CLASS).textValue() : "";;
+					type = nodeObject.hasNonNull(TYPE) ? nodeObject.get(TYPE).textValue() : null;
+					script = nodeObject.hasNonNull(VALUE) ? nodeObject.get(VALUE).textValue() : "";
+					file = nodeObject.hasNonNull(FILE) ? nodeObject.get(FILE).textValue() : "";
 
 					// 构建 node
 					NodePropBean nodePropBean = new NodePropBean()
@@ -278,20 +271,21 @@ public class ParserHelper {
 			}
 
 			//解析每一个chain
-			JSONArray chainArray = flowJsonObject.getJSONObject(FLOW).getJSONArray(CHAIN);
-			chainArray.forEach(o -> {
-				JSONObject jsonObject = (JSONObject) o;
-				parseOneChainConsumer.accept(jsonObject);
-			});
+			Iterator<JsonNode> chainIterator = flowJsonNode.get(FLOW).get(CHAIN).elements();
+			while (chainIterator.hasNext()) {
+				JsonNode jsonNode = chainIterator.next();
+				parseOneChainConsumer.accept(jsonNode);
+			}
 		}
 	}
+
 
 	/**
 	 * 解析一个chain的过程
 	 *
-	 * @param chainObject chain 节点
+	 * @param chainNode chain 节点
 	 */
-	public static void parseOneChain(JSONObject chainObject) {
+	public static void parseOneChain(JsonNode chainNode) {
 		String condValueStr;
 		ConditionTypeEnum conditionType;
 		String group;
@@ -300,17 +294,17 @@ public class ParserHelper {
 		String threadExecutorClass;
 
 		//构建chainBuilder
-		String chainName = chainObject.getString(NAME);
+		String chainName = chainNode.get(NAME).textValue();
 		LiteFlowChainBuilder chainBuilder = LiteFlowChainBuilder.createChain().setChainName(chainName);
-
-		for (Object o : chainObject.getJSONArray(CONDITION)) {
-			JSONObject condObject = (JSONObject) o;
-			conditionType = ConditionTypeEnum.getEnumByCode(condObject.getString(TYPE));
-			condValueStr = condObject.getString(VALUE);
-			errorResume = condObject.getString(ERROR_RESUME);
-			group = condObject.getString(GROUP);
-			any = condObject.getString(ANY);
-			threadExecutorClass = condObject.getString(THREAD_EXECUTOR_CLASS);
+		Iterator<JsonNode> iterator =  chainNode.get(CONDITION).iterator();
+		while (iterator.hasNext()) {
+			JsonNode condNode = iterator.next();
+			conditionType = ConditionTypeEnum.getEnumByCode(condNode.get(TYPE).textValue());
+			condValueStr = condNode.get(VALUE).textValue();
+			errorResume = condNode.hasNonNull(ERROR_RESUME) ? condNode.get(ERROR_RESUME).textValue() : "";
+			group = condNode.hasNonNull(GROUP) ? condNode.get(GROUP).textValue() : "";
+			any = condNode.hasNonNull(ANY) ? condNode.get(ANY).textValue() : "";
+			threadExecutorClass =  condNode.hasNonNull(THREAD_EXECUTOR_CLASS) ? condNode.get(THREAD_EXECUTOR_CLASS).textValue() : "";
 
 			ChainPropBean chainPropBean = new ChainPropBean()
 					.setCondValueStr(condValueStr)
@@ -324,7 +318,6 @@ public class ParserHelper {
 			ParserHelper.buildChain(chainPropBean, chainBuilder);
 		}
 	}
-
 	/**
 	 * 解析一个chain的过程
 	 * <p>
@@ -367,12 +360,12 @@ public class ParserHelper {
 	/**
 	 * 解析一个chain的过程
 	 *
-	 * @param chainObject chain 节点
+	 * @param chainNode chain 节点
 	 */
-	public static void parseOneChainEl(JSONObject chainObject) {
+	public static void parseOneChainEl(JsonNode chainNode) {
 		//构建chainBuilder
-		String chainName = chainObject.getString(NAME);
-		String el = chainObject.getString(VALUE);
+		String chainName = chainNode.get(NAME).textValue();
+		String el = chainNode.get(VALUE).textValue();
 		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainName(chainName);
 		chainELBuilder.setEL(el).build();
 	}
