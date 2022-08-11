@@ -17,8 +17,8 @@ LiteFlow is a community-driven project. We take community building very seriousl
 
 You can find out how to join the community on the official website!
 
-## Website url: [Click here to access the official website](https://liteflow.yomahub.com/)
-## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/pages/5816c5/)
+## Website url: [Click here to access the official website](https://liteflow.yomahub.com/en)
+## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/en/pages/5816c5/)
 ## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
 LiteFlow has more than 860 test cases in the source code, including most scenarios, you can see the test cases in the source code.
@@ -58,6 +58,10 @@ LiteFlow has an extremely detailed and easy-to-understand documentation， it ca
 Right now LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
 Looking forward to your use！
+
+**DISCORD LINK**
+
+Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
 **WECHAT OFFICIAL ACCOUNT**
 
