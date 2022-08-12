@@ -72,6 +72,10 @@ public class SwitchCondition extends Condition{
         this.getExecutableList().add(switchNode);
     }
 
+    public Map<String, Executable> getTargetMap() {
+        return targetMap;
+    }
+
     public Node getSwitchNode(){
         return (Node) this.getExecutableList().get(0);
     }
