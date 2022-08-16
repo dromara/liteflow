@@ -16,6 +16,7 @@ public abstract class XmlFlowParser extends BaseXmlFlowParser {
 	/**
 	 * 解析一个chain的过程
 	 */
+	@Override
 	public void parseOneChain(Element e) {
 		ParserHelper.parseOneChain(e);
 	}
