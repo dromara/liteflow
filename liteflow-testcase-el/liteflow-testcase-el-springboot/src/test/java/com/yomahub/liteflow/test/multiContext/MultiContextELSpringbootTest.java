@@ -51,4 +51,18 @@ public class MultiContextELSpringbootTest extends BaseTest {
         DefaultContext context = response.getContextBean(DefaultContext.class);
     }
 
+    @Test
+    public void testPassInitializedContextBean() throws Exception{
+        OrderContext orderContext = new OrderContext();
+        orderContext.setOrderNo("SO11223344");
+        CheckContext checkContext = new CheckContext();
+        checkContext.setSign("987654321d");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", null, orderContext, checkContext);
+        Assert.assertTrue(response.isSuccess());
+        OrderContext context1 = response.getContextBean(OrderContext.class);
+        CheckContext context2 = response.getContextBean(CheckContext.class);
+        Assert.assertEquals("SO11223344", context1.getOrderNo());
+        Assert.assertEquals("987654321d", context2.getSign());
+    }
+
 }
