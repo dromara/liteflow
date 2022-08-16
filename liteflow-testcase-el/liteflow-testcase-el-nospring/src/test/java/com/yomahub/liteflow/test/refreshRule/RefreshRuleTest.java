@@ -32,7 +32,7 @@ public class RefreshRuleTest extends BaseTest {
     @Test
     public void testRefresh1() throws Exception{
         String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
+        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
     }
@@ -44,7 +44,7 @@ public class RefreshRuleTest extends BaseTest {
             try {
                 Thread.sleep(4000L);
                 String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_XML, content);
+                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
             } catch (Exception e) {
                 e.printStackTrace();
             }
