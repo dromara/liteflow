@@ -58,15 +58,25 @@ public class DataBus {
 		}
 	}
 
-	public static int offerSlot(List<Class<?>> contextClazzList) {
+	public static int offerSlotByClass(List<Class<?>> contextClazzList) {
+		//把classList通过反射初始化成对象列表
+		//这里用newInstanceIfPossible这个方法，是为了兼容当没有无参构造方法所报的错
+		List<Object> contextBeanList = contextClazzList.stream()
+				.map((Function<Class<?>, Object>) ReflectUtil::newInstanceIfPossible).collect(Collectors.toList());
+
+		Slot slot = new Slot(contextBeanList);
+
+		return offerIndex(slot);
+	}
+
+	public static int offerSlotByBean(List<Object> contextList){
+		Slot slot = new Slot(contextList);
+
+		return offerIndex(slot);
+	}
+
+	private static int offerIndex(Slot slot){
 		try {
-			//把classList通过反射初始化成对象列表
-			//这里用newInstanceIfPossible这个方法，是为了兼容当没有无参构造方法所报的错
-			List<Object> contextBeanList = contextClazzList.stream()
-					.map((Function<Class<?>, Object>) ReflectUtil::newInstanceIfPossible).collect(Collectors.toList());
-
-			Slot slot = new Slot(contextBeanList);
-
 			//这里有没有并发问题？
 			//没有，因为QUEUE的类型为ConcurrentLinkedQueue，并发情况下，每次取到的index不会相同
 			//当然前提是QUEUE里面的值不会重复，但是这个是由其他机制来保证的
