@@ -287,9 +287,17 @@ public class FlowExecutor {
         } catch (Exception e) {
             if (ObjectUtil.isNotNull(chain)) {
                 String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(), chain.getChainName(), slotIndex);
-                LOG.error(errMsg, e);
+                if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+                    LOG.error(errMsg, e);
+                }else{
+                    LOG.error(errMsg);
+                }
             }else{
-                LOG.error(e.getMessage(), e);
+                if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())){
+                    LOG.error(e.getMessage(), e);
+                }else{
+                    LOG.error(e.getMessage());
+                }
             }
             slot.setException(e);
         } finally {
