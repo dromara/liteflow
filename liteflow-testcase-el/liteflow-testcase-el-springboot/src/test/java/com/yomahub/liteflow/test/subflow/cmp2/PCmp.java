@@ -21,7 +21,7 @@ public class PCmp extends NodeComponent {
             int finalI = i;
             new Thread(() -> {
                 try {
-                    flowExecutor.invoke("c2", "it's implicit subflow " + finalI, slotIndex);
+                    flowExecutor.invokeInAsync("c2", "it's implicit subflow " + finalI, slotIndex);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

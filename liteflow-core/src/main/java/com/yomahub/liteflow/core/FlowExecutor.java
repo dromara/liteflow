@@ -10,6 +10,7 @@ package com.yomahub.liteflow.core;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.*;
+import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -156,14 +157,25 @@ public class FlowExecutor {
 
     //隐式流程的调用方法
     public void invoke(String chainId, Object param, Integer slotIndex) throws Exception {
-        LiteflowResponse response = this.execute2Resp(chainId, param, null, null, slotIndex, true);
+        LiteflowResponse response = this.execute2Resp(chainId, param, null, null, slotIndex, InnerChainTypeEnum.IN_SYNC);
         if (!response.isSuccess()){
             throw response.getCause();
         }
     }
 
     public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
-        return this.execute2Resp(chainId, param, null, null, slotIndex, true);
+        return this.execute2Resp(chainId, param, null, null, slotIndex, InnerChainTypeEnum.IN_SYNC);
+    }
+
+    public void invokeInAsync(String chainId, Object param, Integer slotIndex) throws Exception {
+        LiteflowResponse response = this.execute2Resp(chainId, param, null, null, slotIndex, InnerChainTypeEnum.IN_ASYNC);
+        if (!response.isSuccess()){
+            throw response.getCause();
+        }
+    }
+
+    public LiteflowResponse invoke2RespInAsync(String chainId, Object param, Integer slotIndex) {
+        return this.execute2Resp(chainId, param, null, null, slotIndex, InnerChainTypeEnum.IN_ASYNC);
     }
 
     //单独调用某一个node
@@ -184,23 +196,23 @@ public class FlowExecutor {
 
     //调用一个流程并返回LiteflowResponse，允许多上下文的传入
     public LiteflowResponse execute2Resp(String chainId, Object param, Class<?>... contextBeanClazzArray) {
-        return this.execute2Resp(chainId, param, contextBeanClazzArray, null, null, false);
+        return this.execute2Resp(chainId, param, contextBeanClazzArray, null, null, InnerChainTypeEnum.NONE);
     }
 
     //调用一个流程并返回Future<LiteflowResponse>，允许多上下文的传入
     public Future<LiteflowResponse> execute2Future(String chainId, Object param, Class<?>... contextBeanClazzArray) {
         return ExecutorHelper.loadInstance().buildMainExecutor(liteflowConfig.getMainExecutorClass()).submit(()
-                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazzArray,null, null, false));
+                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazzArray,null, null, InnerChainTypeEnum.NONE));
     }
 
 
     public LiteflowResponse execute2Resp(String chainId, Object param, Object... contextBeanArray) {
-        return this.execute2Resp(chainId, param, null, contextBeanArray, null, false);
+        return this.execute2Resp(chainId, param, null, contextBeanArray, null, InnerChainTypeEnum.NONE);
     }
 
     public Future<LiteflowResponse> execute2Future(String chainId, Object param, Object... contextBeanArray) {
         return ExecutorHelper.loadInstance().buildMainExecutor(liteflowConfig.getMainExecutorClass()).submit(()
-                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, null, contextBeanArray, null, false));
+                -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, null, contextBeanArray, null, InnerChainTypeEnum.NONE));
     }
 
     //调用一个流程，返回默认的上下文，适用于简单的调用
@@ -217,8 +229,8 @@ public class FlowExecutor {
                                           Object param,
                                           Class<?>[] contextBeanClazzArray,
                                           Object[] contextBeanArray,
-                                          Integer slotIndex, boolean isInnerChain) {
-        Slot slot = doExecute(chainId, param, contextBeanClazzArray, contextBeanArray, slotIndex, isInnerChain);
+                                          Integer slotIndex, InnerChainTypeEnum innerChainType) {
+        Slot slot = doExecute(chainId, param, contextBeanClazzArray, contextBeanArray, slotIndex, innerChainType);
         return new LiteflowResponse(slot);
     }
 
@@ -227,12 +239,12 @@ public class FlowExecutor {
                            Class<?>[] contextBeanClazzArray,
                            Object[] contextBeanArray,
                            Integer slotIndex,
-                           boolean isInnerChain) {
+                           InnerChainTypeEnum innerChainType) {
         if (FlowBus.needInit()) {
             init();
         }
 
-        if (!isInnerChain && ObjectUtil.isNull(slotIndex)) {
+        if (innerChainType.equals(InnerChainTypeEnum.NONE) && ObjectUtil.isNull(slotIndex)) {
             if (ArrayUtil.isNotEmpty(contextBeanClazzArray)){
                 slotIndex = DataBus.offerSlotByClass(ListUtil.toList(contextBeanClazzArray));
             }else{
@@ -259,13 +271,13 @@ public class FlowExecutor {
             }
         }
 
-        if (!isInnerChain) {
-            if (ObjectUtil.isNotNull(param)) {
+        if (ObjectUtil.isNotNull(param)) {
+            if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
                 slot.setRequestData(param);
-            }
-        } else {
-            if (ObjectUtil.isNotNull(param)) {
+            } else if(innerChainType.equals(InnerChainTypeEnum.IN_SYNC)){
                 slot.setChainReqData(chainId, param);
+            } else if(innerChainType.equals(InnerChainTypeEnum.IN_ASYNC)){
+                slot.setChainReqData2Queue(chainId, param);
             }
         }
 
@@ -301,7 +313,7 @@ public class FlowExecutor {
             }
             slot.setException(e);
         } finally {
-            if (!isInnerChain) {
+            if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
                 slot.printStep();
                 DataBus.releaseSlot(slotIndex);
             }

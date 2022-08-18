@@ -116,6 +116,20 @@ public class Slot{
 	public <T> T getChainReqData(String chainId) {
 		String key = CHAIN_REQ_PREFIX + chainId;
 		if (hasMetaData(key)){
+			return (T) metaDataMap.get(key);
+		}else{
+			return null;
+		}
+	}
+
+	public synchronized <T> void setChainReqData(String chainId, T t) {
+		String key = CHAIN_REQ_PREFIX + chainId;
+		putMetaDataMap(key, t);
+	}
+
+	public <T> T getChainReqDataFromQueue(String chainId) {
+		String key = CHAIN_REQ_PREFIX + chainId;
+		if (hasMetaData(key)){
 			Queue<Object> queue = (Queue<Object>) metaDataMap.get(key);
 			return (T)queue.poll();
 		}else{
@@ -123,7 +137,7 @@ public class Slot{
 		}
 	}
 
-	public synchronized <T> void setChainReqData(String chainId, T t) {
+	public synchronized <T> void setChainReqData2Queue(String chainId, T t) {
 		String key = CHAIN_REQ_PREFIX + chainId;
 		if (hasMetaData(key)){
 			Queue<Object> queue = (Queue<Object>) metaDataMap.get(key);

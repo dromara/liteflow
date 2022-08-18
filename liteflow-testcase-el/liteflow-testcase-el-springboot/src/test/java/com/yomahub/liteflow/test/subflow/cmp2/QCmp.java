@@ -14,7 +14,7 @@ import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELSpringbootTest.
 public class QCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
-        String requestData = this.getSubChainReqData();
+        String requestData = this.getSubChainReqDataInAsync();
         DefaultContext context = this.getFirstContextBean();
 
         synchronized (QCmp.class){

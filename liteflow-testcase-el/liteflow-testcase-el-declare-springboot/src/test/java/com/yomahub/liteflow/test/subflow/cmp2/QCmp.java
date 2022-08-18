@@ -16,7 +16,7 @@ import java.util.Set;
 public class QCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {
-        String requestData = bindCmp.getSubChainReqData();
+        String requestData = bindCmp.getSubChainReqDataInAsync();
         DefaultContext context = bindCmp.getFirstContextBean();
 
         synchronized (QCmp.class){
