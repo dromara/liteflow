@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 	<version>${revision}</version>
 	<name>liteflow</name>
-	<description>a lightweight and practical micro-process framework</description>
+	<description>Small but powerful rules engine</description>
 	<url>https://github.com/bryan31/liteflow</url>
 
 	<licenses>
