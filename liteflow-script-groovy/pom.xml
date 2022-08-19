@@ -16,13 +16,13 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-common</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-core</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

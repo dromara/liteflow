@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>com.yomahub</groupId>
 			<artifactId>liteflow-script-common</artifactId>
-			<version>${project.version}</version>
+			<version>${revision}</version>
 		</dependency>
 
 		<dependency>

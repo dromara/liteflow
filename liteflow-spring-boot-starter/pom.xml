@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-spring</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
