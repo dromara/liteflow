@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-spring-boot-starter</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-qlexpress</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
 
