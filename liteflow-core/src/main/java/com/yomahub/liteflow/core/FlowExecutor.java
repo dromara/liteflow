@@ -90,7 +90,14 @@ public class FlowExecutor {
             return;
         }
 
-        List<String> sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource().split(",|;"));
+        //如果有前缀的，则不需要再进行分割了，说明是一个整体
+        //如果没有前缀，说明是本地文件，可能配置多个，所以需要分割
+        List<String> sourceRulePathList;
+        if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, liteflowConfig.getRuleSource())){
+            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource());
+        }else{
+            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource().split(",|;"));
+        }
 
         FlowParser parser = null;
         Set<String> parserNameSet = new HashSet<>();
