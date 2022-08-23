@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
 /**
  * WhenCondition基于代码形式的组装器
@@ -18,7 +19,8 @@ public class LiteFlowWhenConditionBuilder extends LiteFlowConditionBuilder{
     }
 
     public LiteFlowWhenConditionBuilder setErrorResume(boolean errorResume){
-        this.condition.setErrorResume(errorResume);
+        WhenCondition whenCondition = (WhenCondition) this.condition;
+        whenCondition.setErrorResume(errorResume);
         return this;
     }
 
@@ -30,16 +32,18 @@ public class LiteFlowWhenConditionBuilder extends LiteFlowConditionBuilder{
     }
 
     public LiteFlowWhenConditionBuilder setGroup(String group){
+        WhenCondition whenCondition = (WhenCondition) this.condition;
         if (StrUtil.isBlank(group)){
-            this.condition.setGroup(LocalDefaultFlowConstant.DEFAULT);
+            whenCondition.setGroup(LocalDefaultFlowConstant.DEFAULT);
         }else{
-            this.condition.setGroup(group);
+            whenCondition.setGroup(group);
         }
         return this;
     }
 
     public LiteFlowWhenConditionBuilder setAny(boolean any){
-        this.condition.setAny(any);
+        WhenCondition whenCondition = (WhenCondition) this.condition;
+        whenCondition.setAny(any);
         return this;
     }
 
@@ -52,10 +56,11 @@ public class LiteFlowWhenConditionBuilder extends LiteFlowConditionBuilder{
 
 
     public LiteFlowWhenConditionBuilder setThreadExecutorClass(String executorServiceName){
+        WhenCondition whenCondition = (WhenCondition) this.condition;
         if (StrUtil.isBlank(executorServiceName)) {
             return this;
         }
-        this.condition.setThreadExecutorClass(executorServiceName);
+        whenCondition.setThreadExecutorClass(executorServiceName);
         return this;
     }
 }

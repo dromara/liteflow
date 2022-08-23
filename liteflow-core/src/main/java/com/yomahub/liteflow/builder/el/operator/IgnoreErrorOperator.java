@@ -5,6 +5,7 @@ import com.ql.util.express.Operator;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +30,9 @@ public class IgnoreErrorOperator extends Operator {
                 throw new Exception();
             }
 
-            Condition condition;
-            if (objects[0] instanceof Condition){
-                condition = (Condition) objects[0];
+            WhenCondition condition;
+            if (objects[0] instanceof WhenCondition){
+                condition = (WhenCondition) objects[0];
             }else{
                 LOG.error("The caller must be executable item!");
                 throw new Exception();
