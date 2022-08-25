@@ -149,7 +149,7 @@ public class FlowBus {
     }
 
     public static void addIfScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.IF_SCRIPT, ScriptSwitchComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.IF_SCRIPT, ScriptIfComponent.class, script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {

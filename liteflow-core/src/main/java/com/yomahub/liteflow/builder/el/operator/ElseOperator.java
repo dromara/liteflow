@@ -32,17 +32,24 @@ public class ElseOperator extends Operator {
             IfCondition ifCondition;
             if (objects[0] instanceof IfCondition) {
                 ifCondition = (IfCondition) objects[0];
-
-                if (ifCondition.getFalseCaseExecutableItem() != null) {
-                    throw new QLException("The if caller already has else item");
-                }
             } else {
                 throw new QLException("The caller must be IfCondition item");
             }
 
             Executable elseExecutableItem = (Executable) objects[1];
 
-            ifCondition.setFalseCaseExecutableItem(elseExecutableItem);
+            //因为当中可能会有多个ELIF，所以并不知道这个ELSE前面有没有ELIF，
+            //每一次拿到的caller总是最开始大的if，需要遍历到没有falseCaseExecutable的地方。
+            //塞进去是一个elseExecutableItem
+            IfCondition loopIfCondition = ifCondition;
+            while (true){
+                if (loopIfCondition.getFalseCaseExecutableItem() == null){
+                    loopIfCondition.setFalseCaseExecutableItem(elseExecutableItem);
+                    break;
+                }else{
+                    loopIfCondition = (IfCondition) loopIfCondition.getFalseCaseExecutableItem();
+                }
+            }
 
             return ifCondition;
         }catch (QLException e){

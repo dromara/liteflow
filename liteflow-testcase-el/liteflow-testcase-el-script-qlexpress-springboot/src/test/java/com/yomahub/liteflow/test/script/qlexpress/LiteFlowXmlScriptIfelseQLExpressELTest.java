@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.ifelse;
+package com.yomahub.liteflow.test.script.qlexpress;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -14,16 +14,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-/**
- * springboot环境EL常规的例子测试
- * @author Bryan.Zhang
- */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/ifelse/application.properties")
-@SpringBootTest(classes = IfELSpringbootTest.class)
+@SpringBootTest(classes = LiteFlowXmlScriptIfelseQLExpressELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.ifelse.cmp"})
-public class IfELSpringbootTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.qlexpress.cmp"})
+public class LiteFlowXmlScriptIfelseQLExpressELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -33,7 +29,7 @@ public class IfELSpringbootTest extends BaseTest {
     public void testIf1() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("x1==>a==>b", response.getExecuteStepStrWithoutTime());
+        Assert.assertEquals("x0==>a==>b", response.getExecuteStepStrWithoutTime());
     }
 
     //IF只有3个参数
@@ -73,7 +69,7 @@ public class IfELSpringbootTest extends BaseTest {
     public void testIf6() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("x1==>x1==>c==>c", response.getExecuteStepStrWithoutTime());
+        Assert.assertEquals("x1==>x0==>c==>c", response.getExecuteStepStrWithoutTime());
     }
 
     //IF ELIF... ELSE 的形式
@@ -83,5 +79,4 @@ public class IfELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("x1==>x1==>x1==>x1==>d==>b==>a", response.getExecuteStepStrWithoutTime());
     }
-
 }

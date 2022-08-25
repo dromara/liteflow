@@ -1,32 +1,24 @@
 package com.yomahub.liteflow.test.ifelse;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Resource;
+public class IfElseTest extends BaseTest{
 
-/**
- * springboot环境EL常规的例子测试
- * @author Bryan.Zhang
- */
-@RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/ifelse/application.properties")
-@SpringBootTest(classes = IfELSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.ifelse.cmp"})
-public class IfELSpringbootTest extends BaseTest {
+    private static FlowExecutor flowExecutor;
 
-    @Resource
-    private FlowExecutor flowExecutor;
+    @BeforeClass
+    public static void init(){
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("ifelse/flow.el.xml");
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
+    }
 
     //IF只有2个参数
     @Test
@@ -83,5 +75,4 @@ public class IfELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("x1==>x1==>x1==>x1==>d==>b==>a", response.getExecuteStepStrWithoutTime());
     }
-
 }

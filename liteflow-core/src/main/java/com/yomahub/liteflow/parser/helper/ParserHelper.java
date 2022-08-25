@@ -7,6 +7,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
+import com.yomahub.liteflow.annotation.LiteflowIfCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
@@ -15,6 +16,7 @@ import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.ChainPropBean;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.NodeIfComponent;
 import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -67,7 +69,9 @@ public class ParserHelper {
 				Object o = ReflectUtil.newInstanceIfPossible(c);
 				if (o instanceof NodeSwitchComponent) {
 					type = NodeTypeEnum.SWITCH.getCode();
-				} else if (o instanceof NodeComponent) {
+				}else if(o instanceof NodeIfComponent){
+					type = NodeTypeEnum.IF.getCode();
+				}else if (o instanceof NodeComponent) {
 					type = NodeTypeEnum.COMMON.getCode();
 				}
 
@@ -83,6 +87,13 @@ public class ParserHelper {
 					LiteflowSwitchCmpDefine liteflowSwitchCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowSwitchCmpDefine.class);
 					if (liteflowSwitchCmpDefine != null) {
 						type = NodeTypeEnum.SWITCH.getCode();
+					}
+				}
+
+				if (type == null) {
+					LiteflowIfCmpDefine liteflowIfCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowIfCmpDefine.class);
+					if (liteflowIfCmpDefine != null) {
+						type = NodeTypeEnum.IF.getCode();
 					}
 				}
 			} catch (Exception e) {

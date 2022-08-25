@@ -63,6 +63,7 @@ public class LiteFlowChainELBuilder {
         expressRunner.addFunction("FINALLY", new FinallyOperator());
         expressRunner.addFunction("IF", new IfOperator());
         expressRunner.addFunctionAndClassMethod("ELSE", Object.class, new ElseOperator());
+        expressRunner.addFunctionAndClassMethod("ELIF", Object.class, new ElifOperator());
         expressRunner.addFunctionAndClassMethod("to", Object.class, new ToOperator());
         expressRunner.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
         expressRunner.addFunctionAndClassMethod("any", Object.class, new AnyOperator());

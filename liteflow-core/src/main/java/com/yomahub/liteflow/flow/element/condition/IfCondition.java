@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow.element.condition;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -25,7 +26,7 @@ public class IfCondition extends Condition {
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
-        if (getIfNode().getType().equals(NodeTypeEnum.IF)) {
+        if (ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(getIfNode().getType())){
             //先执行IF节点
             this.getIfNode().setCurrChainName(this.getCurrChainName());
             this.getIfNode().execute(slotIndex);

@@ -15,15 +15,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境EL常规的例子测试
+ * springboot环境最普通的例子测试
  * @author Bryan.Zhang
+ * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/ifelse/application.properties")
-@SpringBootTest(classes = IfELSpringbootTest.class)
+@SpringBootTest(classes = IfElseELDeclSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.ifelse.cmp"})
-public class IfELSpringbootTest extends BaseTest {
+public class IfElseELDeclSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

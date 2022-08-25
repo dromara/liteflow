@@ -38,7 +38,7 @@ public class IfOperator extends Operator {
             if (objects[0] instanceof Node) {
                 ifNode = (Node) objects[0];
 
-                if (!ifNode.getType().equals(NodeTypeEnum.IF)) {
+                if (!ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(ifNode.getType())) {
                     throw new QLException("The first parameter must be If item");
                 }
             } else {

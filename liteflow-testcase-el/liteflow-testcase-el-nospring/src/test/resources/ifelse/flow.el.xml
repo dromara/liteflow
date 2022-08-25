@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.ifelse.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.ifelse.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.ifelse.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.ifelse.cmp.DCmp"/>
+        <node id="x1" class="com.yomahub.liteflow.test.ifelse.cmp.X1Cmp"/>
+    </nodes>
+
     <chain name="chain1">
         IF(x1.tag("true"), THEN(a, b));
     </chain>
