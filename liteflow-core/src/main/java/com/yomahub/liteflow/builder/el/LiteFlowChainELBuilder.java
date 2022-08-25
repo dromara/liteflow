@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
+import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
@@ -61,6 +62,7 @@ public class LiteFlowChainELBuilder {
         expressRunner.addFunction("PRE", new PreOperator());
         expressRunner.addFunction("FINALLY", new FinallyOperator());
         expressRunner.addFunction("IF", new IfOperator());
+        expressRunner.addFunction("ELSE", new ElseOperator());
         expressRunner.addFunctionAndClassMethod("to", Object.class, new ToOperator());
         expressRunner.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
         expressRunner.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
@@ -119,10 +121,9 @@ public class LiteFlowChainELBuilder {
             //把主要的condition加入
             this.conditionList.add(condition);
             return this;
+        }catch (QLException e){
+            throw new ELParseException(e.getCause().getMessage());
         }catch (Exception e){
-            for (String scriptErrorMsg : errorList){
-                LOG.error("\n{}", scriptErrorMsg);
-            }
             throw new ELParseException(e.getMessage());
         }
     }
