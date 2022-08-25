@@ -6,11 +6,16 @@ package com.yomahub.liteflow.enums;
  * @since 2.6.0
  */
 public enum NodeTypeEnum {
+
     COMMON("common","普通"),
 
-    SWITCH("switch", "条件"),
+    SWITCH("switch", "选择"),
+
+    IF("if", "条件"),
     SCRIPT("script","脚本"),
-    SWITCH_SCRIPT("switch_script","条件脚本")
+    SWITCH_SCRIPT("switch_script","选择脚本"),
+
+    IF_SCRIPT("if_script", "条件脚本")
     ;
     private String code;
     private String name;

@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 条件Condition
+ * 选择Condition
  * @author Bryan.Zhang
  * @since 2.8.0
  */

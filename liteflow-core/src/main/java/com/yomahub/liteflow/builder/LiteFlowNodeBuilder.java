@@ -32,12 +32,20 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
     }
 
+    public static LiteFlowNodeBuilder createIfNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.IF);
+    }
+
     public static LiteFlowNodeBuilder createScriptNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
     }
 
     public static LiteFlowNodeBuilder createScriptSwitchNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH_SCRIPT);
+    }
+
+    public static LiteFlowNodeBuilder createScriptIfNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.IF_SCRIPT);
     }
 
     public LiteFlowNodeBuilder() {
@@ -104,10 +112,14 @@ public class LiteFlowNodeBuilder {
                 FlowBus.addCommonNode(this.node.getId(), this.node.getName(), this.node.getClazz());
             } else if (this.node.getType().equals(NodeTypeEnum.SWITCH)) {
                 FlowBus.addSwitchNode(this.node.getId(), this.node.getName(), this.node.getClazz());
+            } else if (this.node.getType().equals(NodeTypeEnum.IF)) {
+                FlowBus.addIfNode(this.node.getId(), this.node.getName(), this.node.getClazz());
             } else if (this.node.getType().equals(NodeTypeEnum.SCRIPT)) {
                 FlowBus.addCommonScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             } else if (this.node.getType().equals(NodeTypeEnum.SWITCH_SCRIPT)) {
                 FlowBus.addSwitchScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
+            } else if (this.node.getType().equals(NodeTypeEnum.IF_SCRIPT)) {
+                FlowBus.addIfScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             }
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}]", this.node.getId());

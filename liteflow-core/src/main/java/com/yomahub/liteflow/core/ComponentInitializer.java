@@ -43,7 +43,7 @@ public class ComponentInitializer {
         //先取传进来的name值(配置文件中配置的)，再看有没有配置@LiteflowComponent标注
         //@LiteflowComponent标注只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
         nodeComponent.setName(desc);
-        if (ListUtil.toList(NodeTypeEnum.COMMON, NodeTypeEnum.SWITCH).contains(type)
+        if (ListUtil.toList(NodeTypeEnum.COMMON, NodeTypeEnum.SWITCH, NodeTypeEnum.IF).contains(type)
                 && StrUtil.isBlank(nodeComponent.getName())){
             String name = LiteflowComponentSupportHolder.loadLiteflowComponentSupport().getCmpName(nodeComponent);
             nodeComponent.setName(name);

@@ -3,6 +3,7 @@ package com.yomahub.liteflow.enums;
 public enum LiteFlowMethodEnum {
     PROCESS("process"),
     PROCESS_SWITCH("processSwitch"),
+    PROCESS_IF("processIf"),
     IS_ACCESS("isAccess"),
 
     IS_END("isEnd"),

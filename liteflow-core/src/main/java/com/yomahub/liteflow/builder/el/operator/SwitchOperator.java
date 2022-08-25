@@ -1,7 +1,9 @@
 package com.yomahub.liteflow.builder.el.operator;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
@@ -33,6 +35,11 @@ public class SwitchOperator extends Operator {
             Node switchNode;
             if (objects[0] instanceof Node){
                 switchNode = (Node) objects[0];
+
+                if(!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(switchNode.getType())){
+                    LOG.error("The caller must be Switch item!");
+                    throw new Exception();
+                }
             }else{
                 LOG.error("The caller must be Node item!");
                 throw new Exception();

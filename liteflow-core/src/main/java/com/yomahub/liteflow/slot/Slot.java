@@ -42,6 +42,8 @@ public class Slot{
 
 	private static final String SWITCH_NODE_PREFIX = "_switch_";
 
+	private static final String IF_NODE_PREFIX = "_if_";
+
 	private static final String NODE_INPUT_PREFIX = "_input_";
 
 	private static final String NODE_OUTPUT_PREFIX = "_output_";
@@ -186,6 +188,14 @@ public class Slot{
 
 	public <T> T getSwitchResult(String key){
 		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
+	}
+
+	public void setIfResult(String key, boolean result){
+		putMetaDataMap(IF_NODE_PREFIX + key, result);
+	}
+
+	public boolean getIfResult(String key){
+		return (boolean) metaDataMap.get(IF_NODE_PREFIX + key);
 	}
 
 	public void setChainName(String chainName) {

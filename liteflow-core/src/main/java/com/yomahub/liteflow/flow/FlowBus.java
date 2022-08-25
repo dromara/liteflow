@@ -85,7 +85,9 @@ public class FlowBus {
         NodeTypeEnum type = null;
         if (nodeComponent instanceof NodeSwitchComponent){
             type = NodeTypeEnum.SWITCH;
-        } else if(nodeComponent instanceof NodeComponent){
+        } else if(nodeComponent instanceof NodeIfComponent){
+            type = NodeTypeEnum.IF;
+        }else if(nodeComponent instanceof NodeComponent) {
             type = NodeTypeEnum.COMMON;
         }
 
@@ -124,12 +126,30 @@ public class FlowBus {
         addNode(nodeId, name, NodeTypeEnum.SWITCH, cmpClazz, null);
     }
 
+    public static void addIfNode(String nodeId, String name, String cmpClazzStr){
+        Class<?> cmpClazz;
+        try{
+            cmpClazz = Class.forName(cmpClazzStr);
+        }catch (Exception e){
+            throw new ComponentCannotRegisterException(e.getMessage());
+        }
+        addNode(nodeId, name, NodeTypeEnum.IF, cmpClazz, null);
+    }
+
+    public static void addIfNode(String nodeId, String name, Class<?> cmpClazz){
+        addNode(nodeId, name, NodeTypeEnum.IF, cmpClazz, null);
+    }
+
     public static void addCommonScriptNode(String nodeId, String name, String script){
         addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
     }
 
     public static void addSwitchScriptNode(String nodeId, String name, String script){
         addNode(nodeId, name, NodeTypeEnum.SWITCH_SCRIPT, ScriptSwitchComponent.class, script);
+    }
+
+    public static void addIfScriptNode(String nodeId, String name, String script){
+        addNode(nodeId, name, NodeTypeEnum.IF_SCRIPT, ScriptSwitchComponent.class, script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
@@ -155,7 +175,7 @@ public class FlowBus {
                 //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
                 //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                 //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
-                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.SWITCH_SCRIPT).contains(type)){
+                if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.SWITCH_SCRIPT, NodeTypeEnum.IF_SCRIPT).contains(type)){
                     cmpInstance = (NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
                 }
 
@@ -177,6 +197,8 @@ public class FlowBus {
                     ((ScriptComponent)cmpInstance).loadScript(script);
                 }else if(type.equals(NodeTypeEnum.SWITCH_SCRIPT)){
                     ((ScriptSwitchComponent)cmpInstance).loadScript(script);
+                }else if(type.equals(NodeTypeEnum.IF_SCRIPT)){
+                    ((ScriptIfComponent)cmpInstance).loadScript(script);
                 }
             }
 
