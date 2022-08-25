@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
+import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import org.slf4j.Logger;
@@ -18,36 +19,35 @@ public class AnyOperator extends Operator {
 
     @Override
     public WhenCondition executeInner(Object[] objects) throws Exception {
-        try{
-            if (ArrayUtil.isEmpty(objects)){
-                throw new Exception();
+        try {
+            if (ArrayUtil.isEmpty(objects)) {
+                throw new QLException("parameter is empty");
             }
 
-            if (objects.length != 2){
-                LOG.error("parameter error");
-                throw new Exception();
+            if (objects.length != 2) {
+                throw new QLException("parameter error");
             }
 
             WhenCondition whenCondition;
-            if (objects[0] instanceof WhenCondition){
+            if (objects[0] instanceof WhenCondition) {
                 whenCondition = (WhenCondition) objects[0];
-            }else{
-                LOG.error("The caller must be when condition item!");
-                throw new Exception();
+            } else {
+                throw new QLException("The caller must be when condition item");
             }
 
             boolean any = false;
-            if (objects[1] instanceof Boolean){
+            if (objects[1] instanceof Boolean) {
                 any = Boolean.parseBoolean(objects[1].toString());
-            }else{
-                LOG.error("the parameter must be boolean type!");
-                throw new Exception();
+            } else {
+                throw new QLException("the parameter must be boolean type");
             }
 
             whenCondition.setAny(any);
 
             return whenCondition;
 
+        }catch (QLException e){
+            throw e;
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");
         }

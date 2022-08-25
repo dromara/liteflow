@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
+import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -20,30 +21,27 @@ public class TagOperator extends Operator {
 
     @Override
     public Node executeInner(Object[] objects) throws Exception {
-        try{
-            if (ArrayUtil.isEmpty(objects)){
-                throw new Exception();
+        try {
+            if (ArrayUtil.isEmpty(objects)) {
+                throw new QLException("parameter is empty");
             }
 
-            if (objects.length != 2){
-                LOG.error("parameter error");
-                throw new Exception();
+            if (objects.length != 2) {
+                throw new QLException("parameter error");
             }
 
             Node node;
-            if (objects[0] instanceof Node){
+            if (objects[0] instanceof Node) {
                 node = (Node) objects[0];
-            }else{
-                LOG.error("The caller must be Node item!");
-                throw new Exception();
+            } else {
+                throw new QLException("The caller must be Node item");
             }
 
             String tag = null;
-            if (objects[1] instanceof String){
+            if (objects[1] instanceof String) {
                 tag = objects[1].toString();
-            }else{
-                LOG.error("the parameter must be String type!");
-                throw new Exception();
+            } else {
+                throw new QLException("the parameter must be String type");
             }
 
             //这里为什么要clone一个呢？
@@ -54,6 +52,8 @@ public class TagOperator extends Operator {
 
             return copyNode;
 
+        }catch (QLException e){
+            throw e;
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");
         }

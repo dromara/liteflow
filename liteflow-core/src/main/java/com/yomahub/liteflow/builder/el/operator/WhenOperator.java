@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.builder.el.operator;
 
 import com.ql.util.express.Operator;
+import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
@@ -18,21 +19,22 @@ public class WhenOperator extends Operator {
 
     @Override
     public WhenCondition executeInner(Object[] objects) throws Exception {
-        try{
-            if (objects.length <= 0){
-                LOG.error("parameter error");
-                throw new Exception();
+        try {
+            if (objects.length == 0) {
+                throw new QLException("parameter error");
             }
 
             WhenCondition whenCondition = new WhenCondition();
-            for (Object obj : objects){
-                if (obj instanceof Executable){
-                    whenCondition.addExecutable((Executable)obj);
-                }else{
-                    throw new Exception();
+            for (Object obj : objects) {
+                if (obj instanceof Executable) {
+                    whenCondition.addExecutable((Executable) obj);
+                } else {
+                    throw new QLException("parameter error");
                 }
             }
             return whenCondition;
+        }catch (QLException e){
+            throw e;
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");
         }

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.util.ArrayUtil;
 import com.ql.util.express.Operator;
+import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.condition.Condition;
 import org.slf4j.Logger;
@@ -18,36 +19,36 @@ public class IdOperator extends Operator {
 
     @Override
     public Condition executeInner(Object[] objects) throws Exception {
-        try{
-            if (ArrayUtil.isEmpty(objects)){
-                throw new Exception();
+        try {
+            if (ArrayUtil.isEmpty(objects)) {
+                throw new QLException("parameter is empty");
             }
 
-            if (objects.length != 2){
-                LOG.error("parameter error");
-                throw new Exception();
+            if (objects.length != 2) {
+                throw new QLException("parameter error");
             }
 
             Condition condition;
-            if (objects[0] instanceof Condition){
+            if (objects[0] instanceof Condition) {
                 condition = (Condition) objects[0];
-            }else{
-                LOG.error("The caller must be condition item!");
-                throw new Exception();
+            } else {
+                throw new QLException("The caller must be condition item");
             }
 
             String id;
-            if (objects[1] instanceof String){
+            if (objects[1] instanceof String) {
                 id = objects[1].toString();
-            }else{
+            } else {
                 LOG.error("the parameter must be String type!");
-                throw new Exception();
+                throw new QLException("the parameter must be String type");
             }
 
             condition.setId(id);
 
             return condition;
 
+        }catch (QLException e){
+            throw e;
         }catch (Exception e){
             throw new ELParseException("errors occurred in EL parsing");
         }

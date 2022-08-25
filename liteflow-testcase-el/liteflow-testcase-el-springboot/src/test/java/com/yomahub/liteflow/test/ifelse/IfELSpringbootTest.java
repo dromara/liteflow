@@ -49,4 +49,18 @@ public class IfELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
     }
 
+    //IF有2个参数，加上ELSE
+    @Test
+    public void testIf4() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
+
+    //IF有2个参数，ELSE里再嵌套一个IF
+    @Test
+    public void testIf5() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
+
 }

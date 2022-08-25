@@ -16,4 +16,14 @@
             item
         );
     </chain>
+
+    <chain name="chain4">
+        IF(x1.tag("false"), THEN(a, b)).ELSE(THEN(c, d));
+    </chain>
+
+    <chain name="chain5">
+        item = IF(x1.tag("false"), a, THEN(c, c, b));
+
+        IF(x1.tag("false"), THEN(a, b)).ELSE(item);
+    </chain>
 </flow>
