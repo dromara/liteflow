@@ -23,6 +23,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
     public SpringAware() {
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext ac) throws BeansException {
         applicationContext = ac;
     }
@@ -31,6 +32,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         return applicationContext;
     }
 
+    @Override
     public <T> T getBean(String name) {
         try{
             T t = (T) applicationContext.getBean(name);
@@ -40,6 +42,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         }
     }
 
+    @Override
     public <T> T getBean(Class<T> clazz) {
         try{
             T t = applicationContext.getBean(clazz);
@@ -49,6 +52,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         }
     }
 
+    @Override
     public <T> T registerBean(String beanName, Class<T> c) {
         try{
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
@@ -62,6 +66,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         }
     }
 
+    @Override
     public <T> T registerBean(Class<T> c) {
         return registerBean(c.getName(), c);
     }
@@ -74,6 +79,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         return (T) configurableApplicationContext.getBean(beanName);
     }
 
+    @Override
     public <T> T registerOrGet(String beanName, Class<T> clazz) {
         if (ObjectUtil.isNull(applicationContext)){
             return null;
