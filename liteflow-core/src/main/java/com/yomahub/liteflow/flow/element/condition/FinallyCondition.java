@@ -11,7 +11,7 @@ import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
 
 /**
- * 前置Condition
+ * 后置Condition
  * @author Bryan.Zhang
  * @since 2.6.4
  */
