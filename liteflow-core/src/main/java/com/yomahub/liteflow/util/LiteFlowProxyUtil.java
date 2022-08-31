@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 组件代理类通用方法
@@ -61,8 +62,8 @@ public class LiteFlowProxyUtil {
         return flag3;
     }
 
-    //对一个满足声明式的bean进行代理
-    public static NodeComponent proxy2NodeComponent(Object bean, String nodeId){
+    //对一个满足声明式的bean进行代理,生成代理类数组
+    public static List<NodeComponent> proxy2NodeComponent(Object bean, String nodeId){
         try{
             LiteflowCmpDefine liteflowCmpDefine = bean.getClass().getAnnotation(LiteflowCmpDefine.class);
             LiteflowSwitchCmpDefine liteflowSwitchCmpDefine = bean.getClass().getAnnotation(LiteflowSwitchCmpDefine.class);
@@ -71,17 +72,17 @@ public class LiteFlowProxyUtil {
             ComponentProxy proxy;
             if (ObjectUtil.isNotNull(liteflowCmpDefine)){
                 proxy = new ComponentProxy(nodeId, bean, NodeComponent.class);
-                return (NodeComponent) proxy.getProxy();
+                return proxy.getProxyList();
             }
 
             if (ObjectUtil.isNotNull(liteflowSwitchCmpDefine)){
                 proxy = new ComponentProxy(nodeId, bean, NodeSwitchComponent.class);
-                return (NodeSwitchComponent) proxy.getProxy();
+                return proxy.getProxyList();
             }
 
             if (ObjectUtil.isNotNull(liteflowIfCmpDefine)){
                 proxy = new ComponentProxy(nodeId, bean, NodeIfComponent.class);
-                return (NodeIfComponent) proxy.getProxy();
+                return proxy.getProxyList();
             }
 
             throw new RuntimeException();

@@ -8,9 +8,9 @@
  */
 package com.yomahub.liteflow.spring;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -20,6 +20,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,9 +63,19 @@ public class ComponentScanner implements BeanPostProcessor {
         //如果是，就缓存到类属性的map中
         if (LiteFlowProxyUtil.isDeclareCmp(bean.getClass())){
             LOG.info("proxy component[{}] has been found", beanName);
-            NodeComponent nodeComponent = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
-            nodeComponentMap.put(beanName, nodeComponent);
-            return nodeComponent;
+            List<NodeComponent> nodeComponents = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
+            nodeComponents.forEach(
+                    nodeComponent -> {
+                        String nodeId = nodeComponent.getNodeId();
+                        nodeId = StrUtil.isEmpty(nodeId) ? beanName : nodeId;
+                        nodeComponentMap.put(nodeId, nodeComponent);
+                    }
+            );
+            // 只有注解支持单bean多Node,所以一个直接返回
+            if (nodeComponents.size() == 1){
+                return nodeComponents.get(0);
+            }
+            return bean;
         }
 
         // 组件的扫描发现，扫到之后缓存到类属性map中

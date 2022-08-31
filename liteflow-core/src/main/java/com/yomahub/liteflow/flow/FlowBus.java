@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -36,7 +37,10 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 流程元数据类
@@ -156,7 +160,7 @@ public class FlowBus {
         try {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             //如果不是声明式的，就用传统的方式进行判断
-            NodeComponent cmpInstance = null;
+            List<NodeComponent> cmpInstances = new ArrayList<>();
             if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)){
                 //这里的逻辑要仔细看下
                 //如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
@@ -167,43 +171,50 @@ public class FlowBus {
                 ContextAware contextAware = ContextAwareHolder.loadContextAware();
                 Object bean = ContextAwareHolder.loadContextAware().registerBean(nodeId, cmpClazz);
                 if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())){
-                    cmpInstance = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
+                    cmpInstances = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
                 }else {
-                    cmpInstance = (NodeComponent) bean;
+                    cmpInstances = ListUtil.toList((NodeComponent) bean);
                 }
             }else{
                 //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
                 //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                 //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
                 if (!CollectionUtil.newArrayList(NodeTypeEnum.SCRIPT, NodeTypeEnum.SWITCH_SCRIPT, NodeTypeEnum.IF_SCRIPT).contains(type)){
-                    cmpInstance = (NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz);
+                    cmpInstances = ListUtil.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
                 }
-
-                if (ObjectUtil.isNull(cmpInstance)) {
-                    cmpInstance = (NodeComponent) cmpClazz.newInstance();
+                // 去除null元素
+                cmpInstances.remove(null);
+                // 如果为空
+                if (cmpInstances.isEmpty()) {
+                    NodeComponent cmpInstance = (NodeComponent) cmpClazz.newInstance();
+                    cmpInstances.add(cmpInstance);
                 }
             }
-
             //进行初始化
-            cmpInstance = ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, nodeId);
+            cmpInstances = cmpInstances.stream().map(cmpInstance -> ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, nodeId)).collect(Collectors.toList());
 
             //初始化Node
-            Node node = new Node(cmpInstance);
+            List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
-            //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
-            if (StrUtil.isNotBlank(script)){
-                node.setScript(script);
-                if (type.equals(NodeTypeEnum.SCRIPT)){
-                    ((ScriptComponent)cmpInstance).loadScript(script);
-                }else if(type.equals(NodeTypeEnum.SWITCH_SCRIPT)){
-                    ((ScriptSwitchComponent)cmpInstance).loadScript(script);
-                }else if(type.equals(NodeTypeEnum.IF_SCRIPT)){
-                    ((ScriptIfComponent)cmpInstance).loadScript(script);
+            for (int i = 0; i < nodes.size(); i++) {
+                Node node = nodes.get(i);
+                NodeComponent cmpInstance = cmpInstances.get(i);
+                if (StrUtil.isNotBlank(script)){
+                    node.setScript(script);
+                    if (type.equals(NodeTypeEnum.SCRIPT)){
+                        ((ScriptComponent)cmpInstance).loadScript(script);
+                    }else if(type.equals(NodeTypeEnum.SWITCH_SCRIPT)){
+                        ((ScriptSwitchComponent)cmpInstance).loadScript(script);
+                    }else if(type.equals(NodeTypeEnum.IF_SCRIPT)){
+                        ((ScriptIfComponent)cmpInstance).loadScript(script);
+                    }
                 }
+                String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+                //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
+                nodeMap.put(activeNodeId, node);
             }
-
-            nodeMap.put(nodeId, node);
         } catch (Exception e) {
+            e.printStackTrace();
             String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
             LOG.error(error);
             throw new ComponentCannotRegisterException(error);
