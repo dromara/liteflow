@@ -5,6 +5,7 @@ import cn.hutool.core.util.*;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
+import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
@@ -15,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,7 +40,7 @@ public class ComponentProxy {
         this.clazz = clazz;
     }
 
-    public Object getProxy() throws Exception{
+    public List<NodeComponent> getProxyList() throws Exception{
         //这里要判断bean是否是spring代理过的bean，如果是代理过的bean需要取到原class对象
         Class<?> beanClazz;
         if (LiteFlowProxyUtil.isCglibProxyClass(bean.getClass())){
@@ -51,30 +49,37 @@ public class ComponentProxy {
             beanClazz = bean.getClass();
         }
 
-        //得到当前bean里所覆盖的组件方法(一定是被@LiteFlowMethod修饰的)，自己定义的不算
-        List<String> methodStrList = Arrays.stream(beanClazz.getDeclaredMethods()).filter(
+        //得到当前bean里所覆盖的LiteflowMethod(一定是被@LiteFlowMethod修饰的)，自己定义的不算
+        Map<String, List<LiteflowMethod>> methodListMap = Arrays.stream(beanClazz.getDeclaredMethods()).filter(
                 m -> m.getAnnotation(LiteflowMethod.class) != null
-        ).map(m -> {
-            LiteflowMethod liteflowMethod = m.getAnnotation(LiteflowMethod.class);
-            return liteflowMethod.value().getMethodName();
+        ).map(m -> m.getAnnotation(LiteflowMethod.class)).collect(Collectors.groupingBy(LiteflowMethod::nodeId));
+        return methodListMap.entrySet().stream().map(entry -> {
+            String activeNodeId = StrUtil.isEmpty(entry.getKey()) ? nodeId : entry.getKey();
+            List<LiteflowMethod> methodList = entry.getValue();
+            try {
+                //创建对象
+                //这里package进行了重设，放到了被代理对象的所在目录
+                //生成的对象也加了上被代理对象拥有的注解
+                //被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
+                Object instance = new ByteBuddy().subclass(clazz)
+                        .name(StrUtil.format("{}.ByteBuddy${}${}",
+                                ClassUtil.getPackage(bean.getClass()),
+                                activeNodeId,
+                                SerialsUtil.generateShortUUID()))
+                        .method(ElementMatchers.namedOneOf(methodList.stream().map(m -> m.value().getMethodName()).toArray(String[]::new)))
+                        .intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean)))
+                        .annotateType(bean.getClass().getAnnotations())
+                        .make()
+                        .load(ComponentProxy.class.getClassLoader())
+                        .getLoaded()
+                        .newInstance();
+                NodeComponent nodeComponent = (NodeComponent) instance;
+                nodeComponent.setNodeId(activeNodeId);
+                return nodeComponent;
+            } catch (Exception e) {
+                throw new LiteFlowException(e);
+            }
         }).collect(Collectors.toList());
-
-        //创建对象
-        //这里package进行了重设，放到了被代理对象的所在目录
-        //生成的对象也加了上被代理对象拥有的注解
-        //被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
-        return new ByteBuddy().subclass(clazz)
-                .name(StrUtil.format("{}.ByteBuddy${}${}",
-                        ClassUtil.getPackage(bean.getClass()),
-                        nodeId,
-                        SerialsUtil.generateShortUUID()))
-                .method(ElementMatchers.namedOneOf(methodStrList.toArray(new String[]{})))
-                .intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean)))
-                .annotateType(bean.getClass().getAnnotations())
-                .make()
-                .load(ComponentProxy.class.getClassLoader())
-                .getLoaded()
-                .newInstance();
     }
 
     public class AopInvocationHandler implements InvocationHandler {
@@ -93,6 +98,10 @@ public class ComponentProxy {
             List<LiteFlowMethodBean> liteFlowMethodBeanList = Arrays.stream(ReflectUtil.getMethods(bean.getClass())).filter(m -> {
                 LiteflowMethod liteFlowMethod = m.getAnnotation(LiteflowMethod.class);
                 return ObjectUtil.isNotNull(liteFlowMethod);
+            }).filter(m -> {
+                // 过滤不属于当前NodeComponent的方法
+                LiteflowMethod liteFlowMethod = m.getAnnotation(LiteflowMethod.class);
+                return StrUtil.isEmpty(liteFlowMethod.nodeId())|| Objects.equals(liteFlowMethod.nodeId(),((NodeComponent) proxy).getNodeId());
             }).map(m -> {
                 LiteflowMethod liteFlowMethod = m.getAnnotation(LiteflowMethod.class);
                 return new LiteFlowMethodBean(liteFlowMethod.value().getMethodName(), m);

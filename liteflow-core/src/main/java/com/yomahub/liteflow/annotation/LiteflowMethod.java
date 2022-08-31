@@ -11,4 +11,8 @@ import java.lang.annotation.*;
 public @interface LiteflowMethod {
 
     LiteFlowMethodEnum value();
+
+    // 节点ID，用于区分节点
+    // 默认为空 则按照Spring模式下BeanName为准。
+    String nodeId() default "";
 }
