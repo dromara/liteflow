@@ -7,7 +7,6 @@
  */
 package com.yomahub.liteflow.slot;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -18,7 +17,11 @@ import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,7 +56,7 @@ public class Slot{
 
 	private static final String EXCEPTION = "_exception";
 
-	private static final String SUB_EXCEPTION = "_sub_exception";
+	private static final String SUB_EXCEPTION_PREFIX = "_sub_exception_";
 
 	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
 
@@ -264,16 +267,16 @@ public class Slot{
 		putMetaDataMap(EXCEPTION, e);
 	}
 
-	public Exception getSubException() {
-		return (Exception) this.metaDataMap.get(SUB_EXCEPTION);
+	public Exception getSubException(String chainId) {
+		return (Exception) this.metaDataMap.get(SUB_EXCEPTION_PREFIX + chainId);
 	}
 
-	public void setSubException(Exception e) {
-		putMetaDataMap(SUB_EXCEPTION, e);
+	public void setSubException(String chainId, Exception e) {
+		putMetaDataMap(SUB_EXCEPTION_PREFIX + chainId, e);
 	}
 
-	public void removeSubException(){
-		metaDataMap.remove(SUB_EXCEPTION);
+	public void removeSubException(String chainId){
+		metaDataMap.remove(SUB_EXCEPTION_PREFIX + chainId);
 	}
 
 	public List<Object> getContextBeanList(){
@@ -294,14 +297,9 @@ public class Slot{
 	}
 
 	public void addSubChain(String chainId){
-		if (metaDataMap.containsKey(SUB_CHAIN)){
-			Set<String> subChainSet = (Set<String>) metaDataMap.get(SUB_CHAIN);
-			subChainSet.add(chainId);
-		}else{
-			Set<String> subChainSet = new ConcurrentHashSet<>();
-			subChainSet.add(chainId);
-			metaDataMap.put(SUB_CHAIN, subChainSet);
-		}
+		Set<String> subChainSet = (Set<String>) metaDataMap.getOrDefault(SUB_CHAIN, new ConcurrentHashSet<>());
+		subChainSet.add(chainId);
+		metaDataMap.put(SUB_CHAIN, subChainSet);
 	}
 
 	public boolean isSubChain(String chainId){
