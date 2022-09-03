@@ -63,4 +63,11 @@ public class ImplicitSubFlowELSpringbootTest extends BaseTest {
         //requestData的取值正确
         Assert.assertEquals(10, set.size());
     }
+
+    @Test
+    public void testImplicitSubFlow3() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain_r", "it's a request");
+        Assert.assertTrue(response.isSuccess());
+
+    }
 }
