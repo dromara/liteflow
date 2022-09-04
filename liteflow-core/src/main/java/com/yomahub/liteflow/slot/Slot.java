@@ -299,7 +299,7 @@ public class Slot{
 	public void addSubChain(String chainId){
 		Set<String> subChainSet = (Set<String>) metaDataMap.getOrDefault(SUB_CHAIN, new ConcurrentHashSet<>());
 		subChainSet.add(chainId);
-		metaDataMap.put(SUB_CHAIN, subChainSet);
+		metaDataMap.putIfAbsent(SUB_CHAIN, subChainSet);
 	}
 
 	public boolean isSubChain(String chainId){
