@@ -11,6 +11,7 @@ import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.ResourceUtils;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class SpringPathContentParser implements PathContentParser {
             if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)){
                 locationPattern = ResourceUtils.FILE_URL_PREFIX + path;
             } else {
-                if (!path.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
+                if (!path.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX) && !path.startsWith(ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX)) {
                     locationPattern = ResourceUtils.CLASSPATH_URL_PREFIX + path;
                 }else{
                     locationPattern = path;
