@@ -54,14 +54,27 @@ public class ComponentProxy {
                 m -> m.getAnnotation(LiteflowMethod.class) != null
         ).map(m -> m.getAnnotation(LiteflowMethod.class)).collect(Collectors.groupingBy(LiteflowMethod::nodeId));
         return methodListMap.entrySet().stream().map(entry -> {
-            String activeNodeId = StrUtil.isEmpty(entry.getKey()) ? nodeId : entry.getKey();
+            boolean isMethodCreate = !StrUtil.isEmpty(entry.getKey());
+            String activeNodeId = isMethodCreate ? entry.getKey() : nodeId;
             List<LiteflowMethod> methodList = entry.getValue();
+            // 一个节点只能有一个定义NodeCmp类
+            List<? extends Class<? extends NodeComponent>> classes = methodList.stream().map(LiteflowMethod::cmpClass).distinct().collect(Collectors.toList());
+            boolean legal = classes.size() == 1;
+            if (!legal){
+                throw new LiteFlowException("The cmpClass of the same nodeId must be the same,you declared nodeId:" + activeNodeId + ",cmpClass:" + classes);
+            }
+            Class<?> cmpClass;
+            cmpClass = clazz;
+            // 判断是否是方法声明的组件
+            if (isMethodCreate){
+                cmpClass = methodList.iterator().next().cmpClass();
+            }
             try {
                 //创建对象
                 //这里package进行了重设，放到了被代理对象的所在目录
                 //生成的对象也加了上被代理对象拥有的注解
                 //被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
-                Object instance = new ByteBuddy().subclass(clazz)
+                Object instance = new ByteBuddy().subclass(cmpClass)
                         .name(StrUtil.format("{}.ByteBuddy${}${}",
                                 ClassUtil.getPackage(bean.getClass()),
                                 activeNodeId,

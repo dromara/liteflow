@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.cmpMultiNode.cmp;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.NodeIfComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,21 +12,20 @@ import org.springframework.context.annotation.Configuration;
  * @author sorghum
  */
 @Configuration
-@LiteflowCmpDefine
 public class MultiCmpConfiguration {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a",cmpClass = NodeComponent.class)
     public void processA(NodeComponent bindCmp) {
         System.out.println("ACmp executed!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.IS_ACCESS,nodeId = "a")
+    @LiteflowMethod(value = LiteFlowMethodEnum.IS_ACCESS,nodeId = "a",cmpClass = NodeComponent.class)
     public boolean isAccessA(NodeComponent bindCmp) {
         System.out.println("ACmp isAccessA!");
         return true;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "b")
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "b",cmpClass = NodeIfComponent.class)
     public void processB(NodeComponent bindCmp) {
         System.out.println("BCmp executed!");
     }

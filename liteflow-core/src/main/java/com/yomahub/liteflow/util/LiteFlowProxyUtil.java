@@ -30,23 +30,6 @@ public class LiteFlowProxyUtil {
 
     //判断一个bean是否是声明式组件
     public static boolean isDeclareCmp(Class<?> clazz){
-        //判断bean是否标记了@LiteflowCmpDefine,@LiteflowCondCmpDefine,LiteflowIfCmpDefine这3个标注之一
-        boolean flag1 = clazz.getAnnotation(LiteflowCmpDefine.class) != null
-                || clazz.getAnnotation(LiteflowSwitchCmpDefine.class) != null
-                || clazz.getAnnotation(LiteflowIfCmpDefine.class) != null;
-
-        if (!flag1){
-            return false;
-        }
-
-        //看超类是否是NodeComponent,NodeCondComponent,NodeIfComponent中的一个，如果不是，则说明满足条件。是的话，也不满足
-        boolean flag2 = !ListUtil.toList(NodeComponent.class, NodeSwitchComponent.class, NodeIfComponent.class)
-                .contains(clazz.getSuperclass());
-
-        if (!flag2){
-            return false;
-        }
-
         //查看bean里的method是否有方法标记了@LiteflowMethod标注
         //这里的bean有可能是cglib加强过的class，所以要先进行个判断
         Class<?> targetClass;
@@ -55,11 +38,10 @@ public class LiteFlowProxyUtil {
         }else{
             targetClass = clazz;
         }
-        boolean flag3 = Arrays.stream(targetClass.getMethods()).anyMatch(
+        // 判断是否有方法标记了@LiteflowMethod标注
+        return Arrays.stream(targetClass.getMethods()).anyMatch(
                 method -> method.getAnnotation(LiteflowMethod.class) != null
         );
-
-        return flag3;
     }
 
     //对一个满足声明式的bean进行代理,生成代理类数组
@@ -84,8 +66,7 @@ public class LiteFlowProxyUtil {
                 proxy = new ComponentProxy(nodeId, bean, NodeIfComponent.class);
                 return proxy.getProxyList();
             }
-
-            throw new RuntimeException();
+            return new ComponentProxy(nodeId, bean, NodeIfComponent.class).getProxyList();
         }catch (Exception e){
             String errMsg = StrUtil.format("Error while proxying bean[{}]",bean.getClass().getName());
             LOG.error(errMsg);
