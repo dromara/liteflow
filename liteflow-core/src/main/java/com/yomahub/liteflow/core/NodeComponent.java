@@ -113,15 +113,15 @@ public abstract class NodeComponent{
 			}
 			throw e;
 		} finally {
+			//后置处理
+			self.afterProcess(this.getNodeId(), slot);
+
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
 			LOG.debug("[{}]:component[{}] finished in {} milliseconds",slot.getRequestId(),this.getDisplayName(),timeSpent);
 
 			//往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
-
-			//后置处理
-			self.afterProcess(this.getNodeId(), slot);
 
 			// 性能统计
 			if (ObjectUtil.isNotNull(monitorBus)) {
