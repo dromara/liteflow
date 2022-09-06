@@ -248,7 +248,7 @@ public class FlowExecutor {
                                           Object param,
                                           Integer slotIndex, InnerChainTypeEnum innerChainType) {
         Slot slot = doExecute(chainId, param, null, null, slotIndex, innerChainType);
-        return LiteflowResponse.newInnerResponse(slot);
+        return LiteflowResponse.newInnerResponse(chainId, slot);
     }
 
     private Slot doExecute(String chainId,
@@ -288,7 +288,7 @@ public class FlowExecutor {
         //我知道这在多线程调用隐式流程中会有问题。但是考虑到这种场景的不会多，也有其他的转换方式。
         //所以暂且这么做，以后再优化
         if (!innerChainType.equals(InnerChainTypeEnum.NONE)){
-            slot.removeSubException();
+            slot.removeSubException(chainId);
             slot.addSubChain(chainId);
         }
 
@@ -345,7 +345,7 @@ public class FlowExecutor {
             if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
                 slot.setException(e);
             }else{
-                slot.setSubException(e);
+                slot.setSubException(chainId, e);
             }
         } finally {
             if (innerChainType.equals(InnerChainTypeEnum.NONE)) {

@@ -1,8 +1,5 @@
 package com.yomahub.liteflow.flow;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.collection.ListUtil;
-import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
@@ -37,8 +34,8 @@ public class LiteflowResponse implements Serializable {
         return newResponse(slot, slot.getException());
     }
 
-    public static LiteflowResponse newInnerResponse(Slot slot){
-        return newResponse(slot, slot.getSubException());
+    public static LiteflowResponse newInnerResponse(String chainId, Slot slot){
+        return newResponse(slot, slot.getSubException(chainId));
     }
 
     private static LiteflowResponse newResponse(Slot slot, Exception e){
