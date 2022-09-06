@@ -42,18 +42,9 @@ public class LiteFlowChainELBuilder {
     private final List<Condition> finallyConditionList;
 
     //EL解析引擎
-    private final ExpressRunner expressRunner;
+    private final static ExpressRunner expressRunner;
 
-    public static LiteFlowChainELBuilder createChain() {
-        return new LiteFlowChainELBuilder();
-    }
-
-    public LiteFlowChainELBuilder() {
-        chain = new Chain();
-        conditionList = new ArrayList<>();
-        preConditionList = new ArrayList<>();
-        finallyConditionList = new ArrayList<>();
-
+    static {
         //初始化QLExpress的Runner
         expressRunner = new ExpressRunner();
         expressRunner.addFunction("THEN", new ThenOperator());
@@ -71,6 +62,17 @@ public class LiteFlowChainELBuilder {
         expressRunner.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
         expressRunner.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
         expressRunner.addFunction("node", new NodeOperator());
+    }
+
+    public static LiteFlowChainELBuilder createChain() {
+        return new LiteFlowChainELBuilder();
+    }
+
+    public LiteFlowChainELBuilder() {
+        chain = new Chain();
+        conditionList = new ArrayList<>();
+        preConditionList = new ArrayList<>();
+        finallyConditionList = new ArrayList<>();
     }
 
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
