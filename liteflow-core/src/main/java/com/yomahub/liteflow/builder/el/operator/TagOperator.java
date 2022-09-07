@@ -20,7 +20,7 @@ public class TagOperator extends BaseOperator {
 
 		Node node = OperatorHelper.convert(objects[0], Node.class);
 
-		String tag = null;
+		String tag ;
 		if (objects[1] instanceof String) {
 			tag = objects[1].toString();
 		} else {
@@ -30,7 +30,9 @@ public class TagOperator extends BaseOperator {
 		//这里为什么要clone一个呢？
 		//因为tag是跟着chain走的。而在el上下文里的放的都是同一个node，如果多个同样的node tag不同，则这里必须copy
 		Node copyNode = FlowBus.copyNode(node.getId());
-
+		if (null == copyNode){
+			throw new QLException("The Node must be not null");
+		}
 		copyNode.setTag(tag);
 
 		return copyNode;
