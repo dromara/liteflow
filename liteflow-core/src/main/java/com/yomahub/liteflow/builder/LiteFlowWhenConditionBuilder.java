@@ -2,7 +2,6 @@ package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
-import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.condition.Condition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
