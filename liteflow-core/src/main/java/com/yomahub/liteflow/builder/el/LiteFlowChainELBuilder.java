@@ -42,7 +42,26 @@ public class LiteFlowChainELBuilder {
     private final List<Condition> finallyConditionList;
 
     //EL解析引擎
-    private final ExpressRunner expressRunner;
+    private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();;
+
+    static {
+        //初始化QLExpress的Runner
+        EXPRESS_RUNNER.addFunction("THEN", new ThenOperator());
+        EXPRESS_RUNNER.addFunction("WHEN", new WhenOperator());
+        EXPRESS_RUNNER.addFunction("SWITCH", new SwitchOperator());
+        EXPRESS_RUNNER.addFunction("PRE", new PreOperator());
+        EXPRESS_RUNNER.addFunction("FINALLY", new FinallyOperator());
+        EXPRESS_RUNNER.addFunction("IF", new IfOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("ELSE", Object.class, new ElseOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("ELIF", Object.class, new ElifOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("to", Object.class, new ToOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("id", Object.class, new IdOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
+        EXPRESS_RUNNER.addFunction("node", new NodeOperator());
+    }
 
     public static LiteFlowChainELBuilder createChain() {
         return new LiteFlowChainELBuilder();
@@ -53,24 +72,6 @@ public class LiteFlowChainELBuilder {
         conditionList = new ArrayList<>();
         preConditionList = new ArrayList<>();
         finallyConditionList = new ArrayList<>();
-
-        //初始化QLExpress的Runner
-        expressRunner = new ExpressRunner();
-        expressRunner.addFunction("THEN", new ThenOperator());
-        expressRunner.addFunction("WHEN", new WhenOperator());
-        expressRunner.addFunction("SWITCH", new SwitchOperator());
-        expressRunner.addFunction("PRE", new PreOperator());
-        expressRunner.addFunction("FINALLY", new FinallyOperator());
-        expressRunner.addFunction("IF", new IfOperator());
-        expressRunner.addFunctionAndClassMethod("ELSE", Object.class, new ElseOperator());
-        expressRunner.addFunctionAndClassMethod("ELIF", Object.class, new ElifOperator());
-        expressRunner.addFunctionAndClassMethod("to", Object.class, new ToOperator());
-        expressRunner.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
-        expressRunner.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
-        expressRunner.addFunctionAndClassMethod("id", Object.class, new IdOperator());
-        expressRunner.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
-        expressRunner.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
-        expressRunner.addFunction("node", new NodeOperator());
     }
 
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
@@ -105,7 +106,7 @@ public class LiteFlowChainELBuilder {
             //解析el成为一个Condition
             //为什么这里只是一个Condition，而不是一个List<Condition>呢
             //这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-            Condition condition = (Condition) expressRunner.execute(elStr, context, errorList, true, true);
+            Condition condition = (Condition) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
 
             //从condition的第一层嵌套结构里拿出Pre和Finally节点
             //为什么只寻找第一层，而不往下寻找了呢？
