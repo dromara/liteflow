@@ -28,20 +28,30 @@ public class LiteflowResponse implements Serializable {
     private Slot slot;
     
     public LiteflowResponse() {
-      this(null);
     }
-    public LiteflowResponse(Slot slot) {
-        if (slot != null && slot.getException() != null) {
-            this.success = false;
-            this.cause = slot.getException();
-            this.message = this.cause.getMessage();
-            this.code = this.cause instanceof LiteFlowException ? ((LiteFlowException)this.cause).getCode() : null;
+
+    public static LiteflowResponse newMainResponse(Slot slot){
+        return newResponse(slot, slot.getException());
+    }
+
+    public static LiteflowResponse newInnerResponse(String chainId, Slot slot){
+        return newResponse(slot, slot.getSubException(chainId));
+    }
+
+    private static LiteflowResponse newResponse(Slot slot, Exception e){
+        LiteflowResponse response = new LiteflowResponse();
+        if (slot != null && e != null) {
+            response.setSuccess(false);
+            response.setCause(e);
+            response.setMessage(response.getCause().getMessage());
+            response.setCode(response.getCause() instanceof LiteFlowException ? ((LiteFlowException)response.getCause()).getCode() : null);
         } else {
-            this.success = true;
+            response.setSuccess(true);
         }
-        this.slot = slot;
+        response.setSlot(slot);
+        return response;
     }
-    
+
     public boolean isSuccess() {
         return success;
     }

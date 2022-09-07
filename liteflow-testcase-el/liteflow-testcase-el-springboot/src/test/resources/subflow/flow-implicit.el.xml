@@ -15,4 +15,12 @@
     <chain name="c2">
         THEN(q);
     </chain>
+
+    <chain name="chain_r">
+        THEN(r);
+    </chain>
+
+    <chain name="chain_s">
+        THEN(s);
+    </chain>
 </flow>

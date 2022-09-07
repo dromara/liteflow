@@ -89,7 +89,11 @@ public class Chain implements Executable {
             throw e;
         }catch (Exception e){
             //这里事先取到exception set到slot里，为了方便finally取到exception
-            slot.setException(e);
+            if (slot.isSubChain(chainName)){
+                slot.setSubException(chainName, e);
+            }else{
+                slot.setException(e);
+            }
             throw e;
         }finally {
             //执行后置
