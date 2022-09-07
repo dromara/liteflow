@@ -21,7 +21,7 @@ public class WhenOperator extends Operator {
     public WhenCondition executeInner(Object[] objects) throws Exception {
         try {
             if (objects.length == 0) {
-                throw new QLException("parameter error");
+                throw new QLException("parameter is empty");
             }
 
             WhenCondition whenCondition = new WhenCondition();
@@ -29,7 +29,7 @@ public class WhenOperator extends Operator {
                 if (obj instanceof Executable) {
                     whenCondition.addExecutable((Executable) obj);
                 } else {
-                    throw new QLException("parameter error");
+                    throw new QLException("parameter must be executable item");
                 }
             }
             return whenCondition;
