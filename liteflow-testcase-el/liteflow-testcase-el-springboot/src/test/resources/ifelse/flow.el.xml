@@ -9,7 +9,8 @@
     </chain>
 
     <chain name="chain3">
-        item = IF(x1.tag("false"), a, THEN(c, c, b));
+        item_inner = THEN(c,c,b);
+        item = IF(x1.tag("false"), a, item_inner);
         IF(
             x1.tag("false"),
             a,
