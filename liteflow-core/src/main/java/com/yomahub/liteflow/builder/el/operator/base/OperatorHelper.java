@@ -4,9 +4,8 @@ import com.ql.util.express.exception.QLException;
 
 /**
  * Operator 常用工具类
- *
  * @author gaibu
- * @ate 2022/8/28 12:58
+ * @since 2.8.6
  */
 public class OperatorHelper {
 

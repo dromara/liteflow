@@ -56,9 +56,6 @@ public class FlowParserProvider {
 
     /**
      * 根据配置的地址找到对应的解析器
-     *
-     * @param path
-     * @return
      */
     public static FlowParser lookup(String path) throws Exception {
         if (isLocalConfig(path)) {
