@@ -6,6 +6,7 @@ import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
+import com.yomahub.liteflow.exception.DataNofFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -14,12 +15,15 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Chain基于代码形式的组装器
  * EL表达式规则专属组装器
+ *
  * @author Bryan.Zhang
  * @since 2.8.0
  */
@@ -42,7 +46,8 @@ public class LiteFlowChainELBuilder {
     private final List<Condition> finallyConditionList;
 
     //EL解析引擎
-    private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();;
+    private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
+    ;
 
     static {
         //初始化QLExpress的Runner
@@ -87,13 +92,13 @@ public class LiteFlowChainELBuilder {
     }
 
     public LiteFlowChainELBuilder setEL(String elStr) {
-        if (StrUtil.isBlank(elStr)){
+        if (StrUtil.isBlank(elStr)) {
             String errMsg = StrUtil.format("no conditionList in this chain[{}]", chain.getChainName());
             throw new FlowSystemException(errMsg);
         }
 
         List<String> errorList = new ArrayList<>();
-        try{
+        try {
             DefaultContext<String, Object> context = new DefaultContext<>();
 
             //这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
@@ -112,8 +117,8 @@ public class LiteFlowChainELBuilder {
             //为什么只寻找第一层，而不往下寻找了呢？
             //因为这是一个规范，如果在后面的层级中出现pre和finally，语义上也不好理解，所以pre和finally只能定义在第一层
             //如果硬是要在后面定义，则执行的时候会忽略，相关代码已做了判断
-            for (Executable executable : condition.getExecutableList()){
-                if (executable instanceof PreCondition){
+            for (Executable executable : condition.getExecutableList()) {
+                if (executable instanceof PreCondition) {
                     this.preConditionList.add((PreCondition) executable);
                 } else if (executable instanceof FinallyCondition) {
                     this.finallyConditionList.add((FinallyCondition) executable);
@@ -123,9 +128,13 @@ public class LiteFlowChainELBuilder {
             //把主要的condition加入
             this.conditionList.add(condition);
             return this;
-        }catch (QLException e){
+        } catch (QLException e) {
+            // EL 底层会包装异常，这里是曲线处理
+            if (Objects.equals(e.getCause().getMessage(), DataNofFoundException.MSG)) {
+                throw new ELParseException(String.format("[node/chain is not exist or node/chain not register]elStr=%s", elStr));
+            }
             throw new ELParseException(e.getCause().getMessage());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ELParseException(e.getMessage());
         }
     }
