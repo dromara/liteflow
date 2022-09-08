@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.annotation;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 import java.lang.annotation.*;
@@ -21,5 +22,5 @@ public @interface LiteflowMethod {
      * cmp定义
      *
      */
-    Class<? extends NodeComponent> cmpClass() default NodeComponent.class;
+    AnnotionNodeTypeEnum nodeType() default AnnotionNodeTypeEnum.COMMON;
 }
