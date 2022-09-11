@@ -19,6 +19,7 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.parser.base.FlowParser;
 import com.yomahub.liteflow.parser.factory.FlowParserProvider;
+import com.yomahub.liteflow.parser.spi.ParserClassNameSpi;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
@@ -29,10 +30,7 @@ import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -84,10 +82,19 @@ public class FlowExecutor {
         //进行id生成器的初始化
         IdGeneratorHolder.init();
 
-        //如果没有配置规则文件路径，就停止初始化。
-        //规则文件路径不是一定要有，因为liteflow分基于规则和基于代码两种，有可能是动态代码构建的
         if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
-            return;
+            //查看有没有Parser的SPI实现
+            //所有的Parser的SPI实现都是以custom形式放入的，且只支持xml形式
+            ServiceLoader<ParserClassNameSpi> loader = ServiceLoader.load(ParserClassNameSpi.class);
+            Iterator<ParserClassNameSpi> it = loader.iterator();
+            if (it.hasNext()){
+                ParserClassNameSpi parserClassNameSpi = it.next();
+                liteflowConfig.setRuleSource("el_xml:" + parserClassNameSpi.getSpiClassName());
+            }else{
+                //ruleSource为空，而且没有spi形式的扩展，那么说明真的没有ruleSource
+                //这种情况有可能是基于代码动态构建的
+                return;
+            }
         }
 
         //如果有前缀的，则不需要再进行分割了，说明是一个整体

@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.8.6-BETA</revision>
+		<revision>2.9.0</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -140,15 +140,11 @@
 						<groupId>org.slf4j</groupId>
 					</exclusion>
 				</exclusions>
-				<scope>provided</scope>
-				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-recipes</artifactId>
 				<version>${curator.version}</version>
-				<scope>provided</scope>
-				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>cn.hutool</groupId>
@@ -170,8 +166,6 @@
 				<groupId>com.101tec</groupId>
 				<artifactId>zkclient</artifactId>
 				<version>${zkclient.version}</version>
-				<scope>provided</scope>
-				<optional>true</optional>
 			</dependency>
 
 			<dependency>
@@ -331,6 +325,7 @@
 		<module>liteflow-spring</module>
 		<module>liteflow-testcase-old</module>
 		<module>liteflow-testcase-el</module>
+		<module>liteflow-rule-zk</module>
 	</modules>
 
 	<distributionManagement>

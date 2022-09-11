@@ -29,8 +29,8 @@ public class LiteflowConfig {
     //流程定义资源地址
     private String ruleSource;
 
-    //zk配置的node定义
-    private String zkNode;
+    //流程资源扩展数据
+    private String ruleSourceExtData;
 
     //slot的数量
     private Integer slotSize;
@@ -242,18 +242,6 @@ public class LiteflowConfig {
         this.retryCount = retryCount;
     }
 
-    public String getZkNode() {
-        if (StrUtil.isBlank(zkNode)) {
-            return "/lite-flow/flow";
-        } else {
-            return zkNode;
-        }
-    }
-
-    public void setZkNode(String zkNode) {
-        this.zkNode = zkNode;
-    }
-
     public Boolean getPrintBanner() {
         if (ObjectUtil.isNull(printBanner)) {
             return Boolean.TRUE;
@@ -343,5 +331,13 @@ public class LiteflowConfig {
 
     public void setSubstituteCmpClass(String substituteCmpClass) {
         this.substituteCmpClass = substituteCmpClass;
+    }
+
+    public String getRuleSourceExtData() {
+        return ruleSourceExtData;
+    }
+
+    public void setRuleSourceExtData(String ruleSourceExtData) {
+        this.ruleSourceExtData = ruleSourceExtData;
     }
 }

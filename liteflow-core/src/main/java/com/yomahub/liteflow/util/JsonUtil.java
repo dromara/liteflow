@@ -54,4 +54,17 @@ public class JsonUtil {
             throw new JsonProcessException(errMsg);
         }
     }
+
+    public static <T> T parseObject(String json, Class<T> clazz){
+        if (StrUtil.isEmpty(json)) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, clazz);
+        } catch (IOException e) {
+            String errMsg = StrUtil.format("Error while parsing text [{}],reason: {}", json, e.getMessage());
+            LOG.error(e.getMessage(), e);
+            throw new JsonProcessException(errMsg);
+        }
+    }
 }

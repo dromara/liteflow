@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>liteflow-testcase-old</artifactId>
+        <artifactId>liteflow-testcase-el</artifactId>
         <groupId>com.yomahub</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>liteflow-testcase-script-qlexpress-springboot</artifactId>
+    <artifactId>liteflow-testcase-el-zk-springboot</artifactId>
 
     <dependencies>
         <dependency>
@@ -20,17 +20,30 @@
         </dependency>
 
         <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-rule-zk</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-script-qlexpress</artifactId>
-            <version>${revision}</version>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
