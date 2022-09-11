@@ -318,14 +318,12 @@
 
 	<modules>
 		<module>liteflow-core</module>
+		<module>liteflow-script-plugin</module>
+		<module>liteflow-rule-plugin</module>
 		<module>liteflow-spring-boot-starter</module>
-		<module>liteflow-script-qlexpress</module>
-		<module>liteflow-script-common</module>
-		<module>liteflow-script-groovy</module>
 		<module>liteflow-spring</module>
 		<module>liteflow-testcase-old</module>
 		<module>liteflow-testcase-el</module>
-		<module>liteflow-rule-zk</module>
 	</modules>
 
 	<distributionManagement>
