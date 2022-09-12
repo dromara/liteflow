@@ -15,12 +15,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.yomahub</groupId>
-			<artifactId>liteflow-script-common</artifactId>
-			<version>${revision}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>cn.hutool</groupId>
 			<artifactId>hutool-core</artifactId>
 		</dependency>
