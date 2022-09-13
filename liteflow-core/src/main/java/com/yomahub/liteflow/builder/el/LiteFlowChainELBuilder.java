@@ -11,9 +11,10 @@ import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.condition.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
+import com.yomahub.liteflow.flow.element.condition.PreCondition;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +25,6 @@ import java.util.List;
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
-
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     private Chain chain;
 
