@@ -8,7 +8,7 @@ import com.yomahub.liteflow.exception.ELParseException;
  * BaseOperator 为了强化 executeInner 方法，会捕获抛出的 QLException 错误，输出友好的错误提示
  *
  * @author gaibu
- * @date 2022/8/28 14:32
+ * @since 2.8.6
  */
 public abstract class BaseOperator extends Operator {
 

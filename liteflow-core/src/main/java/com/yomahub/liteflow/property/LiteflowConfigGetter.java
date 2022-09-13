@@ -16,7 +16,7 @@ public class LiteflowConfigGetter {
             //这里liteflowConfig不可能为null
             //如果在springboot环境，由于自动装配，所以不可能为null
             //在spring环境，如果xml没配置，在FlowExecutor的init时候就已经报错了
-            //只有在非spring环境下，是为null
+            //非spring环境下，FlowExecutorHolder.loadInstance(config)的时候，会把config放入这个类的静态属性中
             if (ObjectUtil.isNull(liteflowConfig)){
                 liteflowConfig = new LiteflowConfig();
             }

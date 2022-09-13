@@ -19,14 +19,12 @@ public class IgnoreErrorOperator extends BaseOperator {
 
 		WhenCondition condition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-		boolean ignoreError = false;
 		if (objects[1] instanceof Boolean) {
-			ignoreError = Boolean.parseBoolean(objects[1].toString().toLowerCase());
+			// ignoreError
+			condition.setErrorResume(Boolean.parseBoolean(objects[1].toString().toLowerCase()));
 		} else {
 			throw new QLException("The parameter must be boolean type");
 		}
-
-		condition.setErrorResume(ignoreError);
 
 		return condition;
 	}

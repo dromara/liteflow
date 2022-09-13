@@ -1,6 +1,12 @@
 {
   "properties": [
     {
+      "name": "liteflow.rule-source-ext-data",
+      "type": "java.lang.String",
+      "description": "rule source extended data.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.request-id-generator-class",
       "type": "java.lang.String",
       "description": "Custom requestId builder.",
@@ -27,13 +33,6 @@
       "description": "Whether to print liteflow banner.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": true
-    },
-    {
-      "name": "liteflow.zk-node",
-      "type": "java.lang.String",
-      "description": "Node definition for ZK configuration.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": "/lite-flow/flow"
     },
     {
       "name": "liteflow.slot-size",

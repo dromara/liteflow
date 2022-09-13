@@ -10,7 +10,6 @@ package com.yomahub.liteflow.spring;
 
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -85,7 +84,9 @@ public class ComponentScanner implements BeanPostProcessor {
         return bean;
     }
 
-    //用于清楚spring上下文扫描到的组件实体
+    /**
+     * 用于清除 spring 上下文扫描到的组件实体
+     */
     public static void cleanCache() {
         nodeComponentMap.clear();
     }

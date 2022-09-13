@@ -29,8 +29,6 @@ import java.util.Objects;
  */
 public class LiteFlowChainELBuilder {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
     private Chain chain;
 
     //这是主体的Condition，不包含前置和后置

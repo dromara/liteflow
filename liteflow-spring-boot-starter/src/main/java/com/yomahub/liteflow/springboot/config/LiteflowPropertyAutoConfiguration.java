@@ -25,6 +25,7 @@ public class LiteflowPropertyAutoConfiguration {
     public LiteflowConfig liteflowConfig(LiteflowProperty property, LiteflowMonitorProperty liteflowMonitorProperty){
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setRuleSource(property.getRuleSource());
+        liteflowConfig.setRuleSourceExtData(property.getRuleSourceExtData());
         liteflowConfig.setSlotSize(property.getSlotSize());
         liteflowConfig.setThreadExecutorClass(property.getThreadExecutorClass());
         liteflowConfig.setWhenMaxWaitSeconds(property.getWhenMaxWaitSeconds());
@@ -38,7 +39,6 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setEnable(property.isEnable());
         liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
         liteflowConfig.setRetryCount(property.getRetryCount());
-        liteflowConfig.setZkNode(property.getZkNode());
         liteflowConfig.setPrintBanner(property.isPrintBanner());
         liteflowConfig.setNodeExecutorClass(property.getNodeExecutorClass());
         liteflowConfig.setRequestIdGeneratorClass(property.getRequestIdGeneratorClass());

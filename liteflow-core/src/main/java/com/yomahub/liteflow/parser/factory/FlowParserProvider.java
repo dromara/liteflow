@@ -36,29 +36,12 @@ public class FlowParserProvider {
 
     private static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.yml$";
 
-    private static final String FORMAT_EL_XML_CONFIG_REGEX = "el_xml:.+";
-
-    private static final String FORMAT_EL_JSON_CONFIG_REGEX = "el_json:.+";
-
-    private static final String FORMAT_EL_YML_CONFIG_REGEX = "el_yml:.+";
-
-    private static final String FORMAT_XML_CONFIG_REGEX = "xml:.+";
-
-    private static final String FORMAT_JSON_CONFIG_REGEX = "json:.+";
-
-    private static final String FORMAT_YML_CONFIG_REGEX = "yml:.+";
-
     private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
 
     private static final String CLASS_CONFIG_REGEX = "^(xml:|json:|yml:|el_xml:|el_json:|el_yml:)?\\w+(\\.\\w+)*$";
 
-    private static final String ZK_CONFIG_REGEX = "(xml:|json:|yml:|el_xml:|el_json:|el_yml:)?[\\w\\d][\\w\\d\\.]+\\:(\\d)+(\\,[\\w\\d][\\w\\d\\.]+\\:(\\d)+)*";
-
     /**
      * 根据配置的地址找到对应的解析器
-     *
-     * @param path
-     * @return
      */
     public static FlowParser lookup(String path) throws Exception {
         if (isLocalConfig(path)) {
@@ -121,34 +104,6 @@ public class FlowParserProvider {
             String errorMsg = StrUtil.format("can't support the format {}", path);
             throw new ErrorSupportPathException(errorMsg);
         }
-        else if (isZKConfig(path)) {
-            FlowParserFactory factory = new ZookeeperParserFactory();
-            if (ReUtil.isMatch(FORMAT_XML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, TYPE_XML.getType());
-                return factory.createXmlParser(path);
-            }
-            else if (ReUtil.isMatch(FORMAT_JSON_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, TYPE_JSON.getType());
-                return factory.createJsonParser(path);
-            }
-            else if (ReUtil.isMatch(FORMAT_YML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper,zkNode={},format type={}", path, TYPE_YML.getType());
-                return factory.createYmlParser(path);
-            }
-            else if (ReUtil.isMatch(FORMAT_EL_XML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper with el,zkNode={},format type={}", path, TYPE_EL_XML.getType());
-                return factory.createXmlELParser(path);
-            }
-            else if (ReUtil.isMatch(FORMAT_EL_YML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper with el,zkNode={},format type={}", path, TYPE_EL_YML.getType());
-                return factory.createYmlELParser(path);
-            }
-            else if (ReUtil.isMatch(FORMAT_EL_JSON_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from Zookeeper with el,zkNode={},format type={}", path, TYPE_EL_JSON.getType());
-                return factory.createJsonELParser(path);
-            }
-
-        }
 
         // not found
         String errorMsg = StrUtil.format("can't find the parser for path:{}", path);
@@ -172,12 +127,5 @@ public class FlowParserProvider {
      */
     private static boolean isClassConfig(String path) {
         return ReUtil.isMatch(CLASS_CONFIG_REGEX, path);
-    }
-
-    /**
-     * 判定是否为zk配置
-     */
-    private static boolean isZKConfig(String path) {
-        return ReUtil.isMatch(ZK_CONFIG_REGEX, path);
     }
 }
