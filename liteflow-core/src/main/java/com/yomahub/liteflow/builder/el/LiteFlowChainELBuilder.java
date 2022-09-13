@@ -43,7 +43,6 @@ public class LiteFlowChainELBuilder {
 
     //EL解析引擎
     private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
-    ;
 
     static {
         //初始化QLExpress的Runner
