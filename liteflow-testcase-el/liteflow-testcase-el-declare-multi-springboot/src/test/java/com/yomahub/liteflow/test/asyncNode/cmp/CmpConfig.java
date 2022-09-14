@@ -1,15 +1,14 @@
 package com.yomahub.liteflow.test.asyncNode.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeSwitchComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.asyncNode.exception.TestException;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")
     public void processA(NodeComponent bindCmp) {
@@ -72,7 +71,7 @@ public class CmpConfig {
         System.out.println("Dcomp executed!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotionNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotationNodeTypeEnum.SWITCH)
     public String processSwitchE(NodeComponent bindCmp) throws Exception {
         System.out.println("Ecomp executed!");
         return "g";
@@ -131,7 +130,7 @@ public class CmpConfig {
         throw new TestException();
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "j",nodeType = AnnotionNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "j",nodeType = AnnotationNodeTypeEnum.SWITCH)
     public String processSwitchJ(NodeComponent bindCmp) throws Exception {
         System.out.println("Jcomp executed!");
         return "chain3";

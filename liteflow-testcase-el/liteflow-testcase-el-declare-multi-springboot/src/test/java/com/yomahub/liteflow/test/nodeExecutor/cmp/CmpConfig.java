@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.nodeExecutor.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -7,9 +8,8 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutor;
 import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutorAndCustomRetry;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")

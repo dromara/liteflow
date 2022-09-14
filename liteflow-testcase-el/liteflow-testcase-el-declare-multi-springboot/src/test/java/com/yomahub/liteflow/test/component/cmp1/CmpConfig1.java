@@ -1,14 +1,14 @@
 package com.yomahub.liteflow.test.component.cmp1;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-@Component
+@LiteflowComponent
 public class CmpConfig1 {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")

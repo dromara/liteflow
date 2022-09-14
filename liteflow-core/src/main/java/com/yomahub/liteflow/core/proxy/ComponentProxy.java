@@ -1,11 +1,16 @@
 package com.yomahub.liteflow.core.proxy;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.lang.Tuple;
+import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
+import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -20,7 +25,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -60,40 +69,67 @@ public class ComponentProxy {
         ));
 
         return methodListMap.entrySet().stream().map(entry -> {
+            // 获取当前节点的原有注解，如：LiteFlowRetry 之类的规则注解
             Annotation[] beanClassAnnotation = bean.getClass().getAnnotations();
+            // 如果entry的key为空字符串，则是为了兼容老版本的写法，即：没有指定nodeId的情况
+            // 判断是否是方法级创造节点
             boolean isMethodCreate = !StrUtil.isEmpty(entry.getKey());
+            // 获取当前bean 真实的nodeId
             String activeNodeId = isMethodCreate ? entry.getKey() : nodeId;
+            // 获取当前节点所有的@LiteflowRetry @LiteflowMethod注解对
+            List<Tuple> tupleList = entry.getValue().stream().map(m ->
+                    new Tuple(m.getAnnotation(LiteflowRetry.class), m.getAnnotation(LiteflowMethod.class))
+            ).collect(Collectors.toList());
             // 获取当前节点的所有LiteFlowMethod注解
-            List<LiteflowMethod> methodList = entry.getValue().stream()
-                    .map(m -> m.getAnnotation(LiteflowMethod.class))
+            List<LiteflowMethod> methodList = tupleList.stream().map(tuple -> ((LiteflowMethod)tuple.get(1)))
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-            // 一个节点只能有一个定义NodeCmp类
-            List<? extends Class<? extends NodeComponent>> classes = methodList.stream().map(LiteflowMethod::nodeType).map(AnnotionNodeTypeEnum::getCmpClass).distinct().collect(Collectors.toList());
+            // nodeType去重
+            List<? extends Class<? extends NodeComponent>> classes = methodList.stream()
+                    .map(LiteflowMethod::nodeType)
+                    .map(AnnotationNodeTypeEnum::getCmpClass)
+                    .distinct()
+                    .collect(Collectors.toList());
+            // 相同nodeId里只能定义同一种的类型的NodeComponent
             boolean legal = classes.size() == 1;
             if (!legal){
                 throw new LiteFlowException("The cmpClass of the same nodeId must be the same,you declared nodeId:" + activeNodeId + ",cmpClass:" + classes);
             }
-            // 获取当前节点的所有LiteflowRetry注解
-            List<LiteflowRetry> liteflowRetries = entry.getValue().stream()
-                    .map(m -> m.getAnnotation(LiteflowRetry.class))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            // 一个nodeCmp只能有一个LiteflowRetry定义方法
-            legal = liteflowRetries.size() <= 1;
-            if (!legal){
-                throw new LiteFlowException("the retry annotation must be declared in the one of declared methods ( PROCESS Method is better ),you declared "+ liteflowRetries.size()+" times.");
+            // 当前节点实际LiteflowRetry注解
+            AtomicReference<LiteflowRetry> liteflowRetryAtomicReference = new AtomicReference<>(null);
+            // 相同nodeId只能有一个LiteflowRetry定义方法,且必须再Process方法上
+            boolean illegal = tupleList.stream().anyMatch(
+                    tuple -> {
+                        LiteflowRetry liteflowRetry = tuple.get(0);
+                        LiteflowMethod liteflowMethod = tuple.get(1);
+                        boolean existRetry = liteflowRetry != null;
+                        boolean isProcess = liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS)
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_IF)
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_SWITCH);
+                        // 如果是再Process方法上的liteflowRetry注解，则默认为真实节点。
+                        if (isProcess && existRetry) {
+                            liteflowRetryAtomicReference.set(liteflowRetry);
+                        }
+                        // 如果存在existRetry注解，但是不是在Process方法上，则为非法
+                        return existRetry && !isProcess;
+                    }
+            );
+            if (illegal){
+                throw new LiteFlowException("the retry annotation (@LiteflowRetry) must be declared on the PROCESS method");
             }
-            Class<?> cmpClass;
-            cmpClass = clazz;
+            // 生成nodeCmp的类型，默认为全局定义的clazz
+            Class<?> cmpClazz;
+            cmpClazz = clazz;
             // 判断是否是方法声明的组件
             if (isMethodCreate){
-                cmpClass = methodList.iterator().next().nodeType().getCmpClass();
-                if (liteflowRetries.size() == 1){
-                    // 增加注解
+                cmpClazz = methodList.iterator().next().nodeType().getCmpClass();
+                LiteflowRetry liteflowRetry;
+                if ((liteflowRetry = liteflowRetryAtomicReference.get()) != null){
+                    // 增加LiteFlowRetry注解到注解数组里
                     List<Annotation> annotations = Arrays.stream(beanClassAnnotation)
                             .filter(a -> !a.annotationType().equals(LiteflowRetry.class))
                             .collect(Collectors.toList());
-                    annotations.add(liteflowRetries.get(0));
+                    annotations.add(liteflowRetry);
                     beanClassAnnotation = new Annotation[annotations.size()];
                     annotations.toArray(beanClassAnnotation);
                 }
@@ -103,7 +139,7 @@ public class ComponentProxy {
                 //这里package进行了重设，放到了被代理对象的所在目录
                 //生成的对象也加了上被代理对象拥有的注解
                 //被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
-                Object instance = new ByteBuddy().subclass(cmpClass)
+                Object instance = new ByteBuddy().subclass(cmpClazz)
                         .name(StrUtil.format("{}.ByteBuddy${}${}",
                                 ClassUtil.getPackage(bean.getClass()),
                                 activeNodeId,
@@ -116,6 +152,7 @@ public class ComponentProxy {
                         .getLoaded()
                         .newInstance();
                 NodeComponent nodeComponent = (NodeComponent) instance;
+                // 重设nodeId
                 nodeComponent.setNodeId(activeNodeId);
                 return nodeComponent;
             } catch (Exception e) {

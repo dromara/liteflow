@@ -1,18 +1,17 @@
 package com.yomahub.liteflow.test.component.cmp2;
 
-import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 
-@Component
+@LiteflowComponent
 public class FCondCmp{
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "f",nodeType = AnnotionNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "f",nodeType = AnnotationNodeTypeEnum.SWITCH)
     public String processSwitchF(NodeComponent bindCmp) {
         Integer requestData = bindCmp.getRequestData();
         if (Objects.isNull(requestData)){

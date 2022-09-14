@@ -1,16 +1,16 @@
 package com.yomahub.liteflow.test.exception.cmp;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.test.exception.CustomStatefulException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
     private static final Logger LOG = LoggerFactory.getLogger(CmpConfig.class);
 
@@ -52,7 +52,7 @@ public class CmpConfig {
         LOG.info("Dcomp executed!");
     }
     ////////
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotionNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotationNodeTypeEnum.SWITCH)
     public String processSwitchE(NodeComponent bindCmp) throws Exception {
         return "a";
     }

@@ -1,13 +1,11 @@
 package com.yomahub.liteflow.test.refreshRule.cmp;
 
-import cn.hutool.core.collection.ConcurrentHashSet;
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import com.yomahub.liteflow.slot.DefaultContext;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")
     public void processA(NodeComponent bindCmp) {

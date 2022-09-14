@@ -14,12 +14,12 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.*;
-import com.yomahub.liteflow.exception.NullNodeTypeException;
-import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
+import com.yomahub.liteflow.exception.NullNodeTypeException;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.parser.LocalJsonFlowParser;
 import com.yomahub.liteflow.parser.LocalXmlFlowParser;
 import com.yomahub.liteflow.parser.LocalYmlFlowParser;
@@ -191,7 +191,9 @@ public class FlowBus {
                 }
             }
             //进行初始化
-            cmpInstances = cmpInstances.stream().map(cmpInstance -> ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, nodeId)).collect(Collectors.toList());
+            cmpInstances = cmpInstances.stream()
+                    .map(
+                            cmpInstance -> ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId())).collect(Collectors.toList());
 
             //初始化Node
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
@@ -214,7 +216,6 @@ public class FlowBus {
                 nodeMap.put(activeNodeId, node);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
             LOG.error(error);
             throw new ComponentCannotRegisterException(error);

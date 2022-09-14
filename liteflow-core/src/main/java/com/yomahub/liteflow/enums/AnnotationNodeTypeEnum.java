@@ -3,15 +3,14 @@ package com.yomahub.liteflow.enums;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.NodeIfComponent;
 import com.yomahub.liteflow.core.NodeSwitchComponent;
-import jdk.nashorn.internal.objects.annotations.Getter;
 
 /**
  * 注解节点类型枚举
  *
  * @author Sorghum
- * @date 2022/09/08
+ * @since 2.9.0
  */
-public enum AnnotionNodeTypeEnum {
+public enum AnnotationNodeTypeEnum {
     /**
      * 普通节点
      */
@@ -33,7 +32,7 @@ public enum AnnotionNodeTypeEnum {
      */
     final Class<? extends NodeComponent> cmpClass;
 
-    AnnotionNodeTypeEnum(String desc, Class<? extends NodeComponent> cmpClass) {
+    AnnotationNodeTypeEnum(String desc, Class<? extends NodeComponent> cmpClass) {
         this.desc = desc;
         this.cmpClass = cmpClass;
     }

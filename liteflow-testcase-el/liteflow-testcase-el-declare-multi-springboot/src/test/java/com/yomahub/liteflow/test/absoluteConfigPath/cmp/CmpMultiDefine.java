@@ -7,16 +7,16 @@
  */
 package com.yomahub.liteflow.test.absoluteConfigPath.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import org.springframework.stereotype.Component;
 
-@Component()
+@LiteflowComponent
 public class CmpMultiDefine{
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a",nodeType = AnnotionNodeTypeEnum.COMMON)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a",nodeType = AnnotationNodeTypeEnum.COMMON)
 	public void processA(NodeComponent bindCmp) {
 		System.out.println("ACmp executed!");
 	}

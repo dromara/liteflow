@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.test.aop.cmp2;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class Cmp2Config {
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "d")
     public void processD(NodeComponent bindCmp) {

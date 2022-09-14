@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.parser.cmp;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
     //////////////////
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")
@@ -32,7 +32,7 @@ public class CmpConfig {
     }
 
     //////////////////
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotionNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "e",nodeType = AnnotationNodeTypeEnum.SWITCH)
     public String processSwitchE(NodeComponent bindCmp) throws Exception {
         return "g";
     }

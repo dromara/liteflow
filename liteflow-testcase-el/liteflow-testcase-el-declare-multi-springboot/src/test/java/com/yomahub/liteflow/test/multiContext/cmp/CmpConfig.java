@@ -1,14 +1,14 @@
 package com.yomahub.liteflow.test.multiContext.cmp;
 
 import cn.hutool.core.date.DateUtil;
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.test.multiContext.CheckContext;
 import com.yomahub.liteflow.test.multiContext.OrderContext;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "a")

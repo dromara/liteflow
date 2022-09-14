@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.complex.cmp2;
 
+import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotionNodeTypeEnum;
+import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
-import org.springframework.stereotype.Component;
 
-@Component
+@LiteflowComponent
 public class CmpConfig2 {
 
 
@@ -15,7 +15,7 @@ public class CmpConfig2 {
 
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeType = AnnotionNodeTypeEnum.SWITCH,nodeId = "B")
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeType = AnnotationNodeTypeEnum.SWITCH,nodeId = "B")
     public String processSwitchB(NodeComponent bindCmp) {
         return "t3";
     }
@@ -40,7 +40,7 @@ public class CmpConfig2 {
 
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeType = AnnotionNodeTypeEnum.SWITCH,nodeId = "G")
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeType = AnnotationNodeTypeEnum.SWITCH,nodeId = "G")
     public String processSwitchG(NodeComponent bindCmp) throws Exception {
         return "t2";
     }
