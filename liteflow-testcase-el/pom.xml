@@ -22,5 +22,6 @@
         <module>liteflow-testcase-el-script-groovy-springboot</module>
         <module>liteflow-testcase-el-script-qlexpress-springboot</module>
         <module>liteflow-testcase-el-zk-springboot</module>
+        <module>liteflow-testcase-el-etcd-springboot</module>
     </modules>
 </project>

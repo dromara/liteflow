@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>liteflow-rule-zk</module>
+        <module>liteflow-rule-etcd</module>
     </modules>
 
     <artifactId>liteflow-rule-plugin</artifactId>
