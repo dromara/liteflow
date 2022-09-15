@@ -43,6 +43,9 @@ public class NacosParserHelper {
 		try{
 			Properties properties = new Properties();
 			properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
+			properties.put(PropertyKeyConst.NAMESPACE,nacosParserVO.getNamespace());
+			properties.put(PropertyKeyConst.USERNAME,nacosParserVO.getUsername());
+			properties.put(PropertyKeyConst.PASSWORD,nacosParserVO.getPassword());
 			this.configService = NacosFactory.createConfigService(properties);
 			CONFIG_MAP.put("Content",configService.getConfig(nacosParserVO.getDataId(), nacosParserVO.getGroup(), 3000L));
 		}catch (Exception e){
@@ -86,7 +89,6 @@ public class NacosParserHelper {
 				}
 			});
 		}catch (Exception ex){
-			LOG.error("listener Exception {} " , ex.getMessage());
 			throw new NacosException(ex.getMessage());
 		}
 	}

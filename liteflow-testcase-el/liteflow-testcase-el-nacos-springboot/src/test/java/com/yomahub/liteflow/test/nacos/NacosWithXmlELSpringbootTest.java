@@ -34,11 +34,11 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
     public void testNacosWithXml() throws Exception {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+        System.out.println(" start " + response.getExecuteStepStr());
         for (int i = 0 ; i < 10; i ++){
             Thread.sleep(10000L);
             response = flowExecutor.execute2Resp("chain1", "arg");
-            System.out.println(" i " + response.getExecuteStepStr());
+            System.out.println(" i " + i + response.getExecuteStepStr());
         }
     }
 }

@@ -40,11 +40,20 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
             if (StrUtil.isBlank(nacosParserVO.getServerAddr())){
                 nacosParserVO.setServerAddr("127.0.0.1:8848");
             }
+            if (StrUtil.isBlank(nacosParserVO.getNamespace())){
+                nacosParserVO.setNamespace("");
+            }
             if (StrUtil.isBlank(nacosParserVO.getDataId())){
                 nacosParserVO.setDataId("LiteFLow");
             }
             if (StrUtil.isBlank(nacosParserVO.getGroup())){
-                nacosParserVO.setGroup("LiteFLowConfig");
+                nacosParserVO.setGroup("LITE_FLOW_GROUP");
+            }
+            if (StrUtil.isBlank(nacosParserVO.getUsername())){
+                nacosParserVO.setUsername("");
+            }
+            if (StrUtil.isBlank(nacosParserVO.getPassword())){
+                nacosParserVO.setPassword("");
             }
             helper = new NacosParserHelper(nacosParserVO, parseConsumer);
         }catch (Exception e){
