@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- base test -->
+    <chain name="chain1">
+        THEN(
+            a,b,c,
+            WHEN(d, SWITCH(e).to(f,g)),
+            chain2
+        );
+    </chain>
+
+
+    <chain name="chain2">
+        THEN(b, SWITCH(j).to(a, chain3));
+    </chain>
+
+    <chain name="chain3">
+        WHEN(g, f, h);
+    </chain>
+
+    <chain name="chain3-1">
+        THEN(WHEN(f, g, i), WHEN(h));
+    </chain>
+
+    <chain name="chain3-2">
+        THEN(WHEN(f, g, i).ignoreError(true), WHEN(h));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, b, c, WHEN(d, i, g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain5">
+        THEN(a, b, c, WHEN(d, i, g, i, h));
+    </chain>
+
+    <chain name="chain6">
+        THEN(a, b, c, WHEN(d, i), WHEN(g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain7">
+        THEN(a, b, c, WHEN(d, i).ignoreError(true), WHEN(g, i, h));
+    </chain>
+
+    <chain name="chain8">
+        THEN(WHEN(d, g, h).any(true), THEN(a, b, c));
+    </chain>
+
+</flow>

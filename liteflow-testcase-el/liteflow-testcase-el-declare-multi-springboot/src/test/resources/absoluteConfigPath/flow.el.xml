@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--这里只是内容，在这个测试用例中这个文件请移到/usr/local/flow.xml中-->
+<flow>
+    <chain name="chain1">
+        WHEN(a,b,c);
+    </chain>
+</flow>
