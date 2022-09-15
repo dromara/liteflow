@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a.tag("A"), b.tag("B"), WHEN(c.tag("C"), d.tag("D")));
+    </chain>
+
+    <chain name="chain2">
+        THEN(WHEN(e, a).any(true), b);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a.tag("a1"), b, a.tag("a2"), a.tag("a3"), b);
+    </chain>
+</flow>
