@@ -55,6 +55,8 @@ public class SerialsUtil {
 
     /**
      * 生成一个12位随机数
+     * @param seed 种子值
+     * @return String 随机数
      */
     public static String randomNum12(long seed) {
         // 被除数
@@ -64,6 +66,8 @@ public class SerialsUtil {
 
     /**
      * 生成一个8位随机数
+     * @param seed 种子值
+     * @return String 随机数
      */
     public static String randomNum8(long seed) {
         // 被除数

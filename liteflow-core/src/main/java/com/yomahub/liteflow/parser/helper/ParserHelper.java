@@ -331,8 +331,7 @@ public class ParserHelper {
 	}
 	/**
 	 * 解析一个chain的过程
-	 * <p>
-	 * param e chain 节点
+	 * @param e chain 节点
 	 */
 	public static void parseOneChain(Element e) {
 		String condValueStr;

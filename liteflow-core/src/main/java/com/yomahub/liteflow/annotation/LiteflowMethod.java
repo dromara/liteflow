@@ -18,8 +18,8 @@ public @interface LiteflowMethod {
     String nodeId() default "";
 
     /**
-     * cmp定义
-     *
+     * CMP类型定义
+     * @return AnnotationNodeTypeEnum
      */
     AnnotationNodeTypeEnum nodeType() default AnnotationNodeTypeEnum.COMMON;
 }

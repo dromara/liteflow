@@ -39,8 +39,7 @@ public enum AnnotationNodeTypeEnum {
 
     /**
      * 得到Node定义类
-     *
-     * @return {@link Class}<{@link ?} {@link extends} {@link NodeComponent}>
+     * @return node定义类
      */
     public Class<? extends NodeComponent> getCmpClass() {
         return cmpClass;
