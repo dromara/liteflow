@@ -14,10 +14,10 @@ import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class SwitchOperator extends BaseOperator {
+public class SwitchOperator extends BaseOperator<SwitchCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public SwitchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeNeqOne(objects);
 
 		Node switchNode;

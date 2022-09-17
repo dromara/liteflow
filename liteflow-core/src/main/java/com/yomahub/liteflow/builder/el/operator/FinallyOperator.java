@@ -12,10 +12,10 @@ import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class FinallyOperator extends BaseOperator {
+public class FinallyOperator extends BaseOperator<FinallyCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public FinallyCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtZero(objects);
 
 		FinallyCondition finallyCondition = new FinallyCondition();

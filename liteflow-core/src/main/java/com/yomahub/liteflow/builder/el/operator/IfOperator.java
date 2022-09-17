@@ -15,10 +15,10 @@ import com.yomahub.liteflow.flow.element.condition.IfCondition;
  * @author Bryan.Zhang
  * @since 2.8.5
  */
-public class IfOperator extends BaseOperator {
+public class IfOperator extends BaseOperator<IfCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public IfCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEq(objects, 2, 3);
 
 		//解析第一个参数

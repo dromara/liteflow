@@ -12,10 +12,10 @@ import com.yomahub.liteflow.flow.element.Node;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class TagOperator extends BaseOperator {
+public class TagOperator extends BaseOperator<Node> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public Node build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
 		Node node = OperatorHelper.convert(objects[0], Node.class);

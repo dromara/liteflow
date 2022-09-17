@@ -16,10 +16,10 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
  * @author Bryan.Zhang
  * @since 2.8.3
  */
-public class NodeOperator extends BaseOperator {
+public class NodeOperator extends BaseOperator<Node> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public Node build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeNeqOne(objects);
 
 		String nodeId;
