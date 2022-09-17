@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELDeclSpringbootTest.RUN_TIME_SLOT;
+import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELDeclMultiSpringbootTest.RUN_TIME_SLOT;
 
 @LiteflowComponent
 public class CmpConfig2 {
