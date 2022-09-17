@@ -12,23 +12,25 @@ import com.yomahub.liteflow.exception.ELParseException;
  */
 public abstract class BaseOperator extends Operator {
 
-	@Override
-	public Object executeInner(Object[] objects) throws Exception {
-		try {
-			return buildCondition(objects);
-		} catch (QLException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ELParseException("errors occurred in EL parsing");
-		}
-	}
+    @Override
+    public Object executeInner(Object[] objects) throws Exception {
+        try {
+            // 检查 node 和 chain 是否已经注册
+            OperatorHelper.checkNodeAndChainExist(objects);
+            return buildCondition(objects);
+        } catch (QLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ELParseException("errors occurred in EL parsing");
+        }
+    }
 
-	/**
-	 * 构建 EL 条件
-	 *
-	 * @param objects objects
-	 * @return Condition
-	 * @throws Exception Exception
-	 */
-	public abstract Object buildCondition(Object[] objects) throws Exception;
+    /**
+     * 构建 EL 条件
+     *
+     * @param objects objects
+     * @return Condition
+     * @throws Exception Exception
+     */
+    public abstract Object buildCondition(Object[] objects) throws Exception;
 }
