@@ -6,16 +6,18 @@
         <artifactId>liteflow</artifactId>
         <groupId>com.yomahub</groupId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <modules>
-        <module>liteflow-rule-zk</module>
-        <module>liteflow-rule-sql</module>
-    </modules>
 
-    <artifactId>liteflow-rule-plugin</artifactId>
+    <artifactId>liteflow-rule-sql</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-core</artifactId>
+            <version>${revision}</version>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>
