@@ -192,12 +192,17 @@ public class FlowBus {
             }
             //进行初始化
             cmpInstances = cmpInstances.stream()
-                    .map(
-                            cmpInstance -> ComponentInitializer.loadInstance().initComponent(cmpInstance, type, name, cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId())).collect(Collectors.toList());
+                    .map(cmpInstance -> ComponentInitializer.loadInstance().initComponent(
+                            cmpInstance,
+                            type,
+                            name,
+                            cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId())
+                    ).collect(Collectors.toList());
 
             //初始化Node
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
+            //如果是脚本节点，则还要加载script脚本
             for (int i = 0; i < nodes.size(); i++) {
                 Node node = nodes.get(i);
                 NodeComponent cmpInstance = cmpInstances.get(i);
@@ -212,7 +217,6 @@ public class FlowBus {
                     }
                 }
                 String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-                //如果是脚本节点(普通脚本节点/条件脚本节点)，则还要加载script脚本
                 nodeMap.put(activeNodeId, node);
             }
         } catch (Exception e) {
