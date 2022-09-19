@@ -29,50 +29,19 @@ public class SQLParserVO {
 	private String password;
 
 	/**
-	 * EL 表相关配置
+	 * 表名
 	 */
-	private ElTable elTable;
+	private String tableName = "el_table";
 
-	public static class ElTable {
-		/**
-		 * 表名
-		 */
-		private String tableName = "el_table";
+	/**
+	 * chainName
+	 */
+	private String chainNameField = "chain_name";
 
-		/**
-		 * chainName
-		 */
-		private String chainNameField = "chain_name";
-
-		/**
-		 * el 表达式相关数据
-		 */
-		private String elDataField = "el_data";
-
-		public String getTableName() {
-			return tableName;
-		}
-
-		public void setTableName(String tableName) {
-			this.tableName = tableName;
-		}
-
-		public String getChainNameField() {
-			return chainNameField;
-		}
-
-		public void setChainNameField(String chainNameField) {
-			this.chainNameField = chainNameField;
-		}
-
-		public String getElDataField() {
-			return elDataField;
-		}
-
-		public void setElDataField(String elDataField) {
-			this.elDataField = elDataField;
-		}
-	}
+	/**
+	 * el 表达式相关数据
+	 */
+	private String elDataField = "el_data";
 
 	public String getUrl() {
 		return url;
@@ -106,11 +75,27 @@ public class SQLParserVO {
 		this.password = password;
 	}
 
-	public ElTable getElTable() {
-		return elTable;
+	public String getTableName() {
+		return tableName;
 	}
 
-	public void setElTable(ElTable elTable) {
-		this.elTable = elTable;
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public String getChainNameField() {
+		return chainNameField;
+	}
+
+	public void setChainNameField(String chainNameField) {
+		this.chainNameField = chainNameField;
+	}
+
+	public String getElDataField() {
+		return elDataField;
+	}
+
+	public void setElDataField(String elDataField) {
+		this.elDataField = elDataField;
 	}
 }

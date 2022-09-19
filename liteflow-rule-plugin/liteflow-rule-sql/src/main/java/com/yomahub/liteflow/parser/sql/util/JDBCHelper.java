@@ -73,9 +73,9 @@ public class JDBCHelper {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
-		String elDataField = sqlParserVO.getElTable().getElDataField();
-		String chainNameField = sqlParserVO.getElTable().getChainNameField();
-		String tableName = sqlParserVO.getElTable().getTableName();
+		String elDataField = sqlParserVO.getElDataField();
+		String chainNameField = sqlParserVO.getChainNameField();
+		String tableName = sqlParserVO.getTableName();
 		String sqlCmd = StrFormatter.format(SQL_PATTERN, chainNameField, elDataField, tableName);
 
 		List<String> result = new ArrayList<>();
