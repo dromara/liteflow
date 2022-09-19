@@ -23,13 +23,11 @@ public class EtcdParserHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(EtcdParserHelper.class);
 
 	private final EtcdParserVO etcdParserVO;
-	private final Consumer<String> parseConsumer;
 
 	private EtcdClient etcdClient;
 
-	public EtcdParserHelper(EtcdParserVO etcdParserVO, Consumer<String> parseConsumer) {
+	public EtcdParserHelper(EtcdParserVO etcdParserVO) {
 		this.etcdParserVO = etcdParserVO;
-		this.parseConsumer = parseConsumer;
 
 		try{
 			this.etcdClient  = ContextAwareHolder.loadContextAware().getBean(EtcdClient.class);
@@ -42,10 +40,6 @@ public class EtcdParserHelper {
 		}catch (Exception e){
 			throw new EtcdException(e.getMessage());
 		}
-	}
-
-	public Consumer<String> getParseConsumer() {
-		return parseConsumer;
 	}
 
 	public String getContent(){
@@ -69,7 +63,7 @@ public class EtcdParserHelper {
 	/**
 	 * 监听 etcd 节点
 	 */
-	public void watchRule() {
+	public void listen(Consumer<String> parseConsumer) {
 		this.etcdClient.watchDataChange(this.etcdParserVO.getNodePath(), (updatePath, updateValue) -> {
 			LOG.info("starting load flow config....");
 			parseConsumer.accept(updateValue);

@@ -41,17 +41,12 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    private String flowXml;
-
-    private String changedFlowXml;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        this.changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
-        when(etcdClient.get(any())).thenReturn(flowXml);
-
+        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
+        when(etcdClient.get(any())).thenReturn(flowXml).thenReturn(changedFlowXml);
     }
 
     @Test
@@ -62,9 +57,7 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
         // 手动触发一次 模拟节点数据变更
         EtcdXmlELParser parser = ContextAwareHolder.loadContextAware().getBean(EtcdXmlELParser.class);
-        EtcdParserHelper etcdParserHelper = (EtcdParserHelper)ReflectUtil.getFieldValue(parser, "etcdParserHelper");
-        Consumer<String> parseConsumer = (Consumer<String>)ReflectUtil.getFieldValue(etcdParserHelper, "parseConsumer");
-        parseConsumer.accept(changedFlowXml);
+        parser.parse(etcdClient.get("/lite-flow/flow"));
 
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response2.isSuccess());

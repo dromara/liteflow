@@ -21,14 +21,6 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 	private final EtcdParserHelper etcdParserHelper;
 
 	public EtcdXmlELParser() {
-		Consumer<String> parseConsumer = t -> {
-			try {
-				parse(t);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
-
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
 		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
@@ -46,7 +38,7 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 				throw new EtcdException("Etcd connect string is empty");
 			}
 
-			etcdParserHelper = new EtcdParserHelper(etcdParserVO, parseConsumer);
+			etcdParserHelper = new EtcdParserHelper(etcdParserVO);
 		}catch (Exception e){
 			throw new EtcdException(e.getMessage());
 		}
@@ -54,10 +46,17 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
+		Consumer<String> parseConsumer = t -> {
+			try {
+				parse(t);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
 		try {
 			String content = etcdParserHelper.getContent();
 			etcdParserHelper.checkContent(content);
-			etcdParserHelper.watchRule();
+			etcdParserHelper.listen(parseConsumer);
 			return content;
 		} catch (Exception e){
 			throw new EtcdException(e.getMessage());
