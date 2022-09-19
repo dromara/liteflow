@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class IdOperator extends BaseOperator {
+public class IdOperator extends BaseOperator<Condition> {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public Condition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
 		Condition condition = OperatorHelper.convert(objects[0], Condition.class);

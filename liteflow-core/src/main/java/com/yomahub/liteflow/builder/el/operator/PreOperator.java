@@ -12,10 +12,10 @@ import com.yomahub.liteflow.flow.element.condition.PreCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class PreOperator extends BaseOperator {
+public class PreOperator extends BaseOperator<PreCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public PreCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtZero(objects);
 
 		PreCondition preCondition = new PreCondition();

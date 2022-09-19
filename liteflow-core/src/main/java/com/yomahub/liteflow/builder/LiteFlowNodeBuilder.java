@@ -122,7 +122,7 @@ public class LiteFlowNodeBuilder {
                 FlowBus.addIfScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
             }
         } catch (Exception e) {
-            String errMsg = StrUtil.format("An exception occurred while building the node[{}]", this.node.getId());
+            String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(),e.getMessage());
             LOG.error(errMsg, e);
             throw new NodeBuildException(errMsg);
         }

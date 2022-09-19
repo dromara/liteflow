@@ -12,10 +12,10 @@ import com.yomahub.liteflow.flow.element.condition.ThenCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class ThenOperator extends BaseOperator {
+public class ThenOperator extends BaseOperator<ThenCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public ThenCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtZero(objects);
 
 		ThenCondition thenCondition = new ThenCondition();

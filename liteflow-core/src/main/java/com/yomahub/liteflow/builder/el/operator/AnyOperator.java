@@ -11,10 +11,10 @@ import com.yomahub.liteflow.flow.element.condition.WhenCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class AnyOperator extends BaseOperator {
+public class AnyOperator extends BaseOperator<WhenCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public WhenCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);

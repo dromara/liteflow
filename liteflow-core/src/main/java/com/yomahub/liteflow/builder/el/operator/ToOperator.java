@@ -12,10 +12,10 @@ import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class ToOperator extends BaseOperator {
+public class ToOperator extends BaseOperator<SwitchCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public SwitchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtTwo(objects);
 
 		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);

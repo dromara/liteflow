@@ -11,10 +11,10 @@ import com.yomahub.liteflow.flow.element.condition.IfCondition;
  * @author Bryan.Zhang
  * @since 2.8.5
  */
-public class ElseOperator extends BaseOperator {
+public class ElseOperator extends BaseOperator<IfCondition> {
 
 	@Override
-	public Object buildCondition(Object[] objects) throws Exception {
+	public IfCondition build(Object[] objects) throws Exception {
 		// 参数只能是1个，但这里为什么是2个呢？第一个是caller，第二个才是参数
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
