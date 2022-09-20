@@ -149,9 +149,8 @@ public class JDBCHelper {
 		return sqlParserVO;
 	}
 
-	private JDBCHelper setSqlParserVO(SQLParserVO sqlParserVO) {
+	private void setSqlParserVO(SQLParserVO sqlParserVO) {
 		this.sqlParserVO = sqlParserVO;
-		return this;
 	}
 	//#endregion
 }
