@@ -21,13 +21,6 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
     private final NacosParserHelper helper;
 
     public NacosXmlELParser() {
-        Consumer<String> parseConsumer = t -> {
-            try {
-                parse(t);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
         if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
@@ -44,7 +37,7 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
                 nacosParserVO.setNamespace("");
             }
             if (StrUtil.isBlank(nacosParserVO.getDataId())){
-                nacosParserVO.setDataId("LiteFLow");
+                nacosParserVO.setDataId("LiteFlow");
             }
             if (StrUtil.isBlank(nacosParserVO.getGroup())){
                 nacosParserVO.setGroup("LITE_FLOW_GROUP");
@@ -55,7 +48,7 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
             if (StrUtil.isBlank(nacosParserVO.getPassword())){
                 nacosParserVO.setPassword("");
             }
-            helper = new NacosParserHelper(nacosParserVO, parseConsumer);
+            helper = new NacosParserHelper(nacosParserVO);
         }catch (Exception e){
             throw new NacosException(e.getMessage());
         }
@@ -63,10 +56,17 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
 
     @Override
     public String parseCustom() {
+        Consumer<String> parseConsumer = t -> {
+            try {
+                parse(t);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
         try{
             String content = helper.getContent();
             helper.checkContent(content);
-            helper.listener();
+            helper.listener(parseConsumer);
             return content;
         }catch (Exception e){
             throw new NacosException(e.getMessage());

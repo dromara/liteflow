@@ -1,10 +1,9 @@
 package com.yomahub.liteflow.parser.nacos.util;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
+import com.alibaba.nacos.client.config.NacosConfigService;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.parser.nacos.exception.NacosException;
 import com.yomahub.liteflow.parser.nacos.vo.NacosParserVO;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -27,27 +25,18 @@ public class NacosParserHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(NacosParserHelper.class);
 
 	private final NacosParserVO    nacosParserVO;
-	private final Consumer<String> parseConsumer;
 
-	private static final ConcurrentHashMap<String,String> CONFIG_MAP = new ConcurrentHashMap<>(1);
+	private final NacosConfigService configService;
 
-	private final ConfigService configService;
-
-	static {
-		CONFIG_MAP.put("Content","");
-	}
-
-	public NacosParserHelper(NacosParserVO nacosParserVO, Consumer<String> parseConsumer) {
+	public NacosParserHelper(NacosParserVO nacosParserVO) {
 		this.nacosParserVO = nacosParserVO;
-		this.parseConsumer = parseConsumer;
 		try{
 			Properties properties = new Properties();
 			properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
 			properties.put(PropertyKeyConst.NAMESPACE,nacosParserVO.getNamespace());
 			properties.put(PropertyKeyConst.USERNAME,nacosParserVO.getUsername());
 			properties.put(PropertyKeyConst.PASSWORD,nacosParserVO.getPassword());
-			this.configService = NacosFactory.createConfigService(properties);
-			CONFIG_MAP.put("Content",configService.getConfig(nacosParserVO.getDataId(), nacosParserVO.getGroup(), 3000L));
+			this.configService = new NacosConfigService(properties);
 		}catch (Exception e){
 			throw new NacosException(e.getMessage());
 		}
@@ -55,7 +44,7 @@ public class NacosParserHelper {
 
 	public String getContent(){
 		try{
-			return CONFIG_MAP.get("Content");
+			return configService.getConfig(nacosParserVO.getDataId(), nacosParserVO.getGroup(), 3000L);
 		}catch (Exception e){
 			throw new NacosException(e.getMessage());
 		}
@@ -74,13 +63,12 @@ public class NacosParserHelper {
 	/**
 	 * 监听 nacos 数据变化
 	 */
-	public void listener() {
+	public void listener(Consumer<String> parseConsumer) {
 		try {
 			this.configService.addListener(nacosParserVO.getDataId(), nacosParserVO.getGroup(), new Listener() {
 				@Override
 				public void receiveConfigInfo(String configInfo) {
 					LOG.info("stating load flow config.... {} " , configInfo);
-					CONFIG_MAP.put("Content",configInfo);
 					parseConsumer.accept(configInfo);
 				}
 				@Override
