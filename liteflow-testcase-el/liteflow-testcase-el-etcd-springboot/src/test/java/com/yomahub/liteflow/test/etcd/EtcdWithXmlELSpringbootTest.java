@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.etcd;
 
 import cn.hutool.core.util.ReflectUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
 import com.yomahub.liteflow.parser.etcd.EtcdXmlELParser;
@@ -35,29 +36,45 @@ import static org.mockito.Mockito.*;
 @ComponentScan({"com.yomahub.liteflow.test.etcd.cmp"})
 public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
-    @MockBean(answer= Answers.RETURNS_MOCKS)
+    @MockBean
     private EtcdClient etcdClient;
 
     @Resource
     private FlowExecutor flowExecutor;
 
     @Before
-    public void setUp() {
+    public void setUp(){
+        //其实只有@Mock才需要initMocks方法，@MockBean不需要initMocks的
         MockitoAnnotations.initMocks(this);
-        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
-        when(etcdClient.get(any())).thenReturn(flowXml).thenReturn(changedFlowXml);
+    }
+
+    @After
+    public void after(){
+        FlowBus.cleanCache();
     }
 
     @Test
-    public void testEtcdNodeWithXml() throws Exception {
+    public void testEtcdNodeWithXml1() throws Exception {
+        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+        when(etcdClient.get(any())).thenReturn(flowXml);
+
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+    }
+
+    @Test
+    public void testEtcdNodeWithXml2() throws Exception {
+        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
+        when(etcdClient.get(any())).thenReturn(flowXml).thenReturn(changedFlowXml);
+
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
 
         // 手动触发一次 模拟节点数据变更
-        EtcdXmlELParser parser = ContextAwareHolder.loadContextAware().getBean(EtcdXmlELParser.class);
-        parser.parse(etcdClient.get("/lite-flow/flow"));
+        flowExecutor.reloadRule();
 
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response2.isSuccess());

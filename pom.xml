@@ -56,7 +56,7 @@
 		<transmittable-thread-local.version>2.12.3</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
-		<jetcd.version>0.5.0</jetcd.version>
+		<jetcd.version>0.7.3</jetcd.version>
 		<qlexpress.version>3.3.0</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>
