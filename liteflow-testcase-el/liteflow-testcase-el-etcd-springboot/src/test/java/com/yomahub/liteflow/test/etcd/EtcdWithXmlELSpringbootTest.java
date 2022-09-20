@@ -53,7 +53,7 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
     public void testEtcdNodeWithXml() throws Exception {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertTrue("a==>b==>c".equals(response.getExecuteStepStr()));
+        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
 
         // 手动触发一次 模拟节点数据变更
         EtcdXmlELParser parser = ContextAwareHolder.loadContextAware().getBean(EtcdXmlELParser.class);
@@ -61,6 +61,6 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertTrue("a==>c".equals(response2.getExecuteStepStr()));
+        Assert.assertEquals("a==>c", response2.getExecuteStepStr());
     }
 }
