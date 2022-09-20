@@ -14,6 +14,7 @@
 
     <properties>
         <h2.version>2.1.214</h2.version>
+        <jpa.version>2.0.5.RELEASE</jpa.version>
     </properties>
 
     <dependencies>
@@ -38,7 +39,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>2.0.5.RELEASE</version>
+            <version>${jpa.version}</version>
             <scope>test</scope>
         </dependency>
 
