@@ -25,5 +25,6 @@
         <module>liteflow-testcase-el-zk-springboot</module>
         <module>liteflow-testcase-el-sql-springboot</module>
         <module>liteflow-testcase-el-nacos-springboot</module>
+        <module>liteflow-testcase-el-etcd-springboot</module>
     </modules>
 </project>

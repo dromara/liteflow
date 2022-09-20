@@ -77,8 +77,5 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 		if (Objects.isNull(sqlParserVO.getPassword())) {
 			throw new ELSQLException(StrFormatter.format(ERROR_MSG_PATTERN, "password"));
 		}
-		if (Objects.isNull(sqlParserVO.getElTable())) {
-			sqlParserVO.setElTable(new SQLParserVO.ElTable());
-		}
 	}
 }

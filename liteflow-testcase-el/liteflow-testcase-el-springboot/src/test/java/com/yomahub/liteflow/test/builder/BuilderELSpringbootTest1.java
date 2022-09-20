@@ -135,4 +135,36 @@ public class BuilderELSpringbootTest1 extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
     }
+
+    @Test
+    public void testBuilderForSameNodeMultiTimes() throws Exception {
+        LiteFlowNodeBuilder.createNode().setId("a1")
+                .setName("组件A1")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(ACmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("a2")
+                .setName("组件A2")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(ACmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("c1")
+                .setName("组件C1")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(CCmp.class)
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("c2")
+                .setName("组件C2")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz(CCmp.class)
+                .build();
+
+        LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
+                "THEN(a1,c2,a2,c1)"
+        ).build();
+
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
+    }
 }
