@@ -13,6 +13,7 @@
     <modules>
         <module>liteflow-rule-zk</module>
         <module>liteflow-rule-sql</module>
+        <module>liteflow-rule-nacos</module>
         <module>liteflow-rule-etcd</module>
     </modules>
 
