@@ -7,6 +7,7 @@ import com.alibaba.nacos.client.config.NacosConfigService;
 import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.parser.nacos.exception.NacosException;
 import com.yomahub.liteflow.parser.nacos.vo.NacosParserVO;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +27,20 @@ public class NacosParserHelper {
 
 	private final NacosParserVO    nacosParserVO;
 
-	private final NacosConfigService configService;
+	private NacosConfigService configService;
 
 	public NacosParserHelper(NacosParserVO nacosParserVO) {
 		this.nacosParserVO = nacosParserVO;
 		try{
-			Properties properties = new Properties();
-			properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
-			properties.put(PropertyKeyConst.NAMESPACE,nacosParserVO.getNamespace());
-			properties.put(PropertyKeyConst.USERNAME,nacosParserVO.getUsername());
-			properties.put(PropertyKeyConst.PASSWORD,nacosParserVO.getPassword());
-			this.configService = new NacosConfigService(properties);
+			this.configService = ContextAwareHolder.loadContextAware().getBean(NacosConfigService.class);
+			if (this.configService == null){
+				Properties properties = new Properties();
+				properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
+				properties.put(PropertyKeyConst.NAMESPACE,nacosParserVO.getNamespace());
+				properties.put(PropertyKeyConst.USERNAME,nacosParserVO.getUsername());
+				properties.put(PropertyKeyConst.PASSWORD,nacosParserVO.getPassword());
+				this.configService = new NacosConfigService(properties);
+			}
 		}catch (Exception e){
 			throw new NacosException(e.getMessage());
 		}
@@ -55,7 +59,7 @@ public class NacosParserHelper {
 	 */
 	public void checkContent(String content) {
 		if (StrUtil.isBlank(content)) {
-			String error = MessageFormat.format("the node[{0}] value is empty", nacosParserVO.toString());
+			String error = StrUtil.format("the node[{}] value is empty", nacosParserVO.toString());
 			throw new ParseException(error);
 		}
 	}
