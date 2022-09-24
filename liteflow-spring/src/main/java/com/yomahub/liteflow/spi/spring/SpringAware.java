@@ -52,6 +52,15 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         }
     }
 
+    private <T> T getBean(String beanName, Class<T> clazz) {
+        try{
+            T t = applicationContext.getBean(beanName, clazz);
+            return t;
+        }catch (Exception e){
+            return null;
+        }
+    }
+
     @Override
     public <T> T registerBean(String beanName, Class<T> c) {
         try{
@@ -84,7 +93,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         if (ObjectUtil.isNull(applicationContext)){
             return null;
         }
-        T t = getBean(clazz);
+        T t = getBean(beanName, clazz);
         if (ObjectUtil.isNull(t)) {
             t = registerBean(beanName, clazz);
         }
