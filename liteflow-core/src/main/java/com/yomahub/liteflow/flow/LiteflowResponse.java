@@ -111,7 +111,11 @@ public class LiteflowResponse implements Serializable {
     }
 
     public String getExecuteStepStr(){
-        return this.getSlot().getExecuteStepStr();
+        return getExecuteStepStrWithoutTime();
+    }
+
+    public String getExecuteStepStrWithTime(){
+        return this.getSlot().getExecuteStepStr(true);
     }
 
     public String getExecuteStepStrWithoutTime(){
