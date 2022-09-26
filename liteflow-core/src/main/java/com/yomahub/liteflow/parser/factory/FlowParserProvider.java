@@ -14,7 +14,19 @@ import com.yomahub.liteflow.parser.el.ClassYmlFlowELParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.yomahub.liteflow.enums.FlowParserTypeEnum.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.CLASS_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_EL_JSON_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_EL_XML_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_EL_YML_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_JSON_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_XML_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.LOCAL_YML_CONFIG_REGEX;
+import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegexConstant.PREFIX_FORMAT_CONFIG_REGEX;
 
 /**
  * 解析器提供者
@@ -24,108 +36,116 @@ import static com.yomahub.liteflow.enums.FlowParserTypeEnum.*;
  */
 public class FlowParserProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
 
-    private static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.xml$";
-    private static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.json$";
-    private static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
+	private static final FlowParserFactory LOCAL_PARSER_FACTORY = new LocalParserFactory();
+	/**
+	 * 使用 map 枚举不同类型的 Parser，用于解耦如下的 if 判断
+	 * <pre>
+	 * if (ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)) {
+	 * 	return factory.createXmlParser(path);
+	 * }
+	 * </pre>
+	 */
+	private static final Map<Predicate<String>, Function<String, FlowParser>> LOCAL_PARSER_DICT =
+			new HashMap<Predicate<String>, Function<String, FlowParser>>() {{
+				put(path -> ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createXmlParser);
+				put(path -> ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createJsonParser);
+				put(path -> ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createYmlParser);
+				put(path -> ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createXmlELParser);
+				put(path -> ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createJsonELParser);
+				put(path -> ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path), LOCAL_PARSER_FACTORY::createYmlELParser);
+			}};
 
-    private static final String LOCAL_EL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.xml$";
+	private static final FlowParserFactory CLASS_PARSER_FACTORY = new ClassParserFactory();
+	/**
+	 * 使用 map 枚举不同类型的 Parser，用于解耦如下的 if 判断
+	 * <pre>
+	 * if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
+	 *   return factory.createXmlParser(className);
+	 * }
+	 * </pre>
+	 */
+	private static final Map<Predicate<Class<?>>, Function<String, FlowParser>> CLASS_PARSER_DICT =
+			new HashMap<Predicate<Class<?>>, Function<String, FlowParser>>() {{
+				put(ClassXmlFlowParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createXmlParser);
+				put(ClassJsonFlowParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createJsonParser);
+				put(ClassYmlFlowParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createYmlParser);
+				put(ClassXmlFlowELParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createXmlELParser);
+				put(ClassJsonFlowELParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createJsonELParser);
+				put(ClassYmlFlowELParser.class::isAssignableFrom, CLASS_PARSER_FACTORY::createYmlELParser);
+			}};
 
-    private static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.json$";
+	/**
+	 * 根据配置的地址找到对应的解析器
+	 */
+	public static FlowParser lookup(String path) throws Exception {
+		// 自定义类必须实现以上实现类，否则报错
+		String errorMsg = StrUtil.format("can't support the format {}", path);
 
-    private static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.yml$";
+		// 本地文件
+		if (isLocalConfig(path)) {
+			// 遍历枚举 map 找到对应 factory
+			Predicate<String> dictKey = LOCAL_PARSER_DICT.keySet()
+					.stream()
+					.filter(key -> key.test(path))
+					.findFirst()
+					.orElseThrow(() -> new ErrorSupportPathException(errorMsg));
 
-    private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
+			LOG.info("flow info loaded from local file,path={}", path);
+			return LOCAL_PARSER_DICT.get(dictKey).apply(path);
+		}
+		// 自定义 class 配置
+		else if (isClassConfig(path)) {
+			// 获取最终的className，因为有些可能className前面带了文件类型的标识，比如json:x.x.x.x
+			String className = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "");
+			Class<?> clazz = Class.forName(className);
 
-    private static final String CLASS_CONFIG_REGEX = "^(xml:|json:|yml:|el_xml:|el_json:|el_yml:)?\\w+(\\.\\w+)*$";
+			// 遍历枚举 map 找到对应 factory
+			Predicate<Class<?>> dictKey = CLASS_PARSER_DICT.keySet()
+					.stream()
+					.filter(key -> key.test(clazz))
+					.findFirst()
+					.orElseThrow(() -> new ErrorSupportPathException(errorMsg));
 
-    /**
-     * 根据配置的地址找到对应的解析器
-     */
-    public static FlowParser lookup(String path) throws Exception {
-        if (isLocalConfig(path)) {
-            FlowParserFactory factory = new LocalParserFactory();
-            if (ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local file,path={},format type={}", path, TYPE_XML.getType());
-                return factory.createXmlParser(path);
-            }
-            else if (ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local file,path={},format type={}", path, TYPE_JSON.getType());
-                return factory.createJsonParser(path);
-            }
-            else if (ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local file,path={},format type={}", path, TYPE_YML.getType());
-                return factory.createYmlParser(path);
-            }
-            else if (ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local EL file,path={},format type={}", path, TYPE_EL_XML.getType());
-                return factory.createXmlELParser(path);
-            }
-            else if (ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local EL file,path={},format type={}", path, TYPE_EL_JSON.getType());
-                return factory.createJsonELParser(path);
-            }
-            else if (ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path)) {
-                LOG.info("flow info loaded from local EL file,path={},format type={}", path, TYPE_EL_YML.getType());
-                return factory.createYmlELParser(path);
-            }
-        }
-        else if (isClassConfig(path)) {
-            // 获取最终的className，因为有些可能className前面带了文件类型的标识，比如json:x.x.x.x
-            String className = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "");
-            FlowParserFactory factory = new ClassParserFactory();
-            Class<?> clazz = Class.forName(className);
-            if (ClassXmlFlowParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config,class={},format type={}", className, TYPE_XML.getType());
-                return factory.createXmlParser(className);
-            }
-            else if (ClassJsonFlowParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config,class={},format type={}", className, TYPE_JSON.getType());
-                return factory.createJsonParser(className);
-            }
-            else if (ClassYmlFlowParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config,class={},format type={}", className, TYPE_YML.getType());
-                return factory.createYmlParser(className);
-            }
-            else if (ClassXmlFlowELParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config with el,class={},format type={}", className, TYPE_EL_XML.getType());
-                return factory.createXmlELParser(className);
-            }
-            else if (ClassJsonFlowELParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config with el,class={},format type={}", className, TYPE_EL_JSON.getType());
-                return factory.createJsonELParser(className);
-            }
-            else if (ClassYmlFlowELParser.class.isAssignableFrom(clazz)) {
-                LOG.info("flow info loaded from class config with el,class={},format type={}", className, TYPE_EL_YML.getType());
-                return factory.createYmlELParser(className);
-            }
-            // 自定义类必须实现以上实现类，否则报错
-            String errorMsg = StrUtil.format("can't support the format {}", path);
-            throw new ErrorSupportPathException(errorMsg);
-        }
+			LOG.info("flow info loaded from class config with el,class={}", className);
+			return CLASS_PARSER_DICT.get(dictKey).apply(className);
+		}
 
-        // not found
-        String errorMsg = StrUtil.format("can't find the parser for path:{}", path);
-        throw new ErrorSupportPathException(errorMsg);
-    }
+		// not found
+		throw new ErrorSupportPathException(errorMsg);
+	}
 
-    /**
-     * 判定是否为本地文件
-     */
-    private static boolean isLocalConfig(String path) {
-        return ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path)
-                || ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path);
-    }
+	/**
+	 * 判定是否为本地文件
+	 */
+	private static boolean isLocalConfig(String path) {
+		return ReUtil.isMatch(LOCAL_XML_CONFIG_REGEX, path)
+				|| ReUtil.isMatch(LOCAL_JSON_CONFIG_REGEX, path)
+				|| ReUtil.isMatch(LOCAL_YML_CONFIG_REGEX, path)
+				|| ReUtil.isMatch(LOCAL_EL_XML_CONFIG_REGEX, path)
+				|| ReUtil.isMatch(LOCAL_EL_JSON_CONFIG_REGEX, path)
+				|| ReUtil.isMatch(LOCAL_EL_YML_CONFIG_REGEX, path);
+	}
 
-    /**
-     * 判定是否为自定义class配置
-     */
-    private static boolean isClassConfig(String path) {
-        return ReUtil.isMatch(CLASS_CONFIG_REGEX, path);
-    }
+	/**
+	 * 判定是否为自定义class配置
+	 */
+	private static boolean isClassConfig(String path) {
+		return ReUtil.isMatch(CLASS_CONFIG_REGEX, path);
+	}
+
+	/**
+	 * 统一管理类的常量
+	 */
+	protected static class ConfigRegexConstant {
+		public static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.xml$";
+		public static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.json$";
+		public static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.yml$";
+		public static final String LOCAL_EL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.xml$";
+		public static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.json$";
+		public static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\@\\/\\\\\\*]+\\.el\\.yml$";
+		public static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
+		public static final String CLASS_CONFIG_REGEX = "^(xml:|json:|yml:|el_xml:|el_json:|el_yml:)?\\w+(\\.\\w+)*$";
+	}
 }
