@@ -34,8 +34,4 @@ public class LOGOPrinter {
 		Package pkg = LOGOPrinter.class.getPackage();
 		return (pkg != null) ? pkg.getImplementationVersion() : "DEV";
 	}
-
-	public static void main(String[] args) {
-		System.out.println(getVersion());
-	}
 }
