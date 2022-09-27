@@ -32,7 +32,7 @@ public class LOGOPrinter {
 
 	private static String getVersion(){
 		Package pkg = LOGOPrinter.class.getPackage();
-		return (pkg != null) ? pkg.getImplementationVersion() : null;
+		return (pkg != null) ? pkg.getImplementationVersion() : "DEV";
 	}
 
 	public static void main(String[] args) {
