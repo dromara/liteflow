@@ -13,7 +13,7 @@ public class LOGOPrinter {
 	/**
 	 * LiteFlow 当前版本号
 	 */
-	private static final String VERSION_NO = "v2.9.0";
+	private static final String VERSION_NO = getVersion();
 
 	public static void print() {
 		StringBuilder str = new StringBuilder("\n");
@@ -28,5 +28,14 @@ public class LOGOPrinter {
 		str.append("		Small but powerful rules engine.\n");
 		str.append("================================================================================================\n");
 		LOG.info(str.toString());
+	}
+
+	private static String getVersion(){
+		Package pkg = LOGOPrinter.class.getPackage();
+		return (pkg != null) ? pkg.getImplementationVersion() : null;
+	}
+
+	public static void main(String[] args) {
+		System.out.println(getVersion());
 	}
 }
