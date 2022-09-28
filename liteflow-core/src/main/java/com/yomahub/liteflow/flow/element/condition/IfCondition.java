@@ -74,7 +74,7 @@ public class IfCondition extends Condition {
 
     @Override
     public ConditionTypeEnum getConditionType() {
-        return null;
+        return ConditionTypeEnum.TYPE_IF;
     }
 
     public Executable getTrueCaseExecutableItem() {

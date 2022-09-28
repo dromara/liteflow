@@ -61,6 +61,10 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
         EXPRESS_RUNNER.addFunction("node", new NodeOperator());
+        EXPRESS_RUNNER.addFunction("FOR", new ForOperator());
+
+        EXPRESS_RUNNER.addFunctionAndClassMethod("DO", Object.class, new DoOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("BREAK", Object.class, new BreakOperator());
     }
 
     public static LiteFlowChainELBuilder createChain() {

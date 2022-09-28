@@ -71,7 +71,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
             Slot slot = DataBus.getSlot(slotIndex);
             bindings.put("requestData", slot.getRequestData());
 
-            //如果有隐试流程，则放入隐式流程的流程参数
+            //如果有隐式流程，则放入隐式流程的流程参数
             Object subRequestData = slot.getChainReqData(currChainName);
             if (ObjectUtil.isNotNull(subRequestData)){
                 bindings.put("subRequestData", subRequestData);

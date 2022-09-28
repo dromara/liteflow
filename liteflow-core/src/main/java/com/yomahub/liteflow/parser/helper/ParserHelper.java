@@ -6,9 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
-import com.yomahub.liteflow.annotation.LiteflowIfCmpDefine;
-import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
+import com.yomahub.liteflow.annotation.*;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
 import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
@@ -61,18 +59,16 @@ public class ParserHelper {
 		String type = nodePropBean.getType();
 		String file = nodePropBean.getFile();
 
-		//先尝试自动推断类型
+		//clazz有值的，基本都不是脚本节点
+		//脚本节点，都必须配置type
+		//非脚本节点的先尝试自动推断类型
 		if (StrUtil.isNotBlank(clazz)) {
 			try {
 				//先尝试从继承的类型中推断
 				Class<?> c = Class.forName(clazz);
-				Object o = ReflectUtil.newInstanceIfPossible(c);
-				if (o instanceof NodeSwitchComponent) {
-					type = NodeTypeEnum.SWITCH.getCode();
-				}else if(o instanceof NodeIfComponent){
-					type = NodeTypeEnum.IF.getCode();
-				}else if (o instanceof NodeComponent) {
-					type = NodeTypeEnum.COMMON.getCode();
+				NodeTypeEnum nodeType = NodeTypeEnum.guessTypeByClazz(c);
+				if (nodeType != null){
+					type = nodeType.getCode();
 				}
 
 				//再尝试声明式组件这部分的推断
@@ -94,6 +90,27 @@ public class ParserHelper {
 					LiteflowIfCmpDefine liteflowIfCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowIfCmpDefine.class);
 					if (liteflowIfCmpDefine != null) {
 						type = NodeTypeEnum.IF.getCode();
+					}
+				}
+
+				if (type == null) {
+					LiteflowForCmpDefine liteflowForCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowForCmpDefine.class);
+					if (liteflowForCmpDefine != null) {
+						type = NodeTypeEnum.FOR.getCode();
+					}
+				}
+
+				if (type == null) {
+					LiteflowWhileCmpDefine liteflowWhileCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowWhileCmpDefine.class);
+					if (liteflowWhileCmpDefine != null) {
+						type = NodeTypeEnum.WHILE.getCode();
+					}
+				}
+
+				if (type == null) {
+					LiteflowBreakCmpDefine liteflowBreakCmpDefine = AnnotationUtil.getAnnotation(c, LiteflowBreakCmpDefine.class);
+					if (liteflowBreakCmpDefine != null) {
+						type = NodeTypeEnum.BREAK.getCode();
 					}
 				}
 			} catch (Exception e) {

@@ -46,6 +46,12 @@ public class Slot{
 
 	private static final String IF_NODE_PREFIX = "_if_";
 
+	private static final String FOR_PREFIX = "_for_";
+
+	private static final String WHILE_PREFIX = "_while_";
+
+	private static final String BREAK_PREFIX = "_break_";
+
 	private static final String NODE_INPUT_PREFIX = "_input_";
 
 	private static final String NODE_OUTPUT_PREFIX = "_output_";
@@ -202,6 +208,30 @@ public class Slot{
 
 	public boolean getIfResult(String key){
 		return (boolean) metaDataMap.get(IF_NODE_PREFIX + key);
+	}
+
+	public void setForResult(String key, int forCount){
+		putMetaDataMap(FOR_PREFIX + key, forCount);
+	}
+
+	public int getForResult(String key){
+		return (int) metaDataMap.get(FOR_PREFIX + key);
+	}
+
+	public void setWhileResult(String key, boolean whileFlag){
+		putMetaDataMap(WHILE_PREFIX + key, whileFlag);
+	}
+
+	public boolean getWhileResult(String key){
+		return (boolean) metaDataMap.get(WHILE_PREFIX + key);
+	}
+
+	public void setBreakResult(String key, boolean breakFlag){
+		putMetaDataMap(BREAK_PREFIX + key, breakFlag);
+	}
+
+	public boolean getBreakResult(String key){
+		return (boolean) metaDataMap.get(BREAK_PREFIX + key);
 	}
 
 	public void setChainName(String chainName) {

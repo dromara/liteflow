@@ -105,7 +105,10 @@ public class ComponentProxy {
                         boolean existRetry = liteflowRetry != null;
                         boolean isProcess = liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS)
                                 || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_IF)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_SWITCH);
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_SWITCH)
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_FOR)
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_WHILE)
+                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_BREAK);
                         // 如果是再Process方法上的liteflowRetry注解，则默认为真实节点。
                         if (isProcess && existRetry) {
                             liteflowRetryAtomicReference.set(liteflowRetry);

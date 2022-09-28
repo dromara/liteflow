@@ -4,6 +4,9 @@ public enum LiteFlowMethodEnum {
     PROCESS("process"),
     PROCESS_SWITCH("processSwitch"),
     PROCESS_IF("processIf"),
+    PROCESS_FOR("processFor"),
+    PROCESS_WHILE("processWhile"),
+    PROCESS_BREAK("processBreak"),
     IS_ACCESS("isAccess"),
 
     IS_END("isEnd"),

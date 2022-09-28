@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.enums;
 
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeIfComponent;
-import com.yomahub.liteflow.core.NodeSwitchComponent;
+import com.yomahub.liteflow.core.*;
 
 /**
  * 注解节点类型枚举
@@ -22,7 +20,15 @@ public enum AnnotationNodeTypeEnum {
     /**
      * 条件节点
      */
-    IF("条件", NodeIfComponent.class),;
+    IF("条件", NodeIfComponent.class),
+
+    FOR("计数循环",NodeForComponent.class),
+
+    WHILE("条件循环", NodeWhileComponent.class),
+
+    BREAK("跳出循环", NodeBreakComponent.class)
+    ;
+
     /**
      * 描述
      */

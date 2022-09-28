@@ -126,7 +126,7 @@ public class OperatorHelper {
             return (T) object;
         }
 
-        throw new QLException("The caller must be " + tClass.getName() + " item");
+        throw new QLException("The parameter must be " + tClass.getName() + " item");
     }
 
     /**

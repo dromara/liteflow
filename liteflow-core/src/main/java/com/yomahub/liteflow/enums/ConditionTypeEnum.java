@@ -7,7 +7,11 @@ public enum ConditionTypeEnum {
 
     TYPE_IF("if", "if"),
     TYPE_PRE("pre","pre"),
-    TYPE_FINALLY("finally","finally")
+    TYPE_FINALLY("finally","finally"),
+
+    TYPE_FOR("for", "for"),
+
+    TYPE_WHILE("while", "while")
     ;
     private String type;
     private String name;
