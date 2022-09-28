@@ -31,7 +31,8 @@ public class LOGOPrinter {
 	}
 
 	private static String getVersion(){
-		Package pkg = LOGOPrinter.class.getPackage();
-		return (pkg != null) ? pkg.getImplementationVersion() : "DEV";
+		return Optional.ofNullable(LOGOPrinter.class.getPackage())
+				.map(Package::getImplementationVersion)
+				.orElse("DEV");
 	}
 }
