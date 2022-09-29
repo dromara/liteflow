@@ -22,12 +22,7 @@ public class NodeOperator extends BaseOperator<Node> {
 	public Node build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeNeqOne(objects);
 
-		String nodeId;
-		if (objects[0] instanceof String) {
-			nodeId = (String) objects[0];
-		} else {
-			throw new QLException("The value must be Node item!");
-		}
+		String nodeId = OperatorHelper.convert(objects[0], String.class);
 
 		if (FlowBus.containNode(nodeId)) {
 			return FlowBus.getNode(nodeId);

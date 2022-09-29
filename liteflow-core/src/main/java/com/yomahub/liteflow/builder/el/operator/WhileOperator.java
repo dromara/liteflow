@@ -19,14 +19,9 @@ public class WhileOperator extends BaseOperator<WhileCondition> {
     public WhileCondition build(Object[] objects) throws Exception {
         OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        Node node;
-        if (objects[0] instanceof Node){
-            node = (Node) objects[0];
-            if (!ListUtil.toList(NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT).contains(node.getType())) {
-                throw new QLException("The parameter must be while-node item");
-            }
-        }else{
-            throw new QLException("The parameter must be Node item");
+        Node node = OperatorHelper.convert(objects[0], Node.class);
+        if (!ListUtil.toList(NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT).contains(node.getType())) {
+            throw new QLException("The parameter must be while-node item");
         }
 
         WhileCondition whileCondition = new WhileCondition();

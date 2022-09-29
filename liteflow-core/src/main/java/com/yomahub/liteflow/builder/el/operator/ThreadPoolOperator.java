@@ -19,12 +19,7 @@ public class ThreadPoolOperator extends BaseOperator<WhenCondition> {
 
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-		if (objects[1] instanceof String) {
-			// threadPoolClazz
-			whenCondition.setThreadExecutorClass(objects[1].toString());
-		} else {
-			throw new QLException("the parameter must be String type");
-		}
+		whenCondition.setThreadExecutorClass(OperatorHelper.convert(objects[1], String.class));
 
 		return whenCondition;
 	}

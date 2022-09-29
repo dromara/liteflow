@@ -24,26 +24,13 @@ public class DoOperator extends BaseOperator<LoopCondition> {
     public LoopCondition build(Object[] objects) throws Exception {
         OperatorHelper.checkObjectSizeEqTwo(objects);
 
-        //由于DO关键字有可能用在FOR后面，也有可能用于WHILE后面，所以这里要进行判断
-        LoopCondition condition;
-        if (objects[0] instanceof ForCondition){
-            //获得caller，也就是ForCondition
-            condition = OperatorHelper.convert(objects[0], ForCondition.class);
-        }else if(objects[0] instanceof WhileCondition){
-            //获得caller，也就是WhileCondition
-            condition = OperatorHelper.convert(objects[0], WhileCondition.class);
-        }else{
-            throw new QLException("The caller must be ForCondition or WhileCondition item");
-        }
+        //DO关键字有可能用在FOR后面，也有可能用于WHILE后面，所以这里要进行判断是不是这两种类型的超类LoopCondition
+        String errorMsg = "The caller must be ForCondition or WhileCondition item";
+        LoopCondition condition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 
         //获得需要执行的可执行表达式
-        if (objects[1] instanceof Executable){
-            Executable doExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
-
-            condition.setExecutableList(ListUtil.toList(doExecutableItem));
-        }else{
-            throw new QLException("The parameter must be Executable item");
-        }
+        Executable doExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
+        condition.setExecutableList(ListUtil.toList(doExecutableItem));
 
         return condition;
     }

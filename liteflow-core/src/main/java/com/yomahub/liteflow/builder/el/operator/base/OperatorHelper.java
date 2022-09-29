@@ -1,7 +1,10 @@
 package com.yomahub.liteflow.builder.el.operator.base;
 
+import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.exception.DataNofFoundException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Node;
 
 import java.util.Objects;
 
@@ -114,19 +117,35 @@ public class OperatorHelper {
 
     /**
      * 转换 object 为指定的类型
-     *
-     * @param object object
-     * @param tClass 指定类型
-     * @param <T>    返回类型
-     * @return T
-     * @throws QLException QLException
+     * 如果是Node类型的则进行copy
+     * 为什么要进行copy呢？因为原先的Node都是存放在FlowBus的NodeMap中的。有些属性在EL中不是全局的，属于当前这个chain的。
+     * 所以要进行copy动作
      */
-    public static <T> T convert(Object object, Class<T> tClass) throws QLException {
-        if (tClass.isInstance(object)) {
-            return (T) object;
+    public static <T> T convert(Object object, Class<T> clazz) throws QLException {
+        String errorMsg = StrUtil.format("The parameter must be {} item", clazz.getSimpleName());
+        return convert(object, clazz, errorMsg);
+    }
+
+    /**
+     * 转换 object 为指定的类型,自定义错误信息
+     * 如果是Node类型的则进行copy
+     */
+    public static <T> T convert(Object object, Class<T> clazz, String errorMsg) throws QLException {
+        try{
+            if (clazz.isAssignableFrom(object.getClass())) {
+
+                if(clazz.equals(Node.class)){
+                    Node node = (Node) object;
+                    return (T) node.copy();
+                }else{
+                    return (T) object;
+                }
+            }
+        }catch (Exception e){
+            throw new QLException("An error occurred while copying an object");
         }
 
-        throw new QLException("The parameter must be " + tClass.getName() + " item");
+        throw new QLException(errorMsg);
     }
 
     /**

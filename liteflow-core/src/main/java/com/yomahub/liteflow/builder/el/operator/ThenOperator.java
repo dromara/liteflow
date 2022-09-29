@@ -20,11 +20,7 @@ public class ThenOperator extends BaseOperator<ThenCondition> {
 
 		ThenCondition thenCondition = new ThenCondition();
 		for (Object obj : objects) {
-			if (obj instanceof Executable) {
-				thenCondition.addExecutable((Executable) obj);
-			} else {
-				throw new QLException("parameter must be executable item");
-			}
+			thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return thenCondition;
 	}

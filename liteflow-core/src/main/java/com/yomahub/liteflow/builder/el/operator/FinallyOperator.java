@@ -20,11 +20,7 @@ public class FinallyOperator extends BaseOperator<FinallyCondition> {
 
 		FinallyCondition finallyCondition = new FinallyCondition();
 		for (Object obj : objects) {
-			if (obj instanceof Executable) {
-				finallyCondition.addExecutable((Executable) obj);
-			} else {
-				throw new QLException("parameter must be executable item!");
-			}
+			finallyCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return finallyCondition;
 	}

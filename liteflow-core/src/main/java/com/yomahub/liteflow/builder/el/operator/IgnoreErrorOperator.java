@@ -19,12 +19,8 @@ public class IgnoreErrorOperator extends BaseOperator<WhenCondition> {
 
 		WhenCondition condition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-		if (objects[1] instanceof Boolean) {
-			// ignoreError
-			condition.setErrorResume(Boolean.parseBoolean(objects[1].toString().toLowerCase()));
-		} else {
-			throw new QLException("The parameter must be boolean type");
-		}
+		Boolean ignoreError = OperatorHelper.convert(objects[1], Boolean.class);
+		condition.setErrorResume(ignoreError);
 
 		return condition;
 	}

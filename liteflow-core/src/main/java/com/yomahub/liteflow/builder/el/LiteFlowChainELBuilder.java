@@ -54,15 +54,17 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunction("IF", new IfOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("ELSE", Object.class, new ElseOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("ELIF", Object.class, new ElifOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("TO", Object.class, new ToOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("to", Object.class, new ToOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("id", Object.class, new IdOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
+        EXPRESS_RUNNER.addFunction("NODE", new NodeOperator());
         EXPRESS_RUNNER.addFunction("node", new NodeOperator());
         EXPRESS_RUNNER.addFunction("FOR", new ForOperator());
-
+        EXPRESS_RUNNER.addFunction("WHILE", new WhileOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("DO", Object.class, new DoOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("BREAK", Object.class, new BreakOperator());
     }

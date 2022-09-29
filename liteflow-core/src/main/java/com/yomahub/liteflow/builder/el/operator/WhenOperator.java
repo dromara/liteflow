@@ -19,11 +19,7 @@ public class WhenOperator extends BaseOperator<WhenCondition> {
 
         WhenCondition whenCondition = new WhenCondition();
         for (Object obj : objects) {
-            if (obj instanceof Executable) {
-                whenCondition.addExecutable((Executable) obj);
-            } else {
-                throw new QLException("parameter must be executable item");
-            }
+            whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
         }
         return whenCondition;
     }

@@ -21,12 +21,8 @@ public class ToOperator extends BaseOperator<SwitchCondition> {
 		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);
 
 		for (int i = 1; i < objects.length; i++) {
-			if (objects[i] instanceof Executable) {
-				Executable target = (Executable) objects[i];
-				switchCondition.addTargetItem(target);
-			} else {
-				throw new QLException("The parameter must be Executable item");
-			}
+			Executable target = OperatorHelper.convert(objects[i], Executable.class);
+			switchCondition.addTargetItem(target);
 		}
 		return switchCondition;
 	}

@@ -23,13 +23,9 @@ public class IdOperator extends BaseOperator<Condition> {
 
 		Condition condition = OperatorHelper.convert(objects[0], Condition.class);
 
-		if (objects[1] instanceof String) {
-			// id
-			condition.setId(objects[1].toString());
-		} else {
-			LOG.error("the parameter must be String type!");
-			throw new QLException("the parameter must be String type");
-		}
+		String id = OperatorHelper.convert(objects[1], String.class);
+
+		condition.setId(id);
 
 		return condition;
 	}

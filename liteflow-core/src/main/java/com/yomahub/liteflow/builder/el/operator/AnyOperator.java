@@ -19,13 +19,8 @@ public class AnyOperator extends BaseOperator<WhenCondition> {
 
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-		if (objects[1] instanceof Boolean) {
-			// any
-			whenCondition.setAny(Boolean.parseBoolean(objects[1].toString().toLowerCase()));
-		} else {
-			throw new QLException("the parameter must be boolean type");
-		}
-
+		Boolean any = OperatorHelper.convert(objects[1], Boolean.class);
+		whenCondition.setAny(any);
 		return whenCondition;
 	}
 }

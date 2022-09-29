@@ -25,19 +25,13 @@ public class ElifOperator extends BaseOperator<IfCondition> {
 		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class);
 
 		//解析第一个参数
-		Node ifNode;
-		if (objects[1] instanceof Node) {
-			ifNode = (Node) objects[1];
-
-			if (!ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(ifNode.getType())) {
-				throw new QLException("The first parameter must be If item");
-			}
-		} else {
-			throw new QLException("The first parameter must be Node item");
+		Node ifNode = OperatorHelper.convert(objects[1], Node.class);
+		if (!ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(ifNode.getType())) {
+			throw new QLException("The first parameter must be If item");
 		}
 
 		//解析第二个参数
-		Executable trueCaseExecutableItem = (Executable) objects[2];
+		Executable trueCaseExecutableItem = OperatorHelper.convert(objects[2], Executable.class);
 
 		//构建一个内部的IfCondition
 		IfCondition ifConditionItem = new IfCondition();

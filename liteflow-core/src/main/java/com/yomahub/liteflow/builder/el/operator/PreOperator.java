@@ -20,11 +20,7 @@ public class PreOperator extends BaseOperator<PreCondition> {
 
 		PreCondition preCondition = new PreCondition();
 		for (Object obj : objects) {
-			if (obj instanceof Executable) {
-				preCondition.addExecutable((Executable) obj);
-			} else {
-				throw new QLException("parameter must be executable item");
-			}
+			preCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return preCondition;
 	}
