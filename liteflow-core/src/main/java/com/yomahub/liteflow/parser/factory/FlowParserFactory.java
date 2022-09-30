@@ -12,12 +12,6 @@ import com.yomahub.liteflow.parser.base.BaseYmlFlowParser;
  */
 public interface FlowParserFactory {
 
-    BaseJsonFlowParser createJsonParser(String path);
-
-    BaseXmlFlowParser createXmlParser(String path);
-
-    BaseYmlFlowParser createYmlParser(String path);
-
     BaseJsonFlowParser createJsonELParser(String path);
 
     BaseXmlFlowParser createXmlELParser(String path);

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<flow>
-    <chain name="chain1">
-        <when value="d" group="1"/>
-        <when value="e" group="2"/>
-        <when value="f" group="3"/>
-    </chain>
-</flow>

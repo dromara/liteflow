@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.test.parsecustom.parser;
 
-import com.yomahub.liteflow.parser.ClassJsonFlowParser;
 import com.yomahub.liteflow.parser.el.ClassJsonFlowELParser;
 
 /**

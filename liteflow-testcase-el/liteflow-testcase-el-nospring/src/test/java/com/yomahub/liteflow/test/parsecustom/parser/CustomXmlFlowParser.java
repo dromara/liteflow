@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.parsecustom.parser;
 
-import com.yomahub.liteflow.parser.ClassXmlFlowParser;
+import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 
 /**
  * 非spring环境的自定义xml parser单元测试
@@ -8,10 +8,10 @@ import com.yomahub.liteflow.parser.ClassXmlFlowParser;
  * @author bryan.zhang
  * @since 2.5.7
  */
-public class CustomXmlFlowParser extends ClassXmlFlowParser {
+public class CustomXmlFlowParser extends ClassXmlFlowELParser {
 
     @Override
     public String parseCustom() {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><nodes><node id=\"a\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.ACmp\"/><node id=\"b\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.BCmp\"/><node id=\"c\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.CCmp\"/><node id=\"d\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.DCmp\"/><node id=\"e\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.ECmp\"/><node id=\"f\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.FCmp\"/><node id=\"g\" class=\"com.yomahub.liteflow.test.parsecustom.cmp.GCmp\"/></nodes><chain name=\"chain1\"><then value=\"a,b,c,d\"/></chain></flow>";
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><nodes><node id=\"a\" class=\"com.yomahub.liteflow.test.parser.cmp.ACmp\"/><node id=\"b\" class=\"com.yomahub.liteflow.test.parser.cmp.BCmp\"/><node id=\"c\" class=\"com.yomahub.liteflow.test.parser.cmp.CCmp\"/><node id=\"d\" class=\"com.yomahub.liteflow.test.parser.cmp.DCmp\"/></nodes><chain name=\"chain1\">THEN(a,b,c,d)</chain></flow>";
     }
 }

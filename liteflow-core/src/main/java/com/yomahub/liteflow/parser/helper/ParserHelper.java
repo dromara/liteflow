@@ -3,30 +3,23 @@ package com.yomahub.liteflow.parser.helper;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.annotation.*;
 import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
-import com.yomahub.liteflow.builder.LiteFlowConditionBuilder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.ChainPropBean;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeIfComponent;
-import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.util.JsonUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -138,48 +131,6 @@ public class ParserHelper {
 				.setScript(script)
 				.setFile(file)
 				.build();
-	}
-
-	/**
-	 * 构建 chain
-	 *
-	 * @param chainPropBean 构建 chain 的中间属性
-	 * @param chainBuilder  chainBuilder
-	 */
-	public static void buildChain(ChainPropBean chainPropBean, LiteFlowChainBuilder chainBuilder) {
-		String condValueStr = chainPropBean.getCondValueStr();
-		String group = chainPropBean.getGroup();
-		String errorResume = chainPropBean.getErrorResume();
-		String any = chainPropBean.getAny();
-		String threadExecutorClass = chainPropBean.getThreadExecutorClass();
-		ConditionTypeEnum conditionType = chainPropBean.getConditionType();
-
-		if (ObjectUtil.isNull(conditionType)) {
-			throw new NotSupportConditionException("ConditionType is not supported");
-		}
-
-		if (StrUtil.isBlank(condValueStr)) {
-			throw new EmptyConditionValueException("Condition value cannot be empty");
-		}
-
-		//如果是when类型的话，有特殊化参数要设置，只针对于when的
-		if (conditionType.equals(ConditionTypeEnum.TYPE_WHEN)) {
-			chainBuilder.setCondition(
-					LiteFlowConditionBuilder.createWhenCondition()
-							.setErrorResume(errorResume)
-							.setGroup(group)
-							.setAny(any)
-							.setThreadExecutorClass(threadExecutorClass)
-							.setValue(condValueStr)
-							.build()
-			).build();
-		} else {
-			chainBuilder.setCondition(
-					LiteFlowConditionBuilder.createCondition(conditionType)
-							.setValue(condValueStr)
-							.build()
-			).build();
-		}
 	}
 
 	/**
@@ -304,83 +255,6 @@ public class ParserHelper {
 				JsonNode jsonNode = chainIterator.next();
 				parseOneChainConsumer.accept(jsonNode);
 			}
-		}
-	}
-
-
-	/**
-	 * 解析一个chain的过程
-	 *
-	 * @param chainNode chain 节点
-	 */
-	public static void parseOneChain(JsonNode chainNode) {
-		String condValueStr;
-		ConditionTypeEnum conditionType;
-		String group;
-		String errorResume;
-		String any;
-		String threadExecutorClass;
-
-		//构建chainBuilder
-		String chainName = chainNode.get(NAME).textValue();
-		LiteFlowChainBuilder chainBuilder = LiteFlowChainBuilder.createChain().setChainName(chainName);
-		Iterator<JsonNode> iterator =  chainNode.get(CONDITION).iterator();
-		while (iterator.hasNext()) {
-			JsonNode condNode = iterator.next();
-			conditionType = ConditionTypeEnum.getEnumByCode(condNode.get(TYPE).textValue());
-			condValueStr = condNode.get(VALUE).textValue();
-			errorResume = condNode.hasNonNull(ERROR_RESUME) ? condNode.get(ERROR_RESUME).textValue() : "";
-			group = condNode.hasNonNull(GROUP) ? condNode.get(GROUP).textValue() : "";
-			any = condNode.hasNonNull(ANY) ? condNode.get(ANY).textValue() : "";
-			threadExecutorClass =  condNode.hasNonNull(THREAD_EXECUTOR_CLASS) ? condNode.get(THREAD_EXECUTOR_CLASS).textValue() : "";
-
-			ChainPropBean chainPropBean = new ChainPropBean()
-					.setCondValueStr(condValueStr)
-					.setGroup(group)
-					.setErrorResume(errorResume)
-					.setAny(any)
-					.setThreadExecutorClass(threadExecutorClass)
-					.setConditionType(conditionType);
-
-			// 构建 chain
-			ParserHelper.buildChain(chainPropBean, chainBuilder);
-		}
-	}
-	/**
-	 * 解析一个chain的过程
-	 * @param e chain 节点
-	 */
-	public static void parseOneChain(Element e) {
-		String condValueStr;
-		String group;
-		String errorResume;
-		String any;
-		String threadExecutorClass;
-		ConditionTypeEnum conditionType;
-
-		//构建chainBuilder
-		String chainName = e.attributeValue(NAME);
-		LiteFlowChainBuilder chainBuilder = LiteFlowChainBuilder.createChain().setChainName(chainName);
-
-		for (Iterator<Element> it = e.elementIterator(); it.hasNext(); ) {
-			Element condE = it.next();
-			conditionType = ConditionTypeEnum.getEnumByCode(condE.getName());
-			condValueStr = condE.attributeValue(VALUE);
-			errorResume = condE.attributeValue(ERROR_RESUME);
-			group = condE.attributeValue(GROUP);
-			any = condE.attributeValue(ANY);
-			threadExecutorClass = condE.attributeValue(THREAD_EXECUTOR_CLASS);
-
-			ChainPropBean chainPropBean = new ChainPropBean()
-					.setCondValueStr(condValueStr)
-					.setGroup(group)
-					.setErrorResume(errorResume)
-					.setAny(any)
-					.setThreadExecutorClass(threadExecutorClass)
-					.setConditionType(conditionType);
-
-			// 构建 chain
-			ParserHelper.buildChain(chainPropBean, chainBuilder);
 		}
 	}
 

@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.parser.el;
 
-import com.yomahub.liteflow.parser.JsonFlowParser;
-
 import java.util.List;
 
 /**

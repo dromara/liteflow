@@ -339,7 +339,6 @@
 		<module>liteflow-rule-plugin</module>
 		<module>liteflow-spring-boot-starter</module>
 		<module>liteflow-spring</module>
-		<module>liteflow-testcase-old</module>
 		<module>liteflow-testcase-el</module>
     </modules>
 

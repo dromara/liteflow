@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<flow>
-
-    <chain name="chain21">
-        <then value="a,c"/>
-        <when value="b,d,e(f|g)"/>
-        <then value="chain2"/>
-    </chain>
-</flow>

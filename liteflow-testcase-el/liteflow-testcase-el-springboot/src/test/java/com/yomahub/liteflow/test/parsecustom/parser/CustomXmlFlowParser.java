@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.test.parsecustom.parser;
 
-import com.yomahub.liteflow.parser.ClassXmlFlowParser;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.test.parsecustom.bean.TestBean;
 

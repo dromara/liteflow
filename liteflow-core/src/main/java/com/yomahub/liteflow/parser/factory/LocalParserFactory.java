@@ -12,21 +12,6 @@ import com.yomahub.liteflow.parser.el.*;
 public class LocalParserFactory implements FlowParserFactory {
 
     @Override
-    public JsonFlowParser createJsonParser(String path) {
-        return new LocalJsonFlowParser();
-    }
-
-    @Override
-    public XmlFlowParser createXmlParser(String path) {
-        return new LocalXmlFlowParser();
-    }
-
-    @Override
-    public YmlFlowParser createYmlParser(String path) {
-        return new LocalYmlFlowParser();
-    }
-
-    @Override
     public JsonFlowELParser createJsonELParser(String path) {
         return new LocalJsonFlowELParser();
     }

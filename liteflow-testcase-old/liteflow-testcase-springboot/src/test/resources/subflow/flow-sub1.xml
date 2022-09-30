@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<flow>
-    <chain name="chain2">
-        <then value="b,a"/>
-        <then value="chain3"/>
-    </chain>
-</flow>

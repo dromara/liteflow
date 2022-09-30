@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE flow SYSTEM "liteflow.dtd">
-<flow>
-    <chain name="chain1">
-        <when value="a,b"/>
-        <then value="c,e(a|d)"/>
-    </chain>
-</flow>

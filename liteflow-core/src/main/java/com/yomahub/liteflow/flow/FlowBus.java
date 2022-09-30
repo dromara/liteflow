@@ -8,7 +8,6 @@
  */
 package com.yomahub.liteflow.flow;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -20,9 +19,6 @@ import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.parser.LocalJsonFlowParser;
-import com.yomahub.liteflow.parser.LocalXmlFlowParser;
-import com.yomahub.liteflow.parser.LocalYmlFlowParser;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
@@ -315,13 +311,7 @@ public class FlowBus {
     }
 
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
-        if (type.equals(FlowParserTypeEnum.TYPE_XML)) {
-            new LocalXmlFlowParser().parse(content);
-        } else if (type.equals(FlowParserTypeEnum.TYPE_JSON)) {
-            new LocalJsonFlowParser().parse(content);
-        } else if (type.equals(FlowParserTypeEnum.TYPE_YML)) {
-            new LocalYmlFlowParser().parse(content);
-        } else if (type.equals(FlowParserTypeEnum.TYPE_EL_XML)) {
+        if (type.equals(FlowParserTypeEnum.TYPE_EL_XML)) {
             new LocalXmlFlowELParser().parse(content);
         } else if (type.equals(FlowParserTypeEnum.TYPE_EL_JSON)) {
             new LocalJsonFlowELParser().parse(content);

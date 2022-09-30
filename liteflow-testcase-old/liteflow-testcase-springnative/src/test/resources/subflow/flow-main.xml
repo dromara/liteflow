@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<flow>
-    <chain name="chain1">
-        <then value="a,b"/>
-        <then value="chain2"/> <!-- 测试调用c流程后是否正常调用chain2 -->
-    </chain>
-</flow>

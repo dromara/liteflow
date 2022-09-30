@@ -1,6 +1,0 @@
-flow:
-  chain:
-    - name: chain3
-      condition:
-        - type: then
-          value: 'e,d'
