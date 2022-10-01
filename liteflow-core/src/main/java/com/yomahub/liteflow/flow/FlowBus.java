@@ -24,6 +24,7 @@ import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
+import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
 import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
@@ -246,18 +247,23 @@ public class FlowBus {
             //初始化Node
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
-            //如果是脚本节点，则还要加载script脚本
-            if (type.isScript()){
-                for (int i = 0; i < nodes.size(); i++) {
-                    Node node = nodes.get(i);
-                    NodeComponent cmpInstance = cmpInstances.get(i);
+
+            for (int i = 0; i < nodes.size(); i++) {
+                Node node = nodes.get(i);
+                NodeComponent cmpInstance = cmpInstances.get(i);
+                //如果是脚本节点，则还要加载script脚本
+                if (type.isScript()){
                     if (StrUtil.isNotBlank(script)){
                         node.setScript(script);
                         ((ScriptComponent)cmpInstance).loadScript(script);
+                    }else{
+                        String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
+                        throw new ScriptLoadException(errorMsg);
                     }
-                    String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-                    nodeMap.put(activeNodeId, node);
                 }
+
+                String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+                nodeMap.put(activeNodeId, node);
             }
 
         } catch (Exception e) {
