@@ -33,7 +33,7 @@ public class ForCondition extends LoopCondition{
         forNode.execute(slotIndex);
 
         //这里可能会有spring代理过的bean，所以拿到user原始的class
-        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(this.forNode.getClass());
+        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(this.forNode.getInstance().getClass());
         //获得循环次数
         int forCount = slot.getForResult(originalForCountClass.getName());
 
@@ -46,7 +46,8 @@ public class ForCondition extends LoopCondition{
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
                 breakNode.setCurrChainName(this.getCurrChainName());
-                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getClass());
+                breakNode.execute(slotIndex);
+                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
                 if (isBreak){
                     break;

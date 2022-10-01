@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.loop.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.loop.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.loop.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.loop.cmp.DCmp"/>
+        <node id="x" class="com.yomahub.liteflow.test.loop.cmp.XCmp"/>
+        <node id="y" class="com.yomahub.liteflow.test.loop.cmp.YCmp"/>
+        <node id="z" class="com.yomahub.liteflow.test.loop.cmp.ZCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        FOR(2).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain2">
+        FOR(x).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain3">
+        FOR(10).DO(THEN(a,b,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain4">
+        WHILE(z).DO(THEN(a,d));
+    </chain>
+
+    <chain name="chain5">
+        WHILE(z).DO(THEN(a,d)).BREAK(y);
+    </chain>
+</flow>

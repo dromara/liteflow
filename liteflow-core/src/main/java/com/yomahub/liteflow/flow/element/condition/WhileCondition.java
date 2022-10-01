@@ -37,7 +37,8 @@ public class WhileCondition extends LoopCondition{
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
                 breakNode.setCurrChainName(this.getCurrChainName());
-                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getClass());
+                breakNode.execute(slotIndex);
+                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
                 if (isBreak){
                     break;
@@ -51,7 +52,7 @@ public class WhileCondition extends LoopCondition{
         //执行while组件
         whileNode.setCurrChainName(this.getCurrChainName());
         whileNode.execute(slotIndex);
-        Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(this.whileNode.getClass());
+        Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(this.whileNode.getInstance().getClass());
         return slot.getWhileResult(originalWhileClass.getName());
     }
 

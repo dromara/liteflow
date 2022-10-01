@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="x" type="for_script">
+            <![CDATA[
+                return 3;
+            ]]>
+        </node>
+
+        <node id="y" type="break_script">
+            <![CDATA[
+                count = defaultContext.getData("test");
+                return count > 3;
+            ]]>
+        </node>
+
+        <node id="z" type="while_script">
+            <![CDATA[
+                key = "test";
+                if (defaultContext.hasData(key)){
+                    count = defaultContext.getData("test");
+                    return count < 5;
+                }else{
+                    return true;
+                }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        FOR(2).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain2">
+        FOR(x).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain3">
+        FOR(10).DO(THEN(a,b,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain4">
+        WHILE(z).DO(THEN(a,d));
+    </chain>
+
+    <chain name="chain5">
+        WHILE(z).DO(THEN(a,d)).BREAK(y);
+    </chain>
+</flow>

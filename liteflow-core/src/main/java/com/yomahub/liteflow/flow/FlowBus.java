@@ -177,7 +177,7 @@ public class FlowBus {
     }
 
     public static void addCommonScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptCommonComponent.class, script);
     }
 
     public static void addSwitchScriptNode(String nodeId, String name, String script){
@@ -189,15 +189,15 @@ public class FlowBus {
     }
 
     public static void addForScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.FOR_SCRIPT, ScriptIfComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.FOR_SCRIPT, ScriptForComponent.class, script);
     }
 
     public static void addWhileScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.WHILE_SCRIPT, ScriptIfComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.WHILE_SCRIPT, ScriptWhileComponent.class, script);
     }
 
     public static void addBreakScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.BREAK_SCRIPT, ScriptIfComponent.class, script);
+        addNode(nodeId, name, NodeTypeEnum.BREAK_SCRIPT, ScriptBreakComponent.class, script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
@@ -247,22 +247,19 @@ public class FlowBus {
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
             //如果是脚本节点，则还要加载script脚本
-            for (int i = 0; i < nodes.size(); i++) {
-                Node node = nodes.get(i);
-                NodeComponent cmpInstance = cmpInstances.get(i);
-                if (StrUtil.isNotBlank(script)){
-                    node.setScript(script);
-                    if (type.equals(NodeTypeEnum.SCRIPT)){
+            if (type.isScript()){
+                for (int i = 0; i < nodes.size(); i++) {
+                    Node node = nodes.get(i);
+                    NodeComponent cmpInstance = cmpInstances.get(i);
+                    if (StrUtil.isNotBlank(script)){
+                        node.setScript(script);
                         ((ScriptComponent)cmpInstance).loadScript(script);
-                    }else if(type.equals(NodeTypeEnum.SWITCH_SCRIPT)){
-                        ((ScriptSwitchComponent)cmpInstance).loadScript(script);
-                    }else if(type.equals(NodeTypeEnum.IF_SCRIPT)){
-                        ((ScriptIfComponent)cmpInstance).loadScript(script);
                     }
+                    String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+                    nodeMap.put(activeNodeId, node);
                 }
-                String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-                nodeMap.put(activeNodeId, node);
             }
+
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
             LOG.error(error);

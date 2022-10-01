@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        FOR(2).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain2">
+        FOR(x).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain3">
+        FOR(10).DO(THEN(a,b,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain4">
+        WHILE(z).DO(THEN(a,d));
+    </chain>
+
+    <chain name="chain5">
+        WHILE(z).DO(THEN(a,d)).BREAK(y);
+    </chain>
+</flow>
