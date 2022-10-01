@@ -1,25 +1,11 @@
 package com.yomahub.liteflow.core;
 
-import com.yomahub.liteflow.script.ScriptExecutorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * 脚本组件类
+ * 脚本接口
  * @author Bryan.Zhang
- * @since 2.6.0
+ * @since 2.9.0
  */
-public class ScriptComponent extends NodeComponent{
+public interface ScriptComponent {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    @Override
-    public void process() throws Exception {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
-    }
-
-    public void loadScript(String script) {
-        log.info("load script for component[{}]", getDisplayName());
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
-    }
+    void loadScript(String script);
 }

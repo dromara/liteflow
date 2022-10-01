@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.enums;
 
-import cn.hutool.core.util.ClassUtil;
 import com.yomahub.liteflow.core.*;
 
 /**
@@ -21,7 +20,7 @@ public enum NodeTypeEnum {
     WHILE("while", "循环条件", false, NodeWhileComponent.class),
 
     BREAK("break", "循环跳出", false, NodeBreakComponent.class),
-    SCRIPT("script","脚本", true, ScriptComponent.class),
+    SCRIPT("script","脚本", true, ScriptCommonComponent.class),
 
     SWITCH_SCRIPT("switch_script", "选择脚本", true, ScriptSwitchComponent.class),
 

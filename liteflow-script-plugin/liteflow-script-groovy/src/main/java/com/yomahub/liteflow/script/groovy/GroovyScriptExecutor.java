@@ -52,7 +52,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
         try{
             if (!compiledScriptMap.containsKey(nodeId)){
                 String errorMsg = StrUtil.format("script for node[{}] is not loaded", nodeId);
-                throw new RuntimeException(errorMsg);
+                throw new ScriptLoadException(errorMsg);
             }
 
             CompiledScript compiledScript = compiledScriptMap.get(nodeId);

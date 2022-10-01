@@ -7,12 +7,13 @@ import com.yomahub.liteflow.script.ScriptExecutorFactory;
  * @author Bryan.Zhang
  * @since 2.9.0
  */
-public class ScriptForComponent extends NodeForComponent{
+public class ScriptForComponent extends NodeForComponent implements ScriptComponent{
     @Override
     public int processFor() throws Exception {
         return (int) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
     }
 
+    @Override
     public void loadScript(String script) {
         ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
     }
