@@ -7,6 +7,7 @@ import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressLoader;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
+import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -80,6 +81,9 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             if (ObjectUtil.isNotNull(subRequestData)){
                 context.put("subRequestData", subRequestData);
             }
+
+            //放入用户自己定义的bean
+            context.putAll(ScriptBeanManager.getScriptBeanMap());
 
             return expressRunner.execute(instructionSet, context, errorList, true, false, null);
         }catch (Exception e){

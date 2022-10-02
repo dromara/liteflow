@@ -8,10 +8,14 @@
  */
 package com.yomahub.liteflow.spring;
 
+import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.script.ScriptBean;
+import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import org.slf4j.Logger;
@@ -91,6 +95,12 @@ public class ComponentScanner implements BeanPostProcessor {
             LOG.info("component aspect implement[{}] has been found", beanName);
             cmpAroundAspect = (ICmpAroundAspect) bean;
             return cmpAroundAspect;
+        }
+
+        //扫描@ScriptBean修饰的类
+        ScriptBean scriptBean = AnnotationUtil.getAnnotation(bean.getClass(), ScriptBean.class);
+        if (ObjectUtil.isNotNull(scriptBean)){
+            ScriptBeanManager.addScriptBean(scriptBean.value(), bean);
         }
 
         return bean;

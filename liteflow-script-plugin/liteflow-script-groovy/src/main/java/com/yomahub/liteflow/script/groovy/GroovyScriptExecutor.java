@@ -2,6 +2,7 @@ package com.yomahub.liteflow.script.groovy;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -76,6 +77,9 @@ public class GroovyScriptExecutor implements ScriptExecutor {
             if (ObjectUtil.isNotNull(subRequestData)){
                 bindings.put("subRequestData", subRequestData);
             }
+
+            //放入用户自己定义的bean
+            bindings.putAll(ScriptBeanManager.getScriptBeanMap());
 
             return compiledScript.eval(bindings);
         }catch (Exception e){
