@@ -7,18 +7,16 @@
  */
 package com.yomahub.liteflow.test.ifelse.cmp;
 
-import com.yomahub.liteflow.annotation.LiteflowIfCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeIfComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.springframework.stereotype.Component;
 
 @Component("x1")
-@LiteflowIfCmpDefine
 public class X1Cmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_IF)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeType = NodeTypeEnum.IF)
 	public boolean processIf(NodeComponent bindCmp) throws Exception {
 		return Boolean.parseBoolean(bindCmp.getTag());
 	}

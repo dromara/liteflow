@@ -9,8 +9,8 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -87,7 +87,7 @@ public class ComponentProxy {
             // nodeType去重
             List<? extends Class<? extends NodeComponent>> classes = methodList.stream()
                     .map(LiteflowMethod::nodeType)
-                    .map(AnnotationNodeTypeEnum::getCmpClass)
+                    .map(NodeTypeEnum::getMappingClazz)
                     .distinct()
                     .collect(Collectors.toList());
             // 相同nodeId里只能定义同一种的类型的NodeComponent
@@ -103,12 +103,7 @@ public class ComponentProxy {
                         LiteflowRetry liteflowRetry = tuple.get(0);
                         LiteflowMethod liteflowMethod = tuple.get(1);
                         boolean existRetry = liteflowRetry != null;
-                        boolean isProcess = liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_IF)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_SWITCH)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_FOR)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_WHILE)
-                                || liteflowMethod.value().equals(LiteFlowMethodEnum.PROCESS_BREAK);
+                        boolean isProcess = liteflowMethod.value().isMainMethod();
                         // 如果是再Process方法上的liteflowRetry注解，则默认为真实节点。
                         if (isProcess && existRetry) {
                             liteflowRetryAtomicReference.set(liteflowRetry);
@@ -125,7 +120,7 @@ public class ComponentProxy {
             cmpClazz = clazz;
             // 判断是否是方法声明的组件
             if (isMethodCreate){
-                cmpClazz = methodList.iterator().next().nodeType().getCmpClass();
+                cmpClazz = methodList.iterator().next().nodeType().getMappingClazz();
                 LiteflowRetry liteflowRetry;
                 if ((liteflowRetry = liteflowRetryAtomicReference.get()) != null){
                     // 增加LiteFlowRetry注解到注解数组里

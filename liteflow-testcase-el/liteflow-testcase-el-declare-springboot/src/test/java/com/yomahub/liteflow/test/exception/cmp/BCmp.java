@@ -8,7 +8,6 @@
 package com.yomahub.liteflow.test.exception.cmp;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
@@ -17,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("b")
-@LiteflowCmpDefine
 public class BCmp{
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BCmp.class);

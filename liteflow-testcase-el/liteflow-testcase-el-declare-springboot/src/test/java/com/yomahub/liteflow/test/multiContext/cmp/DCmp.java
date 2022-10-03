@@ -8,7 +8,6 @@
 package com.yomahub.liteflow.test.multiContext.cmp;
 
 import cn.hutool.core.date.DateUtil;
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
@@ -16,7 +15,6 @@ import com.yomahub.liteflow.test.multiContext.OrderContext;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-@LiteflowCmpDefine
 public class DCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)

@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.test.subflow.cmp2;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
@@ -12,7 +11,6 @@ import java.util.Set;
 
 
 @Component("q")
-@LiteflowCmpDefine
 public class QCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) throws Exception {

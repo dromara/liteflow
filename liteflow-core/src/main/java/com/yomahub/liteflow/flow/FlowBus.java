@@ -84,7 +84,7 @@ public class FlowBus {
 
     public static void addSpringScanNode(String nodeId, NodeComponent nodeComponent) {
         //根据class来猜测类型
-        NodeTypeEnum type = NodeTypeEnum.guessTypeByClazz(nodeComponent.getClass());
+        NodeTypeEnum type = NodeTypeEnum.guessType(nodeComponent.getClass());
 
         if (type == null){
             throw new NullNodeTypeException(StrUtil.format("node type is null for node[{}]", nodeId));

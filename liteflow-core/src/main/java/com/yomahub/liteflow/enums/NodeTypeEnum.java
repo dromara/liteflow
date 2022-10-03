@@ -1,6 +1,12 @@
 package com.yomahub.liteflow.enums;
 
+import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.*;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 节点类型枚举
@@ -37,9 +43,9 @@ public enum NodeTypeEnum {
 
     private boolean isScript;
 
-    private Class<?> mappingClazz;
+    private Class<? extends NodeComponent> mappingClazz;
 
-    NodeTypeEnum(String code, String name, boolean isScript, Class<?> mappingClazz) {
+    NodeTypeEnum(String code, String name, boolean isScript, Class<? extends NodeComponent> mappingClazz) {
         this.code = code;
         this.name = name;
         this.isScript = isScript;
@@ -70,11 +76,11 @@ public enum NodeTypeEnum {
         isScript = script;
     }
 
-    public Class<?> getMappingClazz() {
+    public Class<? extends NodeComponent> getMappingClazz() {
         return mappingClazz;
     }
 
-    public void setMappingClazz(Class<?> mappingClazz) {
+    public void setMappingClazz(Class<? extends NodeComponent> mappingClazz) {
         this.mappingClazz = mappingClazz;
     }
 
@@ -87,7 +93,7 @@ public enum NodeTypeEnum {
         return null;
     }
 
-    public static NodeTypeEnum guessTypeByClazz(Class<?> clazz){
+    public static NodeTypeEnum guessTypeBySuperClazz(Class<?> clazz){
         Class<?> superClazz = clazz;
         while(true){
             superClazz = superClazz.getSuperclass();
@@ -105,5 +111,20 @@ public enum NodeTypeEnum {
             }
         }
         return null;
+    }
+
+    public static NodeTypeEnum guessType(Class<?> clazz){
+        NodeTypeEnum nodeType = guessTypeBySuperClazz(clazz);
+        if (nodeType == null){
+            //再尝试声明式组件这部分的推断
+            LiteflowMethod liteflowMethod = Arrays.stream(clazz.getDeclaredMethods()).map(
+                    method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class)
+            ).filter(Objects::nonNull).filter(lfMethod -> lfMethod.value().isMainMethod()).findFirst().orElse(null);
+
+            if (liteflowMethod != null) {
+                nodeType = liteflowMethod.nodeType();
+            }
+        }
+        return nodeType;
     }
 }

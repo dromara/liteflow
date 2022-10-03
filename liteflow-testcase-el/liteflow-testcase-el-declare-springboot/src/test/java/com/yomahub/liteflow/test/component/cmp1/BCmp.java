@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.test.component.cmp1;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
@@ -10,7 +9,6 @@ import java.util.Objects;
 
 
 @Component("b")
-@LiteflowCmpDefine
 public class BCmp{
     @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
     public void process(NodeComponent bindCmp) {

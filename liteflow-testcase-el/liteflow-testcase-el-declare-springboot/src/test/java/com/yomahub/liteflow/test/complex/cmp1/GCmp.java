@@ -8,17 +8,15 @@
 package com.yomahub.liteflow.test.complex.cmp1;
 
 import com.yomahub.liteflow.annotation.LiteflowMethod;
-import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.springframework.stereotype.Component;
 
 @Component("G")
-@LiteflowSwitchCmpDefine
 public class GCmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "t1";
 	}

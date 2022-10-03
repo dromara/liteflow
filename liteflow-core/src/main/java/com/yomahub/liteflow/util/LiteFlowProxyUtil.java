@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.*;
 import com.yomahub.liteflow.core.*;
 import com.yomahub.liteflow.core.proxy.ComponentProxy;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentProxyErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import org.slf4j.Logger;
@@ -42,48 +43,12 @@ public class LiteFlowProxyUtil {
     //对一个满足声明式的bean进行代理,生成代理类数组
     public static List<NodeComponent> proxy2NodeComponent(Object bean, String nodeId){
         try{
-            LiteflowCmpDefine liteflowCmpDefine = bean.getClass().getAnnotation(LiteflowCmpDefine.class);
-            LiteflowSwitchCmpDefine liteflowSwitchCmpDefine = bean.getClass().getAnnotation(LiteflowSwitchCmpDefine.class);
-            LiteflowIfCmpDefine liteflowIfCmpDefine = bean.getClass().getAnnotation(LiteflowIfCmpDefine.class);
-            LiteflowForCmpDefine liteflowForCmpDefine = bean.getClass().getAnnotation(LiteflowForCmpDefine.class);
-            LiteflowWhileCmpDefine liteflowWhileCmpDefine = bean.getClass().getAnnotation(LiteflowWhileCmpDefine.class);
-            LiteflowBreakCmpDefine liteflowBreakCmpDefine = bean.getClass().getAnnotation(LiteflowBreakCmpDefine.class);
-
-            ComponentProxy proxy;
-            if (ObjectUtil.isNotNull(liteflowCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeComponent.class);
-                return proxy.getProxyList();
-            }
-
-            if (ObjectUtil.isNotNull(liteflowSwitchCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeSwitchComponent.class);
-                return proxy.getProxyList();
-            }
-
-            if (ObjectUtil.isNotNull(liteflowIfCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeIfComponent.class);
-                return proxy.getProxyList();
-            }
-
-            if (ObjectUtil.isNotNull(liteflowForCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeForComponent.class);
-                return proxy.getProxyList();
-            }
-
-            if (ObjectUtil.isNotNull(liteflowWhileCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeWhileComponent.class);
-                return proxy.getProxyList();
-            }
-
-            if (ObjectUtil.isNotNull(liteflowBreakCmpDefine)){
-                proxy = new ComponentProxy(nodeId, bean, NodeBreakComponent.class);
-                return proxy.getProxyList();
-            }
-            return new ComponentProxy(nodeId, bean, NodeComponent.class).getProxyList();
+            NodeTypeEnum nodeType = NodeTypeEnum.guessType(bean.getClass());
+            ComponentProxy proxy = new ComponentProxy(nodeId, bean, nodeType.getMappingClazz());
+            return proxy.getProxyList();
         }catch (LiteFlowException liteFlowException){
             throw liteFlowException;
-        }
-        catch (Exception e){
+        }catch (Exception e){
             String errMsg = StrUtil.format("Error while proxying bean[{}]",bean.getClass().getName());
             LOG.error(errMsg);
             throw new ComponentProxyErrorException(errMsg);

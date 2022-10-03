@@ -3,12 +3,9 @@ package com.yomahub.liteflow.test.loop.cmp;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.test.base.cmp.TestDomain;
-
-import javax.annotation.Resource;
 
 @LiteflowComponent
 public class CmpConfig {
@@ -41,19 +38,19 @@ public class CmpConfig {
         }
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_FOR, nodeId = "x", nodeType = AnnotationNodeTypeEnum.FOR)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_FOR, nodeId = "x", nodeType = NodeTypeEnum.FOR)
     public int processX(NodeComponent bindCmp){
         return 3;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "y", nodeType = AnnotationNodeTypeEnum.BREAK)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "y", nodeType = NodeTypeEnum.BREAK)
     public boolean processY(NodeComponent bindCmp){
         DefaultContext context = bindCmp.getFirstContextBean();
         int count = context.getData("test");
         return count > 3;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "z", nodeType = AnnotationNodeTypeEnum.WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "z", nodeType = NodeTypeEnum.WHILE)
     public boolean processZ(NodeComponent bindCmp){
         DefaultContext context = bindCmp.getFirstContextBean();
         String key = "test";

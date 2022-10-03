@@ -8,17 +8,15 @@
 package com.yomahub.liteflow.test.switchcase.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowMethod;
-import com.yomahub.liteflow.annotation.LiteflowSwitchCmpDefine;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.springframework.stereotype.Component;
 
 @Component("f")
-@LiteflowSwitchCmpDefine
 public class FSwitchCmp{
 
-	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_SWITCH)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "tag:td";
 	}

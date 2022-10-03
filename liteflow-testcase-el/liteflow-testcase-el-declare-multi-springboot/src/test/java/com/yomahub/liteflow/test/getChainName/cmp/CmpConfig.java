@@ -3,8 +3,8 @@ package com.yomahub.liteflow.test.getChainName.cmp;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 @LiteflowComponent
@@ -55,7 +55,7 @@ public class CmpConfig {
         context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainName());
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "h",nodeType = AnnotationNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "h",nodeType = NodeTypeEnum.SWITCH)
     public String processSwitchH(NodeComponent bindCmp) throws Exception {
         DefaultContext context = bindCmp.getFirstContextBean();
         context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainName());

@@ -4,8 +4,8 @@ import cn.hutool.core.collection.ConcurrentHashSet;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.AnnotationNodeTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 @LiteflowComponent
@@ -39,7 +39,7 @@ public class CmpConfig {
 
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "c",nodeType = AnnotationNodeTypeEnum.SWITCH)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "c",nodeType = NodeTypeEnum.SWITCH)
     public String processSwitchC(NodeComponent bindCmp) {
         if(bindCmp.getTag().equals("2")){
             return "e";

@@ -7,14 +7,12 @@
  */
 package com.yomahub.liteflow.test.complex.cmp2;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("M")
-@LiteflowCmpDefine
 public class MCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)

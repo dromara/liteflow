@@ -7,7 +7,6 @@
  */
 package com.yomahub.liteflow.test.nodeExecutor.cmp;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
@@ -18,7 +17,6 @@ import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutor;
 
 @LiteflowComponent("c")
 @LiteflowRetry(5)
-@LiteflowCmpDefine
 public class CCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)

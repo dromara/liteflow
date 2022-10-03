@@ -7,12 +7,10 @@
  */
 package com.yomahub.liteflow.test.builder.cmp1;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
-@LiteflowCmpDefine
 public class CCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)

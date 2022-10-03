@@ -7,14 +7,12 @@
  */
 package com.yomahub.liteflow.test.lfCmpAnno.cmp;
 
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent(id = "a", name = "A组件")
-@LiteflowCmpDefine
 public class ACmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
