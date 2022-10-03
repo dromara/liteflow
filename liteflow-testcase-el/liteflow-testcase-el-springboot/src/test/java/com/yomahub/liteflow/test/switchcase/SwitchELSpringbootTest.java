@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.switchError;
+package com.yomahub.liteflow.test.switchcase;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -19,10 +19,10 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/switchError/application.properties")
+@TestPropertySource(value = "classpath:/switchcase/application.properties")
 @SpringBootTest(classes = SwitchELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.switchError.cmp"})
+@ComponentScan({"com.yomahub.liteflow.test.switchcase.cmp"})
 public class SwitchELSpringbootTest extends BaseTest {
 
     @Resource
@@ -32,8 +32,23 @@ public class SwitchELSpringbootTest extends BaseTest {
     //run QlExpress Exception at line 1 :
     // switch().to(): 只有一个node时出错
     @Test
-    public void testSwitchError() throws Exception{
+    public void testSwitch1() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>e==>d==>b", response.getExecuteStepStr());
+    }
+
+    @Test
+    public void testSwitch2() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>e==>d",response.getExecuteStepStr());
+    }
+
+    @Test
+    public void testSwitch3() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>f==>b",response.getExecuteStepStr());
     }
 }

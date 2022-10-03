@@ -5,12 +5,10 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.switchError.cmp;
+package com.yomahub.liteflow.test.switchcase.cmp;
 
 import com.yomahub.liteflow.core.NodeSwitchComponent;
-import org.springframework.stereotype.Component;
 
-@Component("e")
 public class ESwitchCmp extends NodeSwitchComponent {
 
 	@Override

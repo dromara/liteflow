@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.switchcase.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.switchcase.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.switchcase.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.switchcase.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.switchcase.cmp.ESwitchCmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.switchcase.cmp.FSwitchCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(
+            a,
+            SWITCH(e).to(d),
+            b
+        );
+    </chain>
+
+    <chain name="chain2">
+        THEN(
+        a,
+        SWITCH(e).to(b, d)
+        );
+    </chain>
+
+    <chain name="chain3">
+        THEN(
+        a,
+        SWITCH(f).to(b.tag("td"), d)
+        );
+    </chain>
+</flow>

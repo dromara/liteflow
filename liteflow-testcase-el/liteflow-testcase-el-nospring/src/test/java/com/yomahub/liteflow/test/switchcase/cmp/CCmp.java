@@ -5,17 +5,15 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.switchError.cmp;
+package com.yomahub.liteflow.test.switchcase.cmp;
 
-import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 
-@LiteflowComponent("b")
-public class BCmp extends NodeComponent {
+public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println("BCmp executed!");
+		System.out.println("CCmp executed!");
 	}
 
 }

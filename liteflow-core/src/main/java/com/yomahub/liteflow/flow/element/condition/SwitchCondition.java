@@ -17,6 +17,8 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * 选择Condition
@@ -26,6 +28,8 @@ import java.util.Map;
 public class SwitchCondition extends Condition{
 
     private final Map<String, Executable> targetMap = new HashMap<>();
+
+    private final String TAG_PREFIX = "tag:";
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
@@ -40,7 +44,23 @@ public class SwitchCondition extends Condition{
             Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getSwitchNode().getInstance().getClass());
             String targetId = slot.getSwitchResult(originalClass.getName());
             if (StrUtil.isNotBlank(targetId)) {
-                Executable targetExecutor = targetMap.get(targetId);
+                Executable targetExecutor;
+
+                //这里要判断是否跳转到tag
+                if (targetId.startsWith(TAG_PREFIX)){
+                    String targetTag = targetId.replaceAll(TAG_PREFIX, "");
+                    targetExecutor = targetMap.values().stream().filter(executable -> {
+                        if (executable instanceof Node){
+                            Node node = (Node) executable;
+                            return targetTag.equals(node.getTag());
+                        }else{
+                            return false;
+                        }
+                    }).findFirst().orElse(null);
+                }else{
+                    targetExecutor = targetMap.get(targetId);
+                }
+
                 if (ObjectUtil.isNotNull(targetExecutor)) {
                     //switch的目标不能是Pre节点或者Finally节点
                     if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition){
