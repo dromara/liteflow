@@ -11,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * JSON 工具类
@@ -24,9 +27,13 @@ public class JsonUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private JsonUtil() {
+    }
+
+    static {
+        objectMapper.setTimeZone(TimeZone.getDefault());
     }
 
     public static String toJsonString(Object object) {
