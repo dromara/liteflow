@@ -16,6 +16,7 @@ import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -70,6 +71,9 @@ public abstract class NodeComponent{
 
 	//当前流程名字
 	private final TransmittableThreadLocal<String> currChainNameTL = new TransmittableThreadLocal<>();
+
+	//组件外部参数
+	private final TransmittableThreadLocal<String> cmpDataTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
 	}
@@ -323,6 +327,21 @@ public abstract class NodeComponent{
 
 	public void removeCurrChainName(){
 		this.currChainNameTL.remove();
+	}
+
+	public void setCmpData(String cmpData){
+		this.cmpDataTL.set(cmpData);
+	}
+
+	public <T> T getCmpData(Class<T> clazz){
+		if (StrUtil.isBlank(this.cmpDataTL.get())){
+			return null;
+		}
+		return JsonUtil.parseObject(this.cmpDataTL.get(), clazz);
+	}
+
+	public void removeCmpData(){
+		this.cmpDataTL.remove();
 	}
 
 	public void invoke(String chainId, Object param) throws Exception {

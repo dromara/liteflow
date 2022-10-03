@@ -48,6 +48,8 @@ public class Node implements Executable,Cloneable{
 
 	private String tag;
 
+	private String cmpData;
+
 	public Node(){
 
 	}
@@ -105,6 +107,7 @@ public class Node implements Executable,Cloneable{
 			//把线程属性赋值给组件对象
 			instance.setSlotIndex(slotIndex);
 			instance.setTag(tag);
+			instance.setCmpData(cmpData);
 
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
@@ -147,6 +150,7 @@ public class Node implements Executable,Cloneable{
 			instance.removeIsEnd();
 			instance.removeTag();
 			instance.removeCurrChainName();
+			instance.removeCmpData();
 		}
 	}
 
@@ -206,5 +210,13 @@ public class Node implements Executable,Cloneable{
 	@Override
 	public void setCurrChainName(String currentChainName) {
 		instance.setCurrChainName(currentChainName);
+	}
+
+	public String getCmpData() {
+		return cmpData;
+	}
+
+	public void setCmpData(String cmpData) {
+		this.cmpData = cmpData;
 	}
 }

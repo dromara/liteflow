@@ -69,6 +69,7 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunction("WHILE", new WhileOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("DO", Object.class, new DoOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod("BREAK", Object.class, new BreakOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod("data", Object.class, new DataOperator());
     }
 
     public static LiteFlowChainELBuilder createChain() {
