@@ -1,12 +1,18 @@
 package com.yomahub.liteflow.enums;
 
 import cn.hutool.core.annotation.AnnotationUtil;
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 /**
  * 节点类型枚举
@@ -38,6 +44,9 @@ public enum NodeTypeEnum {
 
     BREAK_SCRIPT("break_script", "循环跳出脚本", true, ScriptBreakComponent.class)
     ;
+
+    private static final Logger LOG = LoggerFactory.getLogger(NodeTypeEnum.class);
+
     private String code;
     private String name;
 
@@ -116,6 +125,52 @@ public enum NodeTypeEnum {
     public static NodeTypeEnum guessType(Class<?> clazz){
         NodeTypeEnum nodeType = guessTypeBySuperClazz(clazz);
         if (nodeType == null){
+            //尝试从类声明处进行推断
+            LiteflowCmpDefine liteflowCmpDefine = clazz.getAnnotation(LiteflowCmpDefine.class);
+            if (liteflowCmpDefine != null){
+                //类声明方式中@LiteflowMethod是无需设置nodeId的
+                //但是如果设置了，那么核心逻辑其实是取类上定义的id的
+                //这种可以运行，但是理解起来不大好理解，所以给出提示，建议不要这么做
+                boolean mixDefined = Arrays.stream(clazz.getDeclaredMethods()).anyMatch(method -> {
+                    LiteflowMethod liteflowMethod = AnnotationUtil.getAnnotation(method, LiteflowMethod.class);
+                    if (liteflowMethod != null){
+                        return StrUtil.isNotBlank(liteflowMethod.nodeId());
+                    }else{
+                        return false;
+                    }
+                });
+
+                if (mixDefined){
+                    LOG.warn("[[[WARNING!!!]]]The @liteflowMethod in the class[{}] defined by @liteflowCmpDefine should not configure the nodeId again!",
+                            clazz.getName());
+                }
+
+
+                //在返回之前，还要对方法级别的@LiteflowMethod进行检查，如果存在方法上的类型与类上的不一致时，给予警告信息
+                AtomicReference<Method> differenceTypeMethod = new AtomicReference<>();
+                boolean hasDifferenceNodeType = Arrays.stream(clazz.getDeclaredMethods()).anyMatch(method -> {
+                    LiteflowMethod liteflowMethod = AnnotationUtil.getAnnotation(method, LiteflowMethod.class);
+                    if (liteflowMethod != null){
+                        if (!liteflowMethod.nodeType().equals(liteflowCmpDefine.value())){
+                            differenceTypeMethod.set(method);
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }else{
+                        return false;
+                    }
+                });
+
+                //表示存在不一样的类型
+                if (hasDifferenceNodeType){
+                    LOG.warn("[[[WARNING!!!]]]The nodeType in @liteflowCmpDefine declared on the class[{}] does not match the nodeType in @liteflowMethod declared on the method[{}]!",
+                            clazz.getName(), differenceTypeMethod.get().getName());
+                }
+
+                return liteflowCmpDefine.value();
+            }
+
             //再尝试声明式组件这部分的推断
             LiteflowMethod liteflowMethod = Arrays.stream(clazz.getDeclaredMethods()).map(
                     method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class)
