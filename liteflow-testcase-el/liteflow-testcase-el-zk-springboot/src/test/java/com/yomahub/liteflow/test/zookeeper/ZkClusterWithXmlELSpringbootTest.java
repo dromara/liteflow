@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * springboot环境下的zk cluster的测试
@@ -42,6 +43,7 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        System.setProperty("zookeeper.admin.enableServer", "false");
         zkCluster = new TestingCluster(new InstanceSpec(null, 21810, -1, -1, true, -1, -1, -1),
                 new InstanceSpec(null, 21811, -1, -1, true, -1, -1, -1),
                 new InstanceSpec(null, 21812, -1, -1, true, -1, -1, -1));
@@ -53,12 +55,12 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
         zkClient.setZkSerializer(new ZkSerializer() {
             @Override
             public byte[] serialize(final Object o) throws ZkMarshallingError {
-                return o.toString().getBytes(Charset.forName("UTF-8"));
+                return o.toString().getBytes(StandardCharsets.UTF_8);
             }
 
             @Override
             public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
-                return new String(bytes, Charset.forName("UTF-8"));
+                return new String(bytes, StandardCharsets.UTF_8);
             }
         });
         zkClient.createPersistent(ZK_NODE_PATH, true);
