@@ -16,6 +16,7 @@ public class ScriptSwitchComponent extends NodeSwitchComponent implements Script
         wrap.setCurrChainName(this.getCurrChainName());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Object.class));
         return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }

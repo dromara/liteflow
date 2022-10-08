@@ -20,6 +20,7 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
         wrap.setCurrChainName(this.getCurrChainName());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Object.class));
         ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }

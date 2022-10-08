@@ -15,6 +15,7 @@ public class ScriptBreakComponent extends NodeBreakComponent implements ScriptCo
         wrap.setCurrChainName(this.getCurrChainName());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Object.class));
         return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }

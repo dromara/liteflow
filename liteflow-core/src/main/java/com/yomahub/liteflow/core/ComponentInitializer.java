@@ -51,7 +51,7 @@ public class ComponentInitializer {
         //默认retryForExceptions为Exception.class
         LiteflowRetry liteflowRetryAnnotation = AnnoUtil.getAnnotation(nodeComponent.getClass(), LiteflowRetry.class);
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-        if (ObjectUtil.isNotNull(liteflowRetryAnnotation)) {
+        if (liteflowRetryAnnotation != null) {
             nodeComponent.setRetryCount(liteflowRetryAnnotation.retry());
             nodeComponent.setRetryForExceptions(liteflowRetryAnnotation.forExceptions());
         } else {

@@ -15,6 +15,7 @@ public class ScriptForComponent extends NodeForComponent implements ScriptCompon
         wrap.setCurrChainName(this.getCurrChainName());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Object.class));
         return (int) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }
