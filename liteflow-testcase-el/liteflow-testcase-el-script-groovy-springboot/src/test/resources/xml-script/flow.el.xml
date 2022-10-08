@@ -33,7 +33,7 @@
             <![CDATA[
                 def a=30;
                 def b=2;
-                defaultContext.setData("s4","s4:" + requestData);
+                defaultContext.setData("s4","s4:" + _meta.requestData);
             ]]>
         </node>
     </nodes>

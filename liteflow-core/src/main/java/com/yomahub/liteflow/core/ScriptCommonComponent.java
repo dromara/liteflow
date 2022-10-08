@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,12 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
 
     @Override
     public void process() throws Exception {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
+        ScriptExecuteWrap wrap = new ScriptExecuteWrap();
+        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setNodeId(this.getNodeId());
+        wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setCmpData(this.getCmpData(Object.class));
+        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }
 
     @Override

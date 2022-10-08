@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 
 /**
@@ -11,7 +12,12 @@ public class ScriptWhileComponent extends NodeWhileComponent implements ScriptCo
 
     @Override
     public boolean processWhile() throws Exception {
-        return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(this.getCurrChainName(), getNodeId(), getSlotIndex());
+        ScriptExecuteWrap wrap = new ScriptExecuteWrap();
+        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setNodeId(this.getNodeId());
+        wrap.setSlotIndex(this.getSlotIndex());
+        wrap.setCmpData(this.getCmpData(Object.class));
+        return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }
 
     @Override
