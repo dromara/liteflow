@@ -19,8 +19,6 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 ## 文档链接：[点这里进入文档进行学习](https://liteflow.yomahub.com/pages/5816c5/)
 ## 示例工程：[DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
-**同时LiteFlow的源码中拥有超过1000个的测试用例，包含了大部分的场景，在源码中可以看到测试用例**
-
 ## 特性
 * **组件定义统一：** 所有的逻辑都是组件，为所有的逻辑提供统一化的组件实现方式，小身材，大能量。
 * **规则轻量：** 基于规则文件来编排流程，学习规则入门只需要5分钟，一看既懂。
