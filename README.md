@@ -65,7 +65,7 @@ Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group
 
-![offIical-wx](static/img/offical-wx.jpg)
+![official-wx](static/img/offical-wx.jpg)
 
 Open source is not easy, please sponsor LiteFlow if you support it
 
