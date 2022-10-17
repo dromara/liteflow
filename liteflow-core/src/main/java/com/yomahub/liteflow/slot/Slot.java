@@ -14,6 +14,7 @@ import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -274,7 +275,9 @@ public class Slot{
 		if (ObjectUtil.isNull(this.executeStepsStr)){
 			this.executeStepsStr = getExecuteStepStr(true);
 		}
-		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
+		if (LiteflowConfigGetter.get().getPrintExecutionLog()){
+			LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
+		}
 	}
 
 	public void generateRequestId() {
