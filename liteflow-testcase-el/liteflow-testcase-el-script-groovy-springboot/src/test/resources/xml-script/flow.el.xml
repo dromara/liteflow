@@ -3,6 +3,22 @@
     <nodes>
         <node id="s1" name="普通脚本1" type="script">
             <![CDATA[
+                import cn.hutool.core.date.DateUtil;
+
+                def date = DateUtil.parse("2022-10-17 13:31:43");
+                println(date);
+                defaultContext.setData("demoDate", date);
+
+                class Student {
+                   int studentID;
+                   String studentName;
+                };
+
+                Student student = new Student();
+                student.studentID = 100301;
+                student.studentName = "张三";
+                defaultContext.setData("student",student);
+
                 def a=3;
                 def b=2;
                 defaultContext.setData("s1",a*b);
