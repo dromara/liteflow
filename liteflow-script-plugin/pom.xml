@@ -17,6 +17,7 @@
     <modules>
         <module>liteflow-script-qlexpress</module>
         <module>liteflow-script-groovy</module>
+        <module>liteflow-script-kotlin</module>
     </modules>
 
 </project>
