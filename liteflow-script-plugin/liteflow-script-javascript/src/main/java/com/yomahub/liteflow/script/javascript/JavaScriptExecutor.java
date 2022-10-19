@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.script.groovy;
+package com.yomahub.liteflow.script.javascript;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -18,11 +18,11 @@ import javax.script.*;
 import java.util.Map;
 
 /**
- * Groovy脚本语言的执行器实现
+ * JavaScript脚本语言的执行器实现
  * @author Bryan.Zhang
- * @since 2.6.0
+ * @since 2.9.1
  */
-public class GroovyScriptExecutor implements ScriptExecutor {
+public class JavaScriptExecutor implements ScriptExecutor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -33,7 +33,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
     @Override
     public ScriptExecutor init() {
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        scriptEngine = scriptEngineManager.getEngineByName("groovy");
+        scriptEngine = scriptEngineManager.getEngineByName("javascript");
         return this;
     }
 

@@ -340,7 +340,7 @@
 		<module>liteflow-spring-boot-starter</module>
 		<module>liteflow-spring</module>
 		<module>liteflow-testcase-el</module>
-    </modules>
+	</modules>
 
 	<distributionManagement>
 		<snapshotRepository>

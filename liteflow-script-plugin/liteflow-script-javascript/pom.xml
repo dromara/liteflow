@@ -3,21 +3,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>liteflow</artifactId>
+        <artifactId>liteflow-script-plugin</artifactId>
         <groupId>com.yomahub</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
 
+    <artifactId>liteflow-script-javascript</artifactId>
 
-    <artifactId>liteflow-script-plugin</artifactId>
-
-    <modules>
-        <module>liteflow-script-qlexpress</module>
-        <module>liteflow-script-groovy</module>
-        <module>liteflow-script-javascript</module>
-    </modules>
-
+    <dependencies>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-core</artifactId>
+            <version>${revision}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
