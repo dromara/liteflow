@@ -17,7 +17,6 @@
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-core</artifactId>
             <version>${revision}</version>
-            <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
