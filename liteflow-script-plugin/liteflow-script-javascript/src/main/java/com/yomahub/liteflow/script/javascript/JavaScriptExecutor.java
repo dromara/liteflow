@@ -40,7 +40,8 @@ public class JavaScriptExecutor implements ScriptExecutor {
     @Override
     public void load(String nodeId, String script) {
         try{
-            CompiledScript compiledScript = ((Compilable) scriptEngine).compile(script);
+            String wrapScript = StrUtil.format("function process(){{}} process();",script);
+            CompiledScript compiledScript = ((Compilable) scriptEngine).compile(wrapScript);
             compiledScriptMap.put(nodeId, compiledScript);
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());

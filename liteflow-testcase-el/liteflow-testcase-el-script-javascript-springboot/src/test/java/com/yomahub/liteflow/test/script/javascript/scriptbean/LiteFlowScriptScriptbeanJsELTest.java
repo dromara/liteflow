@@ -1,9 +1,6 @@
-package com.yomahub.liteflow.test.script.javascript.common;
+package com.yomahub.liteflow.test.script.javascript.scriptbean;
 
-import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.enums.FlowParserTypeEnum;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
@@ -18,28 +15,30 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-
-/**
- * 测试springboot下的groovy脚本组件，基于xml配置
- * @author Bryan.Zhang
- * @since 2.6.0
- */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/common/application.properties")
-@SpringBootTest(classes = LiteflowXmlScriptJsELTest.class)
+@TestPropertySource(value = "classpath:/scriptbean/application.properties")
+@SpringBootTest(classes = LiteFlowScriptScriptbeanJsELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.javascript.common.cmp"})
-public class LiteflowXmlScriptJsELTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.javascript.scriptbean.cmp","com.yomahub.liteflow.test.script.javascript.scriptbean.bean"})
+public class LiteFlowScriptScriptbeanJsELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
-    //测试普通脚本节点
     @Test
-    public void testCommon1() {
+    public void testScriptBean1() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Double.valueOf(11), context.getData("s1"));
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertEquals("hello", context.getData("demo"));
     }
+
+    @Test
+    public void testScriptBean2() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+        Assert.assertTrue(response.isSuccess());
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertEquals("hello,kobe", context.getData("demo"));
+    }
+
 }

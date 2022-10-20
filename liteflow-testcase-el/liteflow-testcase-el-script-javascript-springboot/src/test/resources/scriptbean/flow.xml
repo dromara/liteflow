@@ -4,14 +4,14 @@
     <nodes>
         <node id="d" type="script">
             <![CDATA[
-                def str = demo.getDemoStr1();
+                var str = demo.getDemoStr1();
                 defaultContext.setData("demo", str);
             ]]>
         </node>
 
         <node id="e" type="script">
             <![CDATA[
-                def str = demo.getDemoStr2("kobe");
+                var str = demo.getDemoStr2("kobe");
                 defaultContext.setData("demo", str);
             ]]>
         </node>

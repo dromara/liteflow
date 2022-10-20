@@ -25,7 +25,7 @@
             ]]>
         </node>
 
-        <node id="s2" name="条件脚本" type="switch_script">
+        <node id="s2" name="选择脚本" type="switch_script">
             <![CDATA[
                 count = defaultContext.getData("count");
                 if(count > 100){

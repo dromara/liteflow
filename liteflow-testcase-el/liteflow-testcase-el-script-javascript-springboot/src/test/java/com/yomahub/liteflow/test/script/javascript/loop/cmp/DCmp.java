@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.script.groovy.loop.cmp;
+package com.yomahub.liteflow.test.script.javascript.loop.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;

@@ -43,7 +43,7 @@ public class LiteflowXmlScriptGroovyELTest extends BaseTest {
         Assert.assertEquals(Integer.valueOf(6), context.getData("s1"));
     }
 
-    //测试条件脚本节点
+    //测试选择脚本节点
     @Test
     public void testScript2() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
