@@ -23,6 +23,17 @@
         <dependency>
             <groupId>io.etcd</groupId>
             <artifactId>jetcd-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jetcd-grpc</artifactId>
+                    <groupId>io.etcd</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>${netty.version}</version>
         </dependency>
     </dependencies>
 </project>
