@@ -160,7 +160,10 @@ public class Node implements Executable,Cloneable{
 	//详情见这个issue:https://gitee.com/dromara/liteFlow/issues/I4XRBA
 	@Override
 	public boolean isAccess(Integer slotIndex) throws Exception {
+		//把线程属性赋值给组件对象
 		instance.setSlotIndex(slotIndex);
+		instance.setTag(tag);
+		instance.setCmpData(cmpData);
 		return instance.isAccess();
 	}
 

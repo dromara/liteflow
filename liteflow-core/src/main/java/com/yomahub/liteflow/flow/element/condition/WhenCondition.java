@@ -40,6 +40,7 @@ public class WhenCondition extends Condition {
 	private boolean errorResume = false;
 
 	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
+	//此属性已弃用
 	private String group = LocalDefaultFlowConstant.DEFAULT;
 
 	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
