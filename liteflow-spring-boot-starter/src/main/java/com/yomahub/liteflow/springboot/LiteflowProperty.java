@@ -2,6 +2,8 @@ package com.yomahub.liteflow.springboot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Map;
+
 /**
  * 执行流程主要的参数类
  * @author Bryan.Zhang
@@ -15,8 +17,11 @@ public class LiteflowProperty {
     //流程定义资源地址
     private String ruleSource;
 
-    //流程资源扩展数据
+    //流程资源扩展数据，String格式
     private String ruleSourceExtData;
+
+    //流程资源扩展数据，Map格式
+    private Map<String, String> ruleSourceExtDataMap;
 
     //slot的数量
     private int slotSize;
@@ -207,5 +212,13 @@ public class LiteflowProperty {
 
     public void setRuleSourceExtData(String ruleSourceExtData) {
         this.ruleSourceExtData = ruleSourceExtData;
+    }
+
+    public Map<String, String> getRuleSourceExtDataMap() {
+        return ruleSourceExtDataMap;
+    }
+
+    public void setRuleSourceExtDataMap(Map<String, String> ruleSourceExtDataMap) {
+        this.ruleSourceExtDataMap = ruleSourceExtDataMap;
     }
 }

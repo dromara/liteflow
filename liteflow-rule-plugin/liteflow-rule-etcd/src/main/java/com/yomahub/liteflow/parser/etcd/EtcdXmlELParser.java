@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.parser.etcd;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.etcd.exception.EtcdException;
@@ -9,6 +12,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -23,13 +27,17 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 	public EtcdXmlELParser() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
-			throw new EtcdException("rule-source-ext-data is empty");
-		}
-
 		try{
-			EtcdParserVO etcdParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), EtcdParserVO.class);
-			assert etcdParserVO != null;
+			EtcdParserVO etcdParserVO = null;
+			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+				etcdParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), EtcdParserVO.class, CopyOptions.create());
+			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+				etcdParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), EtcdParserVO.class);
+			}
+
+			if (Objects.isNull(etcdParserVO)) {
+				throw new EtcdException("rule-source-ext-data is empty");
+			}
 
 			if (StrUtil.isBlank(etcdParserVO.getNodePath())){
 				etcdParserVO.setNodePath("/lite-flow/flow");

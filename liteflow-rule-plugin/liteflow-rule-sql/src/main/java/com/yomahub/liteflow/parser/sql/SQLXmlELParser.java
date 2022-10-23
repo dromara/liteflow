@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.parser.sql;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
@@ -10,6 +13,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -29,12 +33,13 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 	public SQLXmlELParser() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())) {
-			throw new ELSQLException(ERROR_COMMON_MSG);
-		}
-
 		try {
-			SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+			SQLParserVO sqlParserVO = null;
+			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class, CopyOptions.create());
+			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+				sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+			}
 			if (Objects.isNull(sqlParserVO)) {
 				throw new ELSQLException(ERROR_COMMON_MSG);
 			}

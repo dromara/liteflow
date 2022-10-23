@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.parser.zk;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.zk.exception.ZkException;
@@ -8,8 +11,8 @@ import com.yomahub.liteflow.parser.zk.vo.ZkParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.apache.curator.framework.CuratorFramework;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -31,13 +34,17 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
         };
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-        if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
-            throw new ZkException("rule-source-ext-data is empty");
-        }
-
         try{
-            ZkParserVO zkParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ZkParserVO.class);
-            assert zkParserVO != null;
+            ZkParserVO zkParserVO = null;
+            if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+                zkParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), ZkParserVO.class, CopyOptions.create());
+            }else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+                zkParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ZkParserVO.class);
+            }
+
+            if (Objects.isNull(zkParserVO)) {
+                throw new ZkException("rule-source-ext-data is empty");
+            }
 
             if (StrUtil.isBlank(zkParserVO.getNodePath())){
                 zkParserVO.setNodePath("/lite-flow/flow");

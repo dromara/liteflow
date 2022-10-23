@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.parser.nacos;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.nacos.exception.NacosException;
@@ -9,6 +12,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -23,13 +27,18 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
     public NacosXmlELParser() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-        if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
-            throw new NacosException("rule-source-ext-data for nacos is empty");
-        }
-
         try{
-            NacosParserVO nacosParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), NacosParserVO.class);
-            assert nacosParserVO != null;
+            NacosParserVO nacosParserVO = null;
+            if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+                nacosParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), NacosParserVO.class, CopyOptions.create());
+            }else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+                nacosParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), NacosParserVO.class);
+            }
+
+            if (Objects.isNull(nacosParserVO)) {
+                throw new NacosException("rule-source-ext-data is empty");
+            }
+
             if (StrUtil.isBlank(nacosParserVO.getServerAddr())){
                 nacosParserVO.setServerAddr("127.0.0.1:8848");
             }
