@@ -25,7 +25,7 @@ public class EtcdClient {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EtcdClient.class);
 
-	private Client client;
+	private final Client client;
 
 	private final ConcurrentHashMap<String, Watch.Watcher> watchCache = new ConcurrentHashMap<>();
 

@@ -6,6 +6,9 @@ import com.yomahub.liteflow.parser.zk.exception.ZkException;
 import com.yomahub.liteflow.parser.zk.vo.ZkParserVO;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.CuratorCache;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
@@ -65,15 +68,15 @@ public class ZkParserHelper {
 	/**
 	 * 监听 zk 节点
 	 */
-	public void listenZkNode() throws Exception {
-		final NodeCache cache = new NodeCache(client, zkParserVO.getNodePath());
+	public void listenZkNode() {
+		CuratorCache cache = CuratorCache.build(client, zkParserVO.getNodePath());
+
 		cache.start();
 
-		cache.getListenable().addListener(() -> {
-			String content1 = new String(cache.getCurrentData().getData());
+		cache.listenable().addListener((type, oldData, data) -> {
+			String content1 = new String(data.getData());
 			LOG.info("stating load flow config....");
 			parseConsumer.accept(content1);
 		});
 	}
-
 }

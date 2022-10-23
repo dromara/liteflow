@@ -66,6 +66,7 @@
 		<netty.version>4.1.84.Final</netty.version>
 		<guava.version>31.1-jre</guava.version>
 		<httpclient.version>4.5.13</httpclient.version>
+		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 	</properties>
 
 	<dependencyManagement>
@@ -212,7 +213,11 @@
 				<artifactId>byte-buddy</artifactId>
 				<version>${bytebuddy.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>${commons-beanutils.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjweaver</artifactId>
