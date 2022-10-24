@@ -19,4 +19,6 @@ public interface ContextAware extends SpiPriority {
     <T> T registerBean(String beanName, Object bean);
 
     <T> T registerOrGet(String beanName, Class<T> clazz);
+
+    boolean hasBean(String beanName);
 }

@@ -34,45 +34,29 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
 
     @Override
     public <T> T getBean(String name) {
-        try{
-            T t = (T) applicationContext.getBean(name);
-            return t;
-        }catch (Exception e){
-            return null;
-        }
+        T t = (T) applicationContext.getBean(name);
+        return t;
     }
 
     @Override
     public <T> T getBean(Class<T> clazz) {
-        try{
-            T t = applicationContext.getBean(clazz);
-            return t;
-        }catch (Exception e){
-            return null;
-        }
+        T t = applicationContext.getBean(clazz);
+        return t;
     }
 
     private <T> T getBean(String beanName, Class<T> clazz) {
-        try{
-            T t = applicationContext.getBean(beanName, clazz);
-            return t;
-        }catch (Exception e){
-            return null;
-        }
+        T t = applicationContext.getBean(beanName, clazz);
+        return t;
     }
 
     @Override
     public <T> T registerBean(String beanName, Class<T> c) {
-        try{
-            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
-            BeanDefinition beanDefinition = new GenericBeanDefinition();
-            beanDefinition.setBeanClassName(c.getName());
-            beanFactory.setAllowBeanDefinitionOverriding(true);
-            beanFactory.registerBeanDefinition(beanName, beanDefinition);
-            return getBean(beanName);
-        }catch (Exception e){
-            return ReflectUtil.newInstance(c);
-        }
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory();
+        BeanDefinition beanDefinition = new GenericBeanDefinition();
+        beanDefinition.setBeanClassName(c.getName());
+        beanFactory.setAllowBeanDefinitionOverriding(true);
+        beanFactory.registerBeanDefinition(beanName, beanDefinition);
+        return getBean(beanName);
     }
 
     @Override
@@ -93,11 +77,16 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         if (ObjectUtil.isNull(applicationContext)){
             return null;
         }
-        T t = getBean(beanName, clazz);
-        if (ObjectUtil.isNull(t)) {
-            t = registerBean(beanName, clazz);
+        try{
+            return getBean(beanName, clazz);
+        }catch (Exception e){
+            return registerBean(beanName, clazz);
         }
-        return t;
+    }
+
+    @Override
+    public boolean hasBean(String beanName){
+        return applicationContext.containsBean(beanName);
     }
 
     @Override

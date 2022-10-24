@@ -41,6 +41,11 @@ public class LocalContextAware implements ContextAware {
     }
 
     @Override
+    public boolean hasBean(String beanName) {
+        return false;
+    }
+
+    @Override
     public int priority() {
         return 2;
     }

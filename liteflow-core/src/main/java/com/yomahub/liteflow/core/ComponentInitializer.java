@@ -35,9 +35,11 @@ public class ComponentInitializer {
         nodeComponent.setType(type);
 
         //设置MonitorBus，如果没有就不注入
-        MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
-        if(ObjectUtil.isNotNull(monitorBus)){
-            nodeComponent.setMonitorBus(monitorBus);
+        if (ContextAwareHolder.loadContextAware().hasBean("monitorBus")){
+            MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
+            if(ObjectUtil.isNotNull(monitorBus)){
+                nodeComponent.setMonitorBus(monitorBus);
+            }
         }
 
         //先取传进来的name值(配置文件中配置的)，再看有没有配置@LiteflowComponent标注
