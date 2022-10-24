@@ -2,17 +2,17 @@
 <flow>
 
     <nodes>
-        <node id="d" type="script">
+        <node id="d" type="script" language="groovy">
             <![CDATA[
-                def str = demo.getDemoStr1();
-                defaultContext.setData("demo", str);
+                def str = demo.getDemoStr1()
+                defaultContext.setData("demo", str)
             ]]>
         </node>
 
-        <node id="e" type="script">
+        <node id="e" type="script" language="groovy">
             <![CDATA[
-                def str = demo.getDemoStr2("kobe");
-                defaultContext.setData("demo", str);
+                def str = demo.getDemoStr2("kobe")
+                defaultContext.setData("demo", str)
             ]]>
         </node>
     </nodes>

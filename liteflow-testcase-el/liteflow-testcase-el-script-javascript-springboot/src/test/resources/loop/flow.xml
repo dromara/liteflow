@@ -2,20 +2,20 @@
 <flow>
 
     <nodes>
-        <node id="x" type="for_script">
+        <node id="x" type="for_script" language="js">
             <![CDATA[
                 return 3;
             ]]>
         </node>
 
-        <node id="y" type="break_script">
+        <node id="y" type="break_script" language="js">
             <![CDATA[
                 var count = defaultContext.getData("test");
                 return count > 3;
             ]]>
         </node>
 
-        <node id="z" type="while_script">
+        <node id="z" type="while_script" language="js">
             <![CDATA[
                 var key = "test";
                 if (defaultContext.hasData(key)){

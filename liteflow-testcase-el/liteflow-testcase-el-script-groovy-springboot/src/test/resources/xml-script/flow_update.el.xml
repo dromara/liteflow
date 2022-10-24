@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本" type="script">
+        <node id="s1" name="普通脚本" type="script" language="groovy">
             <![CDATA[
                 def a=3;
                 def b=2;
@@ -9,23 +9,23 @@
             ]]>
         </node>
 
-        <node id="s2" name="条件脚本_改" type="switch_script">
+        <node id="s2" name="条件脚本_改" type="switch_script" language="groovy">
             <![CDATA[
-                count = defaultContext.getData("count");
+                count = defaultContext.getData("count")
                 if(count > 150){
-                    return "b";
+                    return "b"
                 }else{
-                    return "a";
+                    return "a"
                 }
             ]]>
         </node>
 
-        <node id="s3" name="普通脚本_新增" type="script">
+        <node id="s3" name="普通脚本_新增" type="script" language="groovy">
             <![CDATA[
-                def a=3;
-                def b=2;
-                def c=10;
-                defaultContext.setData("s1",a*b+c);
+                def a=3
+                def b=2
+                def c=10
+                defaultContext.setData("s1",a*b+c)
             ]]>
         </node>
     </nodes>

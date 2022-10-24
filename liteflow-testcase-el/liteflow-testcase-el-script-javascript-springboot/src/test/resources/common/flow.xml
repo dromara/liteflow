@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本1" type="script">
+        <node id="s1" name="普通脚本1" type="script" language="js">
             <![CDATA[
                 var a=3;
                 var b=2;

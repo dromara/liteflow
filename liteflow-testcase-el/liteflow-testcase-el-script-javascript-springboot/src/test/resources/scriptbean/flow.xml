@@ -2,14 +2,14 @@
 <flow>
 
     <nodes>
-        <node id="d" type="script">
+        <node id="d" type="script" language="js">
             <![CDATA[
                 var str = demo.getDemoStr1();
                 defaultContext.setData("demo", str);
             ]]>
         </node>
 
-        <node id="e" type="script">
+        <node id="e" type="script" language="js">
             <![CDATA[
                 var str = demo.getDemoStr2("kobe");
                 defaultContext.setData("demo", str);

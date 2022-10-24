@@ -2,27 +2,27 @@
 <flow>
 
     <nodes>
-        <node id="x" type="for_script">
+        <node id="x" type="for_script" language="groovy">
             <![CDATA[
-                return 3;
+                return 3
             ]]>
         </node>
 
-        <node id="y" type="break_script">
+        <node id="y" type="break_script" language="groovy">
             <![CDATA[
-                def count = defaultContext.getData("test");
-                return count > 3;
+                def count = defaultContext.getData("test")
+                return count > 3
             ]]>
         </node>
 
-        <node id="z" type="while_script">
+        <node id="z" type="while_script" language="groovy">
             <![CDATA[
-                def key = "test";
+                def key = "test"
                 if (defaultContext.hasData(key)){
-                    def count = defaultContext.getData("test");
-                    return count < 5;
+                    def count = defaultContext.getData("test")
+                    return count < 5
                 }else{
-                    return true;
+                    return true
                 }
             ]]>
         </node>
