@@ -128,7 +128,7 @@ public class ParserHelper {
 					name = e.attributeValue(NAME);
 					clazz = e.attributeValue(_CLASS);
 					type = e.attributeValue(TYPE);
-					script = e.getTextTrim();
+					script = e.getText();
 					file = e.attributeValue(FILE);
 
 					// 构建 node
