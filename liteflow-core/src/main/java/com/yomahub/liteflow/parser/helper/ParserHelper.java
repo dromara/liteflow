@@ -105,7 +105,7 @@ public class ParserHelper {
 			chainList.forEach(e -> {
 				//校验加载的 chainName 是否有重复的
 				//TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				String chainName = e.attributeValue(NAME);
+				String chainName = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 				if (!chainNameSet.add(chainName)) {
 					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
 				}
@@ -163,12 +163,13 @@ public class ParserHelper {
 				JsonNode innerJsonObject = iterator.next();
 				//校验加载的 chainName 是否有重复的
 				// TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				String chainName = innerJsonObject.get(NAME).textValue();
+				//String chainName = innerJsonObject.get(NAME).textValue();
+				String chainName = Optional.ofNullable(innerJsonObject.get(ID)).orElse(innerJsonObject.get(NAME)).textValue();
 				if (!chainNameSet.add(chainName)) {
 					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
 				}
 
-				FlowBus.addChain(innerJsonObject.get(NAME).textValue());
+				FlowBus.addChain(chainName);
 			}
 		});
 		// 清空
@@ -217,7 +218,7 @@ public class ParserHelper {
 	 */
 	public static void parseOneChainEl(JsonNode chainNode) {
 		//构建chainBuilder
-		String chainName = chainNode.get(NAME).textValue();
+		String chainName = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 		String el = chainNode.get(VALUE).textValue();
 		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainName(chainName);
 		chainELBuilder.setEL(el).build();
@@ -230,7 +231,7 @@ public class ParserHelper {
 	 */
 	public static void parseOneChainEl(Element e) {
 		//构建chainBuilder
-		String chainName = e.attributeValue(NAME);
+		String chainName = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 		String text = e.getText();
 		String el = RegexUtil.removeComments(text);
 		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainName(chainName);

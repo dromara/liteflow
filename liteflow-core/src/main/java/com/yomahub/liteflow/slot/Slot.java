@@ -18,6 +18,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -235,13 +236,31 @@ public class Slot{
 		return (boolean) metaDataMap.get(BREAK_PREFIX + key);
 	}
 
+	/**
+	 * 
+	 * @param chainName
+	 * @Deprecated 请使用 {@link #setChainId(String)} 
+	 */
+	@Deprecated
 	public void setChainName(String chainName) {
+		setChainId(chainName);
+	}
+
+	/**
+	 * @deprecated 请使用 {@link #getChainId()} 
+	 */
+	@Deprecated
+	public String getChainName() {
+		return getChainId();
+	}
+	
+	public void setChainId(String chainId) {
 		if (!hasMetaData(CHAIN_NAME)){
-			this.putMetaDataMap(CHAIN_NAME, chainName);
+			this.putMetaDataMap(CHAIN_NAME, chainId);
 		}
 	}
 
-	public String getChainName() {
+	public String getChainId() {
 		return (String) metaDataMap.get(CHAIN_NAME);
 	}
 

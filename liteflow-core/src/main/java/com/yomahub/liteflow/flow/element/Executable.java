@@ -18,9 +18,28 @@ public interface Executable{
 
     ExecuteTypeEnum getExecuteType();
 
-    String getExecuteName();
+    /**
+     * 
+     * @return
+     * @deprecated 请使用 {@link #getExecuteId()}
+     */
+    @Deprecated 
+    default String getExecuteName() {
+    	return getExecuteId();
+    }
 
+    /**
+     * 
+     * @param currentChainName
+     * @deprecated 请使用 {@link #setCurrChainId(String)}
+     */
     default void setCurrChainName(String currentChainName){
+    	setCurrChainId(currentChainName);
+    }
+    
+    String getExecuteId();
+
+    default void setCurrChainId(String currentChainId){
 
     }
 }
