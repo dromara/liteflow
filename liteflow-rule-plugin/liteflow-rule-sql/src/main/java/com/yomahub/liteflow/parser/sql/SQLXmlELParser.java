@@ -5,14 +5,20 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.prop.NodePropBean;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
+import com.yomahub.liteflow.parser.helper.ParserHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.script.ScriptExecutor;
+import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.util.JsonUtil;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,9 +41,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 		try {
 			SQLParserVO sqlParserVO = null;
-			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
 				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class, CopyOptions.create());
-			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
 				sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 			}
 			if (Objects.isNull(sqlParserVO)) {
@@ -50,6 +56,8 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
 
+			// 初始化 ScriptNodeData
+			initScriptNodeData();
 		} catch (ELSQLException elsqlException) {
 			throw elsqlException;
 		} catch (Exception ex) {
@@ -63,6 +71,19 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 		return JDBCHelper.getInstance().getElDataContent();
 	}
 
+	/**
+	 * 初始化 ScriptNodeData
+	 */
+	private void initScriptNodeData() {
+		if (Objects.isNull(ScriptExecutorFactory.loadInstance().getScriptExecutor())) {
+			// SPI 加载不到脚本执行器，说明不需要加载脚本节点
+			return;
+		}
+
+		List<NodePropBean> scriptNodeBeans = JDBCHelper.getInstance().getScriptNodeBeans();
+		// 构建脚本 node
+		scriptNodeBeans.forEach(ParserHelper::buildNode);
+	}
 
 	/**
 	 * 检查配置文件并设置默认值

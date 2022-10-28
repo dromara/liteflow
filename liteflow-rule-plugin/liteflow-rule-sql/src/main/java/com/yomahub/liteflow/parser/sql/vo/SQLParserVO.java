@@ -43,6 +43,36 @@ public class SQLParserVO {
 	 */
 	private String elDataField = "el_data";
 
+	/**
+	 * 脚本 node 表名
+	 */
+	private String scriptNodeTableName = "script_node_table";
+
+	/**
+	 * 脚本 node id 字段
+	 */
+	private String scriptNodeIdField = "script_node_id";
+
+	/**
+	 * 脚本 node name 字段
+	 */
+	private String scriptNodeNameField = "script_node_name";
+
+	/**
+	 * 脚本 node type 字段
+	 */
+	private String scriptNodeDataField = "script_node_data";
+
+	/**
+	 * 脚本 node type 字段
+	 */
+	private String scriptNodeTypeField = "script_node_type";
+
+	/**
+	 * 脚本 node language 字段
+	 */
+	private String scriptNodeLanguageField = "script_node_language";
+
 	public String getUrl() {
 		return url;
 	}
@@ -97,5 +127,53 @@ public class SQLParserVO {
 
 	public void setElDataField(String elDataField) {
 		this.elDataField = elDataField;
+	}
+
+	public String getScriptNodeTableName() {
+		return scriptNodeTableName;
+	}
+
+	public void setScriptNodeTableName(String scriptNodeTableName) {
+		this.scriptNodeTableName = scriptNodeTableName;
+	}
+
+	public String getScriptNodeIdField() {
+		return scriptNodeIdField;
+	}
+
+	public void setScriptNodeIdField(String scriptNodeIdField) {
+		this.scriptNodeIdField = scriptNodeIdField;
+	}
+
+	public String getScriptNodeNameField() {
+		return scriptNodeNameField;
+	}
+
+	public void setScriptNodeNameField(String scriptNodeNameField) {
+		this.scriptNodeNameField = scriptNodeNameField;
+	}
+
+	public String getScriptNodeDataField() {
+		return scriptNodeDataField;
+	}
+
+	public void setScriptNodeDataField(String scriptNodeDataField) {
+		this.scriptNodeDataField = scriptNodeDataField;
+	}
+
+	public String getScriptNodeTypeField() {
+		return scriptNodeTypeField;
+	}
+
+	public void setScriptNodeTypeField(String scriptNodeTypeField) {
+		this.scriptNodeTypeField = scriptNodeTypeField;
+	}
+
+	public String getScriptNodeLanguageField() {
+		return scriptNodeLanguageField;
+	}
+
+	public void setScriptNodeLanguageField(String scriptNodeLanguageField) {
+		this.scriptNodeLanguageField = scriptNodeLanguageField;
 	}
 }
