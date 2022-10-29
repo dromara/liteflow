@@ -21,6 +21,7 @@ import com.yomahub.liteflow.util.JsonUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ServiceLoader;
 
 /**
  * SQL 解析器实现，只支持 EL 形式的 XML，不支持其他的形式
@@ -55,9 +56,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
-
-			// 初始化 ScriptNodeData
-			initScriptNodeData();
 		} catch (ELSQLException elsqlException) {
 			throw elsqlException;
 		} catch (Exception ex) {
@@ -69,20 +67,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 	@Override
 	public String parseCustom() {
 		return JDBCHelper.getInstance().getElDataContent();
-	}
-
-	/**
-	 * 初始化 ScriptNodeData
-	 */
-	private void initScriptNodeData() {
-		if (Objects.isNull(ScriptExecutorFactory.loadInstance().getScriptExecutor())) {
-			// SPI 加载不到脚本执行器，说明不需要加载脚本节点
-			return;
-		}
-
-		List<NodePropBean> scriptNodeBeans = JDBCHelper.getInstance().getScriptNodeBeans();
-		// 构建脚本 node
-		scriptNodeBeans.forEach(ParserHelper::buildNode);
 	}
 
 	/**

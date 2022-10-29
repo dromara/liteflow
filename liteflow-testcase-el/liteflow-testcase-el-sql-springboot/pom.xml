@@ -49,5 +49,12 @@
             <version>${h2.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-javascript</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
     </dependencies>
 </project>

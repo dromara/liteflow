@@ -9,6 +9,7 @@ import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +30,9 @@ public class JDBCHelper {
 	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{},{} FROM {} ";
 
 	private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-	private static final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}</flow>";
+	private static final String NODE_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
+	private static final String NODES_XML_PATTERN = "<nodes>{}</nodes>";
+	private static final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 	private static final Integer FETCH_SIZE_MAX = 1000;
 
 	private SQLParserVO sqlParserVO;
@@ -104,10 +107,16 @@ public class JDBCHelper {
 		}
 
 		String chains = CollUtil.join(result, StrUtil.CRLF);
-		return StrFormatter.format(XML_PATTERN, chains);
+		String nodes = getScriptNodes();
+		if (StrUtil.isEmpty(nodes)) {
+			return StrFormatter.format(XML_PATTERN, StrUtil.EMPTY, chains);
+		}
+
+		return StrFormatter.format(XML_PATTERN, StrFormatter.format(NODES_XML_PATTERN, nodes), chains);
 	}
 
-	public List<NodePropBean> getScriptNodeBeans() {
+	public String getScriptNodes() {
+		List<String> result = new ArrayList<>();
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -119,7 +128,7 @@ public class JDBCHelper {
 		String scriptNodeLanguageField = sqlParserVO.getScriptNodeLanguageField();
 		String scriptNodeTypeField = sqlParserVO.getScriptNodeTypeField();
 
-		List<NodePropBean> result = new ArrayList<>();
+
 		String sqlCmd = StrFormatter.format(
 				SCRIPT_SQL_PATTERN,
 				scriptNodeIdField,
@@ -131,6 +140,14 @@ public class JDBCHelper {
 		);
 		try {
 			conn = getConn();
+			// 判断表是否存在
+//			DatabaseMetaData meta = conn.getMetaData();
+//			String types[] = {"TABLE"};
+//			rs = meta.getTables(null, null, scriptNodeTableName, types);
+//			if (!rs.next()) {
+//				return StrUtil.EMPTY;
+//			}
+
 			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			// 设置游标拉取数量
 			stmt.setFetchSize(FETCH_SIZE_MAX);
@@ -141,19 +158,13 @@ public class JDBCHelper {
 				String data = getStringFromResultSet(rs, scriptNodeDataField);
 				String name = rs.getString(scriptNodeNameField);
 				String type = getStringFromResultSet(rs, scriptNodeTypeField);
+				String language = getStringFromResultSet(rs, scriptNodeLanguageField);
 
 				if (!NodeTypeEnum.isScriptNodeType(type)) {
 					throw new ELSQLException("is not script node type; node id: " + id);
 				}
 
-				// 构建 node
-				NodePropBean nodePropBean = new NodePropBean()
-						.setId(id)
-						.setName(name)
-						.setScript(data)
-						.setType(type);
-
-				result.add(nodePropBean);
+				result.add(StrFormatter.format(NODE_XML_PATTERN, id, name, type, language));
 			}
 		} catch (Exception e) {
 			throw new ELSQLException(e.getMessage());
@@ -161,7 +172,7 @@ public class JDBCHelper {
 			// 关闭连接
 			close(conn, stmt, rs);
 		}
-		return result;
+		return CollUtil.join(result, StrUtil.CRLF);
 	}
 
 	/**
