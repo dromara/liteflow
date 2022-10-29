@@ -3,14 +3,12 @@ package com.yomahub.liteflow.parser.sql.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.script.ScriptExecutor;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -5,23 +5,15 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.builder.prop.NodePropBean;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
-import com.yomahub.liteflow.parser.helper.ParserHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.script.ScriptExecutor;
-import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 /**
  * SQL 解析器实现，只支持 EL 形式的 XML，不支持其他的形式
