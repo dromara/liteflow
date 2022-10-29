@@ -52,8 +52,9 @@
 
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-script-javascript</artifactId>
+            <artifactId>liteflow-script-groovy</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

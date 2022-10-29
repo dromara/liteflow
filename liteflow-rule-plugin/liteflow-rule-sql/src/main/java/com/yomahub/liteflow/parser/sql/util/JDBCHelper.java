@@ -7,6 +7,7 @@ import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
+import com.yomahub.liteflow.script.ScriptExecutor;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -16,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * jdbc 工具类
@@ -107,12 +109,14 @@ public class JDBCHelper {
 		}
 
 		String chains = CollUtil.join(result, StrUtil.CRLF);
-		String nodes = getScriptNodes();
-		if (StrUtil.isEmpty(nodes)) {
-			return StrFormatter.format(XML_PATTERN, StrUtil.EMPTY, chains);
+		// 根据 SPI 判断是否需要添加 script node 节点
+		ServiceLoader<ScriptExecutor> loader = ServiceLoader.load(ScriptExecutor.class);
+		if (loader.iterator().hasNext()) {
+			String nodes = getScriptNodes();
+			return StrFormatter.format(XML_PATTERN, StrFormatter.format(NODES_XML_PATTERN, nodes), chains);
 		}
 
-		return StrFormatter.format(XML_PATTERN, StrFormatter.format(NODES_XML_PATTERN, nodes), chains);
+		return StrFormatter.format(XML_PATTERN, StrUtil.EMPTY, chains);
 	}
 
 	public String getScriptNodes() {
@@ -140,14 +144,6 @@ public class JDBCHelper {
 		);
 		try {
 			conn = getConn();
-			// 判断表是否存在
-//			DatabaseMetaData meta = conn.getMetaData();
-//			String types[] = {"TABLE"};
-//			rs = meta.getTables(null, null, scriptNodeTableName, types);
-//			if (!rs.next()) {
-//				return StrUtil.EMPTY;
-//			}
-
 			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			// 设置游标拉取数量
 			stmt.setFetchSize(FETCH_SIZE_MAX);
@@ -164,7 +160,7 @@ public class JDBCHelper {
 					throw new ELSQLException("is not script node type; node id: " + id);
 				}
 
-				result.add(StrFormatter.format(NODE_XML_PATTERN, id, name, type, language));
+				result.add(StrFormatter.format(NODE_XML_PATTERN, id, name, type, language, data));
 			}
 		} catch (Exception e) {
 			throw new ELSQLException(e.getMessage());
