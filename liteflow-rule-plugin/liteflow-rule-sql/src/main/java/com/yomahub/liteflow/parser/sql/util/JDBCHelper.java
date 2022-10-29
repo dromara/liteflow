@@ -150,7 +150,7 @@ public class JDBCHelper {
 			while (rs.next()) {
 				String id = getStringFromResultSet(rs, scriptNodeIdField);
 				String data = getStringFromResultSet(rs, scriptNodeDataField);
-				String name = rs.getString(scriptNodeNameField);
+				String name = getStringFromResultSet(rs, scriptNodeNameField);
 				String type = getStringFromResultSet(rs, scriptNodeTypeField);
 				String language = getStringFromResultSet(rs, scriptNodeLanguageField);
 
