@@ -37,10 +37,13 @@ public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "f",nodeType = NodeTypeEnum.SWITCH)
     public String processF(NodeComponent bindCmp) {
-        return "tag:td";
+        return ":td";
     }
 
-
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH,nodeId = "g",nodeType = NodeTypeEnum.SWITCH)
+    public String processG(NodeComponent bindCmp) {
+        return "d:td";
+    }
 }
 
 

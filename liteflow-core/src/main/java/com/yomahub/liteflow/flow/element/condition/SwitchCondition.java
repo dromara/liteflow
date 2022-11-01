@@ -29,7 +29,8 @@ public class SwitchCondition extends Condition{
 
     private final Map<String, Executable> targetMap = new HashMap<>();
 
-    private final String TAG_PREFIX = "tag:";
+    private final String TAG_FLAG = ":";
+
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
@@ -46,13 +47,15 @@ public class SwitchCondition extends Condition{
             if (StrUtil.isNotBlank(targetId)) {
                 Executable targetExecutor;
 
-                //这里要判断是否跳转到tag
-                if (targetId.startsWith(TAG_PREFIX)){
-                    String targetTag = targetId.replaceAll(TAG_PREFIX, "");
+                //这里要判断是否使用tag模式跳转
+                if (targetId.contains(TAG_FLAG)){
+                    String[] target = targetId.split(TAG_FLAG, 2);
+                    String _targetId = target[0];
+                    String _targetTag = target[1];
                     targetExecutor = targetMap.values().stream().filter(executable -> {
                         if (executable instanceof Node){
                             Node node = (Node) executable;
-                            return targetTag.equals(node.getTag());
+                            return (StrUtil.isEmpty(_targetId) || _targetId.equals(node.getId())) && (StrUtil.isEmpty(_targetTag) || _targetTag.equals(node.getTag()));
                         }else{
                             return false;
                         }

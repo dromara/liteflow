@@ -13,6 +13,6 @@ public class FSwitchCmp extends NodeSwitchComponent {
 
 	@Override
 	public String processSwitch() throws Exception {
-		return "tag:td";
+		return ":td";
 	}
 }
