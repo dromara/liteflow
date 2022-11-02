@@ -107,7 +107,7 @@ public class JDBCHelper {
 			close(conn, stmt, rs);
 		}
 
-		String chains = CollUtil.join(result, StrUtil.CRLF);
+		String chains = CollUtil.join(result, StrUtil.EMPTY);
 		// 根据 SPI 判断是否需要添加 script node 节点
 		ServiceLoader<ScriptExecutor> loader = ServiceLoader.load(ScriptExecutor.class);
 		if (loader.iterator().hasNext()) {
