@@ -33,6 +33,7 @@ public enum NodeTypeEnum {
 	WHILE("while", "循环条件", false, NodeWhileComponent.class),
 
 	BREAK("break", "循环跳出", false, NodeBreakComponent.class),
+
 	SCRIPT("script", "脚本", true, ScriptCommonComponent.class),
 
 	SWITCH_SCRIPT("switch_script", "选择脚本", true, ScriptSwitchComponent.class),
@@ -100,21 +101,6 @@ public enum NodeTypeEnum {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * 根据节点类型判断是否是脚本节点
-	 *
-	 * @param code 节点类型
-	 * @return 是否是脚本节点
-	 */
-	public static boolean isScriptNodeType(String code) {
-		return SCRIPT.getCode().equals(code) ||
-				SWITCH_SCRIPT.getCode().equals(code) ||
-				IF_SCRIPT.getCode().equals(code) ||
-				FOR_SCRIPT.getCode().equals(code) ||
-				WHILE_SCRIPT.getCode().equals(code) ||
-				BREAK_SCRIPT.getCode().equals(code);
 	}
 
 	public static NodeTypeEnum guessTypeBySuperClazz(Class<?> clazz) {

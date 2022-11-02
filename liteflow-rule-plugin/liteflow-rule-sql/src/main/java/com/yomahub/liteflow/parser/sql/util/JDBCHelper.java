@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 /**
@@ -154,8 +155,13 @@ public class JDBCHelper {
 				String type = getStringFromResultSet(rs, scriptNodeTypeField);
 				String language = getStringFromResultSet(rs, scriptNodeLanguageField);
 
-				if (!NodeTypeEnum.isScriptNodeType(type)) {
-					throw new ELSQLException("is not script node type; node id: " + id);
+				NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
+				if (Objects.isNull(nodeTypeEnum)){
+					throw new ELSQLException(StrUtil.format("Invalid type value[{}]", type));
+				}
+
+				if (!nodeTypeEnum.isScript()) {
+					throw new ELSQLException(StrUtil.format("The type value[{}] is not a script type", type));
 				}
 
 				result.add(StrFormatter.format(NODE_XML_PATTERN, id, name, type, language, data));
@@ -166,7 +172,7 @@ public class JDBCHelper {
 			// 关闭连接
 			close(conn, stmt, rs);
 		}
-		return CollUtil.join(result, StrUtil.CRLF);
+		return CollUtil.join(result, StrUtil.EMPTY);
 	}
 
 	/**
