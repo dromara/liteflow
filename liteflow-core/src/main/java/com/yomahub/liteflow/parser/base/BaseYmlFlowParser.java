@@ -39,7 +39,8 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 		}
 
 		Consumer<JsonNode> parseOneChainConsumer = this::parseOneChain;
-		ParserHelper.parseJsonNode(jsonObjectList, CHAIN_NAME_SET,parseOneChainConsumer);
+		ParserHelper.parseNodeJson(jsonObjectList);
+		ParserHelper.parseChainJson(jsonObjectList, CHAIN_NAME_SET, parseOneChainConsumer);
 	}
 
 	protected JsonNode convertToJson(String yamlString) {

@@ -36,8 +36,8 @@ public abstract class BaseXmlFlowParser implements FlowParser {
 			documentList.add(document);
 		}
 
-		Consumer<Element> parseOneChainConsumer = this::parseOneChain;
-		ParserHelper.parseDocument(documentList, CHAIN_NAME_SET, parseOneChainConsumer);
+		ParserHelper.parseNodeDocument(documentList);
+		ParserHelper.parseChainDocument(documentList, CHAIN_NAME_SET, this::parseOneChain);
 	}
 
 	/**

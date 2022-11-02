@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" language="groovy" type="if_script">
+            <![CDATA[
+            System.out.println("Groovy 脚本1 被调用。")
+            return false
+            ]]>
+        </node>
+        <node id="s2" language="groovy" type="script">
+            <![CDATA[
+            System.out.println("Groovy 脚本2 被调用。")
+            ]]>
+        </node>
+        <node id="s3" language="groovy" type="script">
+            <![CDATA[
+            System.out.println("Groovy 脚本3 被调用。")
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        // IF(s1, s2, s3);
+        IF(s1, s2, s4);
+    </chain>
+</flow>
