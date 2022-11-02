@@ -12,4 +12,4 @@
         language (groovy|js) #IMPLIED
         >
 <!ATTLIST chain
-        name CDATA #REQUIRED>
+        name CDATA>
