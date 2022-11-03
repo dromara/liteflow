@@ -58,7 +58,7 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		return JDBCHelper.getInstance().getElDataContent();
+		return JDBCHelper.getInstance().getContent();
 	}
 
 	/**

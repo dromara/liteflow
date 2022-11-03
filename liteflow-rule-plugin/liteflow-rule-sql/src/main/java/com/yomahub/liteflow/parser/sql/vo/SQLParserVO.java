@@ -29,9 +29,19 @@ public class SQLParserVO {
 	private String password;
 
 	/**
-	 * 表名
+	 * 应用名
 	 */
-	private String tableName = "el_table";
+	private String applicationName;
+
+	/**
+	 * chain表名
+	 */
+	private String chainTableName;
+
+	/**
+	 * chain表里的应用名字段
+	 */
+	private String chainApplicationNameField = "application_name";
 
 	/**
 	 * chainName
@@ -46,32 +56,32 @@ public class SQLParserVO {
 	/**
 	 * 脚本 node 表名
 	 */
-	private String scriptNodeTableName = "script_node_table";
+	private String scriptTableName;
+
+	/**
+	 * script表里的应用名字段
+	 */
+	private String scriptApplicationNameField = "application_name";
 
 	/**
 	 * 脚本 node id 字段
 	 */
-	private String scriptNodeIdField = "script_node_id";
+	private String scriptIdField = "script_id";
 
 	/**
 	 * 脚本 node name 字段
 	 */
-	private String scriptNodeNameField = "script_node_name";
+	private String scriptNameField = "script_name";
+
+	/**
+	 * 脚本 node data 字段
+	 */
+	private String scriptDataField = "script_data";
 
 	/**
 	 * 脚本 node type 字段
 	 */
-	private String scriptNodeDataField = "script_node_data";
-
-	/**
-	 * 脚本 node type 字段
-	 */
-	private String scriptNodeTypeField = "script_node_type";
-
-	/**
-	 * 脚本 node language 字段
-	 */
-	private String scriptNodeLanguageField = "script_node_language";
+	private String scriptTypeField = "script_type";
 
 	public String getUrl() {
 		return url;
@@ -105,12 +115,28 @@ public class SQLParserVO {
 		this.password = password;
 	}
 
-	public String getTableName() {
-		return tableName;
+	public String getApplicationName() {
+		return applicationName;
 	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	public String getChainTableName() {
+		return chainTableName;
+	}
+
+	public void setChainTableName(String chainTableName) {
+		this.chainTableName = chainTableName;
+	}
+
+	public String getChainApplicationNameField() {
+		return chainApplicationNameField;
+	}
+
+	public void setChainApplicationNameField(String chainApplicationNameField) {
+		this.chainApplicationNameField = chainApplicationNameField;
 	}
 
 	public String getChainNameField() {
@@ -129,51 +155,51 @@ public class SQLParserVO {
 		this.elDataField = elDataField;
 	}
 
-	public String getScriptNodeTableName() {
-		return scriptNodeTableName;
+	public String getScriptTableName() {
+		return scriptTableName;
 	}
 
-	public void setScriptNodeTableName(String scriptNodeTableName) {
-		this.scriptNodeTableName = scriptNodeTableName;
+	public void setScriptTableName(String scriptTableName) {
+		this.scriptTableName = scriptTableName;
 	}
 
-	public String getScriptNodeIdField() {
-		return scriptNodeIdField;
+	public String getScriptApplicationNameField() {
+		return scriptApplicationNameField;
 	}
 
-	public void setScriptNodeIdField(String scriptNodeIdField) {
-		this.scriptNodeIdField = scriptNodeIdField;
+	public void setScriptApplicationNameField(String scriptApplicationNameField) {
+		this.scriptApplicationNameField = scriptApplicationNameField;
 	}
 
-	public String getScriptNodeNameField() {
-		return scriptNodeNameField;
+	public String getScriptIdField() {
+		return scriptIdField;
 	}
 
-	public void setScriptNodeNameField(String scriptNodeNameField) {
-		this.scriptNodeNameField = scriptNodeNameField;
+	public void setScriptIdField(String scriptIdField) {
+		this.scriptIdField = scriptIdField;
 	}
 
-	public String getScriptNodeDataField() {
-		return scriptNodeDataField;
+	public String getScriptNameField() {
+		return scriptNameField;
 	}
 
-	public void setScriptNodeDataField(String scriptNodeDataField) {
-		this.scriptNodeDataField = scriptNodeDataField;
+	public void setScriptNameField(String scriptNameField) {
+		this.scriptNameField = scriptNameField;
 	}
 
-	public String getScriptNodeTypeField() {
-		return scriptNodeTypeField;
+	public String getScriptDataField() {
+		return scriptDataField;
 	}
 
-	public void setScriptNodeTypeField(String scriptNodeTypeField) {
-		this.scriptNodeTypeField = scriptNodeTypeField;
+	public void setScriptDataField(String scriptDataField) {
+		this.scriptDataField = scriptDataField;
 	}
 
-	public String getScriptNodeLanguageField() {
-		return scriptNodeLanguageField;
+	public String getScriptTypeField() {
+		return scriptTypeField;
 	}
 
-	public void setScriptNodeLanguageField(String scriptNodeLanguageField) {
-		this.scriptNodeLanguageField = scriptNodeLanguageField;
+	public void setScriptTypeField(String scriptTypeField) {
+		this.scriptTypeField = scriptTypeField;
 	}
 }

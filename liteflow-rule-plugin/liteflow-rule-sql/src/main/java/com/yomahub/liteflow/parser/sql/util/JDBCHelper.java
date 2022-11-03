@@ -1,13 +1,10 @@
 package com.yomahub.liteflow.parser.sql.util;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import com.yomahub.liteflow.script.ScriptExecutor;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,7 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 /**
  * jdbc 工具类
@@ -26,13 +22,14 @@ import java.util.ServiceLoader;
  */
 public class JDBCHelper {
 
-	private static final String SQL_PATTERN = "SELECT {},{} FROM {} ";
+	private static final String SQL_PATTERN = "SELECT {},{} FROM {} WHERE {}=?";
 
-	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{},{} FROM {} ";
+	private static final String SCRIPT_SQL_CHECK_PATTERN = "SELECT 1 FROM {} WHERE {}=?";
+
+	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{} FROM {} WHERE {}=?";
 
 	private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-	private static final String NODE_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
-	private static final String NODES_XML_PATTERN = "<nodes>{}</nodes>";
+	private static final String NODE_XML_PATTERN = "<nodes><node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node></nodes>";
 	private static final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 	private static final Integer FETCH_SIZE_MAX = 1000;
 
@@ -64,7 +61,7 @@ public class JDBCHelper {
 	 * 获取链接
 	 */
 	public Connection getConn() {
-		Connection connection = null;
+		Connection connection;
 		try {
 			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
 		} catch (SQLException e) {
@@ -76,15 +73,26 @@ public class JDBCHelper {
 	/**
 	 * 获取 ElData 数据内容
 	 */
-	public String getElDataContent() {
+	public String getContent() {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
+		String chainTableName = sqlParserVO.getChainTableName();
 		String elDataField = sqlParserVO.getElDataField();
 		String chainNameField = sqlParserVO.getChainNameField();
-		String tableName = sqlParserVO.getTableName();
-		String sqlCmd = StrFormatter.format(SQL_PATTERN, chainNameField, elDataField, tableName);
+		String chainApplicationNameField = sqlParserVO.getChainApplicationNameField();
+		String applicationName = sqlParserVO.getApplicationName();
+
+		if(StrUtil.isBlank(chainTableName)){
+			throw new ELSQLException("You did not define the chainTableName property");
+		}
+
+		if(StrUtil.isBlank(applicationName) || StrUtil.isBlank(chainApplicationNameField)){
+			throw new ELSQLException("You did not define the applicationName or chainApplicationNameField property");
+		}
+
+		String sqlCmd = StrUtil.format(SQL_PATTERN, chainNameField, elDataField, chainTableName, chainApplicationNameField);
 
 		List<String> result = new ArrayList<>();
 		try {
@@ -92,13 +100,14 @@ public class JDBCHelper {
 			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			// 设置游标拉取数量
 			stmt.setFetchSize(FETCH_SIZE_MAX);
+			stmt.setString(1, applicationName);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				String elData = getStringFromResultSet(rs, elDataField);
 				String chainName = getStringFromResultSet(rs, chainNameField);
 
-				result.add(StrFormatter.format(CHAIN_XML_PATTERN, chainName, elData));
+				result.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, elData));
 			}
 		} catch (Exception e) {
 			throw new ELSQLException(e.getMessage());
@@ -107,15 +116,16 @@ public class JDBCHelper {
 			close(conn, stmt, rs);
 		}
 
-		String chains = CollUtil.join(result, StrUtil.EMPTY);
-		// 根据 SPI 判断是否需要添加 script node 节点
-		ServiceLoader<ScriptExecutor> loader = ServiceLoader.load(ScriptExecutor.class);
-		if (loader.iterator().hasNext()) {
-			String nodes = getScriptNodes();
-			return StrFormatter.format(XML_PATTERN, StrFormatter.format(NODES_XML_PATTERN, nodes), chains);
+		String chainsContent = CollUtil.join(result, StrUtil.EMPTY);
+
+		String nodesContent;
+		if (hasScriptData()){
+			nodesContent = getScriptNodes();
+		}else{
+			nodesContent = StrUtil.EMPTY;
 		}
 
-		return StrFormatter.format(XML_PATTERN, StrUtil.EMPTY, chains);
+		return StrUtil.format(XML_PATTERN, nodesContent, chainsContent);
 	}
 
 	public String getScriptNodes() {
@@ -124,36 +134,40 @@ public class JDBCHelper {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
-		String scriptNodeTableName = sqlParserVO.getScriptNodeTableName();
-		String scriptNodeIdField = sqlParserVO.getScriptNodeIdField();
-		String scriptNodeDataField = sqlParserVO.getScriptNodeDataField();
-		String scriptNodeNameField = sqlParserVO.getScriptNodeNameField();
-		String scriptNodeLanguageField = sqlParserVO.getScriptNodeLanguageField();
-		String scriptNodeTypeField = sqlParserVO.getScriptNodeTypeField();
+		String scriptTableName = sqlParserVO.getScriptTableName();
+		String scriptIdField = sqlParserVO.getScriptIdField();
+		String scriptDataField = sqlParserVO.getScriptDataField();
+		String scriptNameField = sqlParserVO.getScriptNameField();
+		String scriptTypeField = sqlParserVO.getScriptTypeField();
+		String scriptApplicationNameField = sqlParserVO.getScriptApplicationNameField();
+		String applicationName = sqlParserVO.getApplicationName();
 
+		if(StrUtil.isBlank(applicationName) || StrUtil.isBlank(scriptApplicationNameField)){
+			throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
+		}
 
-		String sqlCmd = StrFormatter.format(
+		String sqlCmd = StrUtil.format(
 				SCRIPT_SQL_PATTERN,
-				scriptNodeIdField,
-				scriptNodeDataField,
-				scriptNodeNameField,
-				scriptNodeLanguageField,
-				scriptNodeTypeField,
-				scriptNodeTableName
+				scriptIdField,
+				scriptDataField,
+				scriptNameField,
+				scriptTypeField,
+				scriptTableName,
+				scriptApplicationNameField
 		);
 		try {
 			conn = getConn();
 			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			// 设置游标拉取数量
 			stmt.setFetchSize(FETCH_SIZE_MAX);
+			stmt.setString(1, applicationName);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
-				String id = getStringFromResultSet(rs, scriptNodeIdField);
-				String data = getStringFromResultSet(rs, scriptNodeDataField);
-				String name = getStringFromResultSet(rs, scriptNodeNameField);
-				String type = getStringFromResultSet(rs, scriptNodeTypeField);
-				String language = getStringFromResultSet(rs, scriptNodeLanguageField);
+				String id = getStringFromResultSet(rs, scriptIdField);
+				String data = getStringFromResultSet(rs, scriptDataField);
+				String name = getStringFromResultSet(rs, scriptNameField);
+				String type = getStringFromResultSet(rs, scriptTypeField);
 
 				NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
 				if (Objects.isNull(nodeTypeEnum)){
@@ -164,7 +178,7 @@ public class JDBCHelper {
 					throw new ELSQLException(StrUtil.format("The type value[{}] is not a script type", type));
 				}
 
-				result.add(StrFormatter.format(NODE_XML_PATTERN, id, name, type, language, data));
+				result.add(StrUtil.format(NODE_XML_PATTERN, id, name, type, data));
 			}
 		} catch (Exception e) {
 			throw new ELSQLException(e.getMessage());
@@ -209,12 +223,38 @@ public class JDBCHelper {
 		}
 	}
 
+	private boolean hasScriptData(){
+		if (StrUtil.isBlank(sqlParserVO.getScriptTableName())){
+			return false;
+		}
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		String sqlCmd = StrUtil.format(SCRIPT_SQL_CHECK_PATTERN,
+				sqlParserVO.getScriptTableName(),
+				sqlParserVO.getScriptApplicationNameField());
+		try {
+			conn = getConn();
+			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			stmt.setFetchSize(1);
+			stmt.setString(1, sqlParserVO.getApplicationName());
+			rs = stmt.executeQuery();
+			return rs.next();
+		} catch (Exception e) {
+			return false;
+		} finally {
+			// 关闭连接
+			close(conn, stmt, rs);
+		}
+	}
+
 
 	//#region get set method
 	private String getStringFromResultSet(ResultSet rs, String field) throws SQLException {
 		String data = rs.getString(field);
 		if (StrUtil.isBlank(data)) {
-			throw new ELSQLException(StrFormatter.format("exist {} field value is empty", field));
+			throw new ELSQLException(StrUtil.format("exist {} field value is empty", field));
 		}
 		return data;
 	}
@@ -226,5 +266,4 @@ public class JDBCHelper {
 	private void setSqlParserVO(SQLParserVO sqlParserVO) {
 		this.sqlParserVO = sqlParserVO;
 	}
-	//#endregion
 }
