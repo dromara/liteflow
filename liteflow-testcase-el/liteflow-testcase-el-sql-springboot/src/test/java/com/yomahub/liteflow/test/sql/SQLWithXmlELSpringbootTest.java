@@ -68,7 +68,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	private void changeData() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
-		Connection connection = null;
+		Connection connection;
 		try {
 			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
 			Statement statement = connection.createStatement();
@@ -84,7 +84,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	private void changeScriptData() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
-		Connection connection = null;
+		Connection connection;
 		try {
 			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
 			Statement statement = connection.createStatement();
