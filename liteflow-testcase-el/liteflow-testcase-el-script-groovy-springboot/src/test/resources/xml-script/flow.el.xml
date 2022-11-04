@@ -27,11 +27,11 @@
 
         <node id="s2" name="选择脚本" type="switch_script" language="groovy">
             <![CDATA[
-                count = defaultContext.getData("count");
+                count = defaultContext.getData("count")
                 if(count > 100){
-                    return "a";
+                    return "a"
                 }else{
-                    return "b";
+                    return "b"
                 }
             ]]>
         </node>

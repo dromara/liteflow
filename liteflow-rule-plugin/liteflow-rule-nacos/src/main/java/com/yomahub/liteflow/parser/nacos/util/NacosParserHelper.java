@@ -32,7 +32,9 @@ public class NacosParserHelper {
 	public NacosParserHelper(NacosParserVO nacosParserVO) {
 		this.nacosParserVO = nacosParserVO;
 		try{
-			this.configService = ContextAwareHolder.loadContextAware().getBean(NacosConfigService.class);
+			try{
+				this.configService = ContextAwareHolder.loadContextAware().getBean(NacosConfigService.class);
+			}catch (Exception ignored){}
 			if (this.configService == null){
 				Properties properties = new Properties();
 				properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());

@@ -30,7 +30,9 @@ public class EtcdParserHelper {
 		this.etcdParserVO = etcdParserVO;
 
 		try{
-			this.etcdClient  = ContextAwareHolder.loadContextAware().getBean(EtcdClient.class);
+			try{
+				this.etcdClient  = ContextAwareHolder.loadContextAware().getBean(EtcdClient.class);
+			}catch (Exception ignored){}
 			if (this.etcdClient == null) {
 				Client client = Client.builder()
 						.endpoints(etcdParserVO.getConnectStr().split(","))

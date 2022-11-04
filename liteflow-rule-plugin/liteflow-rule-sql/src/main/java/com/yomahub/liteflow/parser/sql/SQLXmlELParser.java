@@ -13,7 +13,6 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -35,9 +34,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 		try {
 			SQLParserVO sqlParserVO = null;
-			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
 				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class, CopyOptions.create());
-			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
 				sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 			}
 			if (Objects.isNull(sqlParserVO)) {
@@ -49,7 +48,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
-
 		} catch (ELSQLException elsqlException) {
 			throw elsqlException;
 		} catch (Exception ex) {
@@ -60,9 +58,8 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		return JDBCHelper.getInstance().getElDataContent();
+		return JDBCHelper.getInstance().getContent();
 	}
-
 
 	/**
 	 * 检查配置文件并设置默认值

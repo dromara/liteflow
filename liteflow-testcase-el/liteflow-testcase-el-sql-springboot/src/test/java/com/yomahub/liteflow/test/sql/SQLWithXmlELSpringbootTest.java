@@ -33,35 +33,64 @@ import java.sql.Statement;
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})
 public class SQLWithXmlELSpringbootTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testSQLWithXml() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+	@Test
+	public void testSQLWithXml() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
 
-        // 修改数据库
-        changeData();
+		// 修改数据库
+		changeData();
 
-        // 重新加载规则
-        flowExecutor.reloadRule();
-        Assert.assertEquals("a==>c==>b", flowExecutor.execute2Resp("chain1", "arg").getExecuteStepStr());
-    }
+		// 重新加载规则
+		flowExecutor.reloadRule();
+		Assert.assertEquals("a==>c==>b", flowExecutor.execute2Resp("chain1", "arg").getExecuteStepStr());
+	}
 
-    /**
-     * 修改数据库数据
-     */
-    private void changeData() {
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-        SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
-            Statement statement = connection.createStatement();
-            statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='chain1'");
-        } catch (SQLException e) {
-            throw new ELSQLException(e.getMessage());
-        }
-    }
+	@Test
+	public void testSQLWithScriptXml() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
+
+		// 修改数据库
+		changeScriptData();
+		// 重新加载规则
+		flowExecutor.reloadRule();
+		Assert.assertEquals("x0[if 脚本]", flowExecutor.execute2Resp("chain3", "arg").getExecuteStepStr());
+	}
+
+	/**
+	 * 修改数据库数据
+	 */
+	private void changeData() {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+		Connection connection;
+		try {
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
+			Statement statement = connection.createStatement();
+			statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='chain1'");
+		} catch (SQLException e) {
+			throw new ELSQLException(e.getMessage());
+		}
+	}
+
+	/**
+	 * 修改数据库数据
+	 */
+	private void changeScriptData() {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+		Connection connection;
+		try {
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
+			Statement statement = connection.createStatement();
+			statement.executeUpdate("UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false;' WHERE SCRIPT_NODE_ID='x0'");
+		} catch (SQLException e) {
+			throw new ELSQLException(e.getMessage());
+		}
+	}
 }
