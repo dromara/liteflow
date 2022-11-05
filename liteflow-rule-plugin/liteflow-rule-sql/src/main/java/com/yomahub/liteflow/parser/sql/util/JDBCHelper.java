@@ -29,7 +29,9 @@ public class JDBCHelper {
 	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{} FROM {} WHERE {}=?";
 
 	private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-	private static final String NODE_XML_PATTERN = "<nodes><node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node></nodes>";
+	private static final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
+
+	private static final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
 	private static final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 	private static final Integer FETCH_SIZE_MAX = 1000;
 
@@ -178,7 +180,7 @@ public class JDBCHelper {
 					throw new ELSQLException(StrUtil.format("The type value[{}] is not a script type", type));
 				}
 
-				result.add(StrUtil.format(NODE_XML_PATTERN, id, name, type, data));
+				result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, id, name, type, data));
 			}
 		} catch (Exception e) {
 			throw new ELSQLException(e.getMessage());
@@ -186,7 +188,7 @@ public class JDBCHelper {
 			// 关闭连接
 			close(conn, stmt, rs);
 		}
-		return CollUtil.join(result, StrUtil.EMPTY);
+		return StrUtil.format(NODE_XML_PATTERN, CollUtil.join(result, StrUtil.EMPTY));
 	}
 
 	/**

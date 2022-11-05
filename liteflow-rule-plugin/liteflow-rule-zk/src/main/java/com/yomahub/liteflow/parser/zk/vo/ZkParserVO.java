@@ -9,7 +9,9 @@ public class ZkParserVO {
 
     private String connectStr;
 
-    private String nodePath;
+    private String chainPath;
+
+    private String scriptPath;
 
     public String getConnectStr() {
         return connectStr;
@@ -19,11 +21,19 @@ public class ZkParserVO {
         this.connectStr = connectStr;
     }
 
-    public String getNodePath() {
-        return nodePath;
+    public String getChainPath() {
+        return chainPath;
     }
 
-    public void setNodePath(String nodePath) {
-        this.nodePath = nodePath;
+    public void setChainPath(String chainPath) {
+        this.chainPath = chainPath;
+    }
+
+    public String getScriptPath() {
+        return scriptPath;
+    }
+
+    public void setScriptPath(String scriptPath) {
+        this.scriptPath = scriptPath;
     }
 }

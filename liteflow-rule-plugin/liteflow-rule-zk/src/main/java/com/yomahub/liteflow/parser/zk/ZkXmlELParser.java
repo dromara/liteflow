@@ -25,13 +25,6 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
     private final ZkParserHelper zkParserHelper;
 
     public ZkXmlELParser() {
-        Consumer<String> parseConsumer = t -> {
-            try {
-                parse(t);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
         try{
@@ -46,14 +39,14 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
                 throw new ZkException("rule-source-ext-data is empty");
             }
 
-            if (StrUtil.isBlank(zkParserVO.getNodePath())){
-                zkParserVO.setNodePath("/lite-flow/flow");
+            if (StrUtil.isBlank(zkParserVO.getChainPath())){
+                throw new ZkException("You must configure the chainPath property");
             }
             if (StrUtil.isBlank(zkParserVO.getConnectStr())){
                 throw new ZkException("zk connect string is empty");
             }
 
-            zkParserHelper = new ZkParserHelper(zkParserVO, parseConsumer);
+            zkParserHelper = new ZkParserHelper(zkParserVO);
         }catch (Exception e){
             throw new ZkException(e.getMessage());
         }
@@ -64,9 +57,14 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
         try{
             String content = zkParserHelper.getContent();
 
-            zkParserHelper.checkContent(content);
-
-            zkParserHelper.listenZkNode();
+            Consumer<String> listenerConsumer = s -> {
+                try{
+                    parse(s);
+                }catch (Exception e){
+                    throw new ZkException(e.getMessage());
+                }
+            };
+            zkParserHelper.listenZkNode(listenerConsumer);
 
             return content;
         }catch (Exception e){
