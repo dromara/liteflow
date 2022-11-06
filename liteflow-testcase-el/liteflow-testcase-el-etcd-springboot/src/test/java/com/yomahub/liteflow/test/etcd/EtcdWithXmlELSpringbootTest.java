@@ -8,6 +8,7 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
 import com.yomahub.liteflow.parser.etcd.EtcdXmlELParser;
 import com.yomahub.liteflow.parser.etcd.util.EtcdParserHelper;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.*;
@@ -34,14 +35,14 @@ import static org.mockito.Mockito.*;
  * springboot环境下的etcd 规则解析器 测试
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/etcd/application-xml-cluster.properties")
+@TestPropertySource(value = "classpath:/etcd/application-xml.properties")
 @SpringBootTest(classes = EtcdWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.etcd.cmp"})
 public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
-    @MockBean
-    private EtcdClient etcdClient;
+    //@MockBean
+    //private EtcdClient etcdClient;
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -58,29 +59,31 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
     @Test
     public void testEtcdNodeWithXml1() throws Exception {
-        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        when(etcdClient.get(anyString())).thenReturn(flowXml);
+        //String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+        //when(etcdClient.get(anyString())).thenReturn(flowXml);
 
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("hello", context.getData("test"));
     }
 
     @Test
     public void testEtcdNodeWithXml2() throws Exception {
-        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
-        when(etcdClient.get(anyString())).thenReturn(flowXml).thenReturn(changedFlowXml);
-
+//        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+//        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
+//        when(etcdClient.get(anyString())).thenReturn(flowXml).thenReturn(changedFlowXml);
+//
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
 
         // 手动触发一次 模拟节点数据变更
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML,changedFlowXml);
-
+        //FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML,changedFlowXml);
+        Thread.sleep(9000);
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertEquals("a==>c", response2.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>s1[脚本s1]", response2.getExecuteStepStr());
     }
 }

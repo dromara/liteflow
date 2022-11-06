@@ -39,11 +39,11 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 				throw new EtcdException("rule-source-ext-data is empty");
 			}
 
-			if (StrUtil.isBlank(etcdParserVO.getNodePath())){
-				etcdParserVO.setNodePath("/lite-flow/flow");
+			if (StrUtil.isBlank(etcdParserVO.getChainPath())){
+				throw new EtcdException("You must configure the chainPath property");
 			}
-			if (StrUtil.isBlank(etcdParserVO.getConnectStr())){
-				throw new EtcdException("Etcd connect string is empty");
+			if (StrUtil.isBlank(etcdParserVO.getEndpoints())){
+				throw new EtcdException("etcd endpoints is empty");
 			}
 
 			etcdParserHelper = new EtcdParserHelper(etcdParserVO);
@@ -54,17 +54,20 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		Consumer<String> parseConsumer = t -> {
-			try {
-				parse(t);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
+
 		try {
 			String content = etcdParserHelper.getContent();
-			etcdParserHelper.checkContent(content);
-			etcdParserHelper.listen(parseConsumer);
+
+			Consumer<String> listenerConsumer = t -> {
+				try {
+					parse(t);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			};
+
+			etcdParserHelper.listen(listenerConsumer);
+
 			return content;
 		} catch (Exception e){
 			throw new EtcdException(e.getMessage());
