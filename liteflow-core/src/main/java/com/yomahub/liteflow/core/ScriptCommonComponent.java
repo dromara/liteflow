@@ -17,7 +17,7 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
     @Override
     public void process() throws Exception {
         ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setCurrChainId(this.getCurrChainId());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());

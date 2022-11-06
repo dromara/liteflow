@@ -54,7 +54,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public Object execute(ScriptExecuteWrap wrap) {
+    public Object execute(ScriptExecuteWrap wrap) throws Exception{
         List<String> errorList = new ArrayList<>();
         try{
             if (!compiledScriptMap.containsKey(wrap.getNodeId())){
@@ -98,8 +98,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             for (String scriptErrorMsg : errorList){
                 log.error("\n{}", scriptErrorMsg);
             }
-            String errorMsg = StrUtil.format("script execute error for node[{}]", wrap.getNodeId());
-            throw new ScriptExecuteException(errorMsg);
+            throw e;
         }
     }
 

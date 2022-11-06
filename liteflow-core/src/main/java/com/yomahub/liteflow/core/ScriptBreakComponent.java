@@ -12,7 +12,7 @@ public class ScriptBreakComponent extends NodeBreakComponent implements ScriptCo
     @Override
     public boolean processBreak() throws Exception {
         ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setCurrChainId(this.getCurrChainId());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());

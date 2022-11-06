@@ -12,7 +12,7 @@ public class ScriptIfComponent extends NodeIfComponent implements ScriptComponen
     @Override
     public boolean processIf() throws Exception {
         ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setCurrChainId(this.getCurrChainId());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
