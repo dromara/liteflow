@@ -50,7 +50,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public Object execute(ScriptExecuteWrap wrap) {
+    public Object execute(ScriptExecuteWrap wrap) throws Exception{
         try{
             if (!compiledScriptMap.containsKey(wrap.getNodeId())){
                 String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
@@ -91,8 +91,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
             return compiledScript.eval(bindings);
         }catch (Exception e){
             log.error(e.getMessage(), e);
-            String errorMsg = StrUtil.format("script execute error for node[{}]", wrap.getNodeId());
-            throw new ScriptExecuteException(errorMsg);
+            throw e;
         }
     }
 
