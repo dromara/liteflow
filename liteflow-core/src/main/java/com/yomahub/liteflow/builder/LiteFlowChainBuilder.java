@@ -49,11 +49,27 @@ public class LiteFlowChainBuilder {
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
     //2.6.8之后取消了递归的模式，两段式组装，先把带有chainName的chain对象放进去，第二段再组装chain里面的condition
     //所以这里setChainName的时候需要判断下
+    /**
+     * 
+     * @param chainName
+     * @return
+     * @deprecated 请使用 {@link #setChainId(String)}
+     */
+    @Deprecated
     public LiteFlowChainBuilder setChainName(String chainName) {
         if (FlowBus.containChain(chainName)) {
             this.chain = FlowBus.getChain(chainName);
         } else {
             this.chain.setChainName(chainName);
+        }
+        return this;
+    }
+    
+    public LiteFlowChainBuilder setChainId(String chainId) {
+        if (FlowBus.containChain(chainId)) {
+            this.chain = FlowBus.getChain(chainId);
+        } else {
+            this.chain.setChainId(chainId);
         }
         return this;
     }

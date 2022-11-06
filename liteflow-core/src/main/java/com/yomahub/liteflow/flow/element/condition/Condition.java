@@ -7,7 +7,6 @@
  */
 package com.yomahub.liteflow.flow.element.condition;
 
-import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -38,7 +37,7 @@ public abstract class Condition implements Executable{
 	}
 
 	@Override
-	public String getExecuteName() {
+	public String getExecuteId() {
 		return this.id;
 	}
 
@@ -64,12 +63,22 @@ public abstract class Condition implements Executable{
 		this.id = id;
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @deprecated 请使用 {@link #setCurrChainId(String)}
+	 */
+	@Deprecated
 	public String getCurrChainName() {
 		return currChainName;
 	}
 
+	public String getCurrChainId() {
+		return currChainName;
+	}
+	
 	@Override
-	public void setCurrChainName(String currChainName) {
+	public void setCurrChainId(String currChainName) {
 		this.currChainName = currChainName;
 	}
 }

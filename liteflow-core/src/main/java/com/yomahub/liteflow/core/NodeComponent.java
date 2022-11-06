@@ -305,8 +305,16 @@ public abstract class NodeComponent{
 		return getSlot().getChainReqDataFromQueue(this.getCurrChainName());
 	}
 
+	/**
+	 * @deprecated 请使用 {@link #getChainId()}
+	 */
+	@Deprecated
 	public String getChainName(){
 		return getSlot().getChainName();
+	}
+	
+	public String getChainId(){
+		return getSlot().getChainId();
 	}
 
 	public String getDisplayName(){
@@ -317,15 +325,41 @@ public abstract class NodeComponent{
 		}
 	}
 
+	/**
+	 * 
+	 * @param currChainName
+	 * @deprecated 请使用 {@link #setCurrChainId(String)}
+	 */
+	@Deprecated
 	public void setCurrChainName(String currChainName){
 		this.currChainNameTL.set(currChainName);
 	}
 
+	/**
+	 * @deprecated 请使用 {@link #getCurrChainId()}
+	 */
+	@Deprecated
 	public String getCurrChainName(){
 		return this.currChainNameTL.get();
 	}
 
+	/**
+	 * @deprecated 请使用 {@link #removeCurrChainId()}
+	 */
+	@Deprecated
 	public void removeCurrChainName(){
+		this.currChainNameTL.remove();
+	}
+	
+	public void setCurrChainId(String currChainName){
+		this.currChainNameTL.set(currChainName);
+	}
+
+	public String getCurrChainId(){
+		return this.currChainNameTL.get();
+	}
+
+	public void removeCurrChainId(){
 		this.currChainNameTL.remove();
 	}
 

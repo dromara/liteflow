@@ -149,7 +149,7 @@ public class Node implements Executable,Cloneable{
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
 			instance.removeTag();
-			instance.removeCurrChainName();
+			instance.removeCurrChainId();
 			instance.removeCmpData();
 		}
 	}
@@ -182,7 +182,7 @@ public class Node implements Executable,Cloneable{
 	}
 
 	@Override
-	public String getExecuteName() {
+	public String getExecuteId() {
 		return id;
 	}
 
@@ -211,8 +211,8 @@ public class Node implements Executable,Cloneable{
 	}
 
 	@Override
-	public void setCurrChainName(String currentChainName) {
-		instance.setCurrChainName(currentChainName);
+	public void setCurrChainId(String currentChainId) {
+		instance.setCurrChainId(currentChainId);
 	}
 
 	public String getCmpData() {
