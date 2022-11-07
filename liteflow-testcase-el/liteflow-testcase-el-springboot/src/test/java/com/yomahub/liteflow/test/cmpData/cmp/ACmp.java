@@ -15,6 +15,7 @@ public class ACmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		System.out.println(this.getCmpData(String.class));
 		System.out.println("ACmp executed!");
 	}
 }
