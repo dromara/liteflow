@@ -52,6 +52,7 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertEquals("a==>f==>b",response.getExecuteStepStr());
     }
 
+    //根据tag来跳转，指定哪个组件的tag
     @Test
     public void testSwitch4() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
@@ -59,6 +60,7 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertEquals("a==>g==>d",response.getExecuteStepStr());
     }
 
+    //tag的跳转
     @Test
     public void testSwitch5() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
