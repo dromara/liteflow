@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.etcd;
 
+import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.ReflectUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
@@ -65,7 +66,7 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>s1[脚本s1]", response.getExecuteStepStr());
         Assert.assertEquals("hello", context.getData("test"));
     }
 
@@ -77,13 +78,17 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 //
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>s1[脚本s1]", response.getExecuteStepStr());
 
+        int i=0;
+        while (i <= 100000) {
+            i++;
+        }
         // 手动触发一次 模拟节点数据变更
         //FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML,changedFlowXml);
-        Thread.sleep(9000);
+
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertEquals("a==>b==>s1[脚本s1]", response2.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
     }
 }

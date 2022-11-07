@@ -68,11 +68,6 @@ public class EtcdParserHelper {
 
 	public String getContent(){
 		try{
-			//检查zk上有没有chainPath节点
-//			if (client.get(etcdParserVO.getChainPath()) == null) {
-//				throw new EtcdException(StrUtil.format("etcd node[{}] is not exist", etcdParserVO.getChainPath()));
-//			}
-
 			//检查chainPath路径下有没有子节点
 			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getChainPath(), SEPARATOR);
 			if (CollectionUtil.isEmpty(chainNameList)){
@@ -128,11 +123,6 @@ public class EtcdParserHelper {
 		}
 
 		try{
-			//配置了，但是不存在这个节点
-//			if (client.get(etcdParserVO.getScriptPath()) == null){
-//				return false;
-//			}
-
 			//存在这个节点，但是子节点不存在
 			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR);
 			if (CollUtil.isEmpty(chainNameList)){
@@ -151,13 +141,19 @@ public class EtcdParserHelper {
 	 */
 	public void listen(Consumer<String> parseConsumer) {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
-			LOG.info("starting load flow config....");
-			parseConsumer.accept(updateValue);
-			}, null);
+			LOG.info("update path={} value={},starting reload flow config...", updatePath, updateValue);
+			parseConsumer.accept(getContent());
+			}, (deletePath) -> {
+			LOG.info("delete path={},starting reload flow config...", deletePath);
+			parseConsumer.accept(getContent());
+		});
 		this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
-			LOG.info("starting load flow config....");
-			parseConsumer.accept(updateValue);
-		}, null);
+			LOG.info("update path={} value={},starting reload flow config...", updatePath, updateValue);
+			parseConsumer.accept(getContent());
+		}, (deletePath) -> {
+			LOG.info("delete path={},starting reload flow config....", deletePath);
+			parseConsumer.accept(getContent());
+		});
 	}
 
 	public NodeSimpleVO convert(String str){
