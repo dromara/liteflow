@@ -8,6 +8,7 @@
         <node id="e" class="com.yomahub.liteflow.test.switchcase.cmp.ESwitchCmp"/>
         <node id="f" class="com.yomahub.liteflow.test.switchcase.cmp.FSwitchCmp"/>
         <node id="g" class="com.yomahub.liteflow.test.switchcase.cmp.GSwitchCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.switchcase.cmp.HSwitchCmp"/>
     </nodes>
 
     <chain name="chain1">
@@ -36,6 +37,13 @@
         THEN(
         a,
         SWITCH(g).to(b.tag("td"), d.tag("td"))
+        );
+    </chain>
+
+    <chain name="chain5">
+        THEN(
+        a,
+        SWITCH(h).to(b.tag("td"), d.tag("td"))
         );
     </chain>
 </flow>

@@ -29,6 +29,7 @@ public class SwitchCondition extends Condition{
 
     private final Map<String, Executable> targetMap = new HashMap<>();
 
+    private final String TAG_PREFIX = "tag";
     private final String TAG_FLAG = ":";
 
 
@@ -55,7 +56,7 @@ public class SwitchCondition extends Condition{
                     targetExecutor = targetMap.values().stream().filter(executable -> {
                         if (executable instanceof Node){
                             Node node = (Node) executable;
-                            return (StrUtil.isEmpty(_targetId) || _targetId.equals(node.getId())) && (StrUtil.isEmpty(_targetTag) || _targetTag.equals(node.getTag()));
+                            return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(node.getTag())) || ((StrUtil.isEmpty(_targetId) || _targetId.equals(node.getId())) && (StrUtil.isEmpty(_targetTag) || _targetTag.equals(node.getTag())));
                         }else{
                             return false;
                         }

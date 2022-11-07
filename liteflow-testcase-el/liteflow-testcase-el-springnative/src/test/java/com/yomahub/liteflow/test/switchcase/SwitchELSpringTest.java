@@ -45,4 +45,10 @@ public class SwitchELSpringTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>g==>d",response.getExecuteStepStr());
     }
+    @Test
+    public void testSwitch5() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>h==>b",response.getExecuteStepStr());
+    }
 }
