@@ -10,11 +10,11 @@ package com.yomahub.liteflow.test.switchcase.cmp;
 import com.yomahub.liteflow.core.NodeSwitchComponent;
 import org.springframework.stereotype.Component;
 
-@Component("f")
-public class FSwitchCmp extends NodeSwitchComponent {
+@Component("h")
+public class HSwitchCmp extends NodeSwitchComponent {
 
 	@Override
 	public String processSwitch() throws Exception {
-		return ":td";
+		return "tag:td";
 	}
 }
