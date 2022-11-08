@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.zookeeper;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -22,6 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -47,6 +49,8 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         System.setProperty("zookeeper.admin.enableServer", "false");
+
+
         zkCluster = new TestingCluster(new InstanceSpec(null, 21810, -1, -1, true, -1, -1, -1),
                 new InstanceSpec(null, 21811, -1, -1, true, -1, -1, -1),
                 new InstanceSpec(null, 21812, -1, -1, true, -1, -1, -1));
@@ -73,6 +77,8 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
         String script1Path = ZK_SCRIPT_PATH+"/s1:script:脚本s1";
         zkClient.createPersistent(script1Path, true);
         zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
+
+        Thread.sleep(2000L);
     }
     
     @Test
@@ -81,10 +87,5 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("hello", context.getData("test"));
-    }
-    
-    @AfterClass
-    public static void tearDown() throws Exception {
-        zkCluster.stop();
     }
 }
