@@ -1,52 +1,48 @@
 package com.yomahub.liteflow.test.etcd;
 
-import cn.hutool.core.lang.Console;
-import cn.hutool.core.util.ReflectUtil;
+import com.google.common.collect.Lists;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
-import com.yomahub.liteflow.parser.etcd.EtcdXmlELParser;
-import com.yomahub.liteflow.parser.etcd.util.EtcdParserHelper;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.function.Consumer;
-
-import static org.mockito.ArgumentMatchers.any;
+import java.util.List;
 import static org.mockito.Mockito.*;
 
 /**
  * springboot环境下的etcd 规则解析器 测试
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/etcd/application-xml.properties")
+@TestPropertySource(value = "classpath:/etcd/application-xml-cluster.properties")
 @SpringBootTest(classes = EtcdWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.etcd.cmp"})
 public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
-    //@MockBean
-    //private EtcdClient etcdClient;
+    @MockBean
+    private EtcdClient etcdClient;
 
     @Resource
     private FlowExecutor flowExecutor;
+
+    private static final String SEPARATOR = "/";
+
+    private static final String CHAIN_PATH = "/liteflow/chain";
+
+    private static final String SCRIPT_PATH = "/liteflow/script";
+
 
     @Before
     public void setUp(){
@@ -60,35 +56,48 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
     @Test
     public void testEtcdNodeWithXml1() throws Exception {
-        //String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        //when(etcdClient.get(anyString())).thenReturn(flowXml);
+        List<String> chainNameList = Lists.newArrayList("chain1");
+        List<String> scriptNodeValueList = Lists.newArrayList("s1:script:脚本s1");
+        when(etcdClient.getChildrenKeys(anyString(), anyString())).thenReturn(chainNameList).thenReturn(scriptNodeValueList);
+
+        String chain1Data = "THEN(a, b, c, s1);";
+        String scriptNodeValue = "defaultContext.setData(\"test\",\"hello\");";
+        when(etcdClient.get(anyString())).thenReturn(chain1Data).thenReturn(scriptNodeValue);
 
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
         Assert.assertEquals("hello", context.getData("test"));
     }
 
     @Test
     public void testEtcdNodeWithXml2() throws Exception {
-//        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-//        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
-//        when(etcdClient.get(anyString())).thenReturn(flowXml).thenReturn(changedFlowXml);
-//
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>s1[脚本s1]", response.getExecuteStepStr());
+        List<String> chainNameList = Lists.newArrayList("chain1");
+        List<String> scriptNodeValueList = Lists.newArrayList("s1:script:脚本s1");
+        when(etcdClient.getChildrenKeys(CHAIN_PATH, SEPARATOR)).thenReturn(chainNameList);
+        when(etcdClient.getChildrenKeys(SCRIPT_PATH, SEPARATOR)).thenReturn(scriptNodeValueList);
 
-        int i=0;
-        while (i <= 100000) {
-            i++;
-        }
-        // 手动触发一次 模拟节点数据变更
-        //FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML,changedFlowXml);
+        String chain1Data = "THEN(a, b, c, s1);";
+        String chain1ChangedData = "THEN(a, b, s1);";
+        String scriptNodeValue = "defaultContext.setData(\"test\",\"hello\");";
+        String scriptNodeChangedValue = "defaultContext.setData(\"test\",\"hello world\");";
+        when(etcdClient.get(CHAIN_PATH + SEPARATOR + "chain1")).thenReturn(chain1Data).thenReturn(chain1ChangedData);
+        when(etcdClient.get(SCRIPT_PATH + SEPARATOR + "s1:script:脚本s1")).thenReturn(scriptNodeValue).thenReturn(scriptNodeChangedValue);
+
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("hello", context.getData("test"));
+
+        flowExecutor.reloadRule();
 
         LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context2 = response2.getFirstContextBean();
         Assert.assertTrue(response2.isSuccess());
-        Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+        Assert.assertEquals("a==>b==>s1[脚本s1]", response2.getExecuteStepStr());
+        Assert.assertEquals("hello world", context2.getData("test"));
+
     }
 }

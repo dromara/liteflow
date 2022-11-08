@@ -142,7 +142,9 @@ public class EtcdParserHelper {
 	public void listen(Consumer<String> parseConsumer) {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
 			LOG.info("update path={} value={},starting reload flow config...", updatePath, updateValue);
-			parseConsumer.accept(getContent());
+			String content = getContent();
+			LOG.info("update path={} value={},content={}", content);
+//			parseConsumer.accept(content);
 			}, (deletePath) -> {
 			LOG.info("delete path={},starting reload flow config...", deletePath);
 			parseConsumer.accept(getContent());
