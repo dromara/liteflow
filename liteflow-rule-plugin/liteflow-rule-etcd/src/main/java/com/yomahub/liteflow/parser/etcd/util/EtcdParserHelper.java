@@ -141,19 +141,17 @@ public class EtcdParserHelper {
 	 */
 	public void listen(Consumer<String> parseConsumer) {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
-			LOG.info("update path={} value={},starting reload flow config...", updatePath, updateValue);
-			String content = getContent();
-			LOG.info("update path={} value={},content={}", content);
-//			parseConsumer.accept(content);
+			LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
+			parseConsumer.accept(getContent());
 			}, (deletePath) -> {
-			LOG.info("delete path={},starting reload flow config...", deletePath);
+			LOG.info("starting reload flow config... delete path={}", deletePath);
 			parseConsumer.accept(getContent());
 		});
 		this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
-			LOG.info("update path={} value={},starting reload flow config...", updatePath, updateValue);
+			LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
 			parseConsumer.accept(getContent());
 		}, (deletePath) -> {
-			LOG.info("delete path={},starting reload flow config....", deletePath);
+			LOG.info("starting reload flow config... delete path={}", deletePath);
 			parseConsumer.accept(getContent());
 		});
 	}
