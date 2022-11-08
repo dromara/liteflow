@@ -122,31 +122,6 @@ public class ParserHelper {
 		}
 	}
  
-	public static void parseDocument(List<Document> documentList, Set<String> chainNameSet, Consumer<Element> parseOneChainConsumer) {
-		//先在元数据里放上chain
-		//先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
-		//这样就不用去像之前的版本那样回归调用
-		//同时也解决了不能循环依赖的问题
-		documentList.forEach(document -> {
-			// 解析chain节点
-			List<Element> chainList = document.getRootElement().elements(CHAIN);
-
-			//先在元数据里放上chain
-			chainList.forEach(e -> {
-				//校验加载的 chainName 是否有重复的
-				//TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				String chainName = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
-				if (!chainNameSet.add(chainName)) {
-					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
-				}
-
-				FlowBus.addChain(chainName);
-			});
-		});
-		// 清空
-		chainNameSet.clear();
-	}
-
 	public static void parseChainDocument(List<Document> documentList, Set<String> chainNameSet, Consumer<Element> parseOneChainConsumer){
 		//先在元数据里放上chain
 		//先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
@@ -209,33 +184,6 @@ public class ParserHelper {
 		}
  	}
  
-	public static void parseJsonNode(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet, Consumer<JsonNode> parseOneChainConsumer) {
-		//先在元数据里放上chain
-		//先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
-		//这样就不用去像之前的版本那样回归调用
-		//同时也解决了不能循环依赖的问题
-		flowJsonObjectList.forEach(jsonObject -> {
-			// 解析chain节点
-			Iterator<JsonNode> iterator = jsonObject.get(FLOW).get(CHAIN).elements();
-			//先在元数据里放上chain
-			while (iterator.hasNext()) {
-				JsonNode innerJsonObject = iterator.next();
-				//校验加载的 chainName 是否有重复的
-				// TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				//String chainName = innerJsonObject.get(NAME).textValue();
-				String chainName = Optional.ofNullable(innerJsonObject.get(ID)).orElse(innerJsonObject.get(NAME)).textValue();
-				if (!chainNameSet.add(chainName)) {
-					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
-				}
-
-				FlowBus.addChain(chainName);
-			}
-		});
-		// 清空
-		chainNameSet.clear();
-
-	}
-
 	public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet, Consumer<JsonNode> parseOneChainConsumer){
 		//先在元数据里放上chain
 		//先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
