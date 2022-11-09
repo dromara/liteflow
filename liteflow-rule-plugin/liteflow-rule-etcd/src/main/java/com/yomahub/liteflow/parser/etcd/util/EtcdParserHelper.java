@@ -5,6 +5,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
 import com.yomahub.liteflow.parser.etcd.exception.EtcdException;
 import com.yomahub.liteflow.parser.etcd.vo.EtcdParserVO;
@@ -142,17 +146,26 @@ public class EtcdParserHelper {
 	public void listen(Consumer<String> parseConsumer) {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
 			LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
-			parseConsumer.accept(getContent());
+			String chainName = updatePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+			LiteFlowChainELBuilder.createChain().setChainName(chainName).setEL(updateValue).build();
 			}, (deletePath) -> {
 			LOG.info("starting reload flow config... delete path={}", deletePath);
-			parseConsumer.accept(getContent());
+			String chainName = deletePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+			FlowBus.removeChain(chainName);
 		});
 		this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
 			LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
-			parseConsumer.accept(getContent());
+			String scriptNodeValue = updatePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");;
+			NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+			LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
+					.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+					.setName(nodeSimpleVO.getName())
+					.setScript(updateValue).build();
 		}, (deletePath) -> {
 			LOG.info("starting reload flow config... delete path={}", deletePath);
-			parseConsumer.accept(getContent());
+			String scriptNodeValue = deletePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");;
+			NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+			FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
 		});
 	}
 
