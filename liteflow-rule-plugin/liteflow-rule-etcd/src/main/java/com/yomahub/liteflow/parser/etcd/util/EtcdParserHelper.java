@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author zendwang
@@ -92,7 +94,7 @@ public class EtcdParserHelper {
 			//检查是否有脚本内容，如果有，进行脚本内容的获取
 			String scriptAllContent = StrUtil.EMPTY;
 			if (hasScript()){
-				List<String> scriptNodeValueList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR);
+				List<String> scriptNodeValueList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR).stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
 
 				List<String> scriptItemContentList = new ArrayList<>();
 				for (String scriptNodeValue: scriptNodeValueList){
