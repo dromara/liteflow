@@ -307,6 +307,7 @@ public abstract class NodeComponent{
 
 	/**
 	 * @deprecated 请使用 {@link #getChainId()}
+	 * @return String
 	 */
 	@Deprecated
 	public String getChainName(){
@@ -327,7 +328,7 @@ public abstract class NodeComponent{
 
 	/**
 	 * 
-	 * @param currChainName
+	 * @param currChainName 当前chain名称
 	 * @deprecated 请使用 {@link #setCurrChainId(String)}
 	 */
 	@Deprecated
@@ -337,6 +338,7 @@ public abstract class NodeComponent{
 
 	/**
 	 * @deprecated 请使用 {@link #getCurrChainId()}
+	 * @return String
 	 */
 	@Deprecated
 	public String getCurrChainName(){

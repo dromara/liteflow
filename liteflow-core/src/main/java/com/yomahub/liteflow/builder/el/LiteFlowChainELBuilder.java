@@ -88,9 +88,8 @@ public class LiteFlowChainELBuilder {
     //所以这里setChainName的时候需要判断下
     /**
      * 
-     * @param chainName
-     * @return
      * @deprecated 请使用 {@link #setChainId(String)}
+     * @return LiteFlowChainELBuilder
      */
     public LiteFlowChainELBuilder setChainName(String chainName) {
         if (FlowBus.containChain(chainName)) {

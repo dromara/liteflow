@@ -238,8 +238,7 @@ public class Slot{
 
 	/**
 	 * 
-	 * @param chainName
-	 * @Deprecated 请使用 {@link #setChainId(String)} 
+	 * @deprecated  请使用 {@link #setChainId(String)}
 	 */
 	@Deprecated
 	public void setChainName(String chainName) {

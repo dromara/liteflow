@@ -26,7 +26,8 @@ public class ScriptExecuteWrap {
     }
 
     /**
-     * @deprecated 请使用 {@link #getCurrChainId()} 
+     * @deprecated 请使用 {@link #getCurrChainId()}
+     * @return String
      */
     @Deprecated
     public String getCurrChainName() {
@@ -35,7 +36,6 @@ public class ScriptExecuteWrap {
 
     /**
      * 
-     * @param currChainName
      * @deprecated 请使用{@link #setCurrChainId(String)}
      */
     public void setCurrChainName(String currChainName) {
