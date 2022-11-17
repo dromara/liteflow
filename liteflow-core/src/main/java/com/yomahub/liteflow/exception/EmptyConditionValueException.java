@@ -1,6 +1,10 @@
 package com.yomahub.liteflow.exception;
 
 
+/**
+ * 空条件值异常
+ * @author Yun
+ */
 public class EmptyConditionValueException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

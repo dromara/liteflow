@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 无可用插槽异常
+ * @author Yun
+ */
 public class NoAvailableSlotException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

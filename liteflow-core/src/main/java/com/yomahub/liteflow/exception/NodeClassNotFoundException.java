@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 找不到节点类异常
+ * @author Yun
+ */
 public class NodeClassNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

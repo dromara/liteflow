@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 流程系统异常
+ * @author Yun
+ */
 public class FlowSystemException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

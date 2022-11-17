@@ -3,13 +3,13 @@ package com.yomahub.liteflow.builder.el.operator.base;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.exception.DataNofFoundException;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Node;
 
 import java.util.Objects;
 
 /**
  * Operator 常用工具类
+ *
  * @author gaibu
  * @since 2.8.6
  */
@@ -131,17 +131,17 @@ public class OperatorHelper {
      * 如果是Node类型的则进行copy
      */
     public static <T> T convert(Object object, Class<T> clazz, String errorMsg) throws QLException {
-        try{
+        try {
             if (clazz.isAssignableFrom(object.getClass())) {
 
-                if(clazz.equals(Node.class)){
+                if (clazz.equals(Node.class)) {
                     Node node = (Node) object;
                     return (T) node.copy();
-                }else{
+                } else {
                     return (T) object;
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new QLException("An error occurred while copying an object");
         }
 

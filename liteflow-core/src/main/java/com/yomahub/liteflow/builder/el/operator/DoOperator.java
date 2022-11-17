@@ -1,14 +1,10 @@
 package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.collection.ListUtil;
-import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.condition.Condition;
-import com.yomahub.liteflow.flow.element.condition.ForCondition;
 import com.yomahub.liteflow.flow.element.condition.LoopCondition;
-import com.yomahub.liteflow.flow.element.condition.WhileCondition;
 
 /**
  * EL规则中的DO的操作符

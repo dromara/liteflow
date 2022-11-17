@@ -22,13 +22,16 @@ public abstract class Condition implements Executable{
 
 	private String id;
 
-	//可执行元素的集合
+	/**
+	 * 可执行元素的集合
+	 */
 	private List<Executable> executableList = new ArrayList<>();
 
 
-
-	//当前所在的ChainName
-	//如果对于子流程来说，那这个就是子流程所在的Chain
+	/**
+	 * 当前所在的ChainName
+	 * 如果对于子流程来说，那这个就是子流程所在的Chain
+	 */
 	private String currChainName;
 
 	@Override

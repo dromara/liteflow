@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * Json 进程异常
+ * @author Yun
+ */
 public class JsonProcessException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

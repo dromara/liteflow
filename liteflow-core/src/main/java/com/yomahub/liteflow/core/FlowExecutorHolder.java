@@ -4,6 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 
+/**
+ * @author Bryan.Zhang
+ */
 public class FlowExecutorHolder {
 
     private static FlowExecutor flowExecutor;

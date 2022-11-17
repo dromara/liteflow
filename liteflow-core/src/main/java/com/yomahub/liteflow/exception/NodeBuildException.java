@@ -1,6 +1,10 @@
 package com.yomahub.liteflow.exception;
 
 
+/**
+ * 节点构建异常
+ * @author Yun
+ */
 public class NodeBuildException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
