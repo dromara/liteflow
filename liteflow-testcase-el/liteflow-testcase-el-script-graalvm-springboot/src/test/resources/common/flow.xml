@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="js">
+            <![CDATA[
+                var a=3;
+                var b=2;
+                var c=1;
+                var d=5;
+
+                function addByArray(values) {
+                    var sum = 0;
+                    for (var i = 0; i < values.length; i++) {
+                        sum += values[i];
+                    }
+                    return sum;
+                }
+
+                var result = addByArray([a,b,c,d]);
+
+                defaultContext.setData("s1",parseInt(result));
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>

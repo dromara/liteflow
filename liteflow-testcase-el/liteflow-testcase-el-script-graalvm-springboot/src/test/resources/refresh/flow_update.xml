@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="选择脚本_改" type="switch_script" language="js">
+            <![CDATA[
+                var count = defaultContext.getData("count");
+                if(count > 150){
+                    return "b";
+                }else{
+                    return "a";
+                }
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本_新增" type="script" language="js">
+            <![CDATA[
+                var a=3;
+                var b=2;
+                var c=10;
+                defaultContext.setData("s1",a*b+c);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(d, SWITCH(s1).to(a,b), s2);
+    </chain>
+</flow>
