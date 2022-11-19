@@ -77,7 +77,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
             metaMap.put("requestData", slot.getRequestData());
 
             //如果有隐式流程，则放入隐式流程的流程参数
-            Object subRequestData = slot.getChainReqData(wrap.getCurrChainName());
+            Object subRequestData = slot.getChainReqData(wrap.getCurrChainId());
             if (ObjectUtil.isNotNull(subRequestData)){
                 metaMap.put("subRequestData", subRequestData);
             }

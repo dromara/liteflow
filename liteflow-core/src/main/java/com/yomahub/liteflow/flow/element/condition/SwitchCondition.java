@@ -89,7 +89,7 @@ public class SwitchCondition extends Condition{
     }
 
     public void addTargetItem(Executable executable){
-        this.targetMap.put(executable.getExecuteName(), executable);
+        this.targetMap.put(executable.getExecuteId(), executable);
     }
 
     public void setSwitchNode(Node switchNode) {
