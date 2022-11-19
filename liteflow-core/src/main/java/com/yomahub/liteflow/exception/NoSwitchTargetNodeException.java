@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 无切换目标节点异常
+ * @author Yun
+ */
 public class NoSwitchTargetNodeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

@@ -1,6 +1,10 @@
 
 package com.yomahub.liteflow.exception;
 
+/**
+ * 组件方法定义错误异常
+ * @author Bryan.Zhang
+ */
 public class ComponentMethodDefineErrorException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

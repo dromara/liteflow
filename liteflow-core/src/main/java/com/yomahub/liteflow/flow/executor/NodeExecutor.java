@@ -19,7 +19,11 @@ import java.util.List;
 public abstract class NodeExecutor {
     protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    //执行器执行入口-若需要更大维度的执行方式可以重写该方法
+    /**
+     * 执行器执行入口-若需要更大维度的执行方式可以重写该方法
+     * @param instance
+     * @throws Exception
+     */
     public void execute(NodeComponent instance) throws Exception {
         int retryCount = instance.getRetryCount();
         List<Class<? extends Exception>> forExceptions = Arrays.asList(instance.getRetryForExceptions());
@@ -47,7 +51,12 @@ public abstract class NodeExecutor {
         }
     }
 
-    //执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
+    /**
+     * 执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
+     * @param instance
+     * @param currentRetryCount
+     * @throws Exception
+     */
     protected void retry(NodeComponent instance, int currentRetryCount) throws Exception {
         Slot slot = DataBus.getSlot(instance.getSlotIndex());
         LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(),instance.getDisplayName(), currentRetryCount + 1);

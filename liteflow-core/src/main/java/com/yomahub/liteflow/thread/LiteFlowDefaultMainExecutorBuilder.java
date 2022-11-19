@@ -6,6 +6,10 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * LiteFlow 默认主执行器生成器
+ * @author Yun
+ */
 public class LiteFlowDefaultMainExecutorBuilder implements ExecutorBuilder{
     @Override
     public ExecutorService buildExecutor() {

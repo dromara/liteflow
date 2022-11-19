@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 解析异常
+ * @author Yun
+ */
 public class ParseException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

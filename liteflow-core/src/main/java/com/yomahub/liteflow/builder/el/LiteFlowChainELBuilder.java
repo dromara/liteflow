@@ -6,6 +6,7 @@ import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.exception.DataNofFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
@@ -31,45 +32,53 @@ public class LiteFlowChainELBuilder {
 
     private Chain chain;
 
-    //这是主体的Condition，不包含前置和后置
-    //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
-    //虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
-    //所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
+    /**
+     * //这是主体的Condition，不包含前置和后置
+     * //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
+     * //虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
+     * //所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
+     */
     private final List<Condition> conditionList;
 
-    //前置处理Condition，用来区别主体的Condition
+    /**
+     * 前置处理Condition，用来区别主体的Condition
+     */
     private final List<Condition> preConditionList;
 
-    //后置处理Condition，用来区别主体的Condition
+    /**
+     * 后置处理Condition，用来区别主体的Condition
+     */
     private final List<Condition> finallyConditionList;
 
-    //EL解析引擎
+    /**
+     * EL解析引擎
+     */
     private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
 
     static {
         //初始化QLExpress的Runner
-        EXPRESS_RUNNER.addFunction("THEN", new ThenOperator());
-        EXPRESS_RUNNER.addFunction("WHEN", new WhenOperator());
-        EXPRESS_RUNNER.addFunction("SWITCH", new SwitchOperator());
-        EXPRESS_RUNNER.addFunction("PRE", new PreOperator());
-        EXPRESS_RUNNER.addFunction("FINALLY", new FinallyOperator());
-        EXPRESS_RUNNER.addFunction("IF", new IfOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("ELSE", Object.class, new ElseOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("ELIF", Object.class, new ElifOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("TO", Object.class, new ToOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("to", Object.class, new ToOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("tag", Object.class, new TagOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("any", Object.class, new AnyOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("id", Object.class, new IdOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("ignoreError", Object.class, new IgnoreErrorOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("threadPool", Object.class, new ThreadPoolOperator());
-        EXPRESS_RUNNER.addFunction("NODE", new NodeOperator());
-        EXPRESS_RUNNER.addFunction("node", new NodeOperator());
-        EXPRESS_RUNNER.addFunction("FOR", new ForOperator());
-        EXPRESS_RUNNER.addFunction("WHILE", new WhileOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("DO", Object.class, new DoOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("BREAK", Object.class, new BreakOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod("data", Object.class, new DataOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.THEN, new ThenOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.WHEN, new WhenOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.SWITCH, new SwitchOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.PRE, new PreOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.FINALLY, new FinallyOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.IF, new IfOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELSE, Object.class, new ElseOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELIF, Object.class, new ElifOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO, Object.class, new ToOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO.toLowerCase(), Object.class, new ToOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TAG, Object.class, new TagOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ANY, Object.class, new AnyOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ID, Object.class, new IdOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.IGNORE_ERROR, Object.class, new IgnoreErrorOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.THREAD_POOL, Object.class, new ThreadPoolOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.NODE.toUpperCase(), new NodeOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.NODE, new NodeOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.FOR, new ForOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DO, Object.class, new DoOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BREAK, Object.class, new BreakOperator());
+        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DATA, Object.class, new DataOperator());
     }
 
     public static LiteFlowChainELBuilder createChain() {
@@ -86,10 +95,10 @@ public class LiteFlowChainELBuilder {
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
     //2.6.8之后取消了递归的模式，两段式组装，先把带有chainName的chain对象放进去，第二段再组装chain里面的condition
     //所以这里setChainName的时候需要判断下
+
     /**
-     * 
-     * @deprecated 请使用 {@link #setChainId(String)}
      * @return LiteFlowChainELBuilder
+     * @deprecated 请使用 {@link #setChainId(String)}
      */
     public LiteFlowChainELBuilder setChainName(String chainName) {
         if (FlowBus.containChain(chainName)) {
@@ -99,7 +108,7 @@ public class LiteFlowChainELBuilder {
         }
         return this;
     }
-    
+
     public LiteFlowChainELBuilder setChainId(String chainId) {
         if (FlowBus.containChain(chainId)) {
             this.chain = FlowBus.getChain(chainId);

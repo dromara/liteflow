@@ -6,6 +6,9 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * @author Yun
+ */
 public class SerialsUtil {
 
     public static int serialInt = 1;
