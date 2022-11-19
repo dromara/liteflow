@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.enums;
 
+/**
+ * @author Yun
+ */
 public enum ConditionTypeEnum {
     TYPE_THEN("then","then"),
     TYPE_WHEN("when","when"),

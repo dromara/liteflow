@@ -1,6 +1,10 @@
 package com.yomahub.liteflow.exception;
 
 
+/**
+ * 不支持条件异常
+ * @author Yun
+ */
 public class NotSupportConditionException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

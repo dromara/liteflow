@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.exception;
 
 /**
+ * 未找到数据异常
  * @author tangkc
  */
 public class DataNofFoundException extends RuntimeException {

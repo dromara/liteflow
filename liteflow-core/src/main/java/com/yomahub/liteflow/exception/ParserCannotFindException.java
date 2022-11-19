@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 解析器找不到异常
+ * @author Yun
+ */
 public class ParserCannotFindException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.builder.el.operator;
 
-import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Executable;
@@ -14,14 +13,14 @@ import com.yomahub.liteflow.flow.element.condition.ThenCondition;
  */
 public class ThenOperator extends BaseOperator<ThenCondition> {
 
-	@Override
-	public ThenCondition build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeGtZero(objects);
+    @Override
+    public ThenCondition build(Object[] objects) throws Exception {
+        OperatorHelper.checkObjectSizeGtZero(objects);
 
-		ThenCondition thenCondition = new ThenCondition();
-		for (Object obj : objects) {
-			thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
-		}
-		return thenCondition;
-	}
+        ThenCondition thenCondition = new ThenCondition();
+        for (Object obj : objects) {
+            thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
+        }
+        return thenCondition;
+    }
 }

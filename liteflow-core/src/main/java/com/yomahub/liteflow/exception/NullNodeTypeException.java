@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 空节点异常
+ * @author Yun
+ */
 public class NullNodeTypeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

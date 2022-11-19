@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 链端不存在
+ * @author Bryan.Zhang
+ */
 public class ChainNotFoundException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

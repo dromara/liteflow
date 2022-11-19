@@ -1,6 +1,10 @@
 
 package com.yomahub.liteflow.exception;
 
+/**
+ * 组件代理错误异常
+ * @author Yun
+ */
 public class ComponentProxyErrorException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
