@@ -25,15 +25,7 @@ public interface ChainConstant {
 
     String VALUE = "value";
 
-    String ERROR_RESUME = "errorResume";
-
-    String GROUP = "group";
-
     String ANY = "any";
-
-    String THREAD_EXECUTOR_CLASS = "threadExecutorClass";
-
-    String CONDITION = "condition";
 
     String TYPE = "type";
 
