@@ -87,7 +87,8 @@ public class JavaScriptExecutor implements ScriptExecutor {
             bindings.put("_meta", metaMap);
 
             //放入用户自己定义的bean
-            bindings.putAll(ScriptBeanManager.getScriptBeanMap());
+            //放入用户自己定义的bean
+            ScriptBeanManager.getScriptBeanMap().forEach(bindings::putIfAbsent);
 
             return compiledScript.eval(bindings);
         }catch (Exception e){

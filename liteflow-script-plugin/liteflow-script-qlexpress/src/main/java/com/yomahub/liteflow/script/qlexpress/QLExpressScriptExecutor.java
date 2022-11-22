@@ -91,7 +91,8 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             context.putAll(metaMap);
 
             //放入用户自己定义的bean
-            context.putAll(ScriptBeanManager.getScriptBeanMap());
+            //放入用户自己定义的bean
+            ScriptBeanManager.getScriptBeanMap().forEach(context::putIfAbsent);
 
             return expressRunner.execute(instructionSet, context, errorList, true, false, null);
         }catch (Exception e){

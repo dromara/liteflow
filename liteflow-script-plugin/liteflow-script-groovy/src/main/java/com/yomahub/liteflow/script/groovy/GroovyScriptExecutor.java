@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.script.groovy;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.script.ScriptBeanManager;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.*;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Groovy脚本语言的执行器实现
@@ -86,7 +88,7 @@ public class GroovyScriptExecutor implements ScriptExecutor {
             bindings.put("_meta", metaMap);
 
             //放入用户自己定义的bean
-            bindings.putAll(ScriptBeanManager.getScriptBeanMap());
+            ScriptBeanManager.getScriptBeanMap().forEach(bindings::putIfAbsent);
 
             return compiledScript.eval(bindings);
         }catch (Exception e){
