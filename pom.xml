@@ -60,6 +60,7 @@
 		<nacos.version>1.4.4</nacos.version>
 		<qlexpress.version>3.3.0</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
+		<graalvm.version>20.2.0</graalvm.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
@@ -212,6 +213,11 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<version>${bytebuddy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.graalvm.js</groupId>
+				<artifactId>js</artifactId>
+				<version>${graalvm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-beanutils</groupId>

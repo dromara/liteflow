@@ -23,7 +23,7 @@
         <module>liteflow-testcase-el-script-groovy-springboot</module>
         <module>liteflow-testcase-el-script-qlexpress-springboot</module>
         <module>liteflow-testcase-el-script-javascript-springboot</module>
-        <module>liteflow-testcase-el-script-graalvm-springboot</module>
+        <module>liteflow-testcase-el-script-graaljs-springboot</module>
         <module>liteflow-testcase-el-zk-springboot</module>
         <module>liteflow-testcase-el-sql-springboot</module>
         <module>liteflow-testcase-el-nacos-springboot</module>
