@@ -60,7 +60,7 @@
 		<nacos.version>1.4.4</nacos.version>
 		<qlexpress.version>3.3.0</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
-		<graalvm.version>20.2.0</graalvm.version>
+		<graalvm.version>21.3.3.1</graalvm.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
