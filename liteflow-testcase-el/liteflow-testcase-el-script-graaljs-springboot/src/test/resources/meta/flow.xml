@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="js">
+            <![CDATA[
+                var nodeId = _meta.nodeId
+                var currChainId = _meta.currChainId
+                var requestData = _meta.requestData
+                defaultContext.setData("nodeId",nodeId)
+                defaultContext.setData("currChainId",currChainId)
+                defaultContext.setData("requestData",requestData)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain id="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>
