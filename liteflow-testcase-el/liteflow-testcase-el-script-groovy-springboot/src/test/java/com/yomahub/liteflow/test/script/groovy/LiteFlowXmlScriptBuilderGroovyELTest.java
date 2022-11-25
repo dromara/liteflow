@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = LiteFlowXmlScriptBuilderGroovyELTest.class)
@@ -46,7 +47,12 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
                 .setId("s1")
                 .setName("普通脚本S1")
                 .setType(NodeTypeEnum.SCRIPT)
-                .setScript("Integer a=3;Integer b=2;defaultContext.setData(\"s1\",a*b)")
+                .setScript("import cn.hutool.core.collection.ListUtil;" +
+                        "import java.util.stream.Collectors;" +
+                        "Integer a=3;Integer b=2;defaultContext.setData(\"s1\",a*b);" +
+                        "List<String> list = ListUtil.toList(\"a\", \"b\", \"c\");" +
+                        "List<String> resultList = list.stream().map(s -> \"hello,\" + s).collect(Collectors.toList());" +
+                        "defaultContext.setData(\"resultList\", resultList)")
                 .build();
 
         LiteFlowChainELBuilder.createChain().setChainName("chain1")
@@ -58,6 +64,8 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(Integer.valueOf(6), context.getData("s1"));
+        List<String> resultList = context.getData("resultList");
+        Assert.assertEquals(3, resultList.size());
     }
 
     //测试通过builder方式运行普通script节点，以file的方式运行
