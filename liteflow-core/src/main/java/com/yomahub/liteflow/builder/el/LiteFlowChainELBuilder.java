@@ -120,7 +120,7 @@ public class LiteFlowChainELBuilder {
 
     public LiteFlowChainELBuilder setEL(String elStr) {
         if (StrUtil.isBlank(elStr)) {
-            String errMsg = StrUtil.format("no conditionList in this chain[{}]", chain.getChainName());
+            String errMsg = StrUtil.format("no conditionList in this chain[{}]", chain.getChainId());
             throw new FlowSystemException(errMsg);
         }
 
@@ -130,7 +130,7 @@ public class LiteFlowChainELBuilder {
 
             //这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
             //往上下文里放入所有的chain，是的el表达式可以直接引用到chain
-            FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainName(), chain));
+            FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainId(), chain));
 
             //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
             FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
@@ -181,7 +181,7 @@ public class LiteFlowChainELBuilder {
      */
     private void checkBuild() {
         List<String> errorList = new ArrayList<>();
-        if (StrUtil.isBlank(this.chain.getChainName())) {
+        if (StrUtil.isBlank(this.chain.getChainId())) {
             errorList.add("name is blank");
         }
         if (CollUtil.isNotEmpty(errorList)) {
