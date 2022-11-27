@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.etcd.exception.EtcdException;
 import com.yomahub.liteflow.parser.etcd.util.EtcdParserHelper;
@@ -13,6 +14,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 /**
  * Etcd解析器实现，只支持EL形式的XML，不支持其他的形式
@@ -56,7 +58,12 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 
 		try {
 			String content = etcdParserHelper.getContent();
-			etcdParserHelper.listen();
+
+			FlowInitHook.addHook(() -> {
+				etcdParserHelper.listen();
+				return true;
+			});
+
 			return content;
 		} catch (Exception e){
 			throw new EtcdException(e.getMessage());

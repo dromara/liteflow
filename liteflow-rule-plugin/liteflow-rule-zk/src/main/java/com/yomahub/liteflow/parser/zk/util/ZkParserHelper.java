@@ -123,11 +123,7 @@ public class ZkParserHelper {
 
 			//存在这个节点，但是子节点不存在
 			List<String> chainNameList = client.getChildren().forPath(zkParserVO.getScriptPath());
-			if (CollUtil.isEmpty(chainNameList)){
-				return false;
-			}
-
-			return true;
+			return !CollUtil.isEmpty(chainNameList);
 		}catch (Exception e){
 			return false;
 		}
@@ -143,6 +139,9 @@ public class ZkParserHelper {
 		cache1.listenable().addListener((type, oldData, data) -> {
 			String path = data.getPath();
 			String value = new String(data.getData());
+			if (StrUtil.isBlank(value)){
+				return;
+			}
 			if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
 				LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
 				String chainName = FileNameUtil.getName(path);
@@ -160,6 +159,9 @@ public class ZkParserHelper {
 		cache2.listenable().addListener((type, oldData, data) -> {
 			String path = data.getPath();
 			String value = new String(data.getData());
+			if (StrUtil.isBlank(value)){
+				return;
+			}
 			if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
 				LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
 				String scriptNodeValue = FileNameUtil.getName(path);

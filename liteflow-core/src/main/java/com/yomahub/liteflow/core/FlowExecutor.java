@@ -161,6 +161,9 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
+
+        //执行钩子
+        FlowInitHook.executeHook();
     }
 
     //此方法就是从原有的配置源主动拉取新的进行刷新

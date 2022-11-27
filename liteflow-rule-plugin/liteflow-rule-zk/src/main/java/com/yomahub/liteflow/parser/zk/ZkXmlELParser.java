@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.zk.exception.ZkException;
 import com.yomahub.liteflow.parser.zk.util.ZkParserHelper;
@@ -55,7 +56,12 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
     public String parseCustom() {
         try{
             String content = zkParserHelper.getContent();
-            zkParserHelper.listenZkNode();
+
+            FlowInitHook.addHook(() -> {
+                zkParserHelper.listenZkNode();
+                return true;
+            });
+
             return content;
         }catch (Exception e){
             throw new ZkException(e.getMessage());
