@@ -131,11 +131,7 @@ public class EtcdParserHelper {
 		try{
 			//存在这个节点，但是子节点不存在
 			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR);
-			if (CollUtil.isEmpty(chainNameList)){
-				return false;
-			}
-
-			return true;
+			return !CollUtil.isEmpty(chainNameList);
 		}catch (Exception e){
 			return false;
 		}
@@ -146,29 +142,35 @@ public class EtcdParserHelper {
 	 * 监听 etcd 节点
 	 */
 	public void listen() {
-		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
-			LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
-			String chainName = updatePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
-			LiteFlowChainELBuilder.createChain().setChainName(chainName).setEL(updateValue).build();
-			}, (deletePath) -> {
-			LOG.info("starting reload flow config... delete path={}", deletePath);
-			String chainName = deletePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
-			FlowBus.removeChain(chainName);
-		});
-		this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
-			LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
-			String scriptNodeValue = updatePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");;
-			NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-			LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
-					.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-					.setName(nodeSimpleVO.getName())
-					.setScript(updateValue).build();
-		}, (deletePath) -> {
-			LOG.info("starting reload flow config... delete path={}", deletePath);
-			String scriptNodeValue = deletePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");;
-			NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-			FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-		});
+		this.client.watchChildChange(this.etcdParserVO.getChainPath(),
+				(updatePath, updateValue) -> {
+					LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
+					String chainName = updatePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+					LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(updateValue).build();
+				},
+				(deletePath) -> {
+					LOG.info("starting reload flow config... delete path={}", deletePath);
+					String chainName = deletePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+					FlowBus.removeChain(chainName);
+				}
+		);
+		this.client.watchChildChange(this.etcdParserVO.getScriptPath(),
+				(updatePath, updateValue) -> {
+					LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
+					String scriptNodeValue = updatePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");
+					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(updateValue).build();
+				},
+				(deletePath) -> {
+					LOG.info("starting reload flow config... delete path={}", deletePath);
+					String scriptNodeValue = deletePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");
+					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+				}
+		);
 	}
 
 	public NodeSimpleVO convert(String str){

@@ -50,7 +50,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	}
 
 	@Test
-	public void testSQLWithScriptXml() {
+	public void 	testSQLWithScriptXml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());

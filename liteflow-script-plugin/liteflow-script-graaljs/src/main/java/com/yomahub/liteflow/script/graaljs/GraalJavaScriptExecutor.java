@@ -71,7 +71,7 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
             metaMap.put("requestData", slot.getRequestData());
 
             //如果有隐式流程，则放入隐式流程的流程参数
-            Object subRequestData = slot.getChainReqData(wrap.getCurrChainName());
+            Object subRequestData = slot.getChainReqData(wrap.getCurrChainId());
             if (ObjectUtil.isNotNull(subRequestData)){
                 metaMap.put("subRequestData", subRequestData);
             }
@@ -80,9 +80,13 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
             bindings.putMember("_meta", metaMap);
 
             //放入用户自己定义的bean
-            ScriptBeanManager.getScriptBeanMap().entrySet().stream().forEach( e ->{
-                bindings.putMember(e.getKey(), e.getValue());
+            ScriptBeanManager.getScriptBeanMap().forEach((key, value) -> {
+                if (!bindings.hasMember(key)) {
+                    bindings.putMember(key, value);
+                }
             });
+
+
             Value value = context.eval("js", scriptMap.get(wrap.getNodeId()));
             if (value.isBoolean()) {
                 return value.asBoolean();
