@@ -2,15 +2,18 @@ package com.yomahub.liteflow.parser.zk.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.FlowExecutorHolder;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.zk.exception.ZkException;
 import com.yomahub.liteflow.parser.zk.vo.ZkParserVO;
-import com.yomahub.liteflow.util.JsonUtil;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.RetryNTimes;
@@ -19,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class ZkParserHelper {
 
@@ -134,16 +136,45 @@ public class ZkParserHelper {
 	/**
 	 * 监听 zk 节点
 	 */
-	public void listenZkNode(Consumer<String> listenerConsumer) {
+	public void listenZkNode(){
 		//监听chain
 		CuratorCache cache1 = CuratorCache.build(client, zkParserVO.getChainPath());
 		cache1.start();
-		cache1.listenable().addListener((type, oldData, data) -> listenerConsumer.accept(getContent()));
+		cache1.listenable().addListener((type, oldData, data) -> {
+			String path = data.getPath();
+			String value = new String(data.getData());
+			if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
+				LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
+				String chainName = FileNameUtil.getName(path);
+				LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(value).build();
+			}else if(CuratorCacheListener.Type.NODE_DELETED.equals(type)){
+				LOG.info("starting reload flow config... delete path={}", path);
+				String chainName = FileNameUtil.getName(path);
+				FlowBus.removeChain(chainName);
+			}
+		});
 
 		//监听script
 		CuratorCache cache2 = CuratorCache.build(client, zkParserVO.getScriptPath());
 		cache2.start();
-		cache2.listenable().addListener((type, oldData, data) -> listenerConsumer.accept(getContent()));
+		cache2.listenable().addListener((type, oldData, data) -> {
+			String path = data.getPath();
+			String value = new String(data.getData());
+			if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
+				LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
+				String scriptNodeValue = FileNameUtil.getName(path);
+				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+				LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
+						.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+						.setName(nodeSimpleVO.getName())
+						.setScript(value).build();
+			} else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
+				LOG.info("starting reload flow config... delete path={}", path);
+				String scriptNodeValue = FileNameUtil.getName(path);
+				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+				FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+			}
+		});
 	}
 
 	public NodeSimpleVO convert(String str){
@@ -198,5 +229,9 @@ public class ZkParserHelper {
 		public void setName(String name) {
 			this.name = name;
 		}
+	}
+
+	public static void main(String[] args) {
+		System.out.println(FileNameUtil.getName("/chain/dadfa/c1"));
 	}
 }

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.etcd.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
@@ -22,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -145,19 +144,19 @@ public class EtcdParserHelper {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(),
 				(updatePath, updateValue) -> {
 					LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
-					String chainName = updatePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+					String chainName = FileNameUtil.getName(updatePath);
 					LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(updateValue).build();
 				},
 				(deletePath) -> {
 					LOG.info("starting reload flow config... delete path={}", deletePath);
-					String chainName = deletePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
+					String chainName = FileNameUtil.getName(deletePath);
 					FlowBus.removeChain(chainName);
 				}
 		);
 		this.client.watchChildChange(this.etcdParserVO.getScriptPath(),
 				(updatePath, updateValue) -> {
 					LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
-					String scriptNodeValue = updatePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");
+					String scriptNodeValue = FileNameUtil.getName(updatePath);
 					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
 					LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
 							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
@@ -166,7 +165,7 @@ public class EtcdParserHelper {
 				},
 				(deletePath) -> {
 					LOG.info("starting reload flow config... delete path={}", deletePath);
-					String scriptNodeValue = deletePath.replace(this.etcdParserVO.getScriptPath() + SEPARATOR, "");
+					String scriptNodeValue = FileNameUtil.getName(deletePath);
 					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
 					FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
 				}

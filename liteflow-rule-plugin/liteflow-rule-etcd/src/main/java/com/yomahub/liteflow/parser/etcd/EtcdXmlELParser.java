@@ -13,7 +13,6 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * Etcd解析器实现，只支持EL形式的XML，不支持其他的形式

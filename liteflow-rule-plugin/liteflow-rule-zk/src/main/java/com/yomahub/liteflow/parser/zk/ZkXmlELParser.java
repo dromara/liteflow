@@ -13,7 +13,6 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * ZK解析器实现，只支持EL形式的XML，不支持其他的形式
@@ -56,16 +55,7 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
     public String parseCustom() {
         try{
             String content = zkParserHelper.getContent();
-
-            Consumer<String> listenerConsumer = s -> {
-                try{
-                    parse(s);
-                }catch (Exception e){
-                    throw new ZkException(e.getMessage());
-                }
-            };
-            zkParserHelper.listenZkNode(listenerConsumer);
-
+            zkParserHelper.listenZkNode();
             return content;
         }catch (Exception e){
             throw new ZkException(e.getMessage());
