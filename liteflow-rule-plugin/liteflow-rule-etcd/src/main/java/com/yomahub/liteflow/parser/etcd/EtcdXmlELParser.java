@@ -57,17 +57,7 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 
 		try {
 			String content = etcdParserHelper.getContent();
-
-			Consumer<String> listenerConsumer = t -> {
-				try {
-					parse(t);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			};
-
-			etcdParserHelper.listen(listenerConsumer);
-
+			etcdParserHelper.listen();
 			return content;
 		} catch (Exception e){
 			throw new EtcdException(e.getMessage());

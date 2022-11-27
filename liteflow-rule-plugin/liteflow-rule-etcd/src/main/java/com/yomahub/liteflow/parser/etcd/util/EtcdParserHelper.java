@@ -145,7 +145,7 @@ public class EtcdParserHelper {
 	/**
 	 * 监听 etcd 节点
 	 */
-	public void listen(Consumer<String> parseConsumer) {
+	public void listen() {
 		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
 			LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
 			String chainName = updatePath.replace(this.etcdParserVO.getChainPath() + SEPARATOR, "");
