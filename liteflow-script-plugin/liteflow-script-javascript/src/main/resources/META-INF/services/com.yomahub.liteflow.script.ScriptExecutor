@@ -1,2 +1,2 @@
 # JavaScript的实现
-com.yomahub.liteflow.script.graaljs.GraalJavaScriptExecutor
+com.yomahub.liteflow.script.javascript.JavaScriptExecutor
