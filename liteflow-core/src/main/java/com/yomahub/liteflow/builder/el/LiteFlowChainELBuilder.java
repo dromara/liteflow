@@ -120,7 +120,7 @@ public class LiteFlowChainELBuilder {
 
     public LiteFlowChainELBuilder setEL(String elStr) {
         if (StrUtil.isBlank(elStr)) {
-            String errMsg = StrUtil.format("no conditionList in this chain[{}]", chain.getChainId());
+            String errMsg = StrUtil.format("no content in this chain[{}]", chain.getChainId());
             throw new FlowSystemException(errMsg);
         }
 
