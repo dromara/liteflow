@@ -88,7 +88,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             }
 
             //往脚本上下文里放入元数据
-            context.putAll(metaMap);
+            context.put("_meta", metaMap);
 
             //放入用户自己定义的bean
             //放入用户自己定义的bean
