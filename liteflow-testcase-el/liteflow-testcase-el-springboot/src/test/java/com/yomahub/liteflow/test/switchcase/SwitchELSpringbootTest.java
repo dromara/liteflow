@@ -67,4 +67,12 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>h==>b",response.getExecuteStepStr());
     }
+
+    //相同组件的tag的跳转
+    @Test
+    public void testSwitch6() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>h==>b",response.getExecuteStepStr());
+    }
 }

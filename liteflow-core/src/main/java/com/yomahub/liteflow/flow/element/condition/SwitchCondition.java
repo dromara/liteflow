@@ -15,7 +15,9 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -27,7 +29,8 @@ import java.util.function.Predicate;
  */
 public class SwitchCondition extends Condition{
 
-    private final Map<String, Executable> targetMap = new HashMap<>();
+
+    private final List<Executable> targetList = new ArrayList<>();
 
     private final String TAG_PREFIX = "tag";
     private final String TAG_FLAG = ":";
@@ -37,7 +40,7 @@ public class SwitchCondition extends Condition{
     public void execute(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
             //先执行switch节点
-            this.getSwitchNode().setCurrChainName(this.getCurrChainName());
+            this.getSwitchNode().setCurrChainId(this.getCurrChainId());
             this.getSwitchNode().execute(slotIndex);
 
             //根据switch节点执行出来的结果选择
@@ -53,7 +56,7 @@ public class SwitchCondition extends Condition{
                     String[] target = targetId.split(TAG_FLAG, 2);
                     String _targetId = target[0];
                     String _targetTag = target[1];
-                    targetExecutor = targetMap.values().stream().filter(executable -> {
+                    targetExecutor = targetList.stream().filter(executable -> {
                         if (executable instanceof Node){
                             Node node = (Node) executable;
                             return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(node.getTag())) || ((StrUtil.isEmpty(_targetId) || _targetId.equals(node.getId())) && (StrUtil.isEmpty(_targetTag) || _targetTag.equals(node.getTag())));
@@ -62,7 +65,9 @@ public class SwitchCondition extends Condition{
                         }
                     }).findFirst().orElse(null);
                 }else{
-                    targetExecutor = targetMap.get(targetId);
+                    targetExecutor = targetList.stream().filter(
+                            executable -> executable.getExecuteId().equals(targetId)
+                    ).findFirst().orElse(null);
                 }
 
                 if (ObjectUtil.isNotNull(targetExecutor)) {
@@ -71,7 +76,7 @@ public class SwitchCondition extends Condition{
                         String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
                         throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
                     }
-                    targetExecutor.setCurrChainName(this.getCurrChainName());
+                    targetExecutor.setCurrChainId(this.getCurrChainId());
                     targetExecutor.execute(slotIndex);
                 }else{
                     String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}]", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
@@ -89,15 +94,15 @@ public class SwitchCondition extends Condition{
     }
 
     public void addTargetItem(Executable executable){
-        this.targetMap.put(executable.getExecuteId(), executable);
+        this.targetList.add(executable);
     }
 
     public void setSwitchNode(Node switchNode) {
         this.getExecutableList().add(switchNode);
     }
 
-    public Map<String, Executable> getTargetMap() {
-        return targetMap;
+    public List<Executable> getTargetList(){
+        return targetList;
     }
 
     public Node getSwitchNode(){

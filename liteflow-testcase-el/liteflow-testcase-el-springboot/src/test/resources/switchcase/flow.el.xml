@@ -35,4 +35,11 @@
         SWITCH(h).to(b.tag("td"), d.tag("td"))
         );
     </chain>
+
+    <chain name="chain6">
+        THEN(
+        a,
+        SWITCH(h).to(b.tag("td"), b.tag("xx"))
+        );
+    </chain>
 </flow>
