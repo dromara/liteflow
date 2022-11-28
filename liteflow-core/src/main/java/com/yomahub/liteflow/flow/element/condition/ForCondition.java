@@ -29,7 +29,7 @@ public class ForCondition extends LoopCondition{
         }
 
         //执行forCount组件
-        forNode.setCurrChainName(this.getCurrChainName());
+        forNode.setCurrChainId(this.getCurrChainId());
         forNode.execute(slotIndex);
 
         //这里可能会有spring代理过的bean，所以拿到user原始的class

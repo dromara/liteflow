@@ -65,7 +65,7 @@ public class WhenCondition extends Condition {
 	private void executeAsyncCondition(Integer slotIndex) throws Exception{
 		Slot slot = DataBus.getSlot(slotIndex);
 
-		String currChainName = this.getCurrChainName();
+		String currChainName = this.getCurrChainId();
 
 		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
 		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());
@@ -93,7 +93,7 @@ public class WhenCondition extends Condition {
 				return false;
 			}
 		}).map(executable -> CompletableFutureTimeout.completeOnTimeout(
-				WhenFutureObj.timeOut(executable.getExecuteName()),
+				WhenFutureObj.timeOut(executable.getExecuteId()),
 				CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
 				liteflowConfig.getWhenMaxWaitSeconds(),
 				TimeUnit.SECONDS

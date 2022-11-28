@@ -28,7 +28,7 @@ public class IfCondition extends Condition {
     public void execute(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(getIfNode().getType())){
             //先执行IF节点
-            this.getIfNode().setCurrChainName(this.getCurrChainName());
+            this.getIfNode().setCurrChainId(this.getCurrChainId());
             this.getIfNode().execute(slotIndex);
 
             Slot slot = DataBus.getSlot(slotIndex);
@@ -63,7 +63,7 @@ public class IfCondition extends Condition {
                     }
 
                     //执行falseCaseExecutableItem
-                    falseCaseExecutableItem.setCurrChainName(this.getCurrChainName());
+                    falseCaseExecutableItem.setCurrChainId(this.getCurrChainId());
                     falseCaseExecutableItem.execute(slotIndex);
                 }
             }

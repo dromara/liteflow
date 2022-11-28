@@ -27,7 +27,7 @@ public class ThenCondition extends Condition {
 			if (executableItem instanceof PreCondition || executableItem instanceof FinallyCondition){
 				continue;
 			}
-			executableItem.setCurrChainName(this.getCurrChainName());
+			executableItem.setCurrChainId(this.getCurrChainId());
 			executableItem.execute(slotIndex);
 		}
 	}
