@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.*;
+import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +125,10 @@ public enum NodeTypeEnum {
 	}
 
 	public static NodeTypeEnum guessType(Class<?> clazz) {
+		if(LiteFlowProxyUtil.isCglibProxyClass(clazz)){
+			clazz = LiteFlowProxyUtil.getUserClass(clazz);
+		}
+
 		NodeTypeEnum nodeType = guessTypeBySuperClazz(clazz);
 		if (nodeType == null) {
 			//尝试从类声明处进行推断

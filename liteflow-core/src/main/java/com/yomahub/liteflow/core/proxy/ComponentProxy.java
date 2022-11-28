@@ -70,7 +70,7 @@ public class ComponentProxy {
 
         return methodListMap.entrySet().stream().map(entry -> {
             // 获取当前节点的原有注解，如：LiteFlowRetry 之类的规则注解
-            Annotation[] beanClassAnnotation = bean.getClass().getAnnotations();
+            Annotation[] beanClassAnnotation = beanClazz.getAnnotations();
             // 如果entry的key为空字符串，则是为了兼容老版本的写法，即：没有指定nodeId的情况
             // 判断是否是方法级创造节点
             boolean isMethodCreate = !StrUtil.isEmpty(entry.getKey());
@@ -139,7 +139,7 @@ public class ComponentProxy {
                 //被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
                 Object instance = new ByteBuddy().subclass(cmpClazz)
                         .name(StrUtil.format("{}.ByteBuddy${}${}",
-                                ClassUtil.getPackage(bean.getClass()),
+                                ClassUtil.getPackage(beanClazz),
                                 activeNodeId,
                                 SerialsUtil.generateShortUUID()))
                         .method(ElementMatchers.namedOneOf(methodList.stream().map(m -> m.value().getMethodName()).toArray(String[]::new)))
@@ -163,8 +163,11 @@ public class ComponentProxy {
 
         private final Object bean;
 
+        private final Class<?> clazz;
+
         public AopInvocationHandler(Object bean) {
             this.bean = bean;
+            this.clazz = LiteFlowProxyUtil.getUserClass(bean.getClass());
         }
 
         @Override
@@ -172,7 +175,7 @@ public class ComponentProxy {
             //这里做了2件事情
             //先是从普通的bean里过滤出含有@LiteFlowMethod这个标注的方法
             //然后进行转换成LiteFlowMethodBean对象List,形成<methodName,Method>键值对的对象
-            List<LiteFlowMethodBean> liteFlowMethodBeanList = Arrays.stream(ReflectUtil.getMethods(bean.getClass())).filter(m -> {
+            List<LiteFlowMethodBean> liteFlowMethodBeanList = Arrays.stream(ReflectUtil.getMethods(clazz)).filter(m -> {
                 LiteflowMethod liteFlowMethod = m.getAnnotation(LiteflowMethod.class);
                 return ObjectUtil.isNotNull(liteFlowMethod);
             }).filter(m -> {
