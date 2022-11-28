@@ -11,6 +11,8 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
+import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,13 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String, String> scriptMap = new CopyOnWriteHashMap<>();
+    private final Map<String, Source> scriptMap = new CopyOnWriteHashMap<>();
+
+    private Engine engine;
 
     @Override
     public ScriptExecutor init() {
+        engine = Engine.create();
         return this;
     }
 
@@ -37,7 +42,7 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
     public void load(String nodeId, String script) {
         try{
             String wrapScript = StrUtil.format("function process(){{}} process();",script);
-            scriptMap.put(nodeId, wrapScript);
+            scriptMap.put(nodeId, Source.create("js", wrapScript));
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -46,13 +51,11 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
 
     @Override
     public Object execute(ScriptExecuteWrap wrap) throws Exception{
-        try{
-            if (!scriptMap.containsKey(wrap.getNodeId())){
-                String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
-                throw new ScriptLoadException(errorMsg);
-            }
-
-            Context context = Context.newBuilder().allowAllAccess(true).build();
+        if (!scriptMap.containsKey(wrap.getNodeId())){
+            String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
+            throw new ScriptLoadException(errorMsg);
+        }
+        try (Context context = Context.newBuilder().allowAllAccess(true).engine(this.engine).build()) {
             Value bindings =  context.getBindings("js");
             //往脚本语言绑定表里循环增加绑定上下文的key
             //key的规则为自定义上下文的simpleName
@@ -87,7 +90,7 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
             });
 
 
-            Value value = context.eval("js", scriptMap.get(wrap.getNodeId()));
+            Value value = context.eval( scriptMap.get(wrap.getNodeId()));
             if (value.isBoolean()) {
                 return value.asBoolean();
             } else if (value.isNumber()) {
@@ -96,7 +99,7 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
                 return value.asString();
             }
             return value;
-        }catch (Exception e){
+        } catch (Exception e){
             log.error(e.getMessage(), e);
             throw e;
         }
