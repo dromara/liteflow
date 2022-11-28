@@ -53,7 +53,7 @@ public class LiteFlowChainELBuilder {
     /**
      * EL解析引擎
      */
-    private final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
+    public final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
 
     static {
         //初始化QLExpress的Runner
@@ -134,6 +134,9 @@ public class LiteFlowChainELBuilder {
 
             //往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
             FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
+
+            //放入当前主chain的ID
+            context.put(ChainConstant.CURR_CHAIN_ID, this.chain.getChainId());
 
             //解析el成为一个Condition
             //为什么这里只是一个Condition，而不是一个List<Condition>呢
