@@ -38,6 +38,6 @@ public class SubflowInDifferentConfigELSpringTest extends BaseTest {
     public void testExplicitSubFlow2() {
         LiteflowConfig config = LiteflowConfigGetter.get();
         config.setRuleSource("subflow/flow-main.el.xml,subflow/flow-sub1.el.xml,subflow/flow-sub2.el.yml");
-        flowExecutor.init();
+        flowExecutor.reloadRule();
     }
 }

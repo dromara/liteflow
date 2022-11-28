@@ -15,7 +15,7 @@ import java.util.function.BooleanSupplier;
  */
 public class FlowInitHook {
 
-    private static List<BooleanSupplier> supplierList;
+    private static final List<BooleanSupplier> supplierList = new ArrayList<>();
 
     public static void executeHook(){
         if (CollUtil.isNotEmpty(supplierList)){
@@ -24,9 +24,10 @@ public class FlowInitHook {
     }
 
     public static void addHook(BooleanSupplier hookSupplier){
-        if (CollUtil.isEmpty(supplierList)){
-            supplierList = new ArrayList<>();
-        }
         supplierList.add(hookSupplier);
+    }
+
+    public static void cleanHook(){
+        supplierList.clear();
     }
 }
