@@ -35,8 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -67,7 +69,7 @@ public class FlowBus {
 
     //这个方法主要用于第二阶段的替换chain
     public static void addChain(Chain chain) {
-        chainMap.put(chain.getChainName(), chain);
+        chainMap.put(chain.getChainId(), chain);
     }
 
     public static boolean containChain(String chainId) {
@@ -332,5 +334,9 @@ public class FlowBus {
             LOG.error(errMsg);
             return false;
         }
+    }
+
+    public static void removeChain(String... chainIds){
+        Arrays.stream(chainIds).forEach(FlowBus::removeChain);
     }
 }
