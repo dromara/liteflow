@@ -62,7 +62,7 @@ public class ComponentProxy {
             beanClazz = bean.getClass();
         }
         //得到当前bean里所覆盖的LiteflowMethod(一定是被@LiteFlowMethod修饰的)，自己定义的不算
-        Map<String, List<Method>> methodListMap = Arrays.stream(beanClazz.getDeclaredMethods()).filter(
+        Map<String, List<Method>> methodListMap = Arrays.stream(beanClazz.getMethods()).filter(
                 m -> m.getAnnotation(LiteflowMethod.class) != null
         ).collect(Collectors.groupingBy(
                 m -> m.getAnnotation(LiteflowMethod.class).nodeId()
