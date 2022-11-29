@@ -33,6 +33,11 @@ public class LiteFlowChainELBuilder {
     private Chain chain;
 
     /**
+     * 是否只需要验证EL表达式
+     */
+    private Boolean onlyValidate;
+
+    /**
      * //这是主体的Condition，不包含前置和后置
      * //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
      * //虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
@@ -87,6 +92,7 @@ public class LiteFlowChainELBuilder {
 
     public LiteFlowChainELBuilder() {
         chain = new Chain();
+        onlyValidate = Boolean.FALSE;
         conditionList = new ArrayList<>();
         preConditionList = new ArrayList<>();
         finallyConditionList = new ArrayList<>();
@@ -115,6 +121,11 @@ public class LiteFlowChainELBuilder {
         } else {
             this.chain.setChainId(chainId);
         }
+        return this;
+    }
+
+    public LiteFlowChainELBuilder setOnlyValidate() {
+        this.onlyValidate = Boolean.TRUE;
         return this;
     }
 
@@ -176,7 +187,10 @@ public class LiteFlowChainELBuilder {
 
         checkBuild();
 
-        FlowBus.addChain(this.chain);
+        // 仅校验EL表达式格式是否正确时，当前生成的chain 不加入元数据
+        if (!this.onlyValidate) {
+            FlowBus.addChain(this.chain);
+        }
     }
 
     /**
