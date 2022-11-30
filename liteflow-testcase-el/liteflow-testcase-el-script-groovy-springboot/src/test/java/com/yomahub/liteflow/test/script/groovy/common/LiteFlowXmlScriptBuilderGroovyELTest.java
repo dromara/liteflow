@@ -31,17 +31,17 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.ACmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.ACmp")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("b")
                 .setName("组件B")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.BCmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.BCmp")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("c")
                 .setName("组件C")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.CCmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.CCmp")
                 .build();
         LiteFlowNodeBuilder.createScriptNode()
                 .setId("s1")
@@ -74,7 +74,7 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
         LiteFlowNodeBuilder.createNode().setId("d")
                 .setName("组件D")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.DCmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.DCmp")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("s2")
                 .setName("条件脚本S2")
@@ -84,12 +84,12 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
         LiteFlowNodeBuilder.createNode().setId("a")
                 .setName("组件A")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.ACmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.ACmp")
                 .build();
         LiteFlowNodeBuilder.createNode().setId("b")
                 .setName("组件B")
                 .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.script.groovy.cmp.BCmp")
+                .setClazz("com.yomahub.liteflow.test.script.groovy.common.cmp.BCmp")
                 .build();
 
         LiteFlowChainELBuilder.createChain().setChainName("chain2")
