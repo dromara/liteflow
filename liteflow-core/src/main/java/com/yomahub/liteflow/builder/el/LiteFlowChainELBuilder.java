@@ -14,12 +14,12 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.*;
-import com.yomahub.liteflow.script.ScriptBeanManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /**
  * Chain基于代码形式的组装器
@@ -29,6 +29,9 @@ import java.util.function.BiConsumer;
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LiteFlowChainELBuilder.class);
+
 
     private Chain chain;
 
@@ -167,6 +170,21 @@ public class LiteFlowChainELBuilder {
         } catch (Exception e) {
             throw new ELParseException(e.getMessage());
         }
+    }
+
+    /**
+     * EL表达式校验
+     * @param elStr EL表达式
+     * @return true 校验成功 false 校验失败
+     */
+    public Boolean validate(String elStr) {
+       try {
+           this.setEL(elStr);
+           return Boolean.TRUE;
+       } catch (ELParseException e) {
+           LOG.error(e.getMessage());
+       }
+       return Boolean.FALSE;
     }
 
     public void build() {

@@ -5,6 +5,7 @@ import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
@@ -159,5 +160,27 @@ public class BuilderTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
+    }
+
+    @Test
+    public void testChainELExpressValidate() {
+        LiteFlowNodeBuilder.createNode().setId("a")
+                .setName("组件A")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz("com.yomahub.liteflow.test.builder.cmp.ACmp")
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("b")
+                .setName("组件B")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz("com.yomahub.liteflow.test.builder.cmp.BCmp")
+                .build();
+        LiteFlowNodeBuilder.createNode().setId("c")
+                .setName("组件C")
+                .setType(NodeTypeEnum.COMMON)
+                .setClazz("com.yomahub.liteflow.test.builder.cmp.CCmp")
+                .build();
+        Boolean res = LiteFlowChainELBuilder.createChain().validate("THEN(a, b, h)");
+        Assert.assertFalse(res);
+        Assert.assertTrue(LiteFlowChainELBuilder.createChain().validate("THEN(a, b, c)"));
     }
 }
