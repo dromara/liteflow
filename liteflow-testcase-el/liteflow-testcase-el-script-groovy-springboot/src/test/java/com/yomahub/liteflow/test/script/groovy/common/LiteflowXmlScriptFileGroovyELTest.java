@@ -1,10 +1,10 @@
-package com.yomahub.liteflow.test.script.groovy;
+package com.yomahub.liteflow.test.script.groovy.common;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
@@ -20,16 +20,16 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的groovy脚本组件，基于json配置
+ * 测试springboot下的groovy脚本组件，基于xml配置，file脚本
  * @author Bryan.Zhang
  * @since 2.6.4
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(value = "classpath:/json-script-file/application.properties")
-@SpringBootTest(classes = LiteflowJsonScriptFileGroovyELTest.class)
+@TestPropertySource(value = "classpath:/xml-script-file/application.properties")
+@SpringBootTest(classes = LiteflowXmlScriptFileGroovyELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.groovy.cmp"})
-public class LiteflowJsonScriptFileGroovyELTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.groovy.common.cmp"})
+public class LiteflowXmlScriptFileGroovyELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -59,9 +59,9 @@ public class LiteflowJsonScriptFileGroovyELTest extends BaseTest {
         Assert.assertTrue(responseOld.isSuccess());
         Assert.assertEquals("d==>s2[条件脚本]==>a", responseOld.getExecuteStepStr());
         //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
-        String newContent = ResourceUtil.readUtf8Str("classpath: /json-script-file/flow_update.el.json");
+        String newContent = ResourceUtil.readUtf8Str("classpath: /xml-script-file/flow_update.el.xml");
         //进行刷新
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_JSON, newContent);
+        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, newContent);
 
         //重新执行chain2这个链路，结果会变
         LiteflowResponse responseNew = flowExecutor.execute2Resp("chain2", "arg");
@@ -76,9 +76,9 @@ public class LiteflowJsonScriptFileGroovyELTest extends BaseTest {
             try{
                 Thread.sleep(2000L);
                 //更改规则，重新加载，更改的规则内容从flow_update.xml里读取，这里只是为了模拟下获取新的内容。不一定是从文件中读取
-                String newContent = ResourceUtil.readUtf8Str("classpath: /json-script-file/flow_update.el.json");
+                String newContent = ResourceUtil.readUtf8Str("classpath: /xml-script-file/flow_update.el.xml");
                 //进行刷新
-                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_JSON, newContent);
+                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, newContent);
             }catch (Exception e){
                 e.printStackTrace();
             }

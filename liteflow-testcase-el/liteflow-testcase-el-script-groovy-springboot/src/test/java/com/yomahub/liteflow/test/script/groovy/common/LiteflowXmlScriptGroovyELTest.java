@@ -1,11 +1,10 @@
-package com.yomahub.liteflow.test.script.groovy;
+package com.yomahub.liteflow.test.script.groovy.common;
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
@@ -18,9 +17,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -32,7 +28,7 @@ import java.util.stream.Collectors;
 @TestPropertySource(value = "classpath:/xml-script/application.properties")
 @SpringBootTest(classes = LiteflowXmlScriptGroovyELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.groovy.cmp"})
+@ComponentScan({"com.yomahub.liteflow.test.script.groovy.common.cmp"})
 public class LiteflowXmlScriptGroovyELTest extends BaseTest {
 
     @Resource

@@ -1,10 +1,10 @@
-package com.yomahub.liteflow.test.script.groovy;
+package com.yomahub.liteflow.test.script.groovy.common;
 
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
