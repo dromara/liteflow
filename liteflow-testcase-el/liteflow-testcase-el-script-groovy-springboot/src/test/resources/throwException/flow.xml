@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="groovy">
+            <![CDATA[
+            import cn.hutool.core.date.DateUtil
+            import com.yomahub.liteflow.test.script.groovy.throwException.TestException
+
+            def date = DateUtil.parse("2022-10-17 13:31:43")
+            println(date)
+            defaultContext.setData("demoDate", date)
+            throw new TestException("T01", "测试错误")
+            ]]>
+        </node>
+
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, s1);
+    </chain>
+</flow>

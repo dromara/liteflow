@@ -91,7 +91,6 @@ public class JavaScriptExecutor implements ScriptExecutor {
 
             return compiledScript.eval(bindings);
         }catch (Exception e){
-            log.error(e.getMessage(), e);
             throw e;
         }
     }

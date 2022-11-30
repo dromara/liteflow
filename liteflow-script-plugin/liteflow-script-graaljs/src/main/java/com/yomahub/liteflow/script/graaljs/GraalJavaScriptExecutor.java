@@ -100,7 +100,6 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
             }
             return value;
         } catch (Exception e){
-            log.error(e.getMessage(), e);
             throw e;
         }
     }

@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.slot.DataBus;
@@ -92,8 +93,11 @@ public class GroovyScriptExecutor implements ScriptExecutor {
 
             return compiledScript.eval(bindings);
         }catch (Exception e){
-            log.error(e.getMessage(), e);
-            throw e;
+            if (ObjectUtil.isNotNull(e.getCause()) && e.getCause() instanceof LiteFlowException){
+                throw (LiteFlowException)e.getCause();
+            }else{
+                throw e;
+            }
         }
     }
 
