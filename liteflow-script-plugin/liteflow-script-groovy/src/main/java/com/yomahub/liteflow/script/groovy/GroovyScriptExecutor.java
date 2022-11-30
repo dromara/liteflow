@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.script.groovy;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.LiteFlowException;
@@ -10,15 +9,12 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
-import com.yomahub.liteflow.script.exception.ScriptExecuteException;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.script.*;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Groovy脚本语言的执行器实现
