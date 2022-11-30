@@ -161,26 +161,4 @@ public class BuilderTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
     }
-
-    @Test
-    public void testChainELExpressValidate() {
-        LiteFlowNodeBuilder.createNode().setId("a")
-                .setName("组件A")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.ACmp")
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("b")
-                .setName("组件B")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.BCmp")
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("c")
-                .setName("组件C")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.CCmp")
-                .build();
-        Boolean res = LiteFlowChainELBuilder.createChain().validate("THEN(a, b, h)");
-        Assert.assertFalse(res);
-        Assert.assertTrue(LiteFlowChainELBuilder.createChain().validate("THEN(a, b, c)"));
-    }
 }

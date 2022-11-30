@@ -177,9 +177,9 @@ public class LiteFlowChainELBuilder {
      * @param elStr EL表达式
      * @return true 校验成功 false 校验失败
      */
-    public Boolean validate(String elStr) {
+    public static boolean validate(String elStr) {
        try {
-           this.setEL(elStr);
+           LiteFlowChainELBuilder.createChain().setEL(elStr);
            return Boolean.TRUE;
        } catch (ELParseException e) {
            LOG.error(e.getMessage());
