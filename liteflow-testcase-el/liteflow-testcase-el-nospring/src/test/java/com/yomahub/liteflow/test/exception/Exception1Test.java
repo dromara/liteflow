@@ -56,30 +56,4 @@ public class Exception1Test extends BaseTest {
         config.setRuleSource("error/flow.txt");
         flowExecutor.reloadRule();
     }
-
-    @Test
-    public void testChainElBuilderOnlyValidate() {
-        LiteFlowNodeBuilder.createNode().setId("a")
-                .setName("组件A")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.ACmp")
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("b")
-                .setName("组件B")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.BCmp")
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("c")
-                .setName("组件C")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz("com.yomahub.liteflow.test.builder.cmp.CCmp")
-                .build();
-        try {
-            LiteFlowChainELBuilder.createChain().setChainId("chain3").setEL(
-                    "THEN(a, b, d)"
-            ).setOnlyValidate().build();
-        } catch ( Exception ex) {
-            Assert.assertTrue(ex instanceof ELParseException);
-        }
-    }
 }

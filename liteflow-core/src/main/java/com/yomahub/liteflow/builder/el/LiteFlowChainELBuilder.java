@@ -14,12 +14,12 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.*;
-import com.yomahub.liteflow.script.ScriptBeanManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /**
  * Chain基于代码形式的组装器
@@ -30,12 +30,10 @@ import java.util.function.BiConsumer;
  */
 public class LiteFlowChainELBuilder {
 
-    private Chain chain;
+    private static final Logger LOG = LoggerFactory.getLogger(LiteFlowChainELBuilder.class);
 
-    /**
-     * 是否只需要验证EL表达式
-     */
-    private Boolean onlyValidate;
+
+    private Chain chain;
 
     /**
      * //这是主体的Condition，不包含前置和后置
@@ -92,7 +90,6 @@ public class LiteFlowChainELBuilder {
 
     public LiteFlowChainELBuilder() {
         chain = new Chain();
-        onlyValidate = Boolean.FALSE;
         conditionList = new ArrayList<>();
         preConditionList = new ArrayList<>();
         finallyConditionList = new ArrayList<>();
@@ -121,11 +118,6 @@ public class LiteFlowChainELBuilder {
         } else {
             this.chain.setChainId(chainId);
         }
-        return this;
-    }
-
-    public LiteFlowChainELBuilder setOnlyValidate() {
-        this.onlyValidate = Boolean.TRUE;
         return this;
     }
 
@@ -180,6 +172,21 @@ public class LiteFlowChainELBuilder {
         }
     }
 
+    /**
+     * EL表达式校验
+     * @param elStr EL表达式
+     * @return true 校验成功 false 校验失败
+     */
+    public Boolean validate(String elStr) {
+       try {
+           this.setEL(elStr);
+           return Boolean.TRUE;
+       } catch (ELParseException e) {
+           LOG.error(e.getMessage());
+       }
+       return Boolean.FALSE;
+    }
+
     public void build() {
         this.chain.setConditionList(this.conditionList);
         this.chain.setPreConditionList(this.preConditionList);
@@ -187,10 +194,7 @@ public class LiteFlowChainELBuilder {
 
         checkBuild();
 
-        // 仅校验EL表达式格式是否正确时，当前生成的chain 不加入元数据
-        if (!this.onlyValidate) {
-            FlowBus.addChain(this.chain);
-        }
+        FlowBus.addChain(this.chain);
     }
 
     /**
