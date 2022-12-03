@@ -1,10 +1,6 @@
 package com.yomahub.liteflow.test.apollo;
 
-import com.alibaba.nacos.client.config.NacosConfigService;
-import com.ctrip.framework.apollo.Config;
-import com.ctrip.framework.apollo.ConfigService;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import org.junit.After;
@@ -13,16 +9,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * @Description:
