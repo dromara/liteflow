@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class LiteFlowNodeBuilder {
@@ -24,19 +26,22 @@ public class LiteFlowNodeBuilder {
     /**
      * 用于维护不同类型 node 的处理逻辑
      */
-    private static final Map<NodeTypeEnum, Consumer<Node>> NodeBuildConsumerMap = new HashMap<NodeTypeEnum, Consumer<Node>>() {{
-        put(NodeTypeEnum.COMMON, _node -> FlowBus.addCommonNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.SWITCH, _node -> FlowBus.addSwitchNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.IF, _node -> FlowBus.addIfNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.FOR, _node -> FlowBus.addForNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.WHILE, _node -> FlowBus.addWhileNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.BREAK, _node -> FlowBus.addBreakNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.SCRIPT, _node -> FlowBus.addCommonScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.SWITCH_SCRIPT, _node -> FlowBus.addSwitchScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.IF_SCRIPT, _node -> FlowBus.addIfScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.FOR_SCRIPT, _node -> FlowBus.addForScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.WHILE_SCRIPT, _node -> FlowBus.addWhileScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
-        put(NodeTypeEnum.BREAK_SCRIPT, _node -> FlowBus.addBreakScriptNode(_node.getId(), _node.getName(), _node.getClazz()));
+    private static final Map<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>> NodeBuildConsumerMap = new HashMap<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>>() {{
+        // 用于处理普通 node
+        put(NodeTypeEnum.COMMON, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.SWITCH, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.IF, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.FOR, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.WHILE, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.BREAK, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+
+        // 用于处理脚本 node
+        put(NodeTypeEnum.SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.SWITCH_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.IF_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.FOR_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.WHILE_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
+        put(NodeTypeEnum.BREAK_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
     }};
 
     private final Node node;
@@ -153,7 +158,13 @@ public class LiteFlowNodeBuilder {
     public void build() {
         checkBuild();
         try {
-            NodeBuildConsumerMap.get(this.node.getType()).accept(this.node);
+            for (Map.Entry<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>> entry : NodeBuildConsumerMap.entrySet()) {
+                NodeTypeEnum nodeType = entry.getKey();
+                if (nodeType == this.node.getType()) {
+                    entry.getValue().accept(this.node, nodeType);
+                    return;
+                }
+            }
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(), e.getMessage());
             LOG.error(errMsg, e);
