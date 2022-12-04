@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.apollo.exception.ApolloException;
 import com.yomahub.liteflow.parser.apollo.util.ApolloParseHelper;
 import com.yomahub.liteflow.parser.apollo.vo.ApolloParserConfigVO;
@@ -13,7 +14,6 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * @Description:
@@ -33,8 +33,14 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
 				apolloParserConfigVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ApolloParserConfigVO.class);
 			}
+
+			// check config
 			if (Objects.isNull(apolloParserConfigVO)) {
 				throw new ApolloException("ruleSourceExtData or map is empty");
+			}
+
+			if (StrUtil.isBlank(apolloParserConfigVO.getChainNamespace())) {
+				throw new ApolloException("chainNamespace is empty, you must configure the chainNamespace property");
 			}
 
 			apolloParseHelper = new ApolloParseHelper(apolloParserConfigVO);
@@ -43,19 +49,16 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 		}
 	}
 
+
 	@Override
 	public String parseCustom() {
-		Consumer<String> parseConsumer = t -> {
-			try {
-				parse(t);
-			} catch (Exception e) {
-				throw new ApolloException(e.getMessage());
-			}
-		};
+
 		try {
 			String content = apolloParseHelper.getContent();
-			apolloParseHelper.checkContent(content);
-			apolloParseHelper.listen(parseConsumer);
+			FlowInitHook.addHook(() -> {
+				apolloParseHelper.listenApollo();
+				return true;
+			});
 			return content;
 
 		} catch (Exception e) {
