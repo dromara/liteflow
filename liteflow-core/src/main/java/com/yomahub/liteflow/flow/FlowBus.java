@@ -203,6 +203,20 @@ public class FlowBus {
         addNode(nodeId, name, NodeTypeEnum.BREAK_SCRIPT, ScriptBreakComponent.class, script);
     }
 
+    public static void addNode(String nodeId, String name, NodeTypeEnum nodeType, String cmpClazzStr){
+        Class<?> cmpClazz;
+        try{
+            cmpClazz = Class.forName(cmpClazzStr);
+        }catch (Exception e){
+            throw new ComponentCannotRegisterException(e.getMessage());
+        }
+        addNode(nodeId, name, nodeType, cmpClazz, null);
+    }
+
+    public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script){
+        addNode(nodeId, name, nodeType, ScriptCommonComponent.class, script);
+    }
+
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
         try {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
