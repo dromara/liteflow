@@ -40,9 +40,17 @@ public class ApolloWithXmlELSpringbootTest {
 	@Test
 	public void testApolloWithXml1() throws InterruptedException {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Thread.sleep(2000l);
-		Assert.assertEquals("a==>b==>c==>c==>b==>a", response.getExecuteStepStrWithoutTime());
+		Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStrWithoutTime());
 	}
 
+
+	@Test
+	public void testApolloWithXml2() throws InterruptedException {
+		while (true) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+			System.out.println("liteflow step : " + response.getExecuteStepStrWithoutTime());
+			Thread.sleep(2000l);
+		}
+	}
 
 }
