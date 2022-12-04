@@ -232,8 +232,4 @@ public class ZkParserHelper {
 			this.name = name;
 		}
 	}
-
-	public static void main(String[] args) {
-		System.out.println(FileNameUtil.getName("/chain/dadfa/c1"));
-	}
 }
