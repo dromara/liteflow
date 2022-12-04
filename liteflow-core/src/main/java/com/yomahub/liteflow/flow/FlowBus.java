@@ -55,18 +55,6 @@ public class FlowBus {
 
     private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
 
-    /**
-     * 用于维护脚本类型和脚本 cmp 的映射关系
-     */
-    private static final Map<NodeTypeEnum, Class<?>> ScriptComponentClassMap = new HashMap<NodeTypeEnum, Class<?>>() {{
-        put(NodeTypeEnum.SCRIPT, ScriptCommonComponent.class);
-        put(NodeTypeEnum.SWITCH_SCRIPT, ScriptSwitchComponent.class);
-        put(NodeTypeEnum.IF_SCRIPT, ScriptIfComponent.class);
-        put(NodeTypeEnum.FOR_SCRIPT, ScriptForComponent.class);
-        put(NodeTypeEnum.WHILE_SCRIPT, ScriptWhileComponent.class);
-        put(NodeTypeEnum.BREAK_SCRIPT, ScriptBreakComponent.class);
-    }};
-
     private FlowBus() {
     }
 
@@ -148,7 +136,7 @@ public class FlowBus {
      * @param script   脚本
      */
     public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script) {
-        addNode(nodeId, name, nodeType, ScriptComponentClassMap.get(nodeType), script);
+        addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {

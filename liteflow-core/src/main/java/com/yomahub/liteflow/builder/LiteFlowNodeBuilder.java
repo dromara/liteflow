@@ -23,27 +23,6 @@ public class LiteFlowNodeBuilder {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    /**
-     * 用于维护不同类型 node 的处理逻辑
-     */
-    private static final Map<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>> NodeBuildConsumerMap = new HashMap<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>>() {{
-        // 用于处理普通 node
-        put(NodeTypeEnum.COMMON, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.SWITCH, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.IF, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.FOR, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.WHILE, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.BREAK, (_node, nodeType) -> FlowBus.addNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-
-        // 用于处理脚本 node
-        put(NodeTypeEnum.SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.SWITCH_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.IF_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.FOR_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.WHILE_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-        put(NodeTypeEnum.BREAK_SCRIPT, (_node, nodeType) -> FlowBus.addScriptNode(_node.getId(), _node.getName(), nodeType, _node.getClazz()));
-    }};
-
     private final Node node;
 
     public static LiteFlowNodeBuilder createNode() {
@@ -158,13 +137,14 @@ public class LiteFlowNodeBuilder {
     public void build() {
         checkBuild();
         try {
-            for (Map.Entry<NodeTypeEnum, BiConsumer<Node, NodeTypeEnum>> entry : NodeBuildConsumerMap.entrySet()) {
-                NodeTypeEnum nodeType = entry.getKey();
-                if (nodeType == this.node.getType()) {
-                    entry.getValue().accept(this.node, nodeType);
-                    return;
-                }
-            }
+            // 用于处理脚本 node
+           if (this.node.getType().isScript()){
+               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getClazz());
+           }
+           // 用于处理普通 node
+           else{
+               FlowBus.addNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getClazz());
+           }
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(), e.getMessage());
             LOG.error(errMsg, e);
