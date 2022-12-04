@@ -139,7 +139,7 @@ public class LiteFlowNodeBuilder {
         try {
             // 用于处理脚本 node
            if (this.node.getType().isScript()){
-               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getClazz());
+               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript());
            }
            // 用于处理普通 node
            else{
