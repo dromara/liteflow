@@ -1,21 +1,10 @@
 package com.yomahub.liteflow.script.python;
 
-import cn.hutool.core.util.CharUtil;
-import cn.hutool.core.util.CreditCodeUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
-import org.python.antlr.PythonParser;
-import org.python.util.CodegenUtils;
-import org.python.util.JycompileAntTask;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
