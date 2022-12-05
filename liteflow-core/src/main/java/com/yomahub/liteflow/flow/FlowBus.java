@@ -237,7 +237,7 @@ public class FlowBus {
                     cmpInstances.add(cmpInstance);
                 }
             }
-            //进行初始化
+            //进行初始化component
             cmpInstances = cmpInstances.stream()
                     .map(cmpInstance -> ComponentInitializer.loadInstance().initComponent(
                             cmpInstance,
@@ -246,7 +246,7 @@ public class FlowBus {
                             cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId())
                     ).collect(Collectors.toList());
 
-            //初始化Node
+            //初始化Node，把component放到Node里去
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
 
