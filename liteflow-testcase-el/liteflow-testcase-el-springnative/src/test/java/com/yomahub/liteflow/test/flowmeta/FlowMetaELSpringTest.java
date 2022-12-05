@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.flowmeta;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.slot.DefaultContext;
@@ -24,7 +25,7 @@ public class FlowMetaELSpringTest extends BaseTest {
     //测试动态添加元信息节点
     @Test
     public void testFlowMeta() {
-        FlowBus.addCommonNode("d", "d组件", DCmp.class);
+        FlowBus.addNode("d", "d组件", NodeTypeEnum.COMMON, DCmp.class);
         LiteflowResponse response= flowExecutor.execute2Resp("chain1", "it's a request");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
