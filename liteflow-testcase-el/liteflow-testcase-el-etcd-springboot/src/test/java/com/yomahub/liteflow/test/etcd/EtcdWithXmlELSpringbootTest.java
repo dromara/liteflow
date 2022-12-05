@@ -43,7 +43,6 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
     private static final String SCRIPT_PATH = "/liteflow/script";
 
-
     @Before
     public void setUp(){
         MockitoAnnotations.initMocks(this);

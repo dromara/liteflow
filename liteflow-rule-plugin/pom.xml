@@ -15,6 +15,7 @@
         <module>liteflow-rule-sql</module>
         <module>liteflow-rule-nacos</module>
         <module>liteflow-rule-etcd</module>
+        <module>liteflow-rule-apollo</module>
     </modules>
 
     <artifactId>liteflow-rule-plugin</artifactId>

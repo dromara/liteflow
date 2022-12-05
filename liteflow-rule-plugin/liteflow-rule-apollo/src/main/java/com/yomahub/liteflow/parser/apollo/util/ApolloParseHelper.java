@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.apollo.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ctrip.framework.apollo.Config;
@@ -14,6 +15,7 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.apollo.exception.ApolloException;
 import com.yomahub.liteflow.parser.apollo.vo.ApolloParserConfigVO;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +51,23 @@ public class ApolloParseHelper {
 
 	public ApolloParseHelper(ApolloParserConfigVO apolloParserConfigVO) {
 		this.apolloParserConfigVO = apolloParserConfigVO;
+
 		try {
-			chainConfig = ConfigService.getConfig(apolloParserConfigVO.getChainNamespace());
-			String scriptNamespace;
-			// scriptConfig is optional
-			if (StrUtil.isNotBlank(scriptNamespace = apolloParserConfigVO.getScriptNamespace())) {
-				scriptConfig = ConfigService.getConfig(scriptNamespace);
+			try{
+				//这里本身对于程序运行来说没有什么意义，拿到的永远是null
+				//其实config对象也没有注入到spring容器中
+				//这里这样写的目的是为了单测中的mockito，当有@MockBean的时候，这里就能拿到了
+				this.chainConfig = ContextAwareHolder.loadContextAware().getBean("chainConfig");
+				this.scriptConfig = ContextAwareHolder.loadContextAware().getBean("scriptConfig");
+			}catch (Exception ignored){}
+
+			if (ObjectUtil.isNull(chainConfig)){
+				chainConfig = ConfigService.getConfig(apolloParserConfigVO.getChainNamespace());
+				String scriptNamespace;
+				// scriptConfig is optional
+				if (StrUtil.isNotBlank(scriptNamespace = apolloParserConfigVO.getScriptNamespace())) {
+					scriptConfig = ConfigService.getConfig(scriptNamespace);
+				}
 			}
 		} catch (Exception e) {
 			throw new ApolloException(e.getMessage());
