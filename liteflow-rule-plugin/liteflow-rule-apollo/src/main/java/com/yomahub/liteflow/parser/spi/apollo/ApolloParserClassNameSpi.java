@@ -4,9 +4,8 @@ import com.yomahub.liteflow.parser.apollo.ApolloXmlELParser;
 import com.yomahub.liteflow.parser.spi.ParserClassNameSpi;
 
 /**
- * @Description:
- * @Author: zhanghua
- * @Date: 2022/12/3 13:40
+ * @author zhanghua
+ * @since 2.9.5
  */
 public class ApolloParserClassNameSpi implements ParserClassNameSpi {
 

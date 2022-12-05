@@ -16,9 +16,8 @@ import com.yomahub.liteflow.util.JsonUtil;
 import java.util.Objects;
 
 /**
- * @Description:
- * @Author: zhanghua
- * @Date: 2022/12/3 13:38
+ * @author zhanghua
+ * @since 2.9.5
  */
 public class ApolloXmlELParser extends ClassXmlFlowELParser {
 

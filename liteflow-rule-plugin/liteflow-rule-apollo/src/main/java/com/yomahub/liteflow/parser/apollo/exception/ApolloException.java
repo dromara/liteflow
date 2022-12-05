@@ -1,9 +1,8 @@
 package com.yomahub.liteflow.parser.apollo.exception;
 
 /**
- * @Description:
- * @Author: zhanghua
- * @Date: 2022/12/3 13:45
+ * @author zhanghua
+ * @since 2.9.5
  */
 public class ApolloException extends RuntimeException {
 
