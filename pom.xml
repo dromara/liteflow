@@ -68,6 +68,7 @@
 		<guava.version>31.1-jre</guava.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
+		<apollo.version>1.7.0</apollo.version>
 	</properties>
 
 	<dependencyManagement>
@@ -259,6 +260,12 @@
 				<scope>provided</scope>
 				<optional>true</optional>
 			</dependency>
+			<dependency>
+				<groupId>com.ctrip.framework.apollo</groupId>
+				<artifactId>apollo-client</artifactId>
+				<version>${apollo.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
