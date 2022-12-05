@@ -29,6 +29,7 @@
         <module>liteflow-testcase-el-nacos-springboot</module>
         <module>liteflow-testcase-el-etcd-springboot</module>
         <module>liteflow-testcase-el-apollo-springboot</module>
+        <module>liteflow-testcase-el-script-python-springboot</module>
     </modules>
 
     <build>

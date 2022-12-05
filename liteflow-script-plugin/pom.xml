@@ -19,6 +19,7 @@
         <module>liteflow-script-groovy</module>
         <module>liteflow-script-javascript</module>
         <module>liteflow-script-graaljs</module>
+        <module>liteflow-script-python</module>
     </modules>
 
 </project>

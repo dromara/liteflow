@@ -69,6 +69,7 @@
 		<httpclient.version>4.5.13</httpclient.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<apollo.version>1.7.0</apollo.version>
+		<jython.version>2.7.3</jython.version>
 	</properties>
 
 	<dependencyManagement>
@@ -265,7 +266,11 @@
 				<artifactId>apollo-client</artifactId>
 				<version>${apollo.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.python</groupId>
+				<artifactId>jython-standalone</artifactId>
+				<version>${jython.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
