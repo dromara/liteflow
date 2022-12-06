@@ -1,22 +1,22 @@
-package com.yomahub.liteflow.script.python;
+package com.yomahub.liteflow.script.lua;
 
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Python脚本语言的执行器实现
+ * Lua脚本语言的执行器实现
  * @author Bryan.Zhang
  * @since 2.9.5
  */
-public class PythonScriptExecutor extends JSR223ScriptExecutor {
-
+public class LuaScriptExecutor extends JSR223ScriptExecutor {
     @Override
     protected String scriptEngineName() {
-        return "python";
+        return "luaj";
     }
 
     @Override
@@ -33,7 +33,7 @@ public class PythonScriptExecutor extends JSR223ScriptExecutor {
         StringBuilder scriptSB = new StringBuilder();
         noBlankLineList.forEach(s
                 -> scriptSB.append(StrUtil.format("{}\n", s.replaceFirst(blankStr, StrUtil.EMPTY))));
-
         return scriptSB.toString();
+        //return StrUtil.format("function process()\n{}\nend\nprocess()\n",scriptSB.toString());
     }
 }

@@ -70,6 +70,7 @@
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<apollo.version>1.7.0</apollo.version>
 		<jython.version>2.7.3</jython.version>
+		<luaj.version>3.0.1</luaj.version>
 	</properties>
 
 	<dependencyManagement>
@@ -270,6 +271,11 @@
 				<groupId>org.python</groupId>
 				<artifactId>jython-standalone</artifactId>
 				<version>${jython.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.luaj</groupId>
+				<artifactId>luaj-jse</artifactId>
+				<version>${luaj.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

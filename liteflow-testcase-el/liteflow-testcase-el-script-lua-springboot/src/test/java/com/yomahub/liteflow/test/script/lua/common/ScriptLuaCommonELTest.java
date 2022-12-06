@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.script.python.common;
+package com.yomahub.liteflow.test.script.lua.common;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -17,16 +17,16 @@ import javax.annotation.Resource;
 
 
 /**
- * 测试springboot下的python脚本组件，基于xml配置
+ * 测试springboot下的lua脚本组件，基于xml配置
  * @author Bryan.Zhang
  * @since 2.9.5
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/common/application.properties")
-@SpringBootTest(classes = ScriptPythonCommonELTest.class)
+@SpringBootTest(classes = ScriptLuaCommonELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.python.common.cmp"})
-public class ScriptPythonCommonELTest extends BaseTest {
+@ComponentScan({"com.yomahub.liteflow.test.script.lua.common.cmp"})
+public class ScriptLuaCommonELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

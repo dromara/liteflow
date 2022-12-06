@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>liteflow-script-python</artifactId>
+    <artifactId>liteflow-script-lua</artifactId>
 
     <dependencies>
         <dependency>
@@ -20,8 +20,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.python</groupId>
-            <artifactId>jython-standalone</artifactId>
+            <groupId>org.luaj</groupId>
+            <artifactId>luaj-jse</artifactId>
         </dependency>
     </dependencies>
 
