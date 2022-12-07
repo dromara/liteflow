@@ -73,13 +73,15 @@ public class SwitchCondition extends Condition{
                 if (ObjectUtil.isNotNull(targetExecutor)) {
                     //switch的目标不能是Pre节点或者Finally节点
                     if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition){
-                        String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
+                        String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally",
+                                slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
                         throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
                     }
                     targetExecutor.setCurrChainId(this.getCurrChainId());
                     targetExecutor.execute(slotIndex);
                 }else{
-                    String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}]", slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
+                    String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}],target str is [{}]",
+                            slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName(), targetId);
                     throw new NoSwitchTargetNodeException(errorInfo);
                 }
             }
