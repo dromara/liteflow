@@ -1,4 +1,6 @@
-package com.yomahub.liteflow.script;
+package com.yomahub.liteflow.script.annotation;
+
+import com.yomahub.liteflow.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
@@ -13,5 +15,13 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ScriptBean {
 
+    @AliasFor("name")
     String value() default "";
+
+    @AliasFor("value")
+    String name() default "";
+
+    String[] includeMethodName() default {};
+
+    String[] excludeMethodName() default {};
 }

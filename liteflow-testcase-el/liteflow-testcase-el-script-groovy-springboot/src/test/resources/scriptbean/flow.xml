@@ -15,6 +15,34 @@
                 defaultContext.setData("demo", str)
             ]]>
         </node>
+
+        <node id="s1" type="script" language="groovy">
+            <![CDATA[
+            def str = demo3.test1("kobe")
+            defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s2" type="script" language="groovy">
+            <![CDATA[
+            def str = demo3.test3("kobe")
+            defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s3" type="script" language="groovy">
+            <![CDATA[
+            def str = demo4.test1("kobe")
+            defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s4" type="script" language="groovy">
+            <![CDATA[
+            def str = demo4.test3("kobe")
+            defaultContext.setData("demo", str)
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">
@@ -23,5 +51,21 @@
 
     <chain name="chain2">
         THEN(a,b,c,e);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a,b,c,s1);
+    </chain>
+
+    <chain name="chain4">
+        THEN(a,b,c,s2);
+    </chain>
+
+    <chain name="chain5">
+        THEN(a,b,c,s3);
+    </chain>
+
+    <chain name="chain6">
+        THEN(a,b,c,s4);
     </chain>
 </flow>

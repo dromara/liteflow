@@ -98,7 +98,9 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor {
         }catch (Exception e){
             if (ObjectUtil.isNotNull(e.getCause()) && e.getCause() instanceof LiteFlowException){
                 throw (LiteFlowException)e.getCause();
-            }else{
+            } else if (ObjectUtil.isNotNull(e.getCause()) && e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException)e.getCause();
+            } else{
                 throw e;
             }
         }

@@ -8,14 +8,15 @@
  */
 package com.yomahub.liteflow.spring;
 
-import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.script.ScriptBean;
+import com.yomahub.liteflow.script.annotation.ScriptBean;
 import com.yomahub.liteflow.script.ScriptBeanManager;
+import com.yomahub.liteflow.script.proxy.ScriptBeanProxy;
 import com.yomahub.liteflow.util.LOGOPrinter;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class ComponentScanner implements BeanPostProcessor {
     @SuppressWarnings("rawtypes")
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Class clazz = bean.getClass();
+        Class clazz = LiteFlowProxyUtil.getUserClass(bean.getClass());
 
         //判断是不是声明式组件
         //如果是，就缓存到类属性的map中
@@ -98,9 +99,10 @@ public class ComponentScanner implements BeanPostProcessor {
         }
 
         //扫描@ScriptBean修饰的类
-        ScriptBean scriptBean = AnnotationUtil.getAnnotation(bean.getClass(), ScriptBean.class);
+        ScriptBean scriptBean = AnnoUtil.getAnnotation(clazz, ScriptBean.class);
         if (ObjectUtil.isNotNull(scriptBean)){
-            ScriptBeanManager.addScriptBean(scriptBean.value(), bean);
+            ScriptBeanProxy proxy = new ScriptBeanProxy(bean, clazz, scriptBean);
+            ScriptBeanManager.addScriptBean(scriptBean.value(), proxy.getProxyScriptBean());
         }
 
         return bean;

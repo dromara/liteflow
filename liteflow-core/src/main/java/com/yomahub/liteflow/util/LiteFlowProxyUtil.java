@@ -32,12 +32,7 @@ public class LiteFlowProxyUtil {
     public static boolean isDeclareCmp(Class<?> clazz) {
         //查看bean里的method是否有方法标记了@LiteflowMethod标注
         //这里的bean有可能是cglib加强过的class，所以要先进行个判断
-        Class<?> targetClass;
-        if (isCglibProxyClass(clazz)) {
-            targetClass = getUserClass(clazz);
-        } else {
-            targetClass = clazz;
-        }
+        Class<?> targetClass = getUserClass(clazz);
         // 判断是否有方法标记了@LiteflowMethod标注，有则为声明式组件
         return Arrays.stream(targetClass.getMethods()).anyMatch(
                 method -> method.getAnnotation(LiteflowMethod.class) != null
