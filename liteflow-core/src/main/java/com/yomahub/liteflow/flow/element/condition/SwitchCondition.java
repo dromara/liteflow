@@ -3,7 +3,6 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.proxy.ComponentProxy;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
@@ -16,11 +15,7 @@ import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 /**
  * 选择Condition
@@ -34,6 +29,8 @@ public class SwitchCondition extends Condition{
 
     private final String TAG_PREFIX = "tag";
     private final String TAG_FLAG = ":";
+
+    private Executable defaultExecutor;
 
 
     @Override
@@ -68,6 +65,11 @@ public class SwitchCondition extends Condition{
                     targetExecutor = targetList.stream().filter(
                             executable -> executable.getExecuteId().equals(targetId)
                     ).findFirst().orElse(null);
+                }
+
+                if (ObjectUtil.isNull(targetExecutor)) {
+                    //没有匹配到执行节点，则走默认的执行节点
+                    targetExecutor = defaultExecutor;
                 }
 
                 if (ObjectUtil.isNotNull(targetExecutor)) {
@@ -109,5 +111,13 @@ public class SwitchCondition extends Condition{
 
     public Node getSwitchNode(){
         return (Node) this.getExecutableList().get(0);
+    }
+
+    public Executable getDefaultExecutor() {
+        return defaultExecutor;
+    }
+
+    public void setDefaultExecutor(Executable defaultExecutor) {
+        this.defaultExecutor = defaultExecutor;
     }
 }

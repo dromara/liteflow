@@ -66,4 +66,6 @@ public interface ChainConstant {
     String MONITOR_BUS = "monitorBus";
 
     String CURR_CHAIN_ID = "currChainId";
+
+    String DEFAULT = "DEFAULT";
 }
