@@ -70,4 +70,19 @@ public class PreAndFinallyELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("p1==>p2==>p1==>p2==>a==>b==>c==>f1==>f2==>f1", response.getExecuteStepStrWithoutTime());
     }
+
+    //测试变量结构pre和finally是否在各自的chain里打出
+    @Test
+    public void testPreAndFinally6() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("p1==>p2==>p1==>p2==>a==>b==>c==>f1==>f2==>f1", response.getExecuteStepStrWithoutTime());
+    }
+
+    //测试el整体结构的多重pre和finally
+    @Test
+    public void testPreAndFinally7() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
 }

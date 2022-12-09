@@ -33,12 +33,6 @@ public class Chain implements Executable {
 
     private List<Condition> conditionList = new ArrayList<>();
 
-    //前置处理Condition，用来区别主体的Condition
-    private List<Condition> preConditionList = new ArrayList<>();
-
-    //后置处理Condition，用来区别主体的Condition
-    private List<Condition> finallyConditionList = new ArrayList<>();
-
     public Chain(String chainName){
         this.chainId = chainName;
     }
@@ -93,11 +87,9 @@ public class Chain implements Executable {
         try {
             //设置主ChainName
             slot.setChainId(chainId);
-            //执行前置
-            this.executePre(slotIndex);
             //执行主体Condition
             for (Condition condition : conditionList) {
-                condition.setCurrChainName(chainId);
+                condition.setCurrChainId(chainId);
                 condition.execute(slotIndex);
             }
         }catch (ChainEndException e){
@@ -112,23 +104,6 @@ public class Chain implements Executable {
                 slot.setException(e);
             }
             throw e;
-        }finally {
-            //执行后置
-            this.executeFinally(slotIndex);
-        }
-    }
-
-    // 执行pre节点
-    private void executePre(Integer slotIndex) throws Exception {
-        for (Condition condition : this.preConditionList){
-            condition.execute(slotIndex);
-        }
-    }
-
-    //执行后置
-    private void executeFinally(Integer slotIndex) throws Exception {
-        for (Condition condition : this.finallyConditionList){
-            condition.execute(slotIndex);
         }
     }
 
@@ -140,20 +115,5 @@ public class Chain implements Executable {
     @Override
     public String getExecuteId() {
         return chainId;
-    }
-    public List<Condition> getPreConditionList() {
-        return preConditionList;
-    }
-
-    public void setPreConditionList(List<Condition> preConditionList) {
-        this.preConditionList = preConditionList;
-    }
-
-    public List<Condition> getFinallyConditionList() {
-        return finallyConditionList;
-    }
-
-    public void setFinallyConditionList(List<Condition> finallyConditionList) {
-        this.finallyConditionList = finallyConditionList;
     }
 }

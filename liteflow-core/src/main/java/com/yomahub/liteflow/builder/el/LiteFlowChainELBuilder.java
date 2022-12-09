@@ -12,7 +12,6 @@ import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,22 +35,12 @@ public class LiteFlowChainELBuilder {
     private Chain chain;
 
     /**
-     * //这是主体的Condition，不包含前置和后置
+     * //这是主体的Condition
      * //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
      * //虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
      * //所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
      */
     private final List<Condition> conditionList;
-
-    /**
-     * 前置处理Condition，用来区别主体的Condition
-     */
-    private final List<Condition> preConditionList;
-
-    /**
-     * 后置处理Condition，用来区别主体的Condition
-     */
-    private final List<Condition> finallyConditionList;
 
     /**
      * EL解析引擎
@@ -91,8 +80,6 @@ public class LiteFlowChainELBuilder {
     public LiteFlowChainELBuilder() {
         chain = new Chain();
         conditionList = new ArrayList<>();
-        preConditionList = new ArrayList<>();
-        finallyConditionList = new ArrayList<>();
     }
 
     //在parser中chain的build是2段式的，因为涉及到依赖问题，以前是递归parser
@@ -150,13 +137,13 @@ public class LiteFlowChainELBuilder {
             //为什么只寻找第一层，而不往下寻找了呢？
             //因为这是一个规范，如果在后面的层级中出现pre和finally，语义上也不好理解，所以pre和finally只能定义在第一层
             //如果硬是要在后面定义，则执行的时候会忽略，相关代码已做了判断
-            for (Executable executable : condition.getExecutableList()) {
+            /*for (Executable executable : condition.getExecutableList()) {
                 if (executable instanceof PreCondition) {
                     this.preConditionList.add((PreCondition) executable);
                 } else if (executable instanceof FinallyCondition) {
                     this.finallyConditionList.add((FinallyCondition) executable);
                 }
-            }
+            }*/
 
             //把主要的condition加入
             this.conditionList.add(condition);
@@ -189,8 +176,6 @@ public class LiteFlowChainELBuilder {
 
     public void build() {
         this.chain.setConditionList(this.conditionList);
-        this.chain.setPreConditionList(this.preConditionList);
-        this.chain.setFinallyConditionList(this.finallyConditionList);
 
         checkBuild();
 
