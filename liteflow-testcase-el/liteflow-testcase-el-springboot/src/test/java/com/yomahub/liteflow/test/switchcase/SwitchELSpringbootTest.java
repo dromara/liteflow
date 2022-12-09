@@ -75,4 +75,13 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>h==>b",response.getExecuteStepStr());
     }
+
+    //switch增加default选项
+    @Test
+    public void testSwitch7() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("a==>i==>d",response.getExecuteStepStr());
+    }
+
 }
