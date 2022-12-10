@@ -10,9 +10,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 用于标注在Script中可使用的java bean
- * @author Bryan.Zhang
- * @since 2.9.0
+ * 用于标注在Script中可使用的java 方法
+ *
+ * @author tangkc
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
