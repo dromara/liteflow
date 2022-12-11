@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.spi.spring;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.FileUtil;
@@ -8,6 +9,8 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.PathContentParser;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SpringPathContentParser implements PathContentParser {
     @Override
@@ -43,16 +47,15 @@ public class SpringPathContentParser implements PathContentParser {
 
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources(locationPattern);
-            if (ArrayUtil.isEmpty(resources)) {
-                throw new ConfigErrorException("config error,please check rule source property");
+            if (ArrayUtil.isNotEmpty(resources)) {
+                allResource.addAll(ListUtil.toList(resources));
             }
-            allResource.addAll(ListUtil.toList(resources));
         }
 
-        //如果有多个资源，检查资源都是同一个类型，如果出现不同类型的配置，则抛出错误提示
+        //检查资源都是同一个类型，如果出现不同类型的配置，则抛出错误提示
         Set<String> fileTypeSet = new HashSet<>();
         allResource.forEach(resource -> fileTypeSet.add(FileUtil.extName(resource.getFilename())));
-        if (fileTypeSet.size() != 1) {
+        if (fileTypeSet.size() > 1) {
             throw new ConfigErrorException("config error,please use the same type of configuration");
         }
 

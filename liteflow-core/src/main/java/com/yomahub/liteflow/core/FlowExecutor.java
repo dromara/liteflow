@@ -162,6 +162,12 @@ public class FlowExecutor {
             }
         }
 
+        //如果是ruleSource方式的，最后判断下有没有解析出来,如果没有解析出来则报错
+        if (FlowBus.getChainMap().isEmpty()){
+            String errMsg = StrUtil.format("no valid rule config found in rule path [{}]", liteflowConfig.getRuleSource());
+            throw new ConfigErrorException(errMsg);
+        }
+
         //执行钩子
         if(hook){
             FlowInitHook.executeHook();
