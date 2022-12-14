@@ -383,6 +383,7 @@ public abstract class NodeComponent{
 		this.cmpDataTL.remove();
 	}
 
+	@Deprecated
 	public void invoke(String chainId, Object param) throws Exception {
 		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
 	}
@@ -391,6 +392,7 @@ public abstract class NodeComponent{
 		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
 	}
 
+	@Deprecated
 	public void invokeInAsync(String chainId, Object param) throws Exception {
 		FlowExecutorHolder.loadInstance().invokeInAsync(chainId, param, this.getSlotIndex());
 	}
