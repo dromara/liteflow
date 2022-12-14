@@ -373,7 +373,7 @@ public abstract class NodeComponent{
 		if (StrUtil.isBlank(this.cmpDataTL.get())){
 			return null;
 		}
-		if (clazz.equals(String.class)){
+		if (clazz.equals(String.class) || clazz.equals(Object.class)){
 			return (T) this.cmpDataTL.get();
 		}
 		return JsonUtil.parseObject(this.cmpDataTL.get(), clazz);
