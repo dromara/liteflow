@@ -135,12 +135,8 @@ public class ApolloParseHelper {
 					}
 				}));
 
-		// script
-		if (Objects.isNull(scriptConfig)) {
-			// no script config
-			return;
-		}
-		scriptConfig.addChangeListener(changeEvent ->
+		if (StrUtil.isNotBlank(apolloParserConfigVO.getScriptNamespace())){
+			scriptConfig.addChangeListener(changeEvent ->
 				changeEvent.changedKeys().forEach(changeKey -> {
 					ConfigChange configChange = changeEvent.getChange(changeKey);
 					String newValue = configChange.getNewValue();
@@ -165,10 +161,10 @@ public class ApolloParseHelper {
 							nodeSimpleVO = convert(changeKey, null);
 							FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
 					}
-				}));
-
+				})
+			);
+		}
 	}
-
 
 	private NodeSimpleVO convert(String key, String value) {
 		//不需要去理解这串正则，就是一个匹配冒号的

@@ -153,23 +153,26 @@ public class EtcdParserHelper {
 					FlowBus.removeChain(chainName);
 				}
 		);
-		this.client.watchChildChange(this.etcdParserVO.getScriptPath(),
-				(updatePath, updateValue) -> {
-					LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
-					String scriptNodeValue = FileNameUtil.getName(updatePath);
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-					LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
-							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-							.setName(nodeSimpleVO.getName())
-							.setScript(updateValue).build();
-				},
-				(deletePath) -> {
-					LOG.info("starting reload flow config... delete path={}", deletePath);
-					String scriptNodeValue = FileNameUtil.getName(deletePath);
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-					FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-				}
-		);
+
+		if (StrUtil.isNotBlank(this.etcdParserVO.getScriptPath())){
+			this.client.watchChildChange(this.etcdParserVO.getScriptPath(),
+					(updatePath, updateValue) -> {
+						LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
+						String scriptNodeValue = FileNameUtil.getName(updatePath);
+						NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+						LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
+								.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+								.setName(nodeSimpleVO.getName())
+								.setScript(updateValue).build();
+					},
+					(deletePath) -> {
+						LOG.info("starting reload flow config... delete path={}", deletePath);
+						String scriptNodeValue = FileNameUtil.getName(deletePath);
+						NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+						FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+					}
+			);
+		}
 	}
 
 	public NodeSimpleVO convert(String str){

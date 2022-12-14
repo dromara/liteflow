@@ -153,30 +153,32 @@ public class ZkParserHelper {
 			}
 		});
 
-		//监听script
-		CuratorCache cache2 = CuratorCache.build(client, zkParserVO.getScriptPath());
-		cache2.start();
-		cache2.listenable().addListener((type, oldData, data) -> {
-			String path = data.getPath();
-			String value = new String(data.getData());
-			if (StrUtil.isBlank(value)){
-				return;
-			}
-			if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
-				LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
-				String scriptNodeValue = FileNameUtil.getName(path);
-				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-				LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
-						.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-						.setName(nodeSimpleVO.getName())
-						.setScript(value).build();
-			} else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
-				LOG.info("starting reload flow config... delete path={}", path);
-				String scriptNodeValue = FileNameUtil.getName(path);
-				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-				FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-			}
-		});
+		if (StrUtil.isNotBlank(zkParserVO.getScriptPath())){
+			//监听script
+			CuratorCache cache2 = CuratorCache.build(client, zkParserVO.getScriptPath());
+			cache2.start();
+			cache2.listenable().addListener((type, oldData, data) -> {
+				String path = data.getPath();
+				String value = new String(data.getData());
+				if (StrUtil.isBlank(value)){
+					return;
+				}
+				if (ListUtil.toList(CuratorCacheListener.Type.NODE_CREATED, CuratorCacheListener.Type.NODE_CHANGED).contains(type)){
+					LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
+					String scriptNodeValue = FileNameUtil.getName(path);
+					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					LiteFlowNodeBuilder.createScriptNode().setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(value).build();
+				} else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
+					LOG.info("starting reload flow config... delete path={}", path);
+					String scriptNodeValue = FileNameUtil.getName(path);
+					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+				}
+			});
+		}
 	}
 
 	public NodeSimpleVO convert(String str){
