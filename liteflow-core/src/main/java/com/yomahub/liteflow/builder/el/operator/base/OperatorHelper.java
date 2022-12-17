@@ -133,7 +133,6 @@ public class OperatorHelper {
     public static <T> T convert(Object object, Class<T> clazz, String errorMsg) throws QLException {
         try {
             if (clazz.isAssignableFrom(object.getClass())) {
-
                 if (clazz.equals(Node.class)) {
                     Node node = (Node) object;
                     return (T) node.copy();

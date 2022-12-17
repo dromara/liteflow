@@ -50,6 +50,8 @@ public class Node implements Executable,Cloneable{
 
 	private String cmpData;
 
+	private String currChainId;
+
 	public Node(){
 
 	}
@@ -106,8 +108,7 @@ public class Node implements Executable,Cloneable{
 		try {
 			//把线程属性赋值给组件对象
 			instance.setSlotIndex(slotIndex);
-			instance.setTag(tag);
-			instance.setCmpData(cmpData);
+			instance.setRefNode(this);
 
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
@@ -148,9 +149,7 @@ public class Node implements Executable,Cloneable{
 			//移除threadLocal里的信息
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
-			instance.removeTag();
-			instance.removeCurrChainId();
-			instance.removeCmpData();
+			instance.removeRefNode();
 		}
 	}
 
@@ -162,8 +161,7 @@ public class Node implements Executable,Cloneable{
 	public boolean isAccess(Integer slotIndex) throws Exception {
 		//把线程属性赋值给组件对象
 		instance.setSlotIndex(slotIndex);
-		instance.setTag(tag);
-		instance.setCmpData(cmpData);
+		instance.setRefNode(this);
 		return instance.isAccess();
 	}
 
@@ -210,16 +208,20 @@ public class Node implements Executable,Cloneable{
 		this.clazz = clazz;
 	}
 
-	@Override
-	public void setCurrChainId(String currentChainId) {
-		instance.setCurrChainId(currentChainId);
-	}
-
 	public String getCmpData() {
 		return cmpData;
 	}
 
 	public void setCmpData(String cmpData) {
 		this.cmpData = cmpData;
+	}
+
+	@Override
+	public void setCurrChainId(String currentChainId) {
+		this.currChainId = currentChainId;
+	}
+
+	public String getCurrChainId() {
+		return currChainId;
 	}
 }

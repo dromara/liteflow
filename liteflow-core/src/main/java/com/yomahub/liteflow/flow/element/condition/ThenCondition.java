@@ -41,6 +41,7 @@ public class ThenCondition extends Condition {
 	public void execute(Integer slotIndex) throws Exception {
 		try{
 			for (PreCondition preCondition : preConditionList){
+				preCondition.setCurrChainId(this.getCurrChainId());
 				preCondition.execute(slotIndex);
 			}
 
@@ -64,6 +65,7 @@ public class ThenCondition extends Condition {
 			throw e;
 		}finally {
 			for (FinallyCondition finallyCondition : finallyConditionList){
+				finallyCondition.setCurrChainId(this.getCurrChainId());
 				finallyCondition.execute(slotIndex);
 			}
 		}

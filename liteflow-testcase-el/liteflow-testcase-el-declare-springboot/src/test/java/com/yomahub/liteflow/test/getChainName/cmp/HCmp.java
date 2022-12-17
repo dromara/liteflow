@@ -20,7 +20,7 @@ public class HCmp{
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
-		context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainName());
+		context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainId());
 		return "j";
 	}
 

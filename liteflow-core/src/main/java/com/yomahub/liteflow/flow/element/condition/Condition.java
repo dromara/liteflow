@@ -32,7 +32,7 @@ public abstract class Condition implements Executable{
 	 * 当前所在的ChainName
 	 * 如果对于子流程来说，那这个就是子流程所在的Chain
 	 */
-	private String currChainName;
+	private String currChainId;
 
 	@Override
 	public ExecuteTypeEnum getExecuteType() {
@@ -73,15 +73,15 @@ public abstract class Condition implements Executable{
 	 */
 	@Deprecated
 	public String getCurrChainName() {
-		return currChainName;
+		return currChainId;
 	}
 
 	public String getCurrChainId() {
-		return currChainName;
+		return currChainId;
 	}
 	
 	@Override
-	public void setCurrChainId(String currChainName) {
-		this.currChainName = currChainName;
+	public void setCurrChainId(String currChainId) {
+		this.currChainId = currChainId;
 	}
 }

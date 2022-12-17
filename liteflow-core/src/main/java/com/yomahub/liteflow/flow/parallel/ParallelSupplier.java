@@ -29,11 +29,11 @@ public class ParallelSupplier implements Supplier<WhenFutureObj> {
     @Override
     public WhenFutureObj get() {
         try {
-            executableItem.setCurrChainName(currChainName);
+            executableItem.setCurrChainId(currChainName);
             executableItem.execute(slotIndex);
-            return WhenFutureObj.success(executableItem.getExecuteName());
+            return WhenFutureObj.success(executableItem.getExecuteId());
         } catch (Exception e){
-            return WhenFutureObj.fail(executableItem.getExecuteName(), e);
+            return WhenFutureObj.fail(executableItem.getExecuteId(), e);
         }
     }
 }

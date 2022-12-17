@@ -20,9 +20,9 @@ public class ECmp {
 	public void process(NodeComponent bindCmp) {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		if (context.hasData(bindCmp.getNodeId())){
-			context.setData(bindCmp.getNodeId(), context.getData(bindCmp.getNodeId()) + "_" + bindCmp.getCurrChainName());
+			context.setData(bindCmp.getNodeId(), context.getData(bindCmp.getNodeId()) + "_" + bindCmp.getCurrChainId());
 		}else{
-			context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainName());
+			context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainId());
 		}
 	}
 }
