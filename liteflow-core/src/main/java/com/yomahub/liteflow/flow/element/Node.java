@@ -12,6 +12,7 @@ import java.text.MessageFormat;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Node节点，实现可执行器
+ * Node节点并不是单例的，每构建一次都会copy出一个新的实例
  * @author Bryan.Zhang
  */
 public class Node implements Executable,Cloneable{
@@ -51,6 +53,8 @@ public class Node implements Executable,Cloneable{
 	private String cmpData;
 
 	private String currChainId;
+
+	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
 	public Node(){
 
@@ -150,6 +154,7 @@ public class Node implements Executable,Cloneable{
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
 			instance.removeRefNode();
+			removeLoopIndex();
 		}
 	}
 
@@ -223,5 +228,17 @@ public class Node implements Executable,Cloneable{
 
 	public String getCurrChainId() {
 		return currChainId;
+	}
+
+	public void setLoopIndex(int index){
+		this.loopIndexTL.set(index);
+	}
+
+	public Integer getLoopIndex(){
+		return this.loopIndexTL.get();
+	}
+
+	public void removeLoopIndex(){
+		this.loopIndexTL.remove();
 	}
 }

@@ -32,7 +32,10 @@ public class WhileCondition extends LoopCondition{
         Executable executableItem = this.getDoExecutor();
 
         //循环执行
+        int index = 0;
         while(getWhileResult(slotIndex)){
+            executableItem.setCurrChainId(this.getCurrChainId());
+            setLoopIndex(executableItem, index++);
             executableItem.execute(slotIndex);
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){

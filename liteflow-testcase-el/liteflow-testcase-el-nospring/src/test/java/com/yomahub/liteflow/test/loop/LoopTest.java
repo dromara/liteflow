@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -57,5 +58,27 @@ public class LoopTest extends BaseTest{
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y", response.getExecuteStepStr());
+    }
+
+    //测试FOR循环中的index
+    @Test
+    public void testLoop6() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("01234", context.getData("loop_e1"));
+        Assert.assertEquals("01234", context.getData("loop_e2"));
+        Assert.assertEquals("01234", context.getData("loop_e3"));
+    }
+
+    //测试WHILE循环中的index
+    @Test
+    public void testLoop7() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("01234", context.getData("loop_e1"));
+        Assert.assertEquals("01234", context.getData("loop_e2"));
+        Assert.assertEquals("01234", context.getData("loop_e3"));
     }
 }

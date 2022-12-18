@@ -42,6 +42,9 @@ public class ForCondition extends LoopCondition{
 
         //循环执行
         for (int i = 0; i < forCount; i++) {
+            executableItem.setCurrChainId(this.getCurrChainId());
+            //设置循环index
+            setLoopIndex(executableItem, i);
             executableItem.execute(slotIndex);
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
@@ -54,7 +57,6 @@ public class ForCondition extends LoopCondition{
                 }
             }
         }
-
     }
 
     @Override

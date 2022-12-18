@@ -60,9 +60,14 @@ public abstract class NodeComponent{
 	private Class<? extends NodeExecutor> nodeExecutorClass = DefaultNodeExecutor.class;
 
 	/**当前对象为单例，注册进spring上下文，但是node实例不是单例，这里通过对node实例的引用来获得一些链路属性**/
+
 	private final TransmittableThreadLocal<Node> refNodeTL = new TransmittableThreadLocal<>();
 
-	/********************以下的属性为线程附加属性********************/
+	/**
+	 *******************以下的属性为线程附加属性********************
+	 * 线程属性是指每一个request的值都是不一样的
+	 * 这里NodeComponent是单例，所以要用ThreadLocal来修饰
+	 */
 
 	//当前slot的index
 	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
@@ -338,6 +343,10 @@ public abstract class NodeComponent{
 			return (T) cmpData;
 		}
 		return JsonUtil.parseObject(cmpData, clazz);
+	}
+
+	public Integer getLoopIndex(){
+		return this.refNodeTL.get().getLoopIndex();
 	}
 
 	@Deprecated
