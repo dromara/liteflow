@@ -40,27 +40,27 @@ public class Exception1ELSpringBootTest extends BaseTest {
     public void testChainDuplicateException() {
         LiteflowConfig config = LiteflowConfigGetter.get();
         config.setRuleSource("exception/flow-exception.el.xml");
-        flowExecutor.init();
+        flowExecutor.reloadRule();
     }
 
     @Test(expected = ConfigErrorException.class)
     public void testConfigErrorException() {
         flowExecutor.setLiteflowConfig(null);
-        flowExecutor.init();
+        flowExecutor.reloadRule();
     }
 
     @Test(expected = FlowExecutorNotInitException.class)
     public void testFlowExecutorNotInitException() {
         LiteflowConfig config = LiteflowConfigGetter.get();
         config.setRuleSource("error/flow.txt");
-        flowExecutor.init();
+        flowExecutor.reloadRule();
     }
 
     @Test(expected = FlowExecutorNotInitException.class)
     public void testNoConditionInChainException() throws Exception {
         LiteflowConfig config = LiteflowConfigGetter.get();
         config.setRuleSource("exception/flow-blank.el.xml");
-        flowExecutor.init();
+        flowExecutor.reloadRule();
     }
 
 }

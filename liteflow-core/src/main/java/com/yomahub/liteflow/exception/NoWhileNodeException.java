@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 没有 While 节点异常
+ * @author Yun
+ */
 public class NoWhileNodeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

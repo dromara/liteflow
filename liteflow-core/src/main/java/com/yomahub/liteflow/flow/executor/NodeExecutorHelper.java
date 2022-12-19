@@ -13,19 +13,26 @@ import java.util.Map;
  * @since 2.6.9
  */
 public class NodeExecutorHelper {
-    //此处使用Map缓存线程池信息
+    /**
+     * 此处使用Map缓存线程池信息
+     */
     private final Map<Class<? extends NodeExecutor>, NodeExecutor> nodeExecutorMap;
 
     private NodeExecutorHelper() {
         nodeExecutorMap = MapUtil.newConcurrentHashMap();
     }
 
-    //使用静态内部类实现单例模式
+    /**
+     * 使用静态内部类实现单例模式
+     */
     private static class Holder {
         static final NodeExecutorHelper INSTANCE = new NodeExecutorHelper();
     }
 
-    //获取帮助者的实例
+    /**
+     * 获取帮助者的实例
+     * @return
+     */
     public static NodeExecutorHelper loadInstance() {
         // 外围类能直接访问内部类（不管是否是静态的）的私有变量
         return Holder.INSTANCE;

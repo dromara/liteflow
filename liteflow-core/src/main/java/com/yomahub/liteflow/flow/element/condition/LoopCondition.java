@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.flow.element.condition;
 
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 
 /**
@@ -19,5 +21,15 @@ public abstract class LoopCondition extends Condition {
 
     public void setBreakNode(Node breakNode) {
         this.breakNode = breakNode;
+    }
+
+    protected void setLoopIndex(Executable executableItem, int index){
+        if (executableItem instanceof Chain){
+            ((Chain)executableItem).getConditionList().forEach(condition -> setLoopIndex(condition, index));
+        }else if(executableItem instanceof Condition){
+            ((Condition)executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
+        }else if(executableItem instanceof Node){
+            ((Node)executableItem).setLoopIndex(index);
+        }
     }
 }

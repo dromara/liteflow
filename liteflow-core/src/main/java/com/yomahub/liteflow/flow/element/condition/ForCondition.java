@@ -29,7 +29,7 @@ public class ForCondition extends LoopCondition{
         }
 
         //执行forCount组件
-        forNode.setCurrChainName(this.getCurrChainName());
+        forNode.setCurrChainId(this.getCurrChainId());
         forNode.execute(slotIndex);
 
         //这里可能会有spring代理过的bean，所以拿到user原始的class
@@ -42,10 +42,13 @@ public class ForCondition extends LoopCondition{
 
         //循环执行
         for (int i = 0; i < forCount; i++) {
+            executableItem.setCurrChainId(this.getCurrChainId());
+            //设置循环index
+            setLoopIndex(executableItem, i);
             executableItem.execute(slotIndex);
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
-                breakNode.setCurrChainName(this.getCurrChainName());
+                breakNode.setCurrChainId(this.getCurrChainId());
                 breakNode.execute(slotIndex);
                 Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
@@ -54,7 +57,6 @@ public class ForCondition extends LoopCondition{
                 }
             }
         }
-
     }
 
     @Override

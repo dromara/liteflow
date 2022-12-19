@@ -11,7 +11,7 @@ public interface ScriptExecutor {
 
     void load(String nodeId, String script);
 
-    Object execute(ScriptExecuteWrap wrap);
+    Object execute(ScriptExecuteWrap wrap) throws Exception;
 
     void cleanCache();
 }

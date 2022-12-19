@@ -1,6 +1,10 @@
 package com.yomahub.liteflow.parser.etcd;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.etcd.exception.EtcdException;
 import com.yomahub.liteflow.parser.etcd.util.EtcdParserHelper;
@@ -9,7 +13,8 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 /**
  * Etcd解析器实现，只支持EL形式的XML，不支持其他的形式
@@ -23,19 +28,23 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 	public EtcdXmlELParser() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())){
-			throw new EtcdException("rule-source-ext-data is empty");
-		}
-
 		try{
-			EtcdParserVO etcdParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), EtcdParserVO.class);
-			assert etcdParserVO != null;
-
-			if (StrUtil.isBlank(etcdParserVO.getNodePath())){
-				etcdParserVO.setNodePath("/lite-flow/flow");
+			EtcdParserVO etcdParserVO = null;
+			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
+				etcdParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), EtcdParserVO.class, CopyOptions.create());
+			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+				etcdParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), EtcdParserVO.class);
 			}
-			if (StrUtil.isBlank(etcdParserVO.getConnectStr())){
-				throw new EtcdException("Etcd connect string is empty");
+
+			if (Objects.isNull(etcdParserVO)) {
+				throw new EtcdException("rule-source-ext-data is empty");
+			}
+
+			if (StrUtil.isBlank(etcdParserVO.getChainPath())){
+				throw new EtcdException("You must configure the chainPath property");
+			}
+			if (StrUtil.isBlank(etcdParserVO.getEndpoints())){
+				throw new EtcdException("etcd endpoints is empty");
 			}
 
 			etcdParserHelper = new EtcdParserHelper(etcdParserVO);
@@ -46,17 +55,15 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		Consumer<String> parseConsumer = t -> {
-			try {
-				parse(t);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
+
 		try {
 			String content = etcdParserHelper.getContent();
-			etcdParserHelper.checkContent(content);
-			etcdParserHelper.listen(parseConsumer);
+
+			FlowInitHook.addHook(() -> {
+				etcdParserHelper.listen();
+				return true;
+			});
+
 			return content;
 		} catch (Exception e){
 			throw new EtcdException(e.getMessage());

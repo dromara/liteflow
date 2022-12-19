@@ -15,6 +15,6 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData(this.getNodeId(), this.getCurrChainName());
+		context.setData(this.getNodeId(), this.getCurrChainId());
 	}
 }

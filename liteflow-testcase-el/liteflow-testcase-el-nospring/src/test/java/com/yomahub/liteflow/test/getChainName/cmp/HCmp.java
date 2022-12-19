@@ -15,7 +15,7 @@ public class HCmp extends NodeSwitchComponent {
 	@Override
 	public String processSwitch() throws Exception {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData(this.getNodeId(), this.getCurrChainName());
+		context.setData(this.getNodeId(), this.getCurrChainId());
 		return "j";
 	}
 

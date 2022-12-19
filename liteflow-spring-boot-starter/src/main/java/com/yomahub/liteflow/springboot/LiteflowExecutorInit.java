@@ -18,6 +18,6 @@ public class LiteflowExecutorInit implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        flowExecutor.init();
+        flowExecutor.init(true);
     }
 }

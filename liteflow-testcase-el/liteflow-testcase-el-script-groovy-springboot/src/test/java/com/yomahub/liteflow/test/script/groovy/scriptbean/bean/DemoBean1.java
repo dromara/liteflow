@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.script.groovy.scriptbean.bean;
 
-import com.yomahub.liteflow.script.ScriptBean;
+import com.yomahub.liteflow.script.annotation.ScriptBean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

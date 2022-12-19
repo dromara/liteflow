@@ -35,12 +35,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
  * 流程元数据类
+ *
  * @author Bryan.Zhang
  */
 public class FlowBus {
@@ -54,20 +58,20 @@ public class FlowBus {
     private FlowBus() {
     }
 
-    public static Chain getChain(String id){
+    public static Chain getChain(String id) {
         return chainMap.get(id);
     }
 
     //这一方法主要用于第一阶段chain的预装载
-    public static void addChain(String chainName){
-        if (!chainMap.containsKey(chainName)){
+    public static void addChain(String chainName) {
+        if (!chainMap.containsKey(chainName)) {
             chainMap.put(chainName, new Chain(chainName));
         }
     }
 
     //这个方法主要用于第二阶段的替换chain
     public static void addChain(Chain chain) {
-        chainMap.put(chain.getChainName(), chain);
+        chainMap.put(chain.getChainId(), chain);
     }
 
     public static boolean containChain(String chainId) {
@@ -86,119 +90,53 @@ public class FlowBus {
         //根据class来猜测类型
         NodeTypeEnum type = NodeTypeEnum.guessType(nodeComponent.getClass());
 
-        if (type == null){
+        if (type == null) {
             throw new NullNodeTypeException(StrUtil.format("node type is null for node[{}]", nodeId));
         }
 
         nodeMap.put(nodeId, new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, type, null, nodeId)));
     }
 
-    public static void addCommonNode(String nodeId, String name, String cmpClazzStr){
+    /**
+     * 添加 node
+     *
+     * @param nodeId   节点id
+     * @param name     节点名称
+     * @param type     节点类型
+     * @param cmpClazz 节点组件类
+     */
+    public static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz) {
+        addNode(nodeId, name, type, cmpClazz, null);
+    }
+
+    /**
+     * 添加 node
+     *
+     * @param nodeId      节点id
+     * @param name        节点名称
+     * @param nodeType    节点类型
+     * @param cmpClazzStr 节点组件类路径
+     */
+    public static void addNode(String nodeId, String name, NodeTypeEnum nodeType, String cmpClazzStr) {
         Class<?> cmpClazz;
-        try{
+        try {
             cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ComponentCannotRegisterException(e.getMessage());
         }
-        addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
+        addNode(nodeId, name, nodeType, cmpClazz, null);
     }
 
-    public static void addCommonNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.COMMON, cmpClazz, null);
-    }
-
-    public static void addSwitchNode(String nodeId, String name, String cmpClazzStr){
-        Class<?> cmpClazz;
-        try{
-            cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
-            throw new ComponentCannotRegisterException(e.getMessage());
-        }
-        addNode(nodeId, name, NodeTypeEnum.SWITCH, cmpClazz, null);
-    }
-
-    public static void addSwitchNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.SWITCH, cmpClazz, null);
-    }
-
-    public static void addIfNode(String nodeId, String name, String cmpClazzStr){
-        Class<?> cmpClazz;
-        try{
-            cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
-            throw new ComponentCannotRegisterException(e.getMessage());
-        }
-        addNode(nodeId, name, NodeTypeEnum.IF, cmpClazz, null);
-    }
-
-    public static void addIfNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.IF, cmpClazz, null);
-    }
-
-    public static void addForNode(String nodeId, String name, String cmpClazzStr){
-        Class<?> cmpClazz;
-        try{
-            cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
-            throw new ComponentCannotRegisterException(e.getMessage());
-        }
-        addNode(nodeId, name, NodeTypeEnum.FOR, cmpClazz, null);
-    }
-
-    public static void addForNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.FOR, cmpClazz, null);
-    }
-
-    public static void addWhileNode(String nodeId, String name, String cmpClazzStr){
-        Class<?> cmpClazz;
-        try{
-            cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
-            throw new ComponentCannotRegisterException(e.getMessage());
-        }
-        addNode(nodeId, name, NodeTypeEnum.WHILE, cmpClazz, null);
-    }
-
-    public static void addWhileNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.WHILE, cmpClazz, null);
-    }
-
-    public static void addBreakNode(String nodeId, String name, String cmpClazzStr){
-        Class<?> cmpClazz;
-        try{
-            cmpClazz = Class.forName(cmpClazzStr);
-        }catch (Exception e){
-            throw new ComponentCannotRegisterException(e.getMessage());
-        }
-        addNode(nodeId, name, NodeTypeEnum.BREAK, cmpClazz, null);
-    }
-
-    public static void addBreakNode(String nodeId, String name, Class<?> cmpClazz){
-        addNode(nodeId, name, NodeTypeEnum.BREAK, cmpClazz, null);
-    }
-
-    public static void addCommonScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.SCRIPT, ScriptCommonComponent.class, script);
-    }
-
-    public static void addSwitchScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.SWITCH_SCRIPT, ScriptSwitchComponent.class, script);
-    }
-
-    public static void addIfScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.IF_SCRIPT, ScriptIfComponent.class, script);
-    }
-
-    public static void addForScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.FOR_SCRIPT, ScriptForComponent.class, script);
-    }
-
-    public static void addWhileScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.WHILE_SCRIPT, ScriptWhileComponent.class, script);
-    }
-
-    public static void addBreakScriptNode(String nodeId, String name, String script){
-        addNode(nodeId, name, NodeTypeEnum.BREAK_SCRIPT, ScriptBreakComponent.class, script);
+    /**
+     * 添加脚本 node
+     *
+     * @param nodeId   节点id
+     * @param name     节点名称
+     * @param nodeType 节点类型
+     * @param script   脚本
+     */
+    public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script) {
+        addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script);
     }
 
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
@@ -206,7 +144,7 @@ public class FlowBus {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             //如果不是声明式的，就用传统的方式进行判断
             List<NodeComponent> cmpInstances = new ArrayList<>();
-            if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)){
+            if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)) {
                 //这里的逻辑要仔细看下
                 //如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
                 //由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
@@ -215,16 +153,16 @@ public class FlowBus {
                 //这里用ContextAware的spi机制来判断是否spring体系
                 ContextAware contextAware = ContextAwareHolder.loadContextAware();
                 Object bean = ContextAwareHolder.loadContextAware().registerBean(nodeId, cmpClazz);
-                if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())){
+                if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())) {
                     cmpInstances = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
-                }else {
+                } else {
                     cmpInstances = ListUtil.toList((NodeComponent) bean);
                 }
-            }else{
+            } else {
                 //以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
                 //这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
                 //如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
-                if (!type.isScript()){
+                if (!type.isScript()) {
                     cmpInstances = ListUtil.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
                 }
                 // 去除null元素
@@ -235,7 +173,7 @@ public class FlowBus {
                     cmpInstances.add(cmpInstance);
                 }
             }
-            //进行初始化
+            //进行初始化component
             cmpInstances = cmpInstances.stream()
                     .map(cmpInstance -> ComponentInitializer.loadInstance().initComponent(
                             cmpInstance,
@@ -244,7 +182,7 @@ public class FlowBus {
                             cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId())
                     ).collect(Collectors.toList());
 
-            //初始化Node
+            //初始化Node，把component放到Node里去
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
 
 
@@ -252,11 +190,11 @@ public class FlowBus {
                 Node node = nodes.get(i);
                 NodeComponent cmpInstance = cmpInstances.get(i);
                 //如果是脚本节点，则还要加载script脚本
-                if (type.isScript()){
-                    if (StrUtil.isNotBlank(script)){
+                if (type.isScript()) {
+                    if (StrUtil.isNotBlank(script)) {
                         node.setScript(script);
-                        ((ScriptComponent)cmpInstance).loadScript(script);
-                    }else{
+                        ((ScriptComponent) cmpInstance).loadScript(script);
+                    } else {
                         String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
                         throw new ScriptLoadException(errorMsg);
                     }
@@ -267,8 +205,8 @@ public class FlowBus {
             }
 
         } catch (Exception e) {
-            String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name)?nodeId:StrUtil.format("{}({})",nodeId,name));
-            LOG.error(error);
+            String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
+            LOG.error(e.getMessage());
             throw new ComponentCannotRegisterException(error);
         }
     }
@@ -281,19 +219,19 @@ public class FlowBus {
     //那condNodeMap共用有关系么，原则上没有关系。但是从设计理念上，以后应该要分开
     //tag和condNodeMap这2个属性不属于全局概念，属于每个chain范围的属性
     public static Node copyNode(String nodeId) {
-        try{
+        try {
             Node node = nodeMap.get(nodeId);
             return node.copy();
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
 
-    public static Map<String, Node> getNodeMap(){
+    public static Map<String, Node> getNodeMap() {
         return nodeMap;
     }
 
-    public static Map<String, Chain> getChainMap(){
+    public static Map<String, Chain> getChainMap() {
         return chainMap;
     }
 
@@ -305,12 +243,13 @@ public class FlowBus {
 
     public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
-        try{
+        try {
             ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor();
-            if (ObjectUtil.isNotNull(scriptExecutor)){
+            if (ObjectUtil.isNotNull(scriptExecutor)) {
                 scriptExecutor.cleanCache();
             }
-        }catch (ScriptSpiException ignored){}
+        } catch (ScriptSpiException ignored) {
+        }
     }
 
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
@@ -323,14 +262,18 @@ public class FlowBus {
         }
     }
 
-    public static boolean removeChain(String chainId){
-        if (containChain(chainId)){
+    public static boolean removeChain(String chainId) {
+        if (containChain(chainId)) {
             chainMap.remove(chainId);
             return true;
-        }else{
+        } else {
             String errMsg = StrUtil.format("cannot find the chain[{}]", chainId);
             LOG.error(errMsg);
             return false;
         }
+    }
+
+    public static void removeChain(String... chainIds) {
+        Arrays.stream(chainIds).forEach(FlowBus::removeChain);
     }
 }

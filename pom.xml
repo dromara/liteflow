@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.9.0</revision>
+		<revision>2.9.6</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -47,22 +47,33 @@
 		<springboot.version>2.0.5.RELEASE</springboot.version>
 		<spring.version>5.0.9.RELEASE</spring.version>
 		<org.slf4j.version>1.7.32</org.slf4j.version>
-		<jackson.version>2.13.3</jackson.version>
-		<snakeyaml.version>1.29</snakeyaml.version>
+		<jackson.version>2.14.0-rc2</jackson.version>
+		<snakeyaml.version>1.32</snakeyaml.version>
 		<dom4j.version>2.1.3</dom4j.version>
-		<curator.version>5.1.0</curator.version>
+		<curator.version>5.3.0</curator.version>
 		<junit.version>4.12</junit.version>
-		<hutool-core.version>5.7.19</hutool-core.version>
+		<hutool-core.version>5.8.8</hutool-core.version>
 		<transmittable-thread-local.version>2.12.3</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
 		<jetcd.version>0.7.3</jetcd.version>
+		<nacos.version>1.4.4</nacos.version>
 		<qlexpress.version>3.3.0</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
+		<graalvm.version>21.3.3.1</graalvm.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
+
 		<solon.version>1.11.5</solon.version>
+
+		<netty.version>4.1.84.Final</netty.version>
+		<guava.version>31.1-jre</guava.version>
+		<httpclient.version>4.5.13</httpclient.version>
+		<commons-beanutils.version>1.9.4</commons-beanutils.version>
+		<apollo.version>1.7.0</apollo.version>
+		<jython.version>2.7.3</jython.version>
+		<luaj.version>3.0.1</luaj.version>
 	</properties>
 
 	<dependencyManagement>
@@ -175,6 +186,21 @@
 				<version>${jetcd.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.alibaba.nacos</groupId>
+				<artifactId>nacos-client</artifactId>
+				<version>${nacos.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-databind</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-core</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
 				<groupId>com.alibaba</groupId>
 				<artifactId>QLExpress</artifactId>
 				<version>${qlexpress.version}</version>
@@ -194,7 +220,16 @@
 				<artifactId>byte-buddy</artifactId>
 				<version>${bytebuddy.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.graalvm.js</groupId>
+				<artifactId>js</artifactId>
+				<version>${graalvm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>${commons-beanutils.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjweaver</artifactId>
@@ -229,6 +264,21 @@
 				<version>${springboot.version}</version>
 				<scope>provided</scope>
 				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>com.ctrip.framework.apollo</groupId>
+				<artifactId>apollo-client</artifactId>
+				<version>${apollo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.python</groupId>
+				<artifactId>jython-standalone</artifactId>
+				<version>${jython.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.luaj</groupId>
+				<artifactId>luaj-jse</artifactId>
+				<version>${luaj.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -342,7 +392,7 @@
 		<module>liteflow-spring</module>
 		<module>liteflow-solon-plugin</module>
 		<module>liteflow-testcase-el</module>
-    </modules>
+	</modules>
 
 	<distributionManagement>
 		<snapshotRepository>

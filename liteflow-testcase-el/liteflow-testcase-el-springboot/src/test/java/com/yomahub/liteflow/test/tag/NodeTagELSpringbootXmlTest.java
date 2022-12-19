@@ -66,4 +66,13 @@ public class NodeTagELSpringbootXmlTest extends BaseTest {
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("g", response.getExecuteStepStr());
     }
+
+    //测试tag是否能在WHEN中起效果
+    @Test
+    public void testTag5() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("1",context.getData("test"));
+    }
 }

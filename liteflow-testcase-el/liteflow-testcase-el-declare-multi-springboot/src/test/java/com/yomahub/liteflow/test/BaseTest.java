@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test;
 
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
@@ -16,6 +17,7 @@ public class BaseTest {
         ExecutorHelper.loadInstance().clearExecutorServiceMap();
         SpiFactoryCleaner.clean();
         LiteflowConfigGetter.clean();
+        FlowInitHook.cleanHook();
     }
 
 }

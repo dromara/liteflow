@@ -7,7 +7,6 @@
  */
 package com.yomahub.liteflow.flow.element.condition;
 
-import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -23,14 +22,17 @@ public abstract class Condition implements Executable{
 
 	private String id;
 
-	//可执行元素的集合
+	/**
+	 * 可执行元素的集合
+	 */
 	private List<Executable> executableList = new ArrayList<>();
 
 
-
-	//当前所在的ChainName
-	//如果对于子流程来说，那这个就是子流程所在的Chain
-	private String currChainName;
+	/**
+	 * 当前所在的ChainName
+	 * 如果对于子流程来说，那这个就是子流程所在的Chain
+	 */
+	private String currChainId;
 
 	@Override
 	public ExecuteTypeEnum getExecuteType() {
@@ -38,7 +40,7 @@ public abstract class Condition implements Executable{
 	}
 
 	@Override
-	public String getExecuteName() {
+	public String getExecuteId() {
 		return this.id;
 	}
 
@@ -64,12 +66,22 @@ public abstract class Condition implements Executable{
 		this.id = id;
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @deprecated 请使用 {@link #setCurrChainId(String)}
+	 */
+	@Deprecated
 	public String getCurrChainName() {
-		return currChainName;
+		return currChainId;
 	}
 
+	public String getCurrChainId() {
+		return currChainId;
+	}
+	
 	@Override
-	public void setCurrChainName(String currChainName) {
-		this.currChainName = currChainName;
+	public void setCurrChainId(String currChainId) {
+		this.currChainId = currChainId;
 	}
 }

@@ -12,16 +12,16 @@ import com.yomahub.liteflow.flow.element.Node;
  */
 public class DataOperator extends BaseOperator<Node> {
 
-	@Override
-	public Node build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeEqTwo(objects);
+    @Override
+    public Node build(Object[] objects) throws Exception {
+        OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		Node node = OperatorHelper.convert(objects[0], Node.class);
+        Node node = OperatorHelper.convert(objects[0], Node.class);
 
-		String cmpData = OperatorHelper.convert(objects[1], String.class);
+        String cmpData = OperatorHelper.convert(objects[1], String.class);
 
-		node.setCmpData(cmpData);
+        node.setCmpData(cmpData);
 
-		return node;
-	}
+        return node;
+    }
 }

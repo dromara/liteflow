@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="x0" type="if_script">
+        <node id="x0" type="if_script" language="groovy">
             <![CDATA[
-                return true;
+                return true
             ]]>
         </node>
 
-        <node id="x1" type="if_script">
+        <node id="x1" type="if_script" language="groovy">
             <![CDATA[
-                return false;
+                return false
             ]]>
         </node>
     </nodes>

@@ -25,7 +25,7 @@
         <constructor-arg name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 
-    <bean class="com.yomahub.liteflow.monitor.MonitorBus">
+    <bean id="monitorBus" class="com.yomahub.liteflow.monitor.MonitorBus">
         <constructor-arg name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 </beans>

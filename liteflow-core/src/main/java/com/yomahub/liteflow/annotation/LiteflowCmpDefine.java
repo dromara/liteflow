@@ -3,7 +3,9 @@ package com.yomahub.liteflow.annotation;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 import java.lang.annotation.*;
-
+/**
+ * @author Bryan.Zhang
+ */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

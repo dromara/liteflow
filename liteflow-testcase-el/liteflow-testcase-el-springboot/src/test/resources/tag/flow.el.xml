@@ -15,4 +15,8 @@
     <chain name="chain4">
         THEN(f.tag("false"), g);
     </chain>
+
+    <chain name="chain5">
+        WHEN(h.tag("1"));
+    </chain>
 </flow>

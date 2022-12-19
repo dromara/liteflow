@@ -7,6 +7,12 @@
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
+      "name": "liteflow.rule-source-ext-data-map",
+      "type": "java.util.Map",
+      "description": "rule source extended data map.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
       "name": "liteflow.request-id-generator-class",
       "type": "java.lang.String",
       "description": "Custom requestId builder.",

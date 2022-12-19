@@ -29,24 +29,18 @@ public class Chain implements Executable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Chain.class);
 
-    private String chainName;
+    private String chainId;
 
     private List<Condition> conditionList = new ArrayList<>();
 
-    //前置处理Condition，用来区别主体的Condition
-    private List<Condition> preConditionList = new ArrayList<>();
-
-    //后置处理Condition，用来区别主体的Condition
-    private List<Condition> finallyConditionList = new ArrayList<>();
-
     public Chain(String chainName){
-        this.chainName = chainName;
+        this.chainId = chainName;
     }
 
     public Chain(){}
 
     public Chain(String chainName, List<Condition> conditionList) {
-        this.chainName = chainName;
+        this.chainId = chainName;
         this.conditionList = conditionList;
     }
 
@@ -58,29 +52,44 @@ public class Chain implements Executable {
         this.conditionList = conditionList;
     }
 
+    /**
+	 * @deprecated 请使用{@link #getChainId()}
+	 */
+    @Deprecated
     public String getChainName() {
-        return chainName;
+        return chainId;
     }
 
+    /**
+     * 
+     * @param chainName
+     * @deprecated 请使用 {@link #setChainId(String)}
+     */
     public void setChainName(String chainName) {
-        this.chainName = chainName;
+        this.chainId = chainName;
+    }
+    
+    public String getChainId() {
+        return chainId;
+    }
+
+    public void setChainId(String chainId) {
+        this.chainId = chainId;
     }
 
     //执行chain的主方法
     @Override
     public void execute(Integer slotIndex) throws Exception {
         if (CollUtil.isEmpty(conditionList)) {
-            throw new FlowSystemException("no conditionList in this chain[" + chainName + "]");
+            throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
         }
         Slot slot = DataBus.getSlot(slotIndex);
         try {
             //设置主ChainName
-            slot.setChainName(chainName);
-            //执行前置
-            this.executePre(slotIndex);
+            slot.setChainId(chainId);
             //执行主体Condition
             for (Condition condition : conditionList) {
-                condition.setCurrChainName(chainName);
+                condition.setCurrChainId(chainId);
                 condition.execute(slotIndex);
             }
         }catch (ChainEndException e){
@@ -89,29 +98,12 @@ public class Chain implements Executable {
             throw e;
         }catch (Exception e){
             //这里事先取到exception set到slot里，为了方便finally取到exception
-            if (slot.isSubChain(chainName)){
-                slot.setSubException(chainName, e);
+            if (slot.isSubChain(chainId)){
+                slot.setSubException(chainId, e);
             }else{
                 slot.setException(e);
             }
             throw e;
-        }finally {
-            //执行后置
-            this.executeFinally(slotIndex);
-        }
-    }
-
-    // 执行pre节点
-    private void executePre(Integer slotIndex) throws Exception {
-        for (Condition condition : this.preConditionList){
-            condition.execute(slotIndex);
-        }
-    }
-
-    //执行后置
-    private void executeFinally(Integer slotIndex) throws Exception {
-        for (Condition condition : this.finallyConditionList){
-            condition.execute(slotIndex);
         }
     }
 
@@ -121,22 +113,7 @@ public class Chain implements Executable {
     }
 
     @Override
-    public String getExecuteName() {
-        return chainName;
-    }
-    public List<Condition> getPreConditionList() {
-        return preConditionList;
-    }
-
-    public void setPreConditionList(List<Condition> preConditionList) {
-        this.preConditionList = preConditionList;
-    }
-
-    public List<Condition> getFinallyConditionList() {
-        return finallyConditionList;
-    }
-
-    public void setFinallyConditionList(List<Condition> finallyConditionList) {
-        this.finallyConditionList = finallyConditionList;
+    public String getExecuteId() {
+        return chainId;
     }
 }

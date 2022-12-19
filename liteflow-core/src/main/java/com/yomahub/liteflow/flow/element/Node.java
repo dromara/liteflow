@@ -12,6 +12,7 @@ import java.text.MessageFormat;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Node节点，实现可执行器
+ * Node节点并不是单例的，每构建一次都会copy出一个新的实例
  * @author Bryan.Zhang
  */
 public class Node implements Executable,Cloneable{
@@ -49,6 +51,10 @@ public class Node implements Executable,Cloneable{
 	private String tag;
 
 	private String cmpData;
+
+	private String currChainId;
+
+	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
 	public Node(){
 
@@ -106,8 +112,7 @@ public class Node implements Executable,Cloneable{
 		try {
 			//把线程属性赋值给组件对象
 			instance.setSlotIndex(slotIndex);
-			instance.setTag(tag);
-			instance.setCmpData(cmpData);
+			instance.setRefNode(this);
 
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
@@ -148,9 +153,8 @@ public class Node implements Executable,Cloneable{
 			//移除threadLocal里的信息
 			instance.removeSlotIndex();
 			instance.removeIsEnd();
-			instance.removeTag();
-			instance.removeCurrChainName();
-			instance.removeCmpData();
+			instance.removeRefNode();
+			removeLoopIndex();
 		}
 	}
 
@@ -160,7 +164,9 @@ public class Node implements Executable,Cloneable{
 	//详情见这个issue:https://gitee.com/dromara/liteFlow/issues/I4XRBA
 	@Override
 	public boolean isAccess(Integer slotIndex) throws Exception {
+		//把线程属性赋值给组件对象
 		instance.setSlotIndex(slotIndex);
+		instance.setRefNode(this);
 		return instance.isAccess();
 	}
 
@@ -179,7 +185,7 @@ public class Node implements Executable,Cloneable{
 	}
 
 	@Override
-	public String getExecuteName() {
+	public String getExecuteId() {
 		return id;
 	}
 
@@ -207,16 +213,32 @@ public class Node implements Executable,Cloneable{
 		this.clazz = clazz;
 	}
 
-	@Override
-	public void setCurrChainName(String currentChainName) {
-		instance.setCurrChainName(currentChainName);
-	}
-
 	public String getCmpData() {
 		return cmpData;
 	}
 
 	public void setCmpData(String cmpData) {
 		this.cmpData = cmpData;
+	}
+
+	@Override
+	public void setCurrChainId(String currentChainId) {
+		this.currChainId = currentChainId;
+	}
+
+	public String getCurrChainId() {
+		return currChainId;
+	}
+
+	public void setLoopIndex(int index){
+		this.loopIndexTL.set(index);
+	}
+
+	public Integer getLoopIndex(){
+		return this.loopIndexTL.get();
+	}
+
+	public void removeLoopIndex(){
+		this.loopIndexTL.remove();
 	}
 }

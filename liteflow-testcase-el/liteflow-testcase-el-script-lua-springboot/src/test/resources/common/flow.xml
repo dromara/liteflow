@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script">
+            <![CDATA[
+                local a=6
+                local b=10
+                if(a>5) then
+                    b=5
+                else
+                    b=2
+                end
+                defaultContext:setData("s1",a*b)
+                defaultContext:setData("s2",_meta:get("nodeId"))
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>

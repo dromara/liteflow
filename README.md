@@ -21,8 +21,6 @@ You can find out how to join the community on the official website!
 ## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/en/pages/5816c5/)
 ## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
-LiteFlow has more than 1000 test cases in the source code, including most scenarios, you can see the test cases in the source code.
-
 ## Feature
 * **Component definition unified:** All logic is a component, for all logic to provide a unified component implementation, small size, large energy.
 * **Rules lightweight:** based on the rules file to arrange the process, learning the rules entry only takes 5 minutes, a read both understand.
@@ -55,7 +53,7 @@ These processes can be easily solved with LiteFlow! The framework has a very low
 
 LiteFlow has an extremely detailed and easy-to-understand documentation， it can help you solve more than 95% of your problems when using the framework.
 
-Right now LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
+LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
 Looking forward to your use！
 
@@ -67,7 +65,7 @@ Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group
 
-![offIical-wx](static/img/offical-wx.jpg)
+![official-wx](static/img/offical-wx.jpg)
 
 Open source is not easy, please sponsor LiteFlow if you support it
 

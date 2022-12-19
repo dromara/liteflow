@@ -1,6 +1,10 @@
 package com.yomahub.liteflow.exception;
 
 
+/**
+ * 执行异常时
+ * @author Yun
+ */
 public class WhenExecuteException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

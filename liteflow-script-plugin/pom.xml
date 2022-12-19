@@ -17,6 +17,10 @@
     <modules>
         <module>liteflow-script-qlexpress</module>
         <module>liteflow-script-groovy</module>
+        <module>liteflow-script-javascript</module>
+        <module>liteflow-script-graaljs</module>
+        <module>liteflow-script-python</module>
+        <module>liteflow-script-lua</module>
     </modules>
 
 </project>

@@ -40,6 +40,7 @@ public class WhenCondition extends Condition {
 	private boolean errorResume = false;
 
 	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
+	//此属性已弃用
 	private String group = LocalDefaultFlowConstant.DEFAULT;
 
 	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
@@ -64,7 +65,7 @@ public class WhenCondition extends Condition {
 	private void executeAsyncCondition(Integer slotIndex) throws Exception{
 		Slot slot = DataBus.getSlot(slotIndex);
 
-		String currChainName = this.getCurrChainName();
+		String currChainName = this.getCurrChainId();
 
 		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
 		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());
@@ -92,7 +93,7 @@ public class WhenCondition extends Condition {
 				return false;
 			}
 		}).map(executable -> CompletableFutureTimeout.completeOnTimeout(
-				WhenFutureObj.timeOut(executable.getExecuteName()),
+				WhenFutureObj.timeOut(executable.getExecuteId()),
 				CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
 				liteflowConfig.getWhenMaxWaitSeconds(),
 				TimeUnit.SECONDS

@@ -14,9 +14,11 @@ import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -234,13 +236,30 @@ public class Slot{
 		return (boolean) metaDataMap.get(BREAK_PREFIX + key);
 	}
 
+	/**
+	 * 
+	 * @deprecated  请使用 {@link #setChainId(String)}
+	 */
+	@Deprecated
 	public void setChainName(String chainName) {
+		setChainId(chainName);
+	}
+
+	/**
+	 * @deprecated 请使用 {@link #getChainId()} 
+	 */
+	@Deprecated
+	public String getChainName() {
+		return getChainId();
+	}
+	
+	public void setChainId(String chainId) {
 		if (!hasMetaData(CHAIN_NAME)){
-			this.putMetaDataMap(CHAIN_NAME, chainName);
+			this.putMetaDataMap(CHAIN_NAME, chainId);
 		}
 	}
 
-	public String getChainName() {
+	public String getChainId() {
 		return (String) metaDataMap.get(CHAIN_NAME);
 	}
 
@@ -274,7 +293,9 @@ public class Slot{
 		if (ObjectUtil.isNull(this.executeStepsStr)){
 			this.executeStepsStr = getExecuteStepStr(true);
 		}
-		LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
+		if (LiteflowConfigGetter.get().getPrintExecutionLog()){
+			LOG.info("[{}]:CHAIN_NAME[{}]\n{}",getRequestId(),this.getChainName(), this.executeStepsStr);
+		}
 	}
 
 	public void generateRequestId() {

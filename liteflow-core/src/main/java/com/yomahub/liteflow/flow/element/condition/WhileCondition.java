@@ -32,11 +32,14 @@ public class WhileCondition extends LoopCondition{
         Executable executableItem = this.getDoExecutor();
 
         //循环执行
+        int index = 0;
         while(getWhileResult(slotIndex)){
+            executableItem.setCurrChainId(this.getCurrChainId());
+            setLoopIndex(executableItem, index++);
             executableItem.execute(slotIndex);
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
-                breakNode.setCurrChainName(this.getCurrChainName());
+                breakNode.setCurrChainId(this.getCurrChainId());
                 breakNode.execute(slotIndex);
                 Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());

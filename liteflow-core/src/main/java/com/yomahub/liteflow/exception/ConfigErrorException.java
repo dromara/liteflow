@@ -1,5 +1,9 @@
 package com.yomahub.liteflow.exception;
 
+/**
+ * 配置错误异常
+ * @author Yun
+ */
 public class ConfigErrorException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

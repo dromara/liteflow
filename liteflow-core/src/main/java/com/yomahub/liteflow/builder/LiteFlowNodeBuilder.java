@@ -11,8 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class LiteFlowNodeBuilder {
 
@@ -132,33 +137,16 @@ public class LiteFlowNodeBuilder {
     public void build() {
         checkBuild();
         try {
-            if (this.node.getType().equals(NodeTypeEnum.COMMON)) {
-                FlowBus.addCommonNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH)) {
-                FlowBus.addSwitchNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.IF)) {
-                FlowBus.addIfNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.FOR)) {
-                FlowBus.addForNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.WHILE)) {
-                FlowBus.addWhileNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.BREAK)) {
-                FlowBus.addBreakNode(this.node.getId(), this.node.getName(), this.node.getClazz());
-            } else if (this.node.getType().equals(NodeTypeEnum.SCRIPT)) {
-                FlowBus.addCommonScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.SWITCH_SCRIPT)) {
-                FlowBus.addSwitchScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.IF_SCRIPT)) {
-                FlowBus.addIfScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.FOR_SCRIPT)) {
-                FlowBus.addForScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.WHILE_SCRIPT)) {
-                FlowBus.addWhileScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            } else if (this.node.getType().equals(NodeTypeEnum.BREAK_SCRIPT)) {
-                FlowBus.addBreakScriptNode(this.node.getId(), this.node.getName(), this.node.getScript());
-            }
+            // 用于处理脚本 node
+           if (this.node.getType().isScript()){
+               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript());
+           }
+           // 用于处理普通 node
+           else{
+               FlowBus.addNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getClazz());
+           }
         } catch (Exception e) {
-            String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(),e.getMessage());
+            String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(), e.getMessage());
             LOG.error(errMsg, e);
             throw new NodeBuildException(errMsg);
         }

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="x0" type="if_script" language="js">
+            <![CDATA[
+                return true;
+            ]]>
+        </node>
+
+        <node id="x1" type="if_script" language="js">
+            <![CDATA[
+                return false;
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        IF(x0, THEN(a, b));
+    </chain>
+
+    <chain name="chain2">
+        IF(x1, THEN(a, b), THEN(c, d));
+    </chain>
+
+    <chain name="chain3">
+        item = IF(x1, a, THEN(c, c, b));
+        IF(
+            x1,
+            a,
+            item
+        );
+    </chain>
+
+    <chain name="chain4">
+        IF(x1, THEN(a, b)).ELSE(THEN(c, d));
+    </chain>
+
+    <chain name="chain5">
+        item = IF(x1, a, THEN(c, c, b));
+
+        IF(x1, THEN(a, b)).ELSE(item);
+    </chain>
+
+    <chain name="chain6">
+        IF(x1, THEN(a, b)).ELIF(x0, THEN(c, c)).ELSE(d);
+    </chain>
+
+    <chain name="chain7">
+        IF(x1, a).ELIF(x1, b)
+                              .ELIF(x1, c)
+                              .ELIF(x1, d)
+                              .ELSE(THEN(d, b, a));
+    </chain>
+</flow>

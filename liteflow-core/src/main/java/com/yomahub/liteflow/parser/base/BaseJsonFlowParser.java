@@ -35,7 +35,8 @@ public abstract class BaseJsonFlowParser implements FlowParser {
 			JsonNode flowJsonNode = JsonUtil.parseObject(content);
 			jsonObjectList.add(flowJsonNode);
 		}
-		ParserHelper.parseJsonNode(jsonObjectList, CHAIN_NAME_SET, this::parseOneChain);
+		ParserHelper.parseNodeJson(jsonObjectList);
+		ParserHelper.parseChainJson(jsonObjectList, CHAIN_NAME_SET, this::parseOneChain);
 	}
 
 	/**

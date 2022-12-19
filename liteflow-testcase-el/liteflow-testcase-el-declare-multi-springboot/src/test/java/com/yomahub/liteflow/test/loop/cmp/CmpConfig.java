@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.loop.cmp;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -35,6 +36,19 @@ public class CmpConfig {
             context.setData(key, ++count);
         }else{
             context.setData(key, 1);
+        }
+    }
+
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "e")
+    public void processE(NodeComponent bindCmp) {
+        DefaultContext context = bindCmp.getFirstContextBean();
+        String key = StrUtil.format("{}_{}", "loop", bindCmp.getTag());
+        if (context.hasData(key)){
+            String loopStr = context.getData(key);
+            String loopStrReturn = StrUtil.format("{}{}", loopStr, bindCmp.getLoopIndex());
+            context.setData(key, loopStrReturn);
+        }else{
+            context.setData(key, bindCmp.getLoopIndex().toString());
         }
     }
 

@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -58,22 +59,21 @@ public abstract class NodeComponent{
 	/** 节点执行器的类全名 */
 	private Class<? extends NodeExecutor> nodeExecutorClass = DefaultNodeExecutor.class;
 
-	/********************以下的属性为线程附加属性，并非不变属性********************/
+	/**当前对象为单例，注册进spring上下文，但是node实例不是单例，这里通过对node实例的引用来获得一些链路属性**/
+
+	private final TransmittableThreadLocal<Node> refNodeTL = new TransmittableThreadLocal<>();
+
+	/**
+	 *******************以下的属性为线程附加属性********************
+	 * 线程属性是指每一个request的值都是不一样的
+	 * 这里NodeComponent是单例，所以要用ThreadLocal来修饰
+	 */
 
 	//当前slot的index
 	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
 
 	//是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
-
-	//tag标签
-	private final TransmittableThreadLocal<String> tagTL = new TransmittableThreadLocal<>();
-
-	//当前流程名字
-	private final TransmittableThreadLocal<String> currChainNameTL = new TransmittableThreadLocal<>();
-
-	//组件外部参数
-	private final TransmittableThreadLocal<String> cmpDataTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
 	}
@@ -83,7 +83,7 @@ public abstract class NodeComponent{
 
 		//在元数据里加入step信息
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
-		cmpStep.setTag(tagTL.get());
+		cmpStep.setTag(this.getTag());
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -273,16 +273,8 @@ public abstract class NodeComponent{
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
 
-	public void setTag(String tag){
-		this.tagTL.set(tag);
-	}
-
 	public String getTag(){
-		return this.tagTL.get();
-	}
-
-	public void removeTag(){
-		this.tagTL.remove();
+		return this.refNodeTL.get().getTag();
 	}
 
 	public MonitorBus getMonitorBus() {
@@ -298,15 +290,24 @@ public abstract class NodeComponent{
 	}
 
 	public <T> T getSubChainReqData(){
-		return getSlot().getChainReqData(this.getCurrChainName());
+		return getSlot().getChainReqData(this.getCurrChainId());
 	}
 
 	public <T> T getSubChainReqDataInAsync(){
-		return getSlot().getChainReqDataFromQueue(this.getCurrChainName());
+		return getSlot().getChainReqDataFromQueue(this.getCurrChainId());
 	}
 
+	/**
+	 * @deprecated 请使用 {@link #getChainId()}
+	 * @return String
+	 */
+	@Deprecated
 	public String getChainName(){
 		return getSlot().getChainName();
+	}
+	
+	public String getChainId(){
+		return getSlot().getChainId();
 	}
 
 	public String getDisplayName(){
@@ -317,33 +318,38 @@ public abstract class NodeComponent{
 		}
 	}
 
-	public void setCurrChainName(String currChainName){
-		this.currChainNameTL.set(currChainName);
+	public String getCurrChainId(){
+		return getRefNode().getCurrChainId();
 	}
 
-	public String getCurrChainName(){
-		return this.currChainNameTL.get();
+	public Node getRefNode(){
+		return this.refNodeTL.get();
 	}
 
-	public void removeCurrChainName(){
-		this.currChainNameTL.remove();
+	public void setRefNode(Node refNode){
+		this.refNodeTL.set(refNode);
 	}
 
-	public void setCmpData(String cmpData){
-		this.cmpDataTL.set(cmpData);
+	public void removeRefNode(){
+		this.refNodeTL.remove();
 	}
 
 	public <T> T getCmpData(Class<T> clazz){
-		if (StrUtil.isBlank(this.cmpDataTL.get())){
+		String cmpData = getRefNode().getCmpData();
+		if (StrUtil.isBlank(cmpData)){
 			return null;
 		}
-		return JsonUtil.parseObject(this.cmpDataTL.get(), clazz);
+		if (clazz.equals(String.class) || clazz.equals(Object.class)){
+			return (T) cmpData;
+		}
+		return JsonUtil.parseObject(cmpData, clazz);
 	}
 
-	public void removeCmpData(){
-		this.cmpDataTL.remove();
+	public Integer getLoopIndex(){
+		return this.refNodeTL.get().getLoopIndex();
 	}
 
+	@Deprecated
 	public void invoke(String chainId, Object param) throws Exception {
 		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
 	}
@@ -352,6 +358,7 @@ public abstract class NodeComponent{
 		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
 	}
 
+	@Deprecated
 	public void invokeInAsync(String chainId, Object param) throws Exception {
 		FlowExecutorHolder.loadInstance().invokeInAsync(chainId, param, this.getSlotIndex());
 	}

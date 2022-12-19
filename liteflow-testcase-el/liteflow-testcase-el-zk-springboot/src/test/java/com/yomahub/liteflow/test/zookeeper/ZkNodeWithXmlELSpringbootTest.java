@@ -35,8 +35,10 @@ import java.util.concurrent.CountDownLatch;
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.zookeeper.cmp"})
 public class ZkNodeWithXmlELSpringbootTest extends BaseTest {
-    
-    private static final String ZK_NODE_PATH = "/lite-flow/flow";
+
+    private static final String ZK_CHAIN_PATH = "/liteflow/chain";
+
+    private static final String ZK_SCRIPT_PATH = "/liteflow/script";
 
     private static TestingServer zkServer;
     
@@ -46,27 +48,25 @@ public class ZkNodeWithXmlELSpringbootTest extends BaseTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         zkServer = new TestingServer(21810);
-        CountDownLatch latch = new CountDownLatch(1);
-        new Thread(() -> {
-            String data = ResourceUtil.readUtf8Str("zookeeper/flow.xml");
-            ZkClient zkClient = new ZkClient("127.0.0.1:21810");
-            zkClient.setZkSerializer(new ZkSerializer() {
-                @Override
-                public byte[] serialize(final Object o) throws ZkMarshallingError {
-                    return o.toString().getBytes(Charset.forName("UTF-8"));
-                }
+        ZkClient zkClient = new ZkClient("127.0.0.1:21810");
+        zkClient.setZkSerializer(new ZkSerializer() {
+            @Override
+            public byte[] serialize(final Object o) throws ZkMarshallingError {
+                return o.toString().getBytes(Charset.forName("UTF-8"));
+            }
 
-                @Override
-                public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
-                    return new String(bytes, Charset.forName("UTF-8"));
-                }
-            });
-            zkClient.createPersistent(ZK_NODE_PATH, true);
-            zkClient.writeData(ZK_NODE_PATH, data);
-            zkClient.close();
-            latch.countDown();
-        }).start();
-        latch.await();
+            @Override
+            public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
+                return new String(bytes, Charset.forName("UTF-8"));
+            }
+        });
+        String chain1Path = ZK_CHAIN_PATH+"/chain1";
+        zkClient.createPersistent(chain1Path, true);
+        zkClient.writeData(chain1Path, "THEN(a, b, c, s1);");
+
+        String script1Path = ZK_SCRIPT_PATH+"/s1:script:脚本s1";
+        zkClient.createPersistent(script1Path, true);
+        zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
     }
     
     @Test

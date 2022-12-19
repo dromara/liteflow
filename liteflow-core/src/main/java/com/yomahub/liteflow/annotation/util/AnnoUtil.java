@@ -11,7 +11,10 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * 注解工具类
+ * @author Bryan.Zhang
+ */
 public class AnnoUtil {
 
     public static <A extends Annotation> A getAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
@@ -41,7 +44,7 @@ public class AnnoUtil {
         return annotation;
     }
 
-    public static <A extends Annotation> Object getDefaultValue(Class<A> annotationType, String property){
+    private static <A extends Annotation> Object getDefaultValue(Class<A> annotationType, String property){
         try{
             return annotationType.getMethod(property).getDefaultValue();
         }catch (Exception e){

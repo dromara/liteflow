@@ -13,7 +13,6 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.script.ScriptExecutor;
-import com.yomahub.liteflow.script.exception.ScriptExecuteException;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
@@ -54,7 +53,7 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
     }
 
     @Override
-    public Object execute(ScriptExecuteWrap wrap) {
+    public Object execute(ScriptExecuteWrap wrap) throws Exception{
         List<String> errorList = new ArrayList<>();
         try{
             if (!compiledScriptMap.containsKey(wrap.getNodeId())){
@@ -88,18 +87,18 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             }
 
             //往脚本上下文里放入元数据
-            context.putAll(metaMap);
+            context.put("_meta", metaMap);
 
             //放入用户自己定义的bean
-            context.putAll(ScriptBeanManager.getScriptBeanMap());
+            //放入用户自己定义的bean
+            ScriptBeanManager.getScriptBeanMap().forEach(context::putIfAbsent);
 
             return expressRunner.execute(instructionSet, context, errorList, true, false, null);
         }catch (Exception e){
             for (String scriptErrorMsg : errorList){
                 log.error("\n{}", scriptErrorMsg);
             }
-            String errorMsg = StrUtil.format("script execute error for node[{}]", wrap.getNodeId());
-            throw new ScriptExecuteException(errorMsg);
+            throw e;
         }
     }
 

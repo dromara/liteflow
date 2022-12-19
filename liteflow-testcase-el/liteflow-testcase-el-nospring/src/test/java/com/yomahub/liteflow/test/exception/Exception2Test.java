@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.exception;
 
-import com.yomahub.liteflow.builder.LiteFlowChainBuilder;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
@@ -43,7 +43,7 @@ public class Exception2Test extends BaseTest {
 
     @Test(expected = FlowSystemException.class)
     public void testNoConditionInChainException() throws Throwable {
-        LiteFlowChainBuilder.createChain().setChainName("chain2").build();
+        LiteFlowChainELBuilder.createChain().setChainId("chain2").build();
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "test");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals("no conditionList in this chain[chain2]", response.getMessage());

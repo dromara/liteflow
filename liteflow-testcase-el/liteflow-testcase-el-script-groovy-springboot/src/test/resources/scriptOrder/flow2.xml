@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s4" language="groovy" type="script">
+            <![CDATA[
+            System.out.println("Groovy 脚本4 被调用。")
+            ]]>
+        </node>
+    </nodes>
+</flow>

@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.parser.sql;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
@@ -29,12 +32,13 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 	public SQLXmlELParser() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())) {
-			throw new ELSQLException(ERROR_COMMON_MSG);
-		}
-
 		try {
-			SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+			SQLParserVO sqlParserVO = null;
+			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
+				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class, CopyOptions.create());
+			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
+				sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+			}
 			if (Objects.isNull(sqlParserVO)) {
 				throw new ELSQLException(ERROR_COMMON_MSG);
 			}
@@ -44,7 +48,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
-
 		} catch (ELSQLException elsqlException) {
 			throw elsqlException;
 		} catch (Exception ex) {
@@ -55,9 +58,8 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		return JDBCHelper.getInstance().getElDataContent();
+		return JDBCHelper.getInstance().getContent();
 	}
-
 
 	/**
 	 * 检查配置文件并设置默认值

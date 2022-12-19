@@ -29,9 +29,19 @@ public class SQLParserVO {
 	private String password;
 
 	/**
-	 * 表名
+	 * 应用名
 	 */
-	private String tableName = "el_table";
+	private String applicationName;
+
+	/**
+	 * chain表名
+	 */
+	private String chainTableName;
+
+	/**
+	 * chain表里的应用名字段
+	 */
+	private String chainApplicationNameField = "application_name";
 
 	/**
 	 * chainName
@@ -42,6 +52,36 @@ public class SQLParserVO {
 	 * el 表达式相关数据
 	 */
 	private String elDataField = "el_data";
+
+	/**
+	 * 脚本 node 表名
+	 */
+	private String scriptTableName;
+
+	/**
+	 * script表里的应用名字段
+	 */
+	private String scriptApplicationNameField = "application_name";
+
+	/**
+	 * 脚本 node id 字段
+	 */
+	private String scriptIdField = "script_id";
+
+	/**
+	 * 脚本 node name 字段
+	 */
+	private String scriptNameField = "script_name";
+
+	/**
+	 * 脚本 node data 字段
+	 */
+	private String scriptDataField = "script_data";
+
+	/**
+	 * 脚本 node type 字段
+	 */
+	private String scriptTypeField = "script_type";
 
 	public String getUrl() {
 		return url;
@@ -75,12 +115,28 @@ public class SQLParserVO {
 		this.password = password;
 	}
 
-	public String getTableName() {
-		return tableName;
+	public String getApplicationName() {
+		return applicationName;
 	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	public String getChainTableName() {
+		return chainTableName;
+	}
+
+	public void setChainTableName(String chainTableName) {
+		this.chainTableName = chainTableName;
+	}
+
+	public String getChainApplicationNameField() {
+		return chainApplicationNameField;
+	}
+
+	public void setChainApplicationNameField(String chainApplicationNameField) {
+		this.chainApplicationNameField = chainApplicationNameField;
 	}
 
 	public String getChainNameField() {
@@ -97,5 +153,53 @@ public class SQLParserVO {
 
 	public void setElDataField(String elDataField) {
 		this.elDataField = elDataField;
+	}
+
+	public String getScriptTableName() {
+		return scriptTableName;
+	}
+
+	public void setScriptTableName(String scriptTableName) {
+		this.scriptTableName = scriptTableName;
+	}
+
+	public String getScriptApplicationNameField() {
+		return scriptApplicationNameField;
+	}
+
+	public void setScriptApplicationNameField(String scriptApplicationNameField) {
+		this.scriptApplicationNameField = scriptApplicationNameField;
+	}
+
+	public String getScriptIdField() {
+		return scriptIdField;
+	}
+
+	public void setScriptIdField(String scriptIdField) {
+		this.scriptIdField = scriptIdField;
+	}
+
+	public String getScriptNameField() {
+		return scriptNameField;
+	}
+
+	public void setScriptNameField(String scriptNameField) {
+		this.scriptNameField = scriptNameField;
+	}
+
+	public String getScriptDataField() {
+		return scriptDataField;
+	}
+
+	public void setScriptDataField(String scriptDataField) {
+		this.scriptDataField = scriptDataField;
+	}
+
+	public String getScriptTypeField() {
+		return scriptTypeField;
+	}
+
+	public void setScriptTypeField(String scriptTypeField) {
+		this.scriptTypeField = scriptTypeField;
 	}
 }

@@ -34,7 +34,7 @@ public class ForOperator extends BaseOperator<ForCondition> {
             node = new Node();
             NodeForComponent nodeForComponent = new NodeForComponent() {
                 @Override
-                public int processFor() throws Exception {
+                public int processFor() {
                     return forCount;
                 }
             };

@@ -18,6 +18,6 @@ public class FSwitchCmp{
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
-		return "tag:td";
+		return ":td";
 	}
 }

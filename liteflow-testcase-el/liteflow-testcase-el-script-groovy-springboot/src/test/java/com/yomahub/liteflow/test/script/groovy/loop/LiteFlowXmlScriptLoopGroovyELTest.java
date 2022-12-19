@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.script.groovy.loop;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.script.groovy.LiteflowJsonScriptFileGroovyELTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -5,6 +5,9 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 import java.lang.annotation.*;
 
+/**
+ * @author Bryan.Zhang
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -13,8 +16,11 @@ public @interface LiteflowMethod {
 
     LiteFlowMethodEnum value();
 
-    // 节点ID，用于区分节点
-    // 默认为空 则按照Spring模式下BeanName为准。
+    /**
+     * 节点ID，用于区分节点
+     * 默认为空 则按照Spring模式下BeanName为准。
+     * @return
+     */
     String nodeId() default "";
 
     /**

@@ -13,7 +13,7 @@ public class ScriptWhileComponent extends NodeWhileComponent implements ScriptCo
     @Override
     public boolean processWhile() throws Exception {
         ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainName(this.getCurrChainName());
+        wrap.setCurrChainId(this.getCurrChainId());
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());

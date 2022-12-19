@@ -11,6 +11,8 @@ package com.yomahub.liteflow.property;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 
+import java.util.Map;
+
 /**
  * liteflow的配置实体类
  * 这个类中的属性为什么不用基本类型，而用包装类型呢
@@ -31,6 +33,8 @@ public class LiteflowConfig {
 
     //流程资源扩展数据
     private String ruleSourceExtData;
+
+    private Map<String, String> ruleSourceExtDataMap;
 
     //slot的数量
     private Integer slotSize;
@@ -339,5 +343,13 @@ public class LiteflowConfig {
 
     public void setRuleSourceExtData(String ruleSourceExtData) {
         this.ruleSourceExtData = ruleSourceExtData;
+    }
+
+    public Map<String, String> getRuleSourceExtDataMap() {
+        return ruleSourceExtDataMap;
+    }
+
+    public void setRuleSourceExtDataMap(Map<String, String> ruleSourceExtDataMap) {
+        this.ruleSourceExtDataMap = ruleSourceExtDataMap;
     }
 }

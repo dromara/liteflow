@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="选择脚本" type="switch_script" language="js">
+            <![CDATA[
+                var count = defaultContext.getData("count");
+                if(count > 100){
+                    return "a";
+                }else{
+                    return "b";
+                }
+            ]]>
+        </node>
+
+    </nodes>
+
+    <chain name="chain1">
+        THEN(d, SWITCH(s1).to(a,b));
+    </chain>
+
+</flow>

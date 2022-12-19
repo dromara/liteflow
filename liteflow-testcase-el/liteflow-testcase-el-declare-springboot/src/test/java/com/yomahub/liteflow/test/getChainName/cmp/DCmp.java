@@ -19,6 +19,6 @@ public class DCmp {
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		DefaultContext context = bindCmp.getFirstContextBean();
-		context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainName());
+		context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainId());
 	}
 }

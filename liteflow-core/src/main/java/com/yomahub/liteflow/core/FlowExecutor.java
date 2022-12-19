@@ -60,7 +60,7 @@ public class FlowExecutor {
         //设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
         FlowExecutorHolder.setHolder(this);
         if (BooleanUtil.isTrue(liteflowConfig.isParseOnStart())) {
-            this.init();
+            this.init(true);
         }
         //初始化DataBus
         DataBus.init();
@@ -69,7 +69,7 @@ public class FlowExecutor {
     /**
      * FlowExecutor的初始化化方式，主要用于parse规则文件
      */
-    public void init() {
+    public void init(boolean hook) {
         if (ObjectUtil.isNull(liteflowConfig)) {
             throw new ConfigErrorException("config error, please check liteflow config property");
         }
@@ -161,12 +161,23 @@ public class FlowExecutor {
                 throw new FlowExecutorNotInitException(errorMsg);
             }
         }
+
+        //如果是ruleSource方式的，最后判断下有没有解析出来,如果没有解析出来则报错
+        if (FlowBus.getChainMap().isEmpty()){
+            String errMsg = StrUtil.format("no valid rule config found in rule path [{}]", liteflowConfig.getRuleSource());
+            throw new ConfigErrorException(errMsg);
+        }
+
+        //执行钩子
+        if(hook){
+            FlowInitHook.executeHook();
+        }
     }
 
     //此方法就是从原有的配置源主动拉取新的进行刷新
     //和FlowBus.refreshFlowMetaData的区别就是一个为主动拉取，一个为被动监听到新的内容进行刷新
     public void reloadRule() {
-        init();
+        init(false);
     }
 
     //隐式流程的调用方法
@@ -265,7 +276,7 @@ public class FlowExecutor {
                            Integer slotIndex,
                            InnerChainTypeEnum innerChainType) {
         if (FlowBus.needInit()) {
-            init();
+            init(true);
         }
 
         //如果不是隐式流程，那么需要分配Slot

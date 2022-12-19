@@ -2,6 +2,9 @@ package com.yomahub.liteflow.core.proxy;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author Bryan.Zhang
+ */
 public class LiteFlowMethodBean {
 
     private String methodName;
