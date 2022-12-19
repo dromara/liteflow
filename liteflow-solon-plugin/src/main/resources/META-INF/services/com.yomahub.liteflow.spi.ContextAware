@@ -1,2 +1,2 @@
 # Spring 的实现
-com.yomahub.liteflow.spi.solon.SolonAware
+com.yomahub.liteflow.spi.solon.SolonContextAware

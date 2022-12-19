@@ -9,7 +9,7 @@ import org.noear.solon.core.BeanWrap;
  * 基于代码形式的 Solon 上下文工具类
  * @author Bryan.Zhang
  */
-public class SolonAware implements ContextAware {
+public class SolonContextAware implements ContextAware {
 
     @Override
     public <T> T getBean(String name) {

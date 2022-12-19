@@ -24,5 +24,7 @@ public class TestApp {
     public void test() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         System.out.println(ONode.stringify(response));
+
+        assert response.isSuccess();
     }
 }

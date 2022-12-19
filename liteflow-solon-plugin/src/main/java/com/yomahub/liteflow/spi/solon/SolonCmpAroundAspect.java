@@ -15,7 +15,7 @@ public class SolonCmpAroundAspect implements CmpAroundAspect {
     public static ICmpAroundAspect cmpAroundAspect;
 
     static {
-        Solon.context().getBeanAsyn(ICmpAroundAspect.class, bean -> {
+        Solon.context().getBeanAsync(ICmpAroundAspect.class, bean -> {
             cmpAroundAspect = bean;
         });
     }

@@ -62,7 +62,7 @@
 		<bytebuddy.version>1.11.13</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
-		<solon.version>1.10.6</solon.version>
+		<solon.version>1.11.5</solon.version>
 	</properties>
 
 	<dependencyManagement>
