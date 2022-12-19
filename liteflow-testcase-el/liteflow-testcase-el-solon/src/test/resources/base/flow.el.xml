@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="chain1">
+        THEN(a,b,WHEN(c,d));
+    </chain>
+
+    <chain name="chain2">
+        THEN(
+            a,b,
+            SWITCH(e).to(d,f)
+        );
+    </chain>
+
+    <chain name="chain3">
+        THEN(
+            a,
+            WHEN(
+                c,
+                SWITCH(g).to(b, d, THEN(h,i).id("then_1001"))
+            )
+        );
+    </chain>
+
+    <chain name="chain4">
+        THEN(
+            a,b,
+            WHEN(
+                THEN(c, WHEN(j,k)),
+                d,
+                THEN(h, i)
+            ),
+            SWITCH(x).to(
+                m,
+                n,
+                WHEN(q, THEN(p, r)).id("w01")
+            ),
+            z
+        );
+    </chain>
+
+    <chain name="chain5">
+        t1 = THEN(c, WHEN(j,k));
+        w1 = WHEN(q, THEN(p, r)).id("w01");
+        t2 = THEN(h, i);
+
+        THEN(
+            a,b,
+            WHEN(t1, d, t2 ),
+            SWITCH(x).to(m, n, w1),
+            z
+        );
+    </chain>
+</flow>

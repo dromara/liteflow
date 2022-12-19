@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a.tag("1"), a.tag("2"), a.tag("3"));
+    </chain>
+
+    <chain name="chain2">
+        THEN(a.tag("1"), a.tag("2"), a.tag("3"), SWITCH(c.tag("2")).to(d.tag("5"), e.tag("6")));
+    </chain>
+
+    <chain name="chain3">
+        THEN(b1, WHEN(b.tag("1"), b.tag("2"), b.tag("3")));
+    </chain>
+
+    <chain name="chain4">
+        THEN(f.tag("false"), g);
+    </chain>
+
+    <chain name="chain5">
+        WHEN(h.tag("1"));
+    </chain>
+</flow>

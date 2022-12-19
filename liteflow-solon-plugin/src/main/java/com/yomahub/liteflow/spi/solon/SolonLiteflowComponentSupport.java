@@ -19,7 +19,7 @@ public class SolonLiteflowComponentSupport implements LiteflowComponentSupport {
         if (ObjectUtil.isNotNull(liteflowComponent)) {
             return liteflowComponent.name();
         }else{
-            return nodeComponent.getNodeId();
+            return null;
         }
     }
 

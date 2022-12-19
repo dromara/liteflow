@@ -36,11 +36,7 @@ public class XPluginImpl implements Plugin {
         //订阅 NodeComponent 组件
         context.subWrapsOfType(NodeComponent.class, bw -> {
             NodeComponent node1 = bw.raw();
-
-            if (Utils.isNotEmpty(bw.name())) {
-                node1.setName(bw.name());
-                node1.setNodeId(bw.name());
-            }
+            node1.setNodeId(bw.name());
 
             FlowBus.addSpringScanNode(bw.name(), bw.raw());
         });

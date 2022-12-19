@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(node("a"), node("b"), node("c"));
+    </chain>
+
+    <chain name="chain2">
+        THEN(node("a"), node("b"), node("93-nodeTEST"));
+    </chain>
+
+    <chain name="chain3">
+        THEN(a, b, node("88-ffc"));
+    </chain>
+</flow>

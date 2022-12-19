@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        sql = "select * from member t
+            where t.id=10001";
+        cmpData = '{"name":"jack","age":27,"birth":"1995-10-01"}';
+
+        THEN(
+            a.data(sql),
+            b.data(cmpData),
+            c
+        );
+    </chain>
+</flow>
