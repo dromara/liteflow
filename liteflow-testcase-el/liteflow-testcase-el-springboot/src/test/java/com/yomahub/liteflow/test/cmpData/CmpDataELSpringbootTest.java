@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.test.cmpData;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
@@ -16,6 +18,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * springboot环境EL常规的例子测试
@@ -33,7 +37,7 @@ public class CmpDataELSpringbootTest extends BaseTest {
 
     //最简单的情况
     @Test
-    public void testCmpData() throws Exception{
+    public void testCmpData1() throws Exception{
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertTrue(response.isSuccess());
         DefaultContext context = response.getFirstContextBean();
@@ -41,5 +45,15 @@ public class CmpDataELSpringbootTest extends BaseTest {
         Assert.assertEquals(27, user.getAge());
         Assert.assertEquals("jack", user.getName());
         Assert.assertEquals(0, user.getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
+    }
+
+    @Test
+    public void testCmpData2() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg", TestContext.class);
+        Assert.assertTrue(response.isSuccess());
+        TestContext context = response.getFirstContextBean();
+        Assert.assertEquals(8, context.getSet().size());
+        String result = context.getSet().stream().sorted().collect(Collectors.joining());
+        Assert.assertEquals("12345678", result);
     }
 }
