@@ -68,6 +68,11 @@ public class SolonContextAware implements ContextAware {
     }
 
     @Override
+    public boolean hasBean(String beanName) {
+        return Solon.context().hasWrap(beanName);
+    }
+
+    @Override
     public int priority() {
         return 1;
     }

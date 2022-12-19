@@ -7,6 +7,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
+import org.noear.solon.core.AopContext;
 
 /**
  * 主要的业务装配器
@@ -26,6 +27,9 @@ public class LiteflowMainAutoConfiguration {
     @Inject("${liteflow.monitor.enable-log}")
     boolean enableLog;
 
+    @Inject
+    AopContext aopContext;
+
     //实例化FlowExecutor
     @Bean
     public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
@@ -33,11 +37,14 @@ public class LiteflowMainAutoConfiguration {
         flowExecutor.setLiteflowConfig(liteflowConfig);
 
         if (parseOnStart) {
-            flowExecutor.init();
+            aopContext.beanOnloaded((c) -> {
+                flowExecutor.init(true);
+            });
         }
 
         return flowExecutor;
     }
+
 
     @Bean
     public MonitorBus monitorBus(LiteflowConfig liteflowConfig) {

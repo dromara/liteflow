@@ -1,11 +1,6 @@
 package com.yomahub.liteflow.spi.solon;
 
-import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.solon.integration.XPluginImpl;
 import com.yomahub.liteflow.spi.ContextCmpInit;
-
-import java.util.Map;
 
 
 /**
@@ -16,11 +11,7 @@ import java.util.Map;
 public class SolonContextCmpInit implements ContextCmpInit {
     @Override
     public void initCmp() {
-        for (Map.Entry<String, NodeComponent> componentEntry : XPluginImpl.nodeComponentMap.entrySet()) {
-            if (!FlowBus.containNode(componentEntry.getKey())) {
-                FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
-            }
-        }
+        //已在 XPluginImpl 添加组件
     }
 
     @Override
