@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/component/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.component.cmp1","com.yomahub.liteflow.test.component.cmp2"})
 public class FlowExecutorELSpringbootTest extends BaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorELSpringbootTest.class);
 
