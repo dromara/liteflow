@@ -36,7 +36,7 @@ public class SlotOfferELSpringbootTest extends BaseTest {
     @Resource
     private FlowExecutor flowExecutor;
 
-    //最简单的情况
+    //并发200，一共6w条线程去获取Slot的测试
     @Test
     public void testSlotOffer() throws Exception{
         Set<Integer> set = new ConcurrentHashSet<>();
