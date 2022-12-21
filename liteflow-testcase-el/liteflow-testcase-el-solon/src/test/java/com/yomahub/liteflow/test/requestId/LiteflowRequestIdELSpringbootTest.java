@@ -16,7 +16,6 @@ import org.noear.solon.test.annotation.TestPropertySource;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/requestId/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.requestId.cmp"})
 public class LiteflowRequestIdELSpringbootTest extends BaseTest {
 
     @Inject

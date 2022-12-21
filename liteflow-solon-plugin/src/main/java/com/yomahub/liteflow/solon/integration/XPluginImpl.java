@@ -1,9 +1,11 @@
 package com.yomahub.liteflow.solon.integration;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
+import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.solon.LiteflowProperty;
+import com.yomahub.liteflow.solon.NodeComponentOfMethod;
 import org.noear.solon.Utils;
 import org.noear.solon.core.AopContext;
 import org.noear.solon.core.Plugin;
@@ -40,6 +42,15 @@ public class XPluginImpl implements Plugin {
             FlowBus.addSpringScanNode(bw.name(), bw.raw());
         });
 
+        context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
+            NodeComponent node1 = new NodeComponentOfMethod(bw, method, anno.value());
+            String nodeId = Utils.annoAlias(anno.nodeId(), bw.name());
+            node1.setNodeId(nodeId);
+            node1.setType(anno.nodeType());
+
+            FlowBus.addSpringScanNode(bw.name(), node1);
+        });
+
         context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
             if(NodeComponent.class.isAssignableFrom(clz)) {
                 NodeComponent node1 = bw.raw();
@@ -50,6 +61,8 @@ public class XPluginImpl implements Plugin {
                 node1.setName(name1);
 
                 FlowBus.addSpringScanNode(node1.getNodeId(), node1);
+            }else{
+                context.beanExtract(bw); //尝试提取 LiteflowMethod 函数
             }
         });
 
