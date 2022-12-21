@@ -23,7 +23,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author zendwang
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/exception/application.properties")
+@TestPropertySource("classpath:/exception/application.properties")
 @Import(scanPackages = {"com.yomahub.liteflow.test.exception.cmp"})
 public class Exception2ELSpringBootTest extends BaseTest {
     

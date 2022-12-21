@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.6.4
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/customWhenThreadPool/application.properties")
+@TestPropertySource("classpath:/customWhenThreadPool/application.properties")
 @Import(scanPackages = {"com.yomahub.liteflow.test.customWhenThreadPool.cmp"})
 public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 

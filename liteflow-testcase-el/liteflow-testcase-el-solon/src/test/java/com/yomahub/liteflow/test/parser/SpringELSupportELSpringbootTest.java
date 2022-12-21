@@ -11,7 +11,7 @@ import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/parser/application-springEL.properties")
+@TestPropertySource("classpath:/parser/application-springEL.properties")
 public class SpringELSupportELSpringbootTest extends BaseTest {
 
     @Inject

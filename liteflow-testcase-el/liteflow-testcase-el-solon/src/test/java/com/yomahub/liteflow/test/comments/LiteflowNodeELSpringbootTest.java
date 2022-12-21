@@ -12,7 +12,7 @@ import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/comments/application.properties")
+@TestPropertySource("classpath:/comments/application.properties")
 public class LiteflowNodeELSpringbootTest extends BaseTest {
 
 	@Inject

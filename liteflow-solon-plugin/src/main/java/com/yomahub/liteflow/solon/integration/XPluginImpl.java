@@ -4,7 +4,6 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.solon.LiteflowProperty;
-import org.noear.solon.Solon;
 import org.noear.solon.Utils;
 import org.noear.solon.core.AopContext;
 import org.noear.solon.core.Plugin;
@@ -22,12 +21,12 @@ public class XPluginImpl implements Plugin {
         Properties defProps = Utils.loadProperties("META-INF/liteflow-default.properties");
         if (defProps != null && defProps.size() > 0) {
             defProps.forEach((k, v) -> {
-                Solon.cfg().putIfAbsent(k, v);
+                context.getProps().putIfAbsent(k, v);
             });
         }
 
         //是否启用
-        boolean enable = Solon.cfg().getBool("liteflow.enable", false);
+        boolean enable = context.getProps().getBool("liteflow.enable", false);
 
         if (!enable) {
             return;

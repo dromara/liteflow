@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.6.4
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/absoluteConfigPath/application.properties")
+@TestPropertySource("classpath:/absoluteConfigPath/application.properties")
 public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());

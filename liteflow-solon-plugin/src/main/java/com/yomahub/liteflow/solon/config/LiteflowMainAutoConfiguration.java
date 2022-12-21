@@ -21,10 +21,10 @@ import org.noear.solon.core.AopContext;
 @Configuration
 public class LiteflowMainAutoConfiguration {
 
-    @Inject(value = "${liteflow.parse-on-start}",required = false)
+    @Inject(value = "${liteflow.parseOnStart}",required = false)
     boolean parseOnStart;
 
-    @Inject(value = "${liteflow.monitor.enable-log}", required = false)
+    @Inject(value = "${liteflow.monitor.enableLog}", required = false)
     boolean enableLog;
 
     @Inject

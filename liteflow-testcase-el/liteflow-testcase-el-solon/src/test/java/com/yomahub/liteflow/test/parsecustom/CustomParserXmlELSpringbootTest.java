@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.5.7
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/parsecustom/application-custom-xml.properties")
+@TestPropertySource("classpath:/parsecustom/application-custom-xml.properties")
 @Import(scanPackages = {"com.yomahub.liteflow.test.parsecustom.cmp","com.yomahub.liteflow.test.parsecustom.bean"})
 public class CustomParserXmlELSpringbootTest extends BaseTest {
 

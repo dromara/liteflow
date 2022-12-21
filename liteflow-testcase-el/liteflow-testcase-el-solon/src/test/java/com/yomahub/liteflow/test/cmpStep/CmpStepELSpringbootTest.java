@@ -22,7 +22,7 @@ import java.util.Set;
  * @since 2.7.0
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/cmpStep/application.properties")
+@TestPropertySource("classpath:/cmpStep/application.properties")
 public class CmpStepELSpringbootTest extends BaseTest {
 
     @Inject
