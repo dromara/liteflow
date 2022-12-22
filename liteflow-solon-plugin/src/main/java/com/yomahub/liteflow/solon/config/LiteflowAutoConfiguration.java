@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.solon.config;
 
+import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.solon.LiteflowMonitorProperty;
-import com.yomahub.liteflow.solon.LiteflowProperty;
 import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
+import org.noear.solon.annotation.Inject;
 
 /**
  * LiteflowConfig的装配类
@@ -16,7 +16,10 @@ import org.noear.solon.annotation.Configuration;
  * @since 2.9
  */
 @Configuration
-public class LiteflowPropertyAutoConfiguration {
+public class LiteflowAutoConfiguration {
+
+    @Inject(value = "${liteflow.monitor.enableLog}", required = false)
+    boolean enableLog;
 
     @Bean
     public LiteflowConfig liteflowConfig(LiteflowProperty property, LiteflowMonitorProperty liteflowMonitorProperty){
@@ -44,5 +47,14 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setPrintExecutionLog(property.isPrintExecutionLog());
         liteflowConfig.setSubstituteCmpClass(property.getSubstituteCmpClass());
         return liteflowConfig;
+    }
+
+    @Bean
+    public MonitorBus monitorBus(LiteflowConfig liteflowConfig) {
+        if (enableLog) {
+            return new MonitorBus(liteflowConfig);
+        } else {
+            return null; //null 即是没创建
+        }
     }
 }

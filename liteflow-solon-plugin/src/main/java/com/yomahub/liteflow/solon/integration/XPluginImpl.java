@@ -4,8 +4,11 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.solon.LiteflowProperty;
 import com.yomahub.liteflow.solon.NodeComponentOfMethod;
+import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
+import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
+import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
+import com.yomahub.liteflow.solon.config.LiteflowProperty;
 import org.noear.solon.Utils;
 import org.noear.solon.core.AopContext;
 import org.noear.solon.core.Plugin;
@@ -33,6 +36,11 @@ public class XPluginImpl implements Plugin {
         if (!enable) {
             return;
         }
+
+        //放到前面
+        context.beanMake(LiteflowProperty.class);
+        context.beanMake(LiteflowMonitorProperty.class);
+        context.beanMake(LiteflowAutoConfiguration.class);
 
         //订阅 NodeComponent 组件
         context.subWrapsOfType(NodeComponent.class, bw -> {
@@ -65,9 +73,10 @@ public class XPluginImpl implements Plugin {
             }
         });
 
+
         //扫描相关组件
         context.beanOnloaded((ctx)->{
-            context.beanScan(LiteflowProperty.class);
+            context.beanMake(LiteflowMainAutoConfiguration.class);
         });
     }
 }

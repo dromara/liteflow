@@ -24,9 +24,6 @@ public class LiteflowMainAutoConfiguration {
     @Inject(value = "${liteflow.parseOnStart}",required = false)
     boolean parseOnStart;
 
-    @Inject(value = "${liteflow.monitor.enableLog}", required = false)
-    boolean enableLog;
-
     @Inject
     AopContext aopContext;
 
@@ -43,15 +40,5 @@ public class LiteflowMainAutoConfiguration {
         }
 
         return flowExecutor;
-    }
-
-
-    @Bean
-    public MonitorBus monitorBus(LiteflowConfig liteflowConfig) {
-        if (enableLog) {
-            return new MonitorBus(liteflowConfig);
-        } else {
-            return null; //null 即是没创建
-        }
     }
 }

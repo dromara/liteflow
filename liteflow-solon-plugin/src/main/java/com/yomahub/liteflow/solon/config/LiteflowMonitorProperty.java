@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.solon;
+package com.yomahub.liteflow.solon.config;
 
 
 import org.noear.solon.annotation.Configuration;

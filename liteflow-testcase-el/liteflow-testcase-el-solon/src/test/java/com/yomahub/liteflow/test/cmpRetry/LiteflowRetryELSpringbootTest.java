@@ -33,6 +33,7 @@ public class LiteflowRetryELSpringbootTest extends BaseTest {
         Assert.assertEquals("a==>b==>b==>b", response.getExecuteStepStr());
     }
 
+
     //单个组件重试配置测试
     @Test
     public void testRetry2() {
