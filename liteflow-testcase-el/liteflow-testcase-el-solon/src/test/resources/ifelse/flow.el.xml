@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        IF(x1.tag("true"), THEN(a, b));
+    </chain>
+
+    <chain name="chain2">
+        IF(x1.tag("false"), THEN(a, b), THEN(c, d));
+    </chain>
+
+    <chain name="chain3">
+        item_inner = THEN(c,c,b);
+        item = IF(x1.tag("false"), a, item_inner);
+        IF(
+            x1.tag("false"),
+            a,
+            item
+        );
+    </chain>
+
+    <chain name="chain4">
+        IF(x1.tag("false"), THEN(a, b)).ELSE(THEN(c, d));
+    </chain>
+
+    <chain name="chain5">
+        item = IF(x1.tag("false"), a, THEN(c, c, b));
+
+        IF(x1.tag("false"), THEN(a, b)).ELSE(item);
+    </chain>
+
+    <chain name="chain6">
+        IF(x1.tag("false"), THEN(a, b)).ELIF(x1.tag("true"), THEN(c, c)).ELSE(d);
+    </chain>
+
+    <chain name="chain7">
+        IF(x1.tag("false"), a).ELIF(x1.tag("false"), b)
+                              .ELIF(x1.tag("false"), c)
+                              .ELIF(x1.tag("false"), d)
+                              .ELSE(THEN(d, b, a));
+    </chain>
+</flow>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a, b, c);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a, WHEN(b, c).ignoreError(false));
+    </chain>
+
+    <chain name="chain4">
+        THEN(c, d);
+    </chain>
+
+    <chain name="chain5">
+        SWITCH(e).to(b, c);
+    </chain>
+
+    <chain name="chain6">
+        THEN(f, g);
+    </chain>
+
+</flow>

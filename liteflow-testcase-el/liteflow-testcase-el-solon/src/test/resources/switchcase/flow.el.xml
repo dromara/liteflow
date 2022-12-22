@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(
+            a,
+            SWITCH(e).to(d),
+            b
+        );
+    </chain>
+
+    <chain name="chain2">
+        THEN(
+        a,
+        SWITCH(e).to(b, d)
+        );
+    </chain>
+
+    <chain name="chain3">
+        THEN(
+        a,
+        SWITCH(f).to(b.tag("td"), d)
+        );
+    </chain>
+
+    <chain name="chain4">
+        THEN(
+        a,
+        SWITCH(g).to(b.tag("td"), d.tag("td"))
+        );
+    </chain>
+
+    <chain name="chain5">
+        THEN(
+        a,
+        SWITCH(h).to(b.tag("td"), d.tag("td"))
+        );
+    </chain>
+
+    <chain name="chain6">
+        THEN(
+        a,
+        SWITCH(h).to(b.tag("td"), b.tag("xx"))
+        );
+    </chain>
+
+    <chain name="chain7">
+        THEN(
+        a,
+        SWITCH(i).to(b, c).DEFAULT(d)
+        );
+    </chain>
+
+</flow>

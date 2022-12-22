@@ -64,6 +64,9 @@
 		<bytebuddy.version>1.11.13</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
+
+		<solon.version>1.11.7-M2</solon.version>
+
 		<netty.version>4.1.84.Final</netty.version>
 		<guava.version>31.1-jre</guava.version>
 		<httpclient.version>4.5.13</httpclient.version>
@@ -323,35 +326,7 @@
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.7.1</version>
 			</plugin>
-			<!-- Javadoc -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Gpg Signature -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.6</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
 			<!-- version number -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -387,6 +362,7 @@
 		<module>liteflow-rule-plugin</module>
 		<module>liteflow-spring-boot-starter</module>
 		<module>liteflow-spring</module>
+		<module>liteflow-solon-plugin</module>
 		<module>liteflow-testcase-el</module>
 	</modules>
 
