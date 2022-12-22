@@ -23,7 +23,6 @@ import java.util.Set;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/subflow/application-implicit.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.subflow.cmp2"})
 public class ImplicitSubFlowELSpringbootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

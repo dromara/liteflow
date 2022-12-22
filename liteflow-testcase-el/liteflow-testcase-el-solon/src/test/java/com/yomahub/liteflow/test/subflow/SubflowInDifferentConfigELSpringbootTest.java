@@ -21,7 +21,6 @@ import org.noear.solon.test.annotation.TestPropertySource;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/subflow/application-subInDifferentConfig1.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.subflow.cmp1","com.yomahub.liteflow.test.subflow.cmp2"})
 public class SubflowInDifferentConfigELSpringbootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

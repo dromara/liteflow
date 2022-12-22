@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.solon;
 
 
+import org.noear.solon.Utils;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
 
@@ -84,7 +85,11 @@ public class LiteflowProperty {
     }
 
     public void setRuleSource(String ruleSource) {
-        this.ruleSource = ruleSource;
+        if (ruleSource.contains("*")) {
+            this.ruleSource = String.join(",", Utils.resolvePaths(ruleSource));
+        } else {
+            this.ruleSource = ruleSource;
+        }
     }
 
     public int getSlotSize() {

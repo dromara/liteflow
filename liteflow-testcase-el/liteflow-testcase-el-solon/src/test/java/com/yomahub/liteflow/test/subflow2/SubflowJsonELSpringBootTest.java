@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.subflow;
+package com.yomahub.liteflow.test.subflow2;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -6,7 +6,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -19,7 +18,6 @@ import org.noear.solon.test.annotation.TestPropertySource;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/subflow/application-json.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.subflow.cmp1"})
 public class SubflowJsonELSpringBootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

@@ -48,19 +48,18 @@ public class XPluginImpl implements Plugin {
             node1.setNodeId(nodeId);
             node1.setType(anno.nodeType());
 
-            FlowBus.addSpringScanNode(bw.name(), node1);
+            FlowBus.addSpringScanNode(nodeId, node1);
         });
 
         context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
             if(NodeComponent.class.isAssignableFrom(clz)) {
                 NodeComponent node1 = bw.raw();
-                String id1 = Utils.annoAlias(anno.id(), anno.value());
-                String name1 =Utils.annoAlias(anno.name(), id1);
+                String nodeId = Utils.annoAlias(anno.id(), anno.value());
 
-                node1.setNodeId(id1);
-                node1.setName(name1);
+                node1.setNodeId(nodeId);
+                node1.setName(anno.name());
 
-                FlowBus.addSpringScanNode(node1.getNodeId(), node1);
+                FlowBus.addSpringScanNode(nodeId, node1);
             }else{
                 context.beanExtract(bw); //尝试提取 LiteflowMethod 函数
             }

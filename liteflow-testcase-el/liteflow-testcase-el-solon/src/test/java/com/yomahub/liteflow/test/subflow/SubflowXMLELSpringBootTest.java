@@ -19,7 +19,6 @@ import org.noear.solon.test.annotation.TestPropertySource;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/subflow/application-xml.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.subflow.cmp1"})
 public class SubflowXMLELSpringBootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;
