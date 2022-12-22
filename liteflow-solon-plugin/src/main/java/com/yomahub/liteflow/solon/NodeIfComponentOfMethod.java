@@ -26,7 +26,8 @@ public class NodeIfComponentOfMethod extends NodeIfComponent {
             throw new LiteFlowException("NodeIfComponent method parameter cannot be more than one: " + methodFullName);
         }
 
-        if (method.getReturnType() != Boolean.class) {
+        if (method.getReturnType() != Boolean.class
+                && method.getReturnType() != boolean.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
             throw new LiteFlowException("NodeIfComponent method returnType can only be boolean: " + methodFullName);
         }

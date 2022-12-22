@@ -26,7 +26,8 @@ public class NodeForComponentOfMethod extends NodeForComponent {
             throw new LiteFlowException("NodeForComponent method parameter cannot be more than one: " + methodFullName);
         }
 
-        if (method.getReturnType() != Integer.class) {
+        if (method.getReturnType() != Integer.class
+                && method.getReturnType() != int.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
             throw new LiteFlowException("NodeForComponent method returnType can only be int: " + methodFullName);
         }

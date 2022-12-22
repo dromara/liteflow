@@ -27,7 +27,8 @@ public class NodeComponentOfMethod extends NodeComponent {
             throw new LiteFlowException("NodeComponent method parameter cannot be more than one: " + methodFullName);
         }
 
-        if (method.getReturnType() != Void.class) {
+        if (method.getReturnType() != Void.class
+                && method.getReturnType() != void.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
             throw new LiteFlowException("NodeComponent method returnType can only be void: " + methodFullName);
         }
