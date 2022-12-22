@@ -27,13 +27,6 @@
             <artifactId>liteflow-core</artifactId>
             <version>${revision}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.noear</groupId>
-            <artifactId>solon-test</artifactId>
-            <version>${solon.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
