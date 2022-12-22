@@ -2,6 +2,7 @@ package com.yomahub.liteflow.solon;
 
 import com.yomahub.liteflow.core.NodeForComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.exception.LiteFlowException;
 import org.noear.solon.core.BeanWrap;
 
 import java.lang.reflect.Method;
@@ -22,12 +23,12 @@ public class NodeForComponentOfMethod extends NodeForComponent {
 
         if (method.getParameterCount() > 1) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeForComponent method parameter cannot be more than one: " + methodFullName);
+            throw new LiteFlowException("NodeForComponent method parameter cannot be more than one: " + methodFullName);
         }
 
         if (method.getReturnType() != Integer.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeForComponent method returnType can only be int: " + methodFullName);
+            throw new LiteFlowException("NodeForComponent method returnType can only be int: " + methodFullName);
         }
     }
 

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.solon;
 
 import com.yomahub.liteflow.core.NodeBreakComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.exception.LiteFlowException;
 import org.noear.solon.core.BeanWrap;
 
 import java.lang.reflect.Method;
@@ -22,12 +23,12 @@ public class NodeBreakComponentOfMethod extends NodeBreakComponent {
 
         if (method.getParameterCount() > 1) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeBreakComponent method parameter cannot be more than one: " + methodFullName);
+            throw new LiteFlowException("NodeBreakComponent method parameter cannot be more than one: " + methodFullName);
         }
 
         if (method.getReturnType() != Boolean.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeBreakComponent method returnType can only be boolean: " + methodFullName);
+            throw new LiteFlowException("NodeBreakComponent method returnType can only be boolean: " + methodFullName);
         }
     }
 

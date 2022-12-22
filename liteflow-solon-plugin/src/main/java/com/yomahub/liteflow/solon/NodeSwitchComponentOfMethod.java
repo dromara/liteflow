@@ -2,6 +2,7 @@ package com.yomahub.liteflow.solon;
 
 import com.yomahub.liteflow.core.NodeSwitchComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.exception.LiteFlowException;
 import org.noear.solon.core.BeanWrap;
 
 import java.lang.reflect.Method;
@@ -22,12 +23,12 @@ public class NodeSwitchComponentOfMethod extends NodeSwitchComponent {
 
         if (method.getParameterCount() > 1) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeSwitchComponent method parameter cannot be more than one: " + methodFullName);
+            throw new LiteFlowException("NodeSwitchComponent method parameter cannot be more than one: " + methodFullName);
         }
 
         if (method.getReturnType() != String.class) {
             String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new RuntimeException("NodeSwitchComponent method returnType can only be string: " + methodFullName);
+            throw new LiteFlowException("NodeSwitchComponent method returnType can only be string: " + methodFullName);
         }
     }
 

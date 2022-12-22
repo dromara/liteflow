@@ -3,8 +3,9 @@ package com.yomahub.liteflow.solon.integration;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.solon.NodeComponentOfMethod;
+import com.yomahub.liteflow.solon.*;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
@@ -51,7 +52,28 @@ public class XPluginImpl implements Plugin {
         });
 
         context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
-            NodeComponent node1 = new NodeComponentOfMethod(bw, method, anno.value());
+            NodeComponent node1 = null;
+            switch (anno.value()) {
+                case PROCESS_SWITCH:
+                    node1 = new NodeSwitchComponentOfMethod(bw, method, anno.value());
+                    break;
+                case PROCESS_IF:
+                    node1 = new NodeIfComponentOfMethod(bw, method, anno.value());
+                    break;
+                case PROCESS_FOR:
+                    node1 = new NodeForComponentOfMethod(bw, method, anno.value());
+                    break;
+                case PROCESS_WHILE:
+                    node1 = new NodeWhileComponentOfMethod(bw, method, anno.value());
+                    break;
+                case PROCESS_BREAK:
+                    node1 = new NodeBreakComponentOfMethod(bw, method, anno.value());
+                    break;
+                default:
+                    node1 = new NodeComponentOfMethod(bw, method, anno.value());
+            }
+
+
             String nodeId = Utils.annoAlias(anno.nodeId(), bw.name());
             node1.setNodeId(nodeId);
             node1.setType(anno.nodeType());
