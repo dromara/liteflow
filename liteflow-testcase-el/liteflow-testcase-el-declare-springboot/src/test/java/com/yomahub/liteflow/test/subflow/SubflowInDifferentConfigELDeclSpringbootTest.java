@@ -47,7 +47,7 @@ public class SubflowInDifferentConfigELDeclSpringbootTest extends BaseTest {
     @Test(expected = MultipleParsersException.class)
     public void testExplicitSubFlow2() {
         LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        config.setRuleSource("subflow/flow-main.xml,subflow/flow-sub1.xml,subflow/flow-sub2.yml");
+        config.setRuleSource("subflow/flow-main.xml,   subflow/flow-sub1.xml,subflow/flow-sub2.yml");
         flowExecutor.reloadRule();
     }
 }
