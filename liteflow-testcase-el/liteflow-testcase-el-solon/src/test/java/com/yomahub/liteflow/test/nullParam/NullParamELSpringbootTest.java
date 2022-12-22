@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.nullParam;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource(value = "classpath:/nullParam/application.properties")
 @Import(scanPackages = {"com.yomahub.liteflow.test.nullParam.cmp"})
-public class NullParamELSpringbootTest {
+public class NullParamELSpringbootTest extends BaseTest {
 
     @Inject
     private FlowExecutor flowExecutor;
