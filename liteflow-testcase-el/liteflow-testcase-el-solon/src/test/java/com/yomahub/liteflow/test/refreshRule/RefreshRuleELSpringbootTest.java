@@ -9,7 +9,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -20,8 +19,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.6.4
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/refreshRule/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.refreshRule.cmp"})
+@TestPropertySource("classpath:/refreshRule/application.properties")
 public class RefreshRuleELSpringbootTest extends BaseTest {
 
     @Inject

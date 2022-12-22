@@ -6,7 +6,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -20,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @author donguo.tao
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/component/application.properties")
+@TestPropertySource("classpath:/component/application.properties")
 public class FlowExecutorELSpringbootTest extends BaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorELSpringbootTest.class);
 

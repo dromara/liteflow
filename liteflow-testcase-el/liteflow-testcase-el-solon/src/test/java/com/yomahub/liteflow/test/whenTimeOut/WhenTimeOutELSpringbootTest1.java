@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/whenTimeOut/application1.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.whenTimeOut.cmp"})
 public class WhenTimeOutELSpringbootTest1 extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());

@@ -17,7 +17,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author justin.xu
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/subflow/application-json.properties")
+@TestPropertySource("classpath:/subflow/application-json.properties")
 public class SubflowJsonELSpringBootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

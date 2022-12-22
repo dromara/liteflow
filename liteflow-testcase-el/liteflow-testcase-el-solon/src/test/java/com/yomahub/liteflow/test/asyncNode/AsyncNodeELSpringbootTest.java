@@ -20,7 +20,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author ssss
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/asyncNode/application.properties")
+@TestPropertySource("classpath:/asyncNode/application.properties")
 public class AsyncNodeELSpringbootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

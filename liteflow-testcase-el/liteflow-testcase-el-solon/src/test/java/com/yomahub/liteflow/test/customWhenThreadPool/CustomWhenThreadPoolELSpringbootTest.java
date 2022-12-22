@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/customWhenThreadPool/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.customWhenThreadPool.cmp"})
 public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());

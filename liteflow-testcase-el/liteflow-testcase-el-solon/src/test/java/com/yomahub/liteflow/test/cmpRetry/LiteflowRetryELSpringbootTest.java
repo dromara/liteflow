@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.5.10
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/cmpRetry/application.properties")
+@TestPropertySource("classpath:/cmpRetry/application.properties")
 public class LiteflowRetryELSpringbootTest extends BaseTest {
 
     @Inject

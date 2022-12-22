@@ -6,7 +6,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -19,7 +18,6 @@ import org.noear.solon.test.annotation.TestPropertySource;
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/multipleType/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.multipleType.cmp"})
 public class LiteflowMultipleTypeELSpringbootTest extends BaseTest {
 
     @Inject
