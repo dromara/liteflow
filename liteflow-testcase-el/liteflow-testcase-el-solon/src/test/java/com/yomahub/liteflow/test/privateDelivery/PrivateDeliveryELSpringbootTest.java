@@ -8,7 +8,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -19,8 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.5.0
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/privateDelivery/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.privateDelivery.cmp"})
+@TestPropertySource("classpath:/privateDelivery/application.properties")
 public class PrivateDeliveryELSpringbootTest extends BaseTest {
 
     @Inject

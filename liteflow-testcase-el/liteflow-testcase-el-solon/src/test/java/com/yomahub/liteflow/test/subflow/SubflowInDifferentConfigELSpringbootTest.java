@@ -8,7 +8,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.core.AopContext;
 import org.noear.solon.test.SolonJUnit4ClassRunner;

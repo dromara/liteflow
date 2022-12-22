@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -19,8 +18,7 @@ import java.util.concurrent.Future;
  * @since 2.6.13
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/execute2Future/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.execute2Future.cmp"})
+@TestPropertySource("classpath:/execute2Future/application.properties")
 public class Executor2FutureELSpringbootTest extends BaseTest {
 
     @Inject

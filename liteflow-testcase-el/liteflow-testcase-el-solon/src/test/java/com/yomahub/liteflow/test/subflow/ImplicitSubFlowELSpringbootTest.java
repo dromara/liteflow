@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -22,7 +21,7 @@ import java.util.Set;
  * @author justin.xu
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/subflow/application-implicit.properties")
+@TestPropertySource("classpath:/subflow/application-implicit.properties")
 public class ImplicitSubFlowELSpringbootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

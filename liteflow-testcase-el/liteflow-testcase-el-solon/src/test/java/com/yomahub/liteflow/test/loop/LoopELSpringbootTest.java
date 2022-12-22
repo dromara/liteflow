@@ -7,7 +7,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
@@ -17,8 +16,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author Bryan.Zhang
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/loop/application.properties")
-@Import(scanPackages = {"com.yomahub.liteflow.test.loop.cmp"})
+@TestPropertySource("classpath:/loop/application.properties")
 public class LoopELSpringbootTest extends BaseTest {
 
     @Inject

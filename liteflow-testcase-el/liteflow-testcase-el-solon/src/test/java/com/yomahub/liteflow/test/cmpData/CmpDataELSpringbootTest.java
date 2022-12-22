@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author Bryan.Zhang
  */
 @RunWith(SolonJUnit4ClassRunner.class)
-@TestPropertySource(value = "classpath:/cmpData/application.properties")
+@TestPropertySource("classpath:/cmpData/application.properties")
 public class CmpDataELSpringbootTest extends BaseTest {
 
     @Inject
