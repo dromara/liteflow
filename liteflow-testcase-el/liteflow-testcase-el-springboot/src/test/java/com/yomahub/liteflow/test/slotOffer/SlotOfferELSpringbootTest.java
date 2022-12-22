@@ -42,26 +42,23 @@ public class SlotOfferELSpringbootTest extends BaseTest {
         Set<Integer> set = new ConcurrentHashSet<>();
         Set<CompletableFuture<Boolean>> futureSet = new ConcurrentHashSet<>();
         Set<String> error = new ConcurrentHashSet<>();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 60000; i++) {
             futureSet.add(CompletableFuture.supplyAsync(() -> {
-                for (int j = 0; j < 300; j++) {
-                    int index=0;
-                    try{
-                        index = DataBus.offerSlotByClass(ListUtil.toList(DefaultContext.class));
-                        boolean flag = set.add(index);
-                        if (!flag){
-                            error.add(Integer.toString(index));
-                        }
-                    }catch (Exception e) {
-                        error.add(e.getMessage());
-                    }finally {
-                        DataBus.releaseSlot(index);
-                        boolean flag = set.remove(index);
-                        if(!flag){
-                            error.add(Integer.toString(index));
-                        }
+                int index=0;
+                try{
+                    index = DataBus.offerSlotByClass(ListUtil.toList(DefaultContext.class));
+                    boolean flag = set.add(index);
+                    if (!flag){
+                        error.add(Integer.toString(index));
                     }
-
+                }catch (Exception e) {
+                    error.add(e.getMessage());
+                }finally {
+                    DataBus.releaseSlot(index);
+                    boolean flag = set.remove(index);
+                    if(!flag){
+                        error.add(Integer.toString(index));
+                    }
                 }
                 return Boolean.TRUE;
             }));
