@@ -42,6 +42,7 @@ public class XPluginImpl implements Plugin {
         context.beanMake(LiteflowProperty.class);
         context.beanMake(LiteflowMonitorProperty.class);
         context.beanMake(LiteflowAutoConfiguration.class);
+        context.beanMake(LiteflowMainAutoConfiguration.class);
 
         //订阅 NodeComponent 组件
         context.subWrapsOfType(NodeComponent.class, bw -> {
@@ -93,12 +94,6 @@ public class XPluginImpl implements Plugin {
             }else{
                 context.beanExtract(bw); //尝试提取 LiteflowMethod 函数
             }
-        });
-
-
-        //扫描相关组件
-        context.beanOnloaded((ctx)->{
-            context.beanMake(LiteflowMainAutoConfiguration.class);
         });
     }
 }

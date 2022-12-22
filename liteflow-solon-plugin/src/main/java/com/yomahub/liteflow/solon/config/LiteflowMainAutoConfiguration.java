@@ -1,11 +1,9 @@
 package com.yomahub.liteflow.solon.config;
 
-
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
+import org.noear.solon.annotation.Init;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.core.AopContext;
 
@@ -21,24 +19,27 @@ import org.noear.solon.core.AopContext;
 @Configuration
 public class LiteflowMainAutoConfiguration {
 
-    @Inject(value = "${liteflow.parseOnStart}",required = false)
+    @Inject(value = "${liteflow.parseOnStart}", required = false)
     boolean parseOnStart;
 
     @Inject
     AopContext aopContext;
 
-    //实例化FlowExecutor
-    @Bean
-    public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig) {
+    @Inject
+    LiteflowConfig liteflowConfig;
+
+    @Init
+    public void flowExecutor() {
+        //
+        //实例化FlowExecutor
+        //
         FlowExecutor flowExecutor = new FlowExecutor();
         flowExecutor.setLiteflowConfig(liteflowConfig);
 
         if (parseOnStart) {
-            aopContext.beanOnloaded((c) -> {
-                flowExecutor.init(true);
-            });
+            flowExecutor.init(true);
         }
 
-        return flowExecutor;
+        aopContext.wrapAndPut(FlowExecutor.class, flowExecutor);
     }
 }
