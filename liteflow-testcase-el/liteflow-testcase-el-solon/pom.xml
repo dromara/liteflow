@@ -21,15 +21,9 @@
 
         <dependency>
             <groupId>org.noear</groupId>
-            <artifactId>solon-test</artifactId>
+            <artifactId>solon-test-junit4</artifactId>
             <version>${solon.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>junit-jupiter</artifactId>
-                    <groupId>org.junit.jupiter</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
