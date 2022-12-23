@@ -5,6 +5,8 @@ import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * 脚本组件类
  * @author Bryan.Zhang
@@ -21,7 +23,7 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
         wrap.setNodeId(this.getNodeId());
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
-        wrap.setCmpData(this.getCmpData(Object.class));
+        wrap.setCmpData(this.getCmpData(Map.class));
         ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
     }
 
