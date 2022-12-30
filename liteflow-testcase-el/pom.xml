@@ -31,6 +31,7 @@
         <module>liteflow-testcase-el-apollo-springboot</module>
         <module>liteflow-testcase-el-script-python-springboot</module>
         <module>liteflow-testcase-el-script-lua-springboot</module>
+        <module>liteflow-testcase-el-markdown-springboot</module>
     </modules>
 
     <build>
