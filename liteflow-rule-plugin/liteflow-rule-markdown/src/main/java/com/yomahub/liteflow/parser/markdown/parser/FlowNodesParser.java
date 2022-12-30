@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 
 public class FlowNodesParser implements Parser{
 
-    private final Map<String, FlowChartNode> nodeCache = new HashMap<>();
 
     @Override
     public void parse(ParseContext context) {
+        final Map<String, FlowChartNode> nodeCache = new HashMap<>();
 
         FlowChartNode pre = null;
         boolean pointing = false;

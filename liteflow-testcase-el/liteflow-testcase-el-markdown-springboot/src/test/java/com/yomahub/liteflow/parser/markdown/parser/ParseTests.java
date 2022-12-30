@@ -67,6 +67,22 @@ public class ParseTests {
         Assert.assertTrue(">>>" + cache, !cache.contains("FABEND"));
     }
 
+
+    @Test
+    public void testFlowNodesParser4() throws Exception{
+        String text = ResourceUtil.readUtf8Str("classpath://CASE4.md");
+        Parser.ParseContext parseContext = new Parser.ParseContext(text);
+
+        parsers.forEach(p ->p.parse(parseContext));
+
+        Set<String> cache = new HashSet<>();
+        printGraph(parseContext.head, cache);
+        System.out.println(parseContext.el);
+        Assert.assertTrue(">>>" + cache, !cache.contains("FB"));
+        Assert.assertTrue(">>>" + cache, !cache.contains("FA"));
+        Assert.assertTrue(">>>" + cache, !cache.contains("FABEND"));
+    }
+
     private void printGraph(Parser.FlowChartNode head, Set<String> printedCache) {
         if (printedCache.contains(head.nid)) {
             return;

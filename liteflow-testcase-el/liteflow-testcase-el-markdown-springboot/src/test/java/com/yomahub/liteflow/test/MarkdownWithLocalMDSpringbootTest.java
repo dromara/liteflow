@@ -48,4 +48,9 @@ public class MarkdownWithLocalMDSpringbootTest extends BaseTest {
         Assert.assertEquals("A==>B==>C==>D", response.getExecuteStepStrWithoutTime());
     }
 
+    @Test
+    public void testForCase4() throws Exception {
+        LiteflowResponse response = flowExecutor.execute2Resp("测试编排004", "arg");
+        Assert.assertEquals("A==>B==>C==>D==>E==>F", response.getExecuteStepStrWithoutTime());
+    }
 }
