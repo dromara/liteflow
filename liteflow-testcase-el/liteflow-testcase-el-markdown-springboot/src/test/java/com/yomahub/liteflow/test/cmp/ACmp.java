@@ -11,10 +11,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
 @Component("A")
-public class ACmp extends NodeComponent {
+public class ACmp extends AbstractTestCmp {
 
-	@Override
-	public void process() {
-		System.out.println(this.getClass().getName() + " executed!");
-	}
+
 }

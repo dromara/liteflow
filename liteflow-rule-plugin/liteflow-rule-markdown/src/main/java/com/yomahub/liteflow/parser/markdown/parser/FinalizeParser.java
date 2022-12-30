@@ -13,7 +13,7 @@ public class FinalizeParser implements Parser{
     private void join(FlowChartNode root, StringJoiner main) {
         switch (root.type) {
             case COMMON:
-                main.add("node(\"" + root.nid + "\")");
+                main.add("node(\"" + root.nid + "\").tag(\"" + root.tag + "\")");
 
                 if (root.next.isEmpty()) {
                     return;
@@ -23,22 +23,22 @@ public class FinalizeParser implements Parser{
                     join(root.next.get(0), main);
                 } else {
                     StringJoiner when = new StringJoiner(",", "WHEN(", ")");
-                    root.next.forEach(n -> {
+                    for (FlowChartNode n : root.next) {
                         StringJoiner subMain = new StringJoiner(",", "THEN(", ")");
                         join(n, subMain);
                         when.add(subMain.toString());
-                    });
+                    }
                     main.add(when.toString());
                 }
 
                 break;
             case SWITCH:
                 StringJoiner sw = new StringJoiner(",", "SWITCH(node(\"" + root.nid + "\")).to(", ")");
-                root.next.forEach(n -> {
+                for (FlowChartNode n : root.next) {
                     StringJoiner subMain = new StringJoiner(",", "THEN(", ").id(\"" + n.nid + "\")");
                     join(n, subMain);
                     sw.add(subMain.toString());
-                });
+                }
                 main.add(sw.toString());
                 break;
             default:

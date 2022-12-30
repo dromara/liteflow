@@ -48,7 +48,7 @@ public interface Parser {
             this.nid = nid;
             this.desc = desc;
             this.type = type;
-            this.tag = tag;
+            this.tag = tag == null? "" : tag;
         }
 
         @Override
