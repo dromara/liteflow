@@ -53,7 +53,7 @@ public class NodeComponentOfMethod extends NodeComponent {
 
 
     @Override
-    public <T> void beforeProcess(String nodeId, Slot slot) {
+    public void beforeProcess() {
         if(methodEnum != LiteFlowMethodEnum.BEFORE_PROCESS){
             return;
         }
@@ -68,7 +68,7 @@ public class NodeComponentOfMethod extends NodeComponent {
     }
 
     @Override
-    public <T> void afterProcess(String nodeId, Slot slot) {
+    public void afterProcess() {
         if (methodEnum != LiteFlowMethodEnum.AFTER_PROCESS) {
             return;
         }

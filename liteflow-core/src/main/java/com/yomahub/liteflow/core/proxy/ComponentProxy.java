@@ -194,26 +194,17 @@ public class ComponentProxy {
             ).findFirst().orElse(null);
 
             //如果被代理的对象里有此标注标的方法，则调用此被代理的对象里的方法，如果没有，则调用父类里的方法
-            //beforeProcess和afterProcess这2个方法除外
-            if (!ListUtil.toList("beforeProcess","afterProcess").contains(liteFlowMethodBean.getMethodName())) {
-                //进行检查，检查被代理的bean里是否有且仅有NodeComponent这个类型的参数
-                boolean checkFlag = liteFlowMethodBean.getMethod().getParameterTypes().length == 1
-                        && Arrays.asList(liteFlowMethodBean.getMethod().getParameterTypes()).contains(NodeComponent.class);
-                if (!checkFlag) {
-                    String errMsg = StrUtil.format("Method[{}.{}] must have NodeComponent parameter(and only one parameter)", bean.getClass().getName(), liteFlowMethodBean.getMethod().getName());
-                    LOG.error(errMsg);
-                    throw new ComponentMethodDefineErrorException(errMsg);
-                }
-
-                try{
-                    return liteFlowMethodBean.getMethod().invoke(bean, proxy);
-                }catch (Exception e){
-                    InvocationTargetException targetEx = (InvocationTargetException)e;
-                    throw targetEx.getTargetException();
-                }
+            //进行检查，检查被代理的bean里是否有且仅有NodeComponent这个类型的参数
+            boolean checkFlag = liteFlowMethodBean.getMethod().getParameterTypes().length == 1
+                    && Arrays.asList(liteFlowMethodBean.getMethod().getParameterTypes()).contains(NodeComponent.class);
+            if (!checkFlag) {
+                String errMsg = StrUtil.format("Method[{}.{}] must have NodeComponent parameter(and only one parameter)", bean.getClass().getName(), liteFlowMethodBean.getMethod().getName());
+                LOG.error(errMsg);
+                throw new ComponentMethodDefineErrorException(errMsg);
             }
+
             try{
-                return liteFlowMethodBean.getMethod().invoke(bean, args);
+                return liteFlowMethodBean.getMethod().invoke(bean, proxy);
             }catch (Exception e){
                 InvocationTargetException targetEx = (InvocationTargetException)e;
                 throw targetEx.getTargetException();

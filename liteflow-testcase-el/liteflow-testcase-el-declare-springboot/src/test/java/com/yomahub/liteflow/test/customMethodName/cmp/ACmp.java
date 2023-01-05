@@ -27,12 +27,12 @@ public class ACmp{
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.BEFORE_PROCESS)
-	public void beforeAcmp(String nodeId, Slot slot){
+	public void beforeAcmp(NodeComponent bindCmp){
 		System.out.println("before A");
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.AFTER_PROCESS)
-	public void afterAcmp(String nodeId, Slot slot){
+	public void afterAcmp(NodeComponent bindCmp){
 		System.out.println("after A");
 	}
 
