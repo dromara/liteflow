@@ -9,6 +9,7 @@
         id CDATA #REQUIRED
         type (script|if_script|switch_script|while_script|for_script|break_script) #IMPLIED
         class CDATA #IMPLIED
+        file CDATA #IMPLIED
         language (groovy|js|python|lua) #IMPLIED
         >
 <!ATTLIST chain
