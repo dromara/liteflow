@@ -43,6 +43,13 @@
             defaultContext.setData("demo", str)
             ]]>
         </node>
+
+        <node id="s5" type="script" language="groovy">
+            <![CDATA[
+            def str = demo.getDemoStr1()
+            abcCx.put("demo", str)
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">
@@ -67,5 +74,9 @@
 
     <chain name="chain6">
         THEN(a,b,c,s4);
+    </chain>
+
+    <chain name="chain7">
+        THEN(a,b,c,s5);
     </chain>
 </flow>

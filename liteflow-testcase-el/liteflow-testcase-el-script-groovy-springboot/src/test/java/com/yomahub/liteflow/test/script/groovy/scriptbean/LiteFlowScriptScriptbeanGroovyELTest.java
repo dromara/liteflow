@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.script.groovy.scriptbean;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.exception.ScriptBeanMethodInvokeException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
@@ -15,6 +16,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/scriptbean/application.properties")
@@ -74,5 +77,16 @@ public class LiteFlowScriptScriptbeanGroovyELTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
         Assert.assertFalse(response.isSuccess());
         Assert.assertEquals(ScriptBeanMethodInvokeException.class, response.getCause().getClass());
+    }
+
+    //测试在ScriptBeanManager里放入上下文，实现自定义脚本引用名称
+    @Test
+    public void testScriptBean7() throws Exception{
+        Map<String, String> map = new HashMap<>();
+        ScriptBeanManager.addScriptBean("abcCx", map);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg", map);
+        Assert.assertTrue(response.isSuccess());
+        Map<String, String> context = response.getFirstContextBean();
+        Assert.assertEquals("hello", context.get("demo"));
     }
 }
