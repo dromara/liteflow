@@ -188,39 +188,6 @@ public class LiteFlowChainELBuilder {
     }
 
     /**
-     * 解析 EL 表达式，查找未定义的 id 并构建错误信息
-     *
-     * @param elStr el 表达式
-     */
-    private static String buildDataNofFoundExceptionMsg(String elStr) {
-        String msg = String.format("[node/chain is not exist or node/chain not register]\n elStr=%s", StrUtil.trim(elStr));
-        try {
-            InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
-            if (parseResult == null) {
-                return msg;
-            }
-
-            Object o = ReflectUtil.getFieldValue(parseResult, "instructionList");
-            if (o == null){
-                return msg;
-            }
-            Instruction[] instructionList = (Instruction[]) o;
-            List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
-            List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
-            for (Instruction instruction : instructionList) {
-                String attrName = ((InstructionLoadAttr) instruction).getAttrName();
-                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
-                    msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            // ignore
-        }
-        return msg;
-    }
-
-    /**
      * EL表达式校验
      *
      * @param elStr EL表达式
@@ -244,6 +211,8 @@ public class LiteFlowChainELBuilder {
         FlowBus.addChain(this.chain);
     }
 
+    //#region private method
+
     /**
      * build 前简单校验
      */
@@ -256,4 +225,38 @@ public class LiteFlowChainELBuilder {
             throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
         }
     }
+
+    /**
+     * 解析 EL 表达式，查找未定义的 id 并构建错误信息
+     *
+     * @param elStr el 表达式
+     */
+    private String buildDataNofFoundExceptionMsg(String elStr) {
+        String msg = String.format("[node/chain is not exist or node/chain not register]\n elStr=%s", StrUtil.trim(elStr));
+        try {
+            InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
+            if (parseResult == null) {
+                return msg;
+            }
+
+            Object o = ReflectUtil.getFieldValue(parseResult, "instructionList");
+            if (o == null) {
+                return msg;
+            }
+            Instruction[] instructionList = (Instruction[]) o;
+            List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
+            List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
+            for (Instruction instruction : instructionList) {
+                String attrName = ((InstructionLoadAttr) instruction).getAttrName();
+                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
+                    msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
+                    break;
+                }
+            }
+        } catch (Exception ex) {
+            // ignore
+        }
+        return msg;
+    }
+    //#endregion
 }
