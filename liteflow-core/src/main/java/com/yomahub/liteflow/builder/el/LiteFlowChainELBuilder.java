@@ -1,18 +1,43 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
+import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
-import com.yomahub.liteflow.builder.el.operator.*;
+import com.ql.util.express.instruction.detail.Instruction;
+import com.ql.util.express.instruction.detail.InstructionLoadAttr;
+import com.yomahub.liteflow.builder.el.operator.AnyOperator;
+import com.yomahub.liteflow.builder.el.operator.BreakOperator;
+import com.yomahub.liteflow.builder.el.operator.DataOperator;
+import com.yomahub.liteflow.builder.el.operator.DefaultOperator;
+import com.yomahub.liteflow.builder.el.operator.DoOperator;
+import com.yomahub.liteflow.builder.el.operator.ElifOperator;
+import com.yomahub.liteflow.builder.el.operator.ElseOperator;
+import com.yomahub.liteflow.builder.el.operator.FinallyOperator;
+import com.yomahub.liteflow.builder.el.operator.ForOperator;
+import com.yomahub.liteflow.builder.el.operator.IdOperator;
+import com.yomahub.liteflow.builder.el.operator.IfOperator;
+import com.yomahub.liteflow.builder.el.operator.IgnoreErrorOperator;
+import com.yomahub.liteflow.builder.el.operator.NodeOperator;
+import com.yomahub.liteflow.builder.el.operator.PreOperator;
+import com.yomahub.liteflow.builder.el.operator.SwitchOperator;
+import com.yomahub.liteflow.builder.el.operator.TagOperator;
+import com.yomahub.liteflow.builder.el.operator.ThenOperator;
+import com.yomahub.liteflow.builder.el.operator.ThreadPoolOperator;
+import com.yomahub.liteflow.builder.el.operator.ToOperator;
+import com.yomahub.liteflow.builder.el.operator.WhenOperator;
+import com.yomahub.liteflow.builder.el.operator.WhileOperator;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.exception.DataNofFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.condition.*;
+import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.condition.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +177,9 @@ public class LiteFlowChainELBuilder {
         } catch (QLException e) {
             // EL 底层会包装异常，这里是曲线处理
             if (Objects.equals(e.getCause().getMessage(), DataNofFoundException.MSG)) {
-                throw new ELParseException(String.format("[node/chain is not exist or node/chain not register]elStr=%s", elStr));
+                // 构建错误信息
+                String msg = buildDataNofFoundExceptionMsg(elStr);
+                throw new ELParseException(msg);
             }
             throw new ELParseException(e.getCause().getMessage());
         } catch (Exception e) {
@@ -161,18 +188,52 @@ public class LiteFlowChainELBuilder {
     }
 
     /**
+     * 解析 EL 表达式，查找未定义的 id 并构建错误信息
+     *
+     * @param elStr el 表达式
+     */
+    private static String buildDataNofFoundExceptionMsg(String elStr) {
+        String msg = String.format("[node/chain is not exist or node/chain not register]\n elStr=%s", StrUtil.trim(elStr));
+        try {
+            InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
+            if (parseResult == null) {
+                return msg;
+            }
+
+            Object o = ReflectUtil.getFieldValue(parseResult, "instructionList");
+            if (o == null){
+                return msg;
+            }
+            Instruction[] instructionList = (Instruction[]) o;
+            List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
+            List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
+            for (Instruction instruction : instructionList) {
+                String attrName = ((InstructionLoadAttr) instruction).getAttrName();
+                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
+                    msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
+                    break;
+                }
+            }
+        } catch (Exception ex) {
+            // ignore
+        }
+        return msg;
+    }
+
+    /**
      * EL表达式校验
+     *
      * @param elStr EL表达式
      * @return true 校验成功 false 校验失败
      */
     public static boolean validate(String elStr) {
-       try {
-           LiteFlowChainELBuilder.createChain().setEL(elStr);
-           return Boolean.TRUE;
-       } catch (ELParseException e) {
-           LOG.error(e.getMessage());
-       }
-       return Boolean.FALSE;
+        try {
+            LiteFlowChainELBuilder.createChain().setEL(elStr);
+            return Boolean.TRUE;
+        } catch (ELParseException e) {
+            LOG.error(e.getMessage());
+        }
+        return Boolean.FALSE;
     }
 
     public void build() {
