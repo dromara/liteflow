@@ -87,7 +87,7 @@ public class SwitchELSpringbootTest extends BaseTest {
     //switch返回如果是空，会走default选项
     @Test
     public void testSwitch8() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain8", "arg");
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals("a==>j==>d",response.getExecuteStepStr());
     }

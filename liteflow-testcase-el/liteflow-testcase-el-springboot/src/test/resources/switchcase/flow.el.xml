@@ -46,8 +46,14 @@
     <chain name="chain7">
         THEN(
         a,
-        SWITCH(j).to(b, c).DEFAULT(d)
+        SWITCH(i).to(b, c).DEFAULT(d)
         );
     </chain>
 
+    <chain name="chain8">
+        THEN(
+        a,
+        SWITCH(j).to(b, c).DEFAULT(d)
+        );
+    </chain>
 </flow>
