@@ -247,10 +247,12 @@ public class LiteFlowChainELBuilder {
             List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
             List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
             for (Instruction instruction : instructionList) {
-                String attrName = ((InstructionLoadAttr) instruction).getAttrName();
-                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
-                    msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
-                    break;
+                if (instruction instanceof InstructionLoadAttr) {
+                    String attrName = ((InstructionLoadAttr) instruction).getAttrName();
+                    if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
+                        msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
+                        break;
+                    }
                 }
             }
         } catch (Exception ex) {
