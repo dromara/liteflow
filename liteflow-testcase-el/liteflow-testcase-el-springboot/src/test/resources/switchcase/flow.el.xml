@@ -46,7 +46,7 @@
     <chain name="chain7">
         THEN(
         a,
-        SWITCH(i).to(b, c).DEFAULT(d)
+        SWITCH(j).to(b, c).DEFAULT(d)
         );
     </chain>
 

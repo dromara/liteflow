@@ -45,9 +45,9 @@ public class SwitchCondition extends Condition{
             //这里可能会有spring代理过的bean，所以拿到user原始的class
             Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getSwitchNode().getInstance().getClass());
             String targetId = slot.getSwitchResult(originalClass.getName());
-            if (StrUtil.isNotBlank(targetId)) {
-                Executable targetExecutor;
 
+            Executable targetExecutor = null;
+            if (StrUtil.isNotBlank(targetId)) {
                 //这里要判断是否使用tag模式跳转
                 if (targetId.contains(TAG_FLAG)){
                     String[] target = targetId.split(TAG_FLAG, 2);
@@ -66,26 +66,26 @@ public class SwitchCondition extends Condition{
                             executable -> executable.getExecuteId().equals(targetId)
                     ).findFirst().orElse(null);
                 }
+            }
 
-                if (ObjectUtil.isNull(targetExecutor)) {
-                    //没有匹配到执行节点，则走默认的执行节点
-                    targetExecutor = defaultExecutor;
-                }
+            if (ObjectUtil.isNull(targetExecutor)) {
+                //没有匹配到执行节点，则走默认的执行节点
+                targetExecutor = defaultExecutor;
+            }
 
-                if (ObjectUtil.isNotNull(targetExecutor)) {
-                    //switch的目标不能是Pre节点或者Finally节点
-                    if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition){
-                        String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally",
-                                slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
-                        throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
-                    }
-                    targetExecutor.setCurrChainId(this.getCurrChainId());
-                    targetExecutor.execute(slotIndex);
-                }else{
-                    String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}],target str is [{}]",
-                            slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName(), targetId);
-                    throw new NoSwitchTargetNodeException(errorInfo);
+            if (ObjectUtil.isNotNull(targetExecutor)) {
+                //switch的目标不能是Pre节点或者Finally节点
+                if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition){
+                    String errorInfo = StrUtil.format("[{}]:switch component[{}] error, switch target node cannot be pre or finally",
+                            slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
+                    throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
                 }
+                targetExecutor.setCurrChainId(this.getCurrChainId());
+                targetExecutor.execute(slotIndex);
+            }else{
+                String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}],target str is [{}]",
+                        slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName(), targetId);
+                throw new NoSwitchTargetNodeException(errorInfo);
             }
         }else{
             throw new SwitchTypeErrorException("switch instance must be NodeSwitchComponent");
