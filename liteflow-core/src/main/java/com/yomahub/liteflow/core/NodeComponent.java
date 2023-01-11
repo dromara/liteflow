@@ -349,6 +349,10 @@ public abstract class NodeComponent{
 		return this.refNodeTL.get().getLoopIndex();
 	}
 
+	public <T> T getCurrLoopObj(){
+		return this.refNodeTL.get().getCurrLoopObject();
+	}
+
 	@Deprecated
 	public void invoke(String chainId, Object param) throws Exception {
 		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());

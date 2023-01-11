@@ -49,6 +49,7 @@ public class ForCondition extends LoopCondition{
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
                 breakNode.setCurrChainId(this.getCurrChainId());
+                setLoopIndex(breakNode, i);
                 breakNode.execute(slotIndex);
                 Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
@@ -62,10 +63,6 @@ public class ForCondition extends LoopCondition{
     @Override
     public ConditionTypeEnum getConditionType() {
         return ConditionTypeEnum.TYPE_FOR;
-    }
-
-    public Executable getDoExecutor() {
-        return this.getExecutableList().get(0);
     }
 
     public Node getForNode() {

@@ -53,6 +53,10 @@ public class LiteFlowNodeBuilder {
         return new LiteFlowNodeBuilder(NodeTypeEnum.BREAK);
     }
 
+    public static LiteFlowNodeBuilder createIteratorNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.ITERATOR);
+    }
+
     public static LiteFlowNodeBuilder createScriptNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.SCRIPT);
     }
