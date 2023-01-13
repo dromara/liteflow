@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本1" type="script">
+        <node id="s1" name="普通脚本1" type="script" language="python">
             <![CDATA[
+                import json
+                x='{"name": "Jack", "age": 75, "nationality": "China"}'
+                jsonData=json.loads(x)
+                temperature=jsonData['name']
+                print(temperature)
+
+
                 a=6
                 b=10
                 if a>5:
