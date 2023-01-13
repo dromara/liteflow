@@ -31,7 +31,7 @@ import com.yomahub.liteflow.builder.el.operator.ToOperator;
 import com.yomahub.liteflow.builder.el.operator.WhenOperator;
 import com.yomahub.liteflow.builder.el.operator.WhileOperator;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.DataNofFoundException;
+import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -176,9 +176,9 @@ public class LiteFlowChainELBuilder {
             return this;
         } catch (QLException e) {
             // EL 底层会包装异常，这里是曲线处理
-            if (Objects.equals(e.getCause().getMessage(), DataNofFoundException.MSG)) {
+            if (Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
                 // 构建错误信息
-                String msg = buildDataNofFoundExceptionMsg(elStr);
+                String msg = buildDataNotFoundExceptionMsg(elStr);
                 throw new ELParseException(msg);
             }
             throw new ELParseException(e.getCause().getMessage());
@@ -231,7 +231,7 @@ public class LiteFlowChainELBuilder {
      *
      * @param elStr el 表达式
      */
-    private String buildDataNofFoundExceptionMsg(String elStr) {
+    private String buildDataNotFoundExceptionMsg(String elStr) {
         String msg = String.format("[node/chain is not exist or node/chain not register]\n elStr=%s", StrUtil.trim(elStr));
         try {
             InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
