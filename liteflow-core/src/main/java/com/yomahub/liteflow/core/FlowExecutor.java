@@ -82,7 +82,8 @@ public class FlowExecutor {
         //进行id生成器的初始化
         IdGeneratorHolder.init();
 
-        if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
+        String ruleSource = liteflowConfig.getRuleSource();
+        if (StrUtil.isBlank(ruleSource)) {
             //查看有没有Parser的SPI实现
             //所有的Parser的SPI实现都是以custom形式放入的，且只支持xml形式
             ServiceLoader<ParserClassNameSpi> loader = ServiceLoader.load(ParserClassNameSpi.class);
@@ -100,10 +101,11 @@ public class FlowExecutor {
         //如果有前缀的，则不需要再进行分割了，说明是一个整体
         //如果没有前缀，说明是本地文件，可能配置多个，所以需要分割
         List<String> sourceRulePathList;
-        if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, liteflowConfig.getRuleSource())){
-            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource());
-        }else{
-            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource().split(",|;"));
+        if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, ruleSource)) {
+            sourceRulePathList = ListUtil.toList(ruleSource);
+        } else {
+            String afterHandleRuleSource = ruleSource.replace(StrUtil.SPACE, StrUtil.EMPTY);
+            sourceRulePathList = ListUtil.toList(afterHandleRuleSource.split(",|;"));
         }
 
         FlowParser parser = null;
