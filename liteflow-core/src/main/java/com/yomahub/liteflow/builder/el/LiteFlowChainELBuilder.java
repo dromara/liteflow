@@ -1,14 +1,13 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
-import com.ql.util.express.instruction.detail.Instruction;
-import com.ql.util.express.instruction.detail.InstructionLoadAttr;
 import com.yomahub.liteflow.builder.el.operator.AnyOperator;
 import com.yomahub.liteflow.builder.el.operator.BreakOperator;
 import com.yomahub.liteflow.builder.el.operator.DataOperator;
@@ -232,27 +231,45 @@ public class LiteFlowChainELBuilder {
      * @param elStr el 表达式
      */
     private String buildDataNotFoundExceptionMsg(String elStr) {
-        String msg = String.format("[node/chain is not exist or node/chain not register]\n elStr=%s", StrUtil.trim(elStr));
+        String msg = String.format("[node/chain is not exist or node/chain not register]\n EL: %s", StrUtil.trim(elStr));
         try {
             InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
             if (parseResult == null) {
                 return msg;
             }
 
-            Object o = ReflectUtil.getFieldValue(parseResult, "instructionList");
-            if (o == null) {
+            String[] outAttrNames = parseResult.getOutAttrNames();
+            if (ArrayUtil.isEmpty(outAttrNames)) {
                 return msg;
             }
-            Instruction[] instructionList = (Instruction[]) o;
+
             List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
             List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
-            for (Instruction instruction : instructionList) {
-                if (instruction instanceof InstructionLoadAttr) {
-                    String attrName = ((InstructionLoadAttr) instruction).getAttrName();
-                    if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
-                        msg = String.format("[node/chain is not exist or node/chain not register]\n id=%s \n elStr=%s", attrName, StrUtil.trim(elStr));
-                        break;
+            for (String attrName : outAttrNames) {
+                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
+                    msg = String.format("[%s] is not exist or [%s] is not registered, you need to define a node or chain with id [%s] and register it \n EL: ", attrName, attrName, attrName);
+
+                    // 去除 EL 表达式中的空格和换行符
+                    String sourceEl = StrUtil.removeAll(elStr, CharUtil.SPACE, CharUtil.LF, CharUtil.CR);
+                    // 这里需要注意的是，nodeId 和 chainId 可能是关键字的一部分，如果直接 indexOf(attrName) 会出现误判
+                    // 所以需要判断 attrName 前后是否有 ","
+                    int commaRightIndex = sourceEl.indexOf(attrName + StrUtil.COMMA);
+                    if (commaRightIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaRightIndex + 6, true);
                     }
+                    int commaLeftIndex = sourceEl.indexOf(StrUtil.COMMA + attrName);
+                    if (commaLeftIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，再加上 "," 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 7, true);
+                    }
+                    // 还有一种特殊情况，就是 EL 表达式中的节点使用 node("a")
+                    int nodeIndex = sourceEl.indexOf(String.format("node(\"%s\")", attrName));
+                    if (nodeIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
+                    }
+                    break;
                 }
             }
         } catch (Exception ex) {
