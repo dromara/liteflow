@@ -90,7 +90,8 @@ public class FlowExecutor {
             Iterator<ParserClassNameSpi> it = loader.iterator();
             if (it.hasNext()){
                 ParserClassNameSpi parserClassNameSpi = it.next();
-                liteflowConfig.setRuleSource("el_xml:" + parserClassNameSpi.getSpiClassName());
+                ruleSource = "el_xml:" + parserClassNameSpi.getSpiClassName();
+                liteflowConfig.setRuleSource(ruleSource);
             }else{
                 //ruleSource为空，而且没有spi形式的扩展，那么说明真的没有ruleSource
                 //这种情况有可能是基于代码动态构建的
