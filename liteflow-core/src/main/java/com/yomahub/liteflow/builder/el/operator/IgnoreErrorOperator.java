@@ -20,7 +20,7 @@ public class IgnoreErrorOperator extends BaseOperator<WhenCondition> {
 		WhenCondition condition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
 		Boolean ignoreError = OperatorHelper.convert(objects[1], Boolean.class);
-		condition.setErrorResume(ignoreError);
+		condition.setIgnoreError(ignoreError);
 
 		return condition;
 	}

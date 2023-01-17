@@ -37,7 +37,7 @@ public class WhenCondition extends Condition {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
-	private boolean errorResume = false;
+	private boolean ignoreError = false;
 
 	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
 	//此属性已弃用
@@ -150,8 +150,8 @@ public class WhenCondition extends Condition {
 		timeOutWhenFutureObjList.forEach(whenFutureObj ->
 				LOG.warn("requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", slot.getRequestId(), whenFutureObj.getExecutorName()));
 
-		//当配置了errorResume = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
-		if (!this.isErrorResume()) {
+		//当配置了ignoreError = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
+		if (!this.isIgnoreError()) {
 			if (interrupted[0]) {
 				throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", slot.getRequestId()));
 			}
@@ -169,12 +169,12 @@ public class WhenCondition extends Condition {
 		}
 	}
 
-	public boolean isErrorResume() {
-		return errorResume;
+	public boolean isIgnoreError() {
+		return ignoreError;
 	}
 
-	public void setErrorResume(boolean errorResume) {
-		this.errorResume = errorResume;
+	public void setIgnoreError(boolean ignoreError) {
+		this.ignoreError = ignoreError;
 	}
 
 	public String getGroup() {
