@@ -164,7 +164,7 @@ public class WhenCondition extends Condition {
 				}
 			}
 		} else if (interrupted[0]) {
-			//  这里由于配置了errorResume，所以只打印warn日志
+			//  这里由于配置了ignoreError，所以只打印warn日志
 			LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", slot.getRequestId());
 		}
 	}
