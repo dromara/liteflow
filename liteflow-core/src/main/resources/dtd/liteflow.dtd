@@ -14,4 +14,5 @@
         language (groovy|js|python|lua) #IMPLIED
         >
 <!ATTLIST chain
-        name CDATA>
+        id CDATA #REQUIRED
+        >
