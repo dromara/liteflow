@@ -271,7 +271,6 @@ public class LiteFlowChainELBuilder {
                         // 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
                         return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
                     }
-                    break;
                 }
             }
         } catch (Exception ex) {
