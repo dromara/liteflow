@@ -4,8 +4,8 @@ package com.yomahub.liteflow.exception;
  * 未找到数据异常
  * @author tangkc
  */
-public class DataNofFoundException extends RuntimeException {
-    public static final String MSG = "DataNofFoundException";
+public class DataNotFoundException extends RuntimeException {
+    public static final String MSG = "DataNotFoundException";
 
     private static final long serialVersionUID = 1L;
 
@@ -14,11 +14,11 @@ public class DataNofFoundException extends RuntimeException {
      */
     private String message;
 
-    public DataNofFoundException() {
+    public DataNotFoundException() {
         this.message = MSG;
     }
 
-    public DataNofFoundException(String message) {
+    public DataNotFoundException(String message) {
         this.message = message;
     }
 
