@@ -20,6 +20,7 @@ import com.yomahub.liteflow.builder.el.operator.ForOperator;
 import com.yomahub.liteflow.builder.el.operator.IdOperator;
 import com.yomahub.liteflow.builder.el.operator.IfOperator;
 import com.yomahub.liteflow.builder.el.operator.IgnoreErrorOperator;
+import com.yomahub.liteflow.builder.el.operator.IteratorOperator;
 import com.yomahub.liteflow.builder.el.operator.NodeOperator;
 import com.yomahub.liteflow.builder.el.operator.PreOperator;
 import com.yomahub.liteflow.builder.el.operator.SwitchOperator;
@@ -257,18 +258,18 @@ public class LiteFlowChainELBuilder {
                     int commaRightIndex = sourceEl.indexOf(attrName + StrUtil.COMMA);
                     if (commaRightIndex != -1) {
                         // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
-                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaRightIndex + 6, true);
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaRightIndex + 6, true);
                     }
                     int commaLeftIndex = sourceEl.indexOf(StrUtil.COMMA + attrName);
                     if (commaLeftIndex != -1) {
                         // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，再加上 "," 的长度 1，indexOf 从 0 开始，所以还需要加 1
-                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 7, true);
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 7, true);
                     }
                     // 还有一种特殊情况，就是 EL 表达式中的节点使用 node("a")
                     int nodeIndex = sourceEl.indexOf(String.format("node(\"%s\")", attrName));
                     if (nodeIndex != -1) {
                         // 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
-                        msg = msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
                     }
                     break;
                 }
