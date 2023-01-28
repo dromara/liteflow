@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser.el;
 
+import com.yomahub.liteflow.monitor.MonitorFile;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 
 import java.util.List;
@@ -14,6 +15,11 @@ public class LocalYmlFlowELParser extends YmlFlowELParser {
     @Override
     public void parseMain(List<String> pathList) throws Exception {
         List<String> contentList = PathContentParserHolder.loadContextAware().parseContent(pathList);
+
+        // 添加规则文件监听
+        List<String> fileAbsolutePath = PathContentParserHolder.loadContextAware().getFileAbsolutePath(pathList);
+        MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
+
         parse(contentList);
     }
 

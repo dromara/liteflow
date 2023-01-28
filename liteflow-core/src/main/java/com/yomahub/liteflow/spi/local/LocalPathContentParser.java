@@ -2,6 +2,8 @@ package com.yomahub.liteflow.spi.local;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ClassPathResource;
+import cn.hutool.core.io.resource.FileResource;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
@@ -18,14 +20,14 @@ public class LocalPathContentParser implements PathContentParser {
 
     @Override
     public List<String> parseContent(List<String> pathList) throws Exception {
-        if(CollectionUtil.isEmpty(pathList)){
+        if (CollectionUtil.isEmpty(pathList)) {
             throw new ConfigErrorException("rule source must not be null");
         }
 
         List<String> contentList = new ArrayList<>();
 
-        for(String path : pathList){
-            if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)){
+        for (String path : pathList) {
+            if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
                 path = FILE_URL_PREFIX + path;
             } else {
                 if (!path.startsWith(CLASSPATH_URL_PREFIX)) {
@@ -33,12 +35,35 @@ public class LocalPathContentParser implements PathContentParser {
                 }
             }
             String content = ResourceUtil.readUtf8Str(path);
-            if (StrUtil.isNotBlank(content)){
+            if (StrUtil.isNotBlank(content)) {
                 contentList.add(content);
             }
         }
 
         return contentList;
+    }
+
+    @Override
+    public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
+        if (CollectionUtil.isEmpty(pathList)) {
+            throw new ConfigErrorException("rule source must not be null");
+        }
+
+        List<String> result = new ArrayList<>();
+
+        for (String path : pathList) {
+            if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
+                path = FILE_URL_PREFIX + path;
+                result.add(new FileResource(path).getFile().getAbsolutePath());
+            } else {
+                if (!path.startsWith(CLASSPATH_URL_PREFIX)) {
+                    path = CLASSPATH_URL_PREFIX + path;
+                    result.add(new ClassPathResource(path).getAbsolutePath());
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override

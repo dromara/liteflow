@@ -10,7 +10,7 @@ import com.yomahub.liteflow.spi.PathContentParser;
 import org.noear.solon.Utils;
 
 import java.io.File;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +20,32 @@ import java.util.Set;
 public class SolonPathContentParser implements PathContentParser {
     @Override
     public List<String> parseContent(List<String> pathList) throws Exception {
-        if(CollectionUtil.isEmpty(pathList)){
+        List<URL> allResource = getUrls(pathList);
+
+        //转换成内容List
+        List<String> contentList = new ArrayList<>();
+        for (URL resource : allResource) {
+            String content = IoUtil.read(resource.openStream(), CharsetUtil.CHARSET_UTF_8);
+            if (StrUtil.isNotBlank(content)) {
+                contentList.add(content);
+            }
+        }
+
+        return contentList;
+    }
+
+    @Override
+    public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
+        List<URL> allResource = getUrls(pathList);
+        List<String> result = new ArrayList<>();
+        for (URL url : allResource) {
+            result.add(url.getPath());
+        }
+        return result;
+    }
+
+    private static List<URL> getUrls(List<String> pathList) throws MalformedURLException {
+        if (CollectionUtil.isEmpty(pathList)) {
             throw new ConfigErrorException("rule source must not be null");
         }
 
@@ -44,17 +69,7 @@ public class SolonPathContentParser implements PathContentParser {
         if (fileTypeSet.size() != 1) {
             throw new ConfigErrorException("config error,please use the same type of configuration");
         }
-
-        //转换成内容List
-        List<String> contentList = new ArrayList<>();
-        for (URL resource : allResource) {
-            String content = IoUtil.read(resource.openStream(), CharsetUtil.CHARSET_UTF_8);
-            if (StrUtil.isNotBlank(content)){
-                contentList.add(content);
-            }
-        }
-
-        return contentList;
+        return allResource;
     }
 
     @Override
