@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!ELEMENT flow  ((nodes) , (chain)+)>
+<!ELEMENT flow  ((nodes)? , (chain)+)>
 <!ELEMENT nodes  (node)+>
 <!ELEMENT node  (#PCDATA | EMPTY)*>
 <!ELEMENT chain (#PCDATA)>
@@ -14,5 +14,6 @@
         language (groovy|js|python|lua) #IMPLIED
         >
 <!ATTLIST chain
-        id CDATA #REQUIRED
+        id CDATA #IMPLIED
+        name CDATA #IMPLIED
         >
