@@ -158,6 +158,13 @@
       "description": "Set period time to print monitor log.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": 300000
+    },
+    {
+      "name": "liteflow.enable-monitor-file",
+      "type": "java.lang.Boolean",
+      "description": "Set file change monitoring.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
+      "defaultValue": false
     }
   ]
 }

@@ -95,14 +95,14 @@ public class LiteflowConfig {
     private String substituteCmpClass;
 
     // 规则文件/脚本文件变更监听
-    private Boolean monitorFileEnable = Boolean.TRUE;
+    private Boolean enableMonitorFile = Boolean.FALSE;
 
-    public Boolean getMonitorFileEnable() {
-        return monitorFileEnable;
+    public Boolean getEnableMonitorFile() {
+        return enableMonitorFile;
     }
 
-    public void setMonitorFileEnable(Boolean monitorFileEnable) {
-        this.monitorFileEnable = monitorFileEnable;
+    public void setEnableMonitorFile(Boolean enableMonitorFile) {
+        this.enableMonitorFile = enableMonitorFile;
     }
 
     public Boolean getEnable() {

@@ -181,7 +181,7 @@ public class FlowExecutor {
         }
 
         // 文件监听
-        if (liteflowConfig.getMonitorFileEnable()){
+        if (liteflowConfig.getEnableMonitorFile()){
             MonitorFile.getInstance().create();
         }
     }

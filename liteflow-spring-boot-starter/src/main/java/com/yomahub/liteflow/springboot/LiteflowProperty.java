@@ -70,6 +70,17 @@ public class LiteflowProperty {
     //替补组件的class路径
     private String substituteCmpClass;
 
+    // 规则文件/脚本文件变更监听
+    private Boolean enableMonitorFile;
+
+    public Boolean getEnableMonitorFile() {
+        return enableMonitorFile;
+    }
+
+    public void setEnableMonitorFile(Boolean enableMonitorFile) {
+        this.enableMonitorFile = enableMonitorFile;
+    }
+
     public boolean isEnable() {
         return enable;
     }
