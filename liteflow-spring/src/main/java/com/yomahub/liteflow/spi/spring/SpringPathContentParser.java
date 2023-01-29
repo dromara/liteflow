@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.spi.spring;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.FileUtil;
@@ -9,19 +8,15 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.PathContentParser;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.ResourceUtils;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SpringPathContentParser implements PathContentParser {
     @Override
