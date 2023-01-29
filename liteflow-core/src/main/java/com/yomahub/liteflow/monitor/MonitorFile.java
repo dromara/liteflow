@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.monitor;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.watchers.DelayWatcher;
@@ -49,7 +50,7 @@ public class MonitorFile {
      * 创建文件监听
      */
     public void create() {
-        for (String filePath : PATH_LIST) {
+        for (String filePath : CollUtil.distinct(PATH_LIST)) {
             // 这里只监听两种类型，文件修改和文件覆盖
             WatchMonitor.createAll(filePath, new DelayWatcher(new SimpleWatcher() {
 
