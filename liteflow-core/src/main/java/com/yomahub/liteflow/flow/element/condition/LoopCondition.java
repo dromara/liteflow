@@ -26,6 +26,10 @@ public abstract class LoopCondition extends Condition {
     protected void setLoopIndex(Executable executableItem, int index){
         if (executableItem instanceof Chain){
             ((Chain)executableItem).getConditionList().forEach(condition -> setLoopIndex(condition, index));
+        }else if(executableItem instanceof IfCondition){
+            ((Condition)executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
+            setLoopIndex(((IfCondition)executableItem).getTrueCaseExecutableItem(), index);
+            setLoopIndex(((IfCondition)executableItem).getFalseCaseExecutableItem(), index);
         }else if(executableItem instanceof Condition){
             ((Condition)executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
         }else if(executableItem instanceof Node){
@@ -36,6 +40,10 @@ public abstract class LoopCondition extends Condition {
     protected void setCurrLoopObject(Executable executableItem, Object obj){
         if (executableItem instanceof Chain){
             ((Chain)executableItem).getConditionList().forEach(condition -> setCurrLoopObject(condition, obj));
+        }else if(executableItem instanceof IfCondition){
+            ((Condition)executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
+            setCurrLoopObject(((IfCondition)executableItem).getTrueCaseExecutableItem(), obj);
+            setCurrLoopObject(((IfCondition)executableItem).getFalseCaseExecutableItem(), obj);
         }else if(executableItem instanceof Condition){
             ((Condition)executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
         }else if(executableItem instanceof Node){
