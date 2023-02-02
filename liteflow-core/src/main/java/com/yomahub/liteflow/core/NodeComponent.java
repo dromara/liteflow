@@ -92,7 +92,7 @@ public abstract class NodeComponent{
 
 		try{
 			//前置处理
-			self.beforeProcess(this.getNodeId(), slot);
+			self.beforeProcess();
 
 			//主要的处理逻辑
 			self.process();
@@ -118,7 +118,7 @@ public abstract class NodeComponent{
 			throw e;
 		} finally {
 			//后置处理
-			self.afterProcess(this.getNodeId(), slot);
+			self.afterProcess();
 
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
@@ -135,10 +135,10 @@ public abstract class NodeComponent{
 		}
 	}
 
-	public <T> void beforeProcess(String nodeId, Slot slot){
+	public void beforeProcess(){
 		//全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		//非spring环境下，全局切面为空实现
-		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, slot);
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, this.getSlot());
 	}
 
 	public abstract void process() throws Exception;
@@ -151,8 +151,8 @@ public abstract class NodeComponent{
 		//如果需要在抛错后回调某一段逻辑，请覆盖这个方法
 	}
 
-	public <T> void afterProcess(String nodeId, Slot slot){
-		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, slot);
+	public void afterProcess(){
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, this.getSlot());
 	}
 
 	//是否进入该节点
@@ -347,6 +347,10 @@ public abstract class NodeComponent{
 
 	public Integer getLoopIndex(){
 		return this.refNodeTL.get().getLoopIndex();
+	}
+
+	public <T> T getCurrLoopObj(){
+		return this.refNodeTL.get().getCurrLoopObject();
 	}
 
 	@Deprecated

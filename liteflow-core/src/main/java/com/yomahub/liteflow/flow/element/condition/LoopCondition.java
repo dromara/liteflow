@@ -32,4 +32,18 @@ public abstract class LoopCondition extends Condition {
             ((Node)executableItem).setLoopIndex(index);
         }
     }
+
+    protected void setCurrLoopObject(Executable executableItem, Object obj){
+        if (executableItem instanceof Chain){
+            ((Chain)executableItem).getConditionList().forEach(condition -> setCurrLoopObject(condition, obj));
+        }else if(executableItem instanceof Condition){
+            ((Condition)executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
+        }else if(executableItem instanceof Node){
+            ((Node)executableItem).setCurrLoopObject(obj);
+        }
+    }
+
+    protected Executable getDoExecutor() {
+        return this.getExecutableList().get(0);
+    }
 }

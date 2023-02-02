@@ -63,6 +63,8 @@ public interface ChainConstant {
 
     String DATA = "data";
 
+    String ITERATOR = "ITERATOR";
+
     String MONITOR_BUS = "monitorBus";
 
     String CURR_CHAIN_ID = "currChainId";

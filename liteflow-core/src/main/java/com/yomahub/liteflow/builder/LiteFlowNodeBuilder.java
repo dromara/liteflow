@@ -1,23 +1,19 @@
 package com.yomahub.liteflow.builder;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NodeBuildException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class LiteFlowNodeBuilder {
 
@@ -51,6 +47,10 @@ public class LiteFlowNodeBuilder {
 
     public static LiteFlowNodeBuilder createBreakNode() {
         return new LiteFlowNodeBuilder(NodeTypeEnum.BREAK);
+    }
+
+    public static LiteFlowNodeBuilder createIteratorNode() {
+        return new LiteFlowNodeBuilder(NodeTypeEnum.ITERATOR);
     }
 
     public static LiteFlowNodeBuilder createScriptNode() {
@@ -130,8 +130,15 @@ public class LiteFlowNodeBuilder {
         if (StrUtil.isBlank(filePath)) {
             return this;
         }
-        String script = ResourceUtil.readUtf8Str(StrUtil.format("classpath: {}", filePath.trim()));
-        return setScript(script);
+        try {
+            List<String> scriptList = PathContentParserHolder.loadContextAware().parseContent(ListUtil.toList(filePath));
+            String script = CollUtil.getFirst(scriptList);
+            setScript(script);
+        } catch (Exception e) {
+            String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(), e.getMessage());
+            throw new NodeBuildException(errMsg);
+        }
+        return this;
     }
 
     public void build() {

@@ -207,7 +207,7 @@ public class FlowBus {
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
             LOG.error(e.getMessage());
-            throw new ComponentCannotRegisterException(error);
+            throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
         }
     }
 

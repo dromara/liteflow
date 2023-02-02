@@ -50,4 +50,10 @@
         );
     </chain>
 
+    <chain name="chain8">
+        THEN(
+        a,
+        SWITCH(j).to(b, c).DEFAULT(d)
+        );
+    </chain>
 </flow>

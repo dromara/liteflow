@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.exception.*;
@@ -82,14 +83,16 @@ public class FlowExecutor {
         //进行id生成器的初始化
         IdGeneratorHolder.init();
 
-        if (StrUtil.isBlank(liteflowConfig.getRuleSource())) {
+        String ruleSource = liteflowConfig.getRuleSource();
+        if (StrUtil.isBlank(ruleSource)) {
             //查看有没有Parser的SPI实现
             //所有的Parser的SPI实现都是以custom形式放入的，且只支持xml形式
             ServiceLoader<ParserClassNameSpi> loader = ServiceLoader.load(ParserClassNameSpi.class);
             Iterator<ParserClassNameSpi> it = loader.iterator();
             if (it.hasNext()){
                 ParserClassNameSpi parserClassNameSpi = it.next();
-                liteflowConfig.setRuleSource("el_xml:" + parserClassNameSpi.getSpiClassName());
+                ruleSource = "el_xml:" + parserClassNameSpi.getSpiClassName();
+                liteflowConfig.setRuleSource(ruleSource);
             }else{
                 //ruleSource为空，而且没有spi形式的扩展，那么说明真的没有ruleSource
                 //这种情况有可能是基于代码动态构建的
@@ -100,10 +103,11 @@ public class FlowExecutor {
         //如果有前缀的，则不需要再进行分割了，说明是一个整体
         //如果没有前缀，说明是本地文件，可能配置多个，所以需要分割
         List<String> sourceRulePathList;
-        if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, liteflowConfig.getRuleSource())){
-            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource());
-        }else{
-            sourceRulePathList = ListUtil.toList(liteflowConfig.getRuleSource().split(",|;"));
+        if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, ruleSource)) {
+            sourceRulePathList = ListUtil.toList(ruleSource);
+        } else {
+            String afterHandleRuleSource = ruleSource.replace(StrUtil.SPACE, StrUtil.EMPTY);
+            sourceRulePathList = ListUtil.toList(afterHandleRuleSource.split(",|;"));
         }
 
         FlowParser parser = null;
@@ -163,9 +167,11 @@ public class FlowExecutor {
         }
 
         //如果是ruleSource方式的，最后判断下有没有解析出来,如果没有解析出来则报错
-        if (FlowBus.getChainMap().isEmpty()){
-            String errMsg = StrUtil.format("no valid rule config found in rule path [{}]", liteflowConfig.getRuleSource());
-            throw new ConfigErrorException(errMsg);
+        if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData()) && MapUtil.isEmpty(liteflowConfig.getRuleSourceExtDataMap())){
+            if (FlowBus.getChainMap().isEmpty()){
+                String errMsg = StrUtil.format("no valid rule config found in rule path [{}]", liteflowConfig.getRuleSource());
+                throw new ConfigErrorException(errMsg);
+            }
         }
 
         //执行钩子

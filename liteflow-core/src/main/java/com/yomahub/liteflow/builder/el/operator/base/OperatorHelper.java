@@ -2,7 +2,7 @@ package com.yomahub.liteflow.builder.el.operator.base;
 
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
-import com.yomahub.liteflow.exception.DataNofFoundException;
+import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.flow.element.Node;
 
 import java.util.Objects;
@@ -156,7 +156,7 @@ public class OperatorHelper {
     public static void checkNodeAndChainExist(Object[] objects) throws QLException {
         for (Object object : objects) {
             if (Objects.isNull(object)) {
-                throw new QLException(DataNofFoundException.MSG);
+                throw new QLException(DataNotFoundException.MSG);
             }
         }
     }

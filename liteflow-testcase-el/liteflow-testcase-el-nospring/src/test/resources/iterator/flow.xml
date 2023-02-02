@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.iterator.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.iterator.cmp.BCmp"/>
+        <node id="it" class="com.yomahub.liteflow.test.iterator.cmp.ITCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        ITERATOR(it).DO(a);
+    </chain>
+
+    <chain name="chain2">
+        ITERATOR(it).DO(a).BREAK(b);
+    </chain>
+</flow>

@@ -1,18 +1,22 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
+import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.DataNofFoundException;
+import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.condition.*;
+import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.condition.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +73,7 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunction(ChainConstant.NODE, new NodeOperator());
         EXPRESS_RUNNER.addFunction(ChainConstant.FOR, new ForOperator());
         EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.ITERATOR, new IteratorOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DO, Object.class, new DoOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BREAK, Object.class, new BreakOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DATA, Object.class, new DataOperator());
@@ -151,8 +156,10 @@ public class LiteFlowChainELBuilder {
             return this;
         } catch (QLException e) {
             // EL 底层会包装异常，这里是曲线处理
-            if (Objects.equals(e.getCause().getMessage(), DataNofFoundException.MSG)) {
-                throw new ELParseException(String.format("[node/chain is not exist or node/chain not register]elStr=%s", elStr));
+            if (Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+                // 构建错误信息
+                String msg = buildDataNotFoundExceptionMsg(elStr);
+                throw new ELParseException(msg);
             }
             throw new ELParseException(e.getCause().getMessage());
         } catch (Exception e) {
@@ -162,17 +169,18 @@ public class LiteFlowChainELBuilder {
 
     /**
      * EL表达式校验
+     *
      * @param elStr EL表达式
      * @return true 校验成功 false 校验失败
      */
     public static boolean validate(String elStr) {
-       try {
-           LiteFlowChainELBuilder.createChain().setEL(elStr);
-           return Boolean.TRUE;
-       } catch (ELParseException e) {
-           LOG.error(e.getMessage());
-       }
-       return Boolean.FALSE;
+        try {
+            LiteFlowChainELBuilder.createChain().setEL(elStr);
+            return Boolean.TRUE;
+        } catch (ELParseException e) {
+            LOG.error(e.getMessage());
+        }
+        return Boolean.FALSE;
     }
 
     public void build() {
@@ -182,6 +190,8 @@ public class LiteFlowChainELBuilder {
 
         FlowBus.addChain(this.chain);
     }
+
+    //#region private method
 
     /**
      * build 前简单校验
@@ -195,4 +205,57 @@ public class LiteFlowChainELBuilder {
             throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
         }
     }
+
+    /**
+     * 解析 EL 表达式，查找未定义的 id 并构建错误信息
+     *
+     * @param elStr el 表达式
+     */
+    private String buildDataNotFoundExceptionMsg(String elStr) {
+        String msg = String.format("[node/chain is not exist or node/chain not register]\n EL: %s", StrUtil.trim(elStr));
+        try {
+            InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
+            if (parseResult == null) {
+                return msg;
+            }
+
+            String[] outAttrNames = parseResult.getOutAttrNames();
+            if (ArrayUtil.isEmpty(outAttrNames)) {
+                return msg;
+            }
+
+            List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
+            List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
+            for (String attrName : outAttrNames) {
+                if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
+                    msg = String.format("[%s] is not exist or [%s] is not registered, you need to define a node or chain with id [%s] and register it \n EL: ", attrName, attrName, attrName);
+
+                    // 去除 EL 表达式中的空格和换行符
+                    String sourceEl = StrUtil.removeAll(elStr, CharUtil.SPACE, CharUtil.LF, CharUtil.CR);
+                    // 这里需要注意的是，nodeId 和 chainId 可能是关键字的一部分，如果直接 indexOf(attrName) 会出现误判
+                    // 所以需要判断 attrName 前后是否有 ","
+                    int commaRightIndex = sourceEl.indexOf(attrName + StrUtil.COMMA);
+                    if (commaRightIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaRightIndex + 6, true);
+                    }
+                    int commaLeftIndex = sourceEl.indexOf(StrUtil.COMMA + attrName);
+                    if (commaLeftIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 "^" 的长度 1，再加上 "," 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 7, true);
+                    }
+                    // 还有一种特殊情况，就是 EL 表达式中的节点使用 node("a")
+                    int nodeIndex = sourceEl.indexOf(String.format("node(\"%s\")", attrName));
+                    if (nodeIndex != -1) {
+                        // 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0 开始，所以还需要加 1
+                        return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // ignore
+        }
+        return msg;
+    }
+    //#endregion
 }

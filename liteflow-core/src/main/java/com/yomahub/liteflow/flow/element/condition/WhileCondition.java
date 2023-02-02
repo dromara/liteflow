@@ -35,11 +35,12 @@ public class WhileCondition extends LoopCondition{
         int index = 0;
         while(getWhileResult(slotIndex)){
             executableItem.setCurrChainId(this.getCurrChainId());
-            setLoopIndex(executableItem, index++);
+            setLoopIndex(executableItem, index);
             executableItem.execute(slotIndex);
             //如果break组件不为空，则去执行
             if (ObjectUtil.isNotNull(breakNode)){
                 breakNode.setCurrChainId(this.getCurrChainId());
+                setLoopIndex(breakNode, index);
                 breakNode.execute(slotIndex);
                 Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
@@ -47,20 +48,17 @@ public class WhileCondition extends LoopCondition{
                     break;
                 }
             }
+            index++;
         }
     }
 
     private boolean getWhileResult(Integer slotIndex) throws Exception{
         Slot slot = DataBus.getSlot(slotIndex);
         //执行while组件
-        whileNode.setCurrChainName(this.getCurrChainName());
+        whileNode.setCurrChainId(this.getCurrChainId());
         whileNode.execute(slotIndex);
         Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(this.whileNode.getInstance().getClass());
         return slot.getWhileResult(originalWhileClass.getName());
-    }
-
-    public Executable getDoExecutor() {
-        return this.getExecutableList().get(0);
     }
 
     @Override

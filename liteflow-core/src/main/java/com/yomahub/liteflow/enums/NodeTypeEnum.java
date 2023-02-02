@@ -35,6 +35,8 @@ public enum NodeTypeEnum {
 
 	BREAK("break", "循环跳出", false, NodeBreakComponent.class),
 
+	ITERATOR("iterator", "循环迭代", false, NodeIteratorComponent.class),
+
 	SCRIPT("script", "脚本", true, ScriptCommonComponent.class),
 
 	SWITCH_SCRIPT("switch_script", "选择脚本", true, ScriptSwitchComponent.class),

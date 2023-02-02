@@ -56,6 +56,8 @@ public class Node implements Executable,Cloneable{
 
 	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
+	private TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
+
 	public Node(){
 
 	}
@@ -240,5 +242,17 @@ public class Node implements Executable,Cloneable{
 
 	public void removeLoopIndex(){
 		this.loopIndexTL.remove();
+	}
+
+	public void setCurrLoopObject(Object obj){
+		this.currLoopObject.set(obj);
+	}
+
+	public <T> T getCurrLoopObject(){
+		return (T)this.currLoopObject.get();
+	}
+
+	public void removeCurrLoopObject(){
+		this.currLoopObject.remove();
 	}
 }

@@ -14,7 +14,9 @@ public enum ConditionTypeEnum {
 
     TYPE_FOR("for", "for"),
 
-    TYPE_WHILE("while", "while")
+    TYPE_WHILE("while", "while"),
+
+    TYPE_ITERATOR("iterator", "iterator")
     ;
     private String type;
     private String name;

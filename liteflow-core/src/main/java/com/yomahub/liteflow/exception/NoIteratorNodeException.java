@@ -1,11 +1,10 @@
 package com.yomahub.liteflow.exception;
 
 /**
- * 未找到数据异常
- * @author tangkc
+ * 没有节点异常
+ * @author Yun
  */
-public class DataNofFoundException extends RuntimeException {
-    public static final String MSG = "DataNofFoundException";
+public class NoIteratorNodeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
@@ -14,11 +13,7 @@ public class DataNofFoundException extends RuntimeException {
      */
     private String message;
 
-    public DataNofFoundException() {
-        this.message = MSG;
-    }
-
-    public DataNofFoundException(String message) {
+    public NoIteratorNodeException(String message) {
         this.message = message;
     }
 
@@ -30,4 +25,5 @@ public class DataNofFoundException extends RuntimeException {
     public void setMessage(String message) {
         this.message = message;
     }
+
 }

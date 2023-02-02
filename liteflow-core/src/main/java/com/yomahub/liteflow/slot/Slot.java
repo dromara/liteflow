@@ -10,6 +10,7 @@ package com.yomahub.liteflow.slot;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -52,6 +53,8 @@ public class Slot{
 
 	private static final String WHILE_PREFIX = "_while_";
 
+	private static final String ITERATOR_PREFIX = "_iterator_";
+
 	private static final String BREAK_PREFIX = "_break_";
 
 	private static final String NODE_INPUT_PREFIX = "_input_";
@@ -87,6 +90,16 @@ public class Slot{
 
 	private boolean hasMetaData(String key){
 		return metaDataMap.containsKey(key);
+	}
+
+	private <T> void putThreadMetaDataMap(String key, T t){
+		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getName());
+		putMetaDataMap(threadKey, t);
+	}
+
+	private <T> T getThreadMetaData(String key){
+		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getName());
+		return (T)metaDataMap.get(threadKey);
 	}
 
 	private <T> void putMetaDataMap(String key, T t) {
@@ -197,43 +210,51 @@ public class Slot{
 	}
 
 	public <T> void setSwitchResult(String key, T t){
-		putMetaDataMap(SWITCH_NODE_PREFIX + key, t);
+		putThreadMetaDataMap(SWITCH_NODE_PREFIX + key, t);
 	}
 
 	public <T> T getSwitchResult(String key){
-		return (T) metaDataMap.get(SWITCH_NODE_PREFIX + key);
+		return getThreadMetaData(SWITCH_NODE_PREFIX + key);
 	}
 
 	public void setIfResult(String key, boolean result){
-		putMetaDataMap(IF_NODE_PREFIX + key, result);
+		putThreadMetaDataMap(IF_NODE_PREFIX + key, result);
 	}
 
 	public boolean getIfResult(String key){
-		return (boolean) metaDataMap.get(IF_NODE_PREFIX + key);
+		return getThreadMetaData(IF_NODE_PREFIX + key);
 	}
 
 	public void setForResult(String key, int forCount){
-		putMetaDataMap(FOR_PREFIX + key, forCount);
+		putThreadMetaDataMap(FOR_PREFIX + key, forCount);
 	}
 
 	public int getForResult(String key){
-		return (int) metaDataMap.get(FOR_PREFIX + key);
+		return getThreadMetaData(FOR_PREFIX + key);
 	}
 
 	public void setWhileResult(String key, boolean whileFlag){
-		putMetaDataMap(WHILE_PREFIX + key, whileFlag);
+		putThreadMetaDataMap(WHILE_PREFIX + key, whileFlag);
 	}
 
 	public boolean getWhileResult(String key){
-		return (boolean) metaDataMap.get(WHILE_PREFIX + key);
+		return getThreadMetaData(WHILE_PREFIX + key);
 	}
 
 	public void setBreakResult(String key, boolean breakFlag){
-		putMetaDataMap(BREAK_PREFIX + key, breakFlag);
+		putThreadMetaDataMap(BREAK_PREFIX + key, breakFlag);
 	}
 
 	public boolean getBreakResult(String key){
-		return (boolean) metaDataMap.get(BREAK_PREFIX + key);
+		return getThreadMetaData(BREAK_PREFIX + key);
+	}
+
+	public void setIteratorResult(String key, Iterator<?> it){
+		putThreadMetaDataMap(ITERATOR_PREFIX + key, it);
+	}
+
+	public Iterator<?> getIteratorResult(String key){
+		return getThreadMetaData(ITERATOR_PREFIX + key);
 	}
 
 	/**
