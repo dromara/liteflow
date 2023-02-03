@@ -5,6 +5,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.FileResource;
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.ClassLoaderUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
@@ -52,13 +53,17 @@ public class LocalPathContentParser implements PathContentParser {
         List<String> result = new ArrayList<>();
 
         for (String path : pathList) {
-            if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
+             if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
                 path = FILE_URL_PREFIX + path;
                 result.add(new FileResource(path).getFile().getAbsolutePath());
             } else {
                 if (!path.startsWith(CLASSPATH_URL_PREFIX)) {
                     path = CLASSPATH_URL_PREFIX + path;
-                    result.add(new ClassPathResource(path).getAbsolutePath());
+
+                    // 这里会有自定义解析器
+                    if(ClassLoaderUtil.isPresent(path)){
+                        result.add(new ClassPathResource(path).getAbsolutePath());
+                    }
                 }
             }
         }

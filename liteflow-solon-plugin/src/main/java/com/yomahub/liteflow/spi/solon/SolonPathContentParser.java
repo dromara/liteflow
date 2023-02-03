@@ -39,7 +39,10 @@ public class SolonPathContentParser implements PathContentParser {
     @Override
     public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
         List<URL> allResource = getUrls(pathList);
-        return StreamUtil.of(allResource).map(URL::getPath).collect(Collectors.toList());
+        return StreamUtil.of(allResource)
+                .map(URL::getPath)
+                .filter(FileUtil::isFile)
+                .collect(Collectors.toList());
     }
 
     private static List<URL> getUrls(List<String> pathList) throws MalformedURLException {
@@ -57,14 +60,16 @@ public class SolonPathContentParser implements PathContentParser {
                     path = path.substring(ResourceUtils.CLASSPATH_URL_PREFIX.length());
                 }
 
-                allResource.add(Utils.getResource(path));
+                if (Utils.getResource(path) != null) {
+                    allResource.add(Utils.getResource(path));
+                }
             }
         }
 
         //如果有多个资源，检查资源都是同一个类型，如果出现不同类型的配置，则抛出错误提示
         Set<String> fileTypeSet = new HashSet<>();
         allResource.forEach(resource -> fileTypeSet.add(FileUtil.extName(resource.getPath())));
-        if (fileTypeSet.size() != 1) {
+        if (fileTypeSet.size() > 1) {
             throw new ConfigErrorException("config error,please use the same type of configuration");
         }
         return allResource;
