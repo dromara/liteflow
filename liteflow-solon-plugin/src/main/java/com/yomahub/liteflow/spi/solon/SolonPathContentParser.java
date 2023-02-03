@@ -3,6 +3,7 @@ package com.yomahub.liteflow.spi.solon;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SolonPathContentParser implements PathContentParser {
     @Override
@@ -37,11 +39,7 @@ public class SolonPathContentParser implements PathContentParser {
     @Override
     public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
         List<URL> allResource = getUrls(pathList);
-        List<String> result = new ArrayList<>();
-        for (URL url : allResource) {
-            result.add(url.getPath());
-        }
-        return result;
+        return StreamUtil.of(allResource).map(URL::getPath).collect(Collectors.toList());
     }
 
     private static List<URL> getUrls(List<String> pathList) throws MalformedURLException {

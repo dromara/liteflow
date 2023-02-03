@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SpringPathContentParser implements PathContentParser {
     @Override
@@ -41,12 +43,16 @@ public class SpringPathContentParser implements PathContentParser {
     public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
         List<Resource> allResource = getResources(pathList);
 
-        //转换成内容List
-        List<String> result = new ArrayList<>();
-        for (Resource resource : allResource) {
-            result.add(resource.getFile().getAbsolutePath());
-        }
-        return result;
+        return StreamUtil.of(allResource)
+                // 过滤非 file 类型 Resource
+                .filter(Resource::isFile)
+                .map(r -> {
+                    try {
+                        return r.getFile().getAbsolutePath();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
     }
 
     private List<Resource> getResources(List<String> pathList) throws IOException {

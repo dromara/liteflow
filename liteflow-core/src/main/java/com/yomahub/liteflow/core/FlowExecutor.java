@@ -28,6 +28,7 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
+import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +126,9 @@ public class FlowExecutor {
 
                 //支持多类型的配置文件，分别解析
                 if (BooleanUtil.isTrue(liteflowConfig.isSupportMultipleType())) {
+                    // 添加监听文件路径
+                    addMonitorFilePaths(ListUtil.toList(path));
+                    // 解析文件
                     parser.parseMain(ListUtil.toList(path));
                 }
             } catch (CyclicDependencyException e) {
@@ -149,6 +153,9 @@ public class FlowExecutor {
             //进行多个配置文件的一起解析
             try {
                 if (parser != null) {
+                    // 添加监听文件路径
+                    addMonitorFilePaths(rulePathList);
+                    // 解析文件
                     parser.parseMain(rulePathList);
                 } else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
@@ -181,7 +188,7 @@ public class FlowExecutor {
         }
 
         // 文件监听
-        if (liteflowConfig.getEnableMonitorFile()){
+        if (liteflowConfig.getEnableMonitorFile()) {
             MonitorFile.getInstance().create();
         }
     }
@@ -396,5 +403,16 @@ public class FlowExecutor {
         this.liteflowConfig = liteflowConfig;
         //把liteFlowConfig设到LiteFlowGetter中去
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
+    }
+
+    /**
+     * 添加监听文件路径
+     *
+     * @param pathList 文件路径
+     */
+    private void addMonitorFilePaths(List<String> pathList) throws Exception {
+        // 添加规则文件监听
+        List<String> fileAbsolutePath = PathContentParserHolder.loadContextAware().getFileAbsolutePath(pathList);
+        MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
     }
 }
