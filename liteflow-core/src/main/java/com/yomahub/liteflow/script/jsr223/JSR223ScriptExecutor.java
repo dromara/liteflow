@@ -52,7 +52,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor {
             CompiledScript compiledScript = ((Compilable) scriptEngine).compile(convertScript(script));
             compiledScriptMap.put(nodeId, compiledScript);
         }catch (Exception e){
-            String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e);
+            String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
         }
 
