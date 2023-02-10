@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="d" type="script">
+            <![CDATA[
+                a=3;
+                b=2;
+                order.setOrderType(a*b);
+                id = _meta.get("nodeId");
+                checkContext.setSign(id);
+                order2Context.setOrderNo("order2");
+            ]]>
+        </node>
+
+        <node id="e" type="script">
+            <![CDATA[
+                order = order.getOrderNo();
+                System.out.println(order);
+                sign = checkContext.getSign();
+                System.out.println(sign);
+                orderNo2 = order2Context.getOrderNo();
+                System.out.println(orderNo2);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,e);
+    </chain>
+
+</flow>

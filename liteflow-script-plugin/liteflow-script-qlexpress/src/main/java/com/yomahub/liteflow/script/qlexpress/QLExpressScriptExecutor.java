@@ -8,6 +8,8 @@ import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressLoader;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
+import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.slot.DataBus;
@@ -69,7 +71,13 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
             //比如你的自定义上下文为AbcContext，那么key就为:abcContext
             //这里不统一放一个map的原因是考虑到有些用户会调用上下文里的方法，而不是参数，所以脚本语言的绑定表里也是放多个上下文
             DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(o -> {
-                String key = StrUtil.lowerFirst(o.getClass().getSimpleName());
+                ContextBean contextBean = AnnoUtil.getAnnotation(o.getClass(),ContextBean.class);
+                String key;
+                if(contextBean !=null && contextBean.value().trim().length()>0){
+                    key = contextBean.value();
+                }else{
+                    key = StrUtil.lowerFirst(o.getClass().getSimpleName());
+                }
                 context.put(key, o);
             });
 

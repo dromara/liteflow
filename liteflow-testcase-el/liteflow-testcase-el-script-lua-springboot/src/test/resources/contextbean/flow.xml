@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="d" type="script">
+            <![CDATA[
+                local a=6
+                local b=10
+                if(a>5) then
+                    b=5
+                else
+                    b=2
+                end
+                order:setOrderType(a*b)
+                checkContext:setSign(_meta:get("nodeId"))
+                order2Context:setOrderNo("order2")
+            ]]>
+        </node>
+
+        <node id="e" type="script">
+            <![CDATA[
+                local orderNo = order:getOrderNo()
+                print(orderNo)
+                local sign = checkContext:getSign()
+                print(sign)
+                local orderNo2 = order2Context:getOrderNo()
+                print(orderNo2)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,e);
+    </chain>
+
+</flow>
