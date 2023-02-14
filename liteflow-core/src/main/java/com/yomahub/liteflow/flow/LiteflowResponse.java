@@ -13,9 +13,7 @@ import java.util.Queue;
  * 执行结果封装类
  * @author zend.wang
  */
-public class LiteflowResponse implements Serializable {
-    
-    private static final long serialVersionUID = -2792556188993845048L;
+public class LiteflowResponse{
     
     private boolean success;
 
