@@ -94,6 +94,17 @@ public class LiteflowConfig {
     //替补组件class路径
     private String substituteCmpClass;
 
+    // 规则文件/脚本文件变更监听
+    private Boolean enableMonitorFile = Boolean.FALSE;
+
+    public Boolean getEnableMonitorFile() {
+        return enableMonitorFile;
+    }
+
+    public void setEnableMonitorFile(Boolean enableMonitorFile) {
+        this.enableMonitorFile = enableMonitorFile;
+    }
+
     public Boolean getEnable() {
         if (ObjectUtil.isNull(enable)) {
             return Boolean.TRUE;
