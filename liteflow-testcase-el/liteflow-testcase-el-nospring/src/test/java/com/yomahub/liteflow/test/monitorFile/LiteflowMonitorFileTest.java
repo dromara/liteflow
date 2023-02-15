@@ -27,14 +27,11 @@ public class LiteflowMonitorFileTest extends BaseTest {
     }
 
     @Test
-    public void testMultipleType() throws InterruptedException {
+    public void testMonitor() throws InterruptedException {
         String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
         String content = FileUtil.readUtf8String(absolutePath);
         String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-
-        Thread.sleep(1000);
-
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assert.assertEquals("a==>c==>b", response.getExecuteStepStr());
     }

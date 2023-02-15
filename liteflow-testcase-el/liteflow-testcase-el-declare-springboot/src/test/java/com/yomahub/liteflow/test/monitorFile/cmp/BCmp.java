@@ -19,11 +19,6 @@ public class BCmp{
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		try {
-			Thread.sleep(new Random().nextInt(2000));
-		}catch (Exception e){
-			e.printStackTrace();
-		}
 		System.out.println("BCmp executed!");
 	}
 

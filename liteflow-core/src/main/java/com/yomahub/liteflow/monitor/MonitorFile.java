@@ -52,22 +52,13 @@ public class MonitorFile {
     public void create() {
         for (String filePath : CollUtil.distinct(PATH_LIST)) {
             // 这里只监听两种类型，文件修改和文件覆盖
-            WatchMonitor.createAll(filePath, new DelayWatcher(new SimpleWatcher() {
-
+            WatchMonitor.createAll(filePath, new SimpleWatcher(){
                 @Override
                 public void onModify(WatchEvent<?> event, Path currentPath) {
                     logger.info("file modify,filePath={}", filePath);
                     FlowExecutorHolder.loadInstance().reloadRule();
                 }
-
-                @Override
-                public void onOverflow(WatchEvent<?> event, Path currentPath) {
-                    logger.info("file over flow,filePath={}", filePath);
-                    FlowExecutorHolder.loadInstance().reloadRule();
-                }
-                // 在监听目录或文件时，如果这个文件有修改操作，JDK会多次触发modify方法，为了解决这个问题
-                // 合并 500 毫秒内相同的变化
-            }, 500)).start();
+            }).start();
         }
     }
 
