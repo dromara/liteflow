@@ -92,4 +92,12 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertEquals("a==>j==>d",response.getExecuteStepStr());
     }
 
+    //测试跳转到某个链路上
+    @Test
+    public void testSwitch9() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain9", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("k==>a==>b",response.getExecuteStepStr());
+    }
+
 }

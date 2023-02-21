@@ -56,4 +56,12 @@
         SWITCH(j).to(b, c).DEFAULT(d)
         );
     </chain>
+
+    <chain name="chain9">
+        SWITCH(k).TO(a, chain10);
+    </chain>
+
+    <chain name="chain10">
+        THEN(a, b);
+    </chain>
 </flow>
