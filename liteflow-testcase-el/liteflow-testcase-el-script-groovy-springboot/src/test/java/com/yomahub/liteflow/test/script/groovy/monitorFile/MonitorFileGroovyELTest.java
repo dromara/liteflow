@@ -36,6 +36,7 @@ public class MonitorFileGroovyELTest extends BaseTest {
         String newContent = content.replace("a=3", "a=2");
         FileUtil.writeString(newContent,new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Thread.sleep(1000L);
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(Integer.valueOf(4), context.getData("s1"));
