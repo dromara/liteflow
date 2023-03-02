@@ -28,6 +28,11 @@ public class WhileCondition extends LoopCondition{
             throw new NoWhileNodeException(errorInfo);
         }
 
+        //先去判断isAccess方法，如果isAccess方法都返回false，整个WHILE表达式不执行
+        if (!this.getWhileNode().isAccess(slotIndex)){
+            return;
+        }
+
         //获得要循环的可执行对象
         Executable executableItem = this.getDoExecutor();
 

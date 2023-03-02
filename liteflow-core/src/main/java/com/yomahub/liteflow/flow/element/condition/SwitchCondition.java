@@ -36,6 +36,11 @@ public class SwitchCondition extends Condition{
     @Override
     public void execute(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
+            //先去判断isAccess方法，如果isAccess方法都返回false，整个SWITCH表达式不执行
+            if (!this.getSwitchNode().isAccess(slotIndex)){
+                return;
+            }
+
             //先执行switch节点
             this.getSwitchNode().setCurrChainId(this.getCurrChainId());
             this.getSwitchNode().execute(slotIndex);

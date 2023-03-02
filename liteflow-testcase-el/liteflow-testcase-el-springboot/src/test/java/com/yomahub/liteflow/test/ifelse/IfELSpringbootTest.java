@@ -84,4 +84,12 @@ public class IfELSpringbootTest extends BaseTest {
         Assert.assertEquals("x1==>x1==>x1==>x1==>d==>b==>a", response.getExecuteStepStrWithoutTime());
     }
 
+    //IF节点中isAccess返回false，这个情况相当于IF整个表达式串没执行
+    @Test
+    public void testIf8() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain8", "arg");
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertEquals("c", response.getExecuteStepStrWithoutTime());
+    }
+
 }

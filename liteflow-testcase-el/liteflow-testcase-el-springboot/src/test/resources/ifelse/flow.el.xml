@@ -38,4 +38,8 @@
                               .ELIF(x1.tag("false"), d)
                               .ELSE(THEN(d, b, a));
     </chain>
+
+    <chain name="chain8">
+        THEN(IF(x2, a, b), c);
+    </chain>
 </flow>

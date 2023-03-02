@@ -24,6 +24,11 @@ public class IteratorCondition extends LoopCondition{
             throw new NoIteratorNodeException(errorInfo);
         }
 
+        //先去判断isAccess方法，如果isAccess方法都返回false，整个ITERATOR表达式不执行
+        if (!this.getIteratorNode().isAccess(slotIndex)){
+            return;
+        }
+
         //执行Iterator组件
         iteratorNode.setCurrChainId(this.getCurrChainId());
         iteratorNode.execute(slotIndex);
