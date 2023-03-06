@@ -81,4 +81,12 @@ public class ThenCondition extends Condition {
 			super.addExecutable(executable);
 		}
 	}
+
+	public List<PreCondition> getPreConditionList() {
+		return preConditionList;
+	}
+
+	public List<FinallyCondition> getFinallyConditionList() {
+		return finallyConditionList;
+	}
 }
