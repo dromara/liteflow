@@ -20,9 +20,11 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class IfCondition extends Condition {
 
-    private Executable trueCaseExecutableItem;
+    private final String IF_ITEM = "IF_ITEM";
 
-    private Executable falseCaseExecutableItem;
+    private final String TRUE_CASE_GROUP = "TRUE_CASE";
+
+    private final String FALSE_CASE_GROUP = "FALSE_CASE";
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
@@ -42,6 +44,9 @@ public class IfCondition extends Condition {
             //拿到If执行过的结果
             boolean ifResult = slot.getIfResult(originalClass.getName());
 
+            Executable trueCaseExecutableItem = this.getTrueCaseExecutableItem();
+            Executable falseCaseExecutableItem = this.getFalseCaseExecutableItem();
+
             if (ifResult) {
                 //trueCaseExecutableItem这个不能为空，否则执行什么呢
                 if (ObjectUtil.isNull(trueCaseExecutableItem)) {
@@ -56,7 +61,7 @@ public class IfCondition extends Condition {
                 }
 
                 //执行trueCaseExecutableItem
-                trueCaseExecutableItem.setCurrChainName(this.getCurrChainName());
+                trueCaseExecutableItem.setCurrChainId(this.getCurrChainId());
                 trueCaseExecutableItem.execute(slotIndex);
             } else {
                 //falseCaseExecutableItem可以为null，但是不为null时就执行否的情况
@@ -83,22 +88,26 @@ public class IfCondition extends Condition {
     }
 
     public Executable getTrueCaseExecutableItem() {
-        return trueCaseExecutableItem;
+        return this.getExecutableOne(TRUE_CASE_GROUP);
     }
 
     public void setTrueCaseExecutableItem(Executable trueCaseExecutableItem) {
-        this.trueCaseExecutableItem = trueCaseExecutableItem;
+        this.addExecutable(TRUE_CASE_GROUP, trueCaseExecutableItem);
     }
 
     public Executable getFalseCaseExecutableItem() {
-        return falseCaseExecutableItem;
+        return this.getExecutableOne(FALSE_CASE_GROUP);
     }
 
     public void setFalseCaseExecutableItem(Executable falseCaseExecutableItem) {
-        this.falseCaseExecutableItem = falseCaseExecutableItem;
+        this.addExecutable(FALSE_CASE_GROUP, falseCaseExecutableItem);
+    }
+
+    public void setIfNode(Node ifNode){
+        this.addExecutable(IF_ITEM, ifNode);
     }
 
     public Node getIfNode() {
-        return (Node) this.getExecutableList().get(0);
+        return (Node) this.getExecutableOne(IF_ITEM);
     }
 }

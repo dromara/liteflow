@@ -4,6 +4,8 @@ import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -15,32 +17,31 @@ import java.util.function.Consumer;
  */
 public abstract class LoopCondition extends Condition {
 
-    protected Node breakNode;
+    private final String DO_ITEM = "DO_ITEM";
 
-    public Node getBreakNode() {
-        return breakNode;
+    private final String BREAK_ITEM = "BREAK_ITEM";
+
+    protected Node getBreakNode() {
+        return (Node) this.getExecutableOne(BREAK_ITEM);
     }
 
     public void setBreakNode(Node breakNode) {
-        this.breakNode = breakNode;
+        this.addExecutable(BREAK_ITEM, breakNode);
+    }
+
+    protected Executable getDoExecutor() {
+        return this.getExecutableOne(DO_ITEM);
+    }
+
+    public void setDoExecutor(Executable executable) {
+        this.addExecutable(DO_ITEM, executable);
     }
 
     protected void setLoopIndex(Executable executableItem, int index){
         if (executableItem instanceof Chain){
             ((Chain)executableItem).getConditionList().forEach(condition -> setLoopIndex(condition, index));
-        }else if(executableItem instanceof IfCondition) {
-            ((Condition) executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
-            setLoopIndex(((IfCondition) executableItem).getTrueCaseExecutableItem(), index);
-            setLoopIndex(((IfCondition) executableItem).getFalseCaseExecutableItem(), index);
-        }else if(executableItem instanceof SwitchCondition) {
-            ((Condition) executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
-            ((SwitchCondition) executableItem).getTargetList().forEach(executable -> setLoopIndex(executable, index));
-        }else if(executableItem instanceof ThenCondition) {
-            ((Condition)executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
-            ((ThenCondition) executableItem).getPreConditionList().forEach(executable -> setLoopIndex(executable, index));
-            ((ThenCondition) executableItem).getFinallyConditionList().forEach(executable -> setLoopIndex(executable, index));
         }else if(executableItem instanceof Condition){
-            ((Condition)executableItem).getExecutableList().forEach(executable -> setLoopIndex(executable, index));
+            ((Condition) executableItem).getExecutableGroup().forEach((key, value) -> value.forEach(executable -> setLoopIndex(executable, index)));
         }else if(executableItem instanceof Node){
             ((Node)executableItem).setLoopIndex(index);
         }
@@ -49,25 +50,12 @@ public abstract class LoopCondition extends Condition {
     protected void setCurrLoopObject(Executable executableItem, Object obj){
         if (executableItem instanceof Chain){
             ((Chain)executableItem).getConditionList().forEach(condition -> setCurrLoopObject(condition, obj));
-        }else if(executableItem instanceof IfCondition) {
-            ((Condition) executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
-            setCurrLoopObject(((IfCondition) executableItem).getTrueCaseExecutableItem(), obj);
-            setCurrLoopObject(((IfCondition) executableItem).getFalseCaseExecutableItem(), obj);
-        }else if(executableItem instanceof SwitchCondition) {
-            ((Condition) executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
-            ((SwitchCondition) executableItem).getTargetList().forEach(executable -> setCurrLoopObject(executable, obj));
-        }else if(executableItem instanceof ThenCondition) {
-            ((Condition)executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
-            ((ThenCondition) executableItem).getPreConditionList().forEach(executable -> setCurrLoopObject(executable, obj));
-            ((ThenCondition) executableItem).getFinallyConditionList().forEach(executable -> setCurrLoopObject(executable, obj));
         }else if(executableItem instanceof Condition){
-            ((Condition)executableItem).getExecutableList().forEach(executable -> setCurrLoopObject(executable, obj));
+            ((Condition) executableItem).getExecutableGroup().forEach((key, value) -> value.forEach(executable -> setCurrLoopObject(executable, obj)));
         }else if(executableItem instanceof Node){
             ((Node)executableItem).setCurrLoopObject(obj);
         }
     }
 
-    protected Executable getDoExecutor() {
-        return this.getExecutableList().get(0);
-    }
+
 }

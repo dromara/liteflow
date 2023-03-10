@@ -14,11 +14,13 @@ import java.util.Iterator;
 
 public class IteratorCondition extends LoopCondition{
 
-    private Node iteratorNode;
+    private final String ITERATOR_ITEM = "ITERATOR_ITEM";
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
+        Node iteratorNode = this.getIteratorNode();
+
         if (ObjectUtil.isNull(iteratorNode)){
             String errorInfo = StrUtil.format("[{}]:no iterator-node found", slot.getRequestId());
             throw new NoIteratorNodeException(errorInfo);
@@ -34,12 +36,15 @@ public class IteratorCondition extends LoopCondition{
         iteratorNode.execute(slotIndex);
 
         //这里可能会有spring代理过的bean，所以拿到user原始的class
-        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(this.iteratorNode.getInstance().getClass());
+        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(iteratorNode.getInstance().getClass());
         //获得迭代器
         Iterator<?> it = slot.getIteratorResult(originalForCountClass.getName());
 
         //获得要循环的可执行对象
         Executable executableItem = this.getDoExecutor();
+
+        //获取Break节点
+        Node breakNode = this.getBreakNode();
 
         int index = 0;
         while(it.hasNext()){
@@ -58,7 +63,7 @@ public class IteratorCondition extends LoopCondition{
                 setLoopIndex(breakNode, index);
                 setCurrLoopObject(breakNode, itObj);
                 breakNode.execute(slotIndex);
-                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
+                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
                 if (isBreak){
                     break;
@@ -74,10 +79,10 @@ public class IteratorCondition extends LoopCondition{
     }
 
     public Node getIteratorNode() {
-        return iteratorNode;
+        return (Node) this.getExecutableOne(ITERATOR_ITEM);
     }
 
     public void setIteratorNode(Node iteratorNode) {
-        this.iteratorNode = iteratorNode;
+        this.addExecutable(ITERATOR_ITEM, iteratorNode);
     }
 }

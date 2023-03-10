@@ -12,9 +12,8 @@ import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 串行器
@@ -22,15 +21,9 @@ import java.util.List;
  */
 public class ThenCondition extends Condition {
 
-	/**
-	 * 前置处理Condition
-	 */
-	private final List<PreCondition> preConditionList = new ArrayList<>();
+	private final String PRE_ITEM = "PRE_ITEM";
 
-	/**
-	 * 后置处理Condition
-	 */
-	private final List<FinallyCondition> finallyConditionList = new ArrayList<>();
+	private final String FINALLY_ITEM = "FINALLY_ITEM";
 
 	@Override
 	public ConditionTypeEnum getConditionType() {
@@ -39,6 +32,9 @@ public class ThenCondition extends Condition {
 
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
+		List<PreCondition> preConditionList = this.getPreConditionList();
+		List<FinallyCondition> finallyConditionList = this.getFinallyConditionList();
+
 		try{
 			for (PreCondition preCondition : preConditionList){
 				preCondition.setCurrChainId(this.getCurrChainId());
@@ -74,19 +70,27 @@ public class ThenCondition extends Condition {
 	@Override
 	public void addExecutable(Executable executable) {
 		if (executable instanceof PreCondition){
-			preConditionList.add((PreCondition) executable);
+			this.addPreCondition((PreCondition) executable);
 		}else if (executable instanceof FinallyCondition){
-			finallyConditionList.add((FinallyCondition) executable);
+			this.addFinallyCondition((FinallyCondition) executable);
 		}else{
 			super.addExecutable(executable);
 		}
 	}
 
 	public List<PreCondition> getPreConditionList() {
-		return preConditionList;
+		return this.getExecutableList(PRE_ITEM).stream().map(executable -> (PreCondition) executable).collect(Collectors.toList());
+	}
+
+	public void addPreCondition(PreCondition preCondition){
+		this.addExecutable(PRE_ITEM, preCondition);
 	}
 
 	public List<FinallyCondition> getFinallyConditionList() {
-		return finallyConditionList;
+		return this.getExecutableList(FINALLY_ITEM).stream().map(executable -> (FinallyCondition) executable).collect(Collectors.toList());
+	}
+
+	public void addFinallyCondition(FinallyCondition finallyCondition){
+		this.addExecutable(FINALLY_ITEM, finallyCondition);
 	}
 }

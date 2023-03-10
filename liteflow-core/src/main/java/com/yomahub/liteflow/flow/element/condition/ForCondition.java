@@ -18,11 +18,12 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class ForCondition extends LoopCondition{
 
-    private Node forNode;
+    private final String FOR_ITEM = "FOR_ITEM";
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
+        Node forNode = this.getForNode();
         if (ObjectUtil.isNull(forNode)){
             String errorInfo = StrUtil.format("[{}]:no for-node found", slot.getRequestId());
             throw new NoForNodeException(errorInfo);
@@ -38,12 +39,15 @@ public class ForCondition extends LoopCondition{
         forNode.execute(slotIndex);
 
         //这里可能会有spring代理过的bean，所以拿到user原始的class
-        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(this.forNode.getInstance().getClass());
+        Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(forNode.getInstance().getClass());
         //获得循环次数
         int forCount = slot.getForResult(originalForCountClass.getName());
 
         //获得要循环的可执行对象
         Executable executableItem = this.getDoExecutor();
+
+        //获取Break节点
+        Node breakNode = this.getBreakNode();
 
         //循环执行
         for (int i = 0; i < forCount; i++) {
@@ -56,7 +60,7 @@ public class ForCondition extends LoopCondition{
                 breakNode.setCurrChainId(this.getCurrChainId());
                 setLoopIndex(breakNode, i);
                 breakNode.execute(slotIndex);
-                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
+                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
                 if (isBreak){
                     break;
@@ -71,10 +75,10 @@ public class ForCondition extends LoopCondition{
     }
 
     public Node getForNode() {
-        return forNode;
+        return (Node) this.getExecutableOne(FOR_ITEM);
     }
 
     public void setForNode(Node forNode) {
-        this.forNode = forNode;
+        this.addExecutable(FOR_ITEM, forNode);
     }
 }

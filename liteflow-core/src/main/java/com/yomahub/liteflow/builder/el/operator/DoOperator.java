@@ -26,7 +26,7 @@ public class DoOperator extends BaseOperator<LoopCondition> {
 
         //获得需要执行的可执行表达式
         Executable doExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
-        condition.setExecutableList(ListUtil.toList(doExecutableItem));
+        condition.setDoExecutor(doExecutableItem);
 
         return condition;
     }
