@@ -100,4 +100,11 @@ public class SwitchELSpringbootTest extends BaseTest {
         Assert.assertEquals("k==>a==>b",response.getExecuteStepStr());
     }
 
+    //相同组件复用的用例
+    @Test
+    public void testSwitch10() throws Exception{
+        LiteflowResponse response = flowExecutor.execute2Resp("chain11", "arg");
+        Assert.assertTrue(response.isSuccess());
+    }
+
 }

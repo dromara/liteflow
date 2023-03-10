@@ -64,4 +64,11 @@
     <chain name="chain10">
         THEN(a, b);
     </chain>
+
+    <chain name="chain11">
+        THEN(
+            SWITCH(l.tag("node_2")).TO(a.tag("node_1"), a.tag("node_2")),
+            SWITCH(l.tag("node_3")).TO(a.tag("node_3"), a.tag("node_4"))
+        );
+    </chain>
 </flow>
