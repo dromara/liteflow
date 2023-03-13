@@ -32,9 +32,6 @@ public abstract class Condition implements Executable{
 	 */
 	private final Map<String, List<Executable>> executableGroup = new HashMap<>();
 
-	private final String DEFAULT_GROUP = "DEFAULT";
-
-
 	/**
 	 * 当前所在的ChainName
 	 * 如果对于子流程来说，那这个就是子流程所在的Chain
@@ -52,7 +49,7 @@ public abstract class Condition implements Executable{
 	}
 
 	public List<Executable> getExecutableList() {
-		return getExecutableList(DEFAULT_GROUP);
+		return getExecutableList(ConditionKey.DEFAULT_KEY);
 	}
 
 	public List<Executable> getExecutableList(String groupKey) {
@@ -73,11 +70,11 @@ public abstract class Condition implements Executable{
 	}
 
 	public void setExecutableList(List<Executable> executableList) {
-		this.executableGroup.put(DEFAULT_GROUP, executableList);
+		this.executableGroup.put(ConditionKey.DEFAULT_KEY, executableList);
 	}
 
 	public void addExecutable(Executable executable) {
-		addExecutable(DEFAULT_GROUP, executable);
+		addExecutable(ConditionKey.DEFAULT_KEY, executable);
 	}
 
 	public void addExecutable(String groupKey, Executable executable) {
