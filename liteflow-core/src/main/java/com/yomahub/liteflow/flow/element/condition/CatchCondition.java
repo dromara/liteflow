@@ -28,15 +28,13 @@ public class CatchCondition extends Condition{
             catchExecutable.execute(slotIndex);
         }catch (Exception e){
             Executable doExecutable = this.getDoItem();
-            if (ObjectUtil.isNull(doExecutable)){
-                String errorInfo = StrUtil.format("[{}]:no catch do item find", slot.getRequestId());
-                throw new CatchErrorException(errorInfo);
+            if (ObjectUtil.isNotNull(doExecutable)){
+                doExecutable.setCurrChainId(this.getCurrChainId());
+                doExecutable.execute(slotIndex);
+                //catch之后需要把exception给清除掉
+                //正如同java的catch一样，异常自己处理了，属于正常流程了，整个流程状态应该是成功的
+                DataBus.getSlot(slotIndex).removeException();
             }
-            doExecutable.setCurrChainId(this.getCurrChainId());
-            doExecutable.execute(slotIndex);
-            //catch之后需要把exception给清除掉
-            //正如同java的catch一样，异常自己处理了，属于正常流程了，整个流程状态应该是成功的
-            DataBus.getSlot(slotIndex).removeException();
         }
     }
 

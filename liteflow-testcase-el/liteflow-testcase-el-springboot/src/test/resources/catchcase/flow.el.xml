@@ -12,4 +12,18 @@
             THEN(a,b)
         ).DO(d)
     </chain>
+
+    <chain name="chain3">
+        CATCH(
+            THEN(a,b)
+        );
+    </chain>
+
+    <chain name="chain4">
+        FOR(3).DO(
+            CATCH(
+                THEN(a,e,FINALLY(b))
+            )
+        );
+    </chain>
 </flow>
