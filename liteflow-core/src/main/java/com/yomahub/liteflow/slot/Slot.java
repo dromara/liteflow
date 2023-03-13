@@ -339,6 +339,10 @@ public class Slot{
 		putMetaDataMap(EXCEPTION, e);
 	}
 
+	public void removeException(){
+		metaDataMap.remove(EXCEPTION);
+	}
+
 	public Exception getSubException(String chainId) {
 		return (Exception) this.metaDataMap.get(SUB_EXCEPTION_PREFIX + chainId);
 	}

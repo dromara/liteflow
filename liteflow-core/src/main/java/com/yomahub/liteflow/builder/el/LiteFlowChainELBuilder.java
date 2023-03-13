@@ -59,6 +59,12 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunction(ChainConstant.PRE, new PreOperator());
         EXPRESS_RUNNER.addFunction(ChainConstant.FINALLY, new FinallyOperator());
         EXPRESS_RUNNER.addFunction(ChainConstant.IF, new IfOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.NODE.toUpperCase(), new NodeOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.NODE, new NodeOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.FOR, new ForOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.ITERATOR, new IteratorOperator());
+        EXPRESS_RUNNER.addFunction(ChainConstant.CATCH, new CatchOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELSE, Object.class, new ElseOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELIF, Object.class, new ElifOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO, Object.class, new ToOperator());
@@ -69,11 +75,6 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ID, Object.class, new IdOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.IGNORE_ERROR, Object.class, new IgnoreErrorOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.THREAD_POOL, Object.class, new ThreadPoolOperator());
-        EXPRESS_RUNNER.addFunction(ChainConstant.NODE.toUpperCase(), new NodeOperator());
-        EXPRESS_RUNNER.addFunction(ChainConstant.NODE, new NodeOperator());
-        EXPRESS_RUNNER.addFunction(ChainConstant.FOR, new ForOperator());
-        EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
-        EXPRESS_RUNNER.addFunction(ChainConstant.ITERATOR, new IteratorOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DO, Object.class, new DoOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BREAK, Object.class, new BreakOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DATA, Object.class, new DataOperator());

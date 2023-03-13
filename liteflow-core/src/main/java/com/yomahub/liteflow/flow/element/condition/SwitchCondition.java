@@ -27,7 +27,7 @@ public class SwitchCondition extends Condition{
     private final String TAG_FLAG = ":";
 
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
             //获取switch node
             Node switchNode = this.getSwitchNode();

@@ -19,7 +19,7 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 public class ForCondition extends LoopCondition{
 
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
         Node forNode = this.getForNode();
         if (ObjectUtil.isNull(forNode)){

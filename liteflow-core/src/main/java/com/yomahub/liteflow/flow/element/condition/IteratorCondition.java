@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class IteratorCondition extends LoopCondition{
 
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
         Node iteratorNode = this.getIteratorNode();
 

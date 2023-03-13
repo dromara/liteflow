@@ -27,7 +27,7 @@ public class ThenCondition extends Condition {
 	}
 
 	@Override
-	public void execute(Integer slotIndex) throws Exception {
+	public void executeCondition(Integer slotIndex) throws Exception {
 		List<PreCondition> preConditionList = this.getPreConditionList();
 		List<FinallyCondition> finallyConditionList = this.getFinallyConditionList();
 
