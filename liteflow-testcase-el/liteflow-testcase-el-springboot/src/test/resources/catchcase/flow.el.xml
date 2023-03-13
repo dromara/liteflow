@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="chain1">
+        CATCH(
+            THEN(a,b)
+        ).DO(c)
+    </chain>
+
+    <chain name="chain2">
+        CATCH(
+            THEN(a,b)
+        ).DO(d)
+    </chain>
+</flow>
