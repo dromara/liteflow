@@ -18,8 +18,6 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class WhileCondition extends LoopCondition{
 
-    private final String WHILE_ITEM = "WHILE_ITEM";
-
     @Override
     public void execute(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
@@ -77,10 +75,10 @@ public class WhileCondition extends LoopCondition{
     }
 
     public Node getWhileNode() {
-        return (Node) this.getExecutableOne(WHILE_ITEM);
+        return (Node) this.getExecutableOne(ConditionKey.WHILE_KEY);
     }
 
     public void setWhileNode(Node whileNode) {
-        this.addExecutable(WHILE_ITEM, whileNode);
+        this.addExecutable(ConditionKey.WHILE_KEY, whileNode);
     }
 }

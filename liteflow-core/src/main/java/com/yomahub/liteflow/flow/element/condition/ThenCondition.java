@@ -21,10 +21,6 @@ import java.util.stream.Collectors;
  */
 public class ThenCondition extends Condition {
 
-	private final String PRE_ITEM = "PRE_ITEM";
-
-	private final String FINALLY_ITEM = "FINALLY_ITEM";
-
 	@Override
 	public ConditionTypeEnum getConditionType() {
 		return ConditionTypeEnum.TYPE_THEN;
@@ -79,18 +75,18 @@ public class ThenCondition extends Condition {
 	}
 
 	public List<PreCondition> getPreConditionList() {
-		return this.getExecutableList(PRE_ITEM).stream().map(executable -> (PreCondition) executable).collect(Collectors.toList());
+		return this.getExecutableList(ConditionKey.PRE_KEY).stream().map(executable -> (PreCondition) executable).collect(Collectors.toList());
 	}
 
 	public void addPreCondition(PreCondition preCondition){
-		this.addExecutable(PRE_ITEM, preCondition);
+		this.addExecutable(ConditionKey.PRE_KEY, preCondition);
 	}
 
 	public List<FinallyCondition> getFinallyConditionList() {
-		return this.getExecutableList(FINALLY_ITEM).stream().map(executable -> (FinallyCondition) executable).collect(Collectors.toList());
+		return this.getExecutableList(ConditionKey.FINALLY_KEY).stream().map(executable -> (FinallyCondition) executable).collect(Collectors.toList());
 	}
 
 	public void addFinallyCondition(FinallyCondition finallyCondition){
-		this.addExecutable(FINALLY_ITEM, finallyCondition);
+		this.addExecutable(ConditionKey.FINALLY_KEY, finallyCondition);
 	}
 }

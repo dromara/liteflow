@@ -23,14 +23,6 @@ import java.util.List;
  * @since 2.8.0
  */
 public class SwitchCondition extends Condition{
-
-
-    private final String TARGET_ITEM = "TARGET_ITEM";
-
-    private final String DEFAULT_ITEM = "DEFAULT_ITEM";
-
-    private final String SWITCH_ITEM = "SWITCH_ITEM";
-
     private final String TAG_PREFIX = "tag";
     private final String TAG_FLAG = ":";
 
@@ -109,26 +101,26 @@ public class SwitchCondition extends Condition{
     }
 
     public void addTargetItem(Executable executable){
-        this.addExecutable(TARGET_ITEM, executable);
+        this.addExecutable(ConditionKey.SWITCH_TARGET_KEY, executable);
     }
 
     public List<Executable> getTargetList(){
-        return this.getExecutableList(TARGET_ITEM);
+        return this.getExecutableList(ConditionKey.SWITCH_TARGET_KEY);
     }
 
     public void setSwitchNode(Node switchNode) {
-        this.addExecutable(SWITCH_ITEM, switchNode);
+        this.addExecutable(ConditionKey.SWITCH_KEY, switchNode);
     }
 
     public Node getSwitchNode(){
-        return (Node) this.getExecutableOne(SWITCH_ITEM);
+        return (Node) this.getExecutableOne(ConditionKey.SWITCH_KEY);
     }
 
     public Executable getDefaultExecutor() {
-        return this.getExecutableOne(DEFAULT_ITEM);
+        return this.getExecutableOne(ConditionKey.SWITCH_DEFAULT_KEY);
     }
 
     public void setDefaultExecutor(Executable defaultExecutor) {
-        this.addExecutable(DEFAULT_ITEM, defaultExecutor);
+        this.addExecutable(ConditionKey.SWITCH_DEFAULT_KEY, defaultExecutor);
     }
 }

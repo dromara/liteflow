@@ -14,8 +14,6 @@ import java.util.Iterator;
 
 public class IteratorCondition extends LoopCondition{
 
-    private final String ITERATOR_ITEM = "ITERATOR_ITEM";
-
     @Override
     public void execute(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
@@ -79,10 +77,10 @@ public class IteratorCondition extends LoopCondition{
     }
 
     public Node getIteratorNode() {
-        return (Node) this.getExecutableOne(ITERATOR_ITEM);
+        return (Node) this.getExecutableOne(ConditionKey.ITERATOR_KEY);
     }
 
     public void setIteratorNode(Node iteratorNode) {
-        this.addExecutable(ITERATOR_ITEM, iteratorNode);
+        this.addExecutable(ConditionKey.ITERATOR_KEY, iteratorNode);
     }
 }

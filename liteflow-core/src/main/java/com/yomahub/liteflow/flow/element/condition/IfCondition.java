@@ -20,12 +20,6 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class IfCondition extends Condition {
 
-    private final String IF_ITEM = "IF_ITEM";
-
-    private final String TRUE_CASE_GROUP = "TRUE_CASE";
-
-    private final String FALSE_CASE_GROUP = "FALSE_CASE";
-
     @Override
     public void execute(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(getIfNode().getType())){
@@ -88,26 +82,26 @@ public class IfCondition extends Condition {
     }
 
     public Executable getTrueCaseExecutableItem() {
-        return this.getExecutableOne(TRUE_CASE_GROUP);
+        return this.getExecutableOne(ConditionKey.IF_TRUE_CASE_KEY);
     }
 
     public void setTrueCaseExecutableItem(Executable trueCaseExecutableItem) {
-        this.addExecutable(TRUE_CASE_GROUP, trueCaseExecutableItem);
+        this.addExecutable(ConditionKey.IF_TRUE_CASE_KEY, trueCaseExecutableItem);
     }
 
     public Executable getFalseCaseExecutableItem() {
-        return this.getExecutableOne(FALSE_CASE_GROUP);
+        return this.getExecutableOne(ConditionKey.IF_FALSE_CASE_KEY);
     }
 
     public void setFalseCaseExecutableItem(Executable falseCaseExecutableItem) {
-        this.addExecutable(FALSE_CASE_GROUP, falseCaseExecutableItem);
+        this.addExecutable(ConditionKey.IF_FALSE_CASE_KEY, falseCaseExecutableItem);
     }
 
     public void setIfNode(Node ifNode){
-        this.addExecutable(IF_ITEM, ifNode);
+        this.addExecutable(ConditionKey.IF_KEY, ifNode);
     }
 
     public Node getIfNode() {
-        return (Node) this.getExecutableOne(IF_ITEM);
+        return (Node) this.getExecutableOne(ConditionKey.IF_KEY);
     }
 }

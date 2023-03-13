@@ -17,24 +17,20 @@ import java.util.function.Consumer;
  */
 public abstract class LoopCondition extends Condition {
 
-    private final String DO_ITEM = "DO_ITEM";
-
-    private final String BREAK_ITEM = "BREAK_ITEM";
-
     protected Node getBreakNode() {
-        return (Node) this.getExecutableOne(BREAK_ITEM);
+        return (Node) this.getExecutableOne(ConditionKey.BREAK_KEY);
     }
 
     public void setBreakNode(Node breakNode) {
-        this.addExecutable(BREAK_ITEM, breakNode);
+        this.addExecutable(ConditionKey.BREAK_KEY, breakNode);
     }
 
     protected Executable getDoExecutor() {
-        return this.getExecutableOne(DO_ITEM);
+        return this.getExecutableOne(ConditionKey.DO_KEY);
     }
 
     public void setDoExecutor(Executable executable) {
-        this.addExecutable(DO_ITEM, executable);
+        this.addExecutable(ConditionKey.DO_KEY, executable);
     }
 
     protected void setLoopIndex(Executable executableItem, int index){
