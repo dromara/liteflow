@@ -31,10 +31,10 @@ public class CatchCondition extends Condition{
             if (ObjectUtil.isNotNull(doExecutable)){
                 doExecutable.setCurrChainId(this.getCurrChainId());
                 doExecutable.execute(slotIndex);
-                //catch之后需要把exception给清除掉
-                //正如同java的catch一样，异常自己处理了，属于正常流程了，整个流程状态应该是成功的
-                DataBus.getSlot(slotIndex).removeException();
             }
+            //catch之后需要把exception给清除掉
+            //正如同java的catch一样，异常自己处理了，属于正常流程了，整个流程状态应该是成功的
+            DataBus.getSlot(slotIndex).removeException();
         }
     }
 
