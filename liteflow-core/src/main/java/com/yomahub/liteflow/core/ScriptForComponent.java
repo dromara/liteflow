@@ -19,11 +19,11 @@ public class ScriptForComponent extends NodeForComponent implements ScriptCompon
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Map.class));
-        return (int) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
+        return (int) ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
     }
 
     @Override
-    public void loadScript(String script) {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
+    public void loadScript(String script, String language) {
+        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
     }
 }

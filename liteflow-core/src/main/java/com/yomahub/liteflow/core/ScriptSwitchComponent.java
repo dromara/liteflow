@@ -20,11 +20,11 @@ public class ScriptSwitchComponent extends NodeSwitchComponent implements Script
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Map.class));
-        return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
+        return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
     }
 
     @Override
-    public void loadScript(String script) {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
+    public void loadScript(String script, String language) {
+        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
     }
 }

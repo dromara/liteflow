@@ -19,11 +19,11 @@ public class ScriptBreakComponent extends NodeBreakComponent implements ScriptCo
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Map.class));
-        return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
+        return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
     }
 
     @Override
-    public void loadScript(String script) {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
+    public void loadScript(String script, String language) {
+        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
     }
 }

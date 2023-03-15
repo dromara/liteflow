@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.script.groovy;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
 
 /**
@@ -10,7 +11,7 @@ import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
 public class GroovyScriptExecutor extends JSR223ScriptExecutor {
 
     @Override
-    protected String scriptEngineName() {
-        return "groovy";
+    public ScriptTypeEnum scriptType() {
+        return ScriptTypeEnum.GROOVY;
     }
 }

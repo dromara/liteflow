@@ -46,6 +46,8 @@ public class Node implements Executable,Cloneable{
 
 	private String script;
 
+	private String language;
+
 	private NodeComponent instance;
 
 	private String tag;
@@ -254,5 +256,13 @@ public class Node implements Executable,Cloneable{
 
 	public void removeCurrLoopObject(){
 		this.currLoopObject.remove();
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 }

@@ -146,12 +146,17 @@ public class LiteFlowNodeBuilder {
         return this;
     }
 
+    public LiteFlowNodeBuilder setLanguage(String language) {
+        this.node.setLanguage(language);
+        return this;
+    }
+
     public void build() {
         checkBuild();
         try {
             // 用于处理脚本 node
            if (this.node.getType().isScript()){
-               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript());
+               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript(), this.node.getLanguage());
            }
            // 用于处理普通 node
            else{

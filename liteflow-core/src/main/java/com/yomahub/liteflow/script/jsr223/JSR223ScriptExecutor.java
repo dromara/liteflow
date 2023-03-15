@@ -36,11 +36,9 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor {
     @Override
     public ScriptExecutor init() {
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        scriptEngine = scriptEngineManager.getEngineByName(scriptEngineName());
+        scriptEngine = scriptEngineManager.getEngineByName(this.scriptType().getEngineName());
         return this;
     }
-
-    protected abstract String scriptEngineName();
 
     protected String convertScript(String script){
         return script;

@@ -44,6 +44,7 @@ public class ParserHelper {
 		String script = nodePropBean.getScript();
 		String type = nodePropBean.getType();
 		String file = nodePropBean.getFile();
+		String language = nodePropBean.getLanguage();
 
 		//clazz有值的，基本都不是脚本节点
 		//脚本节点，都必须配置type
@@ -80,6 +81,7 @@ public class ParserHelper {
 				.setType(nodeTypeEnum)
 				.setScript(script)
 				.setFile(file)
+				.setLanguage(language)
 				.build();
 	}
 
@@ -98,7 +100,7 @@ public class ParserHelper {
 			// 当存在<nodes>节点定义时，解析node节点
 			if (ObjectUtil.isNotNull(nodesElement)) {
 				List<Element> nodeList = nodesElement.elements(NODE);
-				String id, name, clazz, type, script, file;
+				String id, name, clazz, type, script, file, language;
 				for (Element e : nodeList) {
 					id = e.attributeValue(ID);
 					name = e.attributeValue(NAME);
@@ -106,6 +108,7 @@ public class ParserHelper {
 					type = e.attributeValue(TYPE);
 					script = e.getText();
 					file = e.attributeValue(FILE);
+					language = e.attributeValue(LANGUAGE);
 
 					// 构建 node
 					NodePropBean nodePropBean = new NodePropBean()
@@ -114,7 +117,8 @@ public class ParserHelper {
 							.setClazz(clazz)
 							.setScript(script)
 							.setType(type)
-							.setFile(file);
+							.setFile(file)
+							.setLanguage(language);
 
 					ParserHelper.buildNode(nodePropBean);
 				}

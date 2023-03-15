@@ -28,5 +28,5 @@ public interface ScriptComponent {
      * 加载脚本
      * @param script
      */
-    void loadScript(String script);
+    void loadScript(String script, String language);
 }

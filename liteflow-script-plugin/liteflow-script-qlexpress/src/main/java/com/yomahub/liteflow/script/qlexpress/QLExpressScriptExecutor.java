@@ -10,6 +10,7 @@ import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.context.ContextBean;
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.slot.DataBus;
@@ -115,5 +116,10 @@ public class QLExpressScriptExecutor implements ScriptExecutor {
         compiledScriptMap.clear();
         expressRunner.clearExpressCache();
         ReflectUtil.setFieldValue(expressRunner,"loader",new ExpressLoader(expressRunner));
+    }
+
+    @Override
+    public ScriptTypeEnum scriptType() {
+        return ScriptTypeEnum.QLEXPRESS;
     }
 }

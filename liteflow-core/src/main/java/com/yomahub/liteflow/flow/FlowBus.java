@@ -106,7 +106,7 @@ public class FlowBus {
      * @param cmpClazz 节点组件类
      */
     public static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz) {
-        addNode(nodeId, name, type, cmpClazz, null);
+        addNode(nodeId, name, type, cmpClazz, null, null);
     }
 
     /**
@@ -124,7 +124,7 @@ public class FlowBus {
         } catch (Exception e) {
             throw new ComponentCannotRegisterException(e.getMessage());
         }
-        addNode(nodeId, name, nodeType, cmpClazz, null);
+        addNode(nodeId, name, nodeType, cmpClazz, null, null);
     }
 
     /**
@@ -135,11 +135,11 @@ public class FlowBus {
      * @param nodeType 节点类型
      * @param script   脚本
      */
-    public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script) {
-        addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script);
+    public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script, String language) {
+        addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
     }
 
-    private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script) {
+    private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script, String language) {
         try {
             //判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             //如果不是声明式的，就用传统的方式进行判断
@@ -193,7 +193,8 @@ public class FlowBus {
                 if (type.isScript()) {
                     if (StrUtil.isNotBlank(script)) {
                         node.setScript(script);
-                        ((ScriptComponent) cmpInstance).loadScript(script);
+                        node.setLanguage(language);
+                        ((ScriptComponent) cmpInstance).loadScript(script, language);
                     } else {
                         String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
                         throw new ScriptLoadException(errorMsg);
@@ -244,10 +245,7 @@ public class FlowBus {
     public static void cleanScriptCache() {
         //如果引入了脚本组件SPI，则还需要清理脚本的缓存
         try {
-            ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor();
-            if (ObjectUtil.isNotNull(scriptExecutor)) {
-                scriptExecutor.cleanCache();
-            }
+            ScriptExecutorFactory.loadInstance().cleanScriptCache();
         } catch (ScriptSpiException ignored) {
         }
     }

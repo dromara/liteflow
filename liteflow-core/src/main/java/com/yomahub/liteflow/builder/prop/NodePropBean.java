@@ -35,6 +35,11 @@ public class NodePropBean {
 	 */
 	String file;
 
+	/**
+	 * 脚本语言
+	 */
+	String language;
+
 	public String getId() {
 		return id;
 	}
@@ -86,6 +91,15 @@ public class NodePropBean {
 
 	public NodePropBean setFile(String file) {
 		this.file = file;
+		return this;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public NodePropBean setLanguage(String language) {
+		this.language = language;
 		return this;
 	}
 }

@@ -51,7 +51,6 @@ public class MonitorFile {
      */
     public void create() {
         for (String filePath : CollUtil.distinct(PATH_LIST)) {
-            // 这里只监听两种类型，文件修改和文件覆盖
             WatchMonitor.createAll(filePath, new SimpleWatcher(){
                 @Override
                 public void onModify(WatchEvent<?> event, Path currentPath) {

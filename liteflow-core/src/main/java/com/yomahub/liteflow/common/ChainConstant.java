@@ -23,6 +23,8 @@ public interface ChainConstant {
 
     String NAME = "name";
 
+    String LANGUAGE = "language";
+
     String VALUE = "value";
 
     String ANY = "any";

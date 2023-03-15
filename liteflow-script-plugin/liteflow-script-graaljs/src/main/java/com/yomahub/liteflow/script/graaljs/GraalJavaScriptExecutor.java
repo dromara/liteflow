@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.context.ContextBean;
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptBeanManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -110,5 +111,10 @@ public class GraalJavaScriptExecutor implements ScriptExecutor {
     @Override
     public void cleanCache() {
         scriptMap.clear();
+    }
+
+    @Override
+    public ScriptTypeEnum scriptType() {
+        return ScriptTypeEnum.JS;
     }
 }

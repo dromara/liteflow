@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.script.javascript;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
 /**
  * JavaScript脚本语言的执行器实现
@@ -10,12 +11,12 @@ import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
 public class JavaScriptExecutor extends JSR223ScriptExecutor {
 
     @Override
-    protected String scriptEngineName() {
-        return "javascript";
+    protected String convertScript(String script) {
+        return StrUtil.format("function process(){{}} process();",script);
     }
 
     @Override
-    protected String convertScript(String script) {
-        return StrUtil.format("function process(){{}} process();",script);
+    public ScriptTypeEnum scriptType() {
+        return ScriptTypeEnum.JS;
     }
 }
