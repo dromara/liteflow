@@ -126,8 +126,6 @@ public class FlowExecutor {
 
                 //支持多类型的配置文件，分别解析
                 if (BooleanUtil.isTrue(liteflowConfig.isSupportMultipleType())) {
-                    // 添加监听文件路径
-                    addMonitorFilePaths(ListUtil.toList(path));
                     // 解析文件
                     parser.parseMain(ListUtil.toList(path));
                 }
@@ -153,8 +151,6 @@ public class FlowExecutor {
             //进行多个配置文件的一起解析
             try {
                 if (parser != null) {
-                    // 添加监听文件路径
-                    addMonitorFilePaths(rulePathList);
                     // 解析文件
                     parser.parseMain(rulePathList);
                 } else {
@@ -189,7 +185,14 @@ public class FlowExecutor {
 
         // 文件监听
         if (liteflowConfig.getEnableMonitorFile()) {
-            MonitorFile.getInstance().create();
+            try{
+                addMonitorFilePaths(rulePathList);
+                MonitorFile.getInstance().create();
+            }catch (Exception e){
+                String errMsg = StrUtil.format("file monitor init error for path:{}", rulePathList);
+                throw new MonitorFileInitErrorException(errMsg);
+            }
+
         }
     }
 
