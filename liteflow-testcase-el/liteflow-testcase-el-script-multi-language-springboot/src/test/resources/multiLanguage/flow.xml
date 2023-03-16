@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="groovy脚本" type="script" language="groovy">
+            <![CDATA[
+                class Student {
+                    int studentID
+                    String studentName
+                }
+
+                Student student = new Student()
+                student.studentID = 100301
+                student.studentName = "张三"
+                defaultContext.setData("student", student)
+
+                def a = 3
+                def b = 2
+                defaultContext.setData("s1", a * b)
+            ]]>
+        </node>
+
+        <node id="s2" name="js脚本" type="script" language="js">
+            <![CDATA[
+                var student = defaultContext.getData("student");
+                student.studentID = 10032;
+            ]]>
+        </node>
+
+        <node id="s3" name="python脚本" type="script" language="python">
+            <![CDATA[
+                a = 3
+                s1 = defaultContext.getData("s1")
+                defaultContext.setData("s1",s1*a)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, s1, b, s2, c, s3);
+    </chain>
+
+</flow>

@@ -54,6 +54,12 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
                 ).contains(response.getExecuteStepStr()));
     }
 
+    @Test
+    public void testAsyncFlow3() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a base request");
+        Assert.assertTrue(response.isSuccess());
+    }
+
     //测试errorResume,默认的errorResume为false，这里测试默认的
     @Test
     public void testAsyncFlow3_1() {

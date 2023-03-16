@@ -100,4 +100,8 @@ public class MonitorBus {
 	public void closeScheduler(){
 		this.printLogScheduler.shutdown();
 	}
+
+	public ConcurrentHashMap<String, BoundedPriorityBlockingQueue<CompStatistics>> getStatisticsMap() {
+		return statisticsMap;
+	}
 }

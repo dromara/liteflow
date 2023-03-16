@@ -38,5 +38,6 @@ public class ScriptPythonCommonELTest extends BaseTest {
         DefaultContext context = response.getFirstContextBean();
         Assert.assertTrue(response.isSuccess());
         Assert.assertEquals(Integer.valueOf(30), context.getData("s1"));
+        Assert.assertEquals("杰克", context.getData("name"));
     }
 }

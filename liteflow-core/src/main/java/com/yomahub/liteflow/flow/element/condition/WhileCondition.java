@@ -18,18 +18,25 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class WhileCondition extends LoopCondition{
 
-    private Node whileNode;
-
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         Slot slot = DataBus.getSlot(slotIndex);
+        Node whileNode = this.getWhileNode();
         if (ObjectUtil.isNull(whileNode)){
             String errorInfo = StrUtil.format("[{}]:no while-node found", slot.getRequestId());
             throw new NoWhileNodeException(errorInfo);
         }
 
+        //先去判断isAccess方法，如果isAccess方法都返回false，整个WHILE表达式不执行
+        if (!this.getWhileNode().isAccess(slotIndex)){
+            return;
+        }
+
         //获得要循环的可执行对象
         Executable executableItem = this.getDoExecutor();
+
+        //获取Break节点
+        Node breakNode = this.getBreakNode();
 
         //循环执行
         int index = 0;
@@ -42,7 +49,7 @@ public class WhileCondition extends LoopCondition{
                 breakNode.setCurrChainId(this.getCurrChainId());
                 setLoopIndex(breakNode, index);
                 breakNode.execute(slotIndex);
-                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(this.breakNode.getInstance().getClass());
+                Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
                 boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
                 if (isBreak){
                     break;
@@ -54,10 +61,11 @@ public class WhileCondition extends LoopCondition{
 
     private boolean getWhileResult(Integer slotIndex) throws Exception{
         Slot slot = DataBus.getSlot(slotIndex);
+        Node whileNode = this.getWhileNode();
         //执行while组件
         whileNode.setCurrChainId(this.getCurrChainId());
         whileNode.execute(slotIndex);
-        Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(this.whileNode.getInstance().getClass());
+        Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(whileNode.getInstance().getClass());
         return slot.getWhileResult(originalWhileClass.getName());
     }
 
@@ -67,10 +75,10 @@ public class WhileCondition extends LoopCondition{
     }
 
     public Node getWhileNode() {
-        return whileNode;
+        return (Node) this.getExecutableOne(ConditionKey.WHILE_KEY);
     }
 
     public void setWhileNode(Node whileNode) {
-        this.whileNode = whileNode;
+        this.addExecutable(ConditionKey.WHILE_KEY, whileNode);
     }
 }

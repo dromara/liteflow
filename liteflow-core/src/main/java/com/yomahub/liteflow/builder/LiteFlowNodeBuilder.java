@@ -7,6 +7,7 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NodeBuildException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.monitor.MonitorFile;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,10 +135,19 @@ public class LiteFlowNodeBuilder {
             List<String> scriptList = PathContentParserHolder.loadContextAware().parseContent(ListUtil.toList(filePath));
             String script = CollUtil.getFirst(scriptList);
             setScript(script);
+
+            // 添加脚本文件监听
+            List<String> fileAbsolutePath = PathContentParserHolder.loadContextAware().getFileAbsolutePath(ListUtil.toList(filePath));
+            MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
         } catch (Exception e) {
             String errMsg = StrUtil.format("An exception occurred while building the node[{}],{}", this.node.getId(), e.getMessage());
             throw new NodeBuildException(errMsg);
         }
+        return this;
+    }
+
+    public LiteFlowNodeBuilder setLanguage(String language) {
+        this.node.setLanguage(language);
         return this;
     }
 
@@ -146,7 +156,7 @@ public class LiteFlowNodeBuilder {
         try {
             // 用于处理脚本 node
            if (this.node.getType().isScript()){
-               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript());
+               FlowBus.addScriptNode(this.node.getId(), this.node.getName(), this.node.getType(), this.node.getScript(), this.node.getLanguage());
            }
            // 用于处理普通 node
            else{

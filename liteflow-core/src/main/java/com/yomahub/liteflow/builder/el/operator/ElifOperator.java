@@ -35,7 +35,7 @@ public class ElifOperator extends BaseOperator<IfCondition> {
 
 		//构建一个内部的IfCondition
 		IfCondition ifConditionItem = new IfCondition();
-		ifConditionItem.setExecutableList(ListUtil.toList(ifNode));
+		ifConditionItem.setIfNode(ifNode);
 		ifConditionItem.setTrueCaseExecutableItem(trueCaseExecutableItem);
 
 		//因为可能会有多个ELIF，所以每一次拿到的caller总是最开始大的if，需要遍历到没有falseCaseExecutable的地方。

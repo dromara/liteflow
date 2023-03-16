@@ -23,6 +23,8 @@ public interface ChainConstant {
 
     String NAME = "name";
 
+    String LANGUAGE = "language";
+
     String VALUE = "value";
 
     String ANY = "any";
@@ -70,4 +72,6 @@ public interface ChainConstant {
     String CURR_CHAIN_ID = "currChainId";
 
     String DEFAULT = "DEFAULT";
+
+    String CATCH = "CATCH";
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="d" type="script" language="js">
+            <![CDATA[
+                order.setOrderNo("order1")
+                checkContext.setSign(_meta.get("nodeId"))
+                order2Context.setOrderNo("order2")
+            ]]>
+        </node>
+
+        <node id="e" type="script" language="js">
+            <![CDATA[
+                var orderNo = order.getOrderNo()
+                var sign = checkContext.getSign()
+                var orderNo2 = order2Context.getOrderNo()
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,e);
+    </chain>
+
+</flow>

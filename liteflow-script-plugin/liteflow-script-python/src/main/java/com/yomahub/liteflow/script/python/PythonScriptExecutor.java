@@ -2,6 +2,7 @@ package com.yomahub.liteflow.script.python;
 
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.jsr223.JSR223ScriptExecutor;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +16,8 @@ import java.util.stream.Collectors;
 public class PythonScriptExecutor extends JSR223ScriptExecutor {
 
     @Override
-    protected String scriptEngineName() {
-        return "python";
+    public ScriptTypeEnum scriptType() {
+        return ScriptTypeEnum.PYTHON;
     }
 
     @Override

@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.9.7</revision>
+		<revision>2.10.0</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -72,6 +72,7 @@
 		<apollo.version>1.7.0</apollo.version>
 		<jython.version>2.7.3</jython.version>
 		<luaj.version>3.0.1</luaj.version>
+		<common-io.version>2.11.0</common-io.version>
 	</properties>
 
 	<dependencyManagement>
@@ -277,6 +278,11 @@
 				<groupId>org.luaj</groupId>
 				<artifactId>luaj-jse</artifactId>
 				<version>${luaj.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${common-io.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

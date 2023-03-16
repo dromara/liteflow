@@ -51,7 +51,7 @@ public class WhenCondition extends Condition {
 
 
 	@Override
-	public void execute(Integer slotIndex) throws Exception {
+	public void executeCondition(Integer slotIndex) throws Exception {
 		executeAsyncCondition(slotIndex);
 	}
 

@@ -24,12 +24,12 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
         wrap.setSlotIndex(this.getSlotIndex());
         wrap.setTag(this.getTag());
         wrap.setCmpData(this.getCmpData(Map.class));
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().execute(wrap);
+        ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
     }
 
     @Override
-    public void loadScript(String script) {
+    public void loadScript(String script, String language) {
         log.info("load script for component[{}]", getDisplayName());
-        ScriptExecutorFactory.loadInstance().getScriptExecutor().load(getNodeId(), script);
+        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
     }
 }

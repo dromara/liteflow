@@ -26,8 +26,11 @@ public class LOGOPrinter {
 		str.append("		| |___ | |  | | | |__|_____|  _| | |__| |_| |\\ V  V /  \n");
 		str.append("		|_____|___| |_| |_____|    |_|   |_____\\___/  \\_/\\_/   \n\n");
 		str.append("		Version: " + VERSION_NO + "\n");
-		str.append("		轻量且强大的规则引擎框架。\n");
+		str.append("		新一代轻量且强大的规则引擎编排框架。\n");
+		str.append("		基于开源社区文化，社区驱动型开源框架。\n");
 		str.append("		Small but powerful rules engine.\n");
+		str.append("		官网地址：https://liteflow.yomahub.com/\n");
+		str.append("		wechat：bryan_31\n");
 		str.append("================================================================================================\n");
 		LOG.info(str.toString());
 	}

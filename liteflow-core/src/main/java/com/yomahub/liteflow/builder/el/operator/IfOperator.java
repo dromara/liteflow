@@ -37,7 +37,7 @@ public class IfOperator extends BaseOperator<IfCondition> {
         }
 
         IfCondition ifCondition = new IfCondition();
-        ifCondition.setExecutableList(ListUtil.toList(ifNode));
+        ifCondition.setIfNode(ifNode);
         ifCondition.setTrueCaseExecutableItem(trueCaseExecutableItem);
         ifCondition.setFalseCaseExecutableItem(falseCaseExecutableItem);
         return ifCondition;

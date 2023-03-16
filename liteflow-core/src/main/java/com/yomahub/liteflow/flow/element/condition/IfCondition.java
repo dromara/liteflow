@@ -20,13 +20,14 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
  */
 public class IfCondition extends Condition {
 
-    private Executable trueCaseExecutableItem;
-
-    private Executable falseCaseExecutableItem;
-
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(getIfNode().getType())){
+            //先去判断isAccess方法，如果isAccess方法都返回false，整个IF表达式不执行
+            if (!this.getIfNode().isAccess(slotIndex)){
+                return;
+            }
+
             //先执行IF节点
             this.getIfNode().setCurrChainId(this.getCurrChainId());
             this.getIfNode().execute(slotIndex);
@@ -36,6 +37,9 @@ public class IfCondition extends Condition {
             Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getIfNode().getInstance().getClass());
             //拿到If执行过的结果
             boolean ifResult = slot.getIfResult(originalClass.getName());
+
+            Executable trueCaseExecutableItem = this.getTrueCaseExecutableItem();
+            Executable falseCaseExecutableItem = this.getFalseCaseExecutableItem();
 
             if (ifResult) {
                 //trueCaseExecutableItem这个不能为空，否则执行什么呢
@@ -51,7 +55,7 @@ public class IfCondition extends Condition {
                 }
 
                 //执行trueCaseExecutableItem
-                trueCaseExecutableItem.setCurrChainName(this.getCurrChainName());
+                trueCaseExecutableItem.setCurrChainId(this.getCurrChainId());
                 trueCaseExecutableItem.execute(slotIndex);
             } else {
                 //falseCaseExecutableItem可以为null，但是不为null时就执行否的情况
@@ -78,22 +82,26 @@ public class IfCondition extends Condition {
     }
 
     public Executable getTrueCaseExecutableItem() {
-        return trueCaseExecutableItem;
+        return this.getExecutableOne(ConditionKey.IF_TRUE_CASE_KEY);
     }
 
     public void setTrueCaseExecutableItem(Executable trueCaseExecutableItem) {
-        this.trueCaseExecutableItem = trueCaseExecutableItem;
+        this.addExecutable(ConditionKey.IF_TRUE_CASE_KEY, trueCaseExecutableItem);
     }
 
     public Executable getFalseCaseExecutableItem() {
-        return falseCaseExecutableItem;
+        return this.getExecutableOne(ConditionKey.IF_FALSE_CASE_KEY);
     }
 
     public void setFalseCaseExecutableItem(Executable falseCaseExecutableItem) {
-        this.falseCaseExecutableItem = falseCaseExecutableItem;
+        this.addExecutable(ConditionKey.IF_FALSE_CASE_KEY, falseCaseExecutableItem);
+    }
+
+    public void setIfNode(Node ifNode){
+        this.addExecutable(ConditionKey.IF_KEY, ifNode);
     }
 
     public Node getIfNode() {
-        return (Node) this.getExecutableList().get(0);
+        return (Node) this.getExecutableOne(ConditionKey.IF_KEY);
     }
 }

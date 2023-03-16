@@ -23,27 +23,30 @@ import java.util.List;
  * @since 2.8.0
  */
 public class SwitchCondition extends Condition{
-
-
-    private final List<Executable> targetList = new ArrayList<>();
-
     private final String TAG_PREFIX = "tag";
     private final String TAG_FLAG = ":";
 
-    private Executable defaultExecutor;
-
-
     @Override
-    public void execute(Integer slotIndex) throws Exception {
+    public void executeCondition(Integer slotIndex) throws Exception {
         if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())){
+            //获取switch node
+            Node switchNode = this.getSwitchNode();
+            //获取target List
+            List<Executable> targetList = this.getTargetList();
+
+            //先去判断isAccess方法，如果isAccess方法都返回false，整个SWITCH表达式不执行
+            if (!switchNode.isAccess(slotIndex)){
+                return;
+            }
+
             //先执行switch节点
-            this.getSwitchNode().setCurrChainId(this.getCurrChainId());
-            this.getSwitchNode().execute(slotIndex);
+            switchNode.setCurrChainId(this.getCurrChainId());
+            switchNode.execute(slotIndex);
 
             //根据switch节点执行出来的结果选择
             Slot slot = DataBus.getSlot(slotIndex);
             //这里可能会有spring代理过的bean，所以拿到user原始的class
-            Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getSwitchNode().getInstance().getClass());
+            Class<?> originalClass = LiteFlowProxyUtil.getUserClass(switchNode.getInstance().getClass());
             String targetId = slot.getSwitchResult(originalClass.getName());
 
             Executable targetExecutor = null;
@@ -70,7 +73,7 @@ public class SwitchCondition extends Condition{
 
             if (ObjectUtil.isNull(targetExecutor)) {
                 //没有匹配到执行节点，则走默认的执行节点
-                targetExecutor = defaultExecutor;
+                targetExecutor = this.getDefaultExecutor();
             }
 
             if (ObjectUtil.isNotNull(targetExecutor)) {
@@ -98,26 +101,26 @@ public class SwitchCondition extends Condition{
     }
 
     public void addTargetItem(Executable executable){
-        this.targetList.add(executable);
-    }
-
-    public void setSwitchNode(Node switchNode) {
-        this.getExecutableList().add(switchNode);
+        this.addExecutable(ConditionKey.SWITCH_TARGET_KEY, executable);
     }
 
     public List<Executable> getTargetList(){
-        return targetList;
+        return this.getExecutableList(ConditionKey.SWITCH_TARGET_KEY);
+    }
+
+    public void setSwitchNode(Node switchNode) {
+        this.addExecutable(ConditionKey.SWITCH_KEY, switchNode);
     }
 
     public Node getSwitchNode(){
-        return (Node) this.getExecutableList().get(0);
+        return (Node) this.getExecutableOne(ConditionKey.SWITCH_KEY);
     }
 
     public Executable getDefaultExecutor() {
-        return defaultExecutor;
+        return this.getExecutableOne(ConditionKey.SWITCH_DEFAULT_KEY);
     }
 
     public void setDefaultExecutor(Executable defaultExecutor) {
-        this.defaultExecutor = defaultExecutor;
+        this.addExecutable(ConditionKey.SWITCH_DEFAULT_KEY, defaultExecutor);
     }
 }
