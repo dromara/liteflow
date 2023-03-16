@@ -126,8 +126,7 @@ public abstract class Condition implements Executable{
 	}
 
 	/**
-	 * 
-	 * @deprecated 请使用 {@link #setCurrChainId(String)}
+	 * 请使用 {@link #setCurrChainId(String)}
 	 */
 	@Deprecated
 	public String getCurrChainName() {

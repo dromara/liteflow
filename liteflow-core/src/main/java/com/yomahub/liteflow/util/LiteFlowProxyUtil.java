@@ -26,8 +26,6 @@ public class LiteFlowProxyUtil {
 
     /**
      * 判断一个bean是否是声明式组件
-     * @param clazz
-     * @return
      */
     public static boolean isDeclareCmp(Class<?> clazz) {
         //查看bean里的method是否有方法标记了@LiteflowMethod标注
@@ -41,9 +39,6 @@ public class LiteFlowProxyUtil {
 
     /**
      * 对一个满足声明式的bean进行代理,生成代理类数组
-     * @param bean
-     * @param nodeId
-     * @return
      */
     public static List<NodeComponent> proxy2NodeComponent(Object bean, String nodeId) {
         try {
