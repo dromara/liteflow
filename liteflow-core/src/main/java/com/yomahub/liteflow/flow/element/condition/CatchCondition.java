@@ -11,7 +11,7 @@ import com.yomahub.liteflow.slot.Slot;
 /**
  * Catch Condition
  * @author Bryan.Zhang
- * @since 2.9.8
+ * @since 2.10.0
  */
 public class CatchCondition extends Condition{
 

@@ -9,7 +9,7 @@ import com.yomahub.liteflow.flow.element.condition.CatchCondition;
  * EL规则中的CATCH的操作符
  * 用法：CATCH...DO...
  * @author Bryan.Zhang
- * @since 2.9.8
+ * @since 2.10.0
  */
 public class CatchOperator extends BaseOperator<CatchCondition> {
     @Override
