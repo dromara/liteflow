@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot下的yml parser测试用例
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -23,16 +24,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/parser/application-yml.properties")
 @SpringBootTest(classes = YmlParserELDeclMultiSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.parser.cmp" })
 public class YmlParserELDeclMultiSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的yml parser
-    @Test
-    public void testYmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无springboot场景的yml parser
+	@Test
+	public void testYmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

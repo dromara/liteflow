@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * 有限队列集合
+ *
  * @author Bryan.Zhang
  */
 public class LimitQueue<E> implements Queue<E> {
@@ -130,4 +131,5 @@ public class LimitQueue<E> implements Queue<E> {
 	public <T> T[] toArray(T[] a) {
 		return queue.toArray(a);
 	}
+
 }

@@ -16,6 +16,7 @@ import java.util.Set;
 
 /**
  * spring环境下隐私投递的测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -23,15 +24,16 @@ import java.util.Set;
 @ContextConfiguration("classpath:/privateDelivery/application.xml")
 public class PrivateDeliveryELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testPrivateDelivery() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        ConcurrentHashSet<Integer> set = context.getData("testSet");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(100, set.size());
-    }
+	@Test
+	public void testPrivateDelivery() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		ConcurrentHashSet<Integer> set = context.getData("testSet");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals(100, set.size());
+	}
+
 }

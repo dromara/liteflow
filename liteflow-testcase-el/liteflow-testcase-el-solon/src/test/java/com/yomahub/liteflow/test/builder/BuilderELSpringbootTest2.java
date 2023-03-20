@@ -15,18 +15,17 @@ import org.noear.solon.test.SolonJUnit4ClassRunner;
 @RunWith(SolonJUnit4ClassRunner.class)
 public class BuilderELSpringbootTest2 extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    //通过spring去扫描组件，通过代码去构建chain
-    @Test
-    public void testBuilder() throws Exception {
-        LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
-                "THEN(h, i, j)"
-        ).build();
+	// 通过spring去扫描组件，通过代码去构建chain
+	@Test
+	public void testBuilder() throws Exception {
+		LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL("THEN(h, i, j)").build();
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("h==>i==>j", response.getExecuteStepStr());
-    }
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("h==>i==>j", response.getExecuteStepStr());
+	}
+
 }

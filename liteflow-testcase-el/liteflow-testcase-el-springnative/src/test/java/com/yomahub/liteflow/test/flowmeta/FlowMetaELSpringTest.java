@@ -19,15 +19,16 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/flowmeta/application.xml")
 public class FlowMetaELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试动态添加元信息节点
-    @Test
-    public void testFlowMeta() {
-        FlowBus.addNode("d", "d组件", NodeTypeEnum.COMMON, DCmp.class);
-        LiteflowResponse response= flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
-    }
+	// 测试动态添加元信息节点
+	@Test
+	public void testFlowMeta() {
+		FlowBus.addNode("d", "d组件", NodeTypeEnum.COMMON, DCmp.class);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
+	}
+
 }

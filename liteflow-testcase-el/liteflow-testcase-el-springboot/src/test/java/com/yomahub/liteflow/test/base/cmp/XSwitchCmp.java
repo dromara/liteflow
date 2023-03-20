@@ -17,4 +17,5 @@ public class XSwitchCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "w01";
 	}
+
 }

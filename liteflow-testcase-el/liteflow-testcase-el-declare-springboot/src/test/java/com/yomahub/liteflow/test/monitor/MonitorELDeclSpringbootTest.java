@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境最普通的例子测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -26,24 +27,24 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/monitor/application.properties")
 @SpringBootTest(classes = MonitorELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.monitor.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.monitor.cmp" })
 public class MonitorELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testMonitor() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
+	@Test
+	public void testMonitor() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
 
-        Thread.sleep(10000);
-    }
+		Thread.sleep(10000);
+	}
 
-    @AfterClass
-    public static void clean(){
-        MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
-        monitorBus.closeScheduler();
-    }
+	@AfterClass
+	public static void clean() {
+		MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
+		monitorBus.closeScheduler();
+	}
 
 }

@@ -17,4 +17,5 @@ public class ICmp extends NodeComponent {
 	public void process() {
 
 	}
+
 }

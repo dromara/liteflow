@@ -20,4 +20,5 @@ public class ZkException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

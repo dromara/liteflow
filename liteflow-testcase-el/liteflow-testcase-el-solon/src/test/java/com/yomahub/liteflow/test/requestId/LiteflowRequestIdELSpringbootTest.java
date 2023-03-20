@@ -17,14 +17,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/requestId/application.properties")
 public class LiteflowRequestIdELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testRequestId() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("1", response.getRequestId());
-    }
+	@Test
+	public void testRequestId() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("1", response.getRequestId());
+	}
 
 }

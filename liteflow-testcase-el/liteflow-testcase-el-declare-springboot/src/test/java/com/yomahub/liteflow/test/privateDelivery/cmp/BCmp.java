@@ -15,15 +15,15 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 @LiteflowComponent("b")
-public class BCmp{
+public class BCmp {
 
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) {
-        System.out.println("BCmp executed!");
-        Integer value = bindCmp.getPrivateDeliveryData();
-        DefaultContext context = bindCmp.getFirstContextBean();
-        ConcurrentHashSet<Integer> testSet = context.getData("testSet");
-        testSet.add(value);
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) {
+		System.out.println("BCmp executed!");
+		Integer value = bindCmp.getPrivateDeliveryData();
+		DefaultContext context = bindCmp.getFirstContextBean();
+		ConcurrentHashSet<Integer> testSet = context.getData("testSet");
+		testSet.add(value);
+	}
+
 }
-

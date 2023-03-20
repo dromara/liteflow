@@ -12,8 +12,10 @@ import org.noear.solon.annotation.Component;
 
 @Component("x1")
 public class X1Cmp extends NodeIfComponent {
+
 	@Override
 	public boolean processIf() throws Exception {
 		return Boolean.parseBoolean(this.getTag());
 	}
+
 }

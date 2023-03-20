@@ -11,23 +11,24 @@ package com.yomahub.liteflow.aop;
 import com.yomahub.liteflow.slot.Slot;
 
 /**
- * 全局组件拦截器接口
- * 实现这个接口并注入到spring上下文即可
+ * 全局组件拦截器接口 实现这个接口并注入到spring上下文即可
+ *
  * @author Bryan.Zhang
  */
 public interface ICmpAroundAspect {
 
-    /**
-     * 前置处理
-     * @param nodeId 节点ID
-     * @param slot
-     */
-    void beforeProcess(String nodeId, Slot slot);
+	/**
+	 * 前置处理
+	 * @param nodeId 节点ID
+	 * @param slot
+	 */
+	void beforeProcess(String nodeId, Slot slot);
 
-    /**
-     *  后置处理
-     * @param nodeId 节点ID
-     * @param slot
-     */
-    void afterProcess(String nodeId, Slot slot);
+	/**
+	 * 后置处理
+	 * @param nodeId 节点ID
+	 * @param slot
+	 */
+	void afterProcess(String nodeId, Slot slot);
+
 }

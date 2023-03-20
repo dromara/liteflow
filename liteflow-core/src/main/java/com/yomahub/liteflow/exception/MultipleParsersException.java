@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 重复解析器异常
+ *
  * @author Yun
  */
 public class MultipleParsersException extends RuntimeException {
@@ -23,4 +24,5 @@ public class MultipleParsersException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

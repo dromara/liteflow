@@ -12,9 +12,10 @@ import org.junit.AfterClass;
  * @author tangkc
  * @since 2.8.6
  */
-public class BaseTest   {
+public class BaseTest {
+
 	@AfterClass
-	public static void cleanScanCache(){
+	public static void cleanScanCache() {
 		ComponentScanner.cleanCache();
 		FlowBus.cleanCache();
 		ExecutorHelper.loadInstance().clearExecutorServiceMap();
@@ -22,4 +23,5 @@ public class BaseTest   {
 		LiteflowConfigGetter.clean();
 		FlowInitHook.cleanHook();
 	}
+
 }

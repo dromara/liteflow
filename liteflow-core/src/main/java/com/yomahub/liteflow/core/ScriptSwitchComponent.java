@@ -7,24 +7,28 @@ import java.util.Map;
 
 /**
  * 脚本条件节点
+ *
  * @author Bryan.Zhang
  * @since 2.6.0
  */
-public class ScriptSwitchComponent extends NodeSwitchComponent implements ScriptComponent{
+public class ScriptSwitchComponent extends NodeSwitchComponent implements ScriptComponent {
 
-    @Override
-    public String processSwitch() throws Exception {
-        ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainId(this.getCurrChainId());
-        wrap.setNodeId(this.getNodeId());
-        wrap.setSlotIndex(this.getSlotIndex());
-        wrap.setTag(this.getTag());
-        wrap.setCmpData(this.getCmpData(Map.class));
-        return (String)ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
-    }
+	@Override
+	public String processSwitch() throws Exception {
+		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
+		wrap.setCurrChainId(this.getCurrChainId());
+		wrap.setNodeId(this.getNodeId());
+		wrap.setSlotIndex(this.getSlotIndex());
+		wrap.setTag(this.getTag());
+		wrap.setCmpData(this.getCmpData(Map.class));
+		return (String) ScriptExecutorFactory.loadInstance()
+			.getScriptExecutor(this.getRefNode().getLanguage())
+			.execute(wrap);
+	}
 
-    @Override
-    public void loadScript(String script, String language) {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
-    }
+	@Override
+	public void loadScript(String script, String language) {
+		ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
+	}
+
 }

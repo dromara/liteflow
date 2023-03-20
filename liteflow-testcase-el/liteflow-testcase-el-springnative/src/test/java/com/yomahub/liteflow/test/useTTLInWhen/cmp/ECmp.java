@@ -19,7 +19,7 @@ public class ECmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
-		context.setData(this.getNodeId(),value+",e");
+		context.setData(this.getNodeId(), value + ",e");
 		System.out.println("ECmp executed!");
 	}
 

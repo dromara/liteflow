@@ -18,14 +18,14 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/requestId/application.xml")
 public class LiteflowRequestIdELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testRequestId() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("1", response.getSlot().getRequestId());
-    }
+	@Test
+	public void testRequestId() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("1", response.getSlot().getRequestId());
+	}
 
 }

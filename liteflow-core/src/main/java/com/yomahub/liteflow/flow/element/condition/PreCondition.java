@@ -12,6 +12,7 @@ import com.yomahub.liteflow.flow.element.Executable;
 
 /**
  * 前置Condition
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -19,7 +20,7 @@ public class PreCondition extends Condition {
 
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
-		for(Executable executableItem : this.getExecutableList()){
+		for (Executable executableItem : this.getExecutableList()) {
 			executableItem.setCurrChainId(this.getCurrChainId());
 			executableItem.execute(slotIndex);
 		}
@@ -29,4 +30,5 @@ public class PreCondition extends Condition {
 	public ConditionTypeEnum getConditionType() {
 		return ConditionTypeEnum.TYPE_PRE;
 	}
+
 }

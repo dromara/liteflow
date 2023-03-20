@@ -17,17 +17,18 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutorAndCustomRetry;
 
 @LiteflowComponent("d")
-@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
-public class DCmp{
+@LiteflowRetry(retry = 5, forExceptions = { NullPointerException.class })
+public class DCmp {
 
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) {
-        System.out.println("DCmp executed!");
-        throw new NullPointerException("demo exception");
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) {
+		System.out.println("DCmp executed!");
+		throw new NullPointerException("demo exception");
+	}
 
-    @LiteflowMethod(LiteFlowMethodEnum.GET_NODE_EXECUTOR_CLASS)
-    public Class<? extends NodeExecutor> getNodeExecutorClass(NodeComponent bindCmp) {
-        return CustomerNodeExecutorAndCustomRetry.class;
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.GET_NODE_EXECUTOR_CLASS)
+	public Class<? extends NodeExecutor> getNodeExecutorClass(NodeComponent bindCmp) {
+		return CustomerNodeExecutorAndCustomRetry.class;
+	}
+
 }

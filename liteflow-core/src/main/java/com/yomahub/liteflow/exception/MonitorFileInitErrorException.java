@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 文件监听异常
+ *
  * @author Bryan.Zhang
  * @since 2.10.0
  */
@@ -25,4 +26,5 @@ public class MonitorFileInitErrorException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

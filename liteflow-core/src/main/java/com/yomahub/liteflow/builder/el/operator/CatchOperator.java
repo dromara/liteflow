@@ -6,21 +6,23 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.CatchCondition;
 
 /**
- * EL规则中的CATCH的操作符
- * 用法：CATCH...DO...
+ * EL规则中的CATCH的操作符 用法：CATCH...DO...
+ *
  * @author Bryan.Zhang
  * @since 2.10.0
  */
 public class CatchOperator extends BaseOperator<CatchCondition> {
-    @Override
-    public CatchCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        Executable catchItem = OperatorHelper.convert(objects[0], Executable.class);
+	@Override
+	public CatchCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        CatchCondition catchCondition = new CatchCondition();
-        catchCondition.setCatchItem(catchItem);
+		Executable catchItem = OperatorHelper.convert(objects[0], Executable.class);
 
-        return catchCondition;
-    }
+		CatchCondition catchCondition = new CatchCondition();
+		catchCondition.setCatchItem(catchItem);
+
+		return catchCondition;
+	}
+
 }

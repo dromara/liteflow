@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境的xml parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -23,16 +24,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/parser/application-xml.properties")
 @SpringBootTest(classes = XmlParserELDeclMultiSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parser.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.parser.cmp" })
 public class XmlParserELDeclMultiSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的xml parser
-    @Test
-    public void testXmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无springboot场景的xml parser
+	@Test
+	public void testXmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

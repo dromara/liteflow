@@ -19,11 +19,12 @@ public class ECmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String key = StrUtil.format("{}_{}", "loop", this.getTag());
-		if (context.hasData(key)){
+		if (context.hasData(key)) {
 			String loopStr = context.getData(key);
 			String loopStrReturn = StrUtil.format("{}{}", loopStr, this.getLoopIndex());
 			context.setData(key, loopStrReturn);
-		}else{
+		}
+		else {
 			context.setData(key, this.getLoopIndex().toString());
 		}
 	}

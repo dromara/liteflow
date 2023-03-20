@@ -19,4 +19,5 @@ public class MCmp {
 	public void process(NodeComponent bindCmp) {
 
 	}
+
 }

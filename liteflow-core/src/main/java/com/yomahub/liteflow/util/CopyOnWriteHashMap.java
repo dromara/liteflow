@@ -52,133 +52,134 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A basic copy on write HashMap.
  * <p>
- * If an instance is cloned then any methods invoked on the instance or clone
- * that result in state modification will result in copying of the state
- * before modification.
+ * If an instance is cloned then any methods invoked on the instance or clone that result
+ * in state modification will result in copying of the state before modification.
  *
  * @author Paul.Sandoz@Oracle.Com
  * @author pavel.bucek@oracle.com
  * @author Bryan.Zhang
  */
-public class CopyOnWriteHashMap<K,V> extends ConcurrentHashMap<K,V> {
+public class CopyOnWriteHashMap<K, V> extends ConcurrentHashMap<K, V> {
 
-    volatile ConcurrentHashMap<K, V> view;
+	volatile ConcurrentHashMap<K, V> view;
 
-    private ConcurrentHashMap<K, V> duplicate(ConcurrentHashMap<K, V> original) {
-        // SUBTLETY: note that original.entrySet() grabs the entire contents of the original Map in a
-        // single call. This means that if the original map is Thread-safe or another CopyOnWriteHashMap,
-        // we can safely iterate over the list of entries.
-        return new ConcurrentHashMap<>(original);
-    }
+	private ConcurrentHashMap<K, V> duplicate(ConcurrentHashMap<K, V> original) {
+		// SUBTLETY: note that original.entrySet() grabs the entire contents of the
+		// original Map in a
+		// single call. This means that if the original map is Thread-safe or another
+		// CopyOnWriteHashMap,
+		// we can safely iterate over the list of entries.
+		return new ConcurrentHashMap<>(original);
+	}
 
-    public CopyOnWriteHashMap(ConcurrentHashMap<K, V> that) {
-        this.view = duplicate(that);
-    }
+	public CopyOnWriteHashMap(ConcurrentHashMap<K, V> that) {
+		this.view = duplicate(that);
+	}
 
-    public CopyOnWriteHashMap() {
-        this(new ConcurrentHashMap<>());
-    }
+	public CopyOnWriteHashMap() {
+		this(new ConcurrentHashMap<>());
+	}
 
-    @Override
-    public CopyOnWriteHashMap<K, V> clone() {
-        return new CopyOnWriteHashMap(view);
-    }
+	@Override
+	public CopyOnWriteHashMap<K, V> clone() {
+		return new CopyOnWriteHashMap(view);
+	}
 
-    /* **********************
-     * READ-ONLY OPERATIONS
-     * **********************/
+	/*
+	 * ********************** READ-ONLY OPERATIONS
+	 **********************/
 
-    @Override
-    public int size() {
-        return view.size();
-    }
+	@Override
+	public int size() {
+		return view.size();
+	}
 
-    @Override
-    public boolean isEmpty() {
-        return view.isEmpty();
-    }
+	@Override
+	public boolean isEmpty() {
+		return view.isEmpty();
+	}
 
-    @Override
-    public boolean containsKey(Object key) {
-        return view.containsKey(key);
-    }
+	@Override
+	public boolean containsKey(Object key) {
+		return view.containsKey(key);
+	}
 
-    @Override
-    public boolean containsValue(Object value) {
-        return view.containsValue(value);
-    }
+	@Override
+	public boolean containsValue(Object value) {
+		return view.containsValue(value);
+	}
 
-    @Override
-    public V get(Object key) {
-        return view.get(key);
-    }
+	@Override
+	public V get(Object key) {
+		return view.get(key);
+	}
 
-    @Override
-    public KeySetView<K,V> keySet() {
-        return view.keySet();
-    }
+	@Override
+	public KeySetView<K, V> keySet() {
+		return view.keySet();
+	}
 
-    @Override
-    public Collection<V> values() {
-        return view.values();
-    }
+	@Override
+	public Collection<V> values() {
+		return view.values();
+	}
 
-    @Override
-    public Set<Map.Entry<K, V>> entrySet() {
-        return view.entrySet();
-    }
+	@Override
+	public Set<Map.Entry<K, V>> entrySet() {
+		return view.entrySet();
+	}
 
-    @Override
-    public String toString() {
-        return view.toString();
-    }
+	@Override
+	public String toString() {
+		return view.toString();
+	}
 
-    /* **********************
-     * UPDATING OPERATIONS
-     *
-     * These operations all follow a common pattern:
-     *
-     * 1. Create a copy of the existing view.
-     * 2. Update the copy.
-     * 3. Perform a volatile write to replace the existing view.
-     *
-     * Note that if you are not concerned about lost updates, you could dispense with the synchronization
-     * entirely.
-     * **********************/
+	/*
+	 * ********************** UPDATING OPERATIONS
+	 *
+	 * These operations all follow a common pattern:
+	 *
+	 * 1. Create a copy of the existing view. 2. Update the copy. 3. Perform a volatile
+	 * write to replace the existing view.
+	 *
+	 * Note that if you are not concerned about lost updates, you could dispense with the
+	 * synchronization entirely.
+	 **********************/
 
-    @Override
-    public V put(K key, V value) {
-        synchronized (this) {
-            ConcurrentHashMap<K, V> newCore = duplicate(view);
-            V result = newCore.put(key, value);
-            view = newCore; // volatile write
-            return result;
-        }
-    }
+	@Override
+	public V put(K key, V value) {
+		synchronized (this) {
+			ConcurrentHashMap<K, V> newCore = duplicate(view);
+			V result = newCore.put(key, value);
+			view = newCore; // volatile write
+			return result;
+		}
+	}
 
-    @Override
-    public V remove(Object key) {
-        synchronized (this) {
-            ConcurrentHashMap<K, V> newCore = duplicate(view);
-            V result = newCore.remove(key);
-            view = newCore; // volatile write
-            return result;
-        }
-    }
+	@Override
+	public V remove(Object key) {
+		synchronized (this) {
+			ConcurrentHashMap<K, V> newCore = duplicate(view);
+			V result = newCore.remove(key);
+			view = newCore; // volatile write
+			return result;
+		}
+	}
 
-    @Override
-    public void putAll(Map<? extends K, ? extends V> t) {
-        synchronized (this) {
-            ConcurrentHashMap<K, V> newCore = duplicate(view);
-            newCore.putAll(t);
-            view = newCore; // volatile write
-        }
-    }
+	@Override
+	public void putAll(Map<? extends K, ? extends V> t) {
+		synchronized (this) {
+			ConcurrentHashMap<K, V> newCore = duplicate(view);
+			newCore.putAll(t);
+			view = newCore; // volatile write
+		}
+	}
 
-    @Override
-    public void clear() {
-        synchronized (this) {
-            view = new ConcurrentHashMap<>(); // volatile write
-        }
-    }
+	@Override
+	public void clear() {
+		synchronized (this) {
+			view = new ConcurrentHashMap<>(); // volatile write
+		}
+	}
+
 }

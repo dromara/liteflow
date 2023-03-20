@@ -14,7 +14,7 @@ import com.yomahub.liteflow.test.customNodes.domain.DemoDomain;
 
 import javax.annotation.Resource;
 
-public class BCmp{
+public class BCmp {
 
 	@Resource
 	private DemoDomain demoDomain;
@@ -24,4 +24,5 @@ public class BCmp{
 		demoDomain.sayHi();
 		System.out.println("BCmp executed!");
 	}
+
 }

@@ -28,9 +28,12 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 		try {
 			ApolloParserConfigVO apolloParserConfigVO = null;
 			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
-				apolloParserConfigVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), ApolloParserConfigVO.class, CopyOptions.create());
-			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
-				apolloParserConfigVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ApolloParserConfigVO.class);
+				apolloParserConfigVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(),
+						ApolloParserConfigVO.class, CopyOptions.create());
+			}
+			else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
+				apolloParserConfigVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(),
+						ApolloParserConfigVO.class);
 			}
 
 			// check config
@@ -43,11 +46,11 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 			}
 
 			apolloParseHelper = new ApolloParseHelper(apolloParserConfigVO);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new ApolloException(e.getMessage());
 		}
 	}
-
 
 	@Override
 	public String parseCustom() {
@@ -60,8 +63,10 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 			});
 			return content;
 
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new ApolloException(e.getMessage());
 		}
 	}
+
 }

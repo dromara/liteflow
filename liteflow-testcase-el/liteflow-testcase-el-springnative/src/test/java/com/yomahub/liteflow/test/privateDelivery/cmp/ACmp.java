@@ -25,8 +25,8 @@ public class ACmp extends NodeComponent {
 		context.setData("testSet", new ConcurrentHashSet<>());
 
 		for (int i = 0; i < 100; i++) {
-			this.sendPrivateDeliveryData("b",i+1);
+			this.sendPrivateDeliveryData("b", i + 1);
 		}
 	}
-}
 
+}

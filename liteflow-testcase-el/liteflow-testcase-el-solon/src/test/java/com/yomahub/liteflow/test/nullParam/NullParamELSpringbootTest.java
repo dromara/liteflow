@@ -20,16 +20,16 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/nullParam/application.properties")
 public class NullParamELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    /**
-     * 支持无参的flow执行，以及param 为null时的异常抛出
-     */
-    @Test
-    public void testNullParam() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-    }
+	/**
+	 * 支持无参的flow执行，以及param 为null时的异常抛出
+	 */
+	@Test
+	public void testNullParam() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

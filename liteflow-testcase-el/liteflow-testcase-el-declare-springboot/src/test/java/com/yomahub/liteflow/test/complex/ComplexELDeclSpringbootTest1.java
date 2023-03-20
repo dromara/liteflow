@@ -16,33 +16,35 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境EL复杂例子测试1
+ *
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/complex/application1.properties")
 @SpringBootTest(classes = ComplexELDeclSpringbootTest1.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.complex.cmp1"})
+@ComponentScan({ "com.yomahub.liteflow.test.complex.cmp1" })
 public class ComplexELDeclSpringbootTest1 extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试复杂例子，优化前
-    //案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
-    //因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
-    @Test
-    public void testComplex1_1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1_1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试复杂例子，优化前
+	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
+	// 因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
+	@Test
+	public void testComplex1_1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1_1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
-    //测试复杂例子，优化后
-    //案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
-    //因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
-    @Test
-    public void testComplex1_2() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1_2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试复杂例子，优化后
+	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
+	// 因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
+	@Test
+	public void testComplex1_2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1_2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

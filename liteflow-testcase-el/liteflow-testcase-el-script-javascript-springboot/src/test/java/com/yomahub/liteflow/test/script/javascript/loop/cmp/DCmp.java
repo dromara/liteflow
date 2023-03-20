@@ -18,10 +18,11 @@ public class DCmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String key = "test";
-		if (context.hasData(key)){
+		if (context.hasData(key)) {
 			int count = context.getData(key);
 			context.setData(key, ++count);
-		}else{
+		}
+		else {
 			context.setData(key, 1);
 		}
 	}

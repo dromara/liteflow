@@ -8,17 +8,18 @@ package com.yomahub.liteflow.spi;
  */
 public interface ContextAware extends SpiPriority {
 
-    <T> T getBean(String name);
+	<T> T getBean(String name);
 
-    <T> T getBean(Class<T> clazz);
+	<T> T getBean(Class<T> clazz);
 
-    <T> T registerBean(String beanName, Class<T> clazz);
+	<T> T registerBean(String beanName, Class<T> clazz);
 
-    <T> T registerBean(Class<T> clazz);
+	<T> T registerBean(Class<T> clazz);
 
-    <T> T registerBean(String beanName, Object bean);
+	<T> T registerBean(String beanName, Object bean);
 
-    <T> T registerOrGet(String beanName, Class<T> clazz);
+	<T> T registerOrGet(String beanName, Class<T> clazz);
 
-    boolean hasBean(String beanName);
+	boolean hasBean(String beanName);
+
 }

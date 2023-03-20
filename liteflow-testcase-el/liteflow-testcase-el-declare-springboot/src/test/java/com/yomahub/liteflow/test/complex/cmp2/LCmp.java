@@ -19,4 +19,5 @@ public class LCmp {
 	public void process(NodeComponent bindCmp) {
 
 	}
+
 }

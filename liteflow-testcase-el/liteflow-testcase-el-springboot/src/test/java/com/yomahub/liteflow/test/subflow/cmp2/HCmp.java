@@ -6,17 +6,18 @@ import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELSpringbootTest.RUN_TIME_SLOT;
 
-
 @Component("h")
 public class HCmp extends NodeComponent {
-    @Override
-    public void process() throws Exception {
-        String requestData = this.getSubChainReqData();
-        DefaultContext context = this.getFirstContextBean();
-        context.setData("innerRequest", requestData);
 
-        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+	@Override
+	public void process() throws Exception {
+		String requestData = this.getSubChainReqData();
+		DefaultContext context = this.getFirstContextBean();
+		context.setData("innerRequest", requestData);
 
-        System.out.println("Hcomp executed!");
-    }
+		RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+
+		System.out.println("Hcomp executed!");
+	}
+
 }

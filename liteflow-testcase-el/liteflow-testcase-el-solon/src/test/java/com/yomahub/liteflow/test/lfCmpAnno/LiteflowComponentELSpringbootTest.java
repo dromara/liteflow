@@ -10,9 +10,9 @@ import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
 
-
 /**
  * 测试@LiteflowComponent标注
+ *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
@@ -20,13 +20,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/lfCmpAnno/application.properties")
 public class LiteflowComponentELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testConfig() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getExecuteStepStr());
-    }
+	@Test
+	public void testConfig() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getExecuteStepStr());
+	}
+
 }

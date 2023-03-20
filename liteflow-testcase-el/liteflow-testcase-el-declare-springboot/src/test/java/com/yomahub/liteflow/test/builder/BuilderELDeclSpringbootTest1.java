@@ -22,41 +22,40 @@ import javax.annotation.Resource;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BuilderELDeclSpringbootTest1.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.builder.cmp1"})
+@ComponentScan({ "com.yomahub.liteflow.test.builder.cmp1" })
 public class BuilderELDeclSpringbootTest1 extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //基于普通组件的builder模式测试
-    @Test
-    public void testBuilder() throws Exception {
-        LiteFlowChainELBuilder.createChain().setChainName("chain2").setEL(
-                "THEN(c, d)"
-        ).build();
+	// 基于普通组件的builder模式测试
+	@Test
+	public void testBuilder() throws Exception {
+		LiteFlowChainELBuilder.createChain().setChainName("chain2").setEL("THEN(c, d)").build();
 
-        LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
-                "THEN(a, b, WHEN(SWITCH(e).to(f, g, chain2)))"
-        ).build();
+		LiteFlowChainELBuilder.createChain()
+			.setChainName("chain1")
+			.setEL("THEN(a, b, WHEN(SWITCH(e).to(f, g, chain2)))")
+			.build();
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>e==>c==>d", response.getExecuteStepStrWithoutTime());
-    }
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>e==>c==>d", response.getExecuteStepStrWithoutTime());
+	}
 
-    //基于普通组件的builder模式测试
-    @Test
-    public void testBuilderForConditionNode() throws Exception {
-        LiteFlowChainELBuilder.createChain().setChainName("chain2").setEL(
-                "THEN(c, d)"
-        ).build();
+	// 基于普通组件的builder模式测试
+	@Test
+	public void testBuilderForConditionNode() throws Exception {
+		LiteFlowChainELBuilder.createChain().setChainName("chain2").setEL("THEN(c, d)").build();
 
-        LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
-                "THEN(a.tag('hello'), b, WHEN(SWITCH(e).to(f.tag('FHello'), g, chain2)))"
-        ).build();
+		LiteFlowChainELBuilder.createChain()
+			.setChainName("chain1")
+			.setEL("THEN(a.tag('hello'), b, WHEN(SWITCH(e).to(f.tag('FHello'), g, chain2)))")
+			.build();
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>e==>c==>d", response.getExecuteStepStr());
-    }
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>e==>c==>d", response.getExecuteStepStr());
+	}
+
 }

@@ -15,8 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * 测试显示调用子流程(yml)
- * 单元测试
+ * 测试显示调用子流程(yml) 单元测试
  *
  * @author justin.xu
  */
@@ -24,16 +23,18 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/subflow/application-yml.properties")
 @SpringBootTest(classes = SubflowYmlELDeclSpringBootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.subflow.cmp1"})
+@ComponentScan({ "com.yomahub.liteflow.test.subflow.cmp1" })
 public class SubflowYmlELDeclSpringBootTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
 
-    //是否按照流程定义配置执行
-    @Test
-    public void testExplicitSubFlowYml() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
-    }
+	@Resource
+	private FlowExecutor flowExecutor;
+
+	// 是否按照流程定义配置执行
+	@Test
+	public void testExplicitSubFlowYml() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+	}
+
 }

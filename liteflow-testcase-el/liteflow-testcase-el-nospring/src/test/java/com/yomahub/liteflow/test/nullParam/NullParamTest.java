@@ -16,22 +16,22 @@ import org.junit.Test;
  */
 public class NullParamTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("nullParam/flow.el.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("nullParam/flow.el.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    /**
-     * 支持无参的flow执行，以及param 为null时的异常抛出
-     */
-    @Test
-    public void testNullParam() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-    }
+	/**
+	 * 支持无参的flow执行，以及param 为null时的异常抛出
+	 */
+	@Test
+	public void testNullParam() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

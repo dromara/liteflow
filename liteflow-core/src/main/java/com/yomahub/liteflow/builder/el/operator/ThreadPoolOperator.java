@@ -12,14 +12,15 @@ import com.yomahub.liteflow.flow.element.condition.WhenCondition;
  */
 public class ThreadPoolOperator extends BaseOperator<WhenCondition> {
 
-    @Override
-    public WhenCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEqTwo(objects);
+	@Override
+	public WhenCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-        WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
+		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-        whenCondition.setThreadExecutorClass(OperatorHelper.convert(objects[1], String.class));
+		whenCondition.setThreadExecutorClass(OperatorHelper.convert(objects[1], String.class));
 
-        return whenCondition;
-    }
+		return whenCondition;
+	}
+
 }

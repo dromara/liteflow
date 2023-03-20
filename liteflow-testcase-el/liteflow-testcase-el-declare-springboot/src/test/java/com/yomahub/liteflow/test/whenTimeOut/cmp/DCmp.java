@@ -13,13 +13,14 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
+public class DCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		try {
 			Thread.sleep(4000);
-		}catch (Exception ignored){
+		}
+		catch (Exception ignored) {
 
 		}
 		System.out.println("DCmp executed!");

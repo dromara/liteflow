@@ -7,18 +7,20 @@ import java.util.Iterator;
 
 /**
  * ITERATOR迭代器循环组件抽象类
+ *
  * @author Bryan.Zhang
  * @since 2.9.7
  */
-public abstract class NodeIteratorComponent extends NodeComponent{
+public abstract class NodeIteratorComponent extends NodeComponent {
 
-    @Override
-    public void process() throws Exception {
-        Iterator<?> it = processIterator();
-        Slot slot = this.getSlot();
-        Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-        slot.setIteratorResult(originalClass.getName(), it);
-    }
+	@Override
+	public void process() throws Exception {
+		Iterator<?> it = processIterator();
+		Slot slot = this.getSlot();
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		slot.setIteratorResult(originalClass.getName(), it);
+	}
 
-    public abstract Iterator<?> processIterator() throws Exception;
+	public abstract Iterator<?> processIterator() throws Exception;
+
 }

@@ -14,52 +14,56 @@ import org.junit.Test;
 
 /**
  * 非spring环境下重新加载规则测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
 public class RefreshRuleTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("refreshRule/flow.el.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("refreshRule/flow.el.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //测试普通刷新流程的场景
-    @Test
-    public void testRefresh1() throws Exception{
-        String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试普通刷新流程的场景
+	@Test
+	public void testRefresh1() throws Exception {
+		String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
+		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
-    //测试优雅刷新的场景
-    @Test
-    public void testRefresh2() throws Exception{
-        new Thread(() -> {
-            try {
-                Thread.sleep(4000L);
-                String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+	// 测试优雅刷新的场景
+	@Test
+	public void testRefresh2() throws Exception {
+		new Thread(() -> {
+			try {
+				Thread.sleep(4000L);
+				String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
+				FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 
-        }).start();
+		}).start();
 
-        for (int i = 0; i < 500; i++) {
-            LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-            Assert.assertTrue(response.isSuccess());
-            try {
-                Thread.sleep(10L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+		for (int i = 0; i < 500; i++) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+			Assert.assertTrue(response.isSuccess());
+			try {
+				Thread.sleep(10L);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
-    }
+	}
+
 }

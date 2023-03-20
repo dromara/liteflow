@@ -15,15 +15,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
-	
+public class DCmp {
+
 	private static final Logger LOG = LoggerFactory.getLogger(DCmp.class);
-	
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		if(1==1){
-			int a = 1/0;
+		if (1 == 1) {
+			int a = 1 / 0;
 		}
 		LOG.info("Dcomp executed!");
 	}
+
 }

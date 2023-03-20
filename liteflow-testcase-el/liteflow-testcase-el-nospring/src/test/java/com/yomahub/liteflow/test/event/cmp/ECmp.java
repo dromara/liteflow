@@ -13,7 +13,7 @@ import com.yomahub.liteflow.slot.DefaultContext;
 public class ECmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
+	public void process() throws Exception {
 		System.out.println("CCmp executed!");
 		throw new NullPointerException();
 	}
@@ -21,7 +21,8 @@ public class ECmp extends NodeComponent {
 	@Override
 	public void onError() throws Exception {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("error","error:"+this.getNodeId());
+		context.setData("error", "error:" + this.getNodeId());
 		throw new IllegalAccessException("错误事件回调本身抛出异常");
 	}
+
 }

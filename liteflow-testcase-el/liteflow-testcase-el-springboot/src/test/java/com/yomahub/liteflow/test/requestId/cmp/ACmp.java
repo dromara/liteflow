@@ -16,8 +16,9 @@ import org.springframework.stereotype.Component;
 @Component("a")
 public class ACmp {
 
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) {
-        System.out.println("ACmp executed!");
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) {
+		System.out.println("ACmp executed!");
+	}
+
 }

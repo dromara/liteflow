@@ -16,7 +16,7 @@ public class BCmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("BCmp executed!");
-		if (flag < 2){
+		if (flag < 2) {
 			flag++;
 			throw new RuntimeException("demo exception");
 		}

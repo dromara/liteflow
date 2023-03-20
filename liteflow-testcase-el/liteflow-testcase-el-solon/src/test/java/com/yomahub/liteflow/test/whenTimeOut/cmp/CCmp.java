@@ -17,7 +17,8 @@ public class CCmp extends NodeComponent {
 	public void process() {
 		try {
 			Thread.sleep(3500);
-		}catch (Exception ignored){
+		}
+		catch (Exception ignored) {
 
 		}
 		System.out.println("CCmp executed!");

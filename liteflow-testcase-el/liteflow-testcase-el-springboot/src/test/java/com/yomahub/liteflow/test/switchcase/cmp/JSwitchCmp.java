@@ -17,4 +17,5 @@ public class JSwitchCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "";
 	}
+
 }

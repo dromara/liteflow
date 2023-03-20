@@ -13,10 +13,12 @@ public class CCmp extends NodeSwitchComponent {
 
 	@Override
 	public String processSwitch() throws Exception {
-		if(this.getTag().equals("2")){
+		if (this.getTag().equals("2")) {
 			return "e";
-		}else{
+		}
+		else {
 			return "d";
 		}
 	}
+
 }

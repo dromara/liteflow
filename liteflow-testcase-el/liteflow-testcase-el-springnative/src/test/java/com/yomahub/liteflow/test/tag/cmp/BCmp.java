@@ -22,4 +22,5 @@ public class BCmp extends NodeComponent {
 		ConcurrentHashSet<String> testSet = context.getData("test");
 		testSet.add(this.getTag());
 	}
+
 }

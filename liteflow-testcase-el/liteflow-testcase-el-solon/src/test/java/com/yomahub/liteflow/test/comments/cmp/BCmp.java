@@ -13,7 +13,7 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.noear.solon.annotation.Component;
 
 @Component("b")
-public class BCmp{
+public class BCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

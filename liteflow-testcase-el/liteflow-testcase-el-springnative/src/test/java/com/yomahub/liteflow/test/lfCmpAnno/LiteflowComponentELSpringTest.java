@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-
 /**
  * 测试@LiteflowComponent标注
+ *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
@@ -21,13 +21,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration("classpath:/lfCmpAnno/application.xml")
 public class LiteflowComponentELSpringTest extends BaseTest {
 
-    @Autowired
-    private FlowExecutor flowExecutor;
+	@Autowired
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testConfig() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getExecuteStepStr());
-    }
+	@Test
+	public void testConfig() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a[A组件]==>b[B组件]==>c[C组件]==>b[B组件]==>a[A组件]==>d", response.getExecuteStepStr());
+	}
+
 }

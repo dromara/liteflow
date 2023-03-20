@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-
 /**
  * 基类，用于存放 JsonFlowParser 通用方法
  *
@@ -41,7 +40,6 @@ public abstract class BaseJsonFlowParser implements FlowParser {
 
 	/**
 	 * 解析一个chain的过程
-	 *
 	 * @param chainObject chain 节点
 	 */
 	public abstract void parseOneChain(JsonNode chainObject);

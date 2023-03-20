@@ -18,4 +18,5 @@ public class ACmp extends NodeComponent {
 		System.out.println("ACmp executed!");
 		System.out.println(this.getTag());
 	}
+
 }

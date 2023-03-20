@@ -22,77 +22,79 @@ import java.util.Set;
  * 脚本方法代理
  */
 public class ScriptMethodProxy {
-    /**
-     * 被代理的 bean
-     */
-    private final Object bean;
 
-    /**
-     * 原始的类
-     */
-    private final Class<?> orignalClass;
+	/**
+	 * 被代理的 bean
+	 */
+	private final Object bean;
 
-    private final List<Method> scriptMethods;
+	/**
+	 * 原始的类
+	 */
+	private final Class<?> orignalClass;
 
-    public ScriptMethodProxy(Object bean, Class<?> orignalClass, List<Method> scriptMethods) {
-        this.bean = bean;
-        this.orignalClass = orignalClass;
-        this.scriptMethods = scriptMethods;
-    }
+	private final List<Method> scriptMethods;
 
-    public Object getProxyScriptMethod() {
+	public ScriptMethodProxy(Object bean, Class<?> orignalClass, List<Method> scriptMethods) {
+		this.bean = bean;
+		this.orignalClass = orignalClass;
+		this.scriptMethods = scriptMethods;
+	}
 
-        try {
-            return new ByteBuddy().subclass(orignalClass)
-                    .name(buildClassName()) // 设置生成的类名
-                    .method(ElementMatchers.any())
-                    .intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean, scriptMethods)))
-                    .annotateType(orignalClass.getAnnotations())
-                    .make()
-                    .load(ScriptBeanProxy.class.getClassLoader())
-                    .getLoaded()
-                    .newInstance();
-        } catch (Exception e) {
-            throw new LiteFlowException(e);
-        }
-    }
+	public Object getProxyScriptMethod() {
 
-    private String buildClassName() {
-        return StrUtil.format("{}.ByteBuddy${}",
-                ClassUtil.getPackage(orignalClass),
-                SerialsUtil.generateShortUUID());
-    }
+		try {
+			return new ByteBuddy().subclass(orignalClass)
+				.name(buildClassName()) // 设置生成的类名
+				.method(ElementMatchers.any())
+				.intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean, scriptMethods)))
+				.annotateType(orignalClass.getAnnotations())
+				.make()
+				.load(ScriptBeanProxy.class.getClassLoader())
+				.getLoaded()
+				.newInstance();
+		}
+		catch (Exception e) {
+			throw new LiteFlowException(e);
+		}
+	}
 
-    public static class AopInvocationHandler implements InvocationHandler {
-        private final Object bean;
+	private String buildClassName() {
+		return StrUtil.format("{}.ByteBuddy${}", ClassUtil.getPackage(orignalClass), SerialsUtil.generateShortUUID());
+	}
 
-        private final Class<?> clazz;
+	public static class AopInvocationHandler implements InvocationHandler {
 
-        private final Set<Method> methodSet;
+		private final Object bean;
 
-        public AopInvocationHandler(Object bean, List<Method> methods) {
-            this.bean = bean;
-            this.clazz = LiteFlowProxyUtil.getUserClass(bean.getClass());
-            this.methodSet = new HashSet<>(methods);
-        }
+		private final Class<?> clazz;
 
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Optional<Method> invokeMethodOp = Arrays.stream(clazz.getMethods())
-                    .filter(method::equals)
-                    .findFirst();
+		private final Set<Method> methodSet;
 
-            if (!invokeMethodOp.isPresent()) {
-                String errorMsg = StrUtil.format("cannot find method[{}]", clazz.getName(), method.getName());
-                throw new ScriptBeanMethodInvokeException(errorMsg);
-            }
+		public AopInvocationHandler(Object bean, List<Method> methods) {
+			this.bean = bean;
+			this.clazz = LiteFlowProxyUtil.getUserClass(bean.getClass());
+			this.methodSet = new HashSet<>(methods);
+		}
 
-            if (!methodSet.contains(method)) {
-                String errorMsg = StrUtil.format("script method[{}.{}] cannot be executed", clazz.getName(), method.getName());
-                throw new ScriptBeanMethodInvokeException(errorMsg);
-            }
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			Optional<Method> invokeMethodOp = Arrays.stream(clazz.getMethods()).filter(method::equals).findFirst();
 
-            return invokeMethodOp.get().invoke(bean, args);
-        }
-    }
+			if (!invokeMethodOp.isPresent()) {
+				String errorMsg = StrUtil.format("cannot find method[{}]", clazz.getName(), method.getName());
+				throw new ScriptBeanMethodInvokeException(errorMsg);
+			}
+
+			if (!methodSet.contains(method)) {
+				String errorMsg = StrUtil.format("script method[{}.{}] cannot be executed", clazz.getName(),
+						method.getName());
+				throw new ScriptBeanMethodInvokeException(errorMsg);
+			}
+
+			return invokeMethodOp.get().invoke(bean, args);
+		}
+
+	}
+
 }

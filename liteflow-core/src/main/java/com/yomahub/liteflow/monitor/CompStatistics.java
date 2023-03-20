@@ -9,9 +9,10 @@ package com.yomahub.liteflow.monitor;
 
 /**
  * 统计类
+ *
  * @author Bryan.Zhang
  */
-public class CompStatistics implements Comparable<CompStatistics>{
+public class CompStatistics implements Comparable<CompStatistics> {
 
 	private String componentClazzName;
 
@@ -20,12 +21,13 @@ public class CompStatistics implements Comparable<CompStatistics>{
 	private long memorySpent;
 
 	private long recordTime;
-	
+
 	public CompStatistics(String componentClazzName, long timeSpent) {
 		this.componentClazzName = componentClazzName;
 		this.timeSpent = timeSpent;
 		this.recordTime = System.currentTimeMillis();
 	}
+
 	public String getComponentClazzName() {
 		return componentClazzName;
 	}
@@ -49,16 +51,17 @@ public class CompStatistics implements Comparable<CompStatistics>{
 	public void setMemorySpent(long memorySpent) {
 		this.memorySpent = memorySpent;
 	}
-	
+
 	public long getRecordTime() {
 		return recordTime;
 	}
-	
+
 	@Override
 	public int compareTo(CompStatistics o) {
-		if(o != null) {
-			return this.recordTime >= o.getRecordTime()  ? -1 : 1;
+		if (o != null) {
+			return this.recordTime >= o.getRecordTime() ? -1 : 1;
 		}
 		return 1;
 	}
+
 }

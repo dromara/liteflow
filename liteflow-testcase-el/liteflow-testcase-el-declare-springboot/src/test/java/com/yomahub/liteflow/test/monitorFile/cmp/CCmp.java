@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Random;
 
 @Component("c")
-public class CCmp{
+public class CCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

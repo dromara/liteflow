@@ -12,16 +12,17 @@ import com.yomahub.liteflow.flow.element.condition.Condition;
  */
 public class IdOperator extends BaseOperator<Condition> {
 
-    @Override
-    public Condition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEqTwo(objects);
+	@Override
+	public Condition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-        Condition condition = OperatorHelper.convert(objects[0], Condition.class);
+		Condition condition = OperatorHelper.convert(objects[0], Condition.class);
 
-        String id = OperatorHelper.convert(objects[1], String.class);
+		String id = OperatorHelper.convert(objects[1], String.class);
 
-        condition.setId(id);
+		condition.setId(id);
 
-        return condition;
-    }
+		return condition;
+	}
+
 }

@@ -17,4 +17,5 @@ public class ACmp extends NodeComponent {
 		DefaultContext context = this.getFirstContextBean();
 		context.setData(this.getNodeId(), this.getCurrChainId());
 	}
+
 }

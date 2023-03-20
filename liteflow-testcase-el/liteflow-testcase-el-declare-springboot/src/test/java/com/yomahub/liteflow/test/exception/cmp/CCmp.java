@@ -15,12 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("c")
-public class CCmp{
-	
+public class CCmp {
+
 	private static final Logger LOG = LoggerFactory.getLogger(CCmp.class);
-	
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		LOG.info("Ccomp executed!");
 	}
+
 }

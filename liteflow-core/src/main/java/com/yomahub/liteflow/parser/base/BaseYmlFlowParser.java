@@ -22,7 +22,7 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 
 	private final Set<String> CHAIN_NAME_SET = new HashSet<>();
 
-	public void parse(String content) throws Exception{
+	public void parse(String content) throws Exception {
 		parse(ListUtil.toList(content));
 	}
 
@@ -33,7 +33,7 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 		}
 
 		List<JsonNode> jsonObjectList = ListUtil.toList();
-		for (String content : contentList){
+		for (String content : contentList) {
 			JsonNode ruleObject = convertToJson(content);
 			jsonObjectList.add(ruleObject);
 		}
@@ -44,15 +44,15 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 	}
 
 	protected JsonNode convertToJson(String yamlString) {
-		Yaml yaml= new Yaml();
+		Yaml yaml = new Yaml();
 		Map<String, Object> map = yaml.load(yamlString);
 		return JsonUtil.parseObject(JsonUtil.toJsonString(map));
 	}
 
 	/**
 	 * 解析一个 chain 的过程
-	 *
 	 * @param chain chain
 	 */
 	public abstract void parseOneChain(JsonNode chain);
+
 }

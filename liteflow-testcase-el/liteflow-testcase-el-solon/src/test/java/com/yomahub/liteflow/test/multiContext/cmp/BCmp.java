@@ -16,7 +16,7 @@ public class BCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		//getContextBean无参方法是获取到第一个上下文
+		// getContextBean无参方法是获取到第一个上下文
 		OrderContext orderContext = this.getFirstContextBean();
 		orderContext.setOrderNo("SO12345");
 		System.out.println("BCmp executed!");

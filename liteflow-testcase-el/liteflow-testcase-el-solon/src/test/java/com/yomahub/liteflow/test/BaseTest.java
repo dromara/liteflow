@@ -9,12 +9,13 @@ import org.junit.AfterClass;
 
 public class BaseTest {
 
-    @AfterClass
-    public static void cleanScanCache(){
-        FlowBus.cleanCache();
-        ExecutorHelper.loadInstance().clearExecutorServiceMap();
-        SpiFactoryCleaner.clean();
-        LiteflowConfigGetter.clean();
-        FlowInitHook.cleanHook();
-    }
+	@AfterClass
+	public static void cleanScanCache() {
+		FlowBus.cleanCache();
+		ExecutorHelper.loadInstance().clearExecutorServiceMap();
+		SpiFactoryCleaner.clean();
+		LiteflowConfigGetter.clean();
+		FlowInitHook.cleanHook();
+	}
+
 }

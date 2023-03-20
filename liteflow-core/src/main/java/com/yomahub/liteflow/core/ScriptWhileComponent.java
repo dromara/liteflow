@@ -7,24 +7,28 @@ import java.util.Map;
 
 /**
  * 脚本WHILE节点
+ *
  * @author Bryan.Zhang
  * @since 2.9.0
  */
-public class ScriptWhileComponent extends NodeWhileComponent implements ScriptComponent{
+public class ScriptWhileComponent extends NodeWhileComponent implements ScriptComponent {
 
-    @Override
-    public boolean processWhile() throws Exception {
-        ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-        wrap.setCurrChainId(this.getCurrChainId());
-        wrap.setNodeId(this.getNodeId());
-        wrap.setSlotIndex(this.getSlotIndex());
-        wrap.setTag(this.getTag());
-        wrap.setCmpData(this.getCmpData(Map.class));
-        return (boolean) ScriptExecutorFactory.loadInstance().getScriptExecutor(this.getRefNode().getLanguage()).execute(wrap);
-    }
+	@Override
+	public boolean processWhile() throws Exception {
+		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
+		wrap.setCurrChainId(this.getCurrChainId());
+		wrap.setNodeId(this.getNodeId());
+		wrap.setSlotIndex(this.getSlotIndex());
+		wrap.setTag(this.getTag());
+		wrap.setCmpData(this.getCmpData(Map.class));
+		return (boolean) ScriptExecutorFactory.loadInstance()
+			.getScriptExecutor(this.getRefNode().getLanguage())
+			.execute(wrap);
+	}
 
-    @Override
-    public void loadScript(String script, String language) {
-        ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
-    }
+	@Override
+	public void loadScript(String script, String language) {
+		ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
+	}
+
 }

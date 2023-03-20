@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * 声明式组件自定义方法的测试用例
+ *
  * @author Bryan.Zhang
  * @since 2.7.2
  */
@@ -23,15 +24,16 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/customMethodName/application.properties")
 @SpringBootTest(classes = CustomMethodNameELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.customMethodName.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.customMethodName.cmp" })
 public class CustomMethodNameELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testCustomMethodName() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testCustomMethodName() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

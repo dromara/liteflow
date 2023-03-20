@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 循环依赖异常
+ *
  * @author Yun
  */
 public class CyclicDependencyException extends RuntimeException {
@@ -24,4 +25,5 @@ public class CyclicDependencyException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

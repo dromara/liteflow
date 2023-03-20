@@ -34,58 +34,58 @@ import java.nio.charset.StandardCharsets;
 @TestPropertySource(value = "classpath:/zookeeper/application-xml-cluster.properties")
 @SpringBootTest(classes = ZkClusterWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.zookeeper.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.zookeeper.cmp" })
 public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
-    
-    private static final String ZK_CHAIN_PATH = "/liteflow/chain";
 
-    private static final String ZK_SCRIPT_PATH = "/liteflow/script";
+	private static final String ZK_CHAIN_PATH = "/liteflow/chain";
 
-    private static TestingCluster zkCluster;
-    
-    @Resource
-    private FlowExecutor flowExecutor;
+	private static final String ZK_SCRIPT_PATH = "/liteflow/script";
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        System.setProperty("zookeeper.admin.enableServer", "false");
+	private static TestingCluster zkCluster;
 
+	@Resource
+	private FlowExecutor flowExecutor;
 
-        zkCluster = new TestingCluster(new InstanceSpec(null, 21810, -1, -1, true, -1, -1, -1),
-                new InstanceSpec(null, 21811, -1, -1, true, -1, -1, -1),
-                new InstanceSpec(null, 21812, -1, -1, true, -1, -1, -1));
-        zkCluster.start();
-        String connectStr = zkCluster.getConnectString();
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		System.setProperty("zookeeper.admin.enableServer", "false");
 
-        ZkClient zkClient = new ZkClient(connectStr);
-        zkClient.setZkSerializer(new ZkSerializer() {
-            @Override
-            public byte[] serialize(final Object o) throws ZkMarshallingError {
-                return o.toString().getBytes(StandardCharsets.UTF_8);
-            }
+		zkCluster = new TestingCluster(new InstanceSpec(null, 21810, -1, -1, true, -1, -1, -1),
+				new InstanceSpec(null, 21811, -1, -1, true, -1, -1, -1),
+				new InstanceSpec(null, 21812, -1, -1, true, -1, -1, -1));
+		zkCluster.start();
+		String connectStr = zkCluster.getConnectString();
 
-            @Override
-            public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
-                return new String(bytes, StandardCharsets.UTF_8);
-            }
-        });
+		ZkClient zkClient = new ZkClient(connectStr);
+		zkClient.setZkSerializer(new ZkSerializer() {
+			@Override
+			public byte[] serialize(final Object o) throws ZkMarshallingError {
+				return o.toString().getBytes(StandardCharsets.UTF_8);
+			}
 
-        String chain1Path = ZK_CHAIN_PATH+"/chain1";
-        zkClient.createPersistent(chain1Path, true);
-        zkClient.writeData(chain1Path, "THEN(a, b, c, s1);");
+			@Override
+			public Object deserialize(final byte[] bytes) throws ZkMarshallingError {
+				return new String(bytes, StandardCharsets.UTF_8);
+			}
+		});
 
-        String script1Path = ZK_SCRIPT_PATH+"/s1:script:脚本s1";
-        zkClient.createPersistent(script1Path, true);
-        zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
+		String chain1Path = ZK_CHAIN_PATH + "/chain1";
+		zkClient.createPersistent(chain1Path, true);
+		zkClient.writeData(chain1Path, "THEN(a, b, c, s1);");
 
-        Thread.sleep(2000L);
-    }
-    
-    @Test
-    public void testZkNodeWithXml() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("hello", context.getData("test"));
-    }
+		String script1Path = ZK_SCRIPT_PATH + "/s1:script:脚本s1";
+		zkClient.createPersistent(script1Path, true);
+		zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
+
+		Thread.sleep(2000L);
+	}
+
+	@Test
+	public void testZkNodeWithXml() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("hello", context.getData("test"));
+	}
+
 }

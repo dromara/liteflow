@@ -13,14 +13,15 @@ import com.yomahub.liteflow.flow.element.condition.ThenCondition;
  */
 public class ThenOperator extends BaseOperator<ThenCondition> {
 
-    @Override
-    public ThenCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtZero(objects);
+	@Override
+	public ThenCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeGtZero(objects);
 
-        ThenCondition thenCondition = new ThenCondition();
-        for (Object obj : objects) {
-            thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
-        }
-        return thenCondition;
-    }
+		ThenCondition thenCondition = new ThenCondition();
+		for (Object obj : objects) {
+			thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
+		}
+		return thenCondition;
+	}
+
 }

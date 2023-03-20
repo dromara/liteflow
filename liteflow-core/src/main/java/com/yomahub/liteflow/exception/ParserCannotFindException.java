@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 解析器找不到异常
+ *
  * @author Yun
  */
 public class ParserCannotFindException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ParserCannotFindException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

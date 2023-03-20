@@ -7,19 +7,21 @@ import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
 /**
  * EL规则中的WHEN的操作符
+ *
  * @author Bryan.Zhang
  * @since 2.8.0
  */
 public class WhenOperator extends BaseOperator<WhenCondition> {
 
-    @Override
-    public WhenCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtZero(objects);
+	@Override
+	public WhenCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeGtZero(objects);
 
-        WhenCondition whenCondition = new WhenCondition();
-        for (Object obj : objects) {
-            whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
-        }
-        return whenCondition;
-    }
+		WhenCondition whenCondition = new WhenCondition();
+		for (Object obj : objects) {
+			whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
+		}
+		return whenCondition;
+	}
+
 }

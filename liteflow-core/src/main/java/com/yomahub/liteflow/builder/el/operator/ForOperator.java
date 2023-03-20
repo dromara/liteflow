@@ -19,34 +19,38 @@ import com.yomahub.liteflow.flow.element.condition.ForCondition;
  * @since 2.9.0
  */
 public class ForOperator extends BaseOperator<ForCondition> {
-    @Override
-    public ForCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        Node node;
-        if (objects[0] instanceof Node) {
-            node = OperatorHelper.convert(objects[0], Node.class);
-            if (!ListUtil.toList(NodeTypeEnum.FOR, NodeTypeEnum.FOR_SCRIPT).contains(node.getType())) {
-                throw new QLException("The parameter must be for-node item");
-            }
-        }else if(objects[0] instanceof Integer){
-            Integer forCount = OperatorHelper.convert(objects[0], Integer.class);
-            node = new Node();
-            NodeForComponent nodeForComponent = new NodeForComponent() {
-                @Override
-                public int processFor() {
-                    return forCount;
-                }
-            };
-            nodeForComponent.setSelf(nodeForComponent);
-            nodeForComponent.setNodeId(StrUtil.format("LOOP_{}", forCount));
-            node.setInstance(nodeForComponent);
-        }else{
-            throw new QLException("The parameter must be Node item");
-        }
+	@Override
+	public ForCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        ForCondition forCondition = new ForCondition();
-        forCondition.setForNode(node);
-        return forCondition;
-    }
+		Node node;
+		if (objects[0] instanceof Node) {
+			node = OperatorHelper.convert(objects[0], Node.class);
+			if (!ListUtil.toList(NodeTypeEnum.FOR, NodeTypeEnum.FOR_SCRIPT).contains(node.getType())) {
+				throw new QLException("The parameter must be for-node item");
+			}
+		}
+		else if (objects[0] instanceof Integer) {
+			Integer forCount = OperatorHelper.convert(objects[0], Integer.class);
+			node = new Node();
+			NodeForComponent nodeForComponent = new NodeForComponent() {
+				@Override
+				public int processFor() {
+					return forCount;
+				}
+			};
+			nodeForComponent.setSelf(nodeForComponent);
+			nodeForComponent.setNodeId(StrUtil.format("LOOP_{}", forCount));
+			node.setInstance(nodeForComponent);
+		}
+		else {
+			throw new QLException("The parameter must be Node item");
+		}
+
+		ForCondition forCondition = new ForCondition();
+		forCondition.setForNode(node);
+		return forCondition;
+	}
+
 }

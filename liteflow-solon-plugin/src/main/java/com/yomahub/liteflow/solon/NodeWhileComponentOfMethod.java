@@ -12,37 +12,42 @@ import java.lang.reflect.Method;
  * @since 1.11
  */
 public class NodeWhileComponentOfMethod extends NodeWhileComponent {
-    final BeanWrap beanWrap;
-    final Method method;
-    final LiteFlowMethodEnum methodEnum;
 
-    public NodeWhileComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
-        this.beanWrap = beanWrap;
-        this.method = method;
-        this.methodEnum = methodEnum;
+	final BeanWrap beanWrap;
 
-        if (method.getParameterCount() > 1) {
-            String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new LiteFlowException("NodeWhileComponent method parameter cannot be more than one: " + methodFullName);
-        }
+	final Method method;
 
-        if (method.getReturnType() != Boolean.class
-                && method.getReturnType() != boolean.class) {
-            String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new LiteFlowException("NodeWhileComponent method returnType can only be boolean: " + methodFullName);
-        }
-    }
+	final LiteFlowMethodEnum methodEnum;
 
-    private Object exec() throws Exception {
-        if (method.getParameterCount() == 0) {
-            return method.invoke(beanWrap.get());
-        } else {
-            return method.invoke(beanWrap.get(), this);
-        }
-    }
+	public NodeWhileComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
+		this.beanWrap = beanWrap;
+		this.method = method;
+		this.methodEnum = methodEnum;
 
-    @Override
-    public boolean processWhile() throws Exception {
-        return (boolean) exec();
-    }
+		if (method.getParameterCount() > 1) {
+			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
+			throw new LiteFlowException(
+					"NodeWhileComponent method parameter cannot be more than one: " + methodFullName);
+		}
+
+		if (method.getReturnType() != Boolean.class && method.getReturnType() != boolean.class) {
+			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
+			throw new LiteFlowException("NodeWhileComponent method returnType can only be boolean: " + methodFullName);
+		}
+	}
+
+	private Object exec() throws Exception {
+		if (method.getParameterCount() == 0) {
+			return method.invoke(beanWrap.get());
+		}
+		else {
+			return method.invoke(beanWrap.get(), this);
+		}
+	}
+
+	@Override
+	public boolean processWhile() throws Exception {
+		return (boolean) exec();
+	}
+
 }

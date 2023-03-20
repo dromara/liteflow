@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * 串行器
+ *
  * @author Bryan.Zhang
  */
 public class ThenCondition extends Condition {
@@ -31,8 +32,8 @@ public class ThenCondition extends Condition {
 		List<PreCondition> preConditionList = this.getPreConditionList();
 		List<FinallyCondition> finallyConditionList = this.getFinallyConditionList();
 
-		try{
-			for (PreCondition preCondition : preConditionList){
+		try {
+			for (PreCondition preCondition : preConditionList) {
 				preCondition.setCurrChainId(this.getCurrChainId());
 				preCondition.execute(slotIndex);
 			}
@@ -41,22 +42,26 @@ public class ThenCondition extends Condition {
 				executableItem.setCurrChainId(this.getCurrChainId());
 				executableItem.execute(slotIndex);
 			}
-		}catch (ChainEndException e){
-			//这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
-			//是属于正常逻辑，所以会在FlowExecutor中判断。这里不作为异常处理
+		}
+		catch (ChainEndException e) {
+			// 这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
+			// 是属于正常逻辑，所以会在FlowExecutor中判断。这里不作为异常处理
 			throw e;
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			Slot slot = DataBus.getSlot(slotIndex);
 			String chainId = this.getCurrChainId();
-			//这里事先取到exception set到slot里，为了方便finally取到exception
-			if (slot.isSubChain(chainId)){
+			// 这里事先取到exception set到slot里，为了方便finally取到exception
+			if (slot.isSubChain(chainId)) {
 				slot.setSubException(chainId, e);
-			}else{
+			}
+			else {
 				slot.setException(e);
 			}
 			throw e;
-		}finally {
-			for (FinallyCondition finallyCondition : finallyConditionList){
+		}
+		finally {
+			for (FinallyCondition finallyCondition : finallyConditionList) {
 				finallyCondition.setCurrChainId(this.getCurrChainId());
 				finallyCondition.execute(slotIndex);
 			}
@@ -65,28 +70,37 @@ public class ThenCondition extends Condition {
 
 	@Override
 	public void addExecutable(Executable executable) {
-		if (executable instanceof PreCondition){
+		if (executable instanceof PreCondition) {
 			this.addPreCondition((PreCondition) executable);
-		}else if (executable instanceof FinallyCondition){
+		}
+		else if (executable instanceof FinallyCondition) {
 			this.addFinallyCondition((FinallyCondition) executable);
-		}else{
+		}
+		else {
 			super.addExecutable(executable);
 		}
 	}
 
 	public List<PreCondition> getPreConditionList() {
-		return this.getExecutableList(ConditionKey.PRE_KEY).stream().map(executable -> (PreCondition) executable).collect(Collectors.toList());
+		return this.getExecutableList(ConditionKey.PRE_KEY)
+			.stream()
+			.map(executable -> (PreCondition) executable)
+			.collect(Collectors.toList());
 	}
 
-	public void addPreCondition(PreCondition preCondition){
+	public void addPreCondition(PreCondition preCondition) {
 		this.addExecutable(ConditionKey.PRE_KEY, preCondition);
 	}
 
 	public List<FinallyCondition> getFinallyConditionList() {
-		return this.getExecutableList(ConditionKey.FINALLY_KEY).stream().map(executable -> (FinallyCondition) executable).collect(Collectors.toList());
+		return this.getExecutableList(ConditionKey.FINALLY_KEY)
+			.stream()
+			.map(executable -> (FinallyCondition) executable)
+			.collect(Collectors.toList());
 	}
 
-	public void addFinallyCondition(FinallyCondition finallyCondition){
+	public void addFinallyCondition(FinallyCondition finallyCondition) {
 		this.addExecutable(ConditionKey.FINALLY_KEY, finallyCondition);
 	}
+
 }

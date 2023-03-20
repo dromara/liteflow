@@ -4,15 +4,18 @@ import com.yomahub.liteflow.core.NodeWhileComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 public class ZCmp extends NodeWhileComponent {
-    @Override
-    public boolean processWhile() throws Exception {
-        DefaultContext context = this.getFirstContextBean();
-        String key = "test";
-        if (context.hasData(key)){
-            int count = context.getData("test");
-            return count < 5;
-        }else{
-            return true;
-        }
-    }
+
+	@Override
+	public boolean processWhile() throws Exception {
+		DefaultContext context = this.getFirstContextBean();
+		String key = "test";
+		if (context.hasData(key)) {
+			int count = context.getData("test");
+			return count < 5;
+		}
+		else {
+			return true;
+		}
+	}
+
 }

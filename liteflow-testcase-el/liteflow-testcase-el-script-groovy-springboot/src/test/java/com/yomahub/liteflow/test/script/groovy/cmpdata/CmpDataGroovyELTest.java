@@ -17,24 +17,26 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境EL常规的例子测试
+ *
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/cmpdata/application.properties")
 @SpringBootTest(classes = CmpDataGroovyELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.groovy.cmpdata.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.groovy.cmpdata.cmp" })
 public class CmpDataGroovyELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //最简单的情况
-    @Test
-    public void testCmpData1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("1995-10-01", context.getData("s1"));
-    }
+	// 最简单的情况
+	@Test
+	public void testCmpData1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("1995-10-01", context.getData("s1"));
+	}
+
 }

@@ -11,25 +11,27 @@ import org.junit.Test;
 
 /**
  * 非spring环境下异步线程超时日志打印测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
 public class WhenTimeOutTest2 extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("whenTimeOut/flow2.el.xml");
-        config.setWhenMaxWaitSeconds(5);
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("whenTimeOut/flow2.el.xml");
+		config.setWhenMaxWaitSeconds(5);
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //其中d,e,f都sleep 4秒，其中def是不同的组，超时设置5秒
-    @Test
-    public void testWhenTimeOut() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 其中d,e,f都sleep 4秒，其中def是不同的组，超时设置5秒
+	@Test
+	public void testWhenTimeOut() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

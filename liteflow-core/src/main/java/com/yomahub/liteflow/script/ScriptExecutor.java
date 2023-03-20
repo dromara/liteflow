@@ -4,18 +4,20 @@ import com.yomahub.liteflow.enums.ScriptTypeEnum;
 
 /**
  * 脚本执行器接口
+ *
  * @author Bryan.Zhang
  * @since 2.6.0
  */
 public interface ScriptExecutor {
 
-    ScriptExecutor init();
+	ScriptExecutor init();
 
-    void load(String nodeId, String script);
+	void load(String nodeId, String script);
 
-    Object execute(ScriptExecuteWrap wrap) throws Exception;
+	Object execute(ScriptExecuteWrap wrap) throws Exception;
 
-    void cleanCache();
+	void cleanCache();
 
-    ScriptTypeEnum scriptType();
+	ScriptTypeEnum scriptType();
+
 }

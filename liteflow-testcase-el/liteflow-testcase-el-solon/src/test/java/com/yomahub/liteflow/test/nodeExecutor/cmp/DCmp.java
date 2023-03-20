@@ -15,17 +15,18 @@ import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutorAndCustomRetry;
 
 @LiteflowComponent("d")
-@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
+@LiteflowRetry(retry = 5, forExceptions = { NullPointerException.class })
 public class DCmp extends NodeComponent {
 
-    @Override
-    public void process() {
-        System.out.println("DCmp executed!");
-        throw new NullPointerException("demo exception");
-    }
+	@Override
+	public void process() {
+		System.out.println("DCmp executed!");
+		throw new NullPointerException("demo exception");
+	}
 
-    @Override
-    public Class<? extends NodeExecutor> getNodeExecutorClass() {
-        return CustomerNodeExecutorAndCustomRetry.class;
-    }
+	@Override
+	public Class<? extends NodeExecutor> getNodeExecutorClass() {
+		return CustomerNodeExecutorAndCustomRetry.class;
+	}
+
 }

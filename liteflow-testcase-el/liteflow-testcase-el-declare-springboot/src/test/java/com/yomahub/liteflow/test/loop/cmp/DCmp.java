@@ -14,16 +14,17 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
+public class DCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		String key = "test";
-		if (context.hasData(key)){
+		if (context.hasData(key)) {
 			int count = context.getData(key);
 			context.setData(key, ++count);
-		}else{
+		}
+		else {
 			context.setData(key, 1);
 		}
 	}

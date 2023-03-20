@@ -15,28 +15,29 @@ import java.util.List;
 @LiteflowComponent
 public class CmpConfig {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "a")
-    public void processA(NodeComponent bindCmp) {
-        String key = "test";
-        DefaultContext context = bindCmp.getFirstContextBean();
-        if (!context.hasData(key)){
-            context.setData(key, bindCmp.getCurrLoopObj());
-        }else{
-            String str = context.getData(key);
-            str += bindCmp.getCurrLoopObj();
-            context.setData(key, str);
-        }
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "a")
+	public void processA(NodeComponent bindCmp) {
+		String key = "test";
+		DefaultContext context = bindCmp.getFirstContextBean();
+		if (!context.hasData(key)) {
+			context.setData(key, bindCmp.getCurrLoopObj());
+		}
+		else {
+			String str = context.getData(key);
+			str += bindCmp.getCurrLoopObj();
+			context.setData(key, str);
+		}
+	}
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "b", nodeType = NodeTypeEnum.BREAK)
-    public boolean processB(NodeComponent bindCmp) {
-        return bindCmp.getLoopIndex() == 1;
-    }
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_ITERATOR, nodeId = "it", nodeType = NodeTypeEnum.ITERATOR)
-    public Iterator<?> processIT(NodeComponent bindCmp) {
-        List<String> list = bindCmp.getRequestData();
-        return list.iterator();
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "b", nodeType = NodeTypeEnum.BREAK)
+	public boolean processB(NodeComponent bindCmp) {
+		return bindCmp.getLoopIndex() == 1;
+	}
+
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_ITERATOR, nodeId = "it", nodeType = NodeTypeEnum.ITERATOR)
+	public Iterator<?> processIT(NodeComponent bindCmp) {
+		List<String> list = bindCmp.getRequestData();
+		return list.iterator();
+	}
+
 }
-
-

@@ -21,9 +21,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import java.util.Map;
 
-
 /**
  * 测试springboot下的groovy脚本组件，基于xml配置
+ *
  * @author Bryan.Zhang
  * @since 2.6.0
  */
@@ -31,21 +31,22 @@ import java.util.Map;
 @TestPropertySource(value = "classpath:/multiLanguage/application.properties")
 @SpringBootTest(classes = MultiLanguageELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.multi.language.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.multi.language.cmp" })
 public class MultiLanguageELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试普通脚本节点
-    @Test
-    public void testMultiLanguage1() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Object student = context.getData("student");
-        Map<String,Object> studentMap = JsonUtil.parseObject(JsonUtil.toJsonString(student), Map.class);
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Integer.valueOf(18), context.getData("s1"));
-        Assert.assertEquals(10032, studentMap.get("studentID"));
-    }
+	// 测试普通脚本节点
+	@Test
+	public void testMultiLanguage1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Object student = context.getData("student");
+		Map<String, Object> studentMap = JsonUtil.parseObject(JsonUtil.toJsonString(student), Map.class);
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals(Integer.valueOf(18), context.getData("s1"));
+		Assert.assertEquals(10032, studentMap.get("studentID"));
+	}
+
 }

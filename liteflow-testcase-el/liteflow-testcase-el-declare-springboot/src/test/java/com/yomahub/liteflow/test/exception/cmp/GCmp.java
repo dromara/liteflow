@@ -16,11 +16,12 @@ import org.springframework.stereotype.Component;
 
 @Component("g")
 public class GCmp {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(GCmp.class);
-	
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		LOG.info("Gcomp executed!");
 	}
+
 }

@@ -15,13 +15,14 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/base/application.xml")
 public class BaseCommonELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testBaseCommon(){
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
-    }
+	@Test
+	public void testBaseCommon() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
+	}
+
 }

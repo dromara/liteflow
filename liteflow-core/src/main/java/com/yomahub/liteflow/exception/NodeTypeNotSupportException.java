@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 节点类型不支持异常
+ *
  * @author Bryan.Zhang
  * @since 2.6.0
  */
@@ -25,4 +26,5 @@ public class NodeTypeNotSupportException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

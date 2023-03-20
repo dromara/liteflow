@@ -19,21 +19,20 @@ import javax.annotation.Resource;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BuilderELDeclMultiSpringbootTest2.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.builder.cmp2"})
+@ComponentScan({ "com.yomahub.liteflow.test.builder.cmp2" })
 public class BuilderELDeclMultiSpringbootTest2 extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //通过spring去扫描组件，通过代码去构建chain
-    @Test
-    public void testBuilder() throws Exception {
-        LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
-                "THEN(h, i, j)"
-        ).build();
+	// 通过spring去扫描组件，通过代码去构建chain
+	@Test
+	public void testBuilder() throws Exception {
+		LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL("THEN(h, i, j)").build();
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("h==>i==>j", response.getExecuteStepStr());
-    }
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("h==>i==>j", response.getExecuteStepStr());
+	}
+
 }

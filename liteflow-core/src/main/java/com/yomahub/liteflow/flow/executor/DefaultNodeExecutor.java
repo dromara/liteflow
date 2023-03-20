@@ -9,8 +9,10 @@ import com.yomahub.liteflow.core.NodeComponent;
  * @since 2.6.9
  */
 public class DefaultNodeExecutor extends NodeExecutor {
-    @Override
-    public void execute(NodeComponent instance) throws Exception {
-        super.execute(instance);
-    }
+
+	@Override
+	public void execute(NodeComponent instance) throws Exception {
+		super.execute(instance);
+	}
+
 }

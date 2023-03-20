@@ -18,6 +18,7 @@ import java.util.function.BooleanSupplier;
 
 /**
  * Etcd解析器实现，只支持EL形式的XML，不支持其他的形式
+ *
  * @author zendwang
  * @since 2.9.0
  */
@@ -28,11 +29,13 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 	public EtcdXmlELParser() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		try{
+		try {
 			EtcdParserVO etcdParserVO = null;
-			if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
-				etcdParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), EtcdParserVO.class, CopyOptions.create());
-			}else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
+			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
+				etcdParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), EtcdParserVO.class,
+						CopyOptions.create());
+			}
+			else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
 				etcdParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), EtcdParserVO.class);
 			}
 
@@ -40,15 +43,16 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 				throw new EtcdException("rule-source-ext-data is empty");
 			}
 
-			if (StrUtil.isBlank(etcdParserVO.getChainPath())){
+			if (StrUtil.isBlank(etcdParserVO.getChainPath())) {
 				throw new EtcdException("You must configure the chainPath property");
 			}
-			if (StrUtil.isBlank(etcdParserVO.getEndpoints())){
+			if (StrUtil.isBlank(etcdParserVO.getEndpoints())) {
 				throw new EtcdException("etcd endpoints is empty");
 			}
 
 			etcdParserHelper = new EtcdParserHelper(etcdParserVO);
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw new EtcdException(e.getMessage());
 		}
 	}
@@ -65,8 +69,10 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 			});
 
 			return content;
-		} catch (Exception e){
+		}
+		catch (Exception e) {
 			throw new EtcdException(e.getMessage());
 		}
 	}
+
 }

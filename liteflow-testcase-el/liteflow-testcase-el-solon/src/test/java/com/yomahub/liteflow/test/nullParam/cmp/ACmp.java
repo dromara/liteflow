@@ -19,4 +19,5 @@ public class ACmp extends NodeComponent {
 		System.out.println("get request data:" + this.getRequestData());
 		this.getSlot().setInput("BCmp", "param for BCmp");
 	}
+
 }

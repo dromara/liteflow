@@ -7,14 +7,15 @@ import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELDeclSpringbootTest.RUN_TIME_SLOT;
 
-
 @Component("m")
-public class MCmp{
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) throws Exception {
+public class MCmp {
 
-        RUN_TIME_SLOT.add(bindCmp.getSlot().getRequestId());
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) throws Exception {
 
-        System.out.println("Mcomp executed!");
-    }
+		RUN_TIME_SLOT.add(bindCmp.getSlot().getRequestId());
+
+		System.out.println("Mcomp executed!");
+	}
+
 }

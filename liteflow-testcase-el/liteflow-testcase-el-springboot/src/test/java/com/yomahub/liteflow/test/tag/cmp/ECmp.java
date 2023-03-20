@@ -18,4 +18,5 @@ public class ECmp extends NodeComponent {
 		System.out.println(this.getTag());
 		System.out.println("ECmp executed!");
 	}
+
 }

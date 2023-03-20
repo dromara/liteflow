@@ -20,7 +20,7 @@ public class BCmp {
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("BCmp executed!");
-		if (flag < 2){
+		if (flag < 2) {
 			flag++;
 			throw new RuntimeException("demo exception");
 		}

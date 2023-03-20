@@ -23,4 +23,5 @@ public class GCmp extends NodeComponent {
 	public boolean isContinueOnError() {
 		return true;
 	}
+
 }

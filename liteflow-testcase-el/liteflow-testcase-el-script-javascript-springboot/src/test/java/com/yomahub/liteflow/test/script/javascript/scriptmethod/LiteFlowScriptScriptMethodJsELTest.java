@@ -19,26 +19,27 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/scriptmethod/application.properties")
 @SpringBootTest(classes = LiteFlowScriptScriptMethodJsELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.javascript.scriptmethod.cmp","com.yomahub.liteflow.test.script.javascript.scriptmethod.bean"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.javascript.scriptmethod.cmp",
+		"com.yomahub.liteflow.test.script.javascript.scriptmethod.bean" })
 public class LiteFlowScriptScriptMethodJsELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testScriptBean1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertEquals("hello", context.getData("demo"));
-    }
+	@Test
+	public void testScriptBean1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertEquals("hello", context.getData("demo"));
+	}
 
-    @Test
-    public void testScriptBean2() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertEquals("hello,kobe", context.getData("demo"));
-    }
+	@Test
+	public void testScriptBean2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertEquals("hello,kobe", context.getData("demo"));
+	}
 
 }

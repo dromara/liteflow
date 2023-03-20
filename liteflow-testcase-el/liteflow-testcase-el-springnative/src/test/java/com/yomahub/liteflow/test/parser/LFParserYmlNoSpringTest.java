@@ -9,18 +9,20 @@ import org.junit.Test;
 
 /**
  * 无spring环境的yml parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
 public class LFParserYmlNoSpringTest extends BaseTest {
 
-    //测试无spring场景的yml parser
-    @Test
-    public void testNoSpring() {
-        LiteflowConfig liteflowConfig = new LiteflowConfig();
-        liteflowConfig.setRuleSource("parser/flow.el.yml");
-        FlowExecutor executor = new FlowExecutor(liteflowConfig);
-        LiteflowResponse response = executor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无spring场景的yml parser
+	@Test
+	public void testNoSpring() {
+		LiteflowConfig liteflowConfig = new LiteflowConfig();
+		liteflowConfig.setRuleSource("parser/flow.el.yml");
+		FlowExecutor executor = new FlowExecutor(liteflowConfig);
+		LiteflowResponse response = executor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

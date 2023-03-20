@@ -16,14 +16,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("a")
-public class ACmp{
-	
+public class ACmp {
+
 	private static final Logger LOG = LoggerFactory.getLogger(ACmp.class);
-	
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
+		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
 			throw new RuntimeException("chain execute execption");
 		}
 		LOG.info("Acomp executed!");

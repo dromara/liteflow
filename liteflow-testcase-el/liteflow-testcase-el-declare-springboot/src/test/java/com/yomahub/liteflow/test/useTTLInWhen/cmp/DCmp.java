@@ -15,13 +15,13 @@ import com.yomahub.liteflow.test.useTTLInWhen.TestTL;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
+public class DCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		String value = TestTL.get();
 		DefaultContext context = bindCmp.getFirstContextBean();
-		context.setData(bindCmp.getNodeId(),value+",d");
+		context.setData(bindCmp.getNodeId(), value + ",d");
 		System.out.println("DCmp executed!");
 	}
 

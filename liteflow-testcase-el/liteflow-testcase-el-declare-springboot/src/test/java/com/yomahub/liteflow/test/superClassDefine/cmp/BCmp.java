@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component("b")
 @LiteflowCmpDefine(NodeTypeEnum.COMMON)
-public class BCmp extends SuperClass{
+public class BCmp extends SuperClass {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

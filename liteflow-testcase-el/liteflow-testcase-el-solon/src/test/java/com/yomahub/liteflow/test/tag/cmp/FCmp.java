@@ -22,4 +22,5 @@ public class FCmp extends NodeComponent {
 	public boolean isAccess() {
 		return Boolean.parseBoolean(this.getTag());
 	}
+
 }

@@ -7,10 +7,11 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 @LiteflowComponent("x")
-public class XCmp{
+public class XCmp {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_FOR, nodeType = NodeTypeEnum.FOR)
-    public int processFor(NodeComponent bindCmp) throws Exception {
-        return 3;
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_FOR, nodeType = NodeTypeEnum.FOR)
+	public int processFor(NodeComponent bindCmp) throws Exception {
+		return 3;
+	}
+
 }

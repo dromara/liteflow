@@ -5,14 +5,15 @@ import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELSpringbootTest.RUN_TIME_SLOT;
 
-
 @Component("m")
 public class MCmp extends NodeComponent {
-    @Override
-    public void process() throws Exception {
 
-        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+	@Override
+	public void process() throws Exception {
 
-        System.out.println("Mcomp executed!");
-    }
+		RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+
+		System.out.println("Mcomp executed!");
+	}
+
 }

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 组件不可访问异常
+ *
  * @author Bryan.Zhang
  */
 public class ComponentNotAccessException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ComponentNotAccessException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

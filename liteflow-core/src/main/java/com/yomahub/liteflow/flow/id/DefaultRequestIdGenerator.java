@@ -9,8 +9,9 @@ import cn.hutool.core.util.IdUtil;
  */
 public class DefaultRequestIdGenerator implements RequestIdGenerator {
 
-    @Override
-    public String generate() {
-        return IdUtil.fastSimpleUUID();
-    }
+	@Override
+	public String generate() {
+		return IdUtil.fastSimpleUUID();
+	}
+
 }

@@ -19,7 +19,7 @@ public class DCmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
-		context.setData(this.getNodeId(),value+",d");
+		context.setData(this.getNodeId(), value + ",d");
 		System.out.println("DCmp executed!");
 	}
 

@@ -12,11 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GCmp extends NodeComponent {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(GCmp.class);
-	
+
 	@Override
 	public void process() {
 		LOG.info("Gcomp executed!");
 	}
+
 }

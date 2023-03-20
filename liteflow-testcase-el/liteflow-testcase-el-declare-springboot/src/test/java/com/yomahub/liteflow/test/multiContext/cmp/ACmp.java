@@ -14,7 +14,7 @@ import com.yomahub.liteflow.test.multiContext.CheckContext;
 import org.springframework.stereotype.Component;
 
 @Component("a")
-public class ACmp{
+public class ACmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
@@ -23,4 +23,5 @@ public class ACmp{
 		checkContext.setRandomId(95);
 		System.out.println("ACmp executed!");
 	}
+
 }

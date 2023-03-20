@@ -2,68 +2,77 @@ package com.yomahub.liteflow.parser.nacos.vo;
 
 /**
  * 用于解析 RuleSourceExtData 的vo类，用于nacos模式中
+ *
  * @author mll
  * @since 2.9.0
  */
 public class NacosParserVO {
-    private String serverAddr;
-    private String namespace;
-    private String dataId;
-    private String group;
-    private String username;
-    private String password;
 
-    public String getServerAddr() {
-        return serverAddr;
-    }
+	private String serverAddr;
 
-    public void setServerAddr(String serverAddr) {
-        this.serverAddr = serverAddr;
-    }
+	private String namespace;
 
-    public String getNamespace() {
-        return namespace;
-    }
+	private String dataId;
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
+	private String group;
 
-    public String getDataId() {
-        return dataId;
-    }
+	private String username;
 
-    public void setDataId(String dataId) {
-        this.dataId = dataId;
-    }
+	private String password;
 
-    public String getGroup() {
-        return group;
-    }
+	public String getServerAddr() {
+		return serverAddr;
+	}
 
-    public void setGroup(String group) {
-        this.group = group;
-    }
+	public void setServerAddr(String serverAddr) {
+		this.serverAddr = serverAddr;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getNamespace() {
+		return namespace;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String getDataId() {
+		return dataId;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setDataId(String dataId) {
+		this.dataId = dataId;
+	}
 
-    @Override
-    public String toString() {
-        return "NacosParserVO{" + "serverAddr='" + serverAddr + '\'' + ", namespace='" + namespace + '\'' + ", dataId='" + dataId + '\'' + ", group='" + group + '\''
-               + ", username='" + username + '\'' + ", password='" + password + '\'' + '}';
-    }
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	@Override
+	public String toString() {
+		return "NacosParserVO{" + "serverAddr='" + serverAddr + '\'' + ", namespace='" + namespace + '\'' + ", dataId='"
+				+ dataId + '\'' + ", group='" + group + '\'' + ", username='" + username + '\'' + ", password='"
+				+ password + '\'' + '}';
+	}
+
 }

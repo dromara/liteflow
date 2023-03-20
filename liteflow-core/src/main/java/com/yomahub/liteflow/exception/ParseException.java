@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 解析异常
+ *
  * @author Yun
  */
 public class ParseException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ParseException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

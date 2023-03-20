@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 链端不存在
+ *
  * @author Bryan.Zhang
  */
 public class ChainNotFoundException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ChainNotFoundException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

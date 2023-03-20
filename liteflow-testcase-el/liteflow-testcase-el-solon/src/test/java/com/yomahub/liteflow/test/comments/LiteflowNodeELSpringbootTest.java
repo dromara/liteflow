@@ -23,6 +23,7 @@ public class LiteflowNodeELSpringbootTest extends BaseTest {
 	public void testAsyncFlow1() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a base request");
 		Assert.assertTrue(response.isSuccess());
-		Assert.assertTrue(ListUtil.toList("a==>b==>c==>b","a==>b==>b==>c").contains(response.getExecuteStepStr()));
+		Assert.assertTrue(ListUtil.toList("a==>b==>c==>b", "a==>b==>b==>c").contains(response.getExecuteStepStr()));
 	}
+
 }

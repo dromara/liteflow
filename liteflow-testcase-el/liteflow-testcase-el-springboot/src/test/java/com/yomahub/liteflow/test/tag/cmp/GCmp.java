@@ -17,4 +17,5 @@ public class GCmp extends NodeComponent {
 	public void process() {
 		System.out.println("GCmp executed!");
 	}
+
 }

@@ -19,37 +19,39 @@ import java.util.List;
 
 /**
  * springboot环境EL常规的例子测试
+ *
  * @author Bryan.Zhang
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/iterator/application.properties")
 @SpringBootTest(classes = IteratorELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.iterator.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.iterator.cmp" })
 public class IteratorELSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //最简单的情况
-    @Test
-    public void testIt1() throws Exception{
-        List<String> list = ListUtil.toList("1","2","3");
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        String str = context.getData("test");
-        Assert.assertEquals("123", str);
-    }
+	// 最简单的情况
+	@Test
+	public void testIt1() throws Exception {
+		List<String> list = ListUtil.toList("1", "2", "3");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		String str = context.getData("test");
+		Assert.assertEquals("123", str);
+	}
 
-    //迭代器带break
-    @Test
-    public void testIt2() throws Exception{
-        List<String> list = ListUtil.toList("1","2","3");
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        String str = context.getData("test");
-        Assert.assertEquals("12", str);
-    }
+	// 迭代器带break
+	@Test
+	public void testIt2() throws Exception {
+		List<String> list = ListUtil.toList("1", "2", "3");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		String str = context.getData("test");
+		Assert.assertEquals("12", str);
+	}
+
 }

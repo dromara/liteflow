@@ -8,17 +8,19 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 @LiteflowComponent("z")
-public class ZCmp{
+public class ZCmp {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeType = NodeTypeEnum.WHILE)
-    public boolean processWhile(NodeComponent bindCmp) throws Exception {
-        DefaultContext context = bindCmp.getFirstContextBean();
-        String key = "test";
-        if (context.hasData(key)){
-            int count = context.getData("test");
-            return count < 5;
-        }else{
-            return true;
-        }
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeType = NodeTypeEnum.WHILE)
+	public boolean processWhile(NodeComponent bindCmp) throws Exception {
+		DefaultContext context = bindCmp.getFirstContextBean();
+		String key = "test";
+		if (context.hasData(key)) {
+			int count = context.getData("test");
+			return count < 5;
+		}
+		else {
+			return true;
+		}
+	}
+
 }

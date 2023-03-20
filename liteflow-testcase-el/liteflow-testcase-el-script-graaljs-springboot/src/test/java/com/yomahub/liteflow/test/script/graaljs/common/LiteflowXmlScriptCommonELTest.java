@@ -15,9 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-
 /**
  * 测试springboot下的graaljs脚本组件，基于xml配置
+ *
  * @author zendwang
  * @since 2.9.4
  */
@@ -25,18 +25,19 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/common/application.properties")
 @SpringBootTest(classes = LiteflowXmlScriptCommonELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.graaljs.common.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.graaljs.common.cmp" })
 public class LiteflowXmlScriptCommonELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试普通脚本节点
-    @Test
-    public void testCommon1() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(Integer.valueOf(11), context.getData("s1"));
-    }
+	// 测试普通脚本节点
+	@Test
+	public void testCommon1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals(Integer.valueOf(11), context.getData("s1"));
+	}
+
 }

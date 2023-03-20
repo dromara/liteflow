@@ -9,8 +9,11 @@ package com.yomahub.liteflow.enums;
 
 /**
  * 可执行节点枚举
+ *
  * @author Bryan.Zhang
  */
 public enum ExecuteTypeEnum {
-    CHAIN,CONDITION,NODE
+
+	CHAIN, CONDITION, NODE
+
 }

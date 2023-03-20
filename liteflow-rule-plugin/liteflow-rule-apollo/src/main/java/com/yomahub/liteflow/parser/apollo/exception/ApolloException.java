@@ -17,4 +17,5 @@ public class ApolloException extends RuntimeException {
 	public String getMessage() {
 		return message;
 	}
+
 }

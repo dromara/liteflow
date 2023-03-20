@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境声明式父类声明组件方法测试
+ *
  * @author Bryan.Zhang
  * @since 2.9.4
  */
@@ -24,19 +25,19 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/superClassDefine/application.properties")
 @SpringBootTest(classes = SuperClassDefineELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.superClassDefine.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.superClassDefine.cmp" })
 public class SuperClassDefineELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testSuperClassDefine() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
-        Assert.assertTrue(context.getData("isAccess"));
-    }
+	@Test
+	public void testSuperClassDefine() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>d", response.getExecuteStepStr());
+		Assert.assertTrue(context.getData("isAccess"));
+	}
 
 }

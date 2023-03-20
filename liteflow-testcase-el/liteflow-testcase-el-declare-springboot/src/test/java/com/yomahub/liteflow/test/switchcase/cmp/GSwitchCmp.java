@@ -20,4 +20,5 @@ public class GSwitchCmp {
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "d:td";
 	}
+
 }

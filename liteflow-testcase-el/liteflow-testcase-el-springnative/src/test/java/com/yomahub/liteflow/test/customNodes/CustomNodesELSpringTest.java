@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 
 /**
  * spring环境下自定义声明节点的测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -22,16 +23,17 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/customNodes/application.xml")
 public class CustomNodesELSpringTest extends BaseTest {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testCustomNodes() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testCustomNodes() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

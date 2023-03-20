@@ -11,6 +11,7 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
  * 条件路由节点抽象类
+ *
  * @author Bryan.Zhang
  */
 public abstract class NodeSwitchComponent extends NodeComponent {
@@ -22,7 +23,7 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 		this.getSlot().setSwitchResult(originalClass.getName(), nodeId);
 	}
 
-	//用以返回路由节点的beanId
+	// 用以返回路由节点的beanId
 	public abstract String processSwitch() throws Exception;
 
 }

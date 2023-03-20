@@ -10,24 +10,26 @@ import java.util.ServiceLoader;
 
 /**
  * 组件全局拦截器SPI工厂类
+ *
  * @author Bryan.Zhang
  * @since 2.6.11
  */
 public class CmpAroundAspectHolder {
 
-    private static CmpAroundAspect cmpAroundAspect;
+	private static CmpAroundAspect cmpAroundAspect;
 
-    public static CmpAroundAspect loadCmpAroundAspect(){
-        if (ObjectUtil.isNull(cmpAroundAspect)){
-            List<CmpAroundAspect> list = new ArrayList<>();
-            ServiceLoader.load(CmpAroundAspect.class).forEach(list::add);
-            list.sort(Comparator.comparingInt(CmpAroundAspect::priority));
-            cmpAroundAspect = list.get(0);
-        }
-        return cmpAroundAspect;
-    }
+	public static CmpAroundAspect loadCmpAroundAspect() {
+		if (ObjectUtil.isNull(cmpAroundAspect)) {
+			List<CmpAroundAspect> list = new ArrayList<>();
+			ServiceLoader.load(CmpAroundAspect.class).forEach(list::add);
+			list.sort(Comparator.comparingInt(CmpAroundAspect::priority));
+			cmpAroundAspect = list.get(0);
+		}
+		return cmpAroundAspect;
+	}
 
-    public static void clean(){
-        cmpAroundAspect = null;
-    }
+	public static void clean() {
+		cmpAroundAspect = null;
+	}
+
 }

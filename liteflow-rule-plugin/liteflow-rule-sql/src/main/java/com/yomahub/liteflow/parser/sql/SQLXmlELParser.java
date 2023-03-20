@@ -24,6 +24,7 @@ import java.util.Objects;
 public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	private static final String ERROR_MSG_PATTERN = "rule-source-ext-data {} is blank";
+
 	private static final String ERROR_COMMON_MSG = "rule-source-ext-data is empty";
 
 	/**
@@ -35,8 +36,10 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 		try {
 			SQLParserVO sqlParserVO = null;
 			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
-				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class, CopyOptions.create());
-			} else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
+				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class,
+						CopyOptions.create());
+			}
+			else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
 				sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 			}
 			if (Objects.isNull(sqlParserVO)) {
@@ -48,9 +51,11 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
-		} catch (ELSQLException elsqlException) {
+		}
+		catch (ELSQLException elsqlException) {
 			throw elsqlException;
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw new ELSQLException(ex.getMessage());
 		}
 
@@ -63,7 +68,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	/**
 	 * 检查配置文件并设置默认值
-	 *
 	 * @param sqlParserVO sqlParserVO
 	 */
 	private void checkParserVO(SQLParserVO sqlParserVO) {
@@ -80,4 +84,5 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 			throw new ELSQLException(StrFormatter.format(ERROR_MSG_PATTERN, "password"));
 		}
 	}
+
 }

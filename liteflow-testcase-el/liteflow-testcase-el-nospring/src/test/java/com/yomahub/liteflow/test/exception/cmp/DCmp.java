@@ -12,14 +12,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DCmp extends NodeComponent {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(DCmp.class);
-	
+
 	@Override
 	public void process() {
-		if(1==1){
-			int a = 1/0;
+		if (1 == 1) {
+			int a = 1 / 0;
 		}
 		LOG.info("Dcomp executed!");
 	}
+
 }

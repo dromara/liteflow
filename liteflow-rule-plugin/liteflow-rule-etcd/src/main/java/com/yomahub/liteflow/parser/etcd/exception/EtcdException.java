@@ -3,6 +3,7 @@ package com.yomahub.liteflow.parser.etcd.exception;
 
 /**
  * Etcd解析异常
+ *
  * @author zendwang
  * @since 2.9.0
  */
@@ -25,4 +26,5 @@ public class EtcdException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

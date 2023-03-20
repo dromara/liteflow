@@ -15,7 +15,7 @@ import org.noear.solon.annotation.Component;
 public class DCmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
+	public void process() throws Exception {
 		System.out.println("CCmp executed!");
 		throw new NullPointerException();
 	}
@@ -23,6 +23,7 @@ public class DCmp extends NodeComponent {
 	@Override
 	public void onError() throws Exception {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("error","error:"+this.getNodeId());
+		context.setData("error", "error:" + this.getNodeId());
 	}
+
 }

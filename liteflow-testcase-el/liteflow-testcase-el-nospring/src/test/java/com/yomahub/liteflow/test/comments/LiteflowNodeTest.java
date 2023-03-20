@@ -18,7 +18,7 @@ public class LiteflowNodeTest extends BaseTest {
 	private static FlowExecutor flowExecutor;
 
 	@BeforeClass
-	public static void init(){
+	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("comments/flow.el.xml");
 		flowExecutor = FlowExecutorHolder.loadInstance(config);
@@ -29,6 +29,7 @@ public class LiteflowNodeTest extends BaseTest {
 	public void testAsyncFlow1() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a base request");
 		Assert.assertTrue(response.isSuccess());
-		Assert.assertTrue(ListUtil.toList("a==>b==>c==>b","a==>b==>b==>c").contains(response.getExecuteStepStr()));
+		Assert.assertTrue(ListUtil.toList("a==>b==>c==>b", "a==>b==>b==>c").contains(response.getExecuteStepStr()));
 	}
+
 }

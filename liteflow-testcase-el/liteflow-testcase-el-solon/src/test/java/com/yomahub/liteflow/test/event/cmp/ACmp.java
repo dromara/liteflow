@@ -17,7 +17,7 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("test","");
+		context.setData("test", "");
 		System.out.println("ACmp executed!");
 	}
 
@@ -28,4 +28,5 @@ public class ACmp extends NodeComponent {
 		str += this.getNodeId();
 		context.setData("test", str);
 	}
+
 }

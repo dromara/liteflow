@@ -9,10 +9,11 @@ package com.yomahub.liteflow.enums;
 
 /**
  * 组件步骤类型
+ *
  * @author Bryan.Zhang
  */
 public enum CmpStepTypeEnum {
-	START,
-	END,
-	SINGLE;
+
+	START, END, SINGLE;
+
 }

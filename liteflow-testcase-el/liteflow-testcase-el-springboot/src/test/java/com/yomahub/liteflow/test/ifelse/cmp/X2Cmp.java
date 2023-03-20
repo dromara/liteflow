@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component("x2")
 public class X2Cmp extends NodeIfComponent {
+
 	@Override
 	public boolean processIf() throws Exception {
 		return true;
@@ -21,4 +22,5 @@ public class X2Cmp extends NodeIfComponent {
 	public boolean isAccess() {
 		return false;
 	}
+
 }

@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 @TestPropertySource(value = "classpath:/apollo/application-xml.properties")
 @SpringBootTest(classes = ApolloWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.apollo.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.apollo.cmp" })
 public class ApolloWithXmlELSpringbootTest {
 
 	@MockBean(name = "chainConfig")
@@ -48,7 +48,7 @@ public class ApolloWithXmlELSpringbootTest {
 	private FlowExecutor flowExecutor;
 
 	@Before
-	public void setUp(){
+	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 	}
 
@@ -58,7 +58,7 @@ public class ApolloWithXmlELSpringbootTest {
 	}
 
 	@Test
-	public void testApolloWithXml1(){
+	public void testApolloWithXml1() {
 		Set<String> chainNameList = Sets.newHashSet("chain1");
 		Set<String> scriptNodeValueList = Sets.newHashSet("s1:script:脚本s1");
 		when(chainConfig.getPropertyNames()).thenReturn(chainNameList);
@@ -72,4 +72,5 @@ public class ApolloWithXmlELSpringbootTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStrWithoutTime());
 	}
+
 }

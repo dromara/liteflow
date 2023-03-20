@@ -18,4 +18,5 @@ public class ACmp extends NodeComponent {
 		System.out.println(this.getCmpData(String.class));
 		System.out.println("ACmp executed!");
 	}
+
 }

@@ -10,7 +10,6 @@ public class ApolloParserConfigVO {
 
 	private String scriptNamespace;
 
-
 	public ApolloParserConfigVO() {
 	}
 
@@ -37,9 +36,8 @@ public class ApolloParserConfigVO {
 
 	@Override
 	public String toString() {
-		return "ApolloParserConfigVO{" +
-				"chainNamespace='" + chainNamespace + '\'' +
-				", scriptNamespace='" + scriptNamespace + '\'' +
-				'}';
+		return "ApolloParserConfigVO{" + "chainNamespace='" + chainNamespace + '\'' + ", scriptNamespace='"
+				+ scriptNamespace + '\'' + '}';
 	}
+
 }

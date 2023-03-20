@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 无可用插槽异常
+ *
  * @author Yun
  */
 public class NoAvailableSlotException extends RuntimeException {
@@ -23,4 +24,5 @@ public class NoAvailableSlotException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

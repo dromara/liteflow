@@ -12,6 +12,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot下的yml parser测试用例
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -19,13 +20,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/parser/application-yml.properties")
 public class YmlParserELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的yml parser
-    @Test
-    public void testYmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无springboot场景的yml parser
+	@Test
+	public void testYmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

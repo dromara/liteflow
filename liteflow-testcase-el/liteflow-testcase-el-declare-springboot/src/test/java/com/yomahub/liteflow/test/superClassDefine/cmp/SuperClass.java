@@ -7,10 +7,11 @@ import com.yomahub.liteflow.slot.DefaultContext;
 
 public abstract class SuperClass {
 
-    @LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
-    public boolean isAccess(NodeComponent bindCmp) {
-        DefaultContext context = bindCmp.getFirstContextBean();
-        context.setData("isAccess", true);
-        return true;
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
+	public boolean isAccess(NodeComponent bindCmp) {
+		DefaultContext context = bindCmp.getFirstContextBean();
+		context.setData("isAccess", true);
+		return true;
+	}
+
 }

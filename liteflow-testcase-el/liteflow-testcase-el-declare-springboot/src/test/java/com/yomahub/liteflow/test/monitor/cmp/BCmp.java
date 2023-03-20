@@ -15,13 +15,14 @@ import org.springframework.stereotype.Component;
 import java.util.Random;
 
 @Component("b")
-public class BCmp{
+public class BCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		try {
 			Thread.sleep(new Random().nextInt(2000));
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		System.out.println("BCmp executed!");

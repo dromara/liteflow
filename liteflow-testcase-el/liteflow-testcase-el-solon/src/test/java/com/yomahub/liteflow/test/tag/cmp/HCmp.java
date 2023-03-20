@@ -21,7 +21,8 @@ public class HCmp extends NodeComponent {
 	@Override
 	public boolean isAccess() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("test",this.getTag());
+		context.setData("test", this.getTag());
 		return true;
 	}
+
 }

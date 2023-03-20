@@ -5,14 +5,15 @@ import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELSpringTest.RUN_TIME_SLOT;
 
-
 @Component("f")
 public class FCmp extends NodeComponent {
-    @Override
-    public void process() throws Exception {
 
-        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+	@Override
+	public void process() throws Exception {
 
-        System.out.println("Fcomp executed!");
-    }
+		RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+
+		System.out.println("Fcomp executed!");
+	}
+
 }

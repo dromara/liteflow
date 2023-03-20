@@ -18,28 +18,29 @@ import org.junit.Test;
  */
 public class SubflowInDifferentConfigTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("subflow/flow-main.el.xml,subflow/flow-sub1.el.xml,subflow/flow-sub2.el.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("subflow/flow-main.el.xml,subflow/flow-sub1.el.xml,subflow/flow-sub2.el.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //是否按照流程定义配置执行
-    @Test
-    public void testExplicitSubFlow1() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
-    }
+	// 是否按照流程定义配置执行
+	@Test
+	public void testExplicitSubFlow1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
+	}
 
-    //主要测试有不同的配置类型后会不会报出既定的错误
-    @Test(expected = MultipleParsersException.class)
-    public void testExplicitSubFlow2() {
-        LiteflowConfig config = LiteflowConfigGetter.get();
-        config.setRuleSource("subflow/flow-main.xml,subflow/flow-sub1.xml,subflow/flow-sub2.yml");
-        flowExecutor.reloadRule();
-    }
+	// 主要测试有不同的配置类型后会不会报出既定的错误
+	@Test(expected = MultipleParsersException.class)
+	public void testExplicitSubFlow2() {
+		LiteflowConfig config = LiteflowConfigGetter.get();
+		config.setRuleSource("subflow/flow-main.xml,subflow/flow-sub1.xml,subflow/flow-sub2.yml");
+		flowExecutor.reloadRule();
+	}
+
 }

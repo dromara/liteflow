@@ -13,11 +13,12 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent("e")
-public class ECmp{
+public class ECmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println(bindCmp.getTag());
 		System.out.println("ECmp executed!");
 	}
+
 }

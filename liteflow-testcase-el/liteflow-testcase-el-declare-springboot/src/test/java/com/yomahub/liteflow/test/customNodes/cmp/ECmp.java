@@ -14,7 +14,7 @@ import com.yomahub.liteflow.test.customNodes.domain.DemoDomain;
 
 import javax.annotation.Resource;
 
-public class ECmp{
+public class ECmp {
 
 	@Resource
 	private DemoDomain demoDomain;

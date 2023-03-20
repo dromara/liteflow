@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 
 /**
  * 单元测试:传递null param导致NPE的优化代码
+ *
  * @author LeoLee
  * @since 2.6.6
  **/
@@ -21,15 +22,16 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/nullParam/application-local.xml")
 public class NullParamTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    /**
-     * 支持无参的flow执行，以及param 为null时的异常抛出
-     */
-    @Test
-    public void testNullParam() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-    }
+	/**
+	 * 支持无参的flow执行，以及param 为null时的异常抛出
+	 */
+	@Test
+	public void testNullParam() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

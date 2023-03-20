@@ -11,23 +11,25 @@ import org.junit.Test;
 
 /**
  * 非spring环境下异步线程超时日志打印测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.11
  */
 public class AbsoluteConfigPathTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("/usr/local/flow2.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("/usr/local/flow2.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    @Test
-    public void testAbsoluteConfig() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testAbsoluteConfig() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

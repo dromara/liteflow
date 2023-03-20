@@ -16,30 +16,34 @@ import javax.annotation.Resource;
 
 /**
  * spring环境下参数单元测试
+ *
  * @author zendwang
  * @since 2.5.0
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:/config/application-local.xml")
 public class LiteflowConfigELSpringTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
-    
-    @Autowired
-    private ApplicationContext context;
-    
-    @Test
-    public void testConfig() throws Exception {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("config/flow.el.json", config.getRuleSource());
-        Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());
-        Assert.assertEquals(200, config.getQueueLimit().intValue());
-        Assert.assertEquals(300000L, config.getDelay().longValue());
-        Assert.assertEquals(300000L, config.getPeriod().longValue());
-        Assert.assertFalse(config.getEnableLog());
-        // Assert.assertEquals(Runtime.getRuntime().availableProcessors() * 2, config.getWhenMaxWorkers().longValue());
-        Assert.assertEquals(512, config.getWhenQueueLimit().longValue());
-    }
+
+	@Resource
+	private FlowExecutor flowExecutor;
+
+	@Autowired
+	private ApplicationContext context;
+
+	@Test
+	public void testConfig() throws Exception {
+		LiteflowConfig config = context.getBean(LiteflowConfig.class);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("config/flow.el.json", config.getRuleSource());
+		Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());
+		Assert.assertEquals(200, config.getQueueLimit().intValue());
+		Assert.assertEquals(300000L, config.getDelay().longValue());
+		Assert.assertEquals(300000L, config.getPeriod().longValue());
+		Assert.assertFalse(config.getEnableLog());
+		// Assert.assertEquals(Runtime.getRuntime().availableProcessors() * 2,
+		// config.getWhenMaxWorkers().longValue());
+		Assert.assertEquals(512, config.getWhenQueueLimit().longValue());
+	}
+
 }

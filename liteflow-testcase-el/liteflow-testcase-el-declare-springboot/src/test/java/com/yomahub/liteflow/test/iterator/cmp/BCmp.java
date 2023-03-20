@@ -11,10 +11,11 @@ import org.springframework.stereotype.Component;
 
 @Component("b")
 @LiteflowCmpDefine(NodeTypeEnum.BREAK)
-public class BCmp{
+public class BCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_BREAK)
 	public boolean processBreak(NodeComponent bindCmp) throws Exception {
 		return bindCmp.getLoopIndex() == 1;
 	}
+
 }

@@ -14,8 +14,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent("e")
-@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
-public class ECmp{
+@LiteflowRetry(retry = 5, forExceptions = { NullPointerException.class })
+public class ECmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

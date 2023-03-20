@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境的自定义json parser单元测试
+ *
  * @author dongguo.tao
  * @since 2.5.0
  */
@@ -23,16 +24,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/parsecustom/application-custom-json.properties")
 @SpringBootTest(classes = CustomParserJsonELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.parsecustom.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.parsecustom.cmp" })
 public class CustomParserJsonELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试springboot场景的自定义json parser
-    @Test
-    public void testJsonCustomParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "args");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试springboot场景的自定义json parser
+	@Test
+	public void testJsonCustomParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "args");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

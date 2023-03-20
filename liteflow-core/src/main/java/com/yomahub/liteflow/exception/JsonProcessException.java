@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * Json 进程异常
+ *
  * @author Yun
  */
 public class JsonProcessException extends RuntimeException {
@@ -23,4 +24,5 @@ public class JsonProcessException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

@@ -14,22 +14,23 @@ import org.junit.Test;
 
 public class FlowMetaTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("flowmeta/flow.el.xml");
-        config.setParseOnStart(false);
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("flowmeta/flow.el.xml");
+		config.setParseOnStart(false);
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //测试动态添加元信息节点
-    @Test
-    public void testFlowMeta() {
-        FlowBus.addNode("d", "d组件", NodeTypeEnum.COMMON, DCmp.class);
-        LiteflowResponse response= flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
-    }
+	// 测试动态添加元信息节点
+	@Test
+	public void testFlowMeta() {
+		FlowBus.addNode("d", "d组件", NodeTypeEnum.COMMON, DCmp.class);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>d[d组件]", response.getExecuteStepStr());
+	}
+
 }

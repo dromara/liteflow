@@ -23,12 +23,12 @@ import javax.annotation.Resource;
 @ComponentScan({"com.yomahub.liteflow.test.lazy.cmp"})*/
 public class LazyELSpringbootTest extends BaseTest {
 
-    /*@Resource
-    private FlowExecutor flowExecutor;
+	/*
+	 * @Resource private FlowExecutor flowExecutor;
+	 *
+	 * @Test public void testLazy() throws Exception{ LiteflowResponse response =
+	 * flowExecutor.execute2Resp("chain1", "arg");
+	 * Assert.assertTrue(response.isSuccess()); }
+	 */
 
-    @Test
-    public void testLazy() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }*/
 }
