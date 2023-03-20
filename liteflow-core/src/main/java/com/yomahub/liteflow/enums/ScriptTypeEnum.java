@@ -2,57 +2,55 @@ package com.yomahub.liteflow.enums;
 
 public enum ScriptTypeEnum {
 
-    GROOVY("groovy", "groovy"),
-    QLEXPRESS("qlexpress", "qlexpress"),
-    JS("javascript", "js"),
-    PYTHON("python", "python"),
-    LUA("luaj", "lua");
-    private String engineName;
+	GROOVY("groovy", "groovy"), QLEXPRESS("qlexpress", "qlexpress"), JS("javascript", "js"), PYTHON("python", "python"),
+	LUA("luaj", "lua");
 
-    private String displayName;
+	private String engineName;
 
-    ScriptTypeEnum(String engineName, String displayName) {
-        this.engineName = engineName;
-        this.displayName = displayName;
-    }
+	private String displayName;
 
-    public String getEngineName() {
-        return engineName;
-    }
+	ScriptTypeEnum(String engineName, String displayName) {
+		this.engineName = engineName;
+		this.displayName = displayName;
+	}
 
-    public void setEngineName(String engineName) {
-        this.engineName = engineName;
-    }
+	public String getEngineName() {
+		return engineName;
+	}
 
-    public String getDisplayName() {
-        return displayName;
-    }
+	public void setEngineName(String engineName) {
+		this.engineName = engineName;
+	}
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+	public String getDisplayName() {
+		return displayName;
+	}
 
-    public static ScriptTypeEnum getEnumByDisplayName(String displayName) {
-        for (ScriptTypeEnum e : ScriptTypeEnum.values()) {
-            if (e.getDisplayName().equals(displayName)) {
-                return e;
-            }
-        }
-        return null;
-    }
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 
-    /**
-     * 校验脚本类型是否合法
-     *
-     * @param scriptType 脚本类型
-     * @return true:合法，false:不合法
-     */
-    public static boolean checkScriptType(String scriptType) {
-        for (ScriptTypeEnum e : ScriptTypeEnum.values()) {
-            if (e.getDisplayName().equals(scriptType)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public static ScriptTypeEnum getEnumByDisplayName(String displayName) {
+		for (ScriptTypeEnum e : ScriptTypeEnum.values()) {
+			if (e.getDisplayName().equals(displayName)) {
+				return e;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 校验脚本类型是否合法
+	 * @param scriptType 脚本类型
+	 * @return true:合法，false:不合法
+	 */
+	public static boolean checkScriptType(String scriptType) {
+		for (ScriptTypeEnum e : ScriptTypeEnum.values()) {
+			if (e.getDisplayName().equals(scriptType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
