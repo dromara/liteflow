@@ -22,19 +22,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(value = "classpath:/nullParam/application.properties")
 @SpringBootTest(classes = NullParamELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.nullParam.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.nullParam.cmp" })
 public class NullParamELSpringbootTest {
 
-    @Autowired
-    private FlowExecutor flowExecutor;
+	@Autowired
+	private FlowExecutor flowExecutor;
 
-    /**
-     * 支持无参的flow执行，以及param 为null时的异常抛出
-     */
-    @Test
-    public void testNullParam() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-        Assert.assertTrue(response.isSuccess());
-    }
+	/**
+	 * 支持无参的flow执行，以及param 为null时的异常抛出
+	 */
+	@Test
+	public void testNullParam() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

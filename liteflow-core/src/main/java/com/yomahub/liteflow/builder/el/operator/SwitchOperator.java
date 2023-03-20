@@ -30,4 +30,5 @@ public class SwitchOperator extends BaseOperator<SwitchCondition> {
 
 		return switchCondition;
 	}
+
 }

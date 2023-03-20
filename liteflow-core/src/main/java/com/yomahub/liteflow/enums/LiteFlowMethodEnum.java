@@ -1,52 +1,49 @@
 package com.yomahub.liteflow.enums;
 
 public enum LiteFlowMethodEnum {
-    PROCESS("process", true),
-    PROCESS_SWITCH("processSwitch", true),
-    PROCESS_IF("processIf", true),
-    PROCESS_FOR("processFor", true),
-    PROCESS_WHILE("processWhile", true),
-    PROCESS_BREAK("processBreak", true),
 
-    PROCESS_ITERATOR("processIterator", true),
+	PROCESS("process", true), PROCESS_SWITCH("processSwitch", true), PROCESS_IF("processIf", true),
+	PROCESS_FOR("processFor", true), PROCESS_WHILE("processWhile", true), PROCESS_BREAK("processBreak", true),
 
-    IS_ACCESS("isAccess", false),
+	PROCESS_ITERATOR("processIterator", true),
 
-    IS_END("isEnd", false),
-    IS_CONTINUE_ON_ERROR("isContinueOnError", false),
+	IS_ACCESS("isAccess", false),
 
-    GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass", false),
+	IS_END("isEnd", false), IS_CONTINUE_ON_ERROR("isContinueOnError", false),
 
-    ON_SUCCESS("onSuccess", false),
+	GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass", false),
 
-    ON_ERROR("onError", false),
+	ON_SUCCESS("onSuccess", false),
 
-    BEFORE_PROCESS("beforeProcess", false),
+	ON_ERROR("onError", false),
 
-    AFTER_PROCESS("afterProcess", false);
+	BEFORE_PROCESS("beforeProcess", false),
 
-    private String methodName;
+	AFTER_PROCESS("afterProcess", false);
 
-    private boolean isMainMethod;
+	private String methodName;
 
-    LiteFlowMethodEnum(String methodName, boolean isMainMethod){
-        this.methodName = methodName;
-        this.isMainMethod = isMainMethod;
-    }
+	private boolean isMainMethod;
 
-    public String getMethodName() {
-        return methodName;
-    }
+	LiteFlowMethodEnum(String methodName, boolean isMainMethod) {
+		this.methodName = methodName;
+		this.isMainMethod = isMainMethod;
+	}
 
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
+	public String getMethodName() {
+		return methodName;
+	}
 
-    public boolean isMainMethod() {
-        return isMainMethod;
-    }
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
+	}
 
-    public void setMainMethod(boolean mainMethod) {
-        isMainMethod = mainMethod;
-    }
+	public boolean isMainMethod() {
+		return isMainMethod;
+	}
+
+	public void setMainMethod(boolean mainMethod) {
+		isMainMethod = mainMethod;
+	}
+
 }

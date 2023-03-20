@@ -13,21 +13,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BCmp extends NodeComponent {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(BCmp.class);
 
 	@Override
 	public void process() throws InterruptedException {
 		String str = this.getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("when")) {
+		if (StrUtil.isNotBlank(str) && str.equals("when")) {
 			try {
 				LOG.info("Bcomp sleep begin");
 				Thread.sleep(3000);
 				LOG.info("Bcomp sleep end");
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw e;
 			}
 		}
 		LOG.info("Bcomp executed!");
 	}
+
 }

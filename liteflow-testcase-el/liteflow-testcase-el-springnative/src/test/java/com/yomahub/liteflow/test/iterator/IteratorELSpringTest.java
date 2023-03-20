@@ -18,28 +18,29 @@ import java.util.List;
 @ContextConfiguration("classpath:/iterator/application.xml")
 public class IteratorELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //最简单的情况
-    @Test
-    public void testIt1() throws Exception{
-        List<String> list = ListUtil.toList("1","2","3");
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        String str = context.getData("test");
-        Assert.assertEquals("123", str);
-    }
+	// 最简单的情况
+	@Test
+	public void testIt1() throws Exception {
+		List<String> list = ListUtil.toList("1", "2", "3");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		String str = context.getData("test");
+		Assert.assertEquals("123", str);
+	}
 
-    //迭代器带break
-    @Test
-    public void testIt2() throws Exception{
-        List<String> list = ListUtil.toList("1","2","3");
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
-        Assert.assertTrue(response.isSuccess());
-        DefaultContext context = response.getFirstContextBean();
-        String str = context.getData("test");
-        Assert.assertEquals("12", str);
-    }
+	// 迭代器带break
+	@Test
+	public void testIt2() throws Exception {
+		List<String> list = ListUtil.toList("1", "2", "3");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
+		Assert.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		String str = context.getData("test");
+		Assert.assertEquals("12", str);
+	}
+
 }

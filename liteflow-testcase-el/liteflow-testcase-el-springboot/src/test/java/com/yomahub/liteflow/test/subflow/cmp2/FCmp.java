@@ -6,17 +6,18 @@ import org.springframework.stereotype.Component;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowELSpringbootTest.RUN_TIME_SLOT;
 
-
 @Component("f")
 public class FCmp extends NodeComponent {
-    @Override
-    public void process() throws Exception {
 
-        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+	@Override
+	public void process() throws Exception {
 
-        DefaultContext context = this.getFirstContextBean();
-        context.setData("innerRequestData", "inner request");
+		RUN_TIME_SLOT.add(this.getSlot().getRequestId());
 
-        System.out.println("Fcomp executed!");
-    }
+		DefaultContext context = this.getFirstContextBean();
+		context.setData("innerRequestData", "inner request");
+
+		System.out.println("Fcomp executed!");
+	}
+
 }

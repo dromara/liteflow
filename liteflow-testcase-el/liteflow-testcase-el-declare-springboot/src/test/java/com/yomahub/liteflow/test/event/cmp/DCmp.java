@@ -14,10 +14,10 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
+public class DCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-	public void process(NodeComponent bindCmp) throws Exception{
+	public void process(NodeComponent bindCmp) throws Exception {
 		System.out.println("CCmp executed!");
 		throw new NullPointerException();
 	}
@@ -25,6 +25,7 @@ public class DCmp{
 	@LiteflowMethod(LiteFlowMethodEnum.ON_ERROR)
 	public void onError(NodeComponent bindCmp) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
-		context.setData("error","error:"+bindCmp.getNodeId());
+		context.setData("error", "error:" + bindCmp.getNodeId());
 	}
+
 }

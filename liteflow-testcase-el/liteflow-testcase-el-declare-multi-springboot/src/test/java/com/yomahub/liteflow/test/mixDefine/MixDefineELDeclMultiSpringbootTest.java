@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境最普通的例子测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -23,17 +24,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/mixDefine/application.properties")
 @SpringBootTest(classes = MixDefineELDeclMultiSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.mixDefine.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.mixDefine.cmp" })
 public class MixDefineELDeclMultiSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //类声明和方法声明一起定义
-    @Test
-    public void testMixDefine1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 类声明和方法声明一起定义
+	@Test
+	public void testMixDefine1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

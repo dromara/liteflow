@@ -2,32 +2,35 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 未找到数据异常
+ *
  * @author tangkc
  */
 public class DataNotFoundException extends RuntimeException {
-    public static final String MSG = "DataNotFoundException";
 
-    private static final long serialVersionUID = 1L;
+	public static final String MSG = "DataNotFoundException";
 
-    /**
-     * 异常信息
-     */
-    private String message;
+	private static final long serialVersionUID = 1L;
 
-    public DataNotFoundException() {
-        this.message = MSG;
-    }
+	/**
+	 * 异常信息
+	 */
+	private String message;
 
-    public DataNotFoundException(String message) {
-        this.message = message;
-    }
+	public DataNotFoundException() {
+		this.message = MSG;
+	}
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
+	public DataNotFoundException(String message) {
+		this.message = message;
+	}
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+	@Override
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
 }

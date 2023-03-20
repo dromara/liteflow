@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 配置错误异常
+ *
  * @author Yun
  */
 public class ConfigErrorException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ConfigErrorException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

@@ -24,4 +24,5 @@ public class CCmp extends NodeComponent {
 		str += this.getNodeId();
 		context.setData("test", str);
 	}
+
 }

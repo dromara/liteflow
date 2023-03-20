@@ -2,8 +2,8 @@
 package com.yomahub.liteflow.exception;
 
 /**
- * LiteFlow架内部逻辑发生错误抛出的异常
- * (自定义此异常方便开发者在做全局异常处理时分辨异常类型)
+ * LiteFlow架内部逻辑发生错误抛出的异常 (自定义此异常方便开发者在做全局异常处理时分辨异常类型)
+ *
  * @author zendwang
  * @since 2.8.3
  */
@@ -16,7 +16,6 @@ public class LiteFlowException extends RuntimeException {
 
 	/**
 	 * 构建一个异常
-	 *
 	 * @param message 异常描述信息
 	 */
 	public LiteFlowException(String message) {
@@ -35,7 +34,6 @@ public class LiteFlowException extends RuntimeException {
 
 	/**
 	 * 构建一个异常
-	 *
 	 * @param cause 异常对象
 	 */
 	public LiteFlowException(Throwable cause) {
@@ -44,7 +42,6 @@ public class LiteFlowException extends RuntimeException {
 
 	/**
 	 * 构建一个异常
-	 *
 	 * @param message 异常信息
 	 * @param cause 异常对象
 	 */
@@ -69,4 +66,5 @@ public class LiteFlowException extends RuntimeException {
 	public String getCode() {
 		return code;
 	}
+
 }

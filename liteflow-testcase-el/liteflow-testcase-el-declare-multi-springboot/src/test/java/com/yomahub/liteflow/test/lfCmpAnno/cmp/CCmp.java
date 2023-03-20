@@ -13,7 +13,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent(id = "c", name = "C组件")
-public class CCmp{
+public class CCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

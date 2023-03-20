@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境下异步线程超时日志打印测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -25,17 +26,18 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/absoluteConfigPath/application.properties")
 @SpringBootTest(classes = AbsoluteConfigPathELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.absoluteConfigPath.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.absoluteConfigPath.cmp" })
 public class AbsoluteConfigPathELDeclSpringbootTest extends BaseTest {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testAbsoluteConfig() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testAbsoluteConfig() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

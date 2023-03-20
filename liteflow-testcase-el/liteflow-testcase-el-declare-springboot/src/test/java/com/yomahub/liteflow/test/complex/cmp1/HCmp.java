@@ -13,10 +13,11 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("H")
-public class HCmp{
+public class HCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 
 	}
+
 }

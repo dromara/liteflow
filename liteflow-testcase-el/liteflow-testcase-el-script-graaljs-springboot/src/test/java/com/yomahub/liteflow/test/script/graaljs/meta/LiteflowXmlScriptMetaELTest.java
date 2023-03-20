@@ -15,9 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-
 /**
  * 测试与Java交互的元数据
+ *
  * @author zendwang
  * @since 2.9.4
  */
@@ -25,19 +25,20 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/meta/application.properties")
 @SpringBootTest(classes = LiteflowXmlScriptMetaELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.graaljs.meta.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.graaljs.meta.cmp" })
 public class LiteflowXmlScriptMetaELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testMeta() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("chain1", context.getData("currChainId"));
-        Assert.assertEquals("arg", context.getData("requestData"));
-        Assert.assertEquals("s1", context.getData("nodeId"));
-    }
+	@Test
+	public void testMeta() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("chain1", context.getData("currChainId"));
+		Assert.assertEquals("arg", context.getData("requestData"));
+		Assert.assertEquals("s1", context.getData("nodeId"));
+	}
+
 }

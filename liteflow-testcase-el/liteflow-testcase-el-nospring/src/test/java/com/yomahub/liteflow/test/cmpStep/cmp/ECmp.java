@@ -20,4 +20,5 @@ public class ECmp extends NodeComponent {
 	public boolean isAccess() {
 		return false;
 	}
+
 }

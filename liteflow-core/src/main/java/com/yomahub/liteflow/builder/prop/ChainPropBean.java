@@ -90,4 +90,5 @@ public class ChainPropBean {
 		this.conditionType = conditionType;
 		return this;
 	}
+
 }

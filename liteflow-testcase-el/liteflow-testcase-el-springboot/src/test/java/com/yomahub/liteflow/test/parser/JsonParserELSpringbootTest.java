@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 
 /**
  * spring环境的json parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -24,13 +25,14 @@ import javax.annotation.Resource;
 @EnableAutoConfiguration
 public class JsonParserELSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试spring场景的json parser
-    @Test
-    public void testJsonParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试spring场景的json parser
+	@Test
+	public void testJsonParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

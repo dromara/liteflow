@@ -11,22 +11,23 @@ import org.noear.solon.test.SolonJUnit4ClassRunner;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
- * 测试显示调用子流程(xml)
- * 单元测试
+ * 测试显示调用子流程(xml) 单元测试
  *
  * @author justin.xu
  */
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/subflow/application-xml.properties")
 public class SubflowXMLELSpringBootTest extends BaseTest {
-    @Inject
-    private FlowExecutor flowExecutor;
 
-    //是否按照流程定义配置执行
-    @Test
-    public void testExplicitSubFlow() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
-    }
+	@Inject
+	private FlowExecutor flowExecutor;
+
+	// 是否按照流程定义配置执行
+	@Test
+	public void testExplicitSubFlow() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+	}
+
 }

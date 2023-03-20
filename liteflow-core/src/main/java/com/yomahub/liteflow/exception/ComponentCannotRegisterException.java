@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 流程规则主要执行器类
+ *
  * @author Bryan.Zhang
  * @since 2.5.3
  */
@@ -25,4 +26,5 @@ public class ComponentCannotRegisterException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

@@ -14,7 +14,7 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("b")
-public class BCmp{
+public class BCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {

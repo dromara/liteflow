@@ -21,25 +21,27 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/subflow/application-subInDifferentConfig1.properties")
 public class SubflowInDifferentConfigELSpringbootTest extends BaseTest {
-    @Inject
-    private FlowExecutor flowExecutor;
 
-    //是否按照流程定义配置执行
-    @Test
-    public void testExplicitSubFlow1() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
-    }
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    @Inject
-    private AopContext context;
+	// 是否按照流程定义配置执行
+	@Test
+	public void testExplicitSubFlow1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>b==>a==>e==>d", response.getExecuteStepStr());
+	}
 
-    //主要测试有不同的配置类型后会不会报出既定的错误
-    @Test(expected = MultipleParsersException.class)
-    public void testExplicitSubFlow2() {
-        LiteflowConfig config = context.getBean(LiteflowConfig.class);
-        config.setRuleSource("subflow/flow-main.el.xml,subflow/flow-sub1.el.xml,subflow/flow-sub2.el.yml");
-        flowExecutor.reloadRule();
-    }
+	@Inject
+	private AopContext context;
+
+	// 主要测试有不同的配置类型后会不会报出既定的错误
+	@Test(expected = MultipleParsersException.class)
+	public void testExplicitSubFlow2() {
+		LiteflowConfig config = context.getBean(LiteflowConfig.class);
+		config.setRuleSource("subflow/flow-main.el.xml,subflow/flow-sub1.el.xml,subflow/flow-sub2.el.yml");
+		flowExecutor.reloadRule();
+	}
+
 }

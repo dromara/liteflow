@@ -15,4 +15,5 @@ public class Pre2Cmp extends NodeComponent {
 	public void process() {
 		System.out.println("Pre2Cmp executed!");
 	}
+
 }

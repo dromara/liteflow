@@ -12,6 +12,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot环境的xml parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -19,13 +20,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/parser/application-xml.properties")
 public class XmlParserELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    //测试无springboot场景的xml parser
-    @Test
-    public void testXmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无springboot场景的xml parser
+	@Test
+	public void testXmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

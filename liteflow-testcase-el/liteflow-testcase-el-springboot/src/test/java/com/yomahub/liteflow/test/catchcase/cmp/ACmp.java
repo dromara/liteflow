@@ -16,7 +16,8 @@ public class ACmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("ACmp executed!");
-		int i = 1/0;
+		int i = 1 / 0;
 		System.out.println(i);
 	}
+
 }

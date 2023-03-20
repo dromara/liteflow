@@ -21,35 +21,37 @@ public class ElifOperator extends BaseOperator<IfCondition> {
 	public IfCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqThree(objects);
 
-		//解析caller
+		// 解析caller
 		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class);
 
-		//解析第一个参数
+		// 解析第一个参数
 		Node ifNode = OperatorHelper.convert(objects[1], Node.class);
 		if (!ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(ifNode.getType())) {
 			throw new QLException("The first parameter must be If item");
 		}
 
-		//解析第二个参数
+		// 解析第二个参数
 		Executable trueCaseExecutableItem = OperatorHelper.convert(objects[2], Executable.class);
 
-		//构建一个内部的IfCondition
+		// 构建一个内部的IfCondition
 		IfCondition ifConditionItem = new IfCondition();
 		ifConditionItem.setIfNode(ifNode);
 		ifConditionItem.setTrueCaseExecutableItem(trueCaseExecutableItem);
 
-		//因为可能会有多个ELIF，所以每一次拿到的caller总是最开始大的if，需要遍历到没有falseCaseExecutable的地方。
-		//塞进去是一个新的IfCondition
+		// 因为可能会有多个ELIF，所以每一次拿到的caller总是最开始大的if，需要遍历到没有falseCaseExecutable的地方。
+		// 塞进去是一个新的IfCondition
 		IfCondition loopIfCondition = ifCondition;
 		while (true) {
 			if (loopIfCondition.getFalseCaseExecutableItem() == null) {
 				loopIfCondition.setFalseCaseExecutableItem(ifConditionItem);
 				break;
-			} else {
+			}
+			else {
 				loopIfCondition = (IfCondition) loopIfCondition.getFalseCaseExecutableItem();
 			}
 		}
 
 		return ifCondition;
 	}
+
 }

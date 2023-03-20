@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 流程系统异常
+ *
  * @author Yun
  */
 public class FlowSystemException extends RuntimeException {
@@ -23,4 +24,5 @@ public class FlowSystemException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

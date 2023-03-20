@@ -13,10 +13,11 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent("g")
-public class GCmp{
+public class GCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("GCmp executed!");
 	}
+
 }

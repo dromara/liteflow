@@ -17,4 +17,5 @@ public class HCmp extends NodeComponent {
 	public void process() {
 		System.out.println("HCmp executed!");
 	}
+
 }

@@ -12,7 +12,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
-public class ECmp{
+public class ECmp {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {

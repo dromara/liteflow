@@ -10,7 +10,7 @@ package com.yomahub.liteflow.test.cmpRetry.cmp;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 
-@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
+@LiteflowRetry(retry = 5, forExceptions = { NullPointerException.class })
 public class ECmp extends NodeComponent {
 
 	@Override

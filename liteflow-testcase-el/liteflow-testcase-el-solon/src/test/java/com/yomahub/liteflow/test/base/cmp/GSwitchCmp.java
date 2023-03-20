@@ -17,4 +17,5 @@ public class GSwitchCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "then_1001";
 	}
+
 }

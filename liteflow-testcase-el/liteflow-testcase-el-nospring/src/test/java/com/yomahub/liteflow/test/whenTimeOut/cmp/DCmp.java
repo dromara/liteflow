@@ -15,7 +15,8 @@ public class DCmp extends NodeComponent {
 	public void process() {
 		try {
 			Thread.sleep(4000);
-		}catch (Exception ignored){
+		}
+		catch (Exception ignored) {
 
 		}
 		System.out.println("DCmp executed!");

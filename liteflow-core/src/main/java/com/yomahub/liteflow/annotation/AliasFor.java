@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.annotation;
 
 import java.lang.annotation.*;
+
 /**
  * @author Bryan.Zhang
  */
@@ -9,5 +10,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface AliasFor {
 
-    String value() default "";
+	String value() default "";
+
 }

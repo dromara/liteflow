@@ -7,28 +7,29 @@ import java.lang.reflect.Method;
  */
 public class LiteFlowMethodBean {
 
-    private String methodName;
+	private String methodName;
 
-    private Method method;
+	private Method method;
 
-    public LiteFlowMethodBean(String methodName, Method method) {
-        this.methodName = methodName;
-        this.method = method;
-    }
+	public LiteFlowMethodBean(String methodName, Method method) {
+		this.methodName = methodName;
+		this.method = method;
+	}
 
-    public String getMethodName() {
-        return methodName;
-    }
+	public String getMethodName() {
+		return methodName;
+	}
 
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
+	}
 
-    public Method getMethod() {
-        return method;
-    }
+	public Method getMethod() {
+		return method;
+	}
 
-    public void setMethod(Method method) {
-        this.method = method;
-    }
+	public void setMethod(Method method) {
+		this.method = method;
+	}
+
 }

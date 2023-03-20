@@ -13,12 +13,12 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("d")
-public class DCmp{
+public class DCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("CCmp executed!");
-		int i = 1/0;
+		int i = 1 / 0;
 	}
 
 }

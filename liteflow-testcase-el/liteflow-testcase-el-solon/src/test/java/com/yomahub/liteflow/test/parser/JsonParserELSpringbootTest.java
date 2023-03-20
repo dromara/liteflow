@@ -12,6 +12,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * spring环境的json parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -19,13 +20,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/parser/application-json.properties")
 public class JsonParserELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    //测试spring场景的json parser
-    @Test
-    public void testJsonParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试spring场景的json parser
+	@Test
+	public void testJsonParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

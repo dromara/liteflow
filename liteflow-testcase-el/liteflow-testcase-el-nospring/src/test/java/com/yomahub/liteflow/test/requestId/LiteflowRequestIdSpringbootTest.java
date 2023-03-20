@@ -14,21 +14,21 @@ import org.junit.Test;
  */
 public class LiteflowRequestIdSpringbootTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("requestId/flow.el.xml");
-        config.setRequestIdGeneratorClass("com.yomahub.liteflow.test.requestId.config.CustomRequestIdGenerator");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("requestId/flow.el.xml");
+		config.setRequestIdGeneratorClass("com.yomahub.liteflow.test.requestId.config.CustomRequestIdGenerator");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    @Test
-    public void testRequestId() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("1", response.getSlot().getRequestId());
-    }
+	@Test
+	public void testRequestId() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("1", response.getSlot().getRequestId());
+	}
 
 }

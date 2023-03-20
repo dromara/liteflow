@@ -13,10 +13,12 @@ import java.util.List;
 
 @Component("it")
 @LiteflowCmpDefine(NodeTypeEnum.ITERATOR)
-public class ITCmp{
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS_ITERATOR)
-    public Iterator<?> processIterator(NodeComponent bindCmp) throws Exception {
-        List<String> list = bindCmp.getRequestData();
-        return list.iterator();
-    }
+public class ITCmp {
+
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS_ITERATOR)
+	public Iterator<?> processIterator(NodeComponent bindCmp) throws Exception {
+		List<String> list = bindCmp.getRequestData();
+		return list.iterator();
+	}
+
 }

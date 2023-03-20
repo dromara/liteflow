@@ -8,24 +8,24 @@ import java.lang.annotation.*;
 /**
  * @author Bryan.Zhang
  */
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
 public @interface LiteflowMethod {
 
-    LiteFlowMethodEnum value();
+	LiteFlowMethodEnum value();
 
-    /**
-     * 节点ID，用于区分节点
-     * 默认为空 则按照Spring模式下BeanName为准。
-     * @return
-     */
-    String nodeId() default "";
+	/**
+	 * 节点ID，用于区分节点 默认为空 则按照Spring模式下BeanName为准。
+	 * @return
+	 */
+	String nodeId() default "";
 
-    /**
-     * CMP类型定义
-     * @return AnnotationNodeTypeEnum
-     */
-    NodeTypeEnum nodeType() default NodeTypeEnum.COMMON;
+	/**
+	 * CMP类型定义
+	 * @return AnnotationNodeTypeEnum
+	 */
+	NodeTypeEnum nodeType() default NodeTypeEnum.COMMON;
+
 }

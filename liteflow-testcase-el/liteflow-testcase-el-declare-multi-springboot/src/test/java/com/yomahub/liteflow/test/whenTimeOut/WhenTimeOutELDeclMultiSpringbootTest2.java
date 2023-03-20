@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境下异步线程超时日志打印测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -25,18 +26,19 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/whenTimeOut/application2.properties")
 @SpringBootTest(classes = WhenTimeOutELDeclMultiSpringbootTest2.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.whenTimeOut.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.whenTimeOut.cmp" })
 public class WhenTimeOutELDeclMultiSpringbootTest2 extends BaseTest {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //其中d,e,f都sleep 4秒，其中def是不同的组，超时设置5秒
-    @Test
-    public void testWhenTimeOut() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 其中d,e,f都sleep 4秒，其中def是不同的组，超时设置5秒
+	@Test
+	public void testWhenTimeOut() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

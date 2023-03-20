@@ -202,4 +202,5 @@ public class SQLParserVO {
 	public void setScriptTypeField(String scriptTypeField) {
 		this.scriptTypeField = scriptTypeField;
 	}
+
 }

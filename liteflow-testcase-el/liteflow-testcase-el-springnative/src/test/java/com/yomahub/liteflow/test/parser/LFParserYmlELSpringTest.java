@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 
 /**
  * spring环境的xml parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
@@ -21,13 +22,14 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/parser/application-yml.xml")
 public class LFParserYmlELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试spring场景的xml parser
-    @Test
-    public void testYmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试spring场景的xml parser
+	@Test
+	public void testYmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

@@ -17,8 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 /**
- * springboot环境下自定义声明节点的测试
- * 不通过spring扫描的方式，通过在配置文件里定义nodes的方式
+ * springboot环境下自定义声明节点的测试 不通过spring扫描的方式，通过在配置文件里定义nodes的方式
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -26,19 +26,20 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/customNodes/application.properties")
 @SpringBootTest(classes = CustomNodesELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.customNodes.domain"})
+@ComponentScan({ "com.yomahub.liteflow.test.customNodes.domain" })
 public class CustomNodesELSpringbootTest extends BaseTest {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testCustomNodes() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testCustomNodes() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 
 @Component("d")
 @LiteflowCmpDefine(NodeTypeEnum.COMMON)
-public class DCmp{
+public class DCmp {
 
 	@Resource
 	private TestDomain testDomain;

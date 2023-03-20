@@ -10,6 +10,6 @@ import com.yomahub.liteflow.core.NodeComponent;
  */
 public interface LiteflowComponentSupport extends SpiPriority {
 
-    String getCmpName(NodeComponent nodeComponent);
+	String getCmpName(NodeComponent nodeComponent);
 
 }

@@ -31,8 +31,9 @@ import java.sql.Statement;
 @TestPropertySource(value = "classpath:/application-xml.properties")
 @SpringBootTest(classes = SQLWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.sql.cmp" })
 public class SQLWithXmlELSpringbootTest extends BaseTest {
+
 	@Resource
 	private FlowExecutor flowExecutor;
 
@@ -50,7 +51,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	}
 
 	@Test
-	public void 	testSQLWithScriptXml() {
+	public void testSQLWithScriptXml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
@@ -70,10 +71,12 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
-			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+					sqlParserVO.getPassword());
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='chain1'");
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			throw new ELSQLException(e.getMessage());
 		}
 	}
@@ -86,11 +89,15 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
-			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(), sqlParserVO.getPassword());
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+					sqlParserVO.getPassword());
 			Statement statement = connection.createStatement();
-			statement.executeUpdate("UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false;' WHERE SCRIPT_NODE_ID='x0'");
-		} catch (SQLException e) {
+			statement.executeUpdate(
+					"UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false;' WHERE SCRIPT_NODE_ID='x0'");
+		}
+		catch (SQLException e) {
 			throw new ELSQLException(e.getMessage());
 		}
 	}
+
 }

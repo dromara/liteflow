@@ -14,10 +14,11 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.springframework.stereotype.Component;
 
 @Component("x1")
-public class X1Cmp{
+public class X1Cmp {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeType = NodeTypeEnum.IF)
 	public boolean processIf(NodeComponent bindCmp) throws Exception {
 		return Boolean.parseBoolean(bindCmp.getTag());
 	}
+
 }

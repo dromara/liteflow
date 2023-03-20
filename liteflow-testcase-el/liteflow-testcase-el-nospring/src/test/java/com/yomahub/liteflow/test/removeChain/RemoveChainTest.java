@@ -10,23 +10,24 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class RemoveChainTest extends BaseTest{
+public class RemoveChainTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("removeChain/flow.el.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("removeChain/flow.el.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    @Test
-    public void testRemoveChain(){
-        LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response1.isSuccess());
-        FlowBus.removeChain("chain1");
-        LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertFalse(response2.isSuccess());
-    }
+	@Test
+	public void testRemoveChain() {
+		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response1.isSuccess());
+		FlowBus.removeChain("chain1");
+		LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertFalse(response2.isSuccess());
+	}
+
 }

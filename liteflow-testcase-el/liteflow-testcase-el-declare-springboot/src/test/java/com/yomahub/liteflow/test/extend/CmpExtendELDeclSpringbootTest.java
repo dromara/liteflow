@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境测试声明式组件继承其他类的场景
+ *
  * @author Bryan.Zhang
  * @since 2.7.1
  */
@@ -23,16 +24,16 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/extend/application.properties")
 @SpringBootTest(classes = CmpExtendELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.extend.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.extend.cmp" })
 public class CmpExtendELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testExtend() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testExtend() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

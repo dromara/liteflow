@@ -18,13 +18,13 @@ import org.springframework.stereotype.Component;
 
 @Component("f")
 public class FCmp {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(FCmp.class);
-	
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("custom-stateful-exception")) {
+		if (StrUtil.isNotBlank(str) && str.equals("custom-stateful-exception")) {
 			throw new CustomStatefulException("300", "chain execute custom stateful execption");
 		}
 		LOG.info("Fcomp executed!");

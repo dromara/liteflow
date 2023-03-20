@@ -14,9 +14,9 @@ import com.yomahub.liteflow.core.NodeComponent;
 @LiteflowComponent("a")
 public class ACmp extends NodeComponent {
 
-    @Override
-    public void process() {
-        System.out.println("ACmp executed!");
-    }
+	@Override
+	public void process() {
+		System.out.println("ACmp executed!");
+	}
 
 }

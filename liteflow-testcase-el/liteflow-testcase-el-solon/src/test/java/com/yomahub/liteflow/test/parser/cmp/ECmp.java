@@ -17,4 +17,5 @@ public class ECmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "g";
 	}
+
 }

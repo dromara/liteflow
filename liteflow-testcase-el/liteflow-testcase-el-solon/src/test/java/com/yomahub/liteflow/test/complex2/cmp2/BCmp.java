@@ -16,4 +16,5 @@ public class BCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "t3";
 	}
+
 }

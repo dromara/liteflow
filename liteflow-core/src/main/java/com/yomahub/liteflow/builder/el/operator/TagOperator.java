@@ -26,4 +26,5 @@ public class TagOperator extends BaseOperator<Node> {
 
 		return node;
 	}
+
 }

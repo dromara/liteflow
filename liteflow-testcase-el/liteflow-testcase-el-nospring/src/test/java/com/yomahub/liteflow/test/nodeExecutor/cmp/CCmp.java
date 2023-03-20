@@ -21,7 +21,8 @@ public class CCmp extends NodeComponent {
 	}
 
 	@Override
-	public  Class<? extends NodeExecutor> getNodeExecutorClass() {
+	public Class<? extends NodeExecutor> getNodeExecutorClass() {
 		return CustomerNodeExecutor.class;
 	}
+
 }

@@ -30,11 +30,13 @@ public class ElseOperator extends BaseOperator<IfCondition> {
 			if (loopIfCondition.getFalseCaseExecutableItem() == null) {
 				loopIfCondition.setFalseCaseExecutableItem(elseExecutableItem);
 				break;
-			} else {
+			}
+			else {
 				loopIfCondition = (IfCondition) loopIfCondition.getFalseCaseExecutableItem();
 			}
 		}
 
 		return ifCondition;
 	}
+
 }

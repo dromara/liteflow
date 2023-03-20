@@ -5,8 +5,10 @@ import com.yomahub.liteflow.core.NodeComponent;
 
 @LiteflowComponent("s")
 public class S extends NodeComponent {
-    @Override
-    public void process() throws Exception {
-        throw new RuntimeException("test");
-    }
+
+	@Override
+	public void process() throws Exception {
+		throw new RuntimeException("test");
+	}
+
 }

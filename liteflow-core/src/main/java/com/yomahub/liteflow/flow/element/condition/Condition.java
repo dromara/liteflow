@@ -24,9 +24,10 @@ import java.util.Map;
 
 /**
  * Condition的抽象类
+ *
  * @author Bryan.Zhang
  */
-public abstract class Condition implements Executable{
+public abstract class Condition implements Executable {
 
 	private String id;
 
@@ -36,26 +37,28 @@ public abstract class Condition implements Executable{
 	private final Map<String, List<Executable>> executableGroup = new HashMap<>();
 
 	/**
-	 * 当前所在的ChainName
-	 * 如果对于子流程来说，那这个就是子流程所在的Chain
+	 * 当前所在的ChainName 如果对于子流程来说，那这个就是子流程所在的Chain
 	 */
 	private String currChainId;
 
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
-		try{
+		try {
 			executeCondition(slotIndex);
-		}catch (ChainEndException e){
-			//这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
-			//是属于正常逻辑，所以会在FlowExecutor中判断。这里不作为异常处理
+		}
+		catch (ChainEndException e) {
+			// 这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
+			// 是属于正常逻辑，所以会在FlowExecutor中判断。这里不作为异常处理
 			throw e;
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			Slot slot = DataBus.getSlot(slotIndex);
 			String chainId = this.getCurrChainId();
-			//这里事先取到exception set到slot里，为了方便finally取到exception
-			if (slot.isSubChain(chainId)){
+			// 这里事先取到exception set到slot里，为了方便finally取到exception
+			if (slot.isSubChain(chainId)) {
 				slot.setSubException(chainId, e);
-			}else{
+			}
+			else {
 				slot.setException(e);
 			}
 			throw e;
@@ -80,7 +83,7 @@ public abstract class Condition implements Executable{
 
 	public List<Executable> getExecutableList(String groupKey) {
 		List<Executable> executableList = this.executableGroup.get(groupKey);
-		if (CollUtil.isEmpty(executableList)){
+		if (CollUtil.isEmpty(executableList)) {
 			executableList = new ArrayList<>();
 		}
 		return executableList;
@@ -88,9 +91,10 @@ public abstract class Condition implements Executable{
 
 	public Executable getExecutableOne(String groupKey) {
 		List<Executable> list = getExecutableList(groupKey);
-		if (CollUtil.isEmpty(list)){
+		if (CollUtil.isEmpty(list)) {
 			return null;
-		}else{
+		}
+		else {
 			return list.get(0);
 		}
 	}
@@ -104,13 +108,14 @@ public abstract class Condition implements Executable{
 	}
 
 	public void addExecutable(String groupKey, Executable executable) {
-		if (ObjectUtil.isNull(executable)){
+		if (ObjectUtil.isNull(executable)) {
 			return;
 		}
 		List<Executable> executableList = this.executableGroup.get(groupKey);
-		if (CollUtil.isEmpty(executableList)){
+		if (CollUtil.isEmpty(executableList)) {
 			this.executableGroup.put(groupKey, ListUtil.toList(executable));
-		}else{
+		}
+		else {
 			this.executableGroup.get(groupKey).add(executable);
 		}
 	}
@@ -136,7 +141,7 @@ public abstract class Condition implements Executable{
 	public String getCurrChainId() {
 		return currChainId;
 	}
-	
+
 	@Override
 	public void setCurrChainId(String currChainId) {
 		this.currChainId = currChainId;
@@ -145,4 +150,5 @@ public abstract class Condition implements Executable{
 	public Map<String, List<Executable>> getExecutableGroup() {
 		return executableGroup;
 	}
+
 }

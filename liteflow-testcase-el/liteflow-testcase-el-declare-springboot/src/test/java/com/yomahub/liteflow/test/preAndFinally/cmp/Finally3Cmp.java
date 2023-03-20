@@ -16,17 +16,19 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("f3")
-public class Finally3Cmp{
+public class Finally3Cmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-	public void process(NodeComponent bindCmp) throws Exception{
+	public void process(NodeComponent bindCmp) throws Exception {
 		Slot slot = bindCmp.getSlot();
 		DefaultContext context = slot.getFirstContextBean();
-		if (ObjectUtil.isNull(slot.getException())){
+		if (ObjectUtil.isNull(slot.getException())) {
 			context.setData("hasEx", false);
-		}else{
+		}
+		else {
 			context.setData("hasEx", true);
 		}
 		System.out.println("Finally3Cmp executed!");
 	}
+
 }

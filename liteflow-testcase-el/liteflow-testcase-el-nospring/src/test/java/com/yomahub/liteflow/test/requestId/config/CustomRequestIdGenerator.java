@@ -9,10 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class CustomRequestIdGenerator implements RequestIdGenerator {
 
-    private final AtomicInteger atomicInteger = new AtomicInteger(0);
+	private final AtomicInteger atomicInteger = new AtomicInteger(0);
 
-    @Override
-    public String generate() {
-        return atomicInteger.incrementAndGet() + "";
-    }
+	@Override
+	public String generate() {
+		return atomicInteger.incrementAndGet() + "";
+	}
+
 }

@@ -13,10 +13,11 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
 @Component("f1")
-public class Finally1Cmp{
+public class Finally1Cmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("Finally1Cmp executed!");
 	}
+
 }

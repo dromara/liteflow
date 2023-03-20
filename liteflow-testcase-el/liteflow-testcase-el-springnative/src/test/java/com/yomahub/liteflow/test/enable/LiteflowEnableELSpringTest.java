@@ -23,19 +23,21 @@ import javax.annotation.Resource;
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:/enable/application-local.xml")
 public class LiteflowEnableELSpringTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
 
-    @Test
-    public void testEnable() throws Exception {
-        LiteflowConfig config = LiteflowConfigGetter.get();
-        Boolean enable = config.getEnable();
-        if (enable) {
-            LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-            Assert.assertTrue(response.isSuccess());
-            return;
-        }
+	@Resource
+	private FlowExecutor flowExecutor;
 
-        Assert.assertFalse(enable);
-    }
+	@Test
+	public void testEnable() throws Exception {
+		LiteflowConfig config = LiteflowConfigGetter.get();
+		Boolean enable = config.getEnable();
+		if (enable) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+			Assert.assertTrue(response.isSuccess());
+			return;
+		}
+
+		Assert.assertFalse(enable);
+	}
+
 }

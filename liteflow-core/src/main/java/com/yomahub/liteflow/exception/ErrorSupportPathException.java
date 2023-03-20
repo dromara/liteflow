@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 错误支持路径异常
+ *
  * @author Yun
  */
 public class ErrorSupportPathException extends RuntimeException {
@@ -23,4 +24,5 @@ public class ErrorSupportPathException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

@@ -14,7 +14,7 @@ public class DCmp extends NodeComponent {
 	@Override
 	public void process() {
 		System.out.println("CCmp executed!");
-		int i = 1/0;
+		int i = 1 / 0;
 	}
 
 }

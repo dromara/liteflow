@@ -14,11 +14,12 @@ import org.noear.solon.annotation.Component;
 
 @Component("c")
 public class CCmp extends NodeComponent {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(CCmp.class);
-	
+
 	@Override
 	public void process() {
 		LOG.info("Ccomp executed!");
 	}
+
 }

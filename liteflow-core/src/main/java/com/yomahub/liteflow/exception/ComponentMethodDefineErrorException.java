@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 组件方法定义错误异常
+ *
  * @author Bryan.Zhang
  */
 public class ComponentMethodDefineErrorException extends RuntimeException {
@@ -24,4 +25,5 @@ public class ComponentMethodDefineErrorException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

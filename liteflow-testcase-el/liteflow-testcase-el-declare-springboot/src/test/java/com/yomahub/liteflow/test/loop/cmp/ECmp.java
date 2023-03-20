@@ -15,17 +15,18 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("e")
-public class ECmp{
+public class ECmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		String key = StrUtil.format("{}_{}", "loop", bindCmp.getTag());
-		if (context.hasData(key)){
+		if (context.hasData(key)) {
 			String loopStr = context.getData(key);
 			String loopStrReturn = StrUtil.format("{}{}", loopStr, bindCmp.getLoopIndex());
 			context.setData(key, loopStrReturn);
-		}else{
+		}
+		else {
 			context.setData(key, bindCmp.getLoopIndex().toString());
 		}
 	}

@@ -14,14 +14,16 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 @LiteflowComponent("c")
-public class CCmp{
+public class CCmp {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
-		if(bindCmp.getTag().equals("2")){
+		if (bindCmp.getTag().equals("2")) {
 			return "e";
-		}else{
+		}
+		else {
 			return "d";
 		}
 	}
+
 }

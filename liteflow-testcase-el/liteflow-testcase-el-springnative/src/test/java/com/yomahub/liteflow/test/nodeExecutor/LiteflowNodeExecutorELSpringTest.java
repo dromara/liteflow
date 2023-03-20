@@ -12,7 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-
 /**
  * 测试spring下的组件重试
  *
@@ -23,44 +22,45 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/nodeExecutor/application.xml")
 public class LiteflowNodeExecutorELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    // 默认执行器测试
-    @Test
-    public void testCustomerDefaultNodeExecutor() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(CustomerDefaultNodeExecutor.class, context.getData("customerDefaultNodeExecutor"));
-        Assert.assertEquals("a", response.getExecuteStepStr());
-    }
+	// 默认执行器测试
+	@Test
+	public void testCustomerDefaultNodeExecutor() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals(CustomerDefaultNodeExecutor.class, context.getData("customerDefaultNodeExecutor"));
+		Assert.assertEquals("a", response.getExecuteStepStr());
+	}
 
-    //默认执行器测试+全局重试配置测试
-    @Test
-    public void testDefaultExecutorForRetry() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals(CustomerDefaultNodeExecutor.class, context.getData("customerDefaultNodeExecutor"));
-        Assert.assertEquals("b==>b==>b", response.getExecuteStepStr());
-    }
+	// 默认执行器测试+全局重试配置测试
+	@Test
+	public void testDefaultExecutorForRetry() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals(CustomerDefaultNodeExecutor.class, context.getData("customerDefaultNodeExecutor"));
+		Assert.assertEquals("b==>b==>b", response.getExecuteStepStr());
+	}
 
-    //自定义执行器测试
-    @Test
-    public void testCustomerExecutor() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("c", response.getExecuteStepStr());
-    }
+	// 自定义执行器测试
+	@Test
+	public void testCustomerExecutor() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("c", response.getExecuteStepStr());
+	}
 
-    //自定义执行器测试+全局重试配置测试
-    @Test
-    public void testCustomExecutorForRetry() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-        DefaultContext context = response.getFirstContextBean();
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(CustomerNodeExecutorAndCustomRetry.class, context.getData("retryLogic"));
-        Assert.assertEquals("d==>d==>d==>d==>d==>d", response.getExecuteStepStr());
-    }
+	// 自定义执行器测试+全局重试配置测试
+	@Test
+	public void testCustomExecutorForRetry() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertFalse(response.isSuccess());
+		Assert.assertEquals(CustomerNodeExecutorAndCustomRetry.class, context.getData("retryLogic"));
+		Assert.assertEquals("d==>d==>d==>d==>d==>d", response.getExecuteStepStr());
+	}
+
 }

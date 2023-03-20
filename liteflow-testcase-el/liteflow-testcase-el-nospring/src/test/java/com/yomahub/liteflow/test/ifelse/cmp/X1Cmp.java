@@ -10,8 +10,10 @@ package com.yomahub.liteflow.test.ifelse.cmp;
 import com.yomahub.liteflow.core.NodeIfComponent;
 
 public class X1Cmp extends NodeIfComponent {
+
 	@Override
 	public boolean processIf() throws Exception {
 		return Boolean.parseBoolean(this.getTag());
 	}
+
 }

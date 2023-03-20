@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境最普通的例子测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -23,16 +24,16 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/base/application.properties")
 @SpringBootTest(classes = BaseELDeclSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.base.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.base.cmp" })
 public class BaseELDeclSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testBase() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testBase() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
 }

@@ -14,9 +14,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
-
 /**
  * 测试springboot下的groovy脚本抛错
+ *
  * @author Bryan.Zhang
  * @since 2.9.4
  */
@@ -24,16 +24,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/throwException/application.properties")
 @SpringBootTest(classes = ThrowExceptionScriptGroovyELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.groovy.throwException.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.groovy.throwException.cmp" })
 public class ThrowExceptionScriptGroovyELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void test1(){
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals("T01", response.getCode());
-    }
+	@Test
+	public void test1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertFalse(response.isSuccess());
+		Assert.assertEquals("T01", response.getCode());
+	}
+
 }

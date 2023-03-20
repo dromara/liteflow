@@ -34,61 +34,62 @@ import java.util.function.Consumer;
  */
 public class MonitorFile {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final Set<String> PATH_SET = new HashSet<>();
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static MonitorFile getInstance() {
-        return Singleton.get(MonitorFile.class);
-    }
+	private final Set<String> PATH_SET = new HashSet<>();
 
-    /**
-     * 添加监听文件路径
-     *
-     * @param path 文件路径
-     */
-    public void addMonitorFilePath(String path) {
-        if (FileUtil.isFile(path)){
-            String parentFolder = FileUtil.getParent(path, 1);
-            PATH_SET.add(parentFolder);
-        }else{
-            PATH_SET.add(path);
-        }
-    }
+	public static MonitorFile getInstance() {
+		return Singleton.get(MonitorFile.class);
+	}
 
-    /**
-     * 添加监听文件路径
-     *
-     * @param filePaths 文件路径
-     */
-    public void addMonitorFilePaths(List<String> filePaths) {
-        filePaths.forEach(this::addMonitorFilePath);
-    }
+	/**
+	 * 添加监听文件路径
+	 * @param path 文件路径
+	 */
+	public void addMonitorFilePath(String path) {
+		if (FileUtil.isFile(path)) {
+			String parentFolder = FileUtil.getParent(path, 1);
+			PATH_SET.add(parentFolder);
+		}
+		else {
+			PATH_SET.add(path);
+		}
+	}
 
-    /**
-     * 创建文件监听
-     */
-    public void create() throws Exception{
-        for (String path : PATH_SET) {
-            long interval = TimeUnit.MILLISECONDS.toMillis(2);
-            //不使用过滤器
-            FileAlterationObserver observer = new FileAlterationObserver(new File(path));
-            observer.addListener(new FileAlterationListenerAdaptor() {
-                @Override
-                public void onFileChange(File file) {
-                    logger.info("file modify,filePath={}", file.getAbsolutePath());
-                    FlowExecutorHolder.loadInstance().reloadRule();
-                }
+	/**
+	 * 添加监听文件路径
+	 * @param filePaths 文件路径
+	 */
+	public void addMonitorFilePaths(List<String> filePaths) {
+		filePaths.forEach(this::addMonitorFilePath);
+	}
 
-                @Override
-                public void onFileDelete(File file) {
-                    logger.info("file delete,filePath={}", file.getAbsolutePath());
-                    FlowExecutorHolder.loadInstance().reloadRule();
-                }
-            });
-            //创建文件变化监听器
-            FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
-            // 开始监控
-            monitor.start();
-        }
-    }
+	/**
+	 * 创建文件监听
+	 */
+	public void create() throws Exception {
+		for (String path : PATH_SET) {
+			long interval = TimeUnit.MILLISECONDS.toMillis(2);
+			// 不使用过滤器
+			FileAlterationObserver observer = new FileAlterationObserver(new File(path));
+			observer.addListener(new FileAlterationListenerAdaptor() {
+				@Override
+				public void onFileChange(File file) {
+					logger.info("file modify,filePath={}", file.getAbsolutePath());
+					FlowExecutorHolder.loadInstance().reloadRule();
+				}
+
+				@Override
+				public void onFileDelete(File file) {
+					logger.info("file delete,filePath={}", file.getAbsolutePath());
+					FlowExecutorHolder.loadInstance().reloadRule();
+				}
+			});
+			// 创建文件变化监听器
+			FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
+			// 开始监控
+			monitor.start();
+		}
+	}
+
 }

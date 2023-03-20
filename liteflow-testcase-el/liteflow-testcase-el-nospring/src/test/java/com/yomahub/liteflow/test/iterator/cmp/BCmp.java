@@ -9,4 +9,5 @@ public class BCmp extends NodeBreakComponent {
 	public boolean processBreak() throws Exception {
 		return this.getLoopIndex() == 1;
 	}
+
 }

@@ -15,17 +15,19 @@ import com.yomahub.liteflow.flow.element.condition.WhileCondition;
  * @since 2.9.0
  */
 public class WhileOperator extends BaseOperator<WhileCondition> {
-    @Override
-    public WhileCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        Node node = OperatorHelper.convert(objects[0], Node.class);
-        if (!ListUtil.toList(NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT).contains(node.getType())) {
-            throw new QLException("The parameter must be while-node item");
-        }
+	@Override
+	public WhileCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEq(objects, 1);
 
-        WhileCondition whileCondition = new WhileCondition();
-        whileCondition.setWhileNode(node);
-        return whileCondition;
-    }
+		Node node = OperatorHelper.convert(objects[0], Node.class);
+		if (!ListUtil.toList(NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT).contains(node.getType())) {
+			throw new QLException("The parameter must be while-node item");
+		}
+
+		WhileCondition whileCondition = new WhileCondition();
+		whileCondition.setWhileNode(node);
+		return whileCondition;
+	}
+
 }

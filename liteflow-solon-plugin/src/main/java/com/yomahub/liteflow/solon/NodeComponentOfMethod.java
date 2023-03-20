@@ -13,92 +13,97 @@ import java.lang.reflect.Method;
  * @since 1.11
  */
 public class NodeComponentOfMethod extends NodeComponent {
-    final BeanWrap beanWrap;
-    final Method method;
-    final LiteFlowMethodEnum methodEnum;
 
-    public NodeComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
-        this.beanWrap = beanWrap;
-        this.method = method;
-        this.methodEnum = methodEnum;
+	final BeanWrap beanWrap;
 
-        if (method.getParameterCount() > 1) {
-            String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new LiteFlowException("NodeComponent method parameter cannot be more than one: " + methodFullName);
-        }
+	final Method method;
 
-        if (method.getReturnType() != Void.class
-                && method.getReturnType() != void.class) {
-            String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-            throw new LiteFlowException("NodeComponent method returnType can only be void: " + methodFullName);
-        }
-    }
+	final LiteFlowMethodEnum methodEnum;
 
-    private void exec() throws Exception {
-        if (method.getParameterCount() == 0) {
-            method.invoke(beanWrap.get());
-        } else {
-            method.invoke(beanWrap.get(), this);
-        }
-    }
+	public NodeComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
+		this.beanWrap = beanWrap;
+		this.method = method;
+		this.methodEnum = methodEnum;
 
-    @Override
-    public void process() throws Exception {
-        if(methodEnum != LiteFlowMethodEnum.PROCESS){
-            return;
-        }
+		if (method.getParameterCount() > 1) {
+			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
+			throw new LiteFlowException("NodeComponent method parameter cannot be more than one: " + methodFullName);
+		}
 
-        exec();
-    }
+		if (method.getReturnType() != Void.class && method.getReturnType() != void.class) {
+			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
+			throw new LiteFlowException("NodeComponent method returnType can only be void: " + methodFullName);
+		}
+	}
 
+	private void exec() throws Exception {
+		if (method.getParameterCount() == 0) {
+			method.invoke(beanWrap.get());
+		}
+		else {
+			method.invoke(beanWrap.get(), this);
+		}
+	}
 
-    @Override
-    public void beforeProcess() {
-        if(methodEnum != LiteFlowMethodEnum.BEFORE_PROCESS){
-            return;
-        }
+	@Override
+	public void process() throws Exception {
+		if (methodEnum != LiteFlowMethodEnum.PROCESS) {
+			return;
+		}
 
-        try {
-            exec();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+		exec();
+	}
 
-    @Override
-    public void afterProcess() {
-        if (methodEnum != LiteFlowMethodEnum.AFTER_PROCESS) {
-            return;
-        }
+	@Override
+	public void beforeProcess() {
+		if (methodEnum != LiteFlowMethodEnum.BEFORE_PROCESS) {
+			return;
+		}
 
-        try {
-            exec();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+		try {
+			exec();
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
+	@Override
+	public void afterProcess() {
+		if (methodEnum != LiteFlowMethodEnum.AFTER_PROCESS) {
+			return;
+		}
 
-    @Override
-    public void onError() throws Exception {
-        if(methodEnum != LiteFlowMethodEnum.ON_ERROR){
-            return;
-        }
+		try {
+			exec();
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
+	@Override
+	public void onError() throws Exception {
+		if (methodEnum != LiteFlowMethodEnum.ON_ERROR) {
+			return;
+		}
 
-        exec();
-    }
+		exec();
+	}
 
-    @Override
-    public void onSuccess() throws Exception {
-        if(methodEnum != LiteFlowMethodEnum.ON_SUCCESS){
-            return;
-        }
+	@Override
+	public void onSuccess() throws Exception {
+		if (methodEnum != LiteFlowMethodEnum.ON_SUCCESS) {
+			return;
+		}
 
-        exec();
-    }
+		exec();
+	}
+
 }

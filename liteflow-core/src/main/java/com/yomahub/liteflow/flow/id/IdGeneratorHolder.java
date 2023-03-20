@@ -13,42 +13,46 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
  */
 public class IdGeneratorHolder {
 
-    private RequestIdGenerator requestIdGenerator;
+	private RequestIdGenerator requestIdGenerator;
 
-    private static IdGeneratorHolder INSTANCE;
+	private static IdGeneratorHolder INSTANCE;
 
-    public static void init(){
-        try{
-            INSTANCE = new IdGeneratorHolder();
-            LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-            String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
+	public static void init() {
+		try {
+			INSTANCE = new IdGeneratorHolder();
+			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+			String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
 
-            RequestIdGenerator requestIdGenerator;
-            if (StrUtil.isBlank(requestIdGeneratorClass)) {
-                requestIdGenerator = new DefaultRequestIdGenerator();
-            } else {
-                Class<RequestIdGenerator> idGenerateClass = (Class<RequestIdGenerator>) Class.forName(requestIdGeneratorClass);
-                requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
-            }
-            INSTANCE.setRequestIdGenerator(requestIdGenerator);
-        }catch (Exception e) {
-            throw new RequestIdGeneratorException(e.getMessage());
-        }
-    }
+			RequestIdGenerator requestIdGenerator;
+			if (StrUtil.isBlank(requestIdGeneratorClass)) {
+				requestIdGenerator = new DefaultRequestIdGenerator();
+			}
+			else {
+				Class<RequestIdGenerator> idGenerateClass = (Class<RequestIdGenerator>) Class
+					.forName(requestIdGeneratorClass);
+				requestIdGenerator = ContextAwareHolder.loadContextAware().registerBean(idGenerateClass);
+			}
+			INSTANCE.setRequestIdGenerator(requestIdGenerator);
+		}
+		catch (Exception e) {
+			throw new RequestIdGeneratorException(e.getMessage());
+		}
+	}
 
-    public static IdGeneratorHolder getInstance() {
-        return INSTANCE;
-    }
+	public static IdGeneratorHolder getInstance() {
+		return INSTANCE;
+	}
 
-    public String generate() {
-        return requestIdGenerator.generate();
-    }
+	public String generate() {
+		return requestIdGenerator.generate();
+	}
 
-    public RequestIdGenerator getRequestIdGenerator() {
-        return requestIdGenerator;
-    }
+	public RequestIdGenerator getRequestIdGenerator() {
+		return requestIdGenerator;
+	}
 
-    public void setRequestIdGenerator(RequestIdGenerator requestIdGenerator) {
-        this.requestIdGenerator = requestIdGenerator;
-    }
+	public void setRequestIdGenerator(RequestIdGenerator requestIdGenerator) {
+		this.requestIdGenerator = requestIdGenerator;
+	}
+
 }

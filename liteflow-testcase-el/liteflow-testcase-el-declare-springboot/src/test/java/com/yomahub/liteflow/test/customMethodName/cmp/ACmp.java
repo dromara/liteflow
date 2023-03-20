@@ -14,7 +14,7 @@ import com.yomahub.liteflow.slot.Slot;
 import org.springframework.stereotype.Component;
 
 @Component("a")
-public class ACmp{
+public class ACmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void processAcmp(NodeComponent bindCmp) {
@@ -22,27 +22,27 @@ public class ACmp{
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.IS_ACCESS)
-	public boolean isAcmpAccess(NodeComponent bindCmp){
+	public boolean isAcmpAccess(NodeComponent bindCmp) {
 		return true;
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.BEFORE_PROCESS)
-	public void beforeAcmp(NodeComponent bindCmp){
+	public void beforeAcmp(NodeComponent bindCmp) {
 		System.out.println("before A");
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.AFTER_PROCESS)
-	public void afterAcmp(NodeComponent bindCmp){
+	public void afterAcmp(NodeComponent bindCmp) {
 		System.out.println("after A");
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_SUCCESS)
-	public void onAcmpSuccess(NodeComponent bindCmp){
+	public void onAcmpSuccess(NodeComponent bindCmp) {
 		System.out.println("Acmp success");
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_ERROR)
-	public void onAcmpError(NodeComponent bindCmp){
+	public void onAcmpError(NodeComponent bindCmp) {
 		System.out.println("Acmp error");
 	}
 
@@ -51,4 +51,5 @@ public class ACmp{
 		System.out.println("Acmp end config");
 		return false;
 	}
+
 }

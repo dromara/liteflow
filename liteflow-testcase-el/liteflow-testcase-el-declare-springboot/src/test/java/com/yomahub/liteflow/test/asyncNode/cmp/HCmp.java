@@ -6,23 +6,24 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.springframework.stereotype.Component;
 
-
 @Component("h")
-public class HCmp{
+public class HCmp {
 
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) throws Exception {
-        DefaultContext context = bindCmp.getFirstContextBean();
-        synchronized (NodeComponent.class){
-            if (context.hasData("check")){
-                String str = context.getData("check");
-                str += bindCmp.getNodeId();
-                context.setData("check", str);
-            }else{
-                context.setData("check", bindCmp.getNodeId());
-            }
-        }
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) throws Exception {
+		DefaultContext context = bindCmp.getFirstContextBean();
+		synchronized (NodeComponent.class) {
+			if (context.hasData("check")) {
+				String str = context.getData("check");
+				str += bindCmp.getNodeId();
+				context.setData("check", str);
+			}
+			else {
+				context.setData("check", bindCmp.getNodeId());
+			}
+		}
 
-        System.out.println("Hcomp executed!");
-    }
+		System.out.println("Hcomp executed!");
+	}
+
 }

@@ -8,12 +8,13 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
 @LiteflowComponent("y")
-public class YCmp{
+public class YCmp {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeType = NodeTypeEnum.BREAK)
-    public boolean processBreak(NodeComponent bindCmp) throws Exception {
-        DefaultContext context = bindCmp.getFirstContextBean();
-        int count = context.getData("test");
-        return count > 3;
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeType = NodeTypeEnum.BREAK)
+	public boolean processBreak(NodeComponent bindCmp) throws Exception {
+		DefaultContext context = bindCmp.getFirstContextBean();
+		int count = context.getData("test");
+		return count > 3;
+	}
+
 }

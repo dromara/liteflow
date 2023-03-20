@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TestDomain {
-    public void sayHi(){
-        System.out.println("hello");
-    }
+
+	public void sayHi() {
+		System.out.println("hello");
+	}
+
 }

@@ -4,17 +4,19 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
  * IF节点抽象类
+ *
  * @author Bryan.Zhang
  * @since 2.8.5
  */
-public abstract class NodeIfComponent extends NodeComponent{
+public abstract class NodeIfComponent extends NodeComponent {
 
-    @Override
-    public void process() throws Exception {
-        boolean result = this.processIf();
-        Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-        this.getSlot().setIfResult(originalClass.getName(), result);
-    }
+	@Override
+	public void process() throws Exception {
+		boolean result = this.processIf();
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		this.getSlot().setIfResult(originalClass.getName(), result);
+	}
 
-    public abstract boolean processIf() throws Exception;
+	public abstract boolean processIf() throws Exception;
+
 }

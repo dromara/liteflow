@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 
 /**
  * spring环境下监控的测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -24,21 +25,21 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/monitor/application.xml")
 public class MonitorELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testMonitor() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
+	@Test
+	public void testMonitor() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
 
-        Thread.sleep(10000);
-    }
+		Thread.sleep(10000);
+	}
 
-    @AfterClass
-    public static void clean(){
-        MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
-        monitorBus.closeScheduler();
-    }
+	@AfterClass
+	public static void clean() {
+		MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
+		monitorBus.closeScheduler();
+	}
 
 }

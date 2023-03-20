@@ -15,7 +15,7 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("h")
-public class HCmp{
+public class HCmp {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {

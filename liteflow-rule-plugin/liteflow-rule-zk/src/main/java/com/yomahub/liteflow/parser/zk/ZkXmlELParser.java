@@ -17,54 +17,60 @@ import java.util.Objects;
 
 /**
  * ZK解析器实现，只支持EL形式的XML，不支持其他的形式
+ *
  * @author Bryan.Zhang
  * @since 2.8.6
  */
 public class ZkXmlELParser extends ClassXmlFlowELParser {
 
-    private final ZkParserHelper zkParserHelper;
+	private final ZkParserHelper zkParserHelper;
 
-    public ZkXmlELParser() {
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+	public ZkXmlELParser() {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-        try{
-            ZkParserVO zkParserVO = null;
-            if(MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))){
-                zkParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), ZkParserVO.class, CopyOptions.create());
-            }else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())){
-                zkParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ZkParserVO.class);
-            }
+		try {
+			ZkParserVO zkParserVO = null;
+			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
+				zkParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), ZkParserVO.class,
+						CopyOptions.create());
+			}
+			else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
+				zkParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), ZkParserVO.class);
+			}
 
-            if (Objects.isNull(zkParserVO)) {
-                throw new ZkException("rule-source-ext-data is empty");
-            }
+			if (Objects.isNull(zkParserVO)) {
+				throw new ZkException("rule-source-ext-data is empty");
+			}
 
-            if (StrUtil.isBlank(zkParserVO.getChainPath())){
-                throw new ZkException("You must configure the chainPath property");
-            }
-            if (StrUtil.isBlank(zkParserVO.getConnectStr())){
-                throw new ZkException("zk connect string is empty");
-            }
+			if (StrUtil.isBlank(zkParserVO.getChainPath())) {
+				throw new ZkException("You must configure the chainPath property");
+			}
+			if (StrUtil.isBlank(zkParserVO.getConnectStr())) {
+				throw new ZkException("zk connect string is empty");
+			}
 
-            zkParserHelper = new ZkParserHelper(zkParserVO);
-        }catch (Exception e){
-            throw new ZkException(e.getMessage());
-        }
-    }
+			zkParserHelper = new ZkParserHelper(zkParserVO);
+		}
+		catch (Exception e) {
+			throw new ZkException(e.getMessage());
+		}
+	}
 
-    @Override
-    public String parseCustom() {
-        try{
-            String content = zkParserHelper.getContent();
+	@Override
+	public String parseCustom() {
+		try {
+			String content = zkParserHelper.getContent();
 
-            FlowInitHook.addHook(() -> {
-                zkParserHelper.listenZkNode();
-                return true;
-            });
+			FlowInitHook.addHook(() -> {
+				zkParserHelper.listenZkNode();
+				return true;
+			});
 
-            return content;
-        }catch (Exception e){
-            throw new ZkException(e.getMessage());
-        }
-    }
+			return content;
+		}
+		catch (Exception e) {
+			throw new ZkException(e.getMessage());
+		}
+	}
+
 }

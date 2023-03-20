@@ -15,4 +15,5 @@ public class ESwitchCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "d";
 	}
+
 }

@@ -17,7 +17,7 @@ public class DCmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("count",198);
+		context.setData("count", 198);
 		System.out.println("DCmp executed!");
 	}
 

@@ -7,71 +7,72 @@ package com.yomahub.liteflow.common;
  */
 public interface ChainConstant {
 
-    String CHAIN = "chain";
+	String CHAIN = "chain";
 
-    String FLOW = "flow";
+	String FLOW = "flow";
 
-    String NODES = "nodes";
+	String NODES = "nodes";
 
-    String NODE = "node";
+	String NODE = "node";
 
-    String ID = "id";
+	String ID = "id";
 
-    String _CLASS = "class";
+	String _CLASS = "class";
 
-    String FILE = "file";
+	String FILE = "file";
 
-    String NAME = "name";
+	String NAME = "name";
 
-    String LANGUAGE = "language";
+	String LANGUAGE = "language";
 
-    String VALUE = "value";
+	String VALUE = "value";
 
-    String ANY = "any";
+	String ANY = "any";
 
-    String TYPE = "type";
+	String TYPE = "type";
 
-    String THEN = "THEN";
+	String THEN = "THEN";
 
-    String WHEN = "WHEN";
+	String WHEN = "WHEN";
 
-    String SWITCH = "SWITCH";
+	String SWITCH = "SWITCH";
 
-    String PRE = "PRE";
+	String PRE = "PRE";
 
-    String FINALLY = "FINALLY";
+	String FINALLY = "FINALLY";
 
-    String IF = "IF";
+	String IF = "IF";
 
-    String ELSE = "ELSE";
+	String ELSE = "ELSE";
 
-    String ELIF = "ELIF";
+	String ELIF = "ELIF";
 
-    String TO = "TO";
+	String TO = "TO";
 
-    String TAG = "tag";
+	String TAG = "tag";
 
-    String IGNORE_ERROR = "ignoreError";
+	String IGNORE_ERROR = "ignoreError";
 
-    String THREAD_POOL = "threadPool";
+	String THREAD_POOL = "threadPool";
 
-    String WHILE = "WHILE";
+	String WHILE = "WHILE";
 
-    String FOR = "FOR";
+	String FOR = "FOR";
 
-    String DO = "DO";
+	String DO = "DO";
 
-    String BREAK = "BREAK";
+	String BREAK = "BREAK";
 
-    String DATA = "data";
+	String DATA = "data";
 
-    String ITERATOR = "ITERATOR";
+	String ITERATOR = "ITERATOR";
 
-    String MONITOR_BUS = "monitorBus";
+	String MONITOR_BUS = "monitorBus";
 
-    String CURR_CHAIN_ID = "currChainId";
+	String CURR_CHAIN_ID = "currChainId";
 
-    String DEFAULT = "DEFAULT";
+	String DEFAULT = "DEFAULT";
 
-    String CATCH = "CATCH";
+	String CATCH = "CATCH";
+
 }

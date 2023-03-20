@@ -24,4 +24,5 @@ public class IgnoreErrorOperator extends BaseOperator<WhenCondition> {
 
 		return condition;
 	}
+
 }

@@ -30,25 +30,25 @@ import java.util.stream.Collectors;
 
 /**
  * 并行器
+ *
  * @author Bryan.Zhang
  */
 public class WhenCondition extends Condition {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	//只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
+	// 只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
 	private boolean ignoreError = false;
 
-	//只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
-	//此属性已弃用
+	// 只在when类型下有效，用于不同node进行同组合并，相同的组会进行合并，不同的组不会进行合并
+	// 此属性已弃用
 	private String group = LocalDefaultFlowConstant.DEFAULT;
 
-	//只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
+	// 只在when类型下有效，为true的话说明在多个并行节点下，任意一个成功，整个when就成功
 	private boolean any = false;
 
 	// when单独的线程池名称
 	private String threadExecutorClass;
-
 
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
@@ -60,112 +60,128 @@ public class WhenCondition extends Condition {
 		return ConditionTypeEnum.TYPE_WHEN;
 	}
 
-	//使用线程池执行when并发流程
-	//这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
-	private void executeAsyncCondition(Integer slotIndex) throws Exception{
+	// 使用线程池执行when并发流程
+	// 这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
+	private void executeAsyncCondition(Integer slotIndex) throws Exception {
 		Slot slot = DataBus.getSlot(slotIndex);
 
 		String currChainName = this.getCurrChainId();
 
-		//此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
-		ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(this.getThreadExecutorClass());
+		// 此方法其实只会初始化一次Executor，不会每次都会初始化。Executor是唯一的
+		ExecutorService parallelExecutor = ExecutorHelper.loadInstance()
+			.buildWhenExecutor(this.getThreadExecutorClass());
 
-		//获得liteflow的参数
+		// 获得liteflow的参数
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-		//定义是否中断参数
-		//这里为什么要定义成数组呢，因为后面lambda要用到，根据final不能修改引用的原则，这里用了数组对象
-		final boolean[] interrupted = {false};
+		// 定义是否中断参数
+		// 这里为什么要定义成数组呢，因为后面lambda要用到，根据final不能修改引用的原则，这里用了数组对象
+		final boolean[] interrupted = { false };
 
-		//这里主要是做了封装CompletableFuture对象，用lumbda表达式做了很多事情，这句代码要仔细理清
-		//1.先进行过滤，前置和后置组件过滤掉，因为在EL Chain处理的时候已经提出来了
-		//2.过滤isAccess为false的情况，因为不过滤这个的话，如果加上了any，那么isAccess为false那就是最快的了
-		//3.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
-		//4.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
-		//5.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
-		List<CompletableFuture<WhenFutureObj>> completableFutureList = this.getExecutableList().stream().filter(executable ->
-				!(executable instanceof PreCondition) && !(executable instanceof FinallyCondition)
-		).filter(executable -> {
-			try {
-				return executable.isAccess(slotIndex);
-			}catch (Exception e){
-				LOG.error("there was an error when executing the when component isAccess",e);
-				return false;
-			}
-		}).map(executable -> CompletableFutureTimeout.completeOnTimeout(
-				WhenFutureObj.timeOut(executable.getExecuteId()),
-				CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
-				liteflowConfig.getWhenMaxWaitSeconds(),
-				TimeUnit.SECONDS
-		)).collect(Collectors.toList());
-
+		// 这里主要是做了封装CompletableFuture对象，用lumbda表达式做了很多事情，这句代码要仔细理清
+		// 1.先进行过滤，前置和后置组件过滤掉，因为在EL Chain处理的时候已经提出来了
+		// 2.过滤isAccess为false的情况，因为不过滤这个的话，如果加上了any，那么isAccess为false那就是最快的了
+		// 3.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
+		// 4.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
+		// 5.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
+		List<CompletableFuture<WhenFutureObj>> completableFutureList = this.getExecutableList()
+			.stream()
+			.filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
+			.filter(executable -> {
+				try {
+					return executable.isAccess(slotIndex);
+				}
+				catch (Exception e) {
+					LOG.error("there was an error when executing the when component isAccess", e);
+					return false;
+				}
+			})
+			.map(executable -> CompletableFutureTimeout.completeOnTimeout(
+					WhenFutureObj.timeOut(executable.getExecuteId()),
+					CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex),
+							parallelExecutor),
+					liteflowConfig.getWhenMaxWaitSeconds(), TimeUnit.SECONDS))
+			.collect(Collectors.toList());
 
 		CompletableFuture<?> resultCompletableFuture;
 
-		//这里判断执行方式
-		//如果any为false，说明这些异步任务全部执行好或者超时，才返回
-		//如果any为true，说明这些异步任务只要任意一个执行完成，就返回
-		if(this.isAny()){
-			//把这些CompletableFuture通过anyOf合成一个CompletableFuture
-			resultCompletableFuture = CompletableFuture.anyOf(completableFutureList.toArray(new CompletableFuture[]{}));
-		}else{
-			//把这些CompletableFuture通过allOf合成一个CompletableFuture
-			resultCompletableFuture = CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[]{}));
+		// 这里判断执行方式
+		// 如果any为false，说明这些异步任务全部执行好或者超时，才返回
+		// 如果any为true，说明这些异步任务只要任意一个执行完成，就返回
+		if (this.isAny()) {
+			// 把这些CompletableFuture通过anyOf合成一个CompletableFuture
+			resultCompletableFuture = CompletableFuture
+				.anyOf(completableFutureList.toArray(new CompletableFuture[] {}));
+		}
+		else {
+			// 把这些CompletableFuture通过allOf合成一个CompletableFuture
+			resultCompletableFuture = CompletableFuture
+				.allOf(completableFutureList.toArray(new CompletableFuture[] {}));
 		}
 
 		try {
-			//进行执行，这句执行完后，就意味着所有的任务要么执行完毕，要么超时返回
+			// 进行执行，这句执行完后，就意味着所有的任务要么执行完毕，要么超时返回
 			resultCompletableFuture.get();
-		} catch (InterruptedException | ExecutionException e) {
-			LOG.error("there was an error when executing the CompletableFuture",e);
+		}
+		catch (InterruptedException | ExecutionException e) {
+			LOG.error("there was an error when executing the CompletableFuture", e);
 			interrupted[0] = true;
 		}
 
-		//拿到已经完成的CompletableFuture
-		//如果any为false，那么所有任务都已经完成
-		//如果any为true，那么这里拿到的是第一个完成的任务
-		//这里过滤和转换一起用lumbda做了
+		// 拿到已经完成的CompletableFuture
+		// 如果any为false，那么所有任务都已经完成
+		// 如果any为true，那么这里拿到的是第一个完成的任务
+		// 这里过滤和转换一起用lumbda做了
 		List<WhenFutureObj> allCompletableWhenFutureObjList = completableFutureList.stream().filter(f -> {
-			//过滤出已经完成的，没完成的就直接终止
-			if (f.isDone()){
+			// 过滤出已经完成的，没完成的就直接终止
+			if (f.isDone()) {
 				return true;
-			}else{
+			}
+			else {
 				f.cancel(true);
 				return false;
 			}
 		}).map(f -> {
 			try {
 				return f.get();
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				interrupted[0] = true;
 				return null;
 			}
 		}).collect(Collectors.toList());
 
-		//判断超时，上面已经拿到了所有已经完成的CompletableFuture
-		//那我们只要过滤出超时的CompletableFuture
-		List<WhenFutureObj> timeOutWhenFutureObjList = allCompletableWhenFutureObjList.stream().filter(WhenFutureObj::isTimeout).collect(Collectors.toList());
+		// 判断超时，上面已经拿到了所有已经完成的CompletableFuture
+		// 那我们只要过滤出超时的CompletableFuture
+		List<WhenFutureObj> timeOutWhenFutureObjList = allCompletableWhenFutureObjList.stream()
+			.filter(WhenFutureObj::isTimeout)
+			.collect(Collectors.toList());
 
-		//输出超时信息
-		timeOutWhenFutureObjList.forEach(whenFutureObj ->
-				LOG.warn("requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", slot.getRequestId(), whenFutureObj.getExecutorName()));
+		// 输出超时信息
+		timeOutWhenFutureObjList.forEach(whenFutureObj -> LOG.warn(
+				"requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]",
+				slot.getRequestId(), whenFutureObj.getExecutorName()));
 
-		//当配置了ignoreError = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
+		// 当配置了ignoreError = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
 		if (!this.isIgnoreError()) {
 			if (interrupted[0]) {
-				throw new WhenExecuteException(StrUtil.format("requestId [{}] when execute interrupted. errorResume [false].", slot.getRequestId()));
+				throw new WhenExecuteException(StrUtil
+					.format("requestId [{}] when execute interrupted. errorResume [false].", slot.getRequestId()));
 			}
 
-			//循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
-			for(WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList){
-				if (!whenFutureObj.isSuccess()){
-					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].",slot.getRequestId(), whenFutureObj.getExecutorName()));
+			// 循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
+			for (WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList) {
+				if (!whenFutureObj.isSuccess()) {
+					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].",
+							slot.getRequestId(), whenFutureObj.getExecutorName()));
 					throw whenFutureObj.getEx();
 				}
 			}
-		} else if (interrupted[0]) {
-			//  这里由于配置了ignoreError，所以只打印warn日志
-			LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.", slot.getRequestId());
+		}
+		else if (interrupted[0]) {
+			// 这里由于配置了ignoreError，所以只打印warn日志
+			LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.",
+					slot.getRequestId());
 		}
 	}
 
@@ -200,4 +216,5 @@ public class WhenCondition extends Condition {
 	public void setThreadExecutorClass(String threadExecutorClass) {
 		this.threadExecutorClass = threadExecutorClass;
 	}
+
 }

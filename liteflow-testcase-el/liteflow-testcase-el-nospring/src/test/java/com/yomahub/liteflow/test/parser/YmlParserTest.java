@@ -11,24 +11,26 @@ import org.junit.Test;
 
 /**
  * 非spring下的yml parser测试用例
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
 public class YmlParserTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("parser/flow.el.yml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("parser/flow.el.yml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //测试无spring场景的yml parser
-    @Test
-    public void testYmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无spring场景的yml parser
+	@Test
+	public void testYmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

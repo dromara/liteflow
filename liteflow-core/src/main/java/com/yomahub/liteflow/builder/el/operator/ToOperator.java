@@ -13,16 +13,17 @@ import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
  */
 public class ToOperator extends BaseOperator<SwitchCondition> {
 
-    @Override
-    public SwitchCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtTwo(objects);
+	@Override
+	public SwitchCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeGtTwo(objects);
 
-        SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);
+		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);
 
-        for (int i = 1; i < objects.length; i++) {
-            Executable target = OperatorHelper.convert(objects[i], Executable.class);
-            switchCondition.addTargetItem(target);
-        }
-        return switchCondition;
-    }
+		for (int i = 1; i < objects.length; i++) {
+			Executable target = OperatorHelper.convert(objects[i], Executable.class);
+			switchCondition.addTargetItem(target);
+		}
+		return switchCondition;
+	}
+
 }

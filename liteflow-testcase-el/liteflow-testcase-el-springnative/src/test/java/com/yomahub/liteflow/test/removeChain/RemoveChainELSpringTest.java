@@ -17,15 +17,16 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/removeChain/application.xml")
 public class RemoveChainELSpringTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testRemoveChain(){
-        LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response1.isSuccess());
-        FlowBus.removeChain("chain1");
-        LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertFalse(response2.isSuccess());
-    }
+	@Test
+	public void testRemoveChain() {
+		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response1.isSuccess());
+		FlowBus.removeChain("chain1");
+		LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertFalse(response2.isSuccess());
+	}
+
 }

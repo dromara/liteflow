@@ -16,6 +16,7 @@ public class B1Cmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("test",new ConcurrentHashSet<String>());
+		context.setData("test", new ConcurrentHashSet<String>());
 	}
+
 }

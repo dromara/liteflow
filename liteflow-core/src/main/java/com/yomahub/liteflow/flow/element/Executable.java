@@ -3,43 +3,41 @@ package com.yomahub.liteflow.flow.element;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 
 /**
- * 可执行器接口
- * 目前实现这个接口的有3个，Chain，Condition，Node
+ * 可执行器接口 目前实现这个接口的有3个，Chain，Condition，Node
  *
  * @author Bryan.Zhang
  */
-public interface Executable{
+public interface Executable {
 
-    void execute(Integer slotIndex) throws Exception;
+	void execute(Integer slotIndex) throws Exception;
 
-    default boolean isAccess(Integer slotIndex) throws Exception{
-        return true;
-    }
+	default boolean isAccess(Integer slotIndex) throws Exception {
+		return true;
+	}
 
-    ExecuteTypeEnum getExecuteType();
+	ExecuteTypeEnum getExecuteType();
 
-    /**
-     * 
-     * @return
-     * @deprecated 请使用 {@link #getExecuteId()}
-     */
-    @Deprecated 
-    default String getExecuteName() {
-    	return getExecuteId();
-    }
+	/**
+	 * @return
+	 * @deprecated 请使用 {@link #getExecuteId()}
+	 */
+	@Deprecated
+	default String getExecuteName() {
+		return getExecuteId();
+	}
 
-    /**
-     * 
-     * @param currentChainName
-     * @deprecated 请使用 {@link #setCurrChainId(String)}
-     */
-    default void setCurrChainName(String currentChainName){
-    	setCurrChainId(currentChainName);
-    }
-    
-    String getExecuteId();
+	/**
+	 * @param currentChainName
+	 * @deprecated 请使用 {@link #setCurrChainId(String)}
+	 */
+	default void setCurrChainName(String currentChainName) {
+		setCurrChainId(currentChainName);
+	}
 
-    default void setCurrChainId(String currentChainId){
+	String getExecuteId();
 
-    }
+	default void setCurrChainId(String currentChainId) {
+
+	}
+
 }

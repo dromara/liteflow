@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * springboot环境下异步线程超时日志打印测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -21,14 +22,15 @@ import org.slf4j.LoggerFactory;
 @TestPropertySource("classpath:/absoluteConfigPath/application.properties")
 public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testAbsoluteConfig() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	@Test
+	public void testAbsoluteConfig() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

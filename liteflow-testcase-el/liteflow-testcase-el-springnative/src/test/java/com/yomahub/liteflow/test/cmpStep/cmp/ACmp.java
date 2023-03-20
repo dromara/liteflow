@@ -14,8 +14,9 @@ import org.springframework.stereotype.Component;
 public class ACmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
+	public void process() throws Exception {
 		Thread.sleep(5000L);
 		System.out.println("ACmp executed!");
 	}
+
 }

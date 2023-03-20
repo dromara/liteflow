@@ -21,35 +21,38 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/contextbean/application.properties")
 @SpringBootTest(classes = LiteFlowScriptContextbeanPythonTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.script.python.contextbean.cmp","com.yomahub.liteflow.test.script.python.contextbean.bean"})
+@ComponentScan({ "com.yomahub.liteflow.test.script.python.contextbean.cmp",
+		"com.yomahub.liteflow.test.script.python.contextbean.bean" })
 public class LiteFlowScriptContextbeanPythonTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testContextBean1() throws Exception{
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg", OrderContext.class, CheckContext.class, Order2Context.class);
-        Assert.assertTrue(response.isSuccess());
-        OrderContext orderContext = response.getContextBean(OrderContext.class);
-        CheckContext checkContext = response.getContextBean(CheckContext.class);
-        Order2Context order2Context = response.getContextBean(Order2Context.class);
-        Assert.assertEquals(30, orderContext.getOrderType());
-        Assert.assertEquals("d", checkContext.getSign());
-        Assert.assertEquals("order2", order2Context.getOrderNo());
-    }
+	@Test
+	public void testContextBean1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg", OrderContext.class, CheckContext.class,
+				Order2Context.class);
+		Assert.assertTrue(response.isSuccess());
+		OrderContext orderContext = response.getContextBean(OrderContext.class);
+		CheckContext checkContext = response.getContextBean(CheckContext.class);
+		Order2Context order2Context = response.getContextBean(Order2Context.class);
+		Assert.assertEquals(30, orderContext.getOrderType());
+		Assert.assertEquals("d", checkContext.getSign());
+		Assert.assertEquals("order2", order2Context.getOrderNo());
+	}
 
-    @Test
-    public void testContextBean2() throws Exception{
-        OrderContext orderContext = new OrderContext();
-        orderContext.setOrderNo("order1");
-        CheckContext checkContext = new CheckContext();
-        checkContext.setSign("sign1");
-        Order2Context orderContext2 = new Order2Context();
-        orderContext2.setOrderNo("order2");
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", null, orderContext, checkContext, orderContext2);
-        Assert.assertTrue(response.isSuccess());
+	@Test
+	public void testContextBean2() throws Exception {
+		OrderContext orderContext = new OrderContext();
+		orderContext.setOrderNo("order1");
+		CheckContext checkContext = new CheckContext();
+		checkContext.setSign("sign1");
+		Order2Context orderContext2 = new Order2Context();
+		orderContext2.setOrderNo("order2");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", null, orderContext, checkContext,
+				orderContext2);
+		Assert.assertTrue(response.isSuccess());
 
-    }
+	}
 
 }

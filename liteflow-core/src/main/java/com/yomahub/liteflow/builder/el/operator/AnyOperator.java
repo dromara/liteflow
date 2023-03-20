@@ -12,14 +12,15 @@ import com.yomahub.liteflow.flow.element.condition.WhenCondition;
  */
 public class AnyOperator extends BaseOperator<WhenCondition> {
 
-    @Override
-    public WhenCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeEqTwo(objects);
+	@Override
+	public WhenCondition build(Object[] objects) throws Exception {
+		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-        WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
+		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-        Boolean any = OperatorHelper.convert(objects[1], Boolean.class);
-        whenCondition.setAny(any);
-        return whenCondition;
-    }
+		Boolean any = OperatorHelper.convert(objects[1], Boolean.class);
+		whenCondition.setAny(any);
+		return whenCondition;
+	}
+
 }

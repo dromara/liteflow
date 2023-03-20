@@ -2,6 +2,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 流程执行者未初始化
+ *
  * @author Yun
  */
 public class FlowExecutorNotInitException extends RuntimeException {
@@ -23,4 +24,5 @@ public class FlowExecutorNotInitException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

@@ -18,9 +18,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-
 /**
  * 测试springboot下的groovy脚本组件，基于xml配置
+ *
  * @author Bryan.Zhang
  * @since 2.6.0
  */
@@ -30,13 +30,14 @@ import javax.annotation.Resource;
 @EnableAutoConfiguration
 public class LiteflowScriptOrderGroovyELTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    //测试普通脚本节点
-    @Test
-    public void testScript1() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试普通脚本节点
+	@Test
+	public void testScript1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

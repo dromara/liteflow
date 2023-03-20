@@ -22,20 +22,22 @@ import java.io.File;
 @TestPropertySource(value = "classpath:/monitorFile/application.properties")
 @SpringBootTest(classes = MonitorFileELDeclMultiSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.monitorFile.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.monitorFile.cmp" })
 public class MonitorFileELDeclMultiSpringbootTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
 
-    @Test
-    public void testMonitor() throws Exception{
-        String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
-        String content = FileUtil.readUtf8String(absolutePath);
-        String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
-        FileUtil.writeString(newContent,new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-        Thread.sleep(3000);
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>c==>b", response.getExecuteStepStr());
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    }
+	@Test
+	public void testMonitor() throws Exception {
+		String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+		String content = FileUtil.readUtf8String(absolutePath);
+		String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
+		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+		Thread.sleep(3000);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertEquals("a==>c==>b", response.getExecuteStepStr());
+
+	}
+
 }

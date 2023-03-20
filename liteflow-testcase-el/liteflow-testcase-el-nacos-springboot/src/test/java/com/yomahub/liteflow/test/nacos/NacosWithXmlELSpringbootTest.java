@@ -26,8 +26,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 /**
- * springboot环境下的nacos配置源功能测试
- * nacos存储数据的格式为xml文件
+ * springboot环境下的nacos配置源功能测试 nacos存储数据的格式为xml文件
+ *
  * @author mll
  * @since 2.9.0
  */
@@ -35,41 +35,43 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(value = "classpath:/nacos/application-xml.properties")
 @SpringBootTest(classes = NacosWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.nacos.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.nacos.cmp" })
 public class NacosWithXmlELSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @MockBean
-    private NacosConfigService nacosConfigService;
+	@MockBean
+	private NacosConfigService nacosConfigService;
 
-    @After
-    public void after(){
-        FlowBus.cleanCache();
-    }
+	@After
+	public void after() {
+		FlowBus.cleanCache();
+	}
 
-    @Test
-    public void testNacosWithXml1() throws Exception {
-        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml);
+	@Test
+	public void testNacosWithXml1() throws Exception {
+		String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+		when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml);
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
-    }
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
+	}
 
-    @Test
-    public void testNacosWithXml2() throws Exception {
-        String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-        String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
-        when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml).thenReturn(changedFlowXml);
+	@Test
+	public void testNacosWithXml2() throws Exception {
+		String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
+		String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
+		when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml)
+			.thenReturn(changedFlowXml);
 
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
 
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML,changedFlowXml);
+		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, changedFlowXml);
 
-        response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
-    }
+		response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
+	}
+
 }

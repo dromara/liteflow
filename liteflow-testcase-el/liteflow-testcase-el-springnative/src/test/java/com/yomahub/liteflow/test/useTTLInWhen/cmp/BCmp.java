@@ -19,7 +19,7 @@ public class BCmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
-		context.setData(this.getNodeId(),value+",b");
+		context.setData(this.getNodeId(), value + ",b");
 		System.out.println("BCmp executed!");
 	}
 

@@ -3,6 +3,7 @@ package com.yomahub.liteflow.exception;
 
 /**
  * 组件代理错误异常
+ *
  * @author Yun
  */
 public class ComponentProxyErrorException extends RuntimeException {
@@ -24,4 +25,5 @@ public class ComponentProxyErrorException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

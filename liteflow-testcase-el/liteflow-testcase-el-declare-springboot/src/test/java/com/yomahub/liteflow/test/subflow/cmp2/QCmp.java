@@ -9,23 +9,25 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
-
 @Component("q")
-public class QCmp{
-    @LiteflowMethod(LiteFlowMethodEnum.PROCESS)
-    public void process(NodeComponent bindCmp) throws Exception {
-        String requestData = bindCmp.getSubChainReqDataInAsync();
-        DefaultContext context = bindCmp.getFirstContextBean();
+public class QCmp {
 
-        synchronized (QCmp.class){
-            if (context.hasData("test")){
-                Set<String> set = context.getData("test");
-                set.add(requestData);
-            }else{
-                Set<String> set = new HashSet<>();
-                set.add(requestData);
-                context.setData("test", set);
-            }
-        }
-    }
+	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
+	public void process(NodeComponent bindCmp) throws Exception {
+		String requestData = bindCmp.getSubChainReqDataInAsync();
+		DefaultContext context = bindCmp.getFirstContextBean();
+
+		synchronized (QCmp.class) {
+			if (context.hasData("test")) {
+				Set<String> set = context.getData("test");
+				set.add(requestData);
+			}
+			else {
+				Set<String> set = new HashSet<>();
+				set.add(requestData);
+				context.setData("test", set);
+			}
+		}
+	}
+
 }

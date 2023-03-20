@@ -21,4 +21,5 @@ public class GCmp {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData(bindCmp.getNodeId(), bindCmp.getCurrChainId());
 	}
+
 }

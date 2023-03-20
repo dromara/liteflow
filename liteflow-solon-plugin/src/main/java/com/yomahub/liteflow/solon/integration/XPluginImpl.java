@@ -21,79 +21,81 @@ import java.util.Properties;
  * @since 2.9
  */
 public class XPluginImpl implements Plugin {
-    @Override
-    public void start(AopContext context) {
-        //加载默认配置
-        Properties defProps = Utils.loadProperties("META-INF/liteflow-default.properties");
-        if (defProps != null && defProps.size() > 0) {
-            defProps.forEach((k, v) -> {
-                context.cfg().putIfAbsent(k, v);
-            });
-        }
 
-        //是否启用
-        boolean enable = context.cfg().getBool("liteflow.enable", false);
+	@Override
+	public void start(AopContext context) {
+		// 加载默认配置
+		Properties defProps = Utils.loadProperties("META-INF/liteflow-default.properties");
+		if (defProps != null && defProps.size() > 0) {
+			defProps.forEach((k, v) -> {
+				context.cfg().putIfAbsent(k, v);
+			});
+		}
 
-        if (!enable) {
-            return;
-        }
+		// 是否启用
+		boolean enable = context.cfg().getBool("liteflow.enable", false);
 
-        //放到前面
-        context.beanMake(LiteflowProperty.class);
-        context.beanMake(LiteflowMonitorProperty.class);
-        context.beanMake(LiteflowAutoConfiguration.class);
-        context.beanMake(LiteflowMainAutoConfiguration.class);
+		if (!enable) {
+			return;
+		}
 
-        //订阅 NodeComponent 组件
-        context.subWrapsOfType(NodeComponent.class, bw -> {
-            NodeComponent node1 = bw.raw();
-            node1.setNodeId(bw.name());
+		// 放到前面
+		context.beanMake(LiteflowProperty.class);
+		context.beanMake(LiteflowMonitorProperty.class);
+		context.beanMake(LiteflowAutoConfiguration.class);
+		context.beanMake(LiteflowMainAutoConfiguration.class);
 
-            FlowBus.addSpringScanNode(bw.name(), bw.raw());
-        });
+		// 订阅 NodeComponent 组件
+		context.subWrapsOfType(NodeComponent.class, bw -> {
+			NodeComponent node1 = bw.raw();
+			node1.setNodeId(bw.name());
 
-        context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
-            NodeComponent node1 = null;
-            switch (anno.value()) {
-                case PROCESS_SWITCH:
-                    node1 = new NodeSwitchComponentOfMethod(bw, method, anno.value());
-                    break;
-                case PROCESS_IF:
-                    node1 = new NodeIfComponentOfMethod(bw, method, anno.value());
-                    break;
-                case PROCESS_FOR:
-                    node1 = new NodeForComponentOfMethod(bw, method, anno.value());
-                    break;
-                case PROCESS_WHILE:
-                    node1 = new NodeWhileComponentOfMethod(bw, method, anno.value());
-                    break;
-                case PROCESS_BREAK:
-                    node1 = new NodeBreakComponentOfMethod(bw, method, anno.value());
-                    break;
-                default:
-                    node1 = new NodeComponentOfMethod(bw, method, anno.value());
-            }
+			FlowBus.addSpringScanNode(bw.name(), bw.raw());
+		});
 
+		context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
+			NodeComponent node1 = null;
+			switch (anno.value()) {
+				case PROCESS_SWITCH:
+					node1 = new NodeSwitchComponentOfMethod(bw, method, anno.value());
+					break;
+				case PROCESS_IF:
+					node1 = new NodeIfComponentOfMethod(bw, method, anno.value());
+					break;
+				case PROCESS_FOR:
+					node1 = new NodeForComponentOfMethod(bw, method, anno.value());
+					break;
+				case PROCESS_WHILE:
+					node1 = new NodeWhileComponentOfMethod(bw, method, anno.value());
+					break;
+				case PROCESS_BREAK:
+					node1 = new NodeBreakComponentOfMethod(bw, method, anno.value());
+					break;
+				default:
+					node1 = new NodeComponentOfMethod(bw, method, anno.value());
+			}
 
-            String nodeId = Utils.annoAlias(anno.nodeId(), bw.name());
-            node1.setNodeId(nodeId);
-            node1.setType(anno.nodeType());
+			String nodeId = Utils.annoAlias(anno.nodeId(), bw.name());
+			node1.setNodeId(nodeId);
+			node1.setType(anno.nodeType());
 
-            FlowBus.addSpringScanNode(nodeId, node1);
-        });
+			FlowBus.addSpringScanNode(nodeId, node1);
+		});
 
-        context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
-            if(NodeComponent.class.isAssignableFrom(clz)) {
-                NodeComponent node1 = bw.raw();
-                String nodeId = Utils.annoAlias(anno.id(), anno.value());
+		context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
+			if (NodeComponent.class.isAssignableFrom(clz)) {
+				NodeComponent node1 = bw.raw();
+				String nodeId = Utils.annoAlias(anno.id(), anno.value());
 
-                node1.setNodeId(nodeId);
-                node1.setName(anno.name());
+				node1.setNodeId(nodeId);
+				node1.setName(anno.name());
 
-                FlowBus.addSpringScanNode(nodeId, node1);
-            }else{
-                context.beanExtract(bw); //尝试提取 LiteflowMethod 函数
-            }
-        });
-    }
+				FlowBus.addSpringScanNode(nodeId, node1);
+			}
+			else {
+				context.beanExtract(bw); // 尝试提取 LiteflowMethod 函数
+			}
+		});
+	}
+
 }

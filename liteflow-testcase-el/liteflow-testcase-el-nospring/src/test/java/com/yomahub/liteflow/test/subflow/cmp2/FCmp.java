@@ -4,13 +4,14 @@ import com.yomahub.liteflow.core.NodeComponent;
 
 import static com.yomahub.liteflow.test.subflow.ImplicitSubFlowTest.RUN_TIME_SLOT;
 
-
 public class FCmp extends NodeComponent {
-    @Override
-    public void process() throws Exception {
 
-        RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+	@Override
+	public void process() throws Exception {
 
-        System.out.println("Fcomp executed!");
-    }
+		RUN_TIME_SLOT.add(this.getSlot().getRequestId());
+
+		System.out.println("Fcomp executed!");
+	}
+
 }

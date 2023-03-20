@@ -26,21 +26,33 @@ public class NodeOperator extends BaseOperator<Node> {
 
 		if (FlowBus.containNode(nodeId)) {
 			return FlowBus.getNode(nodeId);
-		} else {
+		}
+		else {
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 			if (StrUtil.isNotBlank(liteflowConfig.getSubstituteCmpClass())) {
-				Node substituteNode = FlowBus.getNodeMap().values().stream().filter(node
-						-> node.getInstance().getClass().getName().equals(liteflowConfig.getSubstituteCmpClass())).findFirst().orElse(null);
+				Node substituteNode = FlowBus.getNodeMap()
+					.values()
+					.stream()
+					.filter(node -> node.getInstance()
+						.getClass()
+						.getName()
+						.equals(liteflowConfig.getSubstituteCmpClass()))
+					.findFirst()
+					.orElse(null);
 				if (ObjectUtil.isNotNull(substituteNode)) {
 					return substituteNode;
-				} else {
+				}
+				else {
 					String error = StrUtil.format("This node[{}] cannot be found", nodeId);
 					throw new QLException(error);
 				}
-			} else {
-				String error = StrUtil.format("This node[{}] cannot be found, or you can configure an substitute node", nodeId);
+			}
+			else {
+				String error = StrUtil.format("This node[{}] cannot be found, or you can configure an substitute node",
+						nodeId);
 				throw new QLException(error);
 			}
 		}
 	}
+
 }

@@ -27,4 +27,5 @@ public class ELSQLException extends RuntimeException {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

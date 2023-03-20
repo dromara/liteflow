@@ -15,6 +15,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot环境下重新加载规则测试
+ *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
@@ -22,41 +23,44 @@ import org.noear.solon.test.annotation.TestPropertySource;
 @TestPropertySource("classpath:/refreshRule/application.properties")
 public class RefreshRuleELSpringbootTest extends BaseTest {
 
-    @Inject
-    private FlowExecutor flowExecutor;
+	@Inject
+	private FlowExecutor flowExecutor;
 
-    //测试普通刷新流程的场景
-    @Test
-    public void testRefresh1() throws Exception{
-        String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-        FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试普通刷新流程的场景
+	@Test
+	public void testRefresh1() throws Exception {
+		String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
+		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 
-    //测试优雅刷新的场景
-    @Test
-    public void testRefresh2() throws Exception{
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000L);
-                String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
-                FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+	// 测试优雅刷新的场景
+	@Test
+	public void testRefresh2() throws Exception {
+		new Thread(() -> {
+			try {
+				Thread.sleep(3000L);
+				String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
+				FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 
-        }).start();
+		}).start();
 
-        for (int i = 0; i < 500; i++) {
-            LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-            Assert.assertTrue(response.isSuccess());
-            try {
-                Thread.sleep(10L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+		for (int i = 0; i < 500; i++) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+			Assert.assertTrue(response.isSuccess());
+			try {
+				Thread.sleep(10L);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
-    }
+	}
+
 }

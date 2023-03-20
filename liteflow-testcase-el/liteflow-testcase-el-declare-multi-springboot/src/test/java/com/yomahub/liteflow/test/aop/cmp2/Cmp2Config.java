@@ -7,19 +7,20 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent
 public class Cmp2Config {
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "d")
-    public void processD(NodeComponent bindCmp) {
-        System.out.println("Dcomp executed!");
-    }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "e")
-    public void processE(NodeComponent bindCmp) {
-        System.out.println("Ecomp executed!");
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "d")
+	public void processD(NodeComponent bindCmp) {
+		System.out.println("Dcomp executed!");
+	}
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS,nodeId = "f")
-    public void processF(NodeComponent bindCmp) {
-        throw new RuntimeException("test error");
-    }
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "e")
+	public void processE(NodeComponent bindCmp) {
+		System.out.println("Ecomp executed!");
+	}
+
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "f")
+	public void processF(NodeComponent bindCmp) {
+		throw new RuntimeException("test error");
+	}
 
 }

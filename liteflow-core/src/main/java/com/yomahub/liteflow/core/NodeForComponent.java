@@ -5,18 +5,20 @@ import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
  * FOR计数节点抽象类
+ *
  * @author Bryan.Zhang
  * @since 2.9.0
  */
-public abstract class NodeForComponent extends NodeComponent{
+public abstract class NodeForComponent extends NodeComponent {
 
-    @Override
-    public void process() throws Exception {
-        int forCount = processFor();
-        Slot slot = this.getSlot();
-        Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-        slot.setForResult(originalClass.getName(), forCount);
-    }
+	@Override
+	public void process() throws Exception {
+		int forCount = processFor();
+		Slot slot = this.getSlot();
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		slot.setForResult(originalClass.getName(), forCount);
+	}
 
-    public abstract int processFor() throws Exception;
+	public abstract int processFor() throws Exception;
+
 }

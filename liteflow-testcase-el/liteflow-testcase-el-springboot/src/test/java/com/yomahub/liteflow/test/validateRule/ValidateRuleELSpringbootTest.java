@@ -28,24 +28,28 @@ import javax.annotation.Resource;
 @EnableAutoConfiguration
 public class ValidateRuleELSpringbootTest extends BaseTest {
 
-    @Test
-    public void testChainELExpressValidate() {
-        LiteFlowNodeBuilder.createNode().setId("a")
-                .setName("组件A")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz(ACmp.class)
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("b")
-                .setName("组件B")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz(BCmp.class)
-                .build();
-        LiteFlowNodeBuilder.createNode().setId("c")
-                .setName("组件C")
-                .setType(NodeTypeEnum.COMMON)
-                .setClazz(CCmp.class)
-                .build();
-        Assert.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, h)"));
-        Assert.assertTrue(LiteFlowChainELBuilder.validate("THEN(a, b, c)"));
-    }
+	@Test
+	public void testChainELExpressValidate() {
+		LiteFlowNodeBuilder.createNode()
+			.setId("a")
+			.setName("组件A")
+			.setType(NodeTypeEnum.COMMON)
+			.setClazz(ACmp.class)
+			.build();
+		LiteFlowNodeBuilder.createNode()
+			.setId("b")
+			.setName("组件B")
+			.setType(NodeTypeEnum.COMMON)
+			.setClazz(BCmp.class)
+			.build();
+		LiteFlowNodeBuilder.createNode()
+			.setId("c")
+			.setName("组件C")
+			.setType(NodeTypeEnum.COMMON)
+			.setClazz(CCmp.class)
+			.build();
+		Assert.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, h)"));
+		Assert.assertTrue(LiteFlowChainELBuilder.validate("THEN(a, b, c)"));
+	}
+
 }

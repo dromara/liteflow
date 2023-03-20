@@ -13,14 +13,14 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 
 @LiteflowComponent("b")
-public class BCmp{
+public class BCmp {
 
 	private int flag = 0;
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
 		System.out.println("BCmp executed!");
-		if (flag < 2){
+		if (flag < 2) {
 			flag++;
 			throw new RuntimeException("demo exception");
 		}

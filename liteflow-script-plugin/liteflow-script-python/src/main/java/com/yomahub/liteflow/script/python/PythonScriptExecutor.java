@@ -10,31 +10,32 @@ import java.util.stream.Collectors;
 
 /**
  * Python脚本语言的执行器实现
+ *
  * @author Bryan.Zhang
  * @since 2.9.5
  */
 public class PythonScriptExecutor extends JSR223ScriptExecutor {
 
-    @Override
-    public ScriptTypeEnum scriptType() {
-        return ScriptTypeEnum.PYTHON;
-    }
+	@Override
+	public ScriptTypeEnum scriptType() {
+		return ScriptTypeEnum.PYTHON;
+	}
 
-    @Override
-    protected String convertScript(String script) {
-        String[] lineArray = script.split("\\n");
-        List<String> noBlankLineList = Arrays.stream(lineArray).filter(
-                s -> !StrUtil.isBlank(s)
-        ).collect(Collectors.toList());
+	@Override
+	protected String convertScript(String script) {
+		String[] lineArray = script.split("\\n");
+		List<String> noBlankLineList = Arrays.stream(lineArray)
+			.filter(s -> !StrUtil.isBlank(s))
+			.collect(Collectors.toList());
 
-        //用第一行的缩进的空格数作为整个代码的缩进量
-        String blankStr = ReUtil.getGroup0("^[ ]*", noBlankLineList.get(0));
+		// 用第一行的缩进的空格数作为整个代码的缩进量
+		String blankStr = ReUtil.getGroup0("^[ ]*", noBlankLineList.get(0));
 
-        //重新构建脚本
-        StringBuilder scriptSB = new StringBuilder();
-        noBlankLineList.forEach(s
-                -> scriptSB.append(StrUtil.format("{}\n", s.replaceFirst(blankStr, StrUtil.EMPTY))));
+		// 重新构建脚本
+		StringBuilder scriptSB = new StringBuilder();
+		noBlankLineList.forEach(s -> scriptSB.append(StrUtil.format("{}\n", s.replaceFirst(blankStr, StrUtil.EMPTY))));
 
-        return scriptSB.toString();
-    }
+		return scriptSB.toString();
+	}
+
 }

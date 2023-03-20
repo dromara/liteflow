@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class CCmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
+	public void process() throws Exception {
 		System.out.println("CCmp executed!");
 		Thread.sleep(2000);
 		throw new RuntimeException("test error c");

@@ -19,39 +19,45 @@ import java.util.function.Consumer;
 /**
  * Nacos client for http api
  * <a href="https://nacos.io/zh-cn/docs/open-api.html">OpenAPI</a>
+ *
  * @author mll
  * @since 2.9.0
  */
 public class NacosParserHelper {
+
 	private static final Logger LOG = LoggerFactory.getLogger(NacosParserHelper.class);
 
-	private final NacosParserVO    nacosParserVO;
+	private final NacosParserVO nacosParserVO;
 
 	private NacosConfigService configService;
 
 	public NacosParserHelper(NacosParserVO nacosParserVO) {
 		this.nacosParserVO = nacosParserVO;
-		try{
-			try{
+		try {
+			try {
 				this.configService = ContextAwareHolder.loadContextAware().getBean(NacosConfigService.class);
-			}catch (Exception ignored){}
-			if (this.configService == null){
+			}
+			catch (Exception ignored) {
+			}
+			if (this.configService == null) {
 				Properties properties = new Properties();
 				properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
-				properties.put(PropertyKeyConst.NAMESPACE,nacosParserVO.getNamespace());
-				properties.put(PropertyKeyConst.USERNAME,nacosParserVO.getUsername());
-				properties.put(PropertyKeyConst.PASSWORD,nacosParserVO.getPassword());
+				properties.put(PropertyKeyConst.NAMESPACE, nacosParserVO.getNamespace());
+				properties.put(PropertyKeyConst.USERNAME, nacosParserVO.getUsername());
+				properties.put(PropertyKeyConst.PASSWORD, nacosParserVO.getPassword());
 				this.configService = new NacosConfigService(properties);
 			}
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw new NacosException(e.getMessage());
 		}
 	}
 
-	public String getContent(){
-		try{
+	public String getContent() {
+		try {
 			return configService.getConfig(nacosParserVO.getDataId(), nacosParserVO.getGroup(), 3000L);
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw new NacosException(e.getMessage());
 		}
 	}
@@ -74,15 +80,17 @@ public class NacosParserHelper {
 			this.configService.addListener(nacosParserVO.getDataId(), nacosParserVO.getGroup(), new Listener() {
 				@Override
 				public void receiveConfigInfo(String configInfo) {
-					LOG.info("stating load flow config.... {} " , configInfo);
+					LOG.info("stating load flow config.... {} ", configInfo);
 					parseConsumer.accept(configInfo);
 				}
+
 				@Override
 				public Executor getExecutor() {
 					return null;
 				}
 			});
-		}catch (Exception ex){
+		}
+		catch (Exception ex) {
 			throw new NacosException(ex.getMessage());
 		}
 	}

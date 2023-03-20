@@ -17,4 +17,5 @@ public class KSwitchCmp extends NodeSwitchComponent {
 	public String processSwitch() throws Exception {
 		return "chain10";
 	}
+
 }

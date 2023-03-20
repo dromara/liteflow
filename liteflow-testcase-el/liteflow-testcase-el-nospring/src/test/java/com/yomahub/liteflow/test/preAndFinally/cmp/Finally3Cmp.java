@@ -15,14 +15,16 @@ import com.yomahub.liteflow.slot.Slot;
 public class Finally3Cmp extends NodeComponent {
 
 	@Override
-	public void process() throws Exception{
+	public void process() throws Exception {
 		Slot slot = this.getSlot();
 		DefaultContext context = slot.getFirstContextBean();
-		if (ObjectUtil.isNull(slot.getException())){
+		if (ObjectUtil.isNull(slot.getException())) {
 			context.setData("hasEx", false);
-		}else{
+		}
+		else {
 			context.setData("hasEx", true);
 		}
 		System.out.println("Finally3Cmp executed!");
 	}
+
 }

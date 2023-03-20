@@ -2,75 +2,76 @@ package com.yomahub.liteflow.script;
 
 /**
  * script执行前的包装元参数
+ *
  * @author Bryan.Zhang
  * @since 2.9.0
  */
 public class ScriptExecuteWrap {
 
-    private int slotIndex;
+	private int slotIndex;
 
-    private String currChainId;
+	private String currChainId;
 
-    private String nodeId;
+	private String nodeId;
 
-    private String tag;
+	private String tag;
 
-    private Object cmpData;
+	private Object cmpData;
 
-    public int getSlotIndex() {
-        return slotIndex;
-    }
+	public int getSlotIndex() {
+		return slotIndex;
+	}
 
-    public void setSlotIndex(int slotIndex) {
-        this.slotIndex = slotIndex;
-    }
+	public void setSlotIndex(int slotIndex) {
+		this.slotIndex = slotIndex;
+	}
 
-    /**
-     * @deprecated 请使用 {@link #getCurrChainId()}
-     * @return String
-     */
-    @Deprecated
-    public String getCurrChainName() {
-        return currChainId;
-    }
+	/**
+	 * @deprecated 请使用 {@link #getCurrChainId()}
+	 * @return String
+	 */
+	@Deprecated
+	public String getCurrChainName() {
+		return currChainId;
+	}
 
-    /**
-     * 
-     * @deprecated 请使用{@link #setCurrChainId(String)}
-     */
-    public void setCurrChainName(String currChainName) {
-        this.currChainId = currChainName;
-    }
-    
-    public String getCurrChainId() {
-        return currChainId;
-    }
+	/**
+	 * @deprecated 请使用{@link #setCurrChainId(String)}
+	 */
+	public void setCurrChainName(String currChainName) {
+		this.currChainId = currChainName;
+	}
 
-    public void setCurrChainId(String currChainId) {
-        this.currChainId = currChainId;
-    }
+	public String getCurrChainId() {
+		return currChainId;
+	}
 
-    public String getNodeId() {
-        return nodeId;
-    }
+	public void setCurrChainId(String currChainId) {
+		this.currChainId = currChainId;
+	}
 
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
+	public String getNodeId() {
+		return nodeId;
+	}
 
-    public String getTag() {
-        return tag;
-    }
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
 
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
+	public String getTag() {
+		return tag;
+	}
 
-    public Object getCmpData() {
-        return cmpData;
-    }
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
 
-    public void setCmpData(Object cmpData) {
-        this.cmpData = cmpData;
-    }
+	public Object getCmpData() {
+		return cmpData;
+	}
+
+	public void setCmpData(Object cmpData) {
+		this.cmpData = cmpData;
+	}
+
 }

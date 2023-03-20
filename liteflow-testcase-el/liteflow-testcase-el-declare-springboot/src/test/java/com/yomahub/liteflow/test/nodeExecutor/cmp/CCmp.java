@@ -17,7 +17,7 @@ import com.yomahub.liteflow.test.nodeExecutor.CustomerNodeExecutor;
 
 @LiteflowComponent("c")
 @LiteflowRetry(5)
-public class CCmp{
+public class CCmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
@@ -25,7 +25,8 @@ public class CCmp{
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.GET_NODE_EXECUTOR_CLASS)
-	public  Class<? extends NodeExecutor> getNodeExecutorClass(NodeComponent bindCmp) {
+	public Class<? extends NodeExecutor> getNodeExecutorClass(NodeComponent bindCmp) {
 		return CustomerNodeExecutor.class;
 	}
+
 }

@@ -14,12 +14,13 @@ import java.lang.annotation.Target;
  *
  * @author tangkc
  */
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
 public @interface ScriptMethod {
 
-    @AliasFor("name")
-    String value() default "";
+	@AliasFor("name")
+	String value() default "";
+
 }

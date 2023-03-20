@@ -16,29 +16,31 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
  */
 public class ClassParserFactory implements FlowParserFactory {
 
-    @Override
-    public BaseJsonFlowParser createJsonELParser(String path) {
-        Class<?> c = forName(path);
-        return (JsonFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
-    }
+	@Override
+	public BaseJsonFlowParser createJsonELParser(String path) {
+		Class<?> c = forName(path);
+		return (JsonFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
+	}
 
-    @Override
-    public BaseXmlFlowParser createXmlELParser(String path) {
-        Class<?> c = forName(path);
-        return (XmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
-    }
+	@Override
+	public BaseXmlFlowParser createXmlELParser(String path) {
+		Class<?> c = forName(path);
+		return (XmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
+	}
 
-    @Override
-    public BaseYmlFlowParser createYmlELParser(String path) {
-        Class<?> c = forName(path);
-        return (YmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
-    }
+	@Override
+	public BaseYmlFlowParser createYmlELParser(String path) {
+		Class<?> c = forName(path);
+		return (YmlFlowELParser) ContextAwareHolder.loadContextAware().registerBean(c);
+	}
 
-    private Class<?> forName(String path) {
-        try {
-            return Class.forName(path);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	private Class<?> forName(String path) {
+		try {
+			return Class.forName(path);
+		}
+		catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

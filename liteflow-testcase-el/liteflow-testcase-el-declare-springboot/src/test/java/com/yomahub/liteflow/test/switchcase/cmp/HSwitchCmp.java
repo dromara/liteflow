@@ -20,4 +20,5 @@ public class HSwitchCmp {
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "tag:td";
 	}
+
 }

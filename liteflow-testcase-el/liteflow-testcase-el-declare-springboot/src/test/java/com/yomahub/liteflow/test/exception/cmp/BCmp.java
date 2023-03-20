@@ -16,22 +16,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("b")
-public class BCmp{
-	
+public class BCmp {
+
 	private static final Logger LOG = LoggerFactory.getLogger(BCmp.class);
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) throws InterruptedException {
 		String str = bindCmp.getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("when")) {
+		if (StrUtil.isNotBlank(str) && str.equals("when")) {
 			try {
 				LOG.info("Bcomp sleep begin");
 				Thread.sleep(3000);
 				LOG.info("Bcomp sleep end");
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				throw e;
 			}
 		}
 		LOG.info("Bcomp executed!");
 	}
+
 }

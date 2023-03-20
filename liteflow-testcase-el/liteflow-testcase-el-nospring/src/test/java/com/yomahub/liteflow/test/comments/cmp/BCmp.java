@@ -16,4 +16,5 @@ public class BCmp extends NodeComponent {
 	public void process() {
 		System.out.println("BCmp executed!");
 	}
+
 }

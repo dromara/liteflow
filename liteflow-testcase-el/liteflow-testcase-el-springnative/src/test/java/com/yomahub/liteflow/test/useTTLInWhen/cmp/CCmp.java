@@ -19,7 +19,7 @@ public class CCmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String value = TestTL.get();
-		context.setData(this.getNodeId(),value+",c");
+		context.setData(this.getNodeId(), value + ",c");
 		System.out.println("CCmp executed!");
 	}
 

@@ -14,10 +14,11 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import org.springframework.stereotype.Component;
 
 @Component("e")
-public class ESwitchCmp{
+public class ESwitchCmp {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH)
 	public String processSwitch(NodeComponent bindCmp) throws Exception {
 		return "d";
 	}
+
 }

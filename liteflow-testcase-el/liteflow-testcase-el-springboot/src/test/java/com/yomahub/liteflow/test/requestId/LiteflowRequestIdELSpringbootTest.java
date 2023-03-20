@@ -21,17 +21,17 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/requestId/application.properties")
 @SpringBootTest(classes = LiteflowRequestIdELSpringbootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({"com.yomahub.liteflow.test.requestId.cmp"})
+@ComponentScan({ "com.yomahub.liteflow.test.requestId.cmp" })
 public class LiteflowRequestIdELSpringbootTest extends BaseTest {
 
-    @Resource
-    private FlowExecutor flowExecutor;
+	@Resource
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testRequestId() throws Exception {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("1", response.getRequestId());
-    }
+	@Test
+	public void testRequestId() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("1", response.getRequestId());
+	}
 
 }

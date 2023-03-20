@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-
 /**
  * 测试spring下混合格式规则的场景
+ *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
@@ -21,16 +21,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration("classpath:/multipleType/application.xml")
 public class LiteflowMultipleTypeELSpringTest extends BaseTest {
 
-    @Autowired
-    private FlowExecutor flowExecutor;
+	@Autowired
+	private FlowExecutor flowExecutor;
 
-    @Test
-    public void testMultipleType() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a", response.getExecuteStepStr());
-        response = flowExecutor.execute2Resp("chain3", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
-    }
+	@Test
+	public void testMultipleType() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>b==>a", response.getExecuteStepStr());
+		response = flowExecutor.execute2Resp("chain3", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+	}
+
 }

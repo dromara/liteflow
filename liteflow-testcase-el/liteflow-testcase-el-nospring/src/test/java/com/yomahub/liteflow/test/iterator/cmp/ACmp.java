@@ -16,12 +16,14 @@ public class ACmp extends NodeComponent {
 	public void process() {
 		String key = "test";
 		DefaultContext context = this.getFirstContextBean();
-		if (!context.hasData(key)){
+		if (!context.hasData(key)) {
 			context.setData(key, this.getCurrLoopObj());
-		}else{
+		}
+		else {
 			String str = context.getData(key);
 			str += this.getCurrLoopObj();
 			context.setData(key, str);
 		}
 	}
+
 }

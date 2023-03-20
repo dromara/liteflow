@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 监控类元数据，打印执行器类
+ *
  * @author Bryan.Zhang
  */
 public class MonitorBus {
@@ -41,34 +42,39 @@ public class MonitorBus {
 	public MonitorBus(LiteflowConfig liteflowConfig) {
 		this.liteflowConfig = liteflowConfig;
 
-		if(BooleanUtil.isTrue(liteflowConfig.getEnableLog())){
-			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(), liteflowConfig.getPeriod(), TimeUnit.MILLISECONDS);
+		if (BooleanUtil.isTrue(liteflowConfig.getEnableLog())) {
+			this.printLogScheduler.scheduleAtFixedRate(new MonitorTimeTask(this), liteflowConfig.getDelay(),
+					liteflowConfig.getPeriod(), TimeUnit.MILLISECONDS);
 		}
 	}
 
-	public void addStatistics(CompStatistics statistics){
-		if(statisticsMap.containsKey(statistics.getComponentClazzName())){
+	public void addStatistics(CompStatistics statistics) {
+		if (statisticsMap.containsKey(statistics.getComponentClazzName())) {
 			statisticsMap.get(statistics.getComponentClazzName()).add(statistics);
-		}else{
-			BoundedPriorityBlockingQueue<CompStatistics> queue = new BoundedPriorityBlockingQueue<>(liteflowConfig.getQueueLimit());
+		}
+		else {
+			BoundedPriorityBlockingQueue<CompStatistics> queue = new BoundedPriorityBlockingQueue<>(
+					liteflowConfig.getQueueLimit());
 			queue.offer(statistics);
 			statisticsMap.put(statistics.getComponentClazzName(), queue);
 		}
 	}
 
-	public void printStatistics(){
-		try{
+	public void printStatistics() {
+		try {
 			Map<String, BigDecimal> compAverageTimeSpent = new HashMap<String, BigDecimal>();
-			
-			for(Entry<String, BoundedPriorityBlockingQueue<CompStatistics>> entry : statisticsMap.entrySet()){
+
+			for (Entry<String, BoundedPriorityBlockingQueue<CompStatistics>> entry : statisticsMap.entrySet()) {
 				long totalTimeSpent = 0;
-				for(CompStatistics statistics : entry.getValue()){
+				for (CompStatistics statistics : entry.getValue()) {
 					totalTimeSpent += statistics.getTimeSpent();
 				}
-				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent).divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP));
+				compAverageTimeSpent.put(entry.getKey(), new BigDecimal(totalTimeSpent)
+					.divide(new BigDecimal(entry.getValue().size()), 2, RoundingMode.HALF_UP));
 			}
 
-			List<Entry<String, BigDecimal>> compAverageTimeSpentEntryList = new ArrayList<>(compAverageTimeSpent.entrySet());
+			List<Entry<String, BigDecimal>> compAverageTimeSpentEntryList = new ArrayList<>(
+					compAverageTimeSpent.entrySet());
 
 			Collections.sort(compAverageTimeSpentEntryList, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
@@ -79,13 +85,15 @@ public class MonitorBus {
 			logStr.append(MessageFormat.format("SLOT TOTAL SIZE : {0}\n", liteflowConfig.getSlotSize()));
 			logStr.append(MessageFormat.format("SLOT OCCUPY COUNT : {0}\n", DataBus.OCCUPY_COUNT));
 			logStr.append("===============================TIME AVERAGE SPENT=====================================\n");
-			for(Entry<String, BigDecimal> entry : compAverageTimeSpentEntryList){
-				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE TIME SPENT : {1}\n", entry.getKey(), entry.getValue()));
+			for (Entry<String, BigDecimal> entry : compAverageTimeSpentEntryList) {
+				logStr.append(MessageFormat.format("COMPONENT[{0}] AVERAGE TIME SPENT : {1}\n", entry.getKey(),
+						entry.getValue()));
 			}
 			logStr.append("======================================================================================\n");
 			LOG.info(logStr.toString());
-		}catch(Exception e){
-			LOG.error("print statistics cause error",e);
+		}
+		catch (Exception e) {
+			LOG.error("print statistics cause error", e);
 		}
 	}
 
@@ -97,11 +105,12 @@ public class MonitorBus {
 		this.liteflowConfig = liteflowConfig;
 	}
 
-	public void closeScheduler(){
+	public void closeScheduler() {
 		this.printLogScheduler.shutdown();
 	}
 
 	public ConcurrentHashMap<String, BoundedPriorityBlockingQueue<CompStatistics>> getStatisticsMap() {
 		return statisticsMap;
 	}
+
 }

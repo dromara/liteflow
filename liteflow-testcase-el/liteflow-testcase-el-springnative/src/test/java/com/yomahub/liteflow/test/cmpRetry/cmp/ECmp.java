@@ -12,7 +12,7 @@ import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 
 @LiteflowComponent("e")
-@LiteflowRetry(retry = 5, forExceptions = {NullPointerException.class})
+@LiteflowRetry(retry = 5, forExceptions = { NullPointerException.class })
 public class ECmp extends NodeComponent {
 
 	@Override

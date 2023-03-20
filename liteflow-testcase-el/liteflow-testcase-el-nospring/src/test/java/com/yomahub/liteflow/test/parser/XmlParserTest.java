@@ -11,24 +11,26 @@ import org.junit.Test;
 
 /**
  * 非spring环境的xml parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
 public class XmlParserTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("parser/flow.el.xml");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("parser/flow.el.xml");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //测试无spring场景的xml parser
-    @Test
-    public void testXmlParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试无spring场景的xml parser
+	@Test
+	public void testXmlParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

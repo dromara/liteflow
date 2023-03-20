@@ -4,33 +4,34 @@ import java.util.Date;
 
 public class User {
 
-    private String name;
+	private String name;
 
-    private int age;
+	private int age;
 
-    private Date birth;
+	private Date birth;
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public int getAge() {
-        return age;
-    }
+	public int getAge() {
+		return age;
+	}
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+	public void setAge(int age) {
+		this.age = age;
+	}
 
-    public Date getBirth() {
-        return birth;
-    }
+	public Date getBirth() {
+		return birth;
+	}
 
-    public void setBirth(Date birth) {
-        this.birth = birth;
-    }
+	public void setBirth(Date birth) {
+		this.birth = birth;
+	}
+
 }

@@ -11,24 +11,26 @@ import org.junit.Test;
 
 /**
  * 非spring环境的json parser单元测试
+ *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
 public class JsonParserTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("parser/flow.el.json");
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("parser/flow.el.json");
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    //测试spring场景的json parser
-    @Test
-    public void testJsonParser() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-        Assert.assertTrue(response.isSuccess());
-    }
+	// 测试spring场景的json parser
+	@Test
+	public void testJsonParser() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

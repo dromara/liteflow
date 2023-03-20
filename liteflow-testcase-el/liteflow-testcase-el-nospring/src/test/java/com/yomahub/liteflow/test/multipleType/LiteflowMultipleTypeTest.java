@@ -11,28 +11,30 @@ import org.junit.Test;
 
 /**
  * 测试非spring下混合格式规则的场景
+ *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
 public class LiteflowMultipleTypeTest extends BaseTest {
 
-    private static FlowExecutor flowExecutor;
+	private static FlowExecutor flowExecutor;
 
-    @BeforeClass
-    public static void init(){
-        LiteflowConfig config = new LiteflowConfig();
-        config.setRuleSource("multipleType/flow.el.xml,multipleType/flow.el.yml");
-        config.setSupportMultipleType(true);
-        flowExecutor = FlowExecutorHolder.loadInstance(config);
-    }
+	@BeforeClass
+	public static void init() {
+		LiteflowConfig config = new LiteflowConfig();
+		config.setRuleSource("multipleType/flow.el.xml,multipleType/flow.el.yml");
+		config.setSupportMultipleType(true);
+		flowExecutor = FlowExecutorHolder.loadInstance(config);
+	}
 
-    @Test
-    public void testMultipleType() {
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c==>b==>a", response.getExecuteStepStr());
-        response = flowExecutor.execute2Resp("chain3", "arg");
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
-    }
+	@Test
+	public void testMultipleType() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c==>b==>a", response.getExecuteStepStr());
+		response = flowExecutor.execute2Resp("chain3", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+	}
+
 }

@@ -18,4 +18,5 @@ public class DCmp extends NodeComponent {
 		System.out.println(this.getTag());
 		System.out.println("DCmp executed!");
 	}
+
 }

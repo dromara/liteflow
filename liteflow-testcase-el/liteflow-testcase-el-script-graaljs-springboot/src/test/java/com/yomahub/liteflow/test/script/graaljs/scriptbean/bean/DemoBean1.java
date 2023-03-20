@@ -9,14 +9,15 @@ import javax.annotation.Resource;
 @ScriptBean("demo")
 public class DemoBean1 {
 
-    @Resource
-    private DemoBean2 demoBean2;
+	@Resource
+	private DemoBean2 demoBean2;
 
-    public String getDemoStr1(){
-        return "hello";
-    }
+	public String getDemoStr1() {
+		return "hello";
+	}
 
-    public String getDemoStr2(String name){
-        return demoBean2.getDemoStr2(name);
-    }
+	public String getDemoStr2(String name) {
+		return demoBean2.getDemoStr2(name);
+	}
+
 }

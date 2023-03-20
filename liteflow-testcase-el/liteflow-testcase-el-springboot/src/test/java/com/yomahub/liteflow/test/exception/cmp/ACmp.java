@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 
 @Component("a")
 public class ACmp extends NodeComponent {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(ACmp.class);
-	
+
 	@Override
 	public void process() {
 		String str = this.getRequestData();
-		if(StrUtil.isNotBlank(str) && str.equals("exception")) {
+		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
 			throw new RuntimeException("chain execute execption");
 		}
 		LOG.info("Acomp executed!");

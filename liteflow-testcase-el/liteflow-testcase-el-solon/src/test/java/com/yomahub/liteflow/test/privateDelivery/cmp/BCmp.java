@@ -15,13 +15,13 @@ import com.yomahub.liteflow.slot.DefaultContext;
 @LiteflowComponent("b")
 public class BCmp extends NodeComponent {
 
-    @Override
-    public void process() {
-        System.out.println("BCmp executed!");
-        Integer value = this.getPrivateDeliveryData();
-        DefaultContext context = this.getFirstContextBean();
-        ConcurrentHashSet<Integer> testSet = context.getData("testSet");
-        testSet.add(value);
-    }
-}
+	@Override
+	public void process() {
+		System.out.println("BCmp executed!");
+		Integer value = this.getPrivateDeliveryData();
+		DefaultContext context = this.getFirstContextBean();
+		ConcurrentHashSet<Integer> testSet = context.getData("testSet");
+		testSet.add(value);
+	}
 
+}
