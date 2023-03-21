@@ -54,4 +54,10 @@ public class IteratorELSpringbootTest extends BaseTest {
 		Assert.assertEquals("12", str);
 	}
 
+	// 多层迭代
+	@Test
+	public void testIt3() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain3");
+		Assert.assertTrue(response.isSuccess());
+	}
 }

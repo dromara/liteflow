@@ -8,4 +8,14 @@
     <chain name="chain2">
         ITERATOR(it).DO(a).BREAK(b);
     </chain>
+
+    <chain name="chain3">
+        ITERATOR(x1).DO(
+            THEN(
+                c,
+                ITERATOR(x2).DO(c)
+            )
+
+        );
+    </chain>
 </flow>
