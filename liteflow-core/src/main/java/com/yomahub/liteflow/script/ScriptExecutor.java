@@ -1,6 +1,17 @@
 package com.yomahub.liteflow.script;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
+import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
+
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * 脚本执行器接口
@@ -8,16 +19,71 @@ import com.yomahub.liteflow.enums.ScriptTypeEnum;
  * @author Bryan.Zhang
  * @since 2.6.0
  */
-public interface ScriptExecutor {
+public abstract class ScriptExecutor {
 
-	ScriptExecutor init();
+	public ScriptExecutor init(){
+		return this;
+	}
 
-	void load(String nodeId, String script);
+	public abstract void load(String nodeId, String script);
 
-	Object execute(ScriptExecuteWrap wrap) throws Exception;
+	public Object execute(ScriptExecuteWrap wrap) throws Exception{
+		try {
+			return executeScript(wrap);
+		}catch (Exception e) {
+			if (ObjectUtil.isNotNull(e.getCause()) && e.getCause() instanceof LiteFlowException) {
+				throw (LiteFlowException) e.getCause();
+			}
+			else if (ObjectUtil.isNotNull(e.getCause()) && e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException) e.getCause();
+			}
+			else {
+				throw e;
+			}
+		}
+	}
 
-	void cleanCache();
+	public abstract Object executeScript(ScriptExecuteWrap wrap) throws Exception;
 
-	ScriptTypeEnum scriptType();
+	public abstract void cleanCache();
+
+	public abstract ScriptTypeEnum scriptType();
+
+	public void bindParam(ScriptExecuteWrap wrap, BiConsumer<String, Object> putConsumer, BiConsumer<String, Object> putIfAbsentConsumer){
+		// 往脚本语言绑定表里循环增加绑定上下文的key
+		// key的规则为自定义上下文的simpleName
+		// 比如你的自定义上下文为AbcContext，那么key就为:abcContext
+		// 这里不统一放一个map的原因是考虑到有些用户会调用上下文里的方法，而不是参数，所以脚本语言的绑定表里也是放多个上下文
+		DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(o -> {
+			ContextBean contextBean = AnnoUtil.getAnnotation(o.getClass(), ContextBean.class);
+			String key;
+			if (contextBean != null && contextBean.value().trim().length() > 0) {
+				key = contextBean.value();
+			}
+			else {
+				key = StrUtil.lowerFirst(o.getClass().getSimpleName());
+			}
+			putConsumer.accept(key, o);
+		});
+
+		// 把wrap对象转换成元数据map
+		Map<String, Object> metaMap = BeanUtil.beanToMap(wrap);
+
+		// 在元数据里放入主Chain的流程参数
+		Slot slot = DataBus.getSlot(wrap.getSlotIndex());
+		metaMap.put("requestData", slot.getRequestData());
+
+		// 如果有隐式流程，则放入隐式流程的流程参数
+		Object subRequestData = slot.getChainReqData(wrap.getCurrChainId());
+		if (ObjectUtil.isNotNull(subRequestData)) {
+			metaMap.put("subRequestData", subRequestData);
+		}
+
+		// 往脚本上下文里放入元数据
+		putConsumer.accept("_meta", metaMap);
+
+		// 放入用户自己定义的bean
+		ScriptBeanManager.getScriptBeanMap().forEach(putIfAbsentConsumer);
+	}
 
 }
