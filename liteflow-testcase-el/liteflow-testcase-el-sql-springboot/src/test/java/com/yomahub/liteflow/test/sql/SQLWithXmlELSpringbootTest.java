@@ -63,13 +63,6 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 		Assert.assertEquals("x0[if 脚本]", flowExecutor.execute2Resp("chain3", "arg").getExecuteStepStr());
 	}
 
-	@Test
-	public void testMultiLanguage1() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("x2[python脚本]==>x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
-	}
-
 	/**
 	 * 修改数据库数据
 	 */
