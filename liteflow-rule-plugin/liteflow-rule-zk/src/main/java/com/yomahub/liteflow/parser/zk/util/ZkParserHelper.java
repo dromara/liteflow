@@ -36,7 +36,9 @@ public class ZkParserHelper {
 
 	private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 
-	private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
+	private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
+
+	private final String NODE_ITEM_XML_WITH_LANGUAGE_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
 
 	private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -92,8 +94,17 @@ public class ZkParserHelper {
 					String scriptData = new String(client.getData()
 						.forPath(StrUtil.format("{}/{}", zkParserVO.getScriptPath(), scriptNodeValue)));
 
-					scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
-							nodeSimpleVO.getName(), nodeSimpleVO.getType(), nodeSimpleVO.getLanguage(), scriptData));
+					// 有语言类型
+					if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+						scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_WITH_LANGUAGE_PATTERN,
+								nodeSimpleVO.getNodeId(), nodeSimpleVO.getName(), nodeSimpleVO.getType(),
+								nodeSimpleVO.getLanguage(), scriptData));
+					}
+					// 没有语言类型
+					else {
+						scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
+								nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
+					}
 				}
 
 				scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
@@ -169,12 +180,25 @@ public class ZkParserHelper {
 					LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
 					String scriptNodeValue = FileNameUtil.getName(path);
 					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-					LiteFlowNodeBuilder.createScriptNode()
-						.setId(nodeSimpleVO.getNodeId())
-						.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-						.setName(nodeSimpleVO.getName())
-						.setScript(value)
-						.build();
+					// 有语言类型
+					if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+						LiteFlowNodeBuilder.createScriptNode()
+							.setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(value)
+							.setLanguage(nodeSimpleVO.getLanguage())
+							.build();
+					}
+					// 没有语言类型
+					else {
+						LiteFlowNodeBuilder.createScriptNode()
+							.setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(value)
+							.build();
+					}
 				}
 				else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
 					LOG.info("starting reload flow config... delete path={}", path);
