@@ -2,8 +2,12 @@ package com.yomahub.liteflow.enums;
 
 public enum ScriptTypeEnum {
 
-	GROOVY("groovy", "groovy"), QLEXPRESS("qlexpress", "qlexpress"), JS("javascript", "js"), PYTHON("python", "python"),
-	LUA("luaj", "lua");
+	GROOVY("groovy", "groovy"),
+	QLEXPRESS("qlexpress", "qlexpress"),
+	JS("javascript", "js"),
+	PYTHON("python", "python"),
+	LUA("luaj", "lua"),
+	AVIATOR("AviatorScript", "aviator");
 
 	private String engineName;
 

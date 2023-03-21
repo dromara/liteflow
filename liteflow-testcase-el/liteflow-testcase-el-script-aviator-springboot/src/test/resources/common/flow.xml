@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="aviator">
+            <![CDATA[
+                use java.util.Date;
+                use cn.hutool.core.date.DateUtil;
+                let d = DateUtil.formatDateTime(new Date());
+                println(d);
+
+                a = 2;
+                b = 3;
+
+                setData(defaultContext, "s1", a*b);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>

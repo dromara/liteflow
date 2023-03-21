@@ -21,6 +21,7 @@
         <module>liteflow-script-graaljs</module>
         <module>liteflow-script-python</module>
         <module>liteflow-script-lua</module>
+        <module>liteflow-script-aviator</module>
     </modules>
 
 </project>
