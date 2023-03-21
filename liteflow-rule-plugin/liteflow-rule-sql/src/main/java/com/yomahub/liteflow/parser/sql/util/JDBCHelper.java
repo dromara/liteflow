@@ -29,13 +29,17 @@ public class JDBCHelper {
 
 	private static final String SCRIPT_SQL_CHECK_PATTERN = "SELECT 1 FROM {} WHERE {}=?";
 
-	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{},{} FROM {} WHERE {}=?";
+	private static final String SCRIPT_SQL_PATTERN = "SELECT {},{},{},{} FROM {} WHERE {}=?";
+
+	private static final String SCRIPT_WITH_LANGUAG_SQL_PATTERN = "SELECT {},{},{},{},{} FROM {} WHERE {}=?";
 
 	private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
 
 	private static final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 
-	private static final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
+	private static final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
+
+	private static final String NODE_ITEM_WITH_LANGUAGE_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
 
 	private static final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -144,6 +148,68 @@ public class JDBCHelper {
 	}
 
 	public String getScriptNodes() {
+		String scriptLanguageField = sqlParserVO.getScriptLanguageField();
+		if (StrUtil.isNotBlank(scriptLanguageField)) {
+			return getScriptNodesWithLanguage();
+		}
+
+		List<String> result = new ArrayList<>();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		String scriptTableName = sqlParserVO.getScriptTableName();
+		String scriptIdField = sqlParserVO.getScriptIdField();
+		String scriptDataField = sqlParserVO.getScriptDataField();
+		String scriptNameField = sqlParserVO.getScriptNameField();
+		String scriptTypeField = sqlParserVO.getScriptTypeField();
+		String scriptApplicationNameField = sqlParserVO.getScriptApplicationNameField();
+		String applicationName = sqlParserVO.getApplicationName();
+
+		if (StrUtil.isBlank(applicationName) || StrUtil.isBlank(scriptApplicationNameField)) {
+			throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
+		}
+
+		String sqlCmd = StrUtil.format(SCRIPT_SQL_PATTERN, scriptIdField, scriptDataField, scriptNameField,
+				scriptTypeField, scriptTableName, scriptApplicationNameField);
+		try {
+			conn = getConn();
+			stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			// 设置游标拉取数量
+			stmt.setFetchSize(FETCH_SIZE_MAX);
+			stmt.setString(1, applicationName);
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				String id = getStringFromResultSet(rs, scriptIdField);
+				String data = getStringFromResultSet(rs, scriptDataField);
+				String name = getStringFromResultSet(rs, scriptNameField);
+				String type = getStringFromResultSet(rs, scriptTypeField);
+
+				NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
+				if (Objects.isNull(nodeTypeEnum)) {
+					throw new ELSQLException(StrUtil.format("Invalid type value[{}]", type));
+				}
+
+				if (!nodeTypeEnum.isScript()) {
+					throw new ELSQLException(StrUtil.format("The type value[{}] is not a script type", type));
+				}
+
+				result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, data));
+			}
+		}
+		catch (Exception e) {
+			throw new ELSQLException(e.getMessage());
+		}
+		finally {
+			// 关闭连接
+			close(conn, stmt, rs);
+		}
+		return StrUtil.format(NODE_XML_PATTERN, CollUtil.join(result, StrUtil.EMPTY));
+	}
+
+	public String getScriptNodesWithLanguage() {
+
 		List<String> result = new ArrayList<>();
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -162,7 +228,7 @@ public class JDBCHelper {
 			throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
 		}
 
-		String sqlCmd = StrUtil.format(SCRIPT_SQL_PATTERN, scriptIdField, scriptDataField, scriptNameField,
+		String sqlCmd = StrUtil.format(SCRIPT_WITH_LANGUAG_SQL_PATTERN, scriptIdField, scriptDataField, scriptNameField,
 				scriptTypeField, scriptLanguageField, scriptTableName, scriptApplicationNameField);
 		try {
 			conn = getConn();
@@ -192,8 +258,8 @@ public class JDBCHelper {
 					throw new ELSQLException(StrUtil.format("The language value[{}] is error", language));
 				}
 
-				result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type,
-						language, data));
+				result.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name),
+						type, language, data));
 			}
 		}
 		catch (Exception e) {

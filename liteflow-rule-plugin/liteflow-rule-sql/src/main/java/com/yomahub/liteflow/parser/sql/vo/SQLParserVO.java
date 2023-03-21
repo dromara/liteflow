@@ -86,7 +86,7 @@ public class SQLParserVO {
 	/**
 	 * 脚本 node language 字段
 	 */
-	private String scriptLanguageField = "script_language";
+	private String scriptLanguageField;
 
 	public String getUrl() {
 		return url;
