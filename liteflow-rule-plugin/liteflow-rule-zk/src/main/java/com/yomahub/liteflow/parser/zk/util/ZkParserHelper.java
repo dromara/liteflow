@@ -19,6 +19,7 @@ import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,8 @@ public class ZkParserHelper {
 	private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 
 	private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
+
+	private final String NODE_ITEM_XML_WITH_LANGUAGE_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
 
 	private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -91,8 +94,17 @@ public class ZkParserHelper {
 					String scriptData = new String(client.getData()
 						.forPath(StrUtil.format("{}/{}", zkParserVO.getScriptPath(), scriptNodeValue)));
 
-					scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
-							nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
+					// 有语言类型
+					if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+						scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_WITH_LANGUAGE_PATTERN,
+								nodeSimpleVO.getNodeId(), nodeSimpleVO.getName(), nodeSimpleVO.getType(),
+								nodeSimpleVO.getLanguage(), scriptData));
+					}
+					// 没有语言类型
+					else {
+						scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
+								nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
+					}
 				}
 
 				scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
@@ -168,12 +180,25 @@ public class ZkParserHelper {
 					LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
 					String scriptNodeValue = FileNameUtil.getName(path);
 					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-					LiteFlowNodeBuilder.createScriptNode()
-						.setId(nodeSimpleVO.getNodeId())
-						.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-						.setName(nodeSimpleVO.getName())
-						.setScript(value)
-						.build();
+					// 有语言类型
+					if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+						LiteFlowNodeBuilder.createScriptNode()
+							.setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(value)
+							.setLanguage(nodeSimpleVO.getLanguage())
+							.build();
+					}
+					// 没有语言类型
+					else {
+						LiteFlowNodeBuilder.createScriptNode()
+							.setId(nodeSimpleVO.getNodeId())
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setName(nodeSimpleVO.getName())
+							.setScript(value)
+							.build();
+					}
 				}
 				else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
 					LOG.info("starting reload flow config... delete path={}", path);
@@ -203,6 +228,10 @@ public class ZkParserHelper {
 			nodeSimpleVO.setName(matchItemList.get(2));
 		}
 
+		if (matchItemList.size() > 3) {
+			nodeSimpleVO.setLanguage(matchItemList.get(3));
+		}
+
 		return nodeSimpleVO;
 	}
 
@@ -213,6 +242,8 @@ public class ZkParserHelper {
 		private String type;
 
 		private String name = "";
+
+		private String language;
 
 		public String getNodeId() {
 			return nodeId;
@@ -236,6 +267,14 @@ public class ZkParserHelper {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+
+		public void setLanguage(String language) {
+			this.language = language;
 		}
 
 	}

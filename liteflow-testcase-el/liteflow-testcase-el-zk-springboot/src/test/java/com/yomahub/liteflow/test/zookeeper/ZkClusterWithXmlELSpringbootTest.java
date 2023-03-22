@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.test.zookeeper;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.resource.ResourceUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
@@ -11,7 +9,6 @@ import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingCluster;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,8 +20,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -71,18 +66,39 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
 
 		String chain1Path = ZK_CHAIN_PATH + "/chain1";
 		zkClient.createPersistent(chain1Path, true);
-		zkClient.writeData(chain1Path, "THEN(a, b, c, s1);");
+		zkClient.writeData(chain1Path, "THEN(a, b, c, s1, s2);");
 
-		String script1Path = ZK_SCRIPT_PATH + "/s1:script:脚本s1";
+		String chain2Path = ZK_CHAIN_PATH + "/chain2";
+		zkClient.createPersistent(chain2Path, true);
+		zkClient.writeData(chain2Path, "THEN(a, b, c, s3);");
+
+		String script1Path = ZK_SCRIPT_PATH + "/s1:script:脚本s1:groovy";
 		zkClient.createPersistent(script1Path, true);
 		zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
+
+		String script2Path = ZK_SCRIPT_PATH + "/s2:script:脚本s2:js";
+		zkClient.createPersistent(script2Path, true);
+		zkClient.writeData(script2Path, "defaultContext.setData(\"test1\",\"hello\");");
+
+		String script3Path = ZK_SCRIPT_PATH + "/s3:script:脚本s3";
+		zkClient.createPersistent(script3Path, true);
+		zkClient.writeData(script3Path, "defaultContext.setData(\"test\",\"hello\");");
 
 		Thread.sleep(2000L);
 	}
 
 	@Test
-	public void testZkNodeWithXml() {
+	public void testZkNodeWithXmlWithLanguage() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("hello", context.getData("test"));
+		Assert.assertEquals("hello", context.getData("test1"));
+	}
+
+	@Test
+	public void testZkNodeWithXml() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("hello", context.getData("test"));
