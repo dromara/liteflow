@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/application-xml.properties")
-@SpringBootTest(classes = SQLWithXmlELSpringbootTest.class)
+@SpringBootTest(classes = SQLWithXmlELMultiLanguageSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.sql.cmp" })
 public class SQLWithXmlELMultiLanguageSpringbootTest extends BaseTest {
