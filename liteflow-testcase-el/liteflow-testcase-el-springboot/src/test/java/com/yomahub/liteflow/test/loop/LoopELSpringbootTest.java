@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.test.loop;
 
+import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
@@ -14,6 +16,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * springboot环境EL循环的例子测试
@@ -93,4 +98,14 @@ public class LoopELSpringbootTest extends BaseTest {
 		Assert.assertEquals("01234", context.getData("loop_e3"));
 	}
 
+	// 测试嵌套循环
+	@Test
+	public void testLoop8() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain8", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		List<Integer> list = context.getData("test");
+		String str = StrUtil.join(StrUtil.EMPTY, list);
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("001101201", str);
+	}
 }

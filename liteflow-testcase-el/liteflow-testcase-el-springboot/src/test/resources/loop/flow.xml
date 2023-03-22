@@ -39,4 +39,13 @@
             )
         );
     </chain>
+
+    <chain name="chain8">
+        FOR(3).DO(
+            THEN(
+                f,
+                FOR(2).DO(f)
+            )
+        );
+    </chain>
 </flow>
