@@ -15,5 +15,6 @@ create table `script_node_table`
     `script_node_name` text    NOT NULL,
     `script_node_type` text    NOT NULL,
     `script_node_data` text    NOT NULL,
+    `script_language`     varchar(1024) NOT NULL,
     PRIMARY KEY (`id`)
 );

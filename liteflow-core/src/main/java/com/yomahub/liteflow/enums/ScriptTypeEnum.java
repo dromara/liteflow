@@ -43,4 +43,18 @@ public enum ScriptTypeEnum {
 		return null;
 	}
 
+	/**
+	 * 校验脚本类型是否合法
+	 * @param scriptType 脚本类型
+	 * @return true:合法，false:不合法
+	 */
+	public static boolean checkScriptType(String scriptType) {
+		for (ScriptTypeEnum e : ScriptTypeEnum.values()) {
+			if (e.getDisplayName().equals(scriptType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

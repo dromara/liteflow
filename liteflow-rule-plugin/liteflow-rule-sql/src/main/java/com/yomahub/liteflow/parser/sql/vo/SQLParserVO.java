@@ -83,6 +83,11 @@ public class SQLParserVO {
 	 */
 	private String scriptTypeField = "script_type";
 
+	/**
+	 * 脚本 node language 字段
+	 */
+	private String scriptLanguageField;
+
 	public String getUrl() {
 		return url;
 	}
@@ -201,6 +206,14 @@ public class SQLParserVO {
 
 	public void setScriptTypeField(String scriptTypeField) {
 		this.scriptTypeField = scriptTypeField;
+	}
+
+	public String getScriptLanguageField() {
+		return scriptLanguageField;
+	}
+
+	public void setScriptLanguageField(String scriptLanguageField) {
+		this.scriptLanguageField = scriptLanguageField;
 	}
 
 }
