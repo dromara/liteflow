@@ -31,7 +31,7 @@ You can find out how to join the community on the official website!
 * **Wide support:** LiteFlow works regardless of whether your project is built on Springboot, Spring, or any other Java framework.
 * **JDK support:** From JDK8 to JDK17. Don't worry about JDK versions.
 * **Full Springboot support:** Supports Springboot 2.X through the latest Springboot 3.X.
-* **Scripting language support:** Scripting language nodes can be defined, supporting both QLExpress and Groovy scripting. More scripting languages will be supported in the future.
+* **Scripting language support:** You can define script language nodes that support Groovy, Javascript, QLExpress, Python, Lua, and Aviator. More script languages will be supported in the future.
 * **Rule nesting support:** You can use simple expressions to create multiple nested complex logic layouts if you want.
 * **Component retry support:** Components can support retry, and each component can customize the retry configuration and specify exceptions.
 * **Context isolation mechanism:** Reliable context isolation mechanism, you do not have to worry about high concurrency data flow.
