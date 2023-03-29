@@ -20,7 +20,7 @@ public class NodeOperator extends BaseOperator<Node> {
 
 	@Override
 	public Node build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeNeqOne(objects);
+		OperatorHelper.checkObjectSizeEqOne(objects);
 
 		String nodeId = OperatorHelper.convert(objects[0], String.class);
 

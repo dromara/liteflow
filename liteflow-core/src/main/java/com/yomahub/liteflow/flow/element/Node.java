@@ -275,4 +275,8 @@ public class Node implements Executable, Cloneable {
 		this.language = language;
 	}
 
+	@Override
+	public <T> T getItemResultMetaValue(Integer slotIndex) {
+		return instance.getItemResultMetaValue(slotIndex);
+	}
 }

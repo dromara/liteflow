@@ -2,7 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
-import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.Condition;
 
 /**
  * EL规则中的id的操作符,只有condition可加id

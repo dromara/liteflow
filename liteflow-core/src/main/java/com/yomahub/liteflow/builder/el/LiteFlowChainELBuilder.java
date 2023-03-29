@@ -16,7 +16,7 @@ import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.flow.element.condition.Condition;
+import com.yomahub.liteflow.flow.element.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,9 @@ public class LiteFlowChainELBuilder {
 	private Chain chain;
 
 	/**
-	 * //这是主体的Condition //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
-	 * //虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
-	 * //所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
+	 * 这是主体的Condition //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
+	 * 虽然FlowBus里面的map都是CopyOnWrite类型的，但是在buildCondition的时候，为了平滑加载，所以不能事先把chain.getConditionList给设为空List
+	 * 所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
 	 */
 	private final List<Condition> conditionList;
 
@@ -62,6 +62,9 @@ public class LiteFlowChainELBuilder {
 		EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.ITERATOR, new IteratorOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.CATCH, new CatchOperator());
+		EXPRESS_RUNNER.addFunction(ChainConstant.AND, new AndOperator());
+		EXPRESS_RUNNER.addFunction(ChainConstant.OR, new OrOperator());
+		EXPRESS_RUNNER.addFunction(ChainConstant.NOT, new NotOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELSE, Object.class, new ElseOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELIF, Object.class, new ElifOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO, Object.class, new ToOperator());
@@ -138,18 +141,6 @@ public class LiteFlowChainELBuilder {
 			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
 			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
 			Condition condition = (Condition) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
-
-			// 从condition的第一层嵌套结构里拿出Pre和Finally节点
-			// 为什么只寻找第一层，而不往下寻找了呢？
-			// 因为这是一个规范，如果在后面的层级中出现pre和finally，语义上也不好理解，所以pre和finally只能定义在第一层
-			// 如果硬是要在后面定义，则执行的时候会忽略，相关代码已做了判断
-			/*
-			 * for (Executable executable : condition.getExecutableList()) { if
-			 * (executable instanceof PreCondition) {
-			 * this.preConditionList.add((PreCondition) executable); } else if (executable
-			 * instanceof FinallyCondition) {
-			 * this.finallyConditionList.add((FinallyCondition) executable); } }
-			 */
 
 			// 把主要的condition加入
 			this.conditionList.add(condition);

@@ -5,9 +5,17 @@ package com.yomahub.liteflow.enums;
  */
 public enum ConditionTypeEnum {
 
-	TYPE_THEN("then", "then"), TYPE_WHEN("when", "when"), TYPE_SWITCH("switch", "switch"),
+	TYPE_THEN("then", "then"),
 
-	TYPE_IF("if", "if"), TYPE_PRE("pre", "pre"), TYPE_FINALLY("finally", "finally"),
+	TYPE_WHEN("when", "when"),
+
+	TYPE_SWITCH("switch", "switch"),
+
+	TYPE_IF("if", "if"),
+
+	TYPE_PRE("pre", "pre"),
+
+	TYPE_FINALLY("finally", "finally"),
 
 	TYPE_FOR("for", "for"),
 
@@ -15,7 +23,11 @@ public enum ConditionTypeEnum {
 
 	TYPE_ITERATOR("iterator", "iterator"),
 
-	TYPE_CATCH("catch", "catch");
+	TYPE_CATCH("catch", "catch"),
+
+	TYPE_AND_OR_OPT("and_or_opt", "and_or_opt"),
+
+	TYPE_NOT_OPT("not_opt", "not_opt");
 
 	private String type;
 

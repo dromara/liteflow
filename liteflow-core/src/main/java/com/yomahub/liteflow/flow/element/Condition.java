@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.flow.element.condition;
+package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
@@ -14,6 +14,7 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.flow.element.condition.ConditionKey;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
@@ -65,7 +66,7 @@ public abstract class Condition implements Executable {
 		}
 	}
 
-	protected abstract void executeCondition(Integer slotIndex) throws Exception;
+	public abstract void executeCondition(Integer slotIndex) throws Exception;
 
 	@Override
 	public ExecuteTypeEnum getExecuteType() {

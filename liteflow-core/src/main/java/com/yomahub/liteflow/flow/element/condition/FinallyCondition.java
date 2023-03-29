@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 
 /**

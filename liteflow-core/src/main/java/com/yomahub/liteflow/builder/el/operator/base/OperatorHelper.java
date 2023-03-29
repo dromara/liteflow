@@ -1,9 +1,13 @@
 package com.yomahub.liteflow.builder.el.operator.base;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
+import com.yomahub.liteflow.flow.element.condition.NotCondition;
 
 import java.util.Objects;
 
@@ -14,28 +18,6 @@ import java.util.Objects;
  * @since 2.8.6
  */
 public class OperatorHelper {
-
-	/**
-	 * 检查参数数量，不等于1
-	 * @param objects objects
-	 * @throws QLException QLException
-	 */
-	public static void checkObjectSizeNeqOne(Object[] objects) throws QLException {
-		checkObjectSizeNeq(objects, 1);
-	}
-
-	/**
-	 * 检查参数数量，不等于 size
-	 * @param objects objects
-	 * @param size 参数数量
-	 * @throws QLException QLException
-	 */
-	public static void checkObjectSizeNeq(Object[] objects, int size) throws QLException {
-		checkObjectSizeGtZero(objects);
-		if (objects.length != size) {
-			throw new QLException("parameter error");
-		}
-	}
 
 	/**
 	 * 检查参数数量，大于 0
@@ -58,6 +40,15 @@ public class OperatorHelper {
 		if (objects.length <= 1) {
 			throw new QLException("parameter error");
 		}
+	}
+
+	/**
+	 * 检查参数数量，等于 1
+	 * @param objects objects
+	 * @throws QLException QLException
+	 */
+	public static void checkObjectSizeEqOne(Object[] objects) throws QLException {
+		checkObjectSizeEq(objects, 1);
 	}
 
 	/**
@@ -138,12 +129,7 @@ public class OperatorHelper {
 		throw new QLException(errorMsg);
 	}
 
-	/**
-	 * 检查 node 和 chain 是否已经注册
-	 * @param objects objects
-	 * @throws QLException QLException
-	 */
-	public static void checkNodeAndChainExist(Object[] objects) throws QLException {
+	public static void checkItemNotNull(Object[] objects) throws QLException {
 		for (Object object : objects) {
 			if (Objects.isNull(object)) {
 				throw new QLException(DataNotFoundException.MSG);
@@ -151,4 +137,17 @@ public class OperatorHelper {
 		}
 	}
 
+	/**
+	 * 所谓Boolean item，指的是那些最终的结果值为布尔类型的Item
+	 * 布尔类型的items有，if，while，break类型的Node，以及AndOrCondition以及NotCondition
+	 */
+	public static void checkObjectMustBeBooleanItem(Object object) throws Exception{
+		if (!(object instanceof Node && ListUtil.toList(
+				NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT,
+				NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT,
+				NodeTypeEnum.BREAK, NodeTypeEnum.BREAK_SCRIPT).contains(((Node) object).getType())
+				|| object instanceof AndOrCondition || object instanceof NotCondition)) {
+			throw new QLException("The first parameter must be boolean type Node or boolean type condition");
+		}
+	}
 }

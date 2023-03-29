@@ -32,4 +32,8 @@ public interface ConditionKey {
 
 	String CATCH_KEY = "CATCH_KEY";
 
+	String AND_OR_ITEM_KEY = "AND_OR_ITEM";
+
+	String NOT_ITEM_KEY = "NOT_ITEM_KEY";
+
 }

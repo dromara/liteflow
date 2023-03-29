@@ -5,6 +5,7 @@ import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.WhileCondition;
 
@@ -18,15 +19,13 @@ public class WhileOperator extends BaseOperator<WhileCondition> {
 
 	@Override
 	public WhileCondition build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeEq(objects, 1);
+		OperatorHelper.checkObjectSizeEqOne(objects);
 
-		Node node = OperatorHelper.convert(objects[0], Node.class);
-		if (!ListUtil.toList(NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT).contains(node.getType())) {
-			throw new QLException("The parameter must be while-node item");
-		}
+		Executable whileItem = OperatorHelper.convert(objects[0], Executable.class);
+		OperatorHelper.checkObjectMustBeBooleanItem(whileItem);
 
 		WhileCondition whileCondition = new WhileCondition();
-		whileCondition.setWhileNode(node);
+		whileCondition.setWhileItem(whileItem);
 		return whileCondition;
 	}
 

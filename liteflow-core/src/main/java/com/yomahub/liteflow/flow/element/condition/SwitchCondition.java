@@ -8,13 +8,13 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
 import com.yomahub.liteflow.exception.SwitchTargetCannotBePreOrFinallyException;
 import com.yomahub.liteflow.exception.SwitchTypeErrorException;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,11 +46,10 @@ public class SwitchCondition extends Condition {
 			switchNode.setCurrChainId(this.getCurrChainId());
 			switchNode.execute(slotIndex);
 
-			// 根据switch节点执行出来的结果选择
+			// 拿到switch节点的结果
+			String targetId = switchNode.getItemResultMetaValue(slotIndex);
+
 			Slot slot = DataBus.getSlot(slotIndex);
-			// 这里可能会有spring代理过的bean，所以拿到user原始的class
-			Class<?> originalClass = LiteFlowProxyUtil.getUserClass(switchNode.getInstance().getClass());
-			String targetId = slot.getSwitchResult(originalClass.getName());
 
 			Executable targetExecutor = null;
 			if (StrUtil.isNotBlank(targetId)) {

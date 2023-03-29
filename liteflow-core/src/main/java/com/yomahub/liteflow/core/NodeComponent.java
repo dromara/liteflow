@@ -377,4 +377,7 @@ public abstract class NodeComponent {
 		return FlowExecutorHolder.loadInstance().invoke2RespInAsync(chainId, param, this.getSlotIndex());
 	}
 
+	public <T> T getItemResultMetaValue(Integer slotIndex){
+		return null;
+	}
 }

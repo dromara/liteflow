@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
@@ -20,5 +21,12 @@ public abstract class NodeForComponent extends NodeComponent {
 	}
 
 	public abstract int processFor() throws Exception;
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Integer getItemResultMetaValue(Integer slotIndex) {
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		return DataBus.getSlot(slotIndex).getForResult(originalClass.getName());
+	}
 
 }

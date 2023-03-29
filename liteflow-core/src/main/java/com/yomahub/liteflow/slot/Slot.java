@@ -50,6 +50,10 @@ public class Slot {
 
 	private static final String IF_NODE_PREFIX = "_if_";
 
+	private static final String AND_OR_PREFIX = "_and_or_";
+
+	private static final String NOT_PREFIX = "_not_";
+
 	private static final String FOR_PREFIX = "_for_";
 
 	private static final String WHILE_PREFIX = "_while_";
@@ -231,6 +235,22 @@ public class Slot {
 
 	public boolean getIfResult(String key) {
 		return getThreadMetaData(IF_NODE_PREFIX + key);
+	}
+
+	public void setAndOrResult(String key, boolean result) {
+		putThreadMetaDataMap(AND_OR_PREFIX + key, result);
+	}
+
+	public boolean getAndOrResult(String key) {
+		return getThreadMetaData(AND_OR_PREFIX + key);
+	}
+
+	public void setNotResult(String key, boolean result) {
+		putThreadMetaDataMap(NOT_PREFIX + key, result);
+	}
+
+	public boolean getNotResult(String key) {
+		return getThreadMetaData(NOT_PREFIX + key);
 	}
 
 	public void setForResult(String key, int forCount) {

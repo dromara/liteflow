@@ -40,4 +40,8 @@ public interface Executable {
 
 	}
 
+	default <T> T getItemResultMetaValue(Integer slotIndex){
+		return null;
+	}
+
 }

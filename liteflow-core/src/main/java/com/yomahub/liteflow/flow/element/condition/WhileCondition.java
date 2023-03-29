@@ -1,14 +1,9 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.exception.NoWhileNodeException;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
  * 循环条件Condition
@@ -20,15 +15,10 @@ public class WhileCondition extends LoopCondition {
 
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
-		Slot slot = DataBus.getSlot(slotIndex);
-		Node whileNode = this.getWhileNode();
-		if (ObjectUtil.isNull(whileNode)) {
-			String errorInfo = StrUtil.format("[{}]:no while-node found", slot.getRequestId());
-			throw new NoWhileNodeException(errorInfo);
-		}
+		Executable whileItem = this.getWhileItem();
 
 		// 先去判断isAccess方法，如果isAccess方法都返回false，整个WHILE表达式不执行
-		if (!this.getWhileNode().isAccess(slotIndex)) {
+		if (!whileItem.isAccess(slotIndex)) {
 			return;
 		}
 
@@ -36,7 +26,7 @@ public class WhileCondition extends LoopCondition {
 		Executable executableItem = this.getDoExecutor();
 
 		// 获取Break节点
-		Node breakNode = this.getBreakNode();
+		Executable breakItem = this.getBreakItem();
 
 		// 循环执行
 		int index = 0;
@@ -45,12 +35,11 @@ public class WhileCondition extends LoopCondition {
 			setLoopIndex(executableItem, index);
 			executableItem.execute(slotIndex);
 			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakNode)) {
-				breakNode.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakNode, index);
-				breakNode.execute(slotIndex);
-				Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
-				boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
+			if (ObjectUtil.isNotNull(breakItem)) {
+				breakItem.setCurrChainId(this.getCurrChainId());
+				setLoopIndex(breakItem, index);
+				breakItem.execute(slotIndex);
+				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
 				if (isBreak) {
 					break;
 				}
@@ -60,13 +49,12 @@ public class WhileCondition extends LoopCondition {
 	}
 
 	private boolean getWhileResult(Integer slotIndex) throws Exception {
-		Slot slot = DataBus.getSlot(slotIndex);
-		Node whileNode = this.getWhileNode();
+		Executable whileItem = this.getWhileItem();
 		// 执行while组件
-		whileNode.setCurrChainId(this.getCurrChainId());
-		whileNode.execute(slotIndex);
-		Class<?> originalWhileClass = LiteFlowProxyUtil.getUserClass(whileNode.getInstance().getClass());
-		return slot.getWhileResult(originalWhileClass.getName());
+		whileItem.setCurrChainId(this.getCurrChainId());
+		whileItem.execute(slotIndex);
+
+		return whileItem.getItemResultMetaValue(slotIndex);
 	}
 
 	@Override
@@ -74,12 +62,12 @@ public class WhileCondition extends LoopCondition {
 		return ConditionTypeEnum.TYPE_WHILE;
 	}
 
-	public Node getWhileNode() {
-		return (Node) this.getExecutableOne(ConditionKey.WHILE_KEY);
+	public Executable getWhileItem() {
+		return this.getExecutableOne(ConditionKey.WHILE_KEY);
 	}
 
-	public void setWhileNode(Node whileNode) {
-		this.addExecutable(ConditionKey.WHILE_KEY, whileNode);
+	public void setWhileItem(Executable whileItem) {
+		this.addExecutable(ConditionKey.WHILE_KEY, whileItem);
 	}
 
 }

@@ -16,8 +16,7 @@ public abstract class BaseOperator<T extends Executable> extends Operator {
 	@Override
 	public T executeInner(Object[] objects) throws Exception {
 		try {
-			// 检查 node 和 chain 是否已经注册
-			OperatorHelper.checkNodeAndChainExist(objects);
+			OperatorHelper.checkItemNotNull(objects);
 			return build(objects);
 		}
 		catch (QLException e) {

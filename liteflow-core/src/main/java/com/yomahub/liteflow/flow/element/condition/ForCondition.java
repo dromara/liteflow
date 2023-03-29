@@ -36,16 +36,14 @@ public class ForCondition extends LoopCondition {
 		forNode.setCurrChainId(this.getCurrChainId());
 		forNode.execute(slotIndex);
 
-		// 这里可能会有spring代理过的bean，所以拿到user原始的class
-		Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(forNode.getInstance().getClass());
 		// 获得循环次数
-		int forCount = slot.getForResult(originalForCountClass.getName());
+		int forCount = forNode.getItemResultMetaValue(slotIndex);
 
 		// 获得要循环的可执行对象
 		Executable executableItem = this.getDoExecutor();
 
 		// 获取Break节点
-		Node breakNode = this.getBreakNode();
+		Executable breakItem = this.getBreakItem();
 
 		// 循环执行
 		for (int i = 0; i < forCount; i++) {
@@ -54,12 +52,11 @@ public class ForCondition extends LoopCondition {
 			setLoopIndex(executableItem, i);
 			executableItem.execute(slotIndex);
 			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakNode)) {
-				breakNode.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakNode, i);
-				breakNode.execute(slotIndex);
-				Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
-				boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
+			if (ObjectUtil.isNotNull(breakItem)) {
+				breakItem.setCurrChainId(this.getCurrChainId());
+				setLoopIndex(breakItem, i);
+				breakItem.execute(slotIndex);
+				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
 				if (isBreak) {
 					break;
 				}

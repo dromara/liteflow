@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
@@ -25,5 +26,12 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 
 	// 用以返回路由节点的beanId
 	public abstract String processSwitch() throws Exception;
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public String getItemResultMetaValue(Integer slotIndex) {
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		return DataBus.getSlot(slotIndex).getSwitchResult(originalClass.getName());
+	}
 
 }

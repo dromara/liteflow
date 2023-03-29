@@ -1,12 +1,9 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * 循环Condition的抽象类 主要继承对象有ForCondition和WhileCondition
@@ -16,11 +13,11 @@ import java.util.function.Consumer;
  */
 public abstract class LoopCondition extends Condition {
 
-	protected Node getBreakNode() {
-		return (Node) this.getExecutableOne(ConditionKey.BREAK_KEY);
+	protected Executable getBreakItem() {
+		return this.getExecutableOne(ConditionKey.BREAK_KEY);
 	}
 
-	public void setBreakNode(Node breakNode) {
+	public void setBreakItem(Executable breakNode) {
 		this.addExecutable(ConditionKey.BREAK_KEY, breakNode);
 	}
 

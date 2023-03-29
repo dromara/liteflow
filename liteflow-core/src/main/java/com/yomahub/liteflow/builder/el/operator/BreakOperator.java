@@ -5,6 +5,7 @@ import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 
@@ -25,13 +26,9 @@ public class BreakOperator extends BaseOperator<LoopCondition> {
 		LoopCondition condition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 
 		// 获得需要执行的可执行表达式
-		Node breakNode = OperatorHelper.convert(objects[1], Node.class);
-		if (ListUtil.toList(NodeTypeEnum.BREAK, NodeTypeEnum.BREAK_SCRIPT).contains(breakNode.getType())) {
-			condition.setBreakNode(breakNode);
-		}
-		else {
-			throw new QLException("The parameter must be node-break item");
-		}
+		Executable breakItem = OperatorHelper.convert(objects[1], Node.class);
+		OperatorHelper.checkObjectMustBeBooleanItem(breakItem);
+		condition.setBreakItem(breakItem);
 		return condition;
 	}
 

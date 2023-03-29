@@ -7,7 +7,9 @@ import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
 import com.yomahub.liteflow.flow.element.condition.IfCondition;
+import com.yomahub.liteflow.flow.element.condition.NotCondition;
 
 /**
  * EL规则中的IF的操作符
@@ -22,10 +24,8 @@ public class IfOperator extends BaseOperator<IfCondition> {
 		OperatorHelper.checkObjectSizeEq(objects, 2, 3);
 
 		// 解析第一个参数
-		Node ifNode = OperatorHelper.convert(objects[0], Node.class);
-		if (!ListUtil.toList(NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT).contains(ifNode.getType())) {
-			throw new QLException("The first parameter must be If item");
-		}
+		Executable ifItem = OperatorHelper.convert(objects[0], Executable.class);
+		OperatorHelper.checkObjectMustBeBooleanItem(ifItem);
 
 		// 解析第二个参数
 		Executable trueCaseExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
@@ -37,7 +37,7 @@ public class IfOperator extends BaseOperator<IfCondition> {
 		}
 
 		IfCondition ifCondition = new IfCondition();
-		ifCondition.setIfNode(ifNode);
+		ifCondition.setIfItem(ifItem);
 		ifCondition.setTrueCaseExecutableItem(trueCaseExecutableItem);
 		ifCondition.setFalseCaseExecutableItem(falseCaseExecutableItem);
 		return ifCondition;

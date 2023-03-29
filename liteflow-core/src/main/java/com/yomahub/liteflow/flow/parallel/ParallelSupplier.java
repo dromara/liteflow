@@ -17,20 +17,20 @@ public class ParallelSupplier implements Supplier<WhenFutureObj> {
 
 	private final Executable executableItem;
 
-	private final String currChainName;
+	private final String currChainId;
 
 	private final Integer slotIndex;
 
-	public ParallelSupplier(Executable executableItem, String currChainName, Integer slotIndex) {
+	public ParallelSupplier(Executable executableItem, String currChainId, Integer slotIndex) {
 		this.executableItem = executableItem;
-		this.currChainName = currChainName;
+		this.currChainId = currChainId;
 		this.slotIndex = slotIndex;
 	}
 
 	@Override
 	public WhenFutureObj get() {
 		try {
-			executableItem.setCurrChainId(currChainName);
+			executableItem.setCurrChainId(currChainId);
 			executableItem.execute(slotIndex);
 			return WhenFutureObj.success(executableItem.getExecuteId());
 		}

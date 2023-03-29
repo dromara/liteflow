@@ -75,4 +75,10 @@ public interface ChainConstant {
 
 	String CATCH = "CATCH";
 
+	String AND = "AND";
+
+	String OR = "OR";
+
+	String NOT = "NOT";
+
 }

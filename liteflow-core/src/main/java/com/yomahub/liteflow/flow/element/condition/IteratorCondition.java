@@ -25,7 +25,7 @@ public class IteratorCondition extends LoopCondition {
 		}
 
 		// 先去判断isAccess方法，如果isAccess方法都返回false，整个ITERATOR表达式不执行
-		if (!this.getIteratorNode().isAccess(slotIndex)) {
+		if (!iteratorNode.isAccess(slotIndex)) {
 			return;
 		}
 
@@ -33,16 +33,13 @@ public class IteratorCondition extends LoopCondition {
 		iteratorNode.setCurrChainId(this.getCurrChainId());
 		iteratorNode.execute(slotIndex);
 
-		// 这里可能会有spring代理过的bean，所以拿到user原始的class
-		Class<?> originalForCountClass = LiteFlowProxyUtil.getUserClass(iteratorNode.getInstance().getClass());
-		// 获得迭代器
-		Iterator<?> it = slot.getIteratorResult(originalForCountClass.getName());
+		Iterator<?> it = iteratorNode.getItemResultMetaValue(slotIndex);
 
 		// 获得要循环的可执行对象
 		Executable executableItem = this.getDoExecutor();
 
 		// 获取Break节点
-		Node breakNode = this.getBreakNode();
+		Executable breakItem = this.getBreakItem();
 
 		int index = 0;
 		while (it.hasNext()) {
@@ -56,13 +53,12 @@ public class IteratorCondition extends LoopCondition {
 			// 执行可执行对象
 			executableItem.execute(slotIndex);
 			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakNode)) {
-				breakNode.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakNode, index);
-				setCurrLoopObject(breakNode, itObj);
-				breakNode.execute(slotIndex);
-				Class<?> originalBreakClass = LiteFlowProxyUtil.getUserClass(breakNode.getInstance().getClass());
-				boolean isBreak = slot.getBreakResult(originalBreakClass.getName());
+			if (ObjectUtil.isNotNull(breakItem)) {
+				breakItem.setCurrChainId(this.getCurrChainId());
+				setLoopIndex(breakItem, index);
+				setCurrLoopObject(breakItem, itObj);
+				breakItem.execute(slotIndex);
+				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
 				if (isBreak) {
 					break;
 				}
