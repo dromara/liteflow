@@ -17,14 +17,14 @@ import java.io.File;
 
 @RunWith(SolonJUnit4ClassRunner.class)
 @TestPropertySource("classpath:/monitorFile/application.properties")
-public class MonitorFileELSpringbootTest extends BaseTest {
+public class MonitorFileSpringbootTest extends BaseTest {
 
 	@Inject
 	private FlowExecutor flowExecutor;
 
 	@Test
 	public void testMonitor() throws Exception {
-		String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+		String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.xml").getAbsolutePath();
 		String content = FileUtil.readUtf8String(absolutePath);
 		String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
