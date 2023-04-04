@@ -71,4 +71,8 @@
             SWITCH(l.tag("node_3")).TO(a.tag("node_3"), a.tag("node_4"))
         );
     </chain>
+
+    <chain name="chain12">
+        SWITCH(l.tag("xx1")).TO(THEN(a,b).tag("xx1"), THEN(a,b,c).tag("xx2"));
+    </chain>
 </flow>

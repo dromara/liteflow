@@ -7,7 +7,7 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
  *
  * @author Bryan.Zhang
  */
-public interface Executable {
+public interface Executable{
 
 	void execute(Integer slotIndex) throws Exception;
 
@@ -19,11 +19,11 @@ public interface Executable {
 
 	/**
 	 * @return
-	 * @deprecated 请使用 {@link #getExecuteId()}
+	 * @deprecated 请使用 {@link #getId()}
 	 */
 	@Deprecated
 	default String getExecuteName() {
-		return getExecuteId();
+		return getId();
 	}
 
 	/**
@@ -34,7 +34,13 @@ public interface Executable {
 		setCurrChainId(currentChainName);
 	}
 
-	String getExecuteId();
+	void setId(String id);
+
+	String getId();
+
+	void setTag(String tag);
+
+	String getTag();
 
 	default void setCurrChainId(String currentChainId) {
 
@@ -43,5 +49,4 @@ public interface Executable {
 	default <T> T getItemResultMetaValue(Integer slotIndex){
 		return null;
 	}
-
 }

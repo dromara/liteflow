@@ -98,7 +98,7 @@ public class WhenCondition extends Condition {
 				}
 			})
 			.map(executable -> CompletableFutureTimeout.completeOnTimeout(
-					WhenFutureObj.timeOut(executable.getExecuteId()),
+					WhenFutureObj.timeOut(executable.getId()),
 					CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex),
 							parallelExecutor),
 					liteflowConfig.getWhenMaxWaitSeconds(), TimeUnit.SECONDS))

@@ -28,9 +28,11 @@ import java.util.Map;
  *
  * @author Bryan.Zhang
  */
-public abstract class Condition implements Executable {
+public abstract class Condition implements Executable{
 
 	private String id;
+
+	private String tag;
 
 	/**
 	 * 可执行元素的集合
@@ -71,11 +73,6 @@ public abstract class Condition implements Executable {
 	@Override
 	public ExecuteTypeEnum getExecuteType() {
 		return ExecuteTypeEnum.CONDITION;
-	}
-
-	@Override
-	public String getExecuteId() {
-		return this.id;
 	}
 
 	public List<Executable> getExecutableList() {
@@ -131,6 +128,15 @@ public abstract class Condition implements Executable {
 		this.id = id;
 	}
 
+	@Override
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
 	/**
 	 * 请使用 {@link #setCurrChainId(String)}
 	 */
@@ -151,5 +157,4 @@ public abstract class Condition implements Executable {
 	public Map<String, List<Executable>> getExecutableGroup() {
 		return executableGroup;
 	}
-
 }

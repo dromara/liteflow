@@ -24,11 +24,13 @@ import java.util.List;
  *
  * @author Bryan.Zhang
  */
-public class Chain implements Executable {
+public class Chain implements Executable{
 
 	private static final Logger LOG = LoggerFactory.getLogger(Chain.class);
 
 	private String chainId;
+
+	private String tag;
 
 	private List<Condition> conditionList = new ArrayList<>();
 
@@ -115,8 +117,21 @@ public class Chain implements Executable {
 	}
 
 	@Override
-	public String getExecuteId() {
+	public void setId(String id) {
+		this.chainId = id;
+	}
+
+	@Override
+	public String getId() {
 		return chainId;
 	}
 
+	@Override
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
 }

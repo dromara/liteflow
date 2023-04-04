@@ -13,7 +13,6 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 import java.util.List;
 
@@ -59,20 +58,14 @@ public class SwitchCondition extends Condition {
 					String _targetId = target[0];
 					String _targetTag = target[1];
 					targetExecutor = targetList.stream().filter(executable -> {
-						if (executable instanceof Node) {
-							Node node = (Node) executable;
-							return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(node.getTag()))
-									|| ((StrUtil.isEmpty(_targetId) || _targetId.equals(node.getId()))
-											&& (StrUtil.isEmpty(_targetTag) || _targetTag.equals(node.getTag())));
-						}
-						else {
-							return false;
-						}
+						return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(executable.getTag()))
+								|| ((StrUtil.isEmpty(_targetId) || _targetId.equals(executable.getId()))
+								&& (StrUtil.isEmpty(_targetTag) || _targetTag.equals(executable.getTag())));
 					}).findFirst().orElse(null);
 				}
 				else {
 					targetExecutor = targetList.stream()
-						.filter(executable -> executable.getExecuteId().equals(targetId))
+						.filter(executable -> executable.getId().equals(targetId))
 						.findFirst()
 						.orElse(null);
 				}

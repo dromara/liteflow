@@ -4,6 +4,8 @@ import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 
 /**
@@ -12,19 +14,19 @@ import com.yomahub.liteflow.flow.element.Node;
  * @author Bryan.Zhang
  * @since 2.8.0
  */
-public class TagOperator extends BaseOperator<Node> {
+public class TagOperator extends BaseOperator<Executable> {
 
 	@Override
-	public Node build(Object[] objects) throws Exception {
+	public Executable build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		Node node = OperatorHelper.convert(objects[0], Node.class);
+		Executable refObj = OperatorHelper.convert(objects[0], Executable.class);
 
 		String tag = OperatorHelper.convert(objects[1], String.class);
 
-		node.setTag(tag);
+		refObj.setTag(tag);
 
-		return node;
+		return refObj;
 	}
 
 }

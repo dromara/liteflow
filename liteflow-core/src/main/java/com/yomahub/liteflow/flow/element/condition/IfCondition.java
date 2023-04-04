@@ -1,17 +1,13 @@
 package com.yomahub.liteflow.flow.element.condition;
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 /**
  * 条件Condition
@@ -46,7 +42,7 @@ public class IfCondition extends Condition {
 			// trueCaseExecutableItem这个不能为空，否则执行什么呢
 			if (ObjectUtil.isNull(trueCaseExecutableItem)) {
 				String errorInfo = StrUtil.format("[{}]:no if-true node found for the component[{}]",
-						slot.getRequestId(), ifItem.getExecuteId());
+						slot.getRequestId(), ifItem.getId());
 				throw new NoIfTrueNodeException(errorInfo);
 			}
 
@@ -55,7 +51,7 @@ public class IfCondition extends Condition {
 					|| trueCaseExecutableItem instanceof FinallyCondition) {
 				String errorInfo = StrUtil.format(
 						"[{}]:if component[{}] error, if true node cannot be pre or finally", slot.getRequestId(),
-						ifItem.getExecuteId());
+						ifItem.getId());
 				throw new IfTargetCannotBePreOrFinallyException(errorInfo);
 			}
 
@@ -71,7 +67,7 @@ public class IfCondition extends Condition {
 						|| falseCaseExecutableItem instanceof FinallyCondition) {
 					String errorInfo = StrUtil.format(
 							"[{}]:if component[{}] error, if true node cannot be pre or finally",
-							slot.getRequestId(), ifItem.getExecuteId());
+							slot.getRequestId(), ifItem.getId());
 					throw new IfTargetCannotBePreOrFinallyException(errorInfo);
 				}
 

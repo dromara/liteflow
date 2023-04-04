@@ -32,10 +32,10 @@ public class ParallelSupplier implements Supplier<WhenFutureObj> {
 		try {
 			executableItem.setCurrChainId(currChainId);
 			executableItem.execute(slotIndex);
-			return WhenFutureObj.success(executableItem.getExecuteId());
+			return WhenFutureObj.success(executableItem.getId());
 		}
 		catch (Exception e) {
-			return WhenFutureObj.fail(executableItem.getExecuteId(), e);
+			return WhenFutureObj.fail(executableItem.getId(), e);
 		}
 	}
 

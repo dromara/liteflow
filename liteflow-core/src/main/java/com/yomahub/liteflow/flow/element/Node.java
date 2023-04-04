@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bryan.Zhang
  */
-public class Node implements Executable, Cloneable {
+public class Node implements Executable, Cloneable{
 
 	private static final Logger LOG = LoggerFactory.getLogger(Node.class);
 
@@ -56,9 +56,9 @@ public class Node implements Executable, Cloneable {
 
 	private String currChainId;
 
-	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
+	private final TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
-	private TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
+	private final TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
 
 	public Node() {
 
@@ -72,12 +72,21 @@ public class Node implements Executable, Cloneable {
 		this.clazz = instance.getClass().getName();
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 
 	public String getName() {
@@ -184,30 +193,8 @@ public class Node implements Executable, Cloneable {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
-
-	public Node copy() throws Exception {
-		return (Node) this.clone();
-	}
-
-	@Override
 	public ExecuteTypeEnum getExecuteType() {
 		return ExecuteTypeEnum.NODE;
-	}
-
-	@Override
-	public String getExecuteId() {
-		return id;
-	}
-
-	public String getTag() {
-		return tag;
-	}
-
-	public void setTag(String tag) {
-		this.tag = tag;
 	}
 
 	public String getScript() {
@@ -278,5 +265,14 @@ public class Node implements Executable, Cloneable {
 	@Override
 	public <T> T getItemResultMetaValue(Integer slotIndex) {
 		return instance.getItemResultMetaValue(slotIndex);
+	}
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+
+	public Node copy() throws Exception {
+		return (Node)this.clone();
 	}
 }
