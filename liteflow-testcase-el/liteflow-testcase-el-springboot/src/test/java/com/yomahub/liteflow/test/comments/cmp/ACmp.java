@@ -10,6 +10,7 @@ package com.yomahub.liteflow.test.comments.cmp;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("a")
@@ -17,6 +18,8 @@ public class ACmp {
 
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
+		DefaultContext context = bindCmp.getFirstContextBean();
+		context.setData("str", bindCmp.getCmpData(String.class));
 		System.out.println("ACmp executed!");
 	}
 
