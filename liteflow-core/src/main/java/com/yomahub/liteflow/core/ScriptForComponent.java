@@ -15,12 +15,7 @@ public class ScriptForComponent extends NodeForComponent implements ScriptCompon
 
 	@Override
 	public int processFor() throws Exception {
-		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-		wrap.setCurrChainId(this.getCurrChainId());
-		wrap.setNodeId(this.getNodeId());
-		wrap.setSlotIndex(this.getSlotIndex());
-		wrap.setTag(this.getTag());
-		wrap.setCmpData(this.getCmpData(Map.class));
+		ScriptExecuteWrap wrap = this.buildWrap(this);
 		return (int) ScriptExecutorFactory.loadInstance()
 			.getScriptExecutor(this.getRefNode().getLanguage())
 			.execute(wrap);

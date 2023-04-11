@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.script.ScriptExecuteWrap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,5 +33,17 @@ public interface ScriptComponent {
 	 * @param script
 	 */
 	void loadScript(String script, String language);
+
+	default ScriptExecuteWrap buildWrap(NodeComponent cmp){
+		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
+		wrap.setCurrChainId(cmp.getCurrChainId());
+		wrap.setNodeId(cmp.getNodeId());
+		wrap.setSlotIndex(cmp.getSlotIndex());
+		wrap.setTag(cmp.getTag());
+		wrap.setCmpData(cmp.getCmpData(Map.class));
+		wrap.setLoopIndex(cmp.getLoopIndex());
+		wrap.setLoopObject(cmp.getCurrLoopObj());
+		return wrap;
+	}
 
 }

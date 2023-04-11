@@ -18,6 +18,10 @@ public class ScriptExecuteWrap {
 
 	private Object cmpData;
 
+	private Integer loopIndex;
+
+	private Object loopObject;
+
 	public int getSlotIndex() {
 		return slotIndex;
 	}
@@ -74,4 +78,19 @@ public class ScriptExecuteWrap {
 		this.cmpData = cmpData;
 	}
 
+	public Integer getLoopIndex() {
+		return loopIndex;
+	}
+
+	public void setLoopIndex(Integer loopIndex) {
+		this.loopIndex = loopIndex;
+	}
+
+	public Object getLoopObject() {
+		return loopObject;
+	}
+
+	public void setLoopObject(Object loopObject) {
+		this.loopObject = loopObject;
+	}
 }
