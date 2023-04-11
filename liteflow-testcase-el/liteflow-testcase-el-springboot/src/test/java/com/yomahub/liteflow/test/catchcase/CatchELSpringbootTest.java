@@ -58,4 +58,10 @@ public class CatchELSpringbootTest extends BaseTest {
 		Assert.assertEquals("LOOP_3==>a==>b==>a==>b==>a==>b", response.getExecuteStepStrWithoutTime());
 	}
 
+	@Test
+	public void testCatch5() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+		Assert.assertFalse(response.isSuccess());
+		Assert.assertEquals("a==>d", response.getExecuteStepStrWithoutTime());
+	}
 }

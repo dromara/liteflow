@@ -4,13 +4,13 @@
     <chain name="chain1">
         CATCH(
             THEN(a,b)
-        ).DO(c)
+        ).DO(c);
     </chain>
 
     <chain name="chain2">
         CATCH(
             THEN(a,b)
-        ).DO(d)
+        ).DO(d);
     </chain>
 
     <chain name="chain3">
@@ -25,5 +25,11 @@
                 THEN(a,e,FINALLY(b))
             )
         );
+    </chain>
+
+    <chain name="chain5">
+        CATCH(
+            a
+        ).DO(d);
     </chain>
 </flow>

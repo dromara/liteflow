@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.script.groovy.loop;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,6 +64,16 @@ public class LiteFlowXmlScriptLoopGroovyELTest extends BaseTest {
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y",
 				response.getExecuteStepStr());
+	}
+
+	// 测试在脚本中取到循环对象
+	@Test
+	public void testLoop6() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("e==>w==>w==>w", response.getExecuteStepStr());
+		DefaultContext context = response.getFirstContextBean();
+		Assert.assertEquals("jack-tom-frank", context.getData("test"));
 	}
 
 }

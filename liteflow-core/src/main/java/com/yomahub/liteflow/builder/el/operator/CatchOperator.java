@@ -3,7 +3,9 @@ package com.yomahub.liteflow.builder.el.operator;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.CatchCondition;
+import com.yomahub.liteflow.flow.element.condition.ThenCondition;
 
 /**
  * EL规则中的CATCH的操作符 用法：CATCH...DO...
@@ -20,8 +22,15 @@ public class CatchOperator extends BaseOperator<CatchCondition> {
 		Executable catchItem = OperatorHelper.convert(objects[0], Executable.class);
 
 		CatchCondition catchCondition = new CatchCondition();
-		catchCondition.setCatchItem(catchItem);
 
+		//如果是单个Node的话，要包装成THEN的CONDITION模式，否则CATCH不到异常
+		if (catchItem instanceof Node){
+			ThenCondition thenCondition = new ThenCondition();
+			thenCondition.addExecutable(catchItem);
+			catchCondition.setCatchItem(thenCondition);
+		}else{
+			catchCondition.setCatchItem(catchItem);
+		}
 		return catchCondition;
 	}
 

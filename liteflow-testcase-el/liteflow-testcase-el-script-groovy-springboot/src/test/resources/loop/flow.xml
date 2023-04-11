@@ -26,6 +26,17 @@
                 }
             ]]>
         </node>
+
+        <node id="w" type="script" language="groovy">
+            <![CDATA[
+                def key = "test"
+                if (defaultContext.hasData(key)){
+                    defaultContext.setData(key, defaultContext.getData(key) + "-" + _meta.loopObject);
+                }else{
+                    defaultContext.setData(key, _meta.loopObject);
+                }
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">
@@ -46,5 +57,9 @@
 
     <chain name="chain5">
         WHILE(z).DO(THEN(a,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain6">
+        ITERATOR(e).DO(w);
     </chain>
 </flow>
