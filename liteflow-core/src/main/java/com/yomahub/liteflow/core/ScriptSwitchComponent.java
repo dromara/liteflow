@@ -15,12 +15,7 @@ public class ScriptSwitchComponent extends NodeSwitchComponent implements Script
 
 	@Override
 	public String processSwitch() throws Exception {
-		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-		wrap.setCurrChainId(this.getCurrChainId());
-		wrap.setNodeId(this.getNodeId());
-		wrap.setSlotIndex(this.getSlotIndex());
-		wrap.setTag(this.getTag());
-		wrap.setCmpData(this.getCmpData(Map.class));
+		ScriptExecuteWrap wrap = this.buildWrap(this);
 		return (String) ScriptExecutorFactory.loadInstance()
 			.getScriptExecutor(this.getRefNode().getLanguage())
 			.execute(wrap);

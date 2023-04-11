@@ -15,12 +15,7 @@ public class ScriptIfComponent extends NodeIfComponent implements ScriptComponen
 
 	@Override
 	public boolean processIf() throws Exception {
-		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-		wrap.setCurrChainId(this.getCurrChainId());
-		wrap.setNodeId(this.getNodeId());
-		wrap.setSlotIndex(this.getSlotIndex());
-		wrap.setTag(this.getTag());
-		wrap.setCmpData(this.getCmpData(Map.class));
+		ScriptExecuteWrap wrap = this.buildWrap(this);
 		return (boolean) ScriptExecutorFactory.loadInstance()
 			.getScriptExecutor(this.getRefNode().getLanguage())
 			.execute(wrap);
