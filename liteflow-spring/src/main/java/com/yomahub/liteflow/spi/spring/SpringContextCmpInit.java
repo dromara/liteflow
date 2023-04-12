@@ -19,7 +19,7 @@ public class SpringContextCmpInit implements ContextCmpInit {
 	public void initCmp() {
 		for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
 			if (!FlowBus.containNode(componentEntry.getKey())) {
-				FlowBus.addSpringScanNode(componentEntry.getKey(), componentEntry.getValue());
+				FlowBus.addManagedNode(componentEntry.getKey(), componentEntry.getValue());
 			}
 		}
 	}
