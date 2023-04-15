@@ -45,7 +45,7 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.0.5.RELEASE</springboot.version>
-		<spring.version>5.0.9.RELEASE</spring.version>
+		<spring.version>5.2.21.RELEASE</spring.version>
 		<org.slf4j.version>1.7.32</org.slf4j.version>
 		<jackson.version>2.14.0-rc2</jackson.version>
 		<snakeyaml.version>1.32</snakeyaml.version>
