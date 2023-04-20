@@ -3,7 +3,6 @@ package com.yomahub.liteflow.solon.integration;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.solon.*;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
@@ -50,7 +49,7 @@ public class XPluginImpl implements Plugin {
 			NodeComponent node1 = bw.raw();
 			node1.setNodeId(bw.name());
 
-			FlowBus.addSpringScanNode(bw.name(), bw.raw());
+			FlowBus.addManagedNode(bw.name(), bw.raw());
 		});
 
 		context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
@@ -79,7 +78,7 @@ public class XPluginImpl implements Plugin {
 			node1.setNodeId(nodeId);
 			node1.setType(anno.nodeType());
 
-			FlowBus.addSpringScanNode(nodeId, node1);
+			FlowBus.addManagedNode(nodeId, node1);
 		});
 
 		context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
@@ -90,7 +89,7 @@ public class XPluginImpl implements Plugin {
 				node1.setNodeId(nodeId);
 				node1.setName(anno.name());
 
-				FlowBus.addSpringScanNode(nodeId, node1);
+				FlowBus.addManagedNode(nodeId, node1);
 			}
 			else {
 				context.beanExtract(bw); // 尝试提取 LiteflowMethod 函数
