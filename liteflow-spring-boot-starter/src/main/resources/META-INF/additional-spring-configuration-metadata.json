@@ -73,7 +73,21 @@
       "type": "java.lang.Integer",
       "description": "Set the async thread max wait seconds on \" when \" mode.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 15
+      "defaultValue": 0
+    },
+    {
+      "name": "liteflow.when-max-wait-time",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread max wait time on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 15000
+    },
+    {
+      "name": "liteflow.when-max-wait-time-unit",
+      "type": "java.util.concurrent.TimeUnit",
+      "description": "Set the async thread max wait time unit on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "MILLISECONDS"
     },
     {
       "name": "liteflow.when-max-workers",

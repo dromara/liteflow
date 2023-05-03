@@ -43,8 +43,7 @@ public class WhenFutureObj {
 		result.setTimeout(true);
 		result.setExecutorName(executorName);
 		result.setEx(new WhenTimeoutException(
-				StrUtil.format("Timed out when executing the component[{}],when-max-timeout-seconds config is:{}(s)",
-						executorName, LiteflowConfigGetter.get().getWhenMaxWaitSeconds())));
+				StrUtil.format("Timed out when executing the component[{}]",executorName)));
 		return result;
 	}
 
