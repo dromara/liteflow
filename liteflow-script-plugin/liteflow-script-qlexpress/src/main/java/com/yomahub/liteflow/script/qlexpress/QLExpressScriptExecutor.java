@@ -33,7 +33,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public ScriptExecutor init() {
-		expressRunner = new ExpressRunner();
+		expressRunner = new ExpressRunner(true, false);
 		return this;
 	}
 
