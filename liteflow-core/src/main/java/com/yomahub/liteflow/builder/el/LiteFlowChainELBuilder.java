@@ -166,7 +166,7 @@ public class LiteFlowChainELBuilder {
 		try {
 			LiteFlowChainELBuilder.createChain().setEL(elStr);
 			return Boolean.TRUE;
-		} catch (ELParseException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
 		return Boolean.FALSE;
