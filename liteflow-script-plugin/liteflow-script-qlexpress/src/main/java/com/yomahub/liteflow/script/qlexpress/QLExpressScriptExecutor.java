@@ -63,7 +63,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 			bindParam(wrap, context::put, context::putIfAbsent);
 
-			return expressRunner.execute(instructionSet, context, errorList, true, false, null);
+			return expressRunner.execute(instructionSet, context, errorList, true, false);
 		}
 		catch (Exception e) {
 			for (String scriptErrorMsg : errorList) {
