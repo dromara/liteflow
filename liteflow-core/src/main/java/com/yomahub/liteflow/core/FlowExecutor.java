@@ -71,8 +71,9 @@ public class FlowExecutor {
 
 	/**
 	 * FlowExecutor的初始化化方式，主要用于parse规则文件
+	 * isStart表示是否是系统启动阶段，启动阶段要做额外的事情，而因为reload所调用的init就不用做
 	 */
-	public void init(boolean hook) {
+	public void init(boolean isStart) {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			throw new ConfigErrorException("config error, please check liteflow config property");
 		}
@@ -82,8 +83,10 @@ public class FlowExecutor {
 		// 在非spring体系下是一个空实现，等于不做此步骤
 		ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
-		// 进行id生成器的初始化
-		IdGeneratorHolder.init();
+		if (isStart){
+			// 进行id生成器的初始化
+			IdGeneratorHolder.init();
+		}
 
 		String ruleSource = liteflowConfig.getRuleSource();
 		if (StrUtil.isBlank(ruleSource)) {
@@ -191,7 +194,7 @@ public class FlowExecutor {
 		}
 
 		// 执行钩子
-		if (hook) {
+		if (isStart) {
 			FlowInitHook.executeHook();
 		}
 
