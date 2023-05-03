@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.spring;
 
+import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +43,16 @@ import java.util.stream.Collectors;
  * @author Bryan.Zhang
  */
 public class ComponentScanner implements BeanPostProcessor {
+
+	/**
+	 * @RefreshScope 注解 bean 的前缀
+	 */
+	private static final String REFRESH_SCOPE_ANN_BEAN_PREFIX = "scopedTarget.";
+
+	/**
+	 * @RefreshScope 注解完整类路径
+	 */
+	private static final String REFRESH_SCOPE_ANN_CLASS_PATH = "org.springframework.cloud.context.config.annotation.RefreshScope";
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentScanner.class);
 
@@ -79,7 +91,7 @@ public class ComponentScanner implements BeanPostProcessor {
 			List<NodeComponent> nodeComponents = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
 			nodeComponents.forEach(nodeComponent -> {
 				String nodeId = nodeComponent.getNodeId();
-				nodeId = StrUtil.isEmpty(nodeId) ? beanName : nodeId;
+				nodeId = StrUtil.isEmpty(nodeId) ? getRealBeanName(clazz, beanName) : nodeId;
 				nodeComponentMap.put(nodeId, nodeComponent);
 			});
 			// 只有注解支持单bean多Node,所以一个直接返回
@@ -93,7 +105,7 @@ public class ComponentScanner implements BeanPostProcessor {
 		if (NodeComponent.class.isAssignableFrom(clazz)) {
 			LOG.info("component[{}] has been found", beanName);
 			NodeComponent nodeComponent = (NodeComponent) bean;
-			nodeComponentMap.put(beanName, nodeComponent);
+			nodeComponentMap.put(getRealBeanName(clazz, beanName), nodeComponent);
 			return nodeComponent;
 		}
 
@@ -143,6 +155,26 @@ public class ComponentScanner implements BeanPostProcessor {
 	 */
 	public static void cleanCache() {
 		nodeComponentMap.clear();
+	}
+
+	/**
+	 * 获取真实的 beanName 1. @RefreshScope 注解标注的bean 名称前会多加一个 scopedTarget.
+	 *
+	 * @param clazz    clazz
+	 * @param beanName beanName
+	 */
+	private String getRealBeanName(Class<?> clazz, String beanName) {
+		if (beanName.startsWith(REFRESH_SCOPE_ANN_BEAN_PREFIX)) {
+			Annotation[] annotations = AnnotationUtil.getAnnotations(clazz, true);
+			for (Annotation annotation : annotations) {
+				String name = annotation.annotationType().getName();
+				if (REFRESH_SCOPE_ANN_CLASS_PATH.equals(name)) {
+					return beanName.replace(REFRESH_SCOPE_ANN_BEAN_PREFIX, "");
+				}
+
+			}
+		}
+		return beanName;
 	}
 
 }
