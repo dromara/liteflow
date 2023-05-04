@@ -253,7 +253,7 @@ public class ParserHelper {
 	private static class RegexUtil {
 
 		// java 注释的正则表达式
-		private static final String REGEX_COMMENT = "(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
+		private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
 
 		/**
 		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释， 会压缩字符串，移除空格和换行符
