@@ -164,7 +164,7 @@ public abstract class NodeComponent {
 		return true;
 	}
 
-	// 出错是否继续执行(这个只适用于并行流程，串行流程不起作用)
+	// 出错是否继续执行
 	public boolean isContinueOnError() {
 		return false;
 	}
