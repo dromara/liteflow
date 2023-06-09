@@ -21,7 +21,7 @@ public class ACmp {
 	public void process(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new FlowSystemException("chain execute execption");
+			throw new FlowSystemException("chain execute exception");
 		}
 		System.out.println("ACmp executed!");
 	}
