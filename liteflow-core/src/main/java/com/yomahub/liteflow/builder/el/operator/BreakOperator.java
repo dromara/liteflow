@@ -26,7 +26,7 @@ public class BreakOperator extends BaseOperator<LoopCondition> {
 		LoopCondition condition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 
 		// 获得需要执行的可执行表达式
-		Executable breakItem = OperatorHelper.convert(objects[1], Node.class);
+		Executable breakItem = OperatorHelper.convert(objects[1], Executable.class);
 		OperatorHelper.checkObjectMustBeBooleanItem(breakItem);
 		condition.setBreakItem(breakItem);
 		return condition;
