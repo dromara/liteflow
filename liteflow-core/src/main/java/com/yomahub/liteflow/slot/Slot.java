@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 /**
  * Slot的抽象类实现
@@ -388,8 +389,9 @@ public class Slot {
 	}
 
 	public <T> T getContextBean(Class<T> contextBeanClazz) {
-		T t = (T) contextBeanList.stream().filter(o -> o.getClass().equals(contextBeanClazz)).findFirst().orElse(null);
+		T t = (T) contextBeanList.stream().filter(o -> o.getClass().getName().equals(contextBeanClazz.getName())).findFirst().orElse(null);
 		if (t == null) {
+			contextBeanList.forEach(o -> LOG.info("ChainId[{}], Context class:{},Request class:{}", this.getChainId(), o.getClass().getName(), contextBeanClazz.getName()));
 			throw new NoSuchContextBeanException("this type is not in the context type passed in");
 		}
 		return t;
