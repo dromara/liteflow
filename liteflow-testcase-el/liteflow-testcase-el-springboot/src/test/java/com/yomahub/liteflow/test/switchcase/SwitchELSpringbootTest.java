@@ -115,4 +115,11 @@ public class SwitchELSpringbootTest extends BaseTest {
 		Assert.assertTrue(response.isSuccess());
 	}
 
+	// 给chain设置tag，跳转到chain上
+	@Test
+	public void testSwitch13() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain13", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
+
 }

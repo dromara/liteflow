@@ -75,4 +75,12 @@
     <chain name="chain12">
         SWITCH(l.tag("xx1")).TO(THEN(a,b).tag("xx1"), THEN(a,b,c).tag("xx2"));
     </chain>
+
+    <chain name="chain13">
+        SWITCH(m.tag("x1")).TO(sub1.tag("x1"), sub1.tag("x2"));
+    </chain>
+
+    <chain name="sub1">
+        THEN(a);
+    </chain>
 </flow>

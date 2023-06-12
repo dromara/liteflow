@@ -30,8 +30,6 @@ public class Chain implements Executable{
 
 	private String chainId;
 
-	private String tag;
-
 	private List<Condition> conditionList = new ArrayList<>();
 
 	public Chain(String chainName) {
@@ -127,11 +125,12 @@ public class Chain implements Executable{
 	}
 
 	@Override
-	public String getTag() {
-		return tag;
+	public void setTag(String tag) {
+		//do nothing
 	}
 
-	public void setTag(String tag) {
-		this.tag = tag;
+	@Override
+	public String getTag() {
+		return null;
 	}
 }
