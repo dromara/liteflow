@@ -56,9 +56,9 @@ public class Node implements Executable, Cloneable{
 
 	private String currChainId;
 
-	private final TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
-	private final TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
 
 	public Node() {
 
@@ -77,14 +77,17 @@ public class Node implements Executable, Cloneable{
 		return id;
 	}
 
+	@Override
 	public void setId(String id) {
 		this.id = id;
 	}
 
+	@Override
 	public String getTag() {
 		return tag;
 	}
 
+	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
 	}
@@ -141,17 +144,17 @@ public class Node implements Executable, Cloneable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
-				// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
-				if (instance.isEnd()) {
-					String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(),
-							instance.getDisplayName());
-					throw new ChainEndException(errorInfo);
-				}
 			}
 			else {
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
 					LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getDisplayName());
 				}
+			}
+			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
+			if (instance.isEnd()) {
+				String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(),
+						instance.getDisplayName());
+				throw new ChainEndException(errorInfo);
 			}
 		}
 		catch (ChainEndException e) {
@@ -273,6 +276,9 @@ public class Node implements Executable, Cloneable{
 	}
 
 	public Node copy() throws Exception {
-		return (Node)this.clone();
+		Node node = (Node)this.clone();
+		node.loopIndexTL = new TransmittableThreadLocal<>();
+		node.currLoopObject = new TransmittableThreadLocal<>();
+		return node;
 	}
 }

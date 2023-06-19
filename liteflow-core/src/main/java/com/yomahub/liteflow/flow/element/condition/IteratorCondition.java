@@ -41,29 +41,34 @@ public class IteratorCondition extends LoopCondition {
 		// 获取Break节点
 		Executable breakItem = this.getBreakItem();
 
-		int index = 0;
-		while (it.hasNext()) {
-			Object itObj = it.next();
+		try{
+			int index = 0;
+			while (it.hasNext()) {
+				Object itObj = it.next();
 
-			executableItem.setCurrChainId(this.getCurrChainId());
-			// 设置循环index
-			setLoopIndex(executableItem, index);
-			// 设置循环迭代器对象
-			setCurrLoopObject(executableItem, itObj);
-			// 执行可执行对象
-			executableItem.execute(slotIndex);
-			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakItem)) {
-				breakItem.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakItem, index);
-				setCurrLoopObject(breakItem, itObj);
-				breakItem.execute(slotIndex);
-				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
-				if (isBreak) {
-					break;
+				executableItem.setCurrChainId(this.getCurrChainId());
+				// 设置循环index
+				setLoopIndex(executableItem, index);
+				// 设置循环迭代器对象
+				setCurrLoopObject(executableItem, itObj);
+				// 执行可执行对象
+				executableItem.execute(slotIndex);
+				// 如果break组件不为空，则去执行
+				if (ObjectUtil.isNotNull(breakItem)) {
+					breakItem.setCurrChainId(this.getCurrChainId());
+					setLoopIndex(breakItem, index);
+					setCurrLoopObject(breakItem, itObj);
+					breakItem.execute(slotIndex);
+					boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
+					if (isBreak) {
+						break;
+					}
 				}
+				index++;
 			}
-			index++;
+		}finally{
+			removeLoopIndex(executableItem);
+			removeCurrLoopObject(executableItem);
 		}
 	}
 
