@@ -4,6 +4,10 @@
         THEN(a);
     </chain>
 
+    <chain name="chain1-2">
+        THEN(j, h);
+    </chain>
+
     <chain name="chain2">
         THEN(b);
     </chain>
