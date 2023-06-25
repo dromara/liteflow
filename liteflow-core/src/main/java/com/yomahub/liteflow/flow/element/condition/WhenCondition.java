@@ -16,13 +16,13 @@ import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
 import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.thread.ExecutorHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class WhenCondition extends Condition {
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	// 只在when类型下有效，以区分当when调用链调用失败时是否继续往下执行 默认false不继续执行
 	private boolean ignoreError = false;
@@ -167,8 +167,7 @@ public class WhenCondition extends Condition {
 
 		// 输出超时信息
 		timeOutWhenFutureObjList.forEach(whenFutureObj -> LOG.warn(
-				"requestId [{}] executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]",
-				slot.getRequestId(), whenFutureObj.getExecutorName()));
+				"executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", whenFutureObj.getExecutorName()));
 
 		// 当配置了ignoreError = false，出现interrupted或者!f.get()的情况，将抛出WhenExecuteException
 		if (!this.isIgnoreError()) {
@@ -180,15 +179,13 @@ public class WhenCondition extends Condition {
 			// 循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
 			for (WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList) {
 				if (!whenFutureObj.isSuccess()) {
-					LOG.info(StrUtil.format("requestId [{}] when-executor[{}] execute failed. errorResume [false].",
-							slot.getRequestId(), whenFutureObj.getExecutorName()));
+					LOG.info(StrUtil.format("when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName()));
 					throw whenFutureObj.getEx();
 				}
 			}
 		} else if (interrupted[0]) {
 			// 这里由于配置了ignoreError，所以只打印warn日志
-			LOG.warn("requestId [{}] executing when condition timeout , but ignore with errorResume.",
-					slot.getRequestId());
+			LOG.warn("executing when condition timeout , but ignore with errorResume.");
 		}
 	}
 

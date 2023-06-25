@@ -15,11 +15,9 @@ import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +37,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unchecked")
 public class Slot {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(Slot.class);
 
 	private static final String REQUEST = "_request";
 
@@ -344,12 +342,16 @@ public class Slot {
 			this.executeStepsStr = getExecuteStepStr(true);
 		}
 		if (LiteflowConfigGetter.get().getPrintExecutionLog()) {
-			LOG.info("[{}]:CHAIN_NAME[{}]\n{}", getRequestId(), this.getChainName(), this.executeStepsStr);
+			LOG.info("CHAIN_NAME[{}]\n{}", this.getChainName(), this.executeStepsStr);
 		}
 	}
 
 	public void generateRequestId() {
 		metaDataMap.put(REQUEST_ID, IdGeneratorHolder.getInstance().generate());
+	}
+
+	public void putRequestId(String requestId){
+		metaDataMap.put(REQUEST_ID, requestId);
 	}
 
 	public String getRequestId() {

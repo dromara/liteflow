@@ -7,13 +7,14 @@
  */
 package com.yomahub.liteflow.flow.element;
 
-import java.text.MessageFormat;
 
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
@@ -24,8 +25,6 @@ import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Node implements Executable, Cloneable{
 
-	private static final Logger LOG = LoggerFactory.getLogger(Node.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(Node.class);
 
 	private String id;
 
@@ -136,7 +135,7 @@ public class Node implements Executable, Cloneable{
 			if (instance.isAccess()) {
 				// 根据配置判断是否打印执行中的日志
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.info("[{}]:[O]start component[{}] execution", slot.getRequestId(), instance.getDisplayName());
+					LOG.info("[O]start component[{}] execution", instance.getDisplayName());
 				}
 
 				// 这里开始进行重试的逻辑和主逻辑的运行
@@ -147,13 +146,12 @@ public class Node implements Executable, Cloneable{
 			}
 			else {
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.info("[{}]:[X]skip component[{}] execution", slot.getRequestId(), instance.getDisplayName());
+					LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 				}
 			}
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 			if (instance.isEnd()) {
-				String errorInfo = StrUtil.format("[{}]:[{}] lead the chain to end", slot.getRequestId(),
-						instance.getDisplayName());
+				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
 		}
@@ -163,13 +161,11 @@ public class Node implements Executable, Cloneable{
 		catch (Exception e) {
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			if (instance.isContinueOnError()) {
-				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,but flow is still go on",
-						slot.getRequestId(), id);
+				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
 				LOG.error(errorMsg);
 			}
 			else {
-				String errorMsg = MessageFormat.format("[{0}]:component[{1}] cause error,error:{2}",
-						slot.getRequestId(), id, e.getMessage());
+				String errorMsg = StrUtil.format("component[{}] cause error,error:{}", id, e.getMessage());
 				LOG.error(errorMsg);
 				throw e;
 			}

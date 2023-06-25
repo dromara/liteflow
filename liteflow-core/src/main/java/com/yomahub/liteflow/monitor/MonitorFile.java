@@ -1,31 +1,18 @@
 package com.yomahub.liteflow.monitor;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.watch.SimpleWatcher;
-import cn.hutool.core.io.watch.WatchMonitor;
-import cn.hutool.core.io.watch.watchers.DelayWatcher;
 import cn.hutool.core.lang.Singleton;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.HiddenFileFilter;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.monitor.FileAlterationListener;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * 规则文件监听器
@@ -34,7 +21,7 @@ import java.util.function.Consumer;
  */
 public class MonitorFile {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	private final Set<String> PATH_SET = new HashSet<>();
 
@@ -75,13 +62,13 @@ public class MonitorFile {
 			observer.addListener(new FileAlterationListenerAdaptor() {
 				@Override
 				public void onFileChange(File file) {
-					logger.info("file modify,filePath={}", file.getAbsolutePath());
+					LOG.info("file modify,filePath={}", file.getAbsolutePath());
 					FlowExecutorHolder.loadInstance().reloadRule();
 				}
 
 				@Override
 				public void onFileDelete(File file) {
-					logger.info("file delete,filePath={}", file.getAbsolutePath());
+					LOG.info("file delete,filePath={}", file.getAbsolutePath());
 					FlowExecutorHolder.loadInstance().reloadRule();
 				}
 			});

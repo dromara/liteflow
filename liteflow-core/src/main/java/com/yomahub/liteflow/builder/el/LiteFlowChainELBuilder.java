@@ -17,8 +17,8 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Condition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 public class LiteFlowChainELBuilder {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LiteFlowChainELBuilder.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowChainELBuilder.class);
 
 	private Chain chain;
 

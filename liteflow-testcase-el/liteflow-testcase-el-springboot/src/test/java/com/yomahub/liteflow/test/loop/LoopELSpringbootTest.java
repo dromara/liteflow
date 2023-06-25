@@ -108,4 +108,11 @@ public class LoopELSpringbootTest extends BaseTest {
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("001101201", str);
 	}
+
+	//FOR循环同一个组件，下标获取不到问题的测试
+	@Test
+	public void testLoop9() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain9", "arg");
+		Assert.assertTrue(response.isSuccess());
+	}
 }

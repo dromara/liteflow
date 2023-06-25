@@ -3,19 +3,12 @@ package com.yomahub.liteflow.util;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.exception.JsonProcessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -25,7 +18,7 @@ import java.util.TimeZone;
  */
 public class JsonUtil {
 
-	private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(JsonUtil.class);
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 

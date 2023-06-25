@@ -4,14 +4,14 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.exception.ScriptBeanMethodInvokeException;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.annotation.ScriptBean;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class ScriptBeanProxy {
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	private final Object bean;
 

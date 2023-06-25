@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import org.slf4j.Logger;
@@ -15,7 +17,7 @@ import java.util.Map;
  */
 public class ScriptCommonComponent extends NodeComponent implements ScriptComponent {
 
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	@Override
 	public void process() throws Exception {
@@ -25,7 +27,7 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
 
 	@Override
 	public void loadScript(String script, String language) {
-		log.info("load script for component[{}]", getDisplayName());
+		LOG.info("load script for component[{}]", getDisplayName());
 		ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
 	}
 

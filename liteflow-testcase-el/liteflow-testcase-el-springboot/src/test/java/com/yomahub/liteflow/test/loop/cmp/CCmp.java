@@ -15,6 +15,7 @@ public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		System.out.println(this.getLoopIndex());
 		System.out.println("CCmp executed!");
 	}
 

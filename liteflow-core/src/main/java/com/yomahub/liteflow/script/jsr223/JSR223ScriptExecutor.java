@@ -1,14 +1,12 @@
 package com.yomahub.liteflow.script.jsr223;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.script.*;
 import java.util.Map;
 
@@ -20,7 +18,7 @@ import java.util.Map;
  */
 public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 
-	protected final Logger log = LoggerFactory.getLogger(this.getClass());
+	protected final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	private ScriptEngine scriptEngine;
 

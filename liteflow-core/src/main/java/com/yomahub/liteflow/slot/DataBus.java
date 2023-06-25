@@ -11,10 +11,10 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
  */
 public class DataBus {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DataBus.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(DataBus.class);
 
 	public static AtomicInteger OCCUPY_COUNT = new AtomicInteger(0);
 
@@ -137,7 +137,7 @@ public class DataBus {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		if (ObjectUtil.isNotNull(SLOTS.get(slotIndex))) {
 			if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-				LOG.info("[{}]:slot[{}] released", SLOTS.get(slotIndex).getRequestId(), slotIndex);
+				LOG.info("slot[{}] released", slotIndex);
 			}
 			SLOTS.remove(slotIndex);
 			QUEUE.add(slotIndex);

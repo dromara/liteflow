@@ -1,9 +1,9 @@
 package com.yomahub.liteflow.util;
 
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class LiteFlowExecutorPoolShutdown {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LiteFlowExecutorPoolShutdown.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowExecutorPoolShutdown.class);
 
 	@PreDestroy
 	public void destroy() throws Exception {

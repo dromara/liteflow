@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.flow.parallel;
 
 import com.yomahub.liteflow.flow.element.Executable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import java.util.function.Supplier;
 
 /**
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  */
 public class ParallelSupplier implements Supplier<WhenFutureObj> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ParallelSupplier.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(ParallelSupplier.class);
 
 	private final Executable executableItem;
 

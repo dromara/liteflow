@@ -48,4 +48,8 @@
             )
         );
     </chain>
+
+    <chain name="chain9">
+        FOR(2).DO(THEN(c, c, c));
+    </chain>
 </flow>

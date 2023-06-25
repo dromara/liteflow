@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.util;
 
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +14,7 @@ import java.util.Optional;
  */
 public class LOGOPrinter {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LOGOPrinter.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(LOGOPrinter.class);
 
 	/**
 	 * LiteFlow 当前版本号
