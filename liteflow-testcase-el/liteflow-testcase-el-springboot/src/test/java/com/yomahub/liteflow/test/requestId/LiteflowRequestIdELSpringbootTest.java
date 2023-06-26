@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.requestId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,10 +29,16 @@ public class LiteflowRequestIdELSpringbootTest extends BaseTest {
 	private FlowExecutor flowExecutor;
 
 	@Test
-	public void testRequestId() throws Exception {
+	public void testRequestId1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("1", response.getRequestId());
 	}
 
+	@Test
+	public void testRequestId2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2RespWithRid("chain1", null, "T001234", DefaultContext.class);
+		Assert.assertTrue(response.isSuccess());
+		Assert.assertEquals("T001234", response.getRequestId());
+	}
 }
