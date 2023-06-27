@@ -3,23 +3,23 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>liteflow</artifactId>
+        <artifactId>liteflow-rule-plugin</artifactId>
         <groupId>com.yomahub</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <modules>
-        <module>liteflow-rule-zk</module>
-        <module>liteflow-rule-sql</module>
-        <module>liteflow-rule-nacos</module>
-        <module>liteflow-rule-etcd</module>
-        <module>liteflow-rule-apollo</module>
-        <module>liteflow-rule-redis</module>
-    </modules>
 
-    <artifactId>liteflow-rule-plugin</artifactId>
+    <artifactId>liteflow-rule-redis</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-core</artifactId>
+            <version>${revision}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
 </project>
