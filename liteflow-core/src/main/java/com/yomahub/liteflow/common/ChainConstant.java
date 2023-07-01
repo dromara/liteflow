@@ -6,6 +6,7 @@ package com.yomahub.liteflow.common;
  * @author tangkc
  */
 public interface ChainConstant {
+	String PARALLEL = "parallel";
 
 	String CHAIN = "chain";
 
