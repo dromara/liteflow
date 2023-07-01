@@ -74,6 +74,7 @@
 		<luaj.version>3.0.1</luaj.version>
 		<aviator.version>5.3.3</aviator.version>
 		<common-io.version>2.11.0</common-io.version>
+		<redisson.version>3.20.0</redisson.version>
 	</properties>
 
 	<dependencyManagement>
