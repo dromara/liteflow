@@ -3,7 +3,7 @@ package com.yomahub.liteflow.parser.redis.vo;
 public class RedisParserVO {
 
     /*连接地址*/
-    private String url;
+    private String host;
 
     /*端口号*/
     private String port;
@@ -15,9 +15,9 @@ public class RedisParserVO {
     private String password;
 
     /*是否采用轮询机制 默认为轮询 否则选择pub/sub机制*/
-    private boolean isPolling = true;
+    private String isPolling = "true";
 
-    /*轮询时间间隔(ms) 默认1分组 若选择pub/sub机制可不配置*/
+    /*轮询时间间隔(ms) 默认1分钟 若选择pub/sub机制可不配置*/
     private String pollingInterval = "60000";
 
     /*chain表配置的数据库号*/
@@ -32,12 +32,12 @@ public class RedisParserVO {
     /*脚本配置的键名*/
     private String scriptKey;
 
-    public String getUrl() {
-        return url;
+    public String getHost() {
+        return host;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setHost(String url) {
+        this.host = host;
     }
 
     public String getPort() {
@@ -64,11 +64,11 @@ public class RedisParserVO {
         this.password = password;
     }
 
-    public boolean isPolling() {
+    public String isPolling() {
         return isPolling;
     }
 
-    public void setPolling(boolean polling) {
+    public void setPolling(String polling) {
         isPolling = polling;
     }
 
