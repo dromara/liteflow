@@ -58,7 +58,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
         try {
             String content = redisParserHelper.getContent();
             FlowInitHook.addHook(() -> {
-               // redisParserHelper.listenApollo();
+                redisParserHelper.listenRedis();
                 return true;
             });
             return content;
