@@ -23,7 +23,7 @@ public class ECmp {
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_ERROR)
-	public void onError(NodeComponent bindCmp) throws Exception {
+	public void onError(NodeComponent bindCmp, Exception e) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("error", "error:" + bindCmp.getNodeId());
 		throw new IllegalAccessException("错误事件回调本身抛出异常");

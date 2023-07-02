@@ -116,7 +116,7 @@ public abstract class NodeComponent {
 			}
 			catch (Exception ex) {
 				String errMsg = StrUtil.format("component[{}] onError method happens exception", this.getDisplayName());
-				LOG.error(errMsg);
+				LOG.error(errMsg, ex);
 			}
 			throw e;
 		}
