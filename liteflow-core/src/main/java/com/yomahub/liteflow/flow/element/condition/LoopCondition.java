@@ -4,6 +4,9 @@ import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
+
+import java.util.function.Supplier;
 
 /**
  * 循环Condition的抽象类 主要继承对象有ForCondition和WhileCondition
@@ -81,6 +84,49 @@ public abstract class LoopCondition extends Condition {
 
     public void setParallel(boolean parallel) {
         this.parallel = parallel;
+    }
+
+    // 循环并行执行的Supplier封装
+    public class LoopParallelSupplier implements Supplier<LoopFutureObj> {
+        private final Executable executableItem;
+        private final String currChainId;
+        private final Integer slotIndex;
+        private final Integer loopIndex;
+        private final Object itObj;
+
+        public LoopParallelSupplier(Executable executableItem, String currChainId, Integer slotIndex, Integer loopIndex) {
+            this.executableItem = executableItem;
+            this.currChainId = currChainId;
+            this.slotIndex = slotIndex;
+            this.loopIndex = loopIndex;
+            this.itObj = null;
+        }
+
+        public LoopParallelSupplier(Executable executableItem, String currChainId, Integer slotIndex, Integer loopIndex, Object itObj) {
+            this.executableItem = executableItem;
+            this.currChainId = currChainId;
+            this.slotIndex = slotIndex;
+            this.loopIndex = loopIndex;
+            this.itObj = itObj;
+        }
+
+
+        @Override
+        public LoopFutureObj get() {
+            try {
+                executableItem.setCurrChainId(this.currChainId);
+                // 设置循环index
+                setLoopIndex(executableItem, loopIndex);
+                //IteratorCondition的情况下，需要设置当前循环对象
+                if(itObj != null){
+                    setCurrLoopObject(executableItem, itObj);
+                }
+                executableItem.execute(slotIndex);
+                return LoopFutureObj.success(executableItem.getId());
+            } catch (Exception e) {
+                return LoopFutureObj.fail(executableItem.getId(), e);
+            }
+        }
     }
 
 }
