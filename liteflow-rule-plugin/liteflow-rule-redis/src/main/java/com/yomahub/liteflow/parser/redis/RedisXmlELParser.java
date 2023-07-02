@@ -5,6 +5,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.util.RedisParserHelper;
@@ -54,8 +55,18 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
 
     @Override
     public String parseCustom() {
-        //todo
-        return null;
+        try {
+            String content = redisParserHelper.getContent();
+            FlowInitHook.addHook(() -> {
+               // redisParserHelper.listenApollo();
+                return true;
+            });
+            return content;
+
+        }
+        catch (Exception e) {
+            throw new RedisException(e.getMessage());
+        }
     }
 
     private void checkParserVO(RedisParserVO redisParserVO) {
