@@ -30,71 +30,66 @@ public class SwitchCondition extends Condition {
 
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
-		if (ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(this.getSwitchNode().getType())) {
-			// 获取switch node
-			Node switchNode = this.getSwitchNode();
-			// 获取target List
-			List<Executable> targetList = this.getTargetList();
+		// 获取switch node
+		Node switchNode = this.getSwitchNode();
+		// 获取target List
+		List<Executable> targetList = this.getTargetList();
 
-			// 先去判断isAccess方法，如果isAccess方法都返回false，整个SWITCH表达式不执行
-			if (!switchNode.isAccess(slotIndex)) {
-				return;
-			}
+		// 先去判断isAccess方法，如果isAccess方法都返回false，整个SWITCH表达式不执行
+		if (!switchNode.isAccess(slotIndex)) {
+			return;
+		}
 
-			// 先执行switch节点
-			switchNode.setCurrChainId(this.getCurrChainId());
-			switchNode.execute(slotIndex);
+		// 先执行switch节点
+		switchNode.setCurrChainId(this.getCurrChainId());
+		switchNode.execute(slotIndex);
 
-			// 拿到switch节点的结果
-			String targetId = switchNode.getItemResultMetaValue(slotIndex);
+		// 拿到switch节点的结果
+		String targetId = switchNode.getItemResultMetaValue(slotIndex);
 
-			Slot slot = DataBus.getSlot(slotIndex);
+		Slot slot = DataBus.getSlot(slotIndex);
 
-			Executable targetExecutor = null;
-			if (StrUtil.isNotBlank(targetId)) {
-				// 这里要判断是否使用tag模式跳转
-				if (targetId.contains(TAG_FLAG)) {
-					String[] target = targetId.split(TAG_FLAG, 2);
-					String _targetId = target[0];
-					String _targetTag = target[1];
-					targetExecutor = targetList.stream().filter(executable -> {
-						return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(executable.getTag()))
-								|| ((StrUtil.isEmpty(_targetId) || _targetId.equals(executable.getId()))
-								&& (StrUtil.isEmpty(_targetTag) || _targetTag.equals(executable.getTag())));
-					}).findFirst().orElse(null);
-				}
-				else {
-					targetExecutor = targetList.stream()
-						.filter(executable -> executable.getId().equals(targetId))
-						.findFirst()
-						.orElse(null);
-				}
-			}
-
-			if (ObjectUtil.isNull(targetExecutor)) {
-				// 没有匹配到执行节点，则走默认的执行节点
-				targetExecutor = this.getDefaultExecutor();
-			}
-
-			if (ObjectUtil.isNotNull(targetExecutor)) {
-				// switch的目标不能是Pre节点或者Finally节点
-				if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition) {
-					String errorInfo = StrUtil.format(
-							"[{}]:switch component[{}] error, switch target node cannot be pre or finally",
-							slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
-					throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
-				}
-				targetExecutor.setCurrChainId(this.getCurrChainId());
-				targetExecutor.execute(slotIndex);
+		Executable targetExecutor = null;
+		if (StrUtil.isNotBlank(targetId)) {
+			// 这里要判断是否使用tag模式跳转
+			if (targetId.contains(TAG_FLAG)) {
+				String[] target = targetId.split(TAG_FLAG, 2);
+				String _targetId = target[0];
+				String _targetTag = target[1];
+				targetExecutor = targetList.stream().filter(executable -> {
+					return (StrUtil.startWith(_targetId, TAG_PREFIX) && _targetTag.equals(executable.getTag()))
+							|| ((StrUtil.isEmpty(_targetId) || _targetId.equals(executable.getId()))
+							&& (StrUtil.isEmpty(_targetTag) || _targetTag.equals(executable.getTag())));
+				}).findFirst().orElse(null);
 			}
 			else {
-				String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}],target str is [{}]",
-						slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName(), targetId);
-				throw new NoSwitchTargetNodeException(errorInfo);
+				targetExecutor = targetList.stream()
+					.filter(executable -> executable.getId().equals(targetId))
+					.findFirst()
+					.orElse(null);
 			}
 		}
+
+		if (ObjectUtil.isNull(targetExecutor)) {
+			// 没有匹配到执行节点，则走默认的执行节点
+			targetExecutor = this.getDefaultExecutor();
+		}
+
+		if (ObjectUtil.isNotNull(targetExecutor)) {
+			// switch的目标不能是Pre节点或者Finally节点
+			if (targetExecutor instanceof PreCondition || targetExecutor instanceof FinallyCondition) {
+				String errorInfo = StrUtil.format(
+						"[{}]:switch component[{}] error, switch target node cannot be pre or finally",
+						slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName());
+				throw new SwitchTargetCannotBePreOrFinallyException(errorInfo);
+			}
+			targetExecutor.setCurrChainId(this.getCurrChainId());
+			targetExecutor.execute(slotIndex);
+		}
 		else {
-			throw new SwitchTypeErrorException("switch instance must be NodeSwitchComponent");
+			String errorInfo = StrUtil.format("[{}]:no target node find for the component[{}],target str is [{}]",
+					slot.getRequestId(), this.getSwitchNode().getInstance().getDisplayName(), targetId);
+			throw new NoSwitchTargetNodeException(errorInfo);
 		}
 	}
 
