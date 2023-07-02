@@ -8,6 +8,8 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
+import com.yomahub.liteflow.parser.redis.util.RedisParserByPolling;
+import com.yomahub.liteflow.parser.redis.util.RedisParserByPubSub;
 import com.yomahub.liteflow.parser.redis.util.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -27,7 +29,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
     public RedisXmlELParser() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
-        try{
+        try {
             RedisParserVO redisParserVO = null;
             if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
                 redisParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(),
@@ -43,12 +45,19 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
             //检查配置文件
             checkParserVO(redisParserVO);
 
-            redisParserHelper = new RedisParserHelper(redisParserVO);
+            //选择Pub/Sub机制 or 轮询机制
+            if (StrUtil.equalsIgnoreCase("false", redisParserVO.isPolling())) {
+                redisParserHelper = new RedisParserByPubSub(redisParserVO);
+            } else {
+                //todo 实例化轮询机制
+                redisParserHelper = new RedisParserByPolling(redisParserVO);
+            }
+
         }
-        catch (RedisException redisException){
+        catch (RedisException redisException) {
             throw redisException;
         }
-        catch (Exception e){
+        catch (Exception e) {
             throw new RedisException(e.getMessage());
         }
     }
@@ -70,10 +79,10 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
     }
 
     private void checkParserVO(RedisParserVO redisParserVO) {
-        if (StrUtil.isEmpty(redisParserVO.getHost())){
+        if (StrUtil.isEmpty(redisParserVO.getHost())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "host"));
         }
-        if (StrUtil.isEmpty(redisParserVO.getPort())){
+        if (StrUtil.isEmpty(redisParserVO.getPort())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "port"));
         }
     }
