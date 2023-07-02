@@ -8,9 +8,6 @@ public class RedisParserVO {
     /*端口号*/
     private String port;
 
-    /*账号名*/
-    private String username;
-
     /*密码*/
     private String password;
 
@@ -26,10 +23,10 @@ public class RedisParserVO {
     /*chain配置的键名*/
     private String chainKey;
 
-    /*脚本表配置的数据库号*/
+    /*脚本表配置的数据库号 若没有脚本数据可不配置*/
     private String scriptDataBase;
 
-    /*脚本配置的键名*/
+    /*脚本配置的键名 若没有脚本数据可不配置*/
     private String scriptKey;
 
     public String getHost() {
@@ -46,14 +43,6 @@ public class RedisParserVO {
 
     public void setPort(String port) {
         this.port = port;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPassword() {

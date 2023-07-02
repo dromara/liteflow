@@ -7,6 +7,7 @@ import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
+import com.yomahub.liteflow.parser.redis.util.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -15,6 +16,8 @@ import com.yomahub.liteflow.util.JsonUtil;
 import java.util.Objects;
 
 public class RedisXmlELParser extends ClassXmlFlowELParser {
+
+    private final RedisParserHelper redisParserHelper;
 
     private static final String ERROR_COMMON_MSG = "ruleSourceExtData or map is empty";
 
@@ -38,6 +41,8 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
 
             //检查配置文件
             checkParserVO(redisParserVO);
+
+            redisParserHelper = new RedisParserHelper(redisParserVO);
         }
         catch (RedisException redisException){
             throw redisException;
