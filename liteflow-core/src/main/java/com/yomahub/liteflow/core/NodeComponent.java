@@ -112,7 +112,7 @@ public abstract class NodeComponent {
 			// 执行失败后回调方法
 			// 这里要注意，失败方法本身抛出错误，只打出堆栈，往外抛出的还是主要的异常
 			try {
-				self.onError();
+				self.onError(e);
 			}
 			catch (Exception ex) {
 				String errMsg = StrUtil.format("component[{}] onError method happens exception", this.getDisplayName());
@@ -151,7 +151,7 @@ public abstract class NodeComponent {
 		// 如果需要在成功后回调某一个方法，请覆盖这个方法
 	}
 
-	public void onError() throws Exception {
+	public void onError(Exception e) throws Exception {
 		// 如果需要在抛错后回调某一段逻辑，请覆盖这个方法
 	}
 

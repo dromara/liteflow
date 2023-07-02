@@ -23,7 +23,7 @@ public class DCmp {
 	}
 
 	@LiteflowMethod(LiteFlowMethodEnum.ON_ERROR)
-	public void onError(NodeComponent bindCmp) throws Exception {
+	public void onError(NodeComponent bindCmp, Exception e) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("error", "error:" + bindCmp.getNodeId());
 	}

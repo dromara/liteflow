@@ -9,6 +9,7 @@ package com.yomahub.liteflow.test.event.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.slot.Slot;
 import org.springframework.stereotype.Component;
 
 @Component("d")
@@ -21,7 +22,8 @@ public class DCmp extends NodeComponent {
 	}
 
 	@Override
-	public void onError() throws Exception {
+	public void onError(Exception e) throws Exception {
+		Slot slot = this.getSlot();
 		DefaultContext context = this.getFirstContextBean();
 		context.setData("error", "error:" + this.getNodeId());
 	}
