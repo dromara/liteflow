@@ -18,13 +18,20 @@ import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
 
+/**
+ * Redis解析器实现，只支持EL形式的XML，不支持其他的形式
+ *
+ * @author hxinyu
+ * @since  2.10.6
+ */
+
 public class RedisXmlELParser extends ClassXmlFlowELParser {
 
     private final RedisParserHelper redisParserHelper;
 
     private static final String ERROR_COMMON_MSG = "ruleSourceExtData or map is empty";
 
-    private static final String ERROR_MSG_PATTERN = "uleSourceExtData {} is blank";
+    private static final String ERROR_MSG_PATTERN = "ruleSourceExtData {} is blank";
 
     public RedisXmlELParser() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();

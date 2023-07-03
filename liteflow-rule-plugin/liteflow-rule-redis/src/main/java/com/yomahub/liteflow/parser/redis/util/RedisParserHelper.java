@@ -3,14 +3,25 @@ package com.yomahub.liteflow.parser.redis.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * Redis 解析器通用接口
+ *
+ * @author hxinyu
+ * @since  2.10.6
+ */
+
 public interface RedisParserHelper {
 
-    Logger LOG = LoggerFactory.getLogger(RedisParserByPubSub.class);
+    Logger LOG = LoggerFactory.getLogger(RedisParserHelper.class);
+
+   // LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
+
     String REDIS_URL_PATTERN = "redis://{}:{}";
 
     String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";

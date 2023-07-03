@@ -1,5 +1,12 @@
 package com.yomahub.liteflow.parser.redis.vo;
 
+/**
+ * 用于解析RuleSourceExtData的vo类，用于Redis模式中
+ *
+ * @author hxinyu
+ * @since  2.10.6
+ */
+
 public class RedisParserVO {
 
     /*连接地址*/

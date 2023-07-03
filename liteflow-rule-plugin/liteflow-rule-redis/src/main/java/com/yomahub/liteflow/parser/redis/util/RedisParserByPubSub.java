@@ -26,6 +26,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Redis Pub/Sub机制实现类
+ * Redisson客户端 RMapCache存储结构
+ *
+ * @author hxinyu
+ * @since  2.10.6
+ */
+
 public class RedisParserByPubSub implements RedisParserHelper {
 
     private final RedisParserVO redisParserVO;
@@ -139,7 +147,7 @@ public class RedisParserByPubSub implements RedisParserHelper {
 
     public boolean hasScript() {
         // 没有scriptClient或没有配置scriptDataBase
-        if (Objects.isNull(scriptClient) || StrUtil.isNotBlank(redisParserVO.getScriptDataBase())) {
+        if (Objects.isNull(scriptClient) || StrUtil.isBlank(redisParserVO.getScriptDataBase())) {
             return false;
         }
         try {
