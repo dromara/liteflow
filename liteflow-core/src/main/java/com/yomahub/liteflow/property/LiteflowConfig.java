@@ -420,7 +420,11 @@ public class LiteflowConfig {
 	}
 
 	public Integer getParallelMaxWorkers() {
-		return parallelMaxWorkers;
+		if(ObjectUtil.isNull(parallelMaxWorkers)){
+			return 16;
+		}else{
+			return parallelMaxWorkers;
+		}
 	}
 
 	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
@@ -428,7 +432,11 @@ public class LiteflowConfig {
 	}
 
 	public Integer getParallelQueueLimit() {
-		return parallelQueueLimit;
+		if(ObjectUtil.isNull(parallelQueueLimit)){
+			return 512;
+		}else{
+			return parallelQueueLimit;
+		}
 	}
 
 	public void setParallelQueueLimit(Integer parallelQueueLimit) {
