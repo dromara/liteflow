@@ -1,7 +1,9 @@
 package com.yomahub.liteflow.flow.parallel;
 
 /**
- * 并行循环各子项的执行结果对象
+ * 并行循环各个并行子项的执行结果对象
+ * 如果该子项执行成功，则success为true，ex为null
+ * 否则success为false，ex为程序抛出异常
  *
  * @author zhhhhy
  * @since 2.11.0
