@@ -4,7 +4,7 @@ package com.yomahub.liteflow.flow.parallel;
  * 并行循环各子项的执行结果对象
  *
  * @author zhhhhy
- * @since 2.10.5
+ * @since 2.11.0
  */
 
 public class LoopFutureObj {

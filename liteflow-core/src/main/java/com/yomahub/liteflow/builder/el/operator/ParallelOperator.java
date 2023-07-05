@@ -8,7 +8,7 @@ import com.yomahub.liteflow.flow.element.condition.LoopCondition;
  * EL规则中的parallel的操作符
  *
  * @author zhhhhy
- * @since 2.10.5
+ * @since 2.11.0
  */
 
 public class ParallelOperator extends BaseOperator<LoopCondition> {

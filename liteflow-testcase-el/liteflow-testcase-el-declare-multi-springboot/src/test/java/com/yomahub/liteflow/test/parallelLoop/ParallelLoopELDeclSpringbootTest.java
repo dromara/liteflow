@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  * springboot环境EL异步循环测试
  *
  * @author zhhhhy
+ * @since 2.11.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/parallelLoop/application.properties")

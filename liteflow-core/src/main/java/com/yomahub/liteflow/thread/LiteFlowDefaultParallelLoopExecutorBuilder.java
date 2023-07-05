@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
  * LiteFlow默认的并行循环执行器实现
  *
  * @author zhhhhy
- * @since 2.10.5
+ * @since 2.11.0
  */
 
 public class LiteFlowDefaultParallelLoopExecutorBuilder implements ExecutorBuilder {
