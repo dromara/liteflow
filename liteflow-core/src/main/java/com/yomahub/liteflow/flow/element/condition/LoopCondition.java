@@ -6,6 +6,8 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 /**
@@ -84,6 +86,19 @@ public abstract class LoopCondition extends Condition {
 
     public void setParallel(boolean parallel) {
         this.parallel = parallel;
+    }
+
+    //循环并行执行的futureList处理
+    protected void handleFutureList(List<CompletableFuture<LoopFutureObj>> futureList)throws Exception{
+        CompletableFuture<?> resultCompletableFuture = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[]{}));
+        resultCompletableFuture.join();
+        //获取所有的执行结果,如果有失败的，那么需要抛出异常
+        for (CompletableFuture<LoopFutureObj> future : futureList) {
+            LoopFutureObj loopFutureObj = future.get();
+            if (!loopFutureObj.isSuccess()) {
+                throw loopFutureObj.getEx();
+            }
+        }
     }
 
     // 循环并行执行的Supplier封装

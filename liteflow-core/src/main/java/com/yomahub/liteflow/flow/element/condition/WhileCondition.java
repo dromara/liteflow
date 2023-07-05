@@ -77,15 +77,7 @@ public class WhileCondition extends LoopCondition {
 				index++;
 			}
 			//等待所有的异步执行完毕
-			CompletableFuture<?> resultCompletableFuture = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[]{}));
-			resultCompletableFuture.join();
-			//获取所有的执行结果,如果有失败的，那么需要抛出异常
-			for (CompletableFuture<LoopFutureObj> future : futureList) {
-				LoopFutureObj loopFutureObj = future.get();
-				if (!loopFutureObj.isSuccess()) {
-					throw loopFutureObj.getEx();
-				}
-			}
+			handleFutureList(futureList);
 		}
 	}
 
