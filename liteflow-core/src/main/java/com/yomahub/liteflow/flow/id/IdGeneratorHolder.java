@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow.id;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.RequestIdGeneratorException;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -44,6 +45,9 @@ public class IdGeneratorHolder {
 	}
 
 	public String generate() {
+		if (ObjectUtil.isNull(requestIdGenerator)){
+			init();
+		}
 		return requestIdGenerator.generate();
 	}
 

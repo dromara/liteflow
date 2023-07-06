@@ -25,7 +25,7 @@ public class ElifOperator extends BaseOperator<IfCondition> {
 		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class);
 
 		// 解析第一个参数
-		Executable ifItem = OperatorHelper.convert(objects[1], Node.class);
+		Executable ifItem = OperatorHelper.convert(objects[1], Executable.class);
 		OperatorHelper.checkObjectMustBeBooleanItem(ifItem);
 
 		// 解析第二个参数

@@ -33,7 +33,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public ScriptExecutor init() {
-		expressRunner = new ExpressRunner();
+		expressRunner = new ExpressRunner(true, false);
 		return this;
 	}
 
@@ -63,7 +63,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 			bindParam(wrap, context::put, context::putIfAbsent);
 
-			return expressRunner.execute(instructionSet, context, errorList, true, false, null);
+			return expressRunner.execute(instructionSet, context, errorList, true, false);
 		}
 		catch (Exception e) {
 			for (String scriptErrorMsg : errorList) {

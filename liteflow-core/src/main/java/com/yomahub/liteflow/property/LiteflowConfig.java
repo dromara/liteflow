@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * liteflow的配置实体类 这个类中的属性为什么不用基本类型，而用包装类型呢
@@ -42,7 +43,12 @@ public class LiteflowConfig {
 	private String threadExecutorClass;
 
 	// 异步线程最大等待秒数
+	@Deprecated
 	private Integer whenMaxWaitSeconds;
+
+	private Integer whenMaxWaitTime;
+
+	private TimeUnit whenMaxWaitTimeUnit;
 
 	// 是否打印监控log
 	private Boolean enableLog;
@@ -139,15 +145,15 @@ public class LiteflowConfig {
 		this.slotSize = slotSize;
 	}
 
+	@Deprecated
 	public Integer getWhenMaxWaitSeconds() {
-		if (ObjectUtil.isNull(whenMaxWaitSeconds)) {
-			return 15;
+		if (whenMaxWaitSeconds == null || whenMaxWaitSeconds == 0){
+			return null;
 		}
-		else {
-			return whenMaxWaitSeconds;
-		}
+		return whenMaxWaitSeconds;
 	}
 
+	@Deprecated
 	public void setWhenMaxWaitSeconds(Integer whenMaxWaitSeconds) {
 		this.whenMaxWaitSeconds = whenMaxWaitSeconds;
 	}
@@ -382,4 +388,25 @@ public class LiteflowConfig {
 		this.ruleSourceExtDataMap = ruleSourceExtDataMap;
 	}
 
+	public Integer getWhenMaxWaitTime() {
+		if (ObjectUtil.isNull(whenMaxWaitTime)){
+			return 15000;
+		}
+		return whenMaxWaitTime;
+	}
+
+	public void setWhenMaxWaitTime(Integer whenMaxWaitTime) {
+		this.whenMaxWaitTime = whenMaxWaitTime;
+	}
+
+	public TimeUnit getWhenMaxWaitTimeUnit() {
+		if (ObjectUtil.isNull(whenMaxWaitTimeUnit)){
+			return TimeUnit.MILLISECONDS;
+		}
+		return whenMaxWaitTimeUnit;
+	}
+
+	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
+		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
+	}
 }

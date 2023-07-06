@@ -17,8 +17,8 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Condition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 public class LiteFlowChainELBuilder {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LiteFlowChainELBuilder.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowChainELBuilder.class);
 
 	private Chain chain;
 
@@ -100,8 +100,7 @@ public class LiteFlowChainELBuilder {
 	public LiteFlowChainELBuilder setChainName(String chainName) {
 		if (FlowBus.containChain(chainName)) {
 			this.chain = FlowBus.getChain(chainName);
-		}
-		else {
+		} else {
 			this.chain.setChainName(chainName);
 		}
 		return this;
@@ -110,8 +109,7 @@ public class LiteFlowChainELBuilder {
 	public LiteFlowChainELBuilder setChainId(String chainId) {
 		if (FlowBus.containChain(chainId)) {
 			this.chain = FlowBus.getChain(chainId);
-		}
-		else {
+		} else {
 			this.chain.setChainId(chainId);
 		}
 		return this;
@@ -145,8 +143,7 @@ public class LiteFlowChainELBuilder {
 			// 把主要的condition加入
 			this.conditionList.add(condition);
 			return this;
-		}
-		catch (QLException e) {
+		} catch (QLException e) {
 			// EL 底层会包装异常，这里是曲线处理
 			if (Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
 				// 构建错误信息
@@ -154,9 +151,9 @@ public class LiteFlowChainELBuilder {
 				throw new ELParseException(msg);
 			}
 			throw new ELParseException(e.getCause().getMessage());
-		}
-		catch (Exception e) {
-			throw new ELParseException(e.getMessage());
+		} catch (Exception e) {
+			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
+			throw new ELParseException(errMsg + e.getMessage());
 		}
 	}
 
@@ -169,8 +166,7 @@ public class LiteFlowChainELBuilder {
 		try {
 			LiteFlowChainELBuilder.createChain().setEL(elStr);
 			return Boolean.TRUE;
-		}
-		catch (ELParseException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
 		return Boolean.FALSE;
@@ -249,8 +245,7 @@ public class LiteFlowChainELBuilder {
 					}
 				}
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// ignore
 		}
 		return msg;

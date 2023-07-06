@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
 
 /**
  * spring环境下参数单元测试
@@ -36,7 +37,8 @@ public class LiteflowConfigELSpringTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("config/flow.el.json", config.getRuleSource());
-		Assert.assertEquals(15, config.getWhenMaxWaitSeconds().intValue());
+		Assert.assertEquals(15000, config.getWhenMaxWaitTime().intValue());
+		Assert.assertEquals(TimeUnit.MILLISECONDS, config.getWhenMaxWaitTimeUnit());
 		Assert.assertEquals(200, config.getQueueLimit().intValue());
 		Assert.assertEquals(300000L, config.getDelay().longValue());
 		Assert.assertEquals(300000L, config.getPeriod().longValue());

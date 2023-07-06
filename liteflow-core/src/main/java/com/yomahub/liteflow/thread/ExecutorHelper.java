@@ -12,6 +12,8 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
@@ -28,7 +30,7 @@ import java.util.concurrent.*;
  */
 public class ExecutorHelper {
 
-	private final Logger LOG = LoggerFactory.getLogger(ExecutorHelper.class);
+	private final LFLog LOG = LFLoggerManager.getLogger(ExecutorHelper.class);
 
 	/**
 	 * 此处使用Map缓存线程池信息 key - 线程池构建者的Class全类名 value - 线程池对象

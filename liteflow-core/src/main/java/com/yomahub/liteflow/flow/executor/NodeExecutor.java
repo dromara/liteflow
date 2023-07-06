@@ -1,12 +1,11 @@
 package com.yomahub.liteflow.flow.executor;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.exception.ChainEndException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
  */
 public abstract class NodeExecutor {
 
-	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	protected final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	/**
 	 * 执行器执行入口-若需要更大维度的执行方式可以重写该方法
@@ -58,8 +57,7 @@ public abstract class NodeExecutor {
 	 */
 	protected void retry(NodeComponent instance, int currentRetryCount) throws Exception {
 		Slot slot = DataBus.getSlot(instance.getSlotIndex());
-		LOG.info("[{}]:component[{}] performs {} retry", slot.getRequestId(), instance.getDisplayName(),
-				currentRetryCount + 1);
+		LOG.info("component[{}] performs {} retry", instance.getDisplayName(), currentRetryCount + 1);
 		// 执行业务逻辑的主要入口
 		instance.execute();
 	}

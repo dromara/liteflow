@@ -7,8 +7,8 @@ import com.yomahub.liteflow.core.proxy.ComponentProxy;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentProxyErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class LiteFlowProxyUtil {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LiteFlowProxyUtil.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowProxyUtil.class);
 
 	/**
 	 * 判断一个bean是否是声明式组件

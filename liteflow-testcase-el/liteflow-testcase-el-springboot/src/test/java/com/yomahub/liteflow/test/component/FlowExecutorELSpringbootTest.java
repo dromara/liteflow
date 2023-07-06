@@ -42,6 +42,13 @@ public class FlowExecutorELSpringbootTest extends BaseTest {
 		Assert.assertNotNull(response.getSlot().getResponseData());
 	}
 
+	//测试在isAccess里setIsEnd(true)
+	@Test
+	public void testIsAccess2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1-2", null);
+		Assert.assertTrue(response.isSuccess());
+	}
+
 	// 组件抛错的功能点测试
 	@Test(expected = ArithmeticException.class)
 	public void testComponentException() throws Exception {
@@ -89,5 +96,7 @@ public class FlowExecutorELSpringbootTest extends BaseTest {
 		Assert.assertTrue(response.isSuccess());
 		Assert.assertEquals("g", response.getExecuteStepStr());
 	}
+
+
 
 }

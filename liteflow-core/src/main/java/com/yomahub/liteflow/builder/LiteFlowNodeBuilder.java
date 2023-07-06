@@ -7,10 +7,10 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NodeBuildException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.monitor.MonitorFile;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class LiteFlowNodeBuilder {
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	private final Node node;
 

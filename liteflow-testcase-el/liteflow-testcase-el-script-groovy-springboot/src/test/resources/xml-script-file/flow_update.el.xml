@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本" type="script" file="xml-script-file/s1.groovy"/>
-        <node id="s2" name="条件脚本_改" type="switch_script" file="xml-script-file/s2_update.groovy"/>
-        <node id="s3" name="普通脚本_新增" type="script" file="xml-script-file/s3.groovy"/>
+        <node id="s1" name="普通脚本" type="script" file="xml-script-file/s1.groovy" language="groovy"/>
+        <node id="s2" name="条件脚本_改" type="switch_script" file="xml-script-file/s2_update.groovy" language="groovy"/>
+        <node id="s3" name="普通脚本_新增" type="script" file="xml-script-file/s3.groovy" language="groovy"/>
     </nodes>
 
     <chain name="chain1">

@@ -4,12 +4,12 @@ import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.exception.ErrorSupportPathException;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.base.FlowParser;
 import com.yomahub.liteflow.parser.el.ClassJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.ClassYmlFlowELParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegex
  */
 public class FlowParserProvider {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
 
 	private static final FlowParserFactory LOCAL_PARSER_FACTORY = new LocalParserFactory();
 

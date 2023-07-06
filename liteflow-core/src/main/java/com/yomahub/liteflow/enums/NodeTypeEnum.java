@@ -5,15 +5,13 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.*;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 
 /**
  * 节点类型枚举
@@ -49,7 +47,7 @@ public enum NodeTypeEnum {
 
 	BREAK_SCRIPT("break_script", "循环跳出脚本", true, ScriptBreakComponent.class);
 
-	private static final Logger LOG = LoggerFactory.getLogger(NodeTypeEnum.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(NodeTypeEnum.class);
 
 	private String code;
 

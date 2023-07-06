@@ -15,11 +15,9 @@ import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 /**
  * Slot的抽象类实现
@@ -38,7 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @SuppressWarnings("unchecked")
 public class Slot {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Slot.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(Slot.class);
 
 	private static final String REQUEST = "_request";
 
@@ -343,12 +342,16 @@ public class Slot {
 			this.executeStepsStr = getExecuteStepStr(true);
 		}
 		if (LiteflowConfigGetter.get().getPrintExecutionLog()) {
-			LOG.info("[{}]:CHAIN_NAME[{}]\n{}", getRequestId(), this.getChainName(), this.executeStepsStr);
+			LOG.info("CHAIN_NAME[{}]\n{}", this.getChainName(), this.executeStepsStr);
 		}
 	}
 
 	public void generateRequestId() {
 		metaDataMap.put(REQUEST_ID, IdGeneratorHolder.getInstance().generate());
+	}
+
+	public void putRequestId(String requestId){
+		metaDataMap.put(REQUEST_ID, requestId);
 	}
 
 	public String getRequestId() {
@@ -388,8 +391,9 @@ public class Slot {
 	}
 
 	public <T> T getContextBean(Class<T> contextBeanClazz) {
-		T t = (T) contextBeanList.stream().filter(o -> o.getClass().equals(contextBeanClazz)).findFirst().orElse(null);
+		T t = (T) contextBeanList.stream().filter(o -> o.getClass().getName().equals(contextBeanClazz.getName())).findFirst().orElse(null);
 		if (t == null) {
+			contextBeanList.forEach(o -> LOG.info("ChainId[{}], Context class:{},Request class:{}", this.getChainId(), o.getClass().getName(), contextBeanClazz.getName()));
 			throw new NoSuchContextBeanException("this type is not in the context type passed in");
 		}
 		return t;

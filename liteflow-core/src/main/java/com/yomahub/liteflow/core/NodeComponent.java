@@ -16,6 +16,8 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.slf4j.Logger;
@@ -37,7 +39,7 @@ import java.util.Map;
  */
 public abstract class NodeComponent {
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
 	private MonitorBus monitorBus;
 
@@ -113,8 +115,7 @@ public abstract class NodeComponent {
 				self.onError();
 			}
 			catch (Exception ex) {
-				String errMsg = StrUtil.format("[{}]:component[{}] onError method happens exception",
-						slot.getRequestId(), this.getDisplayName());
+				String errMsg = StrUtil.format("component[{}] onError method happens exception", this.getDisplayName());
 				LOG.error(errMsg);
 			}
 			throw e;
@@ -125,8 +126,7 @@ public abstract class NodeComponent {
 
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
-			LOG.debug("[{}]:component[{}] finished in {} milliseconds", slot.getRequestId(), this.getDisplayName(),
-					timeSpent);
+			LOG.debug("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
 			// 往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
@@ -164,7 +164,7 @@ public abstract class NodeComponent {
 		return true;
 	}
 
-	// 出错是否继续执行(这个只适用于并行流程，串行流程不起作用)
+	// 出错是否继续执行
 	public boolean isContinueOnError() {
 		return false;
 	}

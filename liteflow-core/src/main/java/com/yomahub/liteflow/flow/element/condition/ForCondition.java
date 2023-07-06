@@ -45,22 +45,26 @@ public class ForCondition extends LoopCondition {
 		// 获取Break节点
 		Executable breakItem = this.getBreakItem();
 
-		// 循环执行
-		for (int i = 0; i < forCount; i++) {
-			executableItem.setCurrChainId(this.getCurrChainId());
-			// 设置循环index
-			setLoopIndex(executableItem, i);
-			executableItem.execute(slotIndex);
-			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakItem)) {
-				breakItem.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakItem, i);
-				breakItem.execute(slotIndex);
-				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
-				if (isBreak) {
-					break;
+		try{
+			// 循环执行
+			for (int i = 0; i < forCount; i++) {
+				executableItem.setCurrChainId(this.getCurrChainId());
+				// 设置循环index
+				setLoopIndex(executableItem, i);
+				executableItem.execute(slotIndex);
+				// 如果break组件不为空，则去执行
+				if (ObjectUtil.isNotNull(breakItem)) {
+					breakItem.setCurrChainId(this.getCurrChainId());
+					setLoopIndex(breakItem, i);
+					breakItem.execute(slotIndex);
+					boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
+					if (isBreak) {
+						break;
+					}
 				}
 			}
+		}finally {
+			removeLoopIndex(executableItem);
 		}
 	}
 

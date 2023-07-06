@@ -3,6 +3,7 @@ package com.yomahub.liteflow.springboot;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 执行流程主要的参数类
@@ -37,7 +38,12 @@ public class LiteflowProperty {
 	private String threadExecutorClass;
 
 	// 异步线程最大等待描述
+	@Deprecated
 	private int whenMaxWaitSeconds;
+
+	private int whenMaxWaitTime;
+
+	private TimeUnit whenMaxWaitTimeUnit;
 
 	// 异步线程池最大线程数
 	private int whenMaxWorkers;
@@ -106,10 +112,12 @@ public class LiteflowProperty {
 		this.slotSize = slotSize;
 	}
 
+	@Deprecated
 	public int getWhenMaxWaitSeconds() {
 		return whenMaxWaitSeconds;
 	}
 
+	@Deprecated
 	public void setWhenMaxWaitSeconds(int whenMaxWaitSeconds) {
 		this.whenMaxWaitSeconds = whenMaxWaitSeconds;
 	}
@@ -234,4 +242,19 @@ public class LiteflowProperty {
 		this.ruleSourceExtDataMap = ruleSourceExtDataMap;
 	}
 
+	public int getWhenMaxWaitTime() {
+		return whenMaxWaitTime;
+	}
+
+	public void setWhenMaxWaitTime(int whenMaxWaitTime) {
+		this.whenMaxWaitTime = whenMaxWaitTime;
+	}
+
+	public TimeUnit getWhenMaxWaitTimeUnit() {
+		return whenMaxWaitTimeUnit;
+	}
+
+	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
+		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
+	}
 }

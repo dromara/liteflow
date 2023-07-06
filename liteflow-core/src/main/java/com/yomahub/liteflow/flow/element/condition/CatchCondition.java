@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.CatchErrorException;
+import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.slot.DataBus;
@@ -28,8 +29,10 @@ public class CatchCondition extends Condition {
 			}
 			catchExecutable.setCurrChainId(this.getCurrChainId());
 			catchExecutable.execute(slotIndex);
-		}
-		catch (Exception e) {
+		}catch (ChainEndException e){
+			//ChainEndException属于用户主动结束流程，不应该进入Catch的流程
+			throw e;
+		}catch (Exception e) {
 			Executable doExecutable = this.getDoItem();
 			if (ObjectUtil.isNotNull(doExecutable)) {
 				doExecutable.setCurrChainId(this.getCurrChainId());

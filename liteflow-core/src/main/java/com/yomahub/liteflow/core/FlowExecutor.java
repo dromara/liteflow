@@ -18,6 +18,8 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.monitor.MonitorFile;
 import com.yomahub.liteflow.parser.base.FlowParser;
 import com.yomahub.liteflow.parser.factory.FlowParserProvider;
@@ -30,8 +32,6 @@ import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
  */
 public class FlowExecutor {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutor.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
 
 	private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
 
@@ -71,8 +71,9 @@ public class FlowExecutor {
 
 	/**
 	 * FlowExecutor的初始化化方式，主要用于parse规则文件
+	 * isStart表示是否是系统启动阶段，启动阶段要做额外的事情，而因为reload所调用的init就不用做
 	 */
-	public void init(boolean hook) {
+	public void init(boolean isStart) {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			throw new ConfigErrorException("config error, please check liteflow config property");
 		}
@@ -82,8 +83,10 @@ public class FlowExecutor {
 		// 在非spring体系下是一个空实现，等于不做此步骤
 		ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
-		// 进行id生成器的初始化
-		IdGeneratorHolder.init();
+		if (isStart){
+			// 进行id生成器的初始化
+			IdGeneratorHolder.init();
+		}
 
 		String ruleSource = liteflowConfig.getRuleSource();
 		if (StrUtil.isBlank(ruleSource)) {
@@ -191,7 +194,7 @@ public class FlowExecutor {
 		}
 
 		// 执行钩子
-		if (hook) {
+		if (isStart) {
 			FlowInitHook.executeHook();
 		}
 
@@ -261,24 +264,44 @@ public class FlowExecutor {
 
 	// 调用一个流程并返回LiteflowResponse，允许多上下文的传入
 	public LiteflowResponse execute2Resp(String chainId, Object param, Class<?>... contextBeanClazzArray) {
-		return this.execute2Resp(chainId, param, contextBeanClazzArray, null);
+		return this.execute2Resp(chainId, param, null, contextBeanClazzArray, null);
 	}
 
 	public LiteflowResponse execute2Resp(String chainId, Object param, Object... contextBeanArray) {
-		return this.execute2Resp(chainId, param, null, contextBeanArray);
+		return this.execute2Resp(chainId, param, null, null, contextBeanArray);
+	}
+
+	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
+		return this.execute2Resp(chainId, param, requestId, contextBeanClazzArray, null);
+	}
+
+	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
+		return this.execute2Resp(chainId, param, requestId, null, contextBeanArray);
 	}
 
 	// 调用一个流程并返回Future<LiteflowResponse>，允许多上下文的传入
 	public Future<LiteflowResponse> execute2Future(String chainId, Object param, Class<?>... contextBeanClazzArray) {
 		return ExecutorHelper.loadInstance()
 			.buildMainExecutor(liteflowConfig.getMainExecutorClass())
-			.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazzArray, null));
+			.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanClazzArray));
 	}
 
 	public Future<LiteflowResponse> execute2Future(String chainId, Object param, Object... contextBeanArray) {
 		return ExecutorHelper.loadInstance()
 			.buildMainExecutor(liteflowConfig.getMainExecutorClass())
-			.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, null, contextBeanArray));
+			.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(chainId, param, contextBeanArray));
+	}
+
+	public Future<LiteflowResponse> execute2FutureWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
+		return ExecutorHelper.loadInstance()
+				.buildMainExecutor(liteflowConfig.getMainExecutorClass())
+				.submit(() -> FlowExecutorHolder.loadInstance().execute2RespWithRid(chainId, param, requestId, contextBeanClazzArray));
+	}
+
+	public Future<LiteflowResponse> execute2FutureWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
+		return ExecutorHelper.loadInstance()
+				.buildMainExecutor(liteflowConfig.getMainExecutorClass())
+				.submit(() -> FlowExecutorHolder.loadInstance().execute2RespWithRid(chainId, param, requestId, contextBeanArray));
 	}
 
 	// 调用一个流程，返回默认的上下文，适用于简单的调用
@@ -293,19 +316,19 @@ public class FlowExecutor {
 		}
 	}
 
-	private LiteflowResponse execute2Resp(String chainId, Object param, Class<?>[] contextBeanClazzArray,
+	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray,
 			Object[] contextBeanArray) {
-		Slot slot = doExecute(chainId, param, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE);
+		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE);
 		return LiteflowResponse.newMainResponse(slot);
 	}
 
 	private LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex,
 			InnerChainTypeEnum innerChainType) {
-		Slot slot = doExecute(chainId, param, null, null, slotIndex, innerChainType);
+		Slot slot = doExecute(chainId, param, null, null, null, slotIndex, innerChainType);
 		return LiteflowResponse.newInnerResponse(chainId, slot);
 	}
 
-	private Slot doExecute(String chainId, Object param, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
+	private Slot doExecute(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
 			Integer slotIndex, InnerChainTypeEnum innerChainType) {
 		if (FlowBus.needInit()) {
 			init(true);
@@ -342,11 +365,14 @@ public class FlowExecutor {
 			slot.addSubChain(chainId);
 		}
 
-		if (StrUtil.isBlank(slot.getRequestId())) {
+		//如果传入了用户的RequestId，则用这个请求Id，如果没传入，则进行生成
+		if (StrUtil.isNotBlank(requestId)){
+			slot.putRequestId(requestId);
+			LFLoggerManager.setRequestId(requestId);
+		}else if(StrUtil.isBlank(slot.getRequestId())){
 			slot.generateRequestId();
-			if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-				LOG.info("requestId[{}] has generated", slot.getRequestId());
-			}
+			LFLoggerManager.setRequestId(slot.getRequestId());
+			LOG.info("requestId has generated");
 		}
 
 		if (ObjectUtil.isNotNull(param)) {
@@ -366,8 +392,7 @@ public class FlowExecutor {
 			chain = FlowBus.getChain(chainId);
 
 			if (ObjectUtil.isNull(chain)) {
-				String errorMsg = StrUtil.format("[{}]:couldn't find chain with the id[{}]", slot.getRequestId(),
-						chainId);
+				String errorMsg = StrUtil.format("couldn't find chain with the id[{}]", chainId);
 				throw new ChainNotFoundException(errorMsg);
 			}
 			// 执行chain
@@ -375,15 +400,13 @@ public class FlowExecutor {
 		}
 		catch (ChainEndException e) {
 			if (ObjectUtil.isNotNull(chain)) {
-				String warnMsg = StrUtil.format("[{}]:chain[{}] execute end on slot[{}]", slot.getRequestId(),
-						chain.getChainName(), slotIndex);
+				String warnMsg = StrUtil.format("chain[{}] execute end on slot[{}]", chain.getChainId(), slotIndex);
 				LOG.warn(warnMsg);
 			}
 		}
 		catch (Exception e) {
 			if (ObjectUtil.isNotNull(chain)) {
-				String errMsg = StrUtil.format("[{}]:chain[{}] execute error on slot[{}]", slot.getRequestId(),
-						chain.getChainName(), slotIndex);
+				String errMsg = StrUtil.format("chain[{}] execute error on slot[{}]", chain.getChainId(), slotIndex);
 				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
 					LOG.error(errMsg, e);
 				}
@@ -413,6 +436,7 @@ public class FlowExecutor {
 			if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
 				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
+				LFLoggerManager.removeRequestId();
 			}
 		}
 		return slot;

@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.10.2</revision>
+		<revision>2.10.5</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -58,7 +58,7 @@
 		<zkclient.version>0.10</zkclient.version>
 		<jetcd.version>0.7.3</jetcd.version>
 		<nacos.version>1.4.4</nacos.version>
-		<qlexpress.version>3.3.0</qlexpress.version>
+		<qlexpress.version>3.3.1</qlexpress.version>
 		<groovy.version>3.0.8</groovy.version>
 		<graalvm.version>21.3.3.1</graalvm.version>
 		<bytebuddy.version>1.11.13</bytebuddy.version>

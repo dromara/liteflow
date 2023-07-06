@@ -55,4 +55,30 @@ public abstract class LoopCondition extends Condition {
 		}
 	}
 
+	protected void removeLoopIndex(Executable executableItem){
+		if (executableItem instanceof Chain) {
+			((Chain) executableItem).getConditionList().forEach(this::removeLoopIndex);
+		}
+		else if (executableItem instanceof Condition) {
+			((Condition) executableItem).getExecutableGroup()
+					.forEach((key, value) -> value.forEach(this::removeLoopIndex));
+		}
+		else if (executableItem instanceof Node) {
+			((Node) executableItem).removeLoopIndex();
+		}
+	}
+
+	protected void removeCurrLoopObject(Executable executableItem){
+		if (executableItem instanceof Chain) {
+			((Chain) executableItem).getConditionList().forEach(this::removeCurrLoopObject);
+		}
+		else if (executableItem instanceof Condition) {
+			((Condition) executableItem).getExecutableGroup()
+					.forEach((key, value) -> value.forEach(this::removeCurrLoopObject));
+		}
+		else if (executableItem instanceof Node) {
+			((Node) executableItem).removeCurrLoopObject();
+		}
+	}
+
 }

@@ -10,7 +10,6 @@ package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.*;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
@@ -19,10 +18,11 @@ import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
-import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
@@ -31,15 +31,10 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.local.LocalContextAware;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +44,7 @@ import java.util.stream.Collectors;
  */
 public class FlowBus {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FlowBus.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(FlowBus.class);
 
 	private static final Map<String, Chain> chainMap = new CopyOnWriteHashMap<>();
 
@@ -86,7 +81,10 @@ public class FlowBus {
 		return nodeMap.containsKey(nodeId);
 	}
 
-	public static void addSpringScanNode(String nodeId, NodeComponent nodeComponent) {
+	/**
+	 * 添加已托管的节点（如：Spring、Solon 管理的节点）
+	 * */
+	public static void addManagedNode(String nodeId, NodeComponent nodeComponent) {
 		// 根据class来猜测类型
 		NodeTypeEnum type = NodeTypeEnum.guessType(nodeComponent.getClass());
 

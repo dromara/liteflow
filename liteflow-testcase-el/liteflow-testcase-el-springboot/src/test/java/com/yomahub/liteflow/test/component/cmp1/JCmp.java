@@ -5,18 +5,22 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.loop.cmp;
+package com.yomahub.liteflow.test.component.cmp1;
 
 import com.yomahub.liteflow.core.NodeComponent;
 import org.springframework.stereotype.Component;
 
-@Component("c")
-public class CCmp extends NodeComponent {
+@Component("j")
+public class JCmp extends NodeComponent {
 
 	@Override
 	public void process() {
-		System.out.println(this.getLoopIndex());
-		System.out.println("CCmp executed!");
+		System.out.println("JCmp executed!");
 	}
 
+	@Override
+	public boolean isAccess() {
+		this.setIsEnd(true);
+		return false;
+	}
 }
