@@ -3,6 +3,9 @@ package com.yomahub.liteflow.parser.redis.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +20,7 @@ import java.util.List;
 
 public interface RedisParserHelper {
 
-    Logger LOG = LoggerFactory.getLogger(RedisParserHelper.class);
-
-   // LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
+   LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
 
     String REDIS_URL_PATTERN = "redis://{}:{}";
 
