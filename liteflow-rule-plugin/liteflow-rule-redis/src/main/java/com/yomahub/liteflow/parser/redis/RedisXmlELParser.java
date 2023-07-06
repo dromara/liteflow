@@ -9,7 +9,7 @@ import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.util.RedisParserByPolling;
-import com.yomahub.liteflow.parser.redis.util.RedisParserByPubSub;
+import com.yomahub.liteflow.parser.redis.util.RedisParserBySubscribe;
 import com.yomahub.liteflow.parser.redis.util.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -52,9 +52,9 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
             //检查配置文件
             checkParserVO(redisParserVO);
 
-            //选择Pub/Sub机制 or 轮询机制
-            if (StrUtil.equalsIgnoreCase("false", redisParserVO.isPolling())) {
-                redisParserHelper = new RedisParserByPubSub(redisParserVO);
+            //选择订阅机制 or 轮询机制
+            if (StrUtil.equalsIgnoreCase("subscribe", redisParserVO.getMode())) {
+                redisParserHelper = new RedisParserBySubscribe(redisParserVO);
             } else {
                 //todo 实例化轮询机制
                 redisParserHelper = new RedisParserByPolling(redisParserVO);

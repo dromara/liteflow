@@ -3,7 +3,6 @@ package com.yomahub.liteflow.parser.redis.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.FlowExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

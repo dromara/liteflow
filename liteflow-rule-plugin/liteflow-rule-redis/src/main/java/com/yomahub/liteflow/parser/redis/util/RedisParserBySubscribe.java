@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -34,7 +33,7 @@ import java.util.Set;
  * @since  2.10.6
  */
 
-public class RedisParserByPubSub implements RedisParserHelper {
+public class RedisParserBySubscribe implements RedisParserHelper {
 
     private final RedisParserVO redisParserVO;
 
@@ -42,7 +41,7 @@ public class RedisParserByPubSub implements RedisParserHelper {
 
     private RedissonClient scriptClient;
 
-    public RedisParserByPubSub(RedisParserVO redisParserVO) {
+    public RedisParserBySubscribe(RedisParserVO redisParserVO) {
         this.redisParserVO = redisParserVO;
 
         try {
@@ -53,13 +52,11 @@ public class RedisParserByPubSub implements RedisParserHelper {
             catch (Exception ignored) {
             }
             if (ObjectUtil.isNull(chainClient)) {
-                Config config = getRedissonConfig(redisParserVO,
-                        Integer.parseInt(redisParserVO.getChainDataBase()));
+                Config config = getRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
                 this.chainClient = Redisson.create(config);
                 //如果有脚本数据
-                if (StrUtil.isNotBlank(redisParserVO.getScriptDataBase())) {
-                    config = getRedissonConfig(redisParserVO,
-                            Integer.parseInt(redisParserVO.getScriptDataBase()));
+                if (Objects.isNull(redisParserVO.getScriptDataBase())) {
+                    config = getRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
                     this.scriptClient = Redisson.create(config);
                 }
             }
@@ -147,7 +144,7 @@ public class RedisParserByPubSub implements RedisParserHelper {
 
     public boolean hasScript() {
         // 没有scriptClient或没有配置scriptDataBase
-        if (Objects.isNull(scriptClient) || StrUtil.isBlank(redisParserVO.getScriptDataBase())) {
+        if (Objects.isNull(scriptClient) || Objects.isNull(redisParserVO.getScriptDataBase())) {
             return false;
         }
         try {
@@ -185,7 +182,7 @@ public class RedisParserByPubSub implements RedisParserHelper {
         });
 
         //监听 script
-        if (Objects.nonNull(scriptClient) && StrUtil.isNotBlank(redisParserVO.getScriptDataBase())) {
+        if (Objects.nonNull(scriptClient) && Objects.isNull(redisParserVO.getScriptDataBase())) {
             RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
             //添加 script
             scriptKey.addListener((EntryCreatedListener<String, String>) event -> {

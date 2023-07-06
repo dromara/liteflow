@@ -18,20 +18,20 @@ public class RedisParserVO {
     /*密码*/
     private String password;
 
-    /*是否采用轮询机制 默认为轮询 否则选择pub/sub机制*/
-    private String isPolling = "true";
+    /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
+    private String mode = "poll";
 
-    /*轮询时间间隔(ms) 默认1分钟 若选择pub/sub机制可不配置*/
+    /*轮询时间间隔(ms) 默认1分钟 若选择订阅机制可不配置*/
     private String pollingInterval = "60000";
 
     /*chain表配置的数据库号*/
-    private String chainDataBase;
+    private Integer chainDataBase;
 
     /*chain配置的键名*/
     private String chainKey;
 
     /*脚本表配置的数据库号 若没有脚本数据可不配置*/
-    private String scriptDataBase;
+    private Integer scriptDataBase;
 
     /*脚本配置的键名 若没有脚本数据可不配置*/
     private String scriptKey;
@@ -60,12 +60,12 @@ public class RedisParserVO {
         this.password = password;
     }
 
-    public String isPolling() {
-        return isPolling;
+    public String getMode() {
+        return mode;
     }
 
-    public void setPolling(String polling) {
-        isPolling = polling;
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
     public String getPollingInterval() {
@@ -76,11 +76,11 @@ public class RedisParserVO {
         this.pollingInterval = pollingInterval;
     }
 
-    public String getChainDataBase() {
+    public Integer getChainDataBase() {
         return chainDataBase;
     }
 
-    public void setChainDataBase(String chainDataBase) {
+    public void setChainDataBase(Integer chainDataBase) {
         this.chainDataBase = chainDataBase;
     }
 
@@ -92,11 +92,11 @@ public class RedisParserVO {
         this.chainKey = chainKey;
     }
 
-    public String getScriptDataBase() {
+    public Integer getScriptDataBase() {
         return scriptDataBase;
     }
 
-    public void setScriptDataBase(String scriptDataBase) {
+    public void setScriptDataBase(Integer scriptDataBase) {
         this.scriptDataBase = scriptDataBase;
     }
 
