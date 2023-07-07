@@ -21,8 +21,7 @@ public class RedisParserByPolling implements RedisParserHelper{
 
     private Jedis scriptClient;
 
-    public
-    RedisParserByPolling(RedisParserVO redisParserVO) {
+    public RedisParserByPolling(RedisParserVO redisParserVO) {
         this.redisParserVO = redisParserVO;
 
         try{
