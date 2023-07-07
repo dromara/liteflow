@@ -56,7 +56,6 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
             if (StrUtil.equalsIgnoreCase("subscribe", redisParserVO.getMode())) {
                 redisParserHelper = new RedisParserBySubscribe(redisParserVO);
             } else {
-                //todo 实例化轮询机制
                 redisParserHelper = new RedisParserByPolling(redisParserVO);
             }
 

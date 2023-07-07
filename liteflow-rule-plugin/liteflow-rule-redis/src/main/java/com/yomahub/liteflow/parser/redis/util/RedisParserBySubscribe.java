@@ -22,7 +22,6 @@ import org.redisson.config.Config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -46,8 +45,8 @@ public class RedisParserBySubscribe implements RedisParserHelper {
 
         try {
             try {
-                this.chainClient = ContextAwareHolder.loadContextAware().getBean("chainClient");
-                this.scriptClient = ContextAwareHolder.loadContextAware().getBean("scriptClient");
+                this.chainClient = ContextAwareHolder.loadContextAware().getBean("chainRClient");
+                this.scriptClient = ContextAwareHolder.loadContextAware().getBean("scriptRClient");
             }
             catch (Exception ignored) {
             }
@@ -55,7 +54,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
                 Config config = getRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
                 this.chainClient = Redisson.create(config);
                 //如果有脚本数据
-                if (Objects.isNull(redisParserVO.getScriptDataBase())) {
+                if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
                     config = getRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
                     this.scriptClient = Redisson.create(config);
                 }
@@ -112,7 +111,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
                 List<String> scriptItemContentList = new ArrayList<>();
                 for (String scriptKeyValue : scriptKeySet) {
                     NodeSimpleVO nodeSimpleVO = convert(scriptKeyValue);
-                    if (Objects.isNull(nodeSimpleVO)) {
+                    if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
                                 StrUtil.format("The name of the redis key is invalid:{}", scriptKeyValue));
                     }
@@ -144,7 +143,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
 
     public boolean hasScript() {
         // 没有scriptClient或没有配置scriptDataBase
-        if (Objects.isNull(scriptClient) || Objects.isNull(redisParserVO.getScriptDataBase())) {
+        if (ObjectUtil.isNull(scriptClient) || ObjectUtil.isNull(redisParserVO.getScriptDataBase())) {
             return false;
         }
         try {
@@ -182,7 +181,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
         });
 
         //监听 script
-        if (Objects.nonNull(scriptClient) && Objects.isNull(redisParserVO.getScriptDataBase())) {
+        if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
             RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
             //添加 script
             scriptKey.addListener((EntryCreatedListener<String, String>) event -> {
