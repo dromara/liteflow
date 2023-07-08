@@ -47,7 +47,12 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
         }
     }
 
-    // 将一个 Executable 包装为带有单独超时控制的 WhenCondition
+    /**
+     * 将一个 Executable 包装为带有单独超时控制的 WhenCondition
+     * @param executable 带包装对象
+     * @param maxWaitSeconds 最大等待秒数
+     * @return 包装后的 WhenCondition
+     */
     private WhenCondition wrappedByWhen(Executable executable, Integer maxWaitSeconds) {
         WhenCondition whenCondition = new WhenCondition();
         whenCondition.addExecutable(executable);
@@ -56,13 +61,22 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
         return whenCondition;
     }
 
-    // 判断 THEN 中是否含有 FINALLY 组件
+    /**
+     * 判断 THEN 中是否含有 FINALLY 组件
+     * @param executable 判断对象
+     * @return 含有 FINALLY 组件返回 true，否则返回 false
+     */
     private boolean containsFinally(Executable executable) {
         return executable instanceof ThenCondition
                 && CollUtil.isNotEmpty(((ThenCondition) executable).getFinallyConditionList());
     }
 
-    // 将 FINALLY 排除在超时控制之外
+    /**
+     * 将 FINALLY 排除在超时控制之外
+     * @param thenCondition 待处理的 ThenCondition
+     * @param maxWaitSeconds 最大等待秒数
+     * @return 处理后的 ThenCondition
+     */
     private ThenCondition handleFinally(ThenCondition thenCondition, Integer maxWaitSeconds) {
         // 进行如下转换
         // THEN(PRE(a),b,FINALLY(c))

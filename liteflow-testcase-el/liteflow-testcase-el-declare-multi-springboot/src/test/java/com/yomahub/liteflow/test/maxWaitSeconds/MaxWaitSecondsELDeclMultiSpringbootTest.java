@@ -20,7 +20,7 @@ import javax.annotation.Resource;
 import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.CmpConfig.CONTENT_KEY;
 
 /**
- * springboot环境下超时控制测试
+ * Spring Boot 环境下超时控制测试
  *
  * @author DaleLee
  * @since 2.11.0

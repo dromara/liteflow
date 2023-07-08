@@ -8,8 +8,10 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 @LiteflowComponent
 public class CmpConfig {
@@ -18,7 +20,8 @@ public class CmpConfig {
 
     private int count = 0;
 
-    private boolean changed = false;
+    // 执行过的 chain
+    Set<String> executedChain = new HashSet<>();
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "a")
     public void processA(NodeComponent bindCmp) {
@@ -79,9 +82,9 @@ public class CmpConfig {
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "w", nodeType = NodeTypeEnum.WHILE)
     public boolean processWhile(NodeComponent bindCmp) throws Exception {
         // 判断是否切换了 chain
-        if (bindCmp.getCurrChainId().equals("while2") && !changed) {
+        if (!executedChain.contains(bindCmp.getCurrChainId())) {
             count = 0;
-            changed = true;
+            executedChain.add(bindCmp.getCurrChainId());
         }
         count++;
         return count <= 2;

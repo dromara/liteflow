@@ -4,10 +4,10 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 
-import static com.yomahub.liteflow.test.maxWaitSeconds.MaxWaitSecondsELSpringBootTest.CONTENT_KEY;
-
 @LiteflowComponent("d")
 public class DCmp  extends NodeComponent {
+
+    public static final String CONTENT_KEY = "testKey";
 
     @Override
     public void process() {

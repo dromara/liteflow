@@ -19,6 +19,12 @@ import org.junit.Test;
 
 import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
 
+/**
+ * 非 Spring 环境下超时控制测试
+ *
+ * @author DaleLee
+ * @since 2.11.0
+ */
 public class MaxWaitSecondsTest extends BaseTest {
 
     private static FlowExecutor flowExecutor;

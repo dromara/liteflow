@@ -21,7 +21,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
 import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
 
 /**
- * solon环境下超时控制测试
+ * Solon 环境下超时控制测试
  *
  * @author DaleLee
  * @since 2.11.0

@@ -8,10 +8,9 @@ import com.yomahub.liteflow.exception.WhenTimeoutException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.loop.LoopELDeclSpringbootTest;
-import com.yomahub.liteflow.test.maxWaitSeconds.cmp.ACmp;
-import com.yomahub.liteflow.test.maxWaitSeconds.cmp.BCmp;
-import com.yomahub.liteflow.test.maxWaitSeconds.cmp.CCmp;
+import com.yomahub.liteflow.test.validateRule.cmp.ACmp;
+import com.yomahub.liteflow.test.validateRule.cmp.BCmp;
+import com.yomahub.liteflow.test.validateRule.cmp.CCmp;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,17 +25,18 @@ import javax.annotation.Resource;
 import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
 
 /**
- * springboot环境下超时控制测试
+ * Spring Boot 环境下超时控制测试
  *
  * @author DaleLee
  * @since 2.11.0
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/maxWaitSeconds/application.properties")
-@SpringBootTest(classes = MaxWaitSecondsELDeclSpringBootTest.class)
+@SpringBootTest(classes = MaxWaitSecondsELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.maxWaitSeconds.cmp" })
-public class MaxWaitSecondsELDeclSpringBootTest extends BaseTest {
+public class MaxWaitSecondsELSpringbootTest extends BaseTest {
+
     @Resource
     private FlowExecutor flowExecutor;
 
@@ -145,6 +145,7 @@ public class MaxWaitSecondsELDeclSpringBootTest extends BaseTest {
         // FINALLY 执行时在默认数据上下文中放入了 CONTENT_KEY
         DefaultContext contextBean = response.getFirstContextBean();
         Assert.assertTrue(contextBean.hasData(CONTENT_KEY));
+
     }
 
     // 测试 maxWaitSeconds 关键字不能作用于 Finally
