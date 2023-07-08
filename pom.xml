@@ -76,6 +76,7 @@
 		<common-io.version>2.11.0</common-io.version>
 		<redisson.version>3.21.0</redisson.version>
 		<jedis.version>4.3.1</jedis.version>
+		<hutool-crypto.version>5.8.18</hutool-crypto.version>
 	</properties>
 
 	<dependencyManagement>

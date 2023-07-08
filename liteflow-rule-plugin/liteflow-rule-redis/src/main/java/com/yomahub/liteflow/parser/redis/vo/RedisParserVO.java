@@ -21,8 +21,8 @@ public class RedisParserVO {
     /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
     private String mode = "poll";
 
-    /*轮询时间间隔(ms) 默认1分钟 若选择订阅机制可不配置*/
-    private String pollingInterval = "60000";
+    /*轮询时间间隔(s) 默认1分钟 若选择订阅机制可不配置*/
+    private String pollingInterval = "60";
 
     /*chain表配置的数据库号*/
     private Integer chainDataBase;

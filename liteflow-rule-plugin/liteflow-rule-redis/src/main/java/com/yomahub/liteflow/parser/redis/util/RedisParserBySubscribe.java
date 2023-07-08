@@ -172,7 +172,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
         });
         //修改 chain
         chainKey.addListener((EntryUpdatedListener<String, String>) event -> {
-            LOG.info("starting reload flow config... update path={} new value={},", event.getKey(), event.getValue());
+            LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
             LiteFlowChainELBuilder.createChain().setChainId(event.getKey()).setEL(event.getValue()).build();
         });
         //删除 chain
