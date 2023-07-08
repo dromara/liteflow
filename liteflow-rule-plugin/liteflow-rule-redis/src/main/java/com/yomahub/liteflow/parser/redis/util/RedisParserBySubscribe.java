@@ -106,16 +106,17 @@ public class RedisParserBySubscribe implements RedisParserHelper {
             String scriptAllContent = StrUtil.EMPTY;
             if (hasScript()) {
                 RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
-                Set<String> scriptKeySet = scriptKey.keySet();
+                Set<String> scriptFieldSet = scriptKey.keySet();
 
                 List<String> scriptItemContentList = new ArrayList<>();
-                for (String scriptKeyValue : scriptKeySet) {
-                    NodeSimpleVO nodeSimpleVO = convert(scriptKeyValue);
+                for (String scriptFieldValue : scriptFieldSet) {
+                    NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
                     if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
-                                StrUtil.format("The name of the redis key is invalid:{}", scriptKeyValue));
+                                StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
+                                        scriptFieldValue, scriptKey));
                     }
-                    String scriptData = scriptKey.get(scriptKeyValue);
+                    String scriptData = scriptKey.get(scriptFieldValue);
 
                     // 有语言类型
                     if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
@@ -128,10 +129,10 @@ public class RedisParserBySubscribe implements RedisParserHelper {
                         scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
                                 nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
                     }
-
-                    scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
-                            CollUtil.join(scriptItemContentList, StrUtil.EMPTY));
                 }
+
+                scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
+                        CollUtil.join(scriptItemContentList, StrUtil.EMPTY));
             }
 
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);

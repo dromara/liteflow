@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
@@ -85,11 +86,17 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
     }
 
     private void checkParserVO(RedisParserVO redisParserVO) {
-        if (StrUtil.isEmpty(redisParserVO.getHost())) {
+        if (StrUtil.isBlank(redisParserVO.getHost())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "host"));
         }
-        if (StrUtil.isEmpty(redisParserVO.getPort())) {
+        if (StrUtil.isBlank(redisParserVO.getPort())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "port"));
+        }
+        if (ObjectUtil.isNull(redisParserVO.getChainDataBase())) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "chainDataBase"));
+        }
+        if (StrUtil.isBlank(redisParserVO.getChainKey())) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "chainKey"));
         }
     }
 }
