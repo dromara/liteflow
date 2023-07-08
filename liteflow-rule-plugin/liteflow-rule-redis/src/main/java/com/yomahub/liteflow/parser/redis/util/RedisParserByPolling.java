@@ -187,6 +187,13 @@ public class RedisParserByPolling implements RedisParserHelper{
         //轮询chain内容的定时任务
         pool.scheduleAtFixedRate(pollChainTask(keyLuaOfChain, valueLuaOfChain),
                 60, Long.valueOf(redisParserVO.getPollingInterval()), TimeUnit.SECONDS);
+
+        //如果有脚本内容
+        if (ObjectUtil.isNotNull(scriptJedis) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
+            String keyLuaOfScript = scriptJedis.scriptLoad(luaOfKey);
+            String valueLuaOfScript = scriptJedis.scriptLoad(luaOfValue);
+        }
+
     }
 
 
