@@ -33,10 +33,10 @@ public class RedisParserByPolling implements RedisParserHelper{
     private Jedis scriptJedis;
 
     //chainKey中chain总数
-    private Integer chainFieldNum = 0;
+    private Integer chainNum = 0;
 
     //scriptKey中script总数
-    private Integer scriptFieldNum = 0;
+    private Integer scriptNum = 0;
 
     //chainKey中value的SHA1加密值 用于轮询时确定value是否变化
     private Map<String, String> chainSHAMap = new HashMap<>();
@@ -99,7 +99,7 @@ public class RedisParserByPolling implements RedisParserHelper{
             if (CollectionUtil.isEmpty(chainNameSet)) {
                 throw new RedisException(StrUtil.format("There are no chains in key [{}]", chainKey));
             }
-            chainFieldNum = chainNameSet.size();
+            chainNum = chainNameSet.size();
             // 获取chainKey下的所有子节点内容List
             List<String> chainItemContentList = new ArrayList<>();
             for (String chainName : chainNameSet) {
@@ -120,7 +120,7 @@ public class RedisParserByPolling implements RedisParserHelper{
             if (hasScript()) {
                 String scriptKey = redisParserVO.getScriptKey();
                 Set<String> scriptFieldSet = scriptJedis.hkeys(scriptKey);
-                scriptFieldNum = scriptFieldSet.size();
+                scriptNum = scriptFieldSet.size();
 
                 List<String> scriptItemContentList = new ArrayList<>();
                 for (String scriptFieldValue : scriptFieldSet) {
@@ -188,7 +188,7 @@ public class RedisParserByPolling implements RedisParserHelper{
 
         //定时任务线程池
         ScheduledExecutorService pool = Executors.newScheduledThreadPool(10);
-        //轮询chain内容的定时任务
+        //添加轮询chain的定时任务
         pool.scheduleAtFixedRate(pollChainTask(keyLuaOfChain, valueLuaOfChain),
                 60, Long.valueOf(redisParserVO.getPollingInterval()), TimeUnit.SECONDS);
 
@@ -198,8 +198,10 @@ public class RedisParserByPolling implements RedisParserHelper{
             //将lua脚本添加到scriptJedis脚本缓存
             String keyLuaOfScript = scriptJedis.scriptLoad(luaOfKey);
             String valueLuaOfScript = scriptJedis.scriptLoad(luaOfValue);
+            //添加轮询script的定时任务
+            pool.scheduleAtFixedRate(pollScriptTask(keyLuaOfScript, valueLuaOfScript),
+                    60, Long.valueOf(redisParserVO.getPollingInterval()), TimeUnit.SECONDS);
         }
-
     }
 
 
@@ -211,15 +213,16 @@ public class RedisParserByPolling implements RedisParserHelper{
     private Runnable pollChainTask(String keyLua, String valueLua) {
         Runnable r = () -> {
             String chainKey = redisParserVO.getChainKey();
-            //先获取chainKey中最新的chain数量
+            //Lua获取chainKey中最新的chain数量
             String keyNum = chainJedis.evalsha(keyLua, 1, chainKey).toString();
-            //修改chainFieldNum为最新chain数量
-            chainFieldNum = Integer.parseInt(keyNum);
+            //修改chainNum为最新chain数量
+            chainNum = Integer.parseInt(keyNum);
 
             //遍历Map,判断各个chain的value有无变化：修改变化了值的chain和被删除的chain
             for(Map.Entry<String, String> entry: chainSHAMap.entrySet()) {
                 String chainId = entry.getKey();
                 String oldSHA = entry.getValue();
+                //在redis服务端通过Lua脚本计算SHA值
                 String newSHA = chainJedis.evalsha(valueLua, 2, chainKey, chainId).toString();
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该chain,表示该chain已被删除
@@ -242,7 +245,7 @@ public class RedisParserByPolling implements RedisParserHelper{
             }
 
             //处理新添加chain和chainId被修改的情况
-            if (chainFieldNum > chainSHAMap.size()) {
+            if (chainNum > chainSHAMap.size()) {
                 //如果封装的SHAMap数量比最新chain总数少, 说明有两种情况：
                 // 1、添加了新chain
                 // 2、修改了chainId:因为遍历到旧的id时会取到nil,SHAMap会把原来的chainId删掉,但没有机会添加新的chainId
@@ -256,6 +259,68 @@ public class RedisParserByPolling implements RedisParserHelper{
                         LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
                         LOG.info("starting poll flow config... update key={} new value={},", chainId, chainData);
                         chainSHAMap.put(chainId, DigestUtil.sha1Hex(chainData));
+                    }
+                }
+            }
+        };
+        return r;
+    }
+
+    /**
+     * 用于轮询script的定时任务
+     * 首先根据hash中field数量的变化拉取新增的script
+     * 再根据hash中value的SHA值修改变化的和被删除的script
+     */
+    private Runnable pollScriptTask(String keyLua, String valueLua) {
+        Runnable r = () -> {
+            String scriptKey = redisParserVO.getScriptKey();
+            //Lua获取scriptKey中最新的script数量
+            String keyNum = scriptJedis.evalsha(keyLua, 1, scriptKey).toString();
+            //修改scriptNum为最新script数量
+            scriptNum = Integer.parseInt(keyNum);
+
+            //遍历Map,判断各个script的value有无变化：修改变化了值的script和被删除的script
+            for(Map.Entry<String, String> entry: scriptSHAMap.entrySet()) {
+                String scriptFieldValue = entry.getKey();
+                String oldSHA = entry.getValue();
+                //在redis服务端通过Lua脚本计算SHA值
+                String newSHA = scriptJedis.evalsha(valueLua, 2, scriptKey, scriptFieldValue).toString();
+                if (StrUtil.equals(newSHA, "nil")) {
+                    //新SHA值为nil, 即未获取到该script,表示该script已被删除
+                    NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
+                    FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                    LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
+
+                    //修改SHAMap
+                    scriptSHAMap.remove(scriptFieldValue);
+                }
+                else if (!StrUtil.equals(newSHA, oldSHA)) {
+                    //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
+                    String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
+                    changeScriptNode(scriptFieldValue, scriptData);
+                    LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
+
+                    //修改SHAMap
+                    scriptSHAMap.put(scriptFieldValue, newSHA);
+                }
+                //SHA值无变化,表示该script未改变
+            }
+
+            //处理新添加script和script名被修改的情况
+            if (scriptNum > scriptSHAMap.size()) {
+                //如果封装的SHAMap数量比最新script总数少, 说明有两种情况：
+                // 1、添加了新script
+                // 2、修改了script名:因为遍历到旧的id时会取到nil,SHAMap会把原来的script删掉,但没有机会添加新的script
+                // 3、上述两者结合
+                //在此处重新拉取所有script名集合,补充添加新script
+                Set<String> newScriptSet = scriptJedis.hkeys(scriptKey);
+                for (String scriptFieldValue : newScriptSet) {
+                    if (scriptSHAMap.get(scriptFieldValue) == null) {
+                        //将新script添加到LiteFlowChainELBuilder和SHAMap
+                        String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
+                        changeScriptNode(scriptFieldValue, scriptData);
+                        LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
+                        scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));
                     }
                 }
             }

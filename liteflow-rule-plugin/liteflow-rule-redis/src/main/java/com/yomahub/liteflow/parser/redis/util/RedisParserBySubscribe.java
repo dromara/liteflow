@@ -189,14 +189,12 @@ public class RedisParserBySubscribe implements RedisParserHelper {
             //添加 script
             scriptKey.addListener((EntryCreatedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
-                NodeSimpleVO nodeSimpleVO = convert(event.getKey());
-                changeScriptNode(nodeSimpleVO, event.getValue());
+                changeScriptNode(event.getKey(), event.getValue());
             });
             //修改 script
             scriptKey.addListener((EntryUpdatedListener<String, String>) event -> {
-                LOG.info("starting reload flow config... update path={} new value={},", event.getKey(), event.getValue());
-                NodeSimpleVO nodeSimpleVO = convert(event.getKey());
-                changeScriptNode(nodeSimpleVO, event.getValue());
+                LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
+                changeScriptNode(event.getKey(), event.getValue());
             });
             //删除 script
             scriptKey.addListener((EntryRemovedListener<String, String>) event -> {
@@ -204,28 +202,6 @@ public class RedisParserBySubscribe implements RedisParserHelper {
                 NodeSimpleVO nodeSimpleVO = convert(event.getKey());
                 FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
             });
-        }
-    }
-
-    private void changeScriptNode(NodeSimpleVO nodeSimpleVO, String newValue) {
-        // 有语言类型
-        if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .setLanguage(nodeSimpleVO.getLanguage())
-                    .build();
-        }
-        // 没有语言类型
-        else {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .build();
         }
     }
 }

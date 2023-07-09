@@ -3,7 +3,9 @@ package com.yomahub.liteflow.parser.redis.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import org.slf4j.Logger;
@@ -37,6 +39,35 @@ public interface RedisParserHelper {
     String getContent();
 
     void listenRedis();
+
+
+    /**
+     * script节点的修改/添加
+     * @param scriptFieldValue 新的script名
+     * @param newValue 新的script值
+     */
+    default void changeScriptNode(String scriptFieldValue, String newValue) {
+        NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
+        // 有语言类型
+        if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+            LiteFlowNodeBuilder.createScriptNode()
+                    .setId(nodeSimpleVO.getNodeId())
+                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                    .setName(nodeSimpleVO.getName())
+                    .setScript(newValue)
+                    .setLanguage(nodeSimpleVO.getLanguage())
+                    .build();
+        }
+        // 没有语言类型
+        else {
+            LiteFlowNodeBuilder.createScriptNode()
+                    .setId(nodeSimpleVO.getNodeId())
+                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                    .setName(nodeSimpleVO.getName())
+                    .setScript(newValue)
+                    .build();
+        }
+    }
 
     default NodeSimpleVO convert(String str) {
         // 不需要去理解这串正则，就是一个匹配冒号的
