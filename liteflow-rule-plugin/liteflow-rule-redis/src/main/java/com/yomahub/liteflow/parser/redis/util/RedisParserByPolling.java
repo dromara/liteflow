@@ -213,29 +213,12 @@ public class RedisParserByPolling implements RedisParserHelper{
             @Override
             public void run() {
                 String chainKey = redisParserVO.getChainKey();
-                //先判断chainKey中chain数量有无增长
+                //先获取chainKey中最新的chain数量
                 String keyNum = chainJedis.evalsha(keyLua, 1, chainKey).toString();
                 //修改chainFieldNum为最新chain数量
                 chainFieldNum = Integer.parseInt(keyNum);
-                if (Integer.parseInt(keyNum) > chainFieldNum) {
-                    //有新增加的chain,重新从redis中拉取chainId集合, 对比出新增的chain
-                    Set<String> newChainSet = chainJedis.hkeys(chainKey);
-                    Set<String> oldChainSet = chainSHAMap.keySet();
-                    //求出差集,即新增的chain
-                    Set<String> newAdd = new HashSet<>();
-                    newAdd.addAll(newChainSet);
-                    newAdd.removeAll(oldChainSet);
-                    for (String newChainId : newAdd) {
-                        String chainData = chainJedis.hget(chainKey, newChainId);
-                        LiteFlowChainELBuilder.createChain().setChainId(newChainId).setEL(chainData).build();
-                        LOG.info("starting poll flow config... update key={} new value={},", newChainId, chainData);
 
-                        //修改SHAMap
-                        chainSHAMap.put(newChainId, DigestUtil.sha1Hex(chainData));
-                    }
-                }
-
-                //遍历Map,判断各个chain的值有无变化
+                //遍历Map,判断各个chain的value有无变化：修改变化了值的chain和被删除的chain
                 for(Map.Entry<String, String> entry: chainSHAMap.entrySet()) {
                     String chainId = entry.getKey();
                     String oldSHA = entry.getValue();
@@ -260,9 +243,11 @@ public class RedisParserByPolling implements RedisParserHelper{
                     //SHA值无变化,表示该chain未改变
                 }
 
+                //处理新添加chain和chainId被修改的情况
                 if (chainFieldNum > chainSHAMap.size()) {
-                    //如果封装的SHAMap数量比新的chain总数少, 说明有修改了chainId的情况
-                    //因为遍历到旧的id时会取到nil,SHAMap会把原来的chainId删掉,但没有机会添加新的chainId
+                    //如果封装的SHAMap数量比新的chain总数少, 说明有两种情况：
+                    // 1、添加了新chain
+                    // 2、修改了chainId:因为遍历到旧的id时会取到nil,SHAMap会把原来的chainId删掉,但没有机会添加新的chainId
                     //在此处重新拉取所有chainId集合,补充添加新chainId
                     Set<String> newChainSet = chainJedis.hkeys(chainKey);
                     for (String chainId : newChainSet) {
