@@ -89,7 +89,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
         if (StrUtil.isBlank(redisParserVO.getHost())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "host"));
         }
-        if (StrUtil.isBlank(redisParserVO.getPort())) {
+        if (ObjectUtil.isNull(redisParserVO.getPort())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "port"));
         }
         if (ObjectUtil.isNull(redisParserVO.getChainDataBase())) {

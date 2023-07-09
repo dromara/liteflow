@@ -45,8 +45,8 @@ public class RedisParserBySubscribe implements RedisParserHelper {
 
         try {
             try {
-                this.chainClient = ContextAwareHolder.loadContextAware().getBean("chainRClient");
-                this.scriptClient = ContextAwareHolder.loadContextAware().getBean("scriptRClient");
+                this.chainClient = ContextAwareHolder.loadContextAware().getBean("chainClient");
+                this.scriptClient = ContextAwareHolder.loadContextAware().getBean("scriptClient");
             }
             catch (Exception ignored) {
             }
@@ -69,11 +69,13 @@ public class RedisParserBySubscribe implements RedisParserHelper {
     private Config getRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
         Config config = new Config();
         String redisAddress = StrFormatter.format(REDIS_URL_PATTERN, redisParserVO.getHost(), redisParserVO.getPort());
+        //如果配置了密码
         if (StrUtil.isNotBlank(redisParserVO.getPassword())) {
             config.useSingleServer().setAddress(redisAddress)
                     .setPassword(redisParserVO.getPassword())
                     .setDatabase(dataBase);
         }
+        //没有配置密码
         else {
             config.useSingleServer().setAddress(redisAddress)
                     .setDatabase(dataBase);
@@ -93,10 +95,10 @@ public class RedisParserBySubscribe implements RedisParserHelper {
             }
             // 获取chainKey下的所有子节点内容List
             List<String> chainItemContentList = new ArrayList<>();
-            for (String chainName : chainNameSet) {
-                String chainData = chainKey.get(chainName);
+            for (String chainId : chainNameSet) {
+                String chainData = chainKey.get(chainId);
                 if (StrUtil.isNotBlank(chainData)) {
-                    chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, chainData));
+                    chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainId, chainData));
                 }
             }
             // 合并成所有chain的xml内容

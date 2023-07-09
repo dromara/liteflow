@@ -13,7 +13,7 @@ public class RedisParserVO {
     private String host;
 
     /*端口号*/
-    private String port;
+    private Integer port;
 
     /*密码*/
     private String password;
@@ -44,11 +44,11 @@ public class RedisParserVO {
         this.host = host;
     }
 
-    public String getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
