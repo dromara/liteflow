@@ -1,20 +1,21 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.AndOrConditionException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import java.util.List;
 
 public class AndOrCondition extends Condition {
+
+    private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
     private BooleanConditionTypeEnum booleanConditionType;
 
@@ -34,6 +35,7 @@ public class AndOrCondition extends Condition {
             item.setCurrChainId(this.getCurrChainId());
             item.execute(slotIndex);
             booleanArray[i] = item.getItemResultMetaValue(slotIndex);
+            LOG.info("the result of boolean component [{}] is [{}]", item.getId(), booleanArray[i]);
         }
 
         BooleanConditionTypeEnum booleanConditionType = this.getBooleanConditionType();
