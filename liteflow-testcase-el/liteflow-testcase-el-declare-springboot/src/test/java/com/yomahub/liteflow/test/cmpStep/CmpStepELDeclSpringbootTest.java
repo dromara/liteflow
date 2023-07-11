@@ -14,10 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * springboot环境最普通的例子测试
@@ -39,13 +36,13 @@ public class CmpStepELDeclSpringbootTest extends BaseTest {
 	public void testStep() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assert.assertFalse(response.isSuccess());
-		Assert.assertTrue(response.getExecuteSteps().get("a").isSuccess());
-		Assert.assertTrue(response.getExecuteSteps().get("b").isSuccess());
-		Assert.assertFalse(response.getExecuteSteps().get("c").isSuccess());
-		Assert.assertFalse(response.getExecuteSteps().get("d").isSuccess());
-		Assert.assertTrue(response.getExecuteSteps().get("c").getTimeSpent() >= 2000);
-		Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("c").getException().getClass());
-		Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("d").getException().getClass());
+		Assert.assertTrue(response.getExecuteSteps().get("a").get(0).isSuccess());
+		Assert.assertTrue(response.getExecuteSteps().get("b").get(0).isSuccess());
+		Assert.assertFalse(response.getExecuteSteps().get("c").get(0).isSuccess());
+		Assert.assertFalse(response.getExecuteSteps().get("d").get(0).isSuccess());
+		Assert.assertTrue(response.getExecuteSteps().get("c").get(0).getTimeSpent() >= 2000);
+		Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("c").get(0).getException().getClass());
+		Assert.assertEquals(RuntimeException.class, response.getExecuteSteps().get("d").get(0).getException().getClass());
 	}
 
 	@Test
@@ -59,7 +56,7 @@ public class CmpStepELDeclSpringbootTest extends BaseTest {
 	public void testStep3() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 		Assert.assertTrue(response.isSuccess());
-		Map<String, CmpStep> stepMap = response.getExecuteSteps();
+		Map<String, List<CmpStep>> stepMap = response.getExecuteSteps();
 		Assert.assertEquals(2, stepMap.size());
 		Queue<CmpStep> queue = response.getExecuteStepQueue();
 		Assert.assertEquals(5, queue.size());
