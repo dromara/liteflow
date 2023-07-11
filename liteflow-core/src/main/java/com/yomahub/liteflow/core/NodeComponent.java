@@ -142,7 +142,7 @@ public abstract class NodeComponent {
 	public void beforeProcess() {
 		// 全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		// 非spring环境下，全局切面为空实现
-		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, this.getSlot());
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.self);
 	}
 
 	public abstract void process() throws Exception;
@@ -156,7 +156,7 @@ public abstract class NodeComponent {
 	}
 
 	public void afterProcess() {
-		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, this.getSlot());
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.self);
 	}
 
 	// 是否进入该节点
