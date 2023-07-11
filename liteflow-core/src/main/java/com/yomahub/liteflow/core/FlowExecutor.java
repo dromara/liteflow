@@ -343,26 +343,15 @@ public class FlowExecutor {
 			else {
 				slotIndex = DataBus.offerSlotByBean(ListUtil.toList(contextBeanArray));
 			}
-			if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-				LOG.info("slot[{}] offered", slotIndex);
-			}
-		}
 
-		if (slotIndex == -1) {
-			throw new NoAvailableSlotException("there is no available slot");
+			if (slotIndex == -1) {
+				throw new NoAvailableSlotException("there is no available slot");
+			}
 		}
 
 		Slot slot = DataBus.getSlot(slotIndex);
 		if (ObjectUtil.isNull(slot)) {
 			throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
-		}
-
-		// 如果是隐式流程，事先把subException给置空，然后把隐式流程的chainId放入slot元数据中
-		// 我知道这在多线程调用隐式流程中会有问题。但是考虑到这种场景的不会多，也有其他的转换方式。
-		// 所以暂且这么做，以后再优化
-		if (!innerChainType.equals(InnerChainTypeEnum.NONE)) {
-			slot.removeSubException(chainId);
-			slot.addSubChain(chainId);
 		}
 
 		//如果传入了用户的RequestId，则用这个请求Id，如果没传入，则进行生成
@@ -374,6 +363,19 @@ public class FlowExecutor {
 			LFLoggerManager.setRequestId(slot.getRequestId());
 			LOG.info("requestId has generated");
 		}
+
+		if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
+			LOG.info("slot[{}] offered", slotIndex);
+		}
+
+		// 如果是隐式流程，事先把subException给置空，然后把隐式流程的chainId放入slot元数据中
+		// 我知道这在多线程调用隐式流程中会有问题。但是考虑到这种场景的不会多，也有其他的转换方式。
+		// 所以暂且这么做，以后再优化
+		if (!innerChainType.equals(InnerChainTypeEnum.NONE)) {
+			slot.removeSubException(chainId);
+			slot.addSubChain(chainId);
+		}
+
 
 		if (ObjectUtil.isNotNull(param)) {
 			if (innerChainType.equals(InnerChainTypeEnum.NONE)) {

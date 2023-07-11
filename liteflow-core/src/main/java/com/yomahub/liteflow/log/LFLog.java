@@ -342,27 +342,38 @@ public class LFLog implements Logger{
 
     @Override
     public void error(String s) {
-        this.log.error(getRId() + s);
+        if (isPrint()) {
+            this.log.error(getRId() + s);
+        }
     }
 
     @Override
     public void error(String s, Object o) {
-        this.log.error(getRId() + s, o);
+        if (isPrint()) {
+            this.log.error(getRId() + s, o);
+        }
     }
 
     @Override
     public void error(String s, Object o, Object o1) {
-        this.log.error(getRId() + s, o, o1);
+        if (isPrint()) {
+            this.log.error(getRId() + s, o, o1);
+        }
+
     }
 
     @Override
     public void error(String s, Object... objects) {
-        this.log.error(getRId() + s, objects);
+        if (isPrint()) {
+            this.log.error(getRId() + s, objects);
+        }
     }
 
     @Override
     public void error(String s, Throwable throwable) {
-        this.log.error(getRId() + s, throwable);
+        if (isPrint()) {
+            this.log.error(getRId() + s, throwable);
+        }
     }
 
     @Override
@@ -372,26 +383,36 @@ public class LFLog implements Logger{
 
     @Override
     public void error(Marker marker, String s) {
-        this.log.error(marker, getRId() + s);
+        if (isPrint()) {
+            this.log.error(marker, getRId() + s);
+        }
     }
 
     @Override
     public void error(Marker marker, String s, Object o) {
-        this.log.error(marker, getRId() + s, o);
+        if (isPrint()) {
+            this.log.error(marker, getRId() + s, o);
+        }
     }
 
     @Override
     public void error(Marker marker, String s, Object o, Object o1) {
-        this.log.error(marker, getRId() + s, o, o1);
+        if (isPrint()) {
+            this.log.error(marker, getRId() + s, o, o1);
+        }
     }
 
     @Override
     public void error(Marker marker, String s, Object... objects) {
-        this.log.error(marker, getRId() + s, objects);
+        if (isPrint()) {
+            this.log.error(marker, getRId() + s, objects);
+        }
     }
 
     @Override
     public void error(Marker marker, String s, Throwable throwable) {
-        this.log.error(marker, getRId() + s, throwable);
+        if (isPrint()) {
+            this.log.error(marker, getRId() + s, throwable);
+        }
     }
 }
