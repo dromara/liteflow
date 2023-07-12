@@ -1,15 +1,13 @@
 package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.StrFormatter;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.condition.ConditionKey;
-import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
-import com.yomahub.liteflow.flow.element.condition.ThenCondition;
-import com.yomahub.liteflow.flow.element.condition.WhenCondition;
+import com.yomahub.liteflow.flow.element.condition.*;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +33,7 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
             return whenCondition;
         } else if (executable instanceof FinallyCondition) {
             // FINALLY，报错
-            String errorMsg = "The caller cannot be FinallyCondition item";
+            String errorMsg = StrFormatter.format("The caller [{}] cannot use the keyword \"maxWaitSeconds'\"", executable.toString());
             throw new QLException(errorMsg);
         } else if (containsFinally(executable)) {
             // 处理 THEN 中的 FINALLY
@@ -43,26 +41,28 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
             return handleFinally(thenCondition, maxWaitSeconds);
         } else {
             // 其他情况，被 WHEN 包装
-            return wrappedByWhen(executable, maxWaitSeconds);
+            return wrappedByTimeout(executable, maxWaitSeconds);
         }
     }
 
     /**
-     * 将一个 Executable 包装为带有单独超时控制的 WhenCondition
-     * @param executable 带包装对象
+     * 将一个 Executable 包装为带有单独超时控制的 TimeoutCondition
+     *
+     * @param executable     待包装对象
      * @param maxWaitSeconds 最大等待秒数
-     * @return 包装后的 WhenCondition
+     * @return 包装后的 TimeoutCondition
      */
-    private WhenCondition wrappedByWhen(Executable executable, Integer maxWaitSeconds) {
-        WhenCondition whenCondition = new WhenCondition();
-        whenCondition.addExecutable(executable);
-        whenCondition.setMaxWaitTime(maxWaitSeconds);
-        whenCondition.setMaxWaitTimeUnit(TimeUnit.SECONDS);
-        return whenCondition;
+    private TimeoutCondition wrappedByTimeout(Executable executable, Integer maxWaitSeconds) {
+        TimeoutCondition timeoutCondition = new TimeoutCondition();
+        timeoutCondition.addExecutable(executable);
+        timeoutCondition.setMaxWaitTime(maxWaitSeconds);
+        timeoutCondition.setMaxWaitTimeUnit(TimeUnit.SECONDS);
+        return timeoutCondition;
     }
 
     /**
      * 判断 THEN 中是否含有 FINALLY 组件
+     *
      * @param executable 判断对象
      * @return 含有 FINALLY 组件返回 true，否则返回 false
      */
@@ -73,7 +73,8 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
 
     /**
      * 将 FINALLY 排除在超时控制之外
-     * @param thenCondition 待处理的 ThenCondition
+     *
+     * @param thenCondition  待处理的 ThenCondition
      * @param maxWaitSeconds 最大等待秒数
      * @return 处理后的 ThenCondition
      */
@@ -95,7 +96,7 @@ public class MaxWaitSecondsOperator extends BaseOperator<Condition> {
         finallyList.clear();
 
         // 包装内部 THEN
-        WhenCondition whenCondition = wrappedByWhen(thenCondition, maxWaitSeconds);
+        WhenCondition whenCondition = wrappedByTimeout(thenCondition, maxWaitSeconds);
         outerThenCondition.addExecutable(whenCondition);
 
         return outerThenCondition;
