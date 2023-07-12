@@ -75,7 +75,6 @@
 		<aviator.version>5.3.3</aviator.version>
 		<common-io.version>2.11.0</common-io.version>
 		<jakarta.version>1.3.5</jakarta.version>
-		<nashorn.version>15.4</nashorn.version>
 	</properties>
 
 	<dependencyManagement>
@@ -298,11 +297,6 @@
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${common-io.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjdk.nashorn</groupId>
-				<artifactId>nashorn-core</artifactId>
-				<version>${nashorn.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
