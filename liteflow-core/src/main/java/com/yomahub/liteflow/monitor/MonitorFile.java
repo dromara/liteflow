@@ -63,13 +63,21 @@ public class MonitorFile {
 				@Override
 				public void onFileChange(File file) {
 					LOG.info("file modify,filePath={}", file.getAbsolutePath());
-					FlowExecutorHolder.loadInstance().reloadRule();
+					this.reloadRule();
 				}
 
 				@Override
 				public void onFileDelete(File file) {
 					LOG.info("file delete,filePath={}", file.getAbsolutePath());
-					FlowExecutorHolder.loadInstance().reloadRule();
+					this.reloadRule();
+				}
+
+                private void reloadRule() {
+                    try {
+                        FlowExecutorHolder.loadInstance().reloadRule();
+                    } catch (Exception e) {
+                        LOG.error("reload rule error", e);
+                    }
 				}
 			});
 			// 创建文件变化监听器
