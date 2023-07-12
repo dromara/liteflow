@@ -14,7 +14,7 @@
 
     <properties>
         <h2.version>2.1.214</h2.version>
-        <jpa.version>2.0.5.RELEASE</jpa.version>
+        <jpa.version>2.6.8</jpa.version>
     </properties>
 
     <dependencies>

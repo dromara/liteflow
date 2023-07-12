@@ -9,7 +9,7 @@ import com.yomahub.liteflow.test.BaseTest;
  * @author Bryan.Zhang
  */
 /*
- * @RunWith(SpringRunner.class)
+ * @ExtendWith(SpringExtension.class)
  *
  * @TestPropertySource(value = "classpath:/aop/application.properties")
  *
@@ -31,17 +31,17 @@ public class CustomAOPELDeclSpringbootTest extends BaseTest {
 	 *
 	 * @Test public void testCustomAopS() { LiteflowResponse response=
 	 * flowExecutor.execute2Resp("chain1", "it's a request");
-	 * Assert.assertTrue(response.isSuccess()); Assert.assertEquals("before_after",
-	 * response.getContextBean.getData("a")); Assert.assertEquals("before_after",
-	 * context.getData("b")); Assert.assertEquals("before_after", context.getData("c")); }
+	 * Assertions.assertTrue(response.isSuccess()); Assertions.assertEquals("before_after",
+	 * response.getContextBean.getData("a")); Assertions.assertEquals("before_after",
+	 * context.getData("b")); Assertions.assertEquals("before_after", context.getData("c")); }
 	 *
 	 * //测试自定义AOP，并行场景
 	 *
 	 * @Test public void testCustomAopP() { LiteflowResponse response=
 	 * flowExecutor.execute2Resp("chain2", "it's a request");
-	 * Assert.assertTrue(response.isSuccess()); Assert.assertEquals("before_after",
-	 * context.getData("a")); Assert.assertEquals("before_after", context.getData("b"));
-	 * Assert.assertEquals("before_after", context.getData("c")); }
+	 * Assertions.assertTrue(response.isSuccess()); Assertions.assertEquals("before_after",
+	 * context.getData("a")); Assertions.assertEquals("before_after", context.getData("b"));
+	 * Assertions.assertEquals("before_after", context.getData("c")); }
 	 */
 
 }

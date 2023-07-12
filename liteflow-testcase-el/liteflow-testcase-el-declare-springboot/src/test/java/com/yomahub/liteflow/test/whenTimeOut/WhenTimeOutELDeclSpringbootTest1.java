@@ -4,9 +4,10 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.exception.WhenTimeoutException;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,7 +24,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/whenTimeOut/application1.properties")
 @SpringBootTest(classes = WhenTimeOutELDeclSpringbootTest1.class)
 @EnableAutoConfiguration
@@ -39,8 +40,8 @@ public class WhenTimeOutELDeclSpringbootTest1 extends BaseTest {
 	@Test
 	public void testWhenTimeOut() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
 	}
 
 }

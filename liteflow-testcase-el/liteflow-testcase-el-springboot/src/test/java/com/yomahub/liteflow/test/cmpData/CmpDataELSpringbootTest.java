@@ -1,24 +1,18 @@
 package com.yomahub.liteflow.test.cmpData;
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.cmpData.vo.User;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +20,6 @@ import java.util.stream.Collectors;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/cmpData/application.properties")
 @SpringBootTest(classes = CmpDataELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -40,22 +33,22 @@ public class CmpDataELSpringbootTest extends BaseTest {
 	@Test
 	public void testCmpData1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		User user = context.getData("user");
-		Assert.assertEquals(27, user.getAge());
-		Assert.assertEquals("jack", user.getName());
-		Assert.assertEquals(0, user.getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
+		Assertions.assertEquals(27, user.getAge());
+		Assertions.assertEquals("jack", user.getName());
+		Assertions.assertEquals(0, user.getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
 	}
 
 	@Test
 	public void testCmpData2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg", TestContext.class);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		TestContext context = response.getFirstContextBean();
-		Assert.assertEquals(8, context.getSet().size());
+		Assertions.assertEquals(8, context.getSet().size());
 		String result = context.getSet().stream().sorted().collect(Collectors.joining());
-		Assert.assertEquals("12345678", result);
+		Assertions.assertEquals("12345678", result);
 	}
 
 }

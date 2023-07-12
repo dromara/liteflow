@@ -13,17 +13,18 @@ import com.yomahub.liteflow.test.builder.cmp1.DCmp;
 import com.yomahub.liteflow.test.builder.cmp1.ECmp;
 import com.yomahub.liteflow.test.builder.cmp1.FCmp;
 import com.yomahub.liteflow.test.builder.cmp1.GCmp;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
 //基于builder模式的单元测试
 //这里只是最基本的builder模式的测试，只是为了验证在spring模式下的正常性
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/builder/application1.xml")
 public class BuilderELSpringTest1 extends BaseTest {
 
@@ -84,8 +85,8 @@ public class BuilderELSpringTest1 extends BaseTest {
 			.build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
 	}
 
 	// 基于普通组件的builder模式测试
@@ -142,8 +143,8 @@ public class BuilderELSpringTest1 extends BaseTest {
 			.build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
 
 	}
 

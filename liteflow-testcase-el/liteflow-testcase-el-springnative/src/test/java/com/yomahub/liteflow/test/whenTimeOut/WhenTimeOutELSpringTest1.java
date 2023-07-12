@@ -4,13 +4,13 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.exception.WhenTimeoutException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -20,7 +20,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/whenTimeOut/application1.xml")
 public class WhenTimeOutELSpringTest1 extends BaseTest {
 
@@ -33,8 +33,8 @@ public class WhenTimeOutELSpringTest1 extends BaseTest {
 	@Test
 	public void testWhenTimeOut() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
 	}
 
 }

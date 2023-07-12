@@ -4,9 +4,10 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,7 +23,7 @@ import java.util.concurrent.Future;
  * @author Bryan.Zhang
  * @since 2.6.13
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/execute2Future/application.properties")
 @SpringBootTest(classes = Executor2FutureELDeclMultiSpringbootTest.class)
 @EnableAutoConfiguration
@@ -36,7 +37,7 @@ public class Executor2FutureELDeclMultiSpringbootTest extends BaseTest {
 	public void testFuture() throws Exception {
 		Future<LiteflowResponse> future = flowExecutor.execute2Future("chain1", "arg", DefaultContext.class);
 		LiteflowResponse response = future.get();
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

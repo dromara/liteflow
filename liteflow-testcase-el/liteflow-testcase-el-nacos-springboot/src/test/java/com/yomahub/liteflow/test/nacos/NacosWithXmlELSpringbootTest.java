@@ -1,27 +1,22 @@
 package com.yomahub.liteflow.test.nacos;
 
 import com.alibaba.nacos.client.config.NacosConfigService;
-import com.alibaba.nacos.client.config.impl.LocalConfigInfoProcessor;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.parser.nacos.util.NacosParserHelper;
-import com.yomahub.liteflow.parser.nacos.vo.NacosParserVO;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +26,7 @@ import static org.mockito.Mockito.when;
  * @author mll
  * @since 2.9.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/nacos/application-xml.properties")
 @SpringBootTest(classes = NacosWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -44,7 +39,7 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
 	@MockBean
 	private NacosConfigService nacosConfigService;
 
-	@After
+	@AfterEach
 	public void after() {
 		FlowBus.cleanCache();
 	}
@@ -55,7 +50,7 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
 		when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml);
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
+		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
 	}
 
 	@Test
@@ -66,12 +61,12 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
 			.thenReturn(changedFlowXml);
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
+		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
 
 		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, changedFlowXml);
 
 		response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
+		Assertions.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
 	}
 
 }

@@ -8,9 +8,9 @@ import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
@@ -18,7 +18,7 @@ public class LiteflowMonitorFileTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("monitorFile/flow.el.xml");
@@ -34,7 +34,7 @@ public class LiteflowMonitorFileTest extends BaseTest {
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
 		Thread.sleep(3000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>c==>b", response.getExecuteStepStr());
+		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
 
 }

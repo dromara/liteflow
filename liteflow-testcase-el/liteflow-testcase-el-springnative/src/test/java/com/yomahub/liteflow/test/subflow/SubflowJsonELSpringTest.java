@@ -2,13 +2,12 @@ package com.yomahub.liteflow.test.subflow;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -17,7 +16,7 @@ import javax.annotation.Resource;
  *
  * @author justin.xu
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/subflow/application-json.xml")
 public class SubflowJsonELSpringTest extends BaseTest {
 
@@ -28,8 +27,8 @@ public class SubflowJsonELSpringTest extends BaseTest {
 	@Test
 	public void testExplicitSubFlow() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
 	}
 
 }

@@ -3,14 +3,12 @@ package com.yomahub.liteflow.test.complex;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -19,7 +17,6 @@ import javax.annotation.Resource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/complex/application2.properties")
 @SpringBootTest(classes = ComplexELSpringbootTest2.class)
 @EnableAutoConfiguration
@@ -35,7 +32,7 @@ public class ComplexELSpringbootTest2 extends BaseTest {
 	@Test
 	public void testComplex2_1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2_1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试复杂例子，优化后
@@ -44,7 +41,7 @@ public class ComplexELSpringbootTest2 extends BaseTest {
 	@Test
 	public void testComplex2_2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2_2", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

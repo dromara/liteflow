@@ -9,23 +9,22 @@ import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.apache.curator.test.InstanceSpec;
 import org.apache.curator.test.TestingCluster;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 
 /**
  * springboot环境下的zk cluster的测试
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/zookeeper/application-xml-cluster.properties")
 @SpringBootTest(classes = ZkClusterWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -41,7 +40,7 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
 	@Resource
 	private FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		System.setProperty("zookeeper.admin.enableServer", "false");
 
@@ -91,17 +90,17 @@ public class ZkClusterWithXmlELSpringbootTest extends BaseTest {
 	public void testZkNodeWithXmlWithLanguage() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("hello", context.getData("test"));
-		Assert.assertEquals("hello", context.getData("test1"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("hello", context.getData("test"));
+		Assertions.assertEquals("hello", context.getData("test1"));
 	}
 
 	@Test
 	public void testZkNodeWithXml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("hello", context.getData("test"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("hello", context.getData("test"));
 	}
 
 }

@@ -6,7 +6,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.thread.ExecutorHelper;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 
 /**
  * @Description:
@@ -15,7 +15,7 @@ import org.junit.AfterClass;
  */
 public class BaseTest {
 
-	@AfterClass
+	@AfterAll
 	public static void cleanScanCache() {
 		ComponentScanner.cleanCache();
 		FlowBus.cleanCache();

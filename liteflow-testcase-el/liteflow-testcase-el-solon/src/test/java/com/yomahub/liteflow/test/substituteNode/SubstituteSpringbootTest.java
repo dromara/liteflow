@@ -3,11 +3,11 @@ package com.yomahub.liteflow.test.substituteNode;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -15,7 +15,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/substituteNode/application.properties")
 public class SubstituteSpringbootTest extends BaseTest {
 
@@ -26,21 +26,21 @@ public class SubstituteSpringbootTest extends BaseTest {
 	@Test
 	public void testSub1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 有替补节点
 	@Test
 	public void testSub2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试特殊命名的节点
 	@Test
 	public void testSub3() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

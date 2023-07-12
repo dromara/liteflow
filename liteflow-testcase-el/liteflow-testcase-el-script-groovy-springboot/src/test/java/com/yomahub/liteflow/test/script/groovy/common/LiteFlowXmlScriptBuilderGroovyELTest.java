@@ -8,9 +8,10 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -18,7 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import java.util.List;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = LiteFlowXmlScriptBuilderGroovyELTest.class)
 @EnableAutoConfiguration
 public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
@@ -61,8 +62,8 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg1");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
 	}
 
 	// 测试通过builder方式运行普通script节点，以脚本文本的方式运行
@@ -101,10 +102,10 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg1");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals(Integer.valueOf(6), context.getData("s1"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals(Integer.valueOf(6), context.getData("s1"));
 		List<String> resultList = context.getData("resultList");
-		Assert.assertEquals(3, resultList.size());
+		Assertions.assertEquals(3, resultList.size());
 	}
 
 	// 测试通过builder方式运行普通script节点，以file的方式运行
@@ -139,8 +140,8 @@ public class LiteFlowXmlScriptBuilderGroovyELTest extends BaseTest {
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg1");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("d[组件D]==>s2[条件脚本S2]==>a[组件A]", response.getExecuteStepStr());
 	}
 
 }

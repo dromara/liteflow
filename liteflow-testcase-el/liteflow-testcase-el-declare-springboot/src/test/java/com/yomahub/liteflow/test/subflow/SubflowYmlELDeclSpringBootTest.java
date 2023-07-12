@@ -3,9 +3,10 @@ package com.yomahub.liteflow.test.subflow;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,7 +20,7 @@ import javax.annotation.Resource;
  *
  * @author justin.xu
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/subflow/application-yml.properties")
 @SpringBootTest(classes = SubflowYmlELDeclSpringBootTest.class)
 @EnableAutoConfiguration
@@ -33,8 +34,8 @@ public class SubflowYmlELDeclSpringBootTest extends BaseTest {
 	@Test
 	public void testExplicitSubFlowYml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
 	}
 
 }
