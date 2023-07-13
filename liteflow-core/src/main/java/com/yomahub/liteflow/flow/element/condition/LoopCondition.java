@@ -91,7 +91,7 @@ public abstract class LoopCondition extends Condition {
     //循环并行执行的futureList处理
     protected void handleFutureList(List<CompletableFuture<LoopFutureObj>> futureList)throws Exception{
         CompletableFuture<?> resultCompletableFuture = CompletableFuture.allOf(futureList.toArray(new CompletableFuture[]{}));
-        resultCompletableFuture.join();
+        resultCompletableFuture.get();
         //获取所有的执行结果,如果有失败的，那么需要抛出异常
         for (CompletableFuture<LoopFutureObj> future : futureList) {
             LoopFutureObj loopFutureObj = future.get();
