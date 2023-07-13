@@ -4,8 +4,12 @@
         <node id="s1" name="groovy脚本" type="script" language="groovy">
             <![CDATA[
                 class Student {
-                    int studentID
-                    String studentName
+                    int studentID;
+                    String studentName;
+
+                    public void setStudentID(int id){
+                        this.studentID = id;
+                    }
                 }
 
                 Student student = new Student()
@@ -22,7 +26,7 @@
         <node id="s2" name="js脚本" type="script" language="js">
             <![CDATA[
                 var student = defaultContext.getData("student");
-                student.studentID = 10032;
+                student.setStudentID(10032);
             ]]>
         </node>
 
