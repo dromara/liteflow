@@ -6,26 +6,23 @@ import cn.hutool.core.util.CharsetUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.io.File;
 
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/monitorFile/application.properties")
 @SpringBootTest(classes = MonitorFileELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.monitorFile.cmp" })
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MonitorFileELSpringbootTest extends BaseTest {
 
 	@Resource
@@ -39,7 +36,7 @@ public class MonitorFileELSpringbootTest extends BaseTest {
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
 		Thread.sleep(3000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>c==>b", response.getExecuteStepStr());
+		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
 
     /**
@@ -56,14 +53,14 @@ public class MonitorFileELSpringbootTest extends BaseTest {
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         Thread.sleep(3000);
         LiteflowResponse reloadFailedResponse = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("a==>c==>b", reloadFailedResponse.getExecuteStepStr());
+        Assertions.assertEquals("a==>c==>b", reloadFailedResponse.getExecuteStepStr());
 
         // 再次变更正确
         newContent = content.replace("THEN(a, c, b);", "THEN(c, b, a);");
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         Thread.sleep(3000);
         LiteflowResponse reloadSuccessResponse = flowExecutor.execute2Resp("chain1", "arg");
-        Assert.assertEquals("c==>b==>a", reloadSuccessResponse.getExecuteStepStr());
+        Assertions.assertEquals("c==>b==>a", reloadSuccessResponse.getExecuteStepStr());
     }
 
 }

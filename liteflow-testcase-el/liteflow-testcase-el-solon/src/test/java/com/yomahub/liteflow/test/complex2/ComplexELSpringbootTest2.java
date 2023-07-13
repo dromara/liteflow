@@ -3,11 +3,11 @@ package com.yomahub.liteflow.test.complex2;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -15,7 +15,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/complex/application2.properties")
 public class ComplexELSpringbootTest2 extends BaseTest {
 
@@ -28,7 +28,7 @@ public class ComplexELSpringbootTest2 extends BaseTest {
 	@Test
 	public void testComplex2_1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2_1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试复杂例子，优化后
@@ -37,7 +37,7 @@ public class ComplexELSpringbootTest2 extends BaseTest {
 	@Test
 	public void testComplex2_2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2_2", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

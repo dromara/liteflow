@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.spi;
 
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 
 /**
@@ -10,8 +11,8 @@ import com.yomahub.liteflow.slot.Slot;
  */
 public interface CmpAroundAspect extends SpiPriority {
 
-	void beforeProcess(String nodeId, Slot slot);
+	void beforeProcess(NodeComponent cmp);
 
-	void afterProcess(String nodeId, Slot slot);
+	void afterProcess(NodeComponent cmp);
 
 }

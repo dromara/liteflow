@@ -2,6 +2,7 @@ package com.yomahub.liteflow.spi.solon;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 import org.noear.solon.Solon;
@@ -23,16 +24,16 @@ public class SolonCmpAroundAspect implements CmpAroundAspect {
 	}
 
 	@Override
-	public void beforeProcess(String nodeId, Slot slot) {
+	public void beforeProcess(NodeComponent cmp) {
 		if (ObjectUtil.isNotNull(cmpAroundAspect)) {
-			cmpAroundAspect.beforeProcess(nodeId, slot);
+			cmpAroundAspect.beforeProcess(cmp);
 		}
 	}
 
 	@Override
-	public void afterProcess(String nodeId, Slot slot) {
+	public void afterProcess(NodeComponent cmp) {
 		if (ObjectUtil.isNotNull(cmpAroundAspect)) {
-			cmpAroundAspect.afterProcess(nodeId, slot);
+			cmpAroundAspect.afterProcess(cmp);
 		}
 	}
 

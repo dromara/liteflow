@@ -3,14 +3,12 @@ package com.yomahub.liteflow.test.parsecustom;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -19,7 +17,6 @@ import javax.annotation.Resource;
  *
  * @author junjun
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/parsecustom/application-custom-yml.properties")
 @SpringBootTest(classes = CustomParserYmlELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -33,7 +30,7 @@ public class CustomParserYmlELSpringbootTest extends BaseTest {
 	@Test
 	public void testYmlCustomParser() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "args");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

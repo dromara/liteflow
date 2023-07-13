@@ -21,7 +21,7 @@
 
         <dependency>
             <groupId>org.noear</groupId>
-            <artifactId>solon-test-junit4</artifactId>
+            <artifactId>solon-test-junit5</artifactId>
             <version>${solon.version}</version>
             <scope>test</scope>
         </dependency>

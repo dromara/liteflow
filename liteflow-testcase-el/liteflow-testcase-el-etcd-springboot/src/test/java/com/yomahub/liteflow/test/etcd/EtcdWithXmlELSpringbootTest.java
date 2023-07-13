@@ -7,16 +7,15 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 import java.util.List;
 import static org.mockito.Mockito.*;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.*;
 /**
  * springboot环境下的etcd 规则解析器 测试
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/etcd/application-xml-cluster.properties")
 @SpringBootTest(classes = EtcdWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -43,12 +42,12 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
 	private static final String SCRIPT_PATH = "/liteflow/script";
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		FlowBus.cleanCache();
 	}
@@ -66,9 +65,9 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
-		Assert.assertEquals("hello", context.getData("test"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+		Assertions.assertEquals("hello", context.getData("test"));
 	}
 
 	@Test
@@ -88,17 +87,17 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
-		Assert.assertEquals("hello", context.getData("test"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
+		Assertions.assertEquals("hello", context.getData("test"));
 
 		flowExecutor.reloadRule();
 
 		LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context2 = response2.getFirstContextBean();
-		Assert.assertTrue(response2.isSuccess());
-		Assert.assertEquals("a==>b==>s1[脚本s1]", response2.getExecuteStepStr());
-		Assert.assertEquals("hello world", context2.getData("test"));
+		Assertions.assertTrue(response2.isSuccess());
+		Assertions.assertEquals("a==>b==>s1[脚本s1]", response2.getExecuteStepStr());
+		Assertions.assertEquals("hello world", context2.getData("test"));
 
 	}
 

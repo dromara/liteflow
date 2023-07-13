@@ -3,11 +3,11 @@ package com.yomahub.liteflow.test.subflow;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -15,7 +15,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author justin.xu
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/subflow/application-xml.properties")
 public class SubflowXMLELSpringBootTest extends BaseTest {
 
@@ -26,8 +26,8 @@ public class SubflowXMLELSpringBootTest extends BaseTest {
 	@Test
 	public void testExplicitSubFlow() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
 	}
 
 }
