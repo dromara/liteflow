@@ -15,7 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -28,10 +27,10 @@ import java.util.regex.Pattern;
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/parallelLoop/application.properties")
-@SpringBootTest(classes = ParallelLoopELDeclSpringbootTest.class)
+@SpringBootTest(classes = ParallelLoopELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.parallelLoop.cmp" })
-public class ParallelLoopELDeclSpringbootTest extends BaseTest {
+public class ParallelLoopELSpringbootTest extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;
