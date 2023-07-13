@@ -7,9 +7,9 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 非spring环境下组件标签的测试
@@ -21,7 +21,7 @@ public class NodeTagJsonTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("tag/flow.el.json");
@@ -32,15 +32,15 @@ public class NodeTagJsonTest extends BaseTest {
 	public void testTag1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("123", context.getData("test"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("123", context.getData("test"));
 	}
 
 	@Test
 	public void testTag2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
 	}
 
 	// 测试多线程when情况下的tag取值是否正确
@@ -50,9 +50,9 @@ public class NodeTagJsonTest extends BaseTest {
 		for (int i = 0; i < 50; i++) {
 			LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 			DefaultContext context = response.getFirstContextBean();
-			Assert.assertTrue(response.isSuccess());
+			Assertions.assertTrue(response.isSuccess());
 			ConcurrentHashSet<String> testSet = context.getData("test");
-			Assert.assertEquals(3, testSet.size());
+			Assertions.assertEquals(3, testSet.size());
 		}
 	}
 
@@ -60,8 +60,8 @@ public class NodeTagJsonTest extends BaseTest {
 	@Test
 	public void testTag4() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("g", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("g", response.getExecuteStepStr());
 	}
 
 }

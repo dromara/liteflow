@@ -5,14 +5,12 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -22,7 +20,6 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/tag/application-json.properties")
 @SpringBootTest(classes = NodeTagELSpringbootJsonTest.class)
 @EnableAutoConfiguration
@@ -36,15 +33,15 @@ public class NodeTagELSpringbootJsonTest extends BaseTest {
 	public void testTag1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("123", context.getData("test"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("123", context.getData("test"));
 	}
 
 	@Test
 	public void testTag2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>a==>a==>c==>e", response.getExecuteStepStr());
 	}
 
 	// 测试多线程when情况下的tag取值是否正确
@@ -54,9 +51,9 @@ public class NodeTagELSpringbootJsonTest extends BaseTest {
 		for (int i = 0; i < 50; i++) {
 			LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 			DefaultContext context = response.getFirstContextBean();
-			Assert.assertTrue(response.isSuccess());
+			Assertions.assertTrue(response.isSuccess());
 			ConcurrentHashSet<String> testSet = context.getData("test");
-			Assert.assertEquals(3, testSet.size());
+			Assertions.assertEquals(3, testSet.size());
 		}
 	}
 
@@ -64,8 +61,8 @@ public class NodeTagELSpringbootJsonTest extends BaseTest {
 	@Test
 	public void testTag4() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("g", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("g", response.getExecuteStepStr());
 	}
 
 }

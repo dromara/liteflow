@@ -7,12 +7,12 @@ import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.core.AopContext;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -20,7 +20,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author zendwang
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/exception/application.properties")
 public class Exception2ELSpringBootTest extends BaseTest {
 
@@ -30,46 +30,52 @@ public class Exception2ELSpringBootTest extends BaseTest {
 	@Inject
 	private AopContext context;
 
-	@Test(expected = ChainNotFoundException.class)
+	@Test
 	public void testChainNotFoundException() throws Exception {
-		flowExecutor.execute("chain0", "it's a request");
+		Assertions.assertThrows(ChainNotFoundException.class, () -> {
+			flowExecutor.execute("chain0", "it's a request");
+		});
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void testComponentCustomException() throws Exception {
-		flowExecutor.execute("chain1", "exception");
+		Assertions.assertThrows(RuntimeException.class, () -> {
+			flowExecutor.execute("chain1", "exception");
+		});
 	}
 
 	@Test
 	public void testGetSlotFromResponseWhenException() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "test");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertNotNull(response.getCause());
-		Assert.assertNotNull(response.getSlot());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertNotNull(response.getCause());
+		Assertions.assertNotNull(response.getSlot());
 	}
 
-	@Test(expected = NoSwitchTargetNodeException.class)
+	@Test
 	public void testNoTargetFindException() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "test");
-		Assert.assertFalse(response.isSuccess());
-		throw response.getCause();
+		Assertions.assertThrows(NoSwitchTargetNodeException.class, () -> {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain5", "test");
+			Assertions.assertFalse(response.isSuccess());
+			throw response.getCause();
+		});
 	}
 
 	@Test
 	public void testInvokeCustomStatefulException() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "custom-stateful-exception");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals("300", response.getCode());
-		Assert.assertNotNull(response.getCause());
-		Assert.assertTrue(response.getCause() instanceof LiteFlowException);
-		Assert.assertNotNull(response.getSlot());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("300", response.getCode());
+		Assertions.assertNotNull(response.getCause());
+		Assertions.assertTrue(response.getCause() instanceof LiteFlowException);
+		Assertions.assertNotNull(response.getSlot());
 	}
 
 	@Test
 	public void testNotInvokeCustomStatefulException() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "test");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertNull(response.getCode());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertNull(response.getCode());
 	}
 
 }

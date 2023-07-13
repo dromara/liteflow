@@ -4,9 +4,10 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.yomahub.liteflow.test.BaseTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 单元测试:传递null param导致NPE的优化代码
@@ -14,11 +15,11 @@ import org.junit.Test;
  * @author LeoLee
  * @since 2.6.6
  */
-public class NullParamTest {
+public class NullParamTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("nullParam/flow.el.xml");
@@ -31,7 +32,7 @@ public class NullParamTest {
 	@Test
 	public void testNullParam() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

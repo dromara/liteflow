@@ -4,10 +4,14 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
 public class NotCondition extends Condition {
+
+    private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
     @Override
     public void executeCondition(Integer slotIndex) throws Exception {
@@ -16,6 +20,8 @@ public class NotCondition extends Condition {
         item.setCurrChainId(this.getCurrChainId());
         item.execute(slotIndex);
         boolean flag = item.getItemResultMetaValue(slotIndex);
+
+        LOG.info("the result of boolean component [{}] is [{}]", item.getId(), flag);
 
         Slot slot = DataBus.getSlot(slotIndex);
 

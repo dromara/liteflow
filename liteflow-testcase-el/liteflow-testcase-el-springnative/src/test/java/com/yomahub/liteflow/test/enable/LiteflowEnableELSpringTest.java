@@ -4,13 +4,12 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -20,7 +19,7 @@ import javax.annotation.Resource;
  * @author qjwyss
  * @since 2.6.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/enable/application-local.xml")
 public class LiteflowEnableELSpringTest extends BaseTest {
 
@@ -33,11 +32,11 @@ public class LiteflowEnableELSpringTest extends BaseTest {
 		Boolean enable = config.getEnable();
 		if (enable) {
 			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-			Assert.assertTrue(response.isSuccess());
+			Assertions.assertTrue(response.isSuccess());
 			return;
 		}
 
-		Assert.assertFalse(enable);
+		Assertions.assertFalse(enable);
 	}
 
 }

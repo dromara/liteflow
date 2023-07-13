@@ -3,14 +3,12 @@ package com.yomahub.liteflow.test.catchcase;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -19,7 +17,6 @@ import javax.annotation.Resource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/catchcase/application.properties")
 @SpringBootTest(classes = CatchELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -32,36 +29,36 @@ public class CatchELSpringbootTest extends BaseTest {
 	@Test
 	public void testCatch1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
-		Assert.assertNull(response.getCause());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
+		Assertions.assertNull(response.getCause());
 	}
 
 	@Test
 	public void testCatch2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals("a==>d", response.getExecuteStepStrWithoutTime());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("a==>d", response.getExecuteStepStrWithoutTime());
 	}
 
 	@Test
 	public void testCatch3() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a", response.getExecuteStepStrWithoutTime());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a", response.getExecuteStepStrWithoutTime());
 	}
 
 	@Test
 	public void testCatch4() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("LOOP_3==>a==>b==>a==>b==>a==>b", response.getExecuteStepStrWithoutTime());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("LOOP_3==>a==>b==>a==>b==>a==>b", response.getExecuteStepStrWithoutTime());
 	}
 
 	@Test
 	public void testCatch5() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals("a==>d", response.getExecuteStepStrWithoutTime());
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("a==>d", response.getExecuteStepStrWithoutTime());
 	}
 }

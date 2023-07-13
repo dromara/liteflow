@@ -4,11 +4,11 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 import java.util.concurrent.Future;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
  * @author Bryan.Zhang
  * @since 2.6.13
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/execute2Future/application.properties")
 public class Executor2FutureELSpringbootTest extends BaseTest {
 
@@ -29,7 +29,7 @@ public class Executor2FutureELSpringbootTest extends BaseTest {
 	public void testFuture() throws Exception {
 		Future<LiteflowResponse> future = flowExecutor.execute2Future("chain1", "arg", DefaultContext.class);
 		LiteflowResponse response = future.get();
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

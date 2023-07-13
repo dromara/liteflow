@@ -3,17 +3,15 @@ package com.yomahub.liteflow.test.removeChain;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/removeChain/application.xml")
 public class RemoveChainELSpringTest extends BaseTest {
 
@@ -23,10 +21,10 @@ public class RemoveChainELSpringTest extends BaseTest {
 	@Test
 	public void testRemoveChain() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response1.isSuccess());
+		Assertions.assertTrue(response1.isSuccess());
 		FlowBus.removeChain("chain1");
 		LiteflowResponse response2 = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertFalse(response2.isSuccess());
+		Assertions.assertFalse(response2.isSuccess());
 	}
 
 }

@@ -7,9 +7,9 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 非spring环境下隐私投递的测试
@@ -21,7 +21,7 @@ public class PrivateDeliveryTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("privateDelivery/flow.el.xml");
@@ -33,8 +33,8 @@ public class PrivateDeliveryTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		ConcurrentHashSet<Integer> set = context.getData("testSet");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals(100, set.size());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals(100, set.size());
 	}
 
 }

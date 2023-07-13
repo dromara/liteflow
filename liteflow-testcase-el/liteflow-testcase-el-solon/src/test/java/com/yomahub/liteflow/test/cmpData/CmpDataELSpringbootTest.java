@@ -6,11 +6,11 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.cmpData.vo.User;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/cmpData/application.properties")
 public class CmpDataELSpringbootTest extends BaseTest {
 
@@ -29,12 +29,12 @@ public class CmpDataELSpringbootTest extends BaseTest {
 	@Test
 	public void testCmpData() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		User user = context.getData("user");
-		Assert.assertEquals(27, user.getAge());
-		Assert.assertEquals("jack", user.getName());
-		Assert.assertEquals(0, user.getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
+		Assertions.assertEquals(27, user.getAge());
+		Assertions.assertEquals("jack", user.getName());
+		Assertions.assertEquals(0, user.getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
 	}
 
 }

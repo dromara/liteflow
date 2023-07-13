@@ -4,11 +4,11 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -16,7 +16,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/loop/application.properties")
 public class LoopELSpringbootTest extends BaseTest {
 
@@ -27,31 +27,31 @@ public class LoopELSpringbootTest extends BaseTest {
 	@Test
 	public void testLoop1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("LOOP_2==>a==>b==>c==>a==>b==>c", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("LOOP_2==>a==>b==>c==>a==>b==>c", response.getExecuteStepStr());
 	}
 
 	// FPR循环由For组件定义
 	@Test
 	public void testLoop2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("x==>a==>b==>c==>a==>b==>c==>a==>b==>c", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("x==>a==>b==>c==>a==>b==>c==>a==>b==>c", response.getExecuteStepStr());
 	}
 
 	// FOR循环中加入BREAK组件
 	@Test
 	public void testLoop3() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// WHILE循环
 	@Test
 	public void testLoop4() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("z==>a==>d==>z==>a==>d==>z==>a==>d==>z==>a==>d==>z==>a==>d==>z",
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("z==>a==>d==>z==>a==>d==>z==>a==>d==>z==>a==>d==>z==>a==>d==>z",
 				response.getExecuteStepStr());
 	}
 
@@ -59,8 +59,8 @@ public class LoopELSpringbootTest extends BaseTest {
 	@Test
 	public void testLoop5() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y",
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y==>z==>a==>d==>y",
 				response.getExecuteStepStr());
 	}
 
@@ -69,10 +69,10 @@ public class LoopELSpringbootTest extends BaseTest {
 	public void testLoop6() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("01234", context.getData("loop_e1"));
-		Assert.assertEquals("01234", context.getData("loop_e2"));
-		Assert.assertEquals("01234", context.getData("loop_e3"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("01234", context.getData("loop_e1"));
+		Assertions.assertEquals("01234", context.getData("loop_e2"));
+		Assertions.assertEquals("01234", context.getData("loop_e3"));
 	}
 
 	// 测试WHILE循环中的index
@@ -80,10 +80,10 @@ public class LoopELSpringbootTest extends BaseTest {
 	public void testLoop7() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("01234", context.getData("loop_e1"));
-		Assert.assertEquals("01234", context.getData("loop_e2"));
-		Assert.assertEquals("01234", context.getData("loop_e3"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("01234", context.getData("loop_e1"));
+		Assertions.assertEquals("01234", context.getData("loop_e2"));
+		Assertions.assertEquals("01234", context.getData("loop_e3"));
 	}
 
 }

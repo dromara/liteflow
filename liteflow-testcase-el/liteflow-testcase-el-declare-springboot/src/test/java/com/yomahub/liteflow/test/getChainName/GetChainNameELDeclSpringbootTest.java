@@ -4,9 +4,10 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,7 +21,7 @@ import javax.annotation.Resource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/getChainName/application.properties")
 @SpringBootTest(classes = GetChainNameELDeclSpringbootTest.class)
 @EnableAutoConfiguration
@@ -34,28 +35,28 @@ public class GetChainNameELDeclSpringbootTest extends BaseTest {
 	public void testGetChainName1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("sub1", context.getData("a"));
-		Assert.assertEquals("sub2", context.getData("b"));
-		Assert.assertEquals("sub3", context.getData("c"));
-		Assert.assertEquals("sub4", context.getData("d"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("sub1", context.getData("a"));
+		Assertions.assertEquals("sub2", context.getData("b"));
+		Assertions.assertEquals("sub3", context.getData("c"));
+		Assertions.assertEquals("sub4", context.getData("d"));
 	}
 
 	@Test
 	public void testGetChainName2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("chain2", context.getData("g"));
-		Assert.assertEquals("sub1", context.getData("a"));
-		Assert.assertEquals("sub2", context.getData("b"));
-		Assert.assertEquals("sub3", context.getData("c"));
-		Assert.assertEquals("sub4", context.getData("d"));
-		Assert.assertEquals("sub5", context.getData("f"));
-		Assert.assertEquals("sub5_chain2", context.getData("e"));
-		Assert.assertEquals("sub6", context.getData("h"));
-		Assert.assertEquals("sub6", context.getData("j"));
-		Assert.assertNull(context.getData("k"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("chain2", context.getData("g"));
+		Assertions.assertEquals("sub1", context.getData("a"));
+		Assertions.assertEquals("sub2", context.getData("b"));
+		Assertions.assertEquals("sub3", context.getData("c"));
+		Assertions.assertEquals("sub4", context.getData("d"));
+		Assertions.assertEquals("sub5", context.getData("f"));
+		Assertions.assertEquals("sub5_chain2", context.getData("e"));
+		Assertions.assertEquals("sub6", context.getData("h"));
+		Assertions.assertEquals("sub6", context.getData("j"));
+		Assertions.assertNull(context.getData("k"));
 	}
 
 }

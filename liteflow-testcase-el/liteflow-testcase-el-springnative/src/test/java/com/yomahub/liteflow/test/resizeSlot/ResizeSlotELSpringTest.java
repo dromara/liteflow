@@ -5,12 +5,11 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import java.util.concurrent.Future;
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/resizeSlot/application.xml")
 public class ResizeSlotELSpringTest extends BaseTest {
 
@@ -44,7 +43,7 @@ public class ResizeSlotELSpringTest extends BaseTest {
 		}
 
 		for (Future<LiteflowResponse> future : futureList) {
-			Assert.assertTrue(future.get().isSuccess());
+			Assertions.assertTrue(future.get().isSuccess());
 		}
 
 		// 取到static的对象QUEUE
@@ -54,7 +53,7 @@ public class ResizeSlotELSpringTest extends BaseTest {
 		// 因为初始slotSize是4，按照0.75的扩容比，要满足100个线程，应该扩容5~6次，5次=65，6次=114
 		// 为什么不是直接114呢？
 		// 因为在单测中根据机器的性能，在多线程情况下，有些机器跑的慢一点，也就是说65个就足够了。有些机器跑的快一点，是能真正扩容到114个的
-		Assert.assertTrue(queue.size() > 4);
+		Assertions.assertTrue(queue.size() > 4);
 	}
 
 }

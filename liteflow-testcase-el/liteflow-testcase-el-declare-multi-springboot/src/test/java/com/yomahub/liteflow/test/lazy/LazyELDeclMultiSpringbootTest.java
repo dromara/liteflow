@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.lazy;
 import com.yomahub.liteflow.test.BaseTest;
 
 //spring的延迟加载在el表达形式模式下不起作用
-/*@RunWith(SpringRunner.class)
+/*@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/lazy/application.properties")
 @SpringBootTest(classes = LazyELDeclSpringbootTest.class)
 @EnableAutoConfiguration
@@ -15,7 +15,7 @@ public class LazyELDeclMultiSpringbootTest extends BaseTest {
 	 *
 	 * @Test public void testLazy() throws Exception{ LiteflowResponse response =
 	 * flowExecutor.execute2Resp("chain1", "arg");
-	 * Assert.assertTrue(response.isSuccess()); }
+	 * Assertions.assertTrue(response.isSuccess()); }
 	 */
 
 }

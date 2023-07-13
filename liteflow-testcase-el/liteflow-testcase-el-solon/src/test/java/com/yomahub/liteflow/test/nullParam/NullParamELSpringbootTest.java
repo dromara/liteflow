@@ -3,11 +3,11 @@ package com.yomahub.liteflow.test.nullParam;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -16,7 +16,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author LeoLee
  * @since 2.6.6
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/nullParam/application.properties")
 public class NullParamELSpringbootTest extends BaseTest {
 
@@ -29,7 +29,7 @@ public class NullParamELSpringbootTest extends BaseTest {
 	@Test
 	public void testNullParam() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

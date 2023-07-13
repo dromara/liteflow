@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.aop;
 
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 
 /**
@@ -17,18 +18,8 @@ import com.yomahub.liteflow.slot.Slot;
  */
 public interface ICmpAroundAspect {
 
-	/**
-	 * 前置处理
-	 * @param nodeId 节点ID
-	 * @param slot
-	 */
-	void beforeProcess(String nodeId, Slot slot);
+	void beforeProcess(NodeComponent cmp);
 
-	/**
-	 * 后置处理
-	 * @param nodeId 节点ID
-	 * @param slot
-	 */
-	void afterProcess(String nodeId, Slot slot);
+	void afterProcess(NodeComponent cmp);
 
 }

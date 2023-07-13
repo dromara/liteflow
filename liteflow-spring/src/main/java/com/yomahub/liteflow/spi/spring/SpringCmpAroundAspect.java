@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.spi.spring;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 import com.yomahub.liteflow.spring.ComponentScanner;
@@ -14,16 +15,16 @@ import com.yomahub.liteflow.spring.ComponentScanner;
 public class SpringCmpAroundAspect implements CmpAroundAspect {
 
 	@Override
-	public void beforeProcess(String nodeId, Slot slot) {
+	public void beforeProcess(NodeComponent cmp) {
 		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.beforeProcess(nodeId, slot);
+			ComponentScanner.cmpAroundAspect.beforeProcess(cmp);
 		}
 	}
 
 	@Override
-	public void afterProcess(String nodeId, Slot slot) {
+	public void afterProcess(NodeComponent cmp) {
 		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
-			ComponentScanner.cmpAroundAspect.afterProcess(nodeId, slot);
+			ComponentScanner.cmpAroundAspect.afterProcess(cmp);
 		}
 	}
 

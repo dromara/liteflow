@@ -4,15 +4,14 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 
 /**
@@ -21,7 +20,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.9.5
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/common/application.properties")
 @SpringBootTest(classes = ScriptAviatorCommonELTest.class)
 @EnableAutoConfiguration
@@ -36,8 +35,8 @@ public class ScriptAviatorCommonELTest extends BaseTest {
 	public void testCommon1() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals(Long.valueOf(6), context.getData("s1"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals(Long.valueOf(6), context.getData("s1"));
 	}
 
 }

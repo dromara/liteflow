@@ -133,10 +133,7 @@ public class Node implements Executable, Cloneable{
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (instance.isAccess()) {
-				// 根据配置判断是否打印执行中的日志
-				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.info("[O]start component[{}] execution", instance.getDisplayName());
-				}
+				LOG.info("[O]start component[{}] execution", instance.getDisplayName());
 
 				// 这里开始进行重试的逻辑和主逻辑的运行
 				NodeExecutor nodeExecutor = NodeExecutorHelper.loadInstance()
@@ -145,9 +142,7 @@ public class Node implements Executable, Cloneable{
 				nodeExecutor.execute(instance);
 			}
 			else {
-				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
-				}
+				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
 			if (instance.isEnd()) {
