@@ -13,9 +13,10 @@ import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.ACmp;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.BCmp;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.CCmp;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 import java.util.concurrent.TimeoutException;
 
@@ -31,7 +32,7 @@ public class MaxWaitSecondsTest extends BaseTest {
 
     private static FlowExecutor flowExecutor;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("maxWaitSeconds/flow.el.xml");
@@ -138,11 +139,11 @@ public class MaxWaitSecondsTest extends BaseTest {
     @Test
     public void testFinally1() {
         LiteflowResponse response = flowExecutor.execute2Resp("finally", "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(TimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(TimeoutException.class, response.getCause().getClass());
         // FINALLY 执行时在默认数据上下文中放入了 CONTENT_KEY
         DefaultContext contextBean = response.getFirstContextBean();
-        Assert.assertTrue(contextBean.hasData(CONTENT_KEY));
+        Assertions.assertTrue(contextBean.hasData(CONTENT_KEY));
 
     }
 
@@ -167,7 +168,7 @@ public class MaxWaitSecondsTest extends BaseTest {
                 .setType(NodeTypeEnum.COMMON)
                 .setClazz(CCmp.class)
                 .build();
-        Assert.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, FINALLY(c).maxWaitSeconds(10))"));
+        Assertions.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, FINALLY(c).maxWaitSeconds(10))"));
     }
 
     // 测试 chain 的超时情况
@@ -184,19 +185,19 @@ public class MaxWaitSecondsTest extends BaseTest {
 
     private void assertTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(TimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(TimeoutException.class, response.getCause().getClass());
     }
 
     private void assertWhenTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
     }
 
     private void assertNotTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertTrue(response.isSuccess());
+        Assertions.assertTrue(response.isSuccess());
     }
 
 }

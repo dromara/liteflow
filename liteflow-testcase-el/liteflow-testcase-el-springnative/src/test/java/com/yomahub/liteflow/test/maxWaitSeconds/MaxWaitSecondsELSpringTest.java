@@ -11,14 +11,13 @@ import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.ACmp;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.BCmp;
 import com.yomahub.liteflow.test.maxWaitSeconds.cmp.CCmp;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
-
 import java.util.concurrent.TimeoutException;
 
 import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
@@ -29,7 +28,7 @@ import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
  * @author DaleLee
  * @since 2.11.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/maxWaitSeconds/application.xml")
 public class MaxWaitSecondsELSpringTest extends BaseTest {
     @Resource
@@ -135,12 +134,11 @@ public class MaxWaitSecondsELSpringTest extends BaseTest {
     @Test
     public void testFinally1() {
         LiteflowResponse response = flowExecutor.execute2Resp("finally", "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(TimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(TimeoutException.class, response.getCause().getClass());
         // FINALLY 执行时在默认数据上下文中放入了 CONTENT_KEY
         DefaultContext contextBean = response.getFirstContextBean();
-        Assert.assertTrue(contextBean.hasData(CONTENT_KEY));
-
+        Assertions.assertTrue(contextBean.hasData(CONTENT_KEY));
     }
 
     // 测试 maxWaitSeconds 关键字不能作用于 Finally
@@ -164,7 +162,7 @@ public class MaxWaitSecondsELSpringTest extends BaseTest {
                 .setType(NodeTypeEnum.COMMON)
                 .setClazz(CCmp.class)
                 .build();
-        Assert.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, FINALLY(c).maxWaitSeconds(10))"));
+        Assertions.assertFalse(LiteFlowChainELBuilder.validate("THEN(a, b, FINALLY(c).maxWaitSeconds(10))"));
     }
 
     // 测试 chain 的超时情况
@@ -181,18 +179,18 @@ public class MaxWaitSecondsELSpringTest extends BaseTest {
 
     private void assertTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(TimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(TimeoutException.class, response.getCause().getClass());
     }
 
     private void assertWhenTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(WhenTimeoutException.class, response.getCause().getClass());
     }
 
     private void assertNotTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
-        Assert.assertTrue(response.isSuccess());
+        Assertions.assertTrue(response.isSuccess());
     }
 }
