@@ -87,7 +87,7 @@ public class ChainPollingTask {
                 //在此处重新拉取所有chainId集合,补充添加新chain
                 Set<String> newChainSet = chainJedis.hkeys(chainKey);
                 for (String chainId : newChainSet) {
-                    if (chainSHAMap.get(chainId) == null) {
+                    if (!chainSHAMap.containsKey(chainId)) {
                         //将新chainId添加到LiteFlowChainELBuilder和SHAMap
                         String chainData = chainJedis.hget(chainKey, chainId);
                         LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();

@@ -191,7 +191,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
         //添加轮询chain的定时任务
         ChainPollingTask chainTask = new ChainPollingTask(redisParserVO, chainJedis, chainNum, chainSHAMap, LOG);
         pool.scheduleAtFixedRate(chainTask.pollChainTask(keyLuaOfChain, valueLuaOfChain),
-                60, Long.parseLong(redisParserVO.getPollingInterval()), TimeUnit.SECONDS);
+                60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
 
         //如果有脚本
         if (ObjectUtil.isNotNull(scriptJedis) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())
@@ -203,7 +203,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
             //添加轮询script的定时任务
             ScriptPollingTask scriptTask = new ScriptPollingTask(redisParserVO, scriptJedis, scriptNum, scriptSHAMap, LOG);
             pool.scheduleAtFixedRate(scriptTask.pollScriptTask(keyLuaOfScript, valueLuaOfScript),
-                    60, Long.parseLong(redisParserVO.getPollingInterval()), TimeUnit.SECONDS);
+                    60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
         }
     }
 }

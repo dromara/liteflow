@@ -24,8 +24,7 @@ public class RedisParserVO {
     private RedisParserMode mode = RedisParserMode.POLL;
 
     /*轮询时间间隔(s) 默认1分钟 若选择订阅机制可不配置*/
-    //todo 确定类型是string还是long,若为string需校验
-    private String pollingInterval = "60";
+    private Integer pollingInterval = 60;
 
     /*chain表配置的数据库号*/
     private Integer chainDataBase;
@@ -78,11 +77,11 @@ public class RedisParserVO {
         }
     }
 
-    public String getPollingInterval() {
+    public Integer getPollingInterval() {
         return pollingInterval;
     }
 
-    public void setPollingInterval(String pollingInterval) {
+    public void setPollingInterval(Integer pollingInterval) {
         this.pollingInterval = pollingInterval;
     }
 

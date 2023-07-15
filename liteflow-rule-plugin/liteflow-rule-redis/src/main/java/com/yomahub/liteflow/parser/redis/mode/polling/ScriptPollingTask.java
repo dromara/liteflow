@@ -86,7 +86,7 @@ public class ScriptPollingTask {
                 //在此处重新拉取所有script名集合,补充添加新script
                 Set<String> newScriptSet = scriptJedis.hkeys(scriptKey);
                 for (String scriptFieldValue : newScriptSet) {
-                    if (scriptSHAMap.get(scriptFieldValue) == null) {
+                    if (!scriptSHAMap.containsKey(scriptFieldValue)) {
                         //将新script添加到LiteFlowChainELBuilder和SHAMap
                         String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
                         RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
