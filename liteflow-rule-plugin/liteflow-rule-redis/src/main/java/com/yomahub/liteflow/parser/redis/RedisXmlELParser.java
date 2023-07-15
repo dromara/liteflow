@@ -9,10 +9,10 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
-import com.yomahub.liteflow.parser.redis.util.RedisParserByPolling;
-import com.yomahub.liteflow.parser.redis.util.RedisParserBySubscribe;
-import com.yomahub.liteflow.parser.redis.util.RedisParserHelper;
-import com.yomahub.liteflow.parser.redis.vo.RedisModeEnum;
+import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
+import com.yomahub.liteflow.parser.redis.mode.subscribe.RedisParserSubscribeMode;
+import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
+import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -55,15 +55,15 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
             checkParserVO(redisParserVO);
 
             //选择订阅机制 or 轮询机制
-            RedisModeEnum mode = redisParserVO.getMode();
+            RedisParserMode mode = redisParserVO.getMode();
             switch (mode) {
                 case SUB:
                 case SUBSCRIBE:
-                    redisParserHelper = new RedisParserBySubscribe(redisParserVO);
+                    redisParserHelper = new RedisParserSubscribeMode(redisParserVO);
                     break;
                 case POLL:
                 default:
-                    redisParserHelper = new RedisParserByPolling(redisParserVO);
+                    redisParserHelper = new RedisParserPollingMode(redisParserVO);
                     break;
             }
 

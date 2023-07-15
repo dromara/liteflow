@@ -1,15 +1,14 @@
-package com.yomahub.liteflow.parser.redis.util;
+package com.yomahub.liteflow.parser.redis.mode.subscribe;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
+import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.redisson.Redisson;
@@ -32,7 +31,7 @@ import java.util.Set;
  * @since  2.10.6
  */
 
-public class RedisParserBySubscribe implements RedisParserHelper {
+public class RedisParserSubscribeMode implements RedisParserHelper {
 
     private final RedisParserVO redisParserVO;
 
@@ -40,7 +39,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
 
     private RedissonClient scriptClient;
 
-    public RedisParserBySubscribe(RedisParserVO redisParserVO) {
+    public RedisParserSubscribeMode(RedisParserVO redisParserVO) {
         this.redisParserVO = redisParserVO;
 
         try {
@@ -112,7 +111,7 @@ public class RedisParserBySubscribe implements RedisParserHelper {
 
                 List<String> scriptItemContentList = new ArrayList<>();
                 for (String scriptFieldValue : scriptFieldSet) {
-                    NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
+                    NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
                     if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
@@ -189,17 +188,17 @@ public class RedisParserBySubscribe implements RedisParserHelper {
             //添加 script
             scriptKey.addListener((EntryCreatedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
-                changeScriptNode(event.getKey(), event.getValue());
+                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
             });
             //修改 script
             scriptKey.addListener((EntryUpdatedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
-                changeScriptNode(event.getKey(), event.getValue());
+                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
             });
             //删除 script
             scriptKey.addListener((EntryRemovedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... delete key={}", event.getKey());
-                NodeSimpleVO nodeSimpleVO = convert(event.getKey());
+                NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(event.getKey());
                 FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
             });
         }

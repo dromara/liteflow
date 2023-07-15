@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.parser.redis.vo;
+package com.yomahub.liteflow.parser.redis.mode;
 
 /**
  * 用于定义redis规则存储和监听方式的枚举类
@@ -6,7 +6,7 @@ package com.yomahub.liteflow.parser.redis.vo;
  * @author hxinyu
  * @since  2.10.6
  */
-public enum RedisModeEnum {
+public enum RedisParserMode {
 
     //poll为轮询模式，subscribe/sub为订阅模式，默认为poll
     POLL("poll"),
@@ -15,7 +15,7 @@ public enum RedisModeEnum {
 
     private String mode;
 
-    RedisModeEnum(String mode) {
+    RedisParserMode(String mode) {
         this.mode = mode;
     }
 

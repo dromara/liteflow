@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.parser.redis.util;
+package com.yomahub.liteflow.parser.redis.mode;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReUtil;
@@ -8,8 +8,6 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ import java.util.List;
 
 public interface RedisParserHelper {
 
-   LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
+    LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
 
     String REDIS_URL_PATTERN = "redis://{}:{}";
 
@@ -46,7 +44,7 @@ public interface RedisParserHelper {
      * @param scriptFieldValue 新的script名
      * @param newValue 新的script值
      */
-    default void changeScriptNode(String scriptFieldValue, String newValue) {
+    static void changeScriptNode(String scriptFieldValue, String newValue) {
         NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
         // 有语言类型
         if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
@@ -69,7 +67,7 @@ public interface RedisParserHelper {
         }
     }
 
-    default NodeSimpleVO convert(String str) {
+    static NodeSimpleVO convert(String str) {
         // 不需要去理解这串正则，就是一个匹配冒号的
         // 一定得是a:b，或是a:b:c...这种完整类型的字符串的
         List<String> matchItemList = ReUtil.findAllGroup0("(?<=[^:]:)[^:]+|[^:]+(?=:[^:])", str);

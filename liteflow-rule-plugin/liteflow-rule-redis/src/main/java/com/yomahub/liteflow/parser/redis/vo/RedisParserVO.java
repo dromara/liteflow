@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.parser.redis.vo;
 
+import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
+
 /**
  * 用于解析RuleSourceExtData的vo类，用于Redis模式中
  *
@@ -19,7 +21,7 @@ public class RedisParserVO {
     private String password;
 
     /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
-    private RedisModeEnum mode = RedisModeEnum.POLL;
+    private RedisParserMode mode = RedisParserMode.POLL;
 
     /*轮询时间间隔(s) 默认1分钟 若选择订阅机制可不配置*/
     //todo 确定类型是string还是long,若为string需校验
@@ -61,14 +63,14 @@ public class RedisParserVO {
         this.password = password;
     }
 
-    public RedisModeEnum getMode() {
+    public RedisParserMode getMode() {
         return mode;
     }
 
     public void setMode(String mode) {
         mode = mode.toUpperCase();
         try{
-            RedisModeEnum m = RedisModeEnum.valueOf(mode);
+            RedisParserMode m = RedisParserMode.valueOf(mode);
             this.mode = m;
         }
         catch (Exception ignored) {
