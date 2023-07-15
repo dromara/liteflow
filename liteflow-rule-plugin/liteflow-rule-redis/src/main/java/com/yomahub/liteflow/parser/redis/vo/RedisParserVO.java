@@ -19,7 +19,7 @@ public class RedisParserVO {
     private String password;
 
     /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
-    private String mode = "poll";
+    private RedisModeEnum mode = RedisModeEnum.POLL;
 
     /*轮询时间间隔(s) 默认1分钟 若选择订阅机制可不配置*/
     //todo 确定类型是string还是long,若为string需校验
@@ -61,12 +61,19 @@ public class RedisParserVO {
         this.password = password;
     }
 
-    public String getMode() {
+    public RedisModeEnum getMode() {
         return mode;
     }
 
     public void setMode(String mode) {
-        this.mode = mode;
+        mode = mode.toUpperCase();
+        try{
+            RedisModeEnum m = RedisModeEnum.valueOf(mode);
+            this.mode = m;
+        }
+        catch (Exception ignored) {
+            //枚举类转换出错默认为轮询方式
+        }
     }
 
     public String getPollingInterval() {

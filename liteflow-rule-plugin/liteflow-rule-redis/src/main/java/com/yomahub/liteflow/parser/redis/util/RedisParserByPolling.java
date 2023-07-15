@@ -207,8 +207,8 @@ public class RedisParserByPolling implements RedisParserHelper{
 
     /**
      * 用于轮询chain的定时任务
-     * 首先根据hash中field数量的变化拉取新增的chain
-     * 再根据hash中value的SHA值修改变化的和被删除的chain
+     * 先根据hash中value的SHA值修改变化的和被删除的chain
+     * 再根据hash中field数量的变化拉取新增的chain
      */
     private Runnable pollChainTask(String keyLua, String valueLua) {
         Runnable r = () -> {
