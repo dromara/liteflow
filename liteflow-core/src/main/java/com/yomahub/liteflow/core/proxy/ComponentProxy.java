@@ -10,6 +10,7 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.exception.ProxyException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
@@ -153,7 +154,7 @@ public class ComponentProxy {
 				return nodeComponent;
 			}
 			catch (Exception e) {
-				throw new LiteFlowException(e);
+				throw new ProxyException(e);
 			}
 		}).collect(Collectors.toList());
 	}
