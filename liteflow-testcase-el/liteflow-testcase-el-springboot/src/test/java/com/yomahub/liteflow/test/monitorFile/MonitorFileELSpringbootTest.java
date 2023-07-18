@@ -6,13 +6,14 @@ import cn.hutool.core.util.CharsetUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -21,6 +22,7 @@ import java.io.File;
 @SpringBootTest(classes = MonitorFileELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.monitorFile.cmp" })
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MonitorFileELSpringbootTest extends BaseTest {
 
 	@Resource
@@ -36,5 +38,29 @@ public class MonitorFileELSpringbootTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
+
+    /**
+     * 测试文件变更，但是 EL 规则错误情况
+     * 输出 ERROR 日志异常信息，但是不会停止监听线程，当下一次变更正确后替换为新规则
+     */
+    @Test
+    public void testMonitorError() throws Exception {
+        String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+        String content = FileUtil.readUtf8String(absolutePath);
+
+        // 错误规则配置
+        String newContent = content.replace("THEN(a, c, b);", "THEN(c, b, ;");
+        FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+        Thread.sleep(3000);
+        LiteflowResponse reloadFailedResponse = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertEquals("a==>c==>b", reloadFailedResponse.getExecuteStepStr());
+
+        // 再次变更正确
+        newContent = content.replace("THEN(a, c, b);", "THEN(c, b, a);");
+        FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+        Thread.sleep(3000);
+        LiteflowResponse reloadSuccessResponse = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertEquals("c==>b==>a", reloadSuccessResponse.getExecuteStepStr());
+    }
 
 }
