@@ -3,11 +3,7 @@ package com.yomahub.liteflow.test.def;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
-import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,8 +65,6 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	 * 修改数据库数据
 	 */
 	private void changeData() {
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
 			connection = dataSource.getConnection();
@@ -85,8 +79,6 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	 * 修改数据库数据
 	 */
 	private void changeScriptData() {
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
 			connection = dataSource.getConnection();
