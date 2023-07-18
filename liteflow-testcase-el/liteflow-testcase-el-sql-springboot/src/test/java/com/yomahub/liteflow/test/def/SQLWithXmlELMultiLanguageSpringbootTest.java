@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/application-xml.properties")
+@TestPropertySource(value = "classpath:/application-data-source-xml.properties")
 @SpringBootTest(classes = SQLWithXmlELMultiLanguageSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})

@@ -18,8 +18,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -28,7 +28,7 @@ import java.sql.Statement;
  * @since 2.9.0
  */
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/application-xml.properties")
+@TestPropertySource(value = "classpath:/application-data-source-xml.properties")
 @SpringBootTest(classes = SQLWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})
@@ -36,6 +36,8 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;
+	@Resource
+	private DataSource dataSource;
 
 	@Test
 	public void testSQLWithXml() {
@@ -71,8 +73,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
-			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
-					sqlParserVO.getPassword());
+			connection = dataSource.getConnection();
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='chain1'");
 		} catch (SQLException e) {
@@ -88,8 +89,7 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
 		Connection connection;
 		try {
-			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
-					sqlParserVO.getPassword());
+			connection = dataSource.getConnection();
 			Statement statement = connection.createStatement();
 			statement.executeUpdate(
 					"UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false;' WHERE SCRIPT_NODE_ID='x0'");
