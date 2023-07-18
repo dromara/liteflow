@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.def;
+package com.yomahub.liteflow.test.sql;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/application-data-source-xml.properties")
+@TestPropertySource(value = "classpath:/application-dynamic-data-source-xml.properties")
 @SpringBootTest(classes = SQLWithXmlELMultiLanguageSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})
