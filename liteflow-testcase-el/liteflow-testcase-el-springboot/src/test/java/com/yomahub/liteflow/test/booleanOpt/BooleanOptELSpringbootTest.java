@@ -39,7 +39,7 @@ public class BooleanOptELSpringbootTest extends BaseTest {
 	public void testBooleanOpt2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertEquals("x1==>x2==>x3==>a", response.getExecuteStepStr());
+		Assertions.assertEquals("x1==>a", response.getExecuteStepStr());
 	}
 
 	// IF情况下AND+NOT
@@ -64,4 +64,13 @@ public class BooleanOptELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("w1==>w2==>a==>bk==>w1==>w2==>a==>bk==>w1==>w2==>a==>bk==>w1==>w2==>a==>bk", response.getExecuteStepStr());
 	}
+
+	// AND + NOT 实现短路效果
+	@Test
+	public void testBooleanOpt6() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("x1==>b", response.getExecuteStepStr());
+	}
+
 }
