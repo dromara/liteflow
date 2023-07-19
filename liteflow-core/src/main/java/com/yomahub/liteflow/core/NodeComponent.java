@@ -126,7 +126,7 @@ public abstract class NodeComponent {
 
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
-			LOG.debug("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
+			LOG.info("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
 			// 往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
