@@ -25,4 +25,9 @@
     <chain name="chain5">
         WHILE(AND(w1, NOT(w2))).DO(a).BREAK(bk);
     </chain>
+
+    <chain name="chain6">
+        IF(AND(NOT(x1), x2, x3), a, b);
+    </chain>
+
 </flow>
