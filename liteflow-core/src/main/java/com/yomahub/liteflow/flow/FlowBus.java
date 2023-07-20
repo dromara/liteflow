@@ -93,7 +93,7 @@ public class FlowBus {
 		}
 
 		nodeMap.put(nodeId,
-				new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, type, null, nodeId)));
+				new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, type, nodeComponent.getName(), nodeId)));
 	}
 
 	/**
