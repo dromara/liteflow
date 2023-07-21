@@ -37,7 +37,7 @@ public class MonitorFileELDeclSpringbootTest extends BaseTest {
 		String content = FileUtil.readUtf8String(absolutePath);
 		String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-		Thread.sleep(1000);
+		Thread.sleep(3000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
