@@ -31,8 +31,9 @@ public class MonitorFileELSpringbootTest extends BaseTest {
         FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
 		String content = FileUtil.readUtf8String(absolutePath);
 		String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
+        Thread.sleep(1000);
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-		Thread.sleep(1000);
+		Thread.sleep(3000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
@@ -44,7 +45,6 @@ public class MonitorFileELSpringbootTest extends BaseTest {
     @Test
     public void testMonitorError() throws Exception {
         String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
-        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         String content = FileUtil.readUtf8String(absolutePath);
 
         // 错误规则配置
