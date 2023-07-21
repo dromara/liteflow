@@ -8,6 +8,7 @@ import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,12 @@ public class LiteflowMonitorFileTest extends BaseTest {
 		Thread.sleep(3000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
+	}
+
+	@AfterEach
+	public void afterEach(){
+		String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+		FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
 	}
 
 }

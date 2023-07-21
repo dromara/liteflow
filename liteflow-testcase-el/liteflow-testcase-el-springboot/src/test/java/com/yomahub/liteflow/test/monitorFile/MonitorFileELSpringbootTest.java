@@ -6,10 +6,7 @@ import cn.hutool.core.util.CharsetUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,10 +28,11 @@ public class MonitorFileELSpringbootTest extends BaseTest {
 	@Test
 	public void testMonitor() throws Exception {
 		String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
 		String content = FileUtil.readUtf8String(absolutePath);
 		String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
 		FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
 	}
@@ -46,21 +44,28 @@ public class MonitorFileELSpringbootTest extends BaseTest {
     @Test
     public void testMonitorError() throws Exception {
         String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         String content = FileUtil.readUtf8String(absolutePath);
 
         // 错误规则配置
-        String newContent = content.replace("THEN(a, c, b);", "THEN(c, b, ;");
+        String newContent = content.replace("THEN(a, b, c);", "THEN(c, b, ;");
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         Thread.sleep(3000);
         LiteflowResponse reloadFailedResponse = flowExecutor.execute2Resp("chain1", "arg");
-        Assertions.assertEquals("a==>c==>b", reloadFailedResponse.getExecuteStepStr());
+        Assertions.assertEquals("a==>b==>c", reloadFailedResponse.getExecuteStepStr());
 
         // 再次变更正确
-        newContent = content.replace("THEN(a, c, b);", "THEN(c, b, a);");
+        newContent = content.replace("THEN(a, b, c);", "THEN(c, b, a);");
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
-        Thread.sleep(3000);
+        Thread.sleep(1000);
         LiteflowResponse reloadSuccessResponse = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertEquals("c==>b==>a", reloadSuccessResponse.getExecuteStepStr());
+    }
+
+    @AfterEach
+    public void afterEach(){
+        String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
+        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
     }
 
 }
