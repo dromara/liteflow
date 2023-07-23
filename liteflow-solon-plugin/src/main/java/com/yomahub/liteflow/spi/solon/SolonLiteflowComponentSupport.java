@@ -14,7 +14,7 @@ import com.yomahub.liteflow.spi.LiteflowComponentSupport;
 public class SolonLiteflowComponentSupport implements LiteflowComponentSupport {
 
 	@Override
-	public String getCmpName(NodeComponent nodeComponent) {
+	public String getCmpName(Object nodeComponent) {
 		// 判断NodeComponent是否是标识了@LiteflowComponent的标注
 		// 如果标注了，那么要从中取到name字段
 		LiteflowComponent liteflowComponent = nodeComponent.getClass().getAnnotation(LiteflowComponent.class);

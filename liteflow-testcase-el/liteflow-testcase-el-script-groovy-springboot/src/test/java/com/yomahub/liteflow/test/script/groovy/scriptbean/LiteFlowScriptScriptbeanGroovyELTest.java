@@ -92,4 +92,13 @@ public class LiteFlowScriptScriptbeanGroovyELTest extends BaseTest {
 		Assertions.assertEquals("hello", context.get("demo"));
 	}
 
+	//测试用构造方法的方式注入bean的场景
+	@Test
+	public void testScriptBean8() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain8", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("hello,jordan", context.getData("demo"));
+	}
+
 }
