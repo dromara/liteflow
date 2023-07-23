@@ -12,15 +12,13 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import redis.clients.jedis.Jedis;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Redis 轮询机制实现类
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 
 public class RedisParserPollingMode implements RedisParserHelper {
@@ -42,6 +40,15 @@ public class RedisParserPollingMode implements RedisParserHelper {
 
     //scriptKey中value的SHA1加密值 用于轮询时确定value是否变化
     private Map<String, String> scriptSHAMap = new HashMap<>();
+
+    //定时任务线程池参数配置
+    private static final int CORE_POOL_SIZE = 1;
+
+    private static final int MAX_POOL_SIZE = 1;
+
+    private static final int QUEUE_CAPACITY = 5;
+
+    private static final Long KEEP_ALIVE_TIME = 1L;
 
     //计算hash中field数量的lua脚本
     private final String luaOfKey = "local keys = redis.call(\"hkeys\", KEYS[1]);\n" +
@@ -186,11 +193,15 @@ public class RedisParserPollingMode implements RedisParserHelper {
         String valueLuaOfChain = chainJedis.scriptLoad(luaOfValue);
 
         //定时任务线程池
-        ScheduledExecutorService pool = Executors.newScheduledThreadPool(10);
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+        ScheduledThreadPoolExecutor pollExecutor = new ScheduledThreadPoolExecutor(
+                CORE_POOL_SIZE,
+                new ThreadPoolExecutor.DiscardOldestPolicy());
+
 
         //添加轮询chain的定时任务
         ChainPollingTask chainTask = new ChainPollingTask(redisParserVO, chainJedis, chainNum, chainSHAMap, LOG);
-        pool.scheduleAtFixedRate(chainTask.pollChainTask(keyLuaOfChain, valueLuaOfChain),
+        pollExecutor.scheduleAtFixedRate(chainTask.pollChainTask(keyLuaOfChain, valueLuaOfChain),
                 60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
 
         //如果有脚本
@@ -202,7 +213,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
 
             //添加轮询script的定时任务
             ScriptPollingTask scriptTask = new ScriptPollingTask(redisParserVO, scriptJedis, scriptNum, scriptSHAMap, LOG);
-            pool.scheduleAtFixedRate(scriptTask.pollScriptTask(keyLuaOfScript, valueLuaOfScript),
+            pollExecutor.scheduleAtFixedRate(scriptTask.pollScriptTask(keyLuaOfScript, valueLuaOfScript),
                     60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
         }
     }

@@ -24,7 +24,7 @@ import java.util.Objects;
  * Redis解析器实现，只支持EL形式的XML，不支持其他的形式
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 
 public class RedisXmlELParser extends ClassXmlFlowELParser {

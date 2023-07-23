@@ -4,7 +4,7 @@ package com.yomahub.liteflow.parser.redis.mode;
  * 用于定义redis规则存储和监听方式的枚举类
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 public enum RedisParserMode {
 

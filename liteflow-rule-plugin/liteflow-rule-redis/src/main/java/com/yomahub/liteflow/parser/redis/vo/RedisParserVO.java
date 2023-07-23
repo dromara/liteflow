@@ -6,7 +6,7 @@ import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
  * 用于解析RuleSourceExtData的vo类，用于Redis模式中
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 
 public class RedisParserVO {

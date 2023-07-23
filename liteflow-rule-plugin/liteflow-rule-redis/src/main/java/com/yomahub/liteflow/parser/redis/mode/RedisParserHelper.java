@@ -15,7 +15,7 @@ import java.util.List;
  * Redis 解析器通用接口
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 
 public interface RedisParserHelper {

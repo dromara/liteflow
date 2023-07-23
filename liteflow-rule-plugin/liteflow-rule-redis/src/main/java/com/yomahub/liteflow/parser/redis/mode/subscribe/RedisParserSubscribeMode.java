@@ -28,7 +28,7 @@ import java.util.Set;
  * Redisson客户端 RMapCache存储结构
  *
  * @author hxinyu
- * @since  2.10.6
+ * @since  2.11.0
  */
 
 public class RedisParserSubscribeMode implements RedisParserHelper {

@@ -15,7 +15,7 @@ import java.util.Set;
  * 用于轮询script的定时任务
  *
  * @author hxinyu
- * @since 2.10.6
+ * @since 2.11.0
  */
 public class ScriptPollingTask {
 
