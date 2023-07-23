@@ -8,15 +8,14 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,7 +26,7 @@ import java.sql.Statement;
  * @author tangkc
  * @since 2.9.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/application-xml.properties")
 @SpringBootTest(classes = SQLWithXmlELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -40,27 +39,27 @@ public class SQLWithXmlELSpringbootTest extends BaseTest {
 	@Test
 	public void testSQLWithXml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertEquals("a==>b==>c", response.getExecuteStepStr());
+		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
 
 		// 修改数据库
 		changeData();
 
 		// 重新加载规则
 		flowExecutor.reloadRule();
-		Assert.assertEquals("a==>c==>b", flowExecutor.execute2Resp("chain1", "arg").getExecuteStepStr());
+		Assertions.assertEquals("a==>c==>b", flowExecutor.execute2Resp("chain1", "arg").getExecuteStepStr());
 	}
 
 	@Test
 	public void testSQLWithScriptXml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
 
 		// 修改数据库
 		changeScriptData();
 		// 重新加载规则
 		flowExecutor.reloadRule();
-		Assert.assertEquals("x0[if 脚本]", flowExecutor.execute2Resp("chain3", "arg").getExecuteStepStr());
+		Assertions.assertEquals("x0[if 脚本]", flowExecutor.execute2Resp("chain3", "arg").getExecuteStepStr());
 	}
 
 	/**

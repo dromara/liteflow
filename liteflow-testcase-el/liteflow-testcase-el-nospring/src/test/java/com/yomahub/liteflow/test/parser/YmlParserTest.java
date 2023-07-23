@@ -5,9 +5,9 @@ import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 非spring下的yml parser测试用例
@@ -19,7 +19,7 @@ public class YmlParserTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("parser/flow.el.yml");
@@ -30,7 +30,7 @@ public class YmlParserTest extends BaseTest {
 	@Test
 	public void testYmlParser() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

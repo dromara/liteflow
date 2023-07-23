@@ -10,7 +10,7 @@ import javax.annotation.Resource;
 @LiteflowComponent
 public class CmpConfig {
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "a")
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "a", nodeName = "A组件")
 	public void processA(NodeComponent bindCmp) {
 		System.out.println("ACmp executed!");
 	}

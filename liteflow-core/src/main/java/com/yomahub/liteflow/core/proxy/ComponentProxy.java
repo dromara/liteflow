@@ -2,10 +2,7 @@ package com.yomahub.liteflow.core.proxy;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
-import cn.hutool.core.util.ClassUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReflectUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.*;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -13,8 +10,10 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.exception.ProxyException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.spi.holder.LiteflowComponentSupportHolder;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -96,8 +96,23 @@ public class ComponentProxy {
 			boolean legal = classes.size() == 1;
 			if (!legal) {
 				throw new LiteFlowException("The cmpClass of the same nodeId must be the same,you declared nodeId:"
-						+ activeNodeId + ",cmpClass:" + classes);
+						+ activeNodeId + ",cmpClass:" + clazz);
 			}
+
+
+			String activeNodeName;
+			if (isMethodCreate){
+				// 获取process上的LiteflowMethod
+				LiteflowMethod mainliteflowMethod = methodList.stream().filter(liteflowMethod -> liteflowMethod.value().isMainMethod()).findFirst().orElse(null);
+				if (mainliteflowMethod == null){
+					String errMsg = StrUtil.format("you have not defined @LiteFlowMethod on the processXXX method in class {}", clazz.getName());
+					throw new LiteFlowException(errMsg);
+				}
+				activeNodeName = mainliteflowMethod.nodeName();
+			}else{
+				activeNodeName = LiteflowComponentSupportHolder.loadLiteflowComponentSupport().getCmpName(bean);
+			}
+
 			// 当前节点实际LiteflowRetry注解
 			AtomicReference<LiteflowRetry> liteflowRetryAtomicReference = new AtomicReference<>(null);
 			// 相同nodeId只能有一个LiteflowRetry定义方法,且必须再Process方法上
@@ -153,10 +168,12 @@ public class ComponentProxy {
 				NodeComponent nodeComponent = (NodeComponent) instance;
 				// 重设nodeId
 				nodeComponent.setNodeId(activeNodeId);
+				// 重设nodeName
+				nodeComponent.setName(activeNodeName);
 				return nodeComponent;
 			}
 			catch (Exception e) {
-				throw new LiteFlowException(e);
+				throw new ProxyException(e);
 			}
 		}).collect(Collectors.toList());
 	}
@@ -198,19 +215,24 @@ public class ComponentProxy {
 				.orElse(null);
 
 			// 如果被代理的对象里有此标注标的方法，则调用此被代理的对象里的方法，如果没有，则调用父类里的方法
-			// 进行检查，检查被代理的bean里是否有且仅有NodeComponent这个类型的参数
-			boolean checkFlag = liteFlowMethodBean.getMethod().getParameterTypes().length == 1
-					&& Arrays.asList(liteFlowMethodBean.getMethod().getParameterTypes()).contains(NodeComponent.class);
+			// 进行检查，检查被代理的bean里是否第一个参数为NodeComponent这个类型的
+			boolean checkFlag = liteFlowMethodBean.getMethod().getParameterTypes().length > 0
+					&& liteFlowMethodBean.getMethod().getParameterTypes()[0].equals(NodeComponent.class);
 			if (!checkFlag) {
 				String errMsg = StrUtil.format(
-						"Method[{}.{}] must have NodeComponent parameter(and only one parameter)",
+						"Method[{}.{}] must have NodeComponent parameter(first parameter is NodeComponent)",
 						bean.getClass().getName(), liteFlowMethodBean.getMethod().getName());
 				LOG.error(errMsg);
 				throw new ComponentMethodDefineErrorException(errMsg);
 			}
 
 			try {
-				return liteFlowMethodBean.getMethod().invoke(bean, proxy);
+				if (args.length > 0){
+					Object[] wrapArgs = ArrayUtil.insert(args, 0, proxy);
+					return liteFlowMethodBean.getMethod().invoke(bean, wrapArgs);
+				}else{
+					return liteFlowMethodBean.getMethod().invoke(bean, proxy);
+				}
 			}
 			catch (Exception e) {
 				InvocationTargetException targetEx = (InvocationTargetException) e;

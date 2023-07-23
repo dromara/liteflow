@@ -5,14 +5,12 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
-import java.util.Set;
 
 /**
  * spring环境下隐私投递的测试
@@ -20,7 +18,7 @@ import java.util.Set;
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/privateDelivery/application.xml")
 public class PrivateDeliveryELSpringTest extends BaseTest {
 
@@ -32,8 +30,8 @@ public class PrivateDeliveryELSpringTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		ConcurrentHashSet<Integer> set = context.getData("testSet");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals(100, set.size());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals(100, set.size());
 	}
 
 }

@@ -71,6 +71,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 	 * @param sqlParserVO sqlParserVO
 	 */
 	private void checkParserVO(SQLParserVO sqlParserVO) {
+		if (sqlParserVO.isDefaultDataSource()) {
+			return;
+		}
 		if (StrUtil.isEmpty(sqlParserVO.getUrl())) {
 			throw new ELSQLException(StrFormatter.format(ERROR_MSG_PATTERN, "url"));
 		}

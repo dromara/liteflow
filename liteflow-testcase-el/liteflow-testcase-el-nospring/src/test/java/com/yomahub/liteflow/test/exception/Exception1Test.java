@@ -12,9 +12,9 @@ import com.yomahub.liteflow.exception.FlowExecutorNotInitException;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 流程执行异常 单元测试
@@ -25,7 +25,7 @@ public class Exception1Test extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("exception/flow.el.xml");
@@ -36,24 +36,30 @@ public class Exception1Test extends BaseTest {
 	/**
 	 * 验证 chain 节点重复的异常
 	 */
-	@Test(expected = ChainDuplicateException.class)
+	@Test
 	public void testChainDuplicateException() {
-		LiteflowConfig config = LiteflowConfigGetter.get();
-		config.setRuleSource("exception/flow-exception.el.xml");
-		flowExecutor.reloadRule();
+		Assertions.assertThrows(ChainDuplicateException.class, () -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource("exception/flow-exception.el.xml");
+			flowExecutor.reloadRule();
+		});
 	}
 
-	@Test(expected = ConfigErrorException.class)
+	@Test
 	public void testConfigErrorException() {
-		flowExecutor.setLiteflowConfig(null);
-		flowExecutor.reloadRule();
+		Assertions.assertThrows(ConfigErrorException.class, () -> {
+			flowExecutor.setLiteflowConfig(null);
+			flowExecutor.reloadRule();
+		});
 	}
 
-	@Test(expected = FlowExecutorNotInitException.class)
+	@Test
 	public void testFlowExecutorNotInitException() {
-		LiteflowConfig config = LiteflowConfigGetter.get();
-		config.setRuleSource("error/flow.txt");
-		flowExecutor.reloadRule();
+		Assertions.assertThrows(FlowExecutorNotInitException.class, () -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource("error/flow.txt");
+			flowExecutor.reloadRule();
+		});
 	}
 
 }

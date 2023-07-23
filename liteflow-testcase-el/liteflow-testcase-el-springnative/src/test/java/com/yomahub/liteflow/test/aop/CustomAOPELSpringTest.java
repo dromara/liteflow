@@ -4,11 +4,11 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -18,7 +18,7 @@ import javax.annotation.Resource;
  * @author zendwang
  * @since 2.8.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/aop/application-custom.xml")
 public class CustomAOPELSpringTest extends BaseTest {
 
@@ -30,10 +30,10 @@ public class CustomAOPELSpringTest extends BaseTest {
 	public void testCustomAopS() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("before_after", context.getData("a"));
-		Assert.assertEquals("before_after", context.getData("b"));
-		Assert.assertEquals("before_after", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("before_after", context.getData("a"));
+		Assertions.assertEquals("before_after", context.getData("b"));
+		Assertions.assertEquals("before_after", context.getData("c"));
 	}
 
 	// 测试自定义AOP，并行场景
@@ -41,10 +41,10 @@ public class CustomAOPELSpringTest extends BaseTest {
 	public void testCustomAopP() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "it's a request");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("before_after", context.getData("a"));
-		Assert.assertEquals("before_after", context.getData("b"));
-		Assert.assertEquals("before_after", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("before_after", context.getData("a"));
+		Assertions.assertEquals("before_after", context.getData("b"));
+		Assertions.assertEquals("before_after", context.getData("c"));
 	}
 
 }

@@ -5,12 +5,12 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -21,7 +21,7 @@ import javax.annotation.Resource;
  * @since 2.8.0
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/aop/application-global.xml")
 public class GlobalAOPELSpringTest extends BaseTest {
 
@@ -33,12 +33,12 @@ public class GlobalAOPELSpringTest extends BaseTest {
 	public void testGlobalAopS() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("before_after", context.getData("a"));
-		Assert.assertEquals("before_after", context.getData("b"));
-		Assert.assertEquals("before_after", context.getData("c"));
-		Assert.assertEquals("before_after", context.getData("d"));
-		Assert.assertEquals("before_after", context.getData("e"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("before_after", context.getData("a"));
+		Assertions.assertEquals("before_after", context.getData("b"));
+		Assertions.assertEquals("before_after", context.getData("c"));
+		Assertions.assertEquals("before_after", context.getData("d"));
+		Assertions.assertEquals("before_after", context.getData("e"));
 	}
 
 	// 测试全局AOP，并行场景
@@ -46,26 +46,26 @@ public class GlobalAOPELSpringTest extends BaseTest {
 	public void testGlobalAopP() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "it's a request");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("before_after", context.getData("a"));
-		Assert.assertEquals("before_after", context.getData("b"));
-		Assert.assertEquals("before_after", context.getData("c"));
-		Assert.assertEquals("before_after", context.getData("d"));
-		Assert.assertEquals("before_after", context.getData("e"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("before_after", context.getData("a"));
+		Assertions.assertEquals("before_after", context.getData("b"));
+		Assertions.assertEquals("before_after", context.getData("c"));
+		Assertions.assertEquals("before_after", context.getData("d"));
+		Assertions.assertEquals("before_after", context.getData("e"));
 	}
 
 	@Test
 	public void testGlobalAopException() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a request");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertFalse(response.isSuccess());
-		Assert.assertEquals("before_after", context.getData("a"));
-		Assert.assertEquals("before_after", context.getData("b"));
-		Assert.assertEquals("before_after", context.getData("c"));
-		Assert.assertEquals("before_after", context.getData("f"));
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("before_after", context.getData("a"));
+		Assertions.assertEquals("before_after", context.getData("b"));
+		Assertions.assertEquals("before_after", context.getData("c"));
+		Assertions.assertEquals("before_after", context.getData("f"));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanScanCache() {
 		BaseTest.cleanScanCache();
 		ComponentScanner.cmpAroundAspect = null;

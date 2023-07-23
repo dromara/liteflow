@@ -7,16 +7,16 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp1.*;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 
 //基于builder模式的单元测试
 //这里只是最基本的builder模式的测试，只是为了验证在springboot模式下的正常性
 //更详细的builder模式测试用例会单独拉testcase去做
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 public class BuilderELSpringbootTest1 extends BaseTest {
 
 	@Inject
@@ -76,8 +76,8 @@ public class BuilderELSpringbootTest1 extends BaseTest {
 			.build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
 	}
 
 	// 基于普通组件的builder模式测试
@@ -134,8 +134,8 @@ public class BuilderELSpringbootTest1 extends BaseTest {
 			.build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a[组件A]==>b[组件B]==>e[组件E]==>c[组件C]==>d[组件D]", response.getExecuteStepStr());
 	}
 
 	@Test
@@ -168,8 +168,8 @@ public class BuilderELSpringbootTest1 extends BaseTest {
 		LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL("THEN(a1,c2,a2,c1)").build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
 	}
 
 }

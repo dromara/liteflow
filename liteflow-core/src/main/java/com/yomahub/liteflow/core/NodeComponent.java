@@ -112,11 +112,11 @@ public abstract class NodeComponent {
 			// 执行失败后回调方法
 			// 这里要注意，失败方法本身抛出错误，只打出堆栈，往外抛出的还是主要的异常
 			try {
-				self.onError();
+				self.onError(e);
 			}
 			catch (Exception ex) {
 				String errMsg = StrUtil.format("component[{}] onError method happens exception", this.getDisplayName());
-				LOG.error(errMsg);
+				LOG.error(errMsg, ex);
 			}
 			throw e;
 		}
@@ -126,7 +126,7 @@ public abstract class NodeComponent {
 
 			stopWatch.stop();
 			final long timeSpent = stopWatch.getTotalTimeMillis();
-			LOG.debug("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
+			LOG.info("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
 			// 往CmpStep中放入时间消耗信息
 			cmpStep.setTimeSpent(timeSpent);
@@ -142,7 +142,7 @@ public abstract class NodeComponent {
 	public void beforeProcess() {
 		// 全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		// 非spring环境下，全局切面为空实现
-		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(nodeId, this.getSlot());
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(this.self);
 	}
 
 	public abstract void process() throws Exception;
@@ -151,12 +151,12 @@ public abstract class NodeComponent {
 		// 如果需要在成功后回调某一个方法，请覆盖这个方法
 	}
 
-	public void onError() throws Exception {
+	public void onError(Exception e) throws Exception {
 		// 如果需要在抛错后回调某一段逻辑，请覆盖这个方法
 	}
 
 	public void afterProcess() {
-		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(nodeId, this.getSlot());
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(this.self);
 	}
 
 	// 是否进入该节点

@@ -6,9 +6,10 @@ import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.script.lua.contextbean.bean.CheckContext;
 import com.yomahub.liteflow.test.script.lua.contextbean.bean.Order2Context;
 import com.yomahub.liteflow.test.script.lua.contextbean.bean.OrderContext;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/contextbean/application.properties")
 @SpringBootTest(classes = LiteFlowScriptContextbeanLuaTest.class)
 @EnableAutoConfiguration
@@ -32,13 +33,13 @@ public class LiteFlowScriptContextbeanLuaTest extends BaseTest {
 	public void testContextBean1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg", OrderContext.class, CheckContext.class,
 				Order2Context.class);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		OrderContext orderContext = response.getContextBean(OrderContext.class);
 		CheckContext checkContext = response.getContextBean(CheckContext.class);
 		Order2Context order2Context = response.getContextBean(Order2Context.class);
-		Assert.assertEquals(30, orderContext.getOrderType());
-		Assert.assertEquals("d", checkContext.getSign());
-		Assert.assertEquals("order2", order2Context.getOrderNo());
+		Assertions.assertEquals(30, orderContext.getOrderType());
+		Assertions.assertEquals("d", checkContext.getSign());
+		Assertions.assertEquals("order2", order2Context.getOrderNo());
 	}
 
 	@Test
@@ -51,7 +52,7 @@ public class LiteFlowScriptContextbeanLuaTest extends BaseTest {
 		orderContext2.setOrderNo("order2");
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", null, orderContext, checkContext,
 				orderContext2);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 
 	}
 

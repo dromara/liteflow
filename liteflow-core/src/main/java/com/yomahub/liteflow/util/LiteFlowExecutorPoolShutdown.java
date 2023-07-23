@@ -5,7 +5,6 @@ import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 
-import javax.annotation.PreDestroy;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -17,7 +16,6 @@ public class LiteFlowExecutorPoolShutdown {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowExecutorPoolShutdown.class);
 
-	@PreDestroy
 	public void destroy() throws Exception {
 		ExecutorService executorService = ContextAwareHolder.loadContextAware().getBean("whenExecutors");
 

@@ -89,7 +89,7 @@ public class NodeComponentOfMethod extends NodeComponent {
 	}
 
 	@Override
-	public void onError() throws Exception {
+	public void onError(Exception e) throws Exception {
 		if (methodEnum != LiteFlowMethodEnum.ON_ERROR) {
 			return;
 		}

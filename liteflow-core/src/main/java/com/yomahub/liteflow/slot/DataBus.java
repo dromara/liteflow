@@ -136,9 +136,7 @@ public class DataBus {
 	public static void releaseSlot(int slotIndex) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		if (ObjectUtil.isNotNull(SLOTS.get(slotIndex))) {
-			if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-				LOG.info("slot[{}] released", slotIndex);
-			}
+			LOG.info("slot[{}] released", slotIndex);
 			SLOTS.remove(slotIndex);
 			QUEUE.add(slotIndex);
 			OCCUPY_COUNT.decrementAndGet();

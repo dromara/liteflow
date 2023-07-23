@@ -60,7 +60,7 @@ public class CmpConfig {
 	}
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.ON_ERROR, nodeId = "d")
-	public void onErrorD(NodeComponent bindCmp) throws Exception {
+	public void onErrorD(NodeComponent bindCmp, Exception e) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("error", "error:" + bindCmp.getNodeId());
 	}
@@ -73,7 +73,7 @@ public class CmpConfig {
 	}
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.ON_ERROR, nodeId = "e")
-	public void onErrorE(NodeComponent bindCmp) throws Exception {
+	public void onErrorE(NodeComponent bindCmp,Exception e) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		context.setData("error", "error:" + bindCmp.getNodeId());
 		throw new IllegalAccessException("错误事件回调本身抛出异常");

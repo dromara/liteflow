@@ -3,15 +3,14 @@ package com.yomahub.liteflow.test.monitor;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.monitor.MonitorBus;
-import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -21,7 +20,7 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/monitor/application.xml")
 public class MonitorELSpringTest extends BaseTest {
 
@@ -31,12 +30,12 @@ public class MonitorELSpringTest extends BaseTest {
 	@Test
 	public void testMonitor() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 
 		Thread.sleep(10000);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void clean() {
 		MonitorBus monitorBus = ContextAwareHolder.loadContextAware().getBean(MonitorBus.class);
 		monitorBus.closeScheduler();

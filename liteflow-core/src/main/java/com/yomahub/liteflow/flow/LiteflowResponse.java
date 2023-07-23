@@ -1,13 +1,13 @@
 package com.yomahub.liteflow.flow;
 
+import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * 执行结果封装类
@@ -101,9 +101,15 @@ public class LiteflowResponse {
 		return this.getSlot().getContextBean(contextBeanClazz);
 	}
 
-	public Map<String, CmpStep> getExecuteSteps() {
-		Map<String, CmpStep> map = new HashMap<>();
-		this.getSlot().getExecuteSteps().forEach(cmpStep -> map.put(cmpStep.getNodeId(), cmpStep));
+	public Map<String, List<CmpStep>> getExecuteSteps() {
+		Map<String, List<CmpStep>> map = new LinkedHashMap<>();
+		this.getSlot().getExecuteSteps().forEach(cmpStep -> {
+			if (map.containsKey(cmpStep.getNodeId())){
+				map.get(cmpStep.getNodeId()).add(cmpStep);
+			}else{
+				map.put(cmpStep.getNodeId(), ListUtil.toList(cmpStep));
+			}
+		});
 		return map;
 	}
 

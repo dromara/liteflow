@@ -12,7 +12,7 @@ import com.yomahub.liteflow.spi.LiteflowComponentSupport;
 public class LocalLiteflowComponentSupport implements LiteflowComponentSupport {
 
 	@Override
-	public String getCmpName(NodeComponent nodeComponent) {
+	public String getCmpName(Object nodeComponent) {
 		return null;
 	}
 

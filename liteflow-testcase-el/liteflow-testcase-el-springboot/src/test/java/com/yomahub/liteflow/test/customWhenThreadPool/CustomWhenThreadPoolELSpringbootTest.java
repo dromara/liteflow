@@ -4,16 +4,14 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -23,7 +21,6 @@ import javax.annotation.Resource;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/customWhenThreadPool/application.properties")
 @SpringBootTest(classes = CustomWhenThreadPoolELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -42,8 +39,8 @@ public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 	public void testGlobalThreadPool() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
 		DefaultContext context = response.getFirstContextBean();
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertTrue(context.getData("threadName").toString().startsWith("lf-when-thead"));
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("lf-when-thead"));
 	}
 
 	/**
@@ -53,8 +50,8 @@ public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 	public void testGlobalAndCustomWhenThreadPool() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response1.getFirstContextBean();
-		Assert.assertTrue(response1.isSuccess());
-		Assert.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
+		Assertions.assertTrue(response1.isSuccess());
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
 	}
 
 	/**
@@ -67,8 +64,8 @@ public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 		// chain配置同一个thead1
 		LiteflowResponse response2 = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response2.getFirstContextBean();
-		Assert.assertTrue(response2.isSuccess());
-		Assert.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
+		Assertions.assertTrue(response2.isSuccess());
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-when-1-thead"));
 
 	}
 

@@ -5,9 +5,9 @@ import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * 测试显示调用子流程(yml) 单元测试
@@ -18,7 +18,7 @@ public class SubflowYmlTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("subflow/flow.el.yml");
@@ -29,8 +29,8 @@ public class SubflowYmlTest extends BaseTest {
 	@Test
 	public void testExplicitSubFlowYml() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-		Assert.assertTrue(response.isSuccess());
-		Assert.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c==>b==>a==>e==>d", response.getExecuteStepStr());
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.spi.local;
 
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 
@@ -12,12 +13,12 @@ import com.yomahub.liteflow.spi.CmpAroundAspect;
 public class LocalCmpAroundAspect implements CmpAroundAspect {
 
 	@Override
-	public void beforeProcess(String nodeId, Slot slot) {
+	public void beforeProcess(NodeComponent cmp) {
 		// 无spring环境下为空实现
 	}
 
 	@Override
-	public void afterProcess(String nodeId, Slot slot) {
+	public void afterProcess(NodeComponent cmp) {
 		// 无spring环境下为空实现
 	}
 

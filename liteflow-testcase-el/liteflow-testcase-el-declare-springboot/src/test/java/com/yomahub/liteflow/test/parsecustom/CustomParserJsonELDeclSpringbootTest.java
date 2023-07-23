@@ -3,9 +3,10 @@ package com.yomahub.liteflow.test.parsecustom;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,7 +21,7 @@ import javax.annotation.Resource;
  * @author dongguo.tao
  * @since 2.5.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/parsecustom/application-custom-json.properties")
 @SpringBootTest(classes = CustomParserJsonELDeclSpringbootTest.class)
 @EnableAutoConfiguration
@@ -34,7 +35,7 @@ public class CustomParserJsonELDeclSpringbootTest extends BaseTest {
 	@Test
 	public void testJsonCustomParser() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "args");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

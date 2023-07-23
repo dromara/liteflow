@@ -2,15 +2,13 @@ package com.yomahub.liteflow.test.nullParam;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * 单元测试:传递null param导致NPE的优化代码
@@ -18,7 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author LeoLee
  * @since 2.6.6
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(value = "classpath:/nullParam/application.properties")
 @SpringBootTest(classes = NullParamELSpringbootTest.class)
 @EnableAutoConfiguration
@@ -34,7 +31,7 @@ public class NullParamELSpringbootTest {
 	@Test
 	public void testNullParam() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

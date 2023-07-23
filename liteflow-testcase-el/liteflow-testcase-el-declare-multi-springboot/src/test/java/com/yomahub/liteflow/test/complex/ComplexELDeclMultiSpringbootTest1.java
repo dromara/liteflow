@@ -3,9 +3,10 @@ package com.yomahub.liteflow.test.complex;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,7 +20,7 @@ import javax.annotation.Resource;
  *
  * @author Bryan.Zhang
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/complex/application1.properties")
 @SpringBootTest(classes = ComplexELDeclMultiSpringbootTest1.class)
 @EnableAutoConfiguration
@@ -35,7 +36,7 @@ public class ComplexELDeclMultiSpringbootTest1 extends BaseTest {
 	@Test
 	public void testComplex1_1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1_1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试复杂例子，优化后
@@ -44,7 +45,7 @@ public class ComplexELDeclMultiSpringbootTest1 extends BaseTest {
 	@Test
 	public void testComplex1_2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1_2", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 }

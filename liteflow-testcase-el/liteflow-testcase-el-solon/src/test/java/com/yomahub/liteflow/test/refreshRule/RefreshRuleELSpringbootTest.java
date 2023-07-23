@@ -6,11 +6,11 @@ import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
+import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
@@ -19,7 +19,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SolonJUnit4ClassRunner.class)
+@ExtendWith(SolonJUnit5Extension.class)
 @TestPropertySource("classpath:/refreshRule/application.properties")
 public class RefreshRuleELSpringbootTest extends BaseTest {
 
@@ -32,7 +32,7 @@ public class RefreshRuleELSpringbootTest extends BaseTest {
 		String content = ResourceUtil.readUtf8Str("classpath: /refreshRule/flow_update.el.xml");
 		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, content);
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试优雅刷新的场景
@@ -52,7 +52,7 @@ public class RefreshRuleELSpringbootTest extends BaseTest {
 
 		for (int i = 0; i < 500; i++) {
 			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-			Assert.assertTrue(response.isSuccess());
+			Assertions.assertTrue(response.isSuccess());
 			try {
 				Thread.sleep(10L);
 			}

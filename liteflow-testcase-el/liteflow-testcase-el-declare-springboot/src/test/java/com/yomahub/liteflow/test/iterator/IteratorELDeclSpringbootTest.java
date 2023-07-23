@@ -5,9 +5,10 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,7 +24,7 @@ import java.util.List;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/iterator/application.properties")
 @SpringBootTest(classes = IteratorELDeclSpringbootTest.class)
 @EnableAutoConfiguration
@@ -38,10 +39,10 @@ public class IteratorELDeclSpringbootTest extends BaseTest {
 	public void testIt1() throws Exception {
 		List<String> list = ListUtil.toList("1", "2", "3");
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		String str = context.getData("test");
-		Assert.assertEquals("123", str);
+		Assertions.assertEquals("123", str);
 	}
 
 	// 迭代器带break
@@ -49,10 +50,10 @@ public class IteratorELDeclSpringbootTest extends BaseTest {
 	public void testIt2() throws Exception {
 		List<String> list = ListUtil.toList("1", "2", "3");
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		String str = context.getData("test");
-		Assert.assertEquals("12", str);
+		Assertions.assertEquals("12", str);
 	}
 
 }

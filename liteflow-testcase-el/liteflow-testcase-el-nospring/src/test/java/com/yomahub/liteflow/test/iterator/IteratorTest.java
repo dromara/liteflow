@@ -7,9 +7,9 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class IteratorTest extends BaseTest {
 
 	private static FlowExecutor flowExecutor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("iterator/flow.xml");
@@ -29,10 +29,10 @@ public class IteratorTest extends BaseTest {
 	public void testIt1() throws Exception {
 		List<String> list = ListUtil.toList("1", "2", "3");
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", list);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		String str = context.getData("test");
-		Assert.assertEquals("123", str);
+		Assertions.assertEquals("123", str);
 	}
 
 	// 迭代器带break
@@ -40,10 +40,10 @@ public class IteratorTest extends BaseTest {
 	public void testIt2() throws Exception {
 		List<String> list = ListUtil.toList("1", "2", "3");
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", list);
-		Assert.assertTrue(response.isSuccess());
+		Assertions.assertTrue(response.isSuccess());
 		DefaultContext context = response.getFirstContextBean();
 		String str = context.getData("test");
-		Assert.assertEquals("12", str);
+		Assertions.assertEquals("12", str);
 	}
 
 }

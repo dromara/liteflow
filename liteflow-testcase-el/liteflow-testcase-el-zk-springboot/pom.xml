@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-script-javascript</artifactId>
+            <artifactId>liteflow-script-graaljs</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>
