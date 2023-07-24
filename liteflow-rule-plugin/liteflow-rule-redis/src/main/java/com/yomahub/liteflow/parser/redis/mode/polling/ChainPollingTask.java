@@ -8,9 +8,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import redis.clients.jedis.Jedis;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 用于轮询chain的定时任务
@@ -52,6 +50,7 @@ public class ChainPollingTask {
             //修改chainNum为最新chain数量
             chainNum = Integer.parseInt(keyNum);
 
+            List<String> needDelete = new ArrayList<>();
             //遍历Map,判断各个chain的value有无变化：修改变化了值的chain和被删除的chain
             for(Map.Entry<String, String> entry: chainSHAMap.entrySet()) {
                 String chainId = entry.getKey();
@@ -63,19 +62,25 @@ public class ChainPollingTask {
                     FlowBus.removeChain(chainId);
                     LOG.info("starting reload flow config... delete key={}", chainId);
 
-                    //修改SHAMap
-                    chainSHAMap.remove(chainId);
+                    //添加到待删除的list 后续统一从SHAMap中移除
+                    //不在这里直接移除是为了避免先删除导致chainSHAMap并没有完全遍历完 chain删除不全
+                    needDelete.add(chainId);
                 }
                 else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该chain的值已被修改,重新拉取变化的chain
                     String chainData = chainJedis.hget(chainKey, chainId);
                     LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
-                    LOG.info("starting poll flow config... update key={} new value={},", chainId, chainData);
+                    LOG.info("starting reload flow config... update key={} new value={},", chainId, chainData);
 
                     //修改SHAMap
                     chainSHAMap.put(chainId, newSHA);
                 }
                 //SHA值无变化,表示该chain未改变
+            }
+
+            //统一从SHAMap中移除要删除的chain
+            for (String chainId : needDelete) {
+                chainSHAMap.remove(chainId);
             }
 
             //处理新添加chain和chainId被修改的情况
@@ -91,7 +96,7 @@ public class ChainPollingTask {
                         //将新chainId添加到LiteFlowChainELBuilder和SHAMap
                         String chainData = chainJedis.hget(chainKey, chainId);
                         LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
-                        LOG.info("starting poll flow config... update key={} new value={},", chainId, chainData);
+                        LOG.info("starting reload flow config... create key={} new value={},", chainId, chainData);
                         chainSHAMap.put(chainId, DigestUtil.sha1Hex(chainData));
                     }
                 }

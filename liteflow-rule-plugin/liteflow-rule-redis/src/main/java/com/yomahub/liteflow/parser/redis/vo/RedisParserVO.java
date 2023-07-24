@@ -42,7 +42,7 @@ public class RedisParserVO {
         return host;
     }
 
-    public void setHost(String url) {
+    public void setHost(String host) {
         this.host = host;
     }
 

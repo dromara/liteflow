@@ -8,6 +8,8 @@ import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import redis.clients.jedis.Jedis;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +53,7 @@ public class ScriptPollingTask {
             //修改scriptNum为最新script数量
             scriptNum = Integer.parseInt(keyNum);
 
+            List<String> needDelete = new ArrayList<>();
             //遍历Map,判断各个script的value有无变化：修改变化了值的script和被删除的script
             for (Map.Entry<String, String> entry : scriptSHAMap.entrySet()) {
                 String scriptFieldValue = entry.getKey();
@@ -63,9 +66,11 @@ public class ScriptPollingTask {
                     FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
                     LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
 
-                    //修改SHAMap
-                    scriptSHAMap.remove(scriptFieldValue);
-                } else if (!StrUtil.equals(newSHA, oldSHA)) {
+                    //添加到待删除的list 后续统一从SHAMap中移除
+                    //不在这里直接移除是为了避免先删除导致scriptSHAMap并没有完全遍历完 script删除不全
+                    needDelete.add(scriptFieldValue);
+                }
+                else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
                     String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
                     RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
@@ -75,6 +80,11 @@ public class ScriptPollingTask {
                     scriptSHAMap.put(scriptFieldValue, newSHA);
                 }
                 //SHA值无变化,表示该script未改变
+            }
+
+            //统一从SHAMap中移除要删除的script
+            for (String scriptFieldValue : needDelete) {
+                scriptSHAMap.remove(scriptFieldValue);
             }
 
             //处理新添加script和script名被修改的情况
@@ -90,7 +100,7 @@ public class ScriptPollingTask {
                         //将新script添加到LiteFlowChainELBuilder和SHAMap
                         String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
                         RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
-                        LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
+                        LOG.info("starting reload flow config... create key={} new value={},", scriptFieldValue, scriptData);
                         scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));
                     }
                 }
