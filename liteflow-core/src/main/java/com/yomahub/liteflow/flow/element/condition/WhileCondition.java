@@ -4,6 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
+import com.yomahub.liteflow.thread.ExecutorHelper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 循环条件Condition
@@ -30,21 +37,47 @@ public class WhileCondition extends LoopCondition {
 
 		// 循环执行
 		int index = 0;
-		while (getWhileResult(slotIndex)) {
-			executableItem.setCurrChainId(this.getCurrChainId());
-			setLoopIndex(executableItem, index);
-			executableItem.execute(slotIndex);
-			// 如果break组件不为空，则去执行
-			if (ObjectUtil.isNotNull(breakItem)) {
-				breakItem.setCurrChainId(this.getCurrChainId());
-				setLoopIndex(breakItem, index);
-				breakItem.execute(slotIndex);
-				boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
-				if (isBreak) {
-					break;
+		if(!this.isParallel()){
+			//串行循环
+			while (getWhileResult(slotIndex)) {
+				executableItem.setCurrChainId(this.getCurrChainId());
+				setLoopIndex(executableItem, index);
+				executableItem.execute(slotIndex);
+				// 如果break组件不为空，则去执行
+				if (ObjectUtil.isNotNull(breakItem)) {
+					breakItem.setCurrChainId(this.getCurrChainId());
+					setLoopIndex(breakItem, index);
+					breakItem.execute(slotIndex);
+					boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
+					if (isBreak) {
+						break;
+					}
 				}
+				index++;
 			}
-			index++;
+		}else{
+			//并行循环逻辑
+			List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
+			//获取并行循环的线程池
+			ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor();
+			while (getWhileResult(slotIndex)){
+				CompletableFuture<LoopFutureObj> future =
+						CompletableFuture.supplyAsync(new LoopParallelSupplier(executableItem, this.getCurrChainId(), slotIndex, index), parallelExecutor);
+				futureList.add(future);
+				//break判断
+				if (ObjectUtil.isNotNull(breakItem)) {
+					breakItem.setCurrChainId(this.getCurrChainId());
+					setLoopIndex(breakItem, index);
+					breakItem.execute(slotIndex);
+					boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
+					if (isBreak) {
+						break;
+					}
+				}
+				index++;
+			}
+			//等待所有的异步执行完毕
+			handleFutureList(futureList);
 		}
 	}
 

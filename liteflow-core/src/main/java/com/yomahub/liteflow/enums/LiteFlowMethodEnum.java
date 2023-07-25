@@ -2,14 +2,19 @@ package com.yomahub.liteflow.enums;
 
 public enum LiteFlowMethodEnum {
 
-	PROCESS("process", true), PROCESS_SWITCH("processSwitch", true), PROCESS_IF("processIf", true),
-	PROCESS_FOR("processFor", true), PROCESS_WHILE("processWhile", true), PROCESS_BREAK("processBreak", true),
+	PROCESS("process", true),
+	PROCESS_SWITCH("processSwitch", true),
+	PROCESS_IF("processIf", true),
+	PROCESS_FOR("processFor", true),
+	PROCESS_WHILE("processWhile", true),
+	PROCESS_BREAK("processBreak", true),
 
 	PROCESS_ITERATOR("processIterator", true),
 
 	IS_ACCESS("isAccess", false),
 
-	IS_END("isEnd", false), IS_CONTINUE_ON_ERROR("isContinueOnError", false),
+	IS_END("isEnd", false),
+	IS_CONTINUE_ON_ERROR("isContinueOnError", false),
 
 	GET_NODE_EXECUTOR_CLASS("getNodeExecutorClass", false),
 
@@ -19,7 +24,10 @@ public enum LiteFlowMethodEnum {
 
 	BEFORE_PROCESS("beforeProcess", false),
 
-	AFTER_PROCESS("afterProcess", false);
+	AFTER_PROCESS("afterProcess", false),
+
+	GET_DISPLAY_NAME("getDisplayName", false)
+	;
 
 	private String methodName;
 

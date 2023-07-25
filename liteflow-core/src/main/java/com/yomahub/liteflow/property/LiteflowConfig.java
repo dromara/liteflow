@@ -103,6 +103,15 @@ public class LiteflowConfig {
 	// 规则文件/脚本文件变更监听
 	private Boolean enableMonitorFile = Boolean.FALSE;
 
+	//并行循环线程池所用class路径
+	private String parallelLoopExecutorClass;
+
+	//使用默认并行循环线程池时，最大线程数
+	private Integer parallelMaxWorkers;
+
+	//使用默认并行循环线程池时，最大队列数
+	private Integer parallelQueueLimit;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -408,5 +417,41 @@ public class LiteflowConfig {
 
 	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
+	}
+
+	public Integer getParallelMaxWorkers() {
+		if(ObjectUtil.isNull(parallelMaxWorkers)){
+			return 16;
+		}else{
+			return parallelMaxWorkers;
+		}
+	}
+
+	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
+		this.parallelMaxWorkers = parallelMaxWorkers;
+	}
+
+	public Integer getParallelQueueLimit() {
+		if(ObjectUtil.isNull(parallelQueueLimit)){
+			return 512;
+		}else{
+			return parallelQueueLimit;
+		}
+	}
+
+	public void setParallelQueueLimit(Integer parallelQueueLimit) {
+		this.parallelQueueLimit = parallelQueueLimit;
+	}
+
+	public String getParallelLoopExecutorClass() {
+		if (StrUtil.isBlank(parallelLoopExecutorClass)) {
+			return "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder";
+		}
+		else {
+			return parallelLoopExecutorClass;
+		}
+	}
+	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
+		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
 	}
 }

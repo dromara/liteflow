@@ -18,9 +18,15 @@ public @interface LiteflowMethod {
 
 	/**
 	 * 节点ID，用于区分节点 默认为空 则按照Spring模式下BeanName为准。
-	 * @return
+	 * @return nodeId
 	 */
 	String nodeId() default "";
+
+	/**
+	 * 节点Name
+	 * @return nodeName
+	 */
+	String nodeName() default "";
 
 	/**
 	 * CMP类型定义

@@ -113,6 +113,12 @@ public class ExecutorHelper {
 		return getExecutorService(clazz);
 	}
 
+	//构造并行循环的线程池
+	public ExecutorService buildLoopParallelExecutor(){
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
+	}
+
 	/**
 	 * 根据线程执行构建者Class类名获取ExecutorService实例
 	 */

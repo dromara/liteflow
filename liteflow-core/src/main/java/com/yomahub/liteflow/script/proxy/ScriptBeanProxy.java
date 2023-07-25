@@ -3,6 +3,7 @@ package com.yomahub.liteflow.script.proxy;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.exception.ProxyException;
 import com.yomahub.liteflow.exception.ScriptBeanMethodInvokeException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -10,8 +11,18 @@ import com.yomahub.liteflow.script.annotation.ScriptBean;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.method.ParameterDescription;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
+import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bytecode.constant.DefaultValue;
 import net.bytebuddy.matcher.ElementMatchers;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -56,19 +67,18 @@ public class ScriptBeanProxy {
 		}
 
 		try {
-			return new ByteBuddy().subclass(orignalClass)
-				.name(StrUtil.format("{}.ByteBuddy${}", ClassUtil.getPackage(orignalClass),
-						SerialsUtil.generateShortUUID()))
+			Class<?> c = new ByteBuddy().subclass(orignalClass).name(StrUtil.format("{}.ByteBuddy${}", ClassUtil.getPackage(orignalClass),SerialsUtil.generateShortUUID()))
 				.method(ElementMatchers.any())
 				.intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean, methodNameList)))
 				.annotateType(orignalClass.getAnnotations())
 				.make()
 				.load(ScriptBeanProxy.class.getClassLoader())
-				.getLoaded()
-				.newInstance();
+				.getLoaded();
+
+			return ReflectUtil.newInstanceIfPossible(c);
 		}
 		catch (Exception e) {
-			throw new LiteFlowException(e);
+			throw new ProxyException(e);
 		}
 
 	}
