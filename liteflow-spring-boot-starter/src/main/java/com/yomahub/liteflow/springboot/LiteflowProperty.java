@@ -80,6 +80,14 @@ public class LiteflowProperty {
 	// 规则文件/脚本文件变更监听
 	private Boolean enableMonitorFile;
 
+	private String parallelLoopExecutorClass;
+
+	//使用默认并行循环线程池时，最大线程数
+	private Integer parallelMaxWorkers;
+
+	//使用默认并行循环线程池时，最大队列数
+	private Integer parallelQueueLimit;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -256,5 +264,29 @@ public class LiteflowProperty {
 
 	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
+	}
+
+	public String getParallelLoopExecutorClass() {
+		return parallelLoopExecutorClass;
+	}
+
+	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
+		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
+	}
+
+	public Integer getParallelMaxWorkers() {
+		return parallelMaxWorkers;
+	}
+
+	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
+		this.parallelMaxWorkers = parallelMaxWorkers;
+	}
+
+	public Integer getParallelQueueLimit() {
+		return parallelQueueLimit;
+	}
+
+	public void setParallelQueueLimit(Integer parallelQueueLimit) {
+		this.parallelQueueLimit = parallelQueueLimit;
 	}
 }
