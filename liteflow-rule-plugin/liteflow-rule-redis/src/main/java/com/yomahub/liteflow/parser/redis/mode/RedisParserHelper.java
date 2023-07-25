@@ -20,7 +20,7 @@ import java.util.List;
 
 public interface RedisParserHelper {
 
-    LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
+    LFLog LOG = LFLoggerManager.getLogger(RedisParserHelper.class);
 
     String REDIS_URL_PATTERN = "redis://{}:{}";
 
