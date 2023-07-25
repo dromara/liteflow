@@ -32,7 +32,7 @@ public class JDBCHelper {
 
     private static final String SCRIPT_WITH_LANGUAG_SQL_PATTERN = "SELECT {},{},{},{},{} FROM {} WHERE {}=?";
 
-    private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
+    private static final String CHAIN_XML_PATTERN = "<chain name=\"{}\"><![CDATA[{}]]></chain>";
 
     private static final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 
