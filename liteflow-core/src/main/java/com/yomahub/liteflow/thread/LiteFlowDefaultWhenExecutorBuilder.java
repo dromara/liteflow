@@ -22,7 +22,7 @@ public class LiteFlowDefaultWhenExecutorBuilder implements ExecutorBuilder {
 			liteflowConfig = new LiteflowConfig();
 		}
 		return buildDefaultExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenMaxWorkers(),
-				liteflowConfig.getWhenQueueLimit(), "lf-when-thead-");
+				liteflowConfig.getWhenQueueLimit(), "when-thread-");
 	}
 
 }
