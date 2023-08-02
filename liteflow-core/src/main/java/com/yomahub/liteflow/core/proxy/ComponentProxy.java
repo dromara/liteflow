@@ -227,7 +227,7 @@ public class ComponentProxy {
 			}
 
 			try {
-				if (args.length > 0){
+				if (args != null && args.length > 0){
 					Object[] wrapArgs = ArrayUtil.insert(args, 0, proxy);
 					return liteFlowMethodBean.getMethod().invoke(bean, wrapArgs);
 				}else{
