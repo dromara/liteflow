@@ -64,7 +64,7 @@ public class SwitchCondition extends Condition {
 			}
 			else {
 				targetExecutor = targetList.stream()
-					.filter(executable -> executable.getId().equals(targetId))
+					.filter(executable -> ObjectUtil.equal(executable.getId(),targetId) )
 					.findFirst()
 					.orElse(null);
 			}
