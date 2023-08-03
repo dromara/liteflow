@@ -21,7 +21,7 @@ public class LiteFlowDefaultMainExecutorBuilder implements ExecutorBuilder {
 			liteflowConfig = new LiteflowConfig();
 		}
 		return buildDefaultExecutor(liteflowConfig.getMainExecutorWorks(), liteflowConfig.getMainExecutorWorks(), 200,
-				"lf-main-thead-");
+				"main-thread-");
 	}
 
 }
