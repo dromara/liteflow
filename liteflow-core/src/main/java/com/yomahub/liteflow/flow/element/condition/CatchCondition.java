@@ -7,6 +7,8 @@ import com.yomahub.liteflow.exception.CatchErrorException;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
@@ -18,13 +20,15 @@ import com.yomahub.liteflow.slot.Slot;
  */
 public class CatchCondition extends Condition {
 
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
+
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
 		Slot slot = DataBus.getSlot(slotIndex);
 		try {
 			Executable catchExecutable = this.getCatchItem();
 			if (ObjectUtil.isNull(catchExecutable)) {
-				String errorInfo = StrUtil.format("[{}]:no catch item find", slot.getRequestId());
+				String errorInfo = "no catch item find";
 				throw new CatchErrorException(errorInfo);
 			}
 			catchExecutable.setCurrChainId(this.getCurrChainId());
@@ -33,6 +37,7 @@ public class CatchCondition extends Condition {
 			//ChainEndException属于用户主动结束流程，不应该进入Catch的流程
 			throw e;
 		}catch (Exception e) {
+			LOG.error("catch exception:" + e.getMessage(), e);
 			Executable doExecutable = this.getDoItem();
 			if (ObjectUtil.isNotNull(doExecutable)) {
 				doExecutable.setCurrChainId(this.getCurrChainId());
