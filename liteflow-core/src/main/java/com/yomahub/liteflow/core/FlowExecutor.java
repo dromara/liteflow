@@ -199,7 +199,7 @@ public class FlowExecutor {
 		}
 
 		// 文件监听
-		if (liteflowConfig.getEnableMonitorFile()) {
+		if (isStart && liteflowConfig.getEnableMonitorFile()) {
 			try {
 				addMonitorFilePaths(rulePathList);
 				MonitorFile.getInstance().create();
