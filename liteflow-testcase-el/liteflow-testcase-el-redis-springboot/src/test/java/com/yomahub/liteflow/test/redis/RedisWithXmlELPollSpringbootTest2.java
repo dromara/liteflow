@@ -1,25 +1,22 @@
 package com.yomahub.liteflow.test.redis;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.FlowInitHook;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
-import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.thread.ExecutorHelper;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -35,20 +32,28 @@ import javax.annotation.Resource;
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/redis/application-poll-xml.properties")
-@SpringBootTest(classes = RedisWithXmlELPollSpringbootTest.class)
+@SpringBootTest(classes = RedisWithXmlELPollSpringbootTest2.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.redis.cmp"})
-public class RedisWithXmlELPollSpringbootTest extends BaseTest {
+public class RedisWithXmlELPollSpringbootTest2 extends BaseTest {
 
-    private static Jedis jedis;
+    @MockBean(name = "chainJedis")
+    private static Jedis chainJedis;
+
+    @MockBean(name = "scriptJedis")
+    private static Jedis scriptJedis;
 
     @Resource
     private FlowExecutor flowExecutor;
 
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
     @BeforeAll
     public static void setUpBeforeClass() {
-        jedis = new Jedis("localhost", 6379);
-        jedis.select(1);
+
         jedis.hset("pollScriptKey", "s11:script:脚本s11:groovy", "defaultContext.setData(\"test11\",\"hello s11\");");
         jedis.hset("pollScriptKey", "s22:script:脚本s22:js", "defaultContext.setData(\"test22\",\"hello s22\");");
         jedis.hset("pollScriptKey", "s33:script:脚本s33", "defaultContext.setData(\"test33\",\"hello s33\");");
