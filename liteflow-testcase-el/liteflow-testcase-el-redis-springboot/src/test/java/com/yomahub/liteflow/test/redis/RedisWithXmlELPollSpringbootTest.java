@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.redis;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -20,6 +21,8 @@ import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -62,12 +65,24 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         Set<String> chainNameSet = new HashSet<>();
         chainNameSet.add("chain11");
         String chainValue = "THEN(a, b, c);";
+        Object chainSHA = DigestUtil.sha1Hex(chainValue);
+
+        //SHA值用于测试修改chain的轮询刷新功能
+        String changeChainValue = "THEN(a, c);";
+        Object changeChainSHA = DigestUtil.sha1Hex(changeChainValue);
         when(chainJedis.hkeys("pollChainKey")).thenReturn(chainNameSet);
-        when(chainJedis.hget("pollChainKey", "chain11")).thenReturn(chainValue);
+        when(chainJedis.hget("pollChainKey", "chain11")).thenReturn(chainValue).thenReturn(changeChainValue);
+        when(chainJedis.evalsha(anyString(), anyInt(), anyString())).thenReturn(chainSHA).thenReturn(changeChainSHA);
 
         LiteflowResponse response = flowExecutor.execute2Resp("chain11", "arg");
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
+
+        flowExecutor.reloadRule();
+
+        response = flowExecutor.execute2Resp("chain11", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>c", response.getExecuteStepStr());
     }
 
     /**
