@@ -30,6 +30,7 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -56,6 +57,9 @@ public abstract class NodeComponent {
 	// 重试次数
 	private int retryCount = 0;
 
+	// 是否重写了rollback方法
+	private boolean isRollback = false;
+
 	// 在目标异常抛出时才重试
 	private Class<? extends Exception>[] retryForExceptions = new Class[] { Exception.class };
 
@@ -78,6 +82,14 @@ public abstract class NodeComponent {
 	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
+		// 反射判断是否重写了rollback方法
+		Class<?> clazz = this.getClass();
+		try {
+			Method method = clazz.getDeclaredMethod("rollback");
+			if(ObjectUtil.isNotNull(method))
+				this.setRollback(true);
+		} catch (Exception e) {
+		}
 	}
 
 	public void execute() throws Exception {
@@ -86,6 +98,7 @@ public abstract class NodeComponent {
 		// 在元数据里加入step信息
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
+		cmpStep.setInstance(this);
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -139,6 +152,37 @@ public abstract class NodeComponent {
 		}
 	}
 
+	public void doRollback() throws Exception {
+		Slot slot = this.getSlot();
+
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		cmpStep.setTag(this.getTag());
+		slot.addRollbackStep(cmpStep);
+
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		try {
+			self.rollback();
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		finally {
+			stopWatch.stop();
+			final long timeSpent = stopWatch.getTotalTimeMillis();
+			LOG.info("component[{}] rollback in {} milliseconds", this.getDisplayName(), timeSpent);
+
+			// 往CmpStep中放入时间消耗信息
+			cmpStep.setRollbackTimeSpent(timeSpent);
+			// 性能统计
+			if (ObjectUtil.isNotNull(monitorBus)) {
+				CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
+				monitorBus.addStatistics(statistics);
+			}
+		}
+	}
+
 	public void beforeProcess() {
 		// 全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
 		// 非spring环境下，全局切面为空实现
@@ -146,6 +190,10 @@ public abstract class NodeComponent {
 	}
 
 	public abstract void process() throws Exception;
+
+	public void rollback() throws Exception{
+		// 如果需要失败后回滚某个方法，请覆盖这个方法
+	};
 
 	public void onSuccess() throws Exception {
 		// 如果需要在成功后回调某一个方法，请覆盖这个方法
@@ -300,6 +348,14 @@ public abstract class NodeComponent {
 
 	public <T> T getSubChainReqDataInAsync() {
 		return getSlot().getChainReqDataFromQueue(this.getCurrChainId());
+	}
+
+	public boolean isRollback() {
+		return isRollback;
+	}
+
+	public void setRollback(boolean rollback) {
+		isRollback = rollback;
 	}
 
 	/**

@@ -26,7 +26,9 @@ public enum LiteFlowMethodEnum {
 
 	AFTER_PROCESS("afterProcess", false),
 
-	GET_DISPLAY_NAME("getDisplayName", false)
+	GET_DISPLAY_NAME("getDisplayName", false),
+
+	ROLLBACK("rollback", false)
 	;
 
 	private String methodName;

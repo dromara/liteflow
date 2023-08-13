@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.entity;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 
 /**
@@ -36,6 +37,11 @@ public class CmpStep {
 	// 有exception，success一定为false
 	// 但是success为false，不一定有exception，因为有可能没执行到，或者没执行结束(any)
 	private Exception exception;
+
+	private NodeComponent instance;
+
+	// 回滚消耗的时间
+	private Long rollbackTimeSpent;
 
 	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
 		this.nodeId = nodeId;
@@ -91,6 +97,22 @@ public class CmpStep {
 		this.exception = exception;
 	}
 
+	public NodeComponent getInstance() {
+		return instance;
+	}
+
+	public void setInstance(NodeComponent instance) {
+		this.instance = instance;
+	}
+
+	public Long getRollbackTimeSpent() {
+		return rollbackTimeSpent;
+	}
+
+	public void setRollbackTimeSpent(Long rollbackTimeSpent) {
+		this.rollbackTimeSpent = rollbackTimeSpent;
+	}
+
 	public String buildString() {
 		if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
 			if (StrUtil.isBlank(nodeName)) {
@@ -119,6 +141,31 @@ public class CmpStep {
 			else {
 				if (timeSpent != null) {
 					return StrUtil.format("{}[{}]<{}>", nodeId, nodeName, timeSpent);
+				}
+				else {
+					return StrUtil.format("{}[{}]", nodeId, nodeName);
+				}
+			}
+		}
+		else {
+			// 目前没有其他的类型
+			return null;
+		}
+	}
+
+	public String buildRollbackStringWithTime() {
+		if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
+			if (StrUtil.isBlank(nodeName)) {
+				if (rollbackTimeSpent != null) {
+					return StrUtil.format("{}<{}>", nodeId, rollbackTimeSpent);
+				}
+				else {
+					return StrUtil.format("{}", nodeId);
+				}
+			}
+			else {
+				if (rollbackTimeSpent != null) {
+					return StrUtil.format("{}[{}]<{}>", nodeId, nodeName, rollbackTimeSpent);
 				}
 				else {
 					return StrUtil.format("{}[{}]", nodeId, nodeName);
