@@ -21,11 +21,12 @@ import org.redisson.config.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Redis Pub/Sub机制实现类
- * Redisson客户端 RMapCache存储结构
+ * 使用 Redisson客户端 RMapCache存储结构
  *
  * @author hxinyu
  * @since  2.11.0
@@ -35,9 +36,9 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
 
     private final RedisParserVO redisParserVO;
 
-    private RedissonClient chainClient;
+    private RClient chainClient;
 
-    private RedissonClient scriptClient;
+    private RClient scriptClient;
 
     public RedisParserSubscribeMode(RedisParserVO redisParserVO) {
         this.redisParserVO = redisParserVO;
@@ -51,11 +52,11 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             }
             if (ObjectUtil.isNull(chainClient)) {
                 Config config = getRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
-                this.chainClient = Redisson.create(config);
+                this.chainClient = new RClient(Redisson.create(config));
                 //如果有脚本数据
                 if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
                     config = getRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
-                    this.scriptClient = Redisson.create(config);
+                    this.scriptClient = new RClient(Redisson.create(config));
                 }
             }
         }
@@ -86,16 +87,16 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
     public String getContent() {
         try {
             // 检查chainKey下有没有子节点
-            RMapCache<String, String> chainKey = chainClient.getMapCache(redisParserVO.getChainKey());
-            Set<String> chainNameSet = chainKey.keySet();
-            if (CollectionUtil.isEmpty(chainNameSet)) {
+            Map<String, String> chainMap = chainClient.getMap(redisParserVO.getChainKey());
+            if (CollectionUtil.isEmpty(chainMap)) {
                 throw new RedisException(StrUtil.format("There are no chains in key [{}]",
                         redisParserVO.getChainKey()));
             }
             // 获取chainKey下的所有子节点内容List
             List<String> chainItemContentList = new ArrayList<>();
-            for (String chainId : chainNameSet) {
-                String chainData = chainKey.get(chainId);
+            for (Map.Entry<String, String> entry : chainMap.entrySet()) {
+                String chainId = entry.getKey();
+                String chainData = entry.getValue();
                 if (StrUtil.isNotBlank(chainData)) {
                     chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainId, chainData));
                 }
@@ -106,19 +107,17 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             // 检查是否有脚本内容，如果有，进行脚本内容的获取
             String scriptAllContent = StrUtil.EMPTY;
             if (hasScript()) {
-                RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
-                Set<String> scriptFieldSet = scriptKey.keySet();
-
+                Map<String, String> scriptMap = scriptClient.getMap(redisParserVO.getScriptKey());
                 List<String> scriptItemContentList = new ArrayList<>();
-                for (String scriptFieldValue : scriptFieldSet) {
+                for (Map.Entry<String, String> entry : scriptMap.entrySet()) {
+                    String scriptFieldValue = entry.getKey();
+                    String scriptData = entry.getValue();
                     NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
                     if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
-                                        scriptFieldValue, scriptKey));
+                                        scriptFieldValue, redisParserVO.getScriptKey()));
                     }
-                    String scriptData = scriptKey.get(scriptFieldValue);
-
                     // 有语言类型
                     if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
                         scriptItemContentList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN,
@@ -150,9 +149,8 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
         }
         try {
             // 存在这个节点，但是子节点不存在
-            RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
-            Set<String> scriptKeySet = scriptKey.keySet();
-            return !CollUtil.isEmpty(scriptKeySet);
+            Map<String, String> scriptMap = scriptClient.getMap(redisParserVO.getScriptKey());
+            return !CollUtil.isEmpty(scriptMap);
         }
         catch (Exception e) {
             return false;
@@ -165,38 +163,38 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
     @Override
     public void listenRedis() {
         //监听 chain
-        RMapCache<String, String> chainKey = chainClient.getMapCache(redisParserVO.getChainKey());
+        String chainKey = redisParserVO.getChainKey();
         //添加新 chain
-        chainKey.addListener((EntryCreatedListener<String, String>) event -> {
+        chainClient.addListener(chainKey, (EntryCreatedListener<String, String>) event -> {
             LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
             LiteFlowChainELBuilder.createChain().setChainId(event.getKey()).setEL(event.getValue()).build();
         });
         //修改 chain
-        chainKey.addListener((EntryUpdatedListener<String, String>) event -> {
+        chainClient.addListener(chainKey, (EntryUpdatedListener<String, String>) event -> {
             LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
             LiteFlowChainELBuilder.createChain().setChainId(event.getKey()).setEL(event.getValue()).build();
         });
         //删除 chain
-        chainKey.addListener((EntryRemovedListener<String, String>) event -> {
+        chainClient.addListener(chainKey, (EntryRemovedListener<String, String>) event -> {
             LOG.info("starting reload flow config... delete key={}", event.getKey());
             FlowBus.removeChain(event.getKey());
         });
 
         //监听 script
         if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
-            RMapCache<String, String> scriptKey = scriptClient.getMapCache(redisParserVO.getScriptKey());
+            String scriptKey = redisParserVO.getScriptKey();
             //添加 script
-            scriptKey.addListener((EntryCreatedListener<String, String>) event -> {
+            scriptClient.addListener(scriptKey, (EntryCreatedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
                 RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
             });
             //修改 script
-            scriptKey.addListener((EntryUpdatedListener<String, String>) event -> {
+            scriptClient.addListener(scriptKey, (EntryUpdatedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
                 RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
             });
             //删除 script
-            scriptKey.addListener((EntryRemovedListener<String, String>) event -> {
+            scriptClient.addListener(scriptKey, (EntryRemovedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... delete key={}", event.getKey());
                 NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(event.getKey());
                 FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
