@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.redis;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.parser.redis.mode.subscribe.RClient;
+import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.AfterEach;

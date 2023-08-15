@@ -8,12 +8,11 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
+import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.redisson.Redisson;
-import org.redisson.api.RMapCache;
-import org.redisson.api.RedissonClient;
 import org.redisson.api.map.event.EntryCreatedListener;
 import org.redisson.api.map.event.EntryRemovedListener;
 import org.redisson.api.map.event.EntryUpdatedListener;
@@ -22,7 +21,6 @@ import org.redisson.config.Config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Redis Pub/Sub机制实现类
