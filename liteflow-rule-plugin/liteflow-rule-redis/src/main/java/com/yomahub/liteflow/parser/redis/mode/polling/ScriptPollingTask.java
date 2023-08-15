@@ -4,9 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
-import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class ScriptPollingTask {
 
     private RedisParserVO redisParserVO;
 
-    private Jedis scriptJedis;
+    private RClient scriptClient;
 
     private Integer scriptNum;
 
@@ -31,9 +31,9 @@ public class ScriptPollingTask {
 
     LFLog LOG;
 
-    public ScriptPollingTask(RedisParserVO redisParserVO, Jedis scriptJedis, Integer scriptNum, Map<String, String> scriptSHAMap, LFLog LOG) {
+    public ScriptPollingTask(RedisParserVO redisParserVO, RClient scriptClient, Integer scriptNum, Map<String, String> scriptSHAMap, LFLog LOG) {
         this.redisParserVO = redisParserVO;
-        this.scriptJedis = scriptJedis;
+        this.scriptClient = scriptClient;
         this.scriptNum = scriptNum;
         this.scriptSHAMap = scriptSHAMap;
         this.LOG = LOG;
@@ -49,7 +49,7 @@ public class ScriptPollingTask {
         Runnable r = () -> {
             String scriptKey = redisParserVO.getScriptKey();
             //Lua获取scriptKey中最新的script数量
-            String keyNum = scriptJedis.evalsha(keyLua, 1, scriptKey).toString();
+            String keyNum = scriptClient.evalSha(keyLua, scriptKey);
             //修改scriptNum为最新script数量
             scriptNum = Integer.parseInt(keyNum);
 
@@ -59,7 +59,7 @@ public class ScriptPollingTask {
                 String scriptFieldValue = entry.getKey();
                 String oldSHA = entry.getValue();
                 //在redis服务端通过Lua脚本计算SHA值
-                String newSHA = scriptJedis.evalsha(valueLua, 2, scriptKey, scriptFieldValue).toString();
+                String newSHA = scriptClient.evalSha(valueLua, scriptKey, scriptFieldValue);
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该script,表示该script已被删除
                     RedisParserHelper.NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
@@ -72,7 +72,7 @@ public class ScriptPollingTask {
                 }
                 else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
-                    String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
+                    String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
                     RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
                     LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
 
@@ -94,11 +94,11 @@ public class ScriptPollingTask {
                 // 2、修改了script名:因为遍历到旧的id时会取到nil,SHAMap会把原来的script删掉,但没有机会添加新的script
                 // 3、上述两者结合
                 //在此处重新拉取所有script名集合,补充添加新script
-                Set<String> newScriptSet = scriptJedis.hkeys(scriptKey);
+                Set<String> newScriptSet = scriptClient.hkeys(scriptKey);
                 for (String scriptFieldValue : newScriptSet) {
                     if (!scriptSHAMap.containsKey(scriptFieldValue)) {
                         //将新script添加到LiteFlowChainELBuilder和SHAMap
-                        String scriptData = scriptJedis.hget(scriptKey, scriptFieldValue);
+                        String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
                         RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
                         LOG.info("starting reload flow config... create key={} new value={},", scriptFieldValue, scriptData);
                         scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));

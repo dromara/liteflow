@@ -4,6 +4,7 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.*;
@@ -37,11 +38,11 @@ import static org.mockito.Mockito.when;
 @ComponentScan({"com.yomahub.liteflow.test.redis.cmp"})
 public class RedisWithXmlELPollSpringbootTest extends BaseTest {
 
-    @MockBean(name = "chainJedis")
-    private static Jedis chainJedis;
+    @MockBean(name = "chainClient")
+    private static RClient chainClient;
 
-    @MockBean(name = "scriptJedis")
-    private static Jedis scriptJedis;
+    @MockBean(name = "scriptClient")
+    private static RClient scriptClient;
 
     @Resource
     private FlowExecutor flowExecutor;
@@ -65,14 +66,14 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         chainNameSet.add("chain11");
         String chainValue = "THEN(a, b, c);";
         //SHA值用于测试修改chain的轮询刷新功能
-        Object chainSHA = DigestUtil.sha1Hex(chainValue);
+        String chainSHA = DigestUtil.sha1Hex(chainValue);
 
         //修改chain并更新SHA值
         String changeChainValue = "THEN(a, c);";
-        Object changeChainSHA = DigestUtil.sha1Hex(changeChainValue);
-        when(chainJedis.hkeys("pollChainKey")).thenReturn(chainNameSet);
-        when(chainJedis.hget("pollChainKey", "chain11")).thenReturn(chainValue).thenReturn(changeChainValue);
-        when(chainJedis.evalsha(anyString(), anyInt(), anyString())).thenReturn(chainSHA).thenReturn(changeChainSHA);
+        String changeChainSHA = DigestUtil.sha1Hex(changeChainValue);
+        when(chainClient.hkeys("pollChainKey")).thenReturn(chainNameSet);
+        when(chainClient.hget("pollChainKey", "chain11")).thenReturn(chainValue).thenReturn(changeChainValue);
+        when(chainClient.evalSha(anyString(), anyString())).thenReturn(chainSHA).thenReturn(changeChainSHA);
 
         //测试修改前的chain
         LiteflowResponse response = flowExecutor.execute2Resp("chain11", "arg");
@@ -95,8 +96,8 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         Set<String> chainNameSet = new HashSet<>();
         chainNameSet.add("chain22");
         String chainValue = "THEN(a, b, c, s11, s22, s33);";
-        when(chainJedis.hkeys("pollChainKey")).thenReturn(chainNameSet);
-        when(chainJedis.hget("pollChainKey", "chain22")).thenReturn(chainValue);
+        when(chainClient.hkeys("pollChainKey")).thenReturn(chainNameSet);
+        when(chainClient.hget("pollChainKey", "chain22")).thenReturn(chainValue);
 
         Set<String> scriptFieldSet = new HashSet<>();
         scriptFieldSet.add("s11:script:脚本s11:groovy");
@@ -106,21 +107,21 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         String s22 = "defaultContext.setData(\"test22\",\"hello s22\");";
         String s33 = "defaultContext.setData(\"test33\",\"hello s33\");";
         //SHA值用于测试修改script的轮询刷新功能
-        Object s11SHA = DigestUtil.sha1Hex(s11);
-        Object s22SHA = DigestUtil.sha1Hex(s22);
-        Object s33SHA = DigestUtil.sha1Hex(s33);
+        String s11SHA = DigestUtil.sha1Hex(s11);
+        String s22SHA = DigestUtil.sha1Hex(s22);
+        String s33SHA = DigestUtil.sha1Hex(s33);
         //修改script值并更新SHA值
         String changeS11 = "defaultContext.setData(\"test11\",\"hello world\");";
-        Object changeS11SHA = DigestUtil.sha1Hex(changeS11);
+        String changeS11SHA = DigestUtil.sha1Hex(changeS11);
 
-        when(scriptJedis.hkeys("pollScriptKey")).thenReturn(scriptFieldSet);
-        when(scriptJedis.hget("pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11).thenReturn(changeS11);
-        when(scriptJedis.hget("pollScriptKey", "s22:script:脚本s22:js")).thenReturn(s22);
-        when(scriptJedis.hget("pollScriptKey", "s33:script:脚本s33")).thenReturn(s33);
+        when(scriptClient.hkeys("pollScriptKey")).thenReturn(scriptFieldSet);
+        when(scriptClient.hget("pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11).thenReturn(changeS11);
+        when(scriptClient.hget("pollScriptKey", "s22:script:脚本s22:js")).thenReturn(s22);
+        when(scriptClient.hget("pollScriptKey", "s33:script:脚本s33")).thenReturn(s33);
         //分别模拟三个script的evalsha指纹值计算的返回值, 其中s11脚本修改 指纹值变化
-        when(scriptJedis.evalsha(anyString(), eq(2), eq("pollScriptKey"), eq("s11:script:脚本s11:groovy"))).thenReturn(s11SHA).thenReturn(changeS11SHA);
-        when(scriptJedis.evalsha(anyString(), eq(2), eq("pollScriptKey"), eq("s22:script:脚本s22:js"))).thenReturn(s22SHA);
-        when(scriptJedis.evalsha(anyString(), eq(2), eq("pollScriptKey"), eq("s33:script:脚本s33"))).thenReturn(s33SHA);
+        when(scriptClient.evalSha(anyString(), eq("pollScriptKey"), eq("s11:script:脚本s11:groovy"))).thenReturn(s11SHA).thenReturn(changeS11SHA);
+        when(scriptClient.evalSha(anyString(), eq("pollScriptKey"), eq("s22:script:脚本s22:js"))).thenReturn(s22SHA);
+        when(scriptClient.evalSha(anyString(), eq("pollScriptKey"), eq("s33:script:脚本s33"))).thenReturn(s33SHA);
 
         //测试修改前的script
         LiteflowResponse response = flowExecutor.execute2Resp("chain22", "arg");

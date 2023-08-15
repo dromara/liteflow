@@ -2,7 +2,6 @@ package com.yomahub.liteflow.parser.redis.mode.subscribe;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -62,23 +61,6 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             throw new RedisException(e.getMessage());
         }
 
-    }
-
-    private Config getRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
-        Config config = new Config();
-        String redisAddress = StrFormatter.format(REDIS_URL_PATTERN, redisParserVO.getHost(), redisParserVO.getPort());
-        //如果配置了密码
-        if (StrUtil.isNotBlank(redisParserVO.getPassword())) {
-            config.useSingleServer().setAddress(redisAddress)
-                    .setPassword(redisParserVO.getPassword())
-                    .setDatabase(dataBase);
-        }
-        //没有配置密码
-        else {
-            config.useSingleServer().setAddress(redisAddress)
-                    .setDatabase(dataBase);
-        }
-        return config;
     }
 
     @Override

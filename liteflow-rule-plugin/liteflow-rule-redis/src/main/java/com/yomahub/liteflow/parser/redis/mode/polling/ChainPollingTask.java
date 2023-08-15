@@ -5,8 +5,8 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
-import redis.clients.jedis.Jedis;
 
 import java.util.*;
 
@@ -20,7 +20,7 @@ public class ChainPollingTask {
 
     private RedisParserVO redisParserVO;
 
-    private Jedis chainJedis;
+    private RClient chainClient;
 
     private Integer chainNum;
 
@@ -28,9 +28,9 @@ public class ChainPollingTask {
 
     LFLog LOG;
 
-    public ChainPollingTask(RedisParserVO redisParserVO, Jedis chainJedis, Integer chainNum, Map<String, String> chainSHAMap, LFLog LOG) {
+    public ChainPollingTask(RedisParserVO redisParserVO, RClient chainClient, Integer chainNum, Map<String, String> chainSHAMap, LFLog LOG) {
         this.redisParserVO = redisParserVO;
-        this.chainJedis = chainJedis;
+        this.chainClient = chainClient;
         this.chainNum = chainNum;
         this.chainSHAMap = chainSHAMap;
         this.LOG = LOG;
@@ -46,7 +46,7 @@ public class ChainPollingTask {
         Runnable r = () -> {
             String chainKey = redisParserVO.getChainKey();
             //Lua获取chainKey中最新的chain数量
-            String keyNum = chainJedis.evalsha(keyLua, 1, chainKey).toString();
+            String keyNum = chainClient.evalSha(keyLua, chainKey);
             //修改chainNum为最新chain数量
             chainNum = Integer.parseInt(keyNum);
 
@@ -56,7 +56,7 @@ public class ChainPollingTask {
                 String chainId = entry.getKey();
                 String oldSHA = entry.getValue();
                 //在redis服务端通过Lua脚本计算SHA值
-                String newSHA = chainJedis.evalsha(valueLua, 2, chainKey, chainId).toString();
+                String newSHA = chainClient.evalSha(valueLua, chainKey, chainId);
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该chain,表示该chain已被删除
                     FlowBus.removeChain(chainId);
@@ -68,7 +68,7 @@ public class ChainPollingTask {
                 }
                 else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该chain的值已被修改,重新拉取变化的chain
-                    String chainData = chainJedis.hget(chainKey, chainId);
+                    String chainData = chainClient.hget(chainKey, chainId);
                     LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
                     LOG.info("starting reload flow config... update key={} new value={},", chainId, chainData);
 
@@ -90,11 +90,11 @@ public class ChainPollingTask {
                 // 2、修改了chainId:因为遍历到旧的id时会取到nil,SHAMap会把原来的chainId删掉,但没有机会添加新的chainId
                 // 3、上述两者结合
                 //在此处重新拉取所有chainId集合,补充添加新chain
-                Set<String> newChainSet = chainJedis.hkeys(chainKey);
+                Set<String> newChainSet = chainClient.hkeys(chainKey);
                 for (String chainId : newChainSet) {
                     if (!chainSHAMap.containsKey(chainId)) {
                         //将新chainId添加到LiteFlowChainELBuilder和SHAMap
-                        String chainData = chainJedis.hget(chainKey, chainId);
+                        String chainData = chainClient.hget(chainKey, chainId);
                         LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
                         LOG.info("starting reload flow config... create key={} new value={},", chainId, chainData);
                         chainSHAMap.put(chainId, DigestUtil.sha1Hex(chainData));

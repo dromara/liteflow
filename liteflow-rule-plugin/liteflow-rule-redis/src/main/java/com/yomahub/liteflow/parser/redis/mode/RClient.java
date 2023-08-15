@@ -33,7 +33,7 @@ public class RClient {
     /**
      * get hashmap of the key
      *
-     * @param key
+     * @param key hash name
      * @return hashmap
      */
     public Map<String, String> getMap(String key) {
@@ -53,8 +53,8 @@ public class RClient {
     /**
      * add listener of the key
      *
-     * @param key
-     * @param listener
+     * @param key hash name
+     * @param listener listener
      * @return listener id
      */
     public int addListener(String key, MapEntryListener listener) {
@@ -65,8 +65,8 @@ public class RClient {
     /**
      * get all keys of hash
      *
-     * @param key
-     * @return
+     * @param key hash name
+     * @return keySet
      */
     public Set<String> hkeys(String key) {
         RMap<String, String> map = redissonClient.getMap(key, new StringCodec());
@@ -76,9 +76,9 @@ public class RClient {
     /**
      * gey value of the key
      *
-     * @param key
-     * @param field
-     * @return
+     * @param key hash name
+     * @param field hash field
+     * @return hash value
      */
     public String hget(String key, String field) {
         RMap<String, String> map = redissonClient.getMap(key, new StringCodec());
@@ -87,7 +87,7 @@ public class RClient {
 
     /**
      * Loads Lua script into Redis scripts cache and returns its SHA-1 digest
-     * @param luaScript
+     * @param luaScript script
      * @return shaDigest
      */
     public String scriptLoad(String luaScript) {
@@ -97,9 +97,9 @@ public class RClient {
 
     /**
      * Executes Lua script stored in Redis scripts cache by SHA-1 digest
-     * @param shaDigest
-     * @param args
-     * @return
+     * @param shaDigest script cache by sha-1
+     * @param args script args
+     * @return string
      */
     public String evalSha(String shaDigest, String... args){
         RScript script = redissonClient.getScript(new StringCodec());

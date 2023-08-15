@@ -1,13 +1,15 @@
 package com.yomahub.liteflow.parser.redis.mode;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
+import org.redisson.config.Config;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ import java.util.List;
  * Redis 解析器通用接口
  *
  * @author hxinyu
- * @since  2.11.0
+ * @since 2.11.0
  */
 
 public interface RedisParserHelper {
@@ -40,9 +42,33 @@ public interface RedisParserHelper {
 
 
     /**
+     * 获取Redisson客户端的Config配置通用方法
+     * @param redisParserVO redisParserVO
+     * @param dataBase redisson连接的数据库号
+     * @return redisson config
+     */
+    default Config getRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
+        Config config = new Config();
+        String redisAddress = StrFormatter.format(REDIS_URL_PATTERN, redisParserVO.getHost(), redisParserVO.getPort());
+        //如果配置了密码
+        if (StrUtil.isNotBlank(redisParserVO.getPassword())) {
+            config.useSingleServer().setAddress(redisAddress)
+                    .setPassword(redisParserVO.getPassword())
+                    .setDatabase(dataBase);
+        }
+        //没有配置密码
+        else {
+            config.useSingleServer().setAddress(redisAddress)
+                    .setDatabase(dataBase);
+        }
+        return config;
+    }
+
+    /**
      * script节点的修改/添加
+     *
      * @param scriptFieldValue 新的script名
-     * @param newValue 新的script值
+     * @param newValue         新的script值
      */
     static void changeScriptNode(String scriptFieldValue, String newValue) {
         NodeSimpleVO nodeSimpleVO = convert(scriptFieldValue);
