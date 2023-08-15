@@ -24,7 +24,6 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -48,11 +47,6 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @AfterEach
     public void after() {

@@ -97,7 +97,7 @@ public class RClient {
 
     /**
      * Executes Lua script stored in Redis scripts cache by SHA-1 digest
-     * @param shaDigest script cache by sha-1
+     * @param shaDigest script cache by SHA-1
      * @param args script args
      * @return string
      */

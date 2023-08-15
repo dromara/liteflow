@@ -16,8 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import redis.clients.jedis.Jedis;
-
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,11 +44,6 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @AfterEach
     public void after() {
