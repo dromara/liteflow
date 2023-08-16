@@ -43,6 +43,7 @@
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 </project>

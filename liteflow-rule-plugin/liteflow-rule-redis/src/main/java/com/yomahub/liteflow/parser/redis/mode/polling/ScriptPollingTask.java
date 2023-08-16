@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
@@ -19,7 +20,7 @@ import java.util.Set;
  * @author hxinyu
  * @since 2.11.0
  */
-public class ScriptPollingTask {
+public class ScriptPollingTask implements Runnable {
 
     private RedisParserVO redisParserVO;
 
@@ -29,24 +30,29 @@ public class ScriptPollingTask {
 
     private Map<String, String> scriptSHAMap;
 
-    LFLog LOG;
+    private String keyLua;
 
-    public ScriptPollingTask(RedisParserVO redisParserVO, RClient scriptClient, Integer scriptNum, Map<String, String> scriptSHAMap, LFLog LOG) {
+    private String valueLua;
+
+    LFLog LOG = LFLoggerManager.getLogger(ScriptPollingTask.class);
+
+    public ScriptPollingTask(RedisParserVO redisParserVO, RClient scriptClient, Integer scriptNum, Map<String, String> scriptSHAMap, String keyLua, String valueLua) {
         this.redisParserVO = redisParserVO;
         this.scriptClient = scriptClient;
         this.scriptNum = scriptNum;
         this.scriptSHAMap = scriptSHAMap;
-        this.LOG = LOG;
+        this.keyLua = keyLua;
+        this.valueLua = valueLua;
     }
 
-
     /**
-     * 用于返回script轮询任务的Runnable实例
+     * 用于返回script轮询任务
      * 首先根据hash中field数量的变化拉取新增的script
      * 再根据hash中value的SHA值修改变化的和被删除的script
      */
-    public Runnable pollScriptTask(String keyLua, String valueLua) {
-        Runnable r = () -> {
+    @Override
+    public void run() {
+        try {
             String scriptKey = redisParserVO.getScriptKey();
             //Lua获取scriptKey中最新的script数量
             String keyNum = scriptClient.evalSha(keyLua, scriptKey);
@@ -105,7 +111,8 @@ public class ScriptPollingTask {
                     }
                 }
             }
-        };
-        return r;
+        } catch (Exception e) {
+            LOG.error("[Exception during script polling] " + e.getMessage(), e);
+        }
     }
 }

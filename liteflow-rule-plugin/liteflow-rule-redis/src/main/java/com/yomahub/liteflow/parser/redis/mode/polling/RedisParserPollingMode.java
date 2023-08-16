@@ -44,7 +44,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
     private Map<String, String> scriptSHAMap = new HashMap<>();
 
     //定时任务线程池核心线程数
-    private static final int CORE_POOL_SIZE = 1;
+    private static final int CORE_POOL_SIZE = 2;
 
     //计算hash中field数量的lua脚本
     private final String luaOfKey = "local keys = redis.call(\"hkeys\", KEYS[1]);\n" +
@@ -187,9 +187,9 @@ public class RedisParserPollingMode implements RedisParserHelper {
                 new ThreadPoolExecutor.DiscardOldestPolicy());
 
         //添加轮询chain的定时任务
-        ChainPollingTask chainTask = new ChainPollingTask(redisParserVO, chainClient, chainNum, chainSHAMap, LOG);
-        pollExecutor.scheduleAtFixedRate(chainTask.pollChainTask(keyLuaOfChain, valueLuaOfChain),
-                60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+        ChainPollingTask chainTask = new ChainPollingTask(redisParserVO, chainClient, chainNum, chainSHAMap, keyLuaOfChain, valueLuaOfChain);
+        pollExecutor.scheduleAtFixedRate(chainTask, redisParserVO.getPollingStartTime().longValue(),
+                redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
 
         //如果有脚本
         if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())
@@ -199,9 +199,9 @@ public class RedisParserPollingMode implements RedisParserHelper {
             String valueLuaOfScript = scriptClient.scriptLoad(luaOfValue);
 
             //添加轮询script的定时任务
-            ScriptPollingTask scriptTask = new ScriptPollingTask(redisParserVO, scriptClient, scriptNum, scriptSHAMap, LOG);
-            pollExecutor.scheduleAtFixedRate(scriptTask.pollScriptTask(keyLuaOfScript, valueLuaOfScript),
-                    60, redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+            ScriptPollingTask scriptTask = new ScriptPollingTask(redisParserVO, scriptClient, scriptNum, scriptSHAMap, keyLuaOfScript, valueLuaOfScript);
+            pollExecutor.scheduleAtFixedRate(scriptTask, redisParserVO.getPollingStartTime().longValue(),
+                    redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
         }
     }
 }

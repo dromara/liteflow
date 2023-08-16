@@ -5,6 +5,7 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 
@@ -16,7 +17,7 @@ import java.util.*;
  * @author hxinyu
  * @since  2.11.0
  */
-public class ChainPollingTask {
+public class ChainPollingTask implements Runnable {
 
     private RedisParserVO redisParserVO;
 
@@ -26,24 +27,29 @@ public class ChainPollingTask {
 
     private Map<String, String> chainSHAMap;
 
-    LFLog LOG;
+    private String keyLua;
 
-    public ChainPollingTask(RedisParserVO redisParserVO, RClient chainClient, Integer chainNum, Map<String, String> chainSHAMap, LFLog LOG) {
+    private String valueLua;
+
+    LFLog LOG = LFLoggerManager.getLogger(ChainPollingTask.class);
+
+    public ChainPollingTask(RedisParserVO redisParserVO, RClient chainClient, Integer chainNum, Map<String, String> chainSHAMap, String keyLua, String valueLua) {
         this.redisParserVO = redisParserVO;
         this.chainClient = chainClient;
         this.chainNum = chainNum;
         this.chainSHAMap = chainSHAMap;
-        this.LOG = LOG;
+        this.keyLua = keyLua;
+        this.valueLua = valueLua;
     }
 
-
     /**
-     * 用于返回chain轮询任务的Runnable实例
+     * 用于返回chain轮询任务
      * 先根据hash中value的SHA值修改变化的和被删除的chain
      * 再根据hash中field数量的变化拉取新增的chain
      */
-    public Runnable pollChainTask(String keyLua, String valueLua) {
-        Runnable r = () -> {
+    @Override
+    public void run() {
+        try {
             String chainKey = redisParserVO.getChainKey();
             //Lua获取chainKey中最新的chain数量
             String keyNum = chainClient.evalSha(keyLua, chainKey);
@@ -52,7 +58,7 @@ public class ChainPollingTask {
 
             List<String> needDelete = new ArrayList<>();
             //遍历Map,判断各个chain的value有无变化：修改变化了值的chain和被删除的chain
-            for(Map.Entry<String, String> entry: chainSHAMap.entrySet()) {
+            for (Map.Entry<String, String> entry : chainSHAMap.entrySet()) {
                 String chainId = entry.getKey();
                 String oldSHA = entry.getValue();
                 //在redis服务端通过Lua脚本计算SHA值
@@ -101,7 +107,8 @@ public class ChainPollingTask {
                     }
                 }
             }
-        };
-        return r;
+        } catch (Exception e) {
+            LOG.error("[Exception during chain polling] " + e.getMessage(), e);
+        }
     }
 }

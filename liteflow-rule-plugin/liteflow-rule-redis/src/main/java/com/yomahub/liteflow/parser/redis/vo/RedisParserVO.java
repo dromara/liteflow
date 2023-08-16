@@ -23,8 +23,11 @@ public class RedisParserVO {
     /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
     private RedisParserMode mode = RedisParserMode.POLL;
 
-    /*轮询时间间隔(s) 默认1分钟 若选择订阅机制可不配置*/
+    /*轮询时间间隔(s) 默认60s 若选择订阅机制可不配置*/
     private Integer pollingInterval = 60;
+
+    /*规则配置后首次轮询的起始时间 默认为60s 若选择订阅机制可不配置*/
+    private Integer pollingStartTime = 60;
 
     /*chain表配置的数据库号*/
     private Integer chainDataBase;
@@ -75,6 +78,14 @@ public class RedisParserVO {
         catch (Exception ignored) {
             //枚举类转换出错默认为轮询方式
         }
+    }
+
+    public Integer getPollingStartTime() {
+        return pollingStartTime;
+    }
+
+    public void setPollingStartTime(Integer pollingStartTime) {
+        this.pollingStartTime = pollingStartTime;
     }
 
     public Integer getPollingInterval() {
