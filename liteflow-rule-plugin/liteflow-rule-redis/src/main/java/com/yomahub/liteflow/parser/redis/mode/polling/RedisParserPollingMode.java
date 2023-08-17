@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.redis.mode.polling;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
@@ -46,6 +47,9 @@ public class RedisParserPollingMode implements RedisParserHelper {
     //定时任务线程池核心线程数
     private static final int CORE_POOL_SIZE = 2;
 
+    //定时任务线程池
+    private ScheduledThreadPoolExecutor pollExecutor;
+
     //计算hash中field数量的lua脚本
     private final String luaOfKey = "local keys = redis.call(\"hkeys\", KEYS[1]);\n" +
             "return #keys;\n";
@@ -78,6 +82,14 @@ public class RedisParserPollingMode implements RedisParserHelper {
                     config = getRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
                     this.scriptClient = new RClient(Redisson.create(config));
                 }
+            }
+            //创建定时任务线程池
+            if (ObjectUtil.isNull(pollExecutor)) {
+                ThreadFactory namedThreadFactory = new NamedThreadFactory("RedisParser-Polling-Thread-", false);
+                pollExecutor = new ScheduledThreadPoolExecutor(
+                        CORE_POOL_SIZE,
+                        namedThreadFactory,
+                        new ThreadPoolExecutor.DiscardOldestPolicy());
             }
         }
         catch (Exception e) {
@@ -180,11 +192,6 @@ public class RedisParserPollingMode implements RedisParserHelper {
         //将lua脚本添加到chainJedis脚本缓存
         String keyLuaOfChain = chainClient.scriptLoad(luaOfKey);
         String valueLuaOfChain = chainClient.scriptLoad(luaOfValue);
-
-        //定时任务线程池
-        ScheduledThreadPoolExecutor pollExecutor = new ScheduledThreadPoolExecutor(
-                CORE_POOL_SIZE,
-                new ThreadPoolExecutor.DiscardOldestPolicy());
 
         //添加轮询chain的定时任务
         ChainPollingTask chainTask = new ChainPollingTask(redisParserVO, chainClient, chainNum, chainSHAMap, keyLuaOfChain, valueLuaOfChain);
