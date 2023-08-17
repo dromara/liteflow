@@ -11,6 +11,7 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
@@ -108,6 +109,17 @@ public abstract class NodeComponent {
 			// 步骤状态设为false，并加入异常
 			cmpStep.setSuccess(false);
 			cmpStep.setException(e);
+
+			if (!(e instanceof ChainEndException)){
+				String chainId = this.getCurrChainId();
+				// 这里事先取到exception set到slot里，为了方便finally取到exception
+				if (slot.isSubChain(chainId)) {
+					slot.setSubException(chainId, e);
+				}
+				else {
+					slot.setException(e);
+				}
+			}
 
 			// 执行失败后回调方法
 			// 这里要注意，失败方法本身抛出错误，只打出堆栈，往外抛出的还是主要的异常
