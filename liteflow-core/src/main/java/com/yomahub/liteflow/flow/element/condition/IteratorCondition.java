@@ -90,6 +90,7 @@ public class IteratorCondition extends LoopCondition {
                     if (ObjectUtil.isNotNull(breakItem)) {
                         breakItem.setCurrChainId(this.getCurrChainId());
                         setLoopIndex(breakItem, index);
+                        setCurrLoopObject(breakItem, itObj);
                         breakItem.execute(slotIndex);
                         boolean isBreak = breakItem.getItemResultMetaValue(slotIndex);
                         if (isBreak) {
