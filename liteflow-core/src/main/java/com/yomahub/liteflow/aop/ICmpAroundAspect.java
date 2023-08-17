@@ -22,4 +22,8 @@ public interface ICmpAroundAspect {
 
 	void afterProcess(NodeComponent cmp);
 
+	void onSuccess(NodeComponent cmp);
+
+	void onError(NodeComponent cmp, Exception e);
+
 }

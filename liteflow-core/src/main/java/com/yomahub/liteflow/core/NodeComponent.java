@@ -110,17 +110,6 @@ public abstract class NodeComponent {
 			cmpStep.setSuccess(false);
 			cmpStep.setException(e);
 
-			if (!(e instanceof ChainEndException)){
-				String chainId = this.getCurrChainId();
-				// 这里事先取到exception set到slot里，为了方便finally取到exception
-				if (slot.isSubChain(chainId)) {
-					slot.setSubException(chainId, e);
-				}
-				else {
-					slot.setException(e);
-				}
-			}
-
 			// 执行失败后回调方法
 			// 这里要注意，失败方法本身抛出错误，只打出堆栈，往外抛出的还是主要的异常
 			try {
@@ -161,10 +150,16 @@ public abstract class NodeComponent {
 
 	public void onSuccess() throws Exception {
 		// 如果需要在成功后回调某一个方法，请覆盖这个方法
+		// 全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
+		// 非spring环境下，全局切面为空实现
+		CmpAroundAspectHolder.loadCmpAroundAspect().onSuccess(this.self);
 	}
 
 	public void onError(Exception e) throws Exception {
 		// 如果需要在抛错后回调某一段逻辑，请覆盖这个方法
+		// 全局切面只在spring体系下生效，这里用了spi机制取到相应环境下的实现类
+		// 非spring环境下，全局切面为空实现
+		CmpAroundAspectHolder.loadCmpAroundAspect().onError(this.self, e);
 	}
 
 	public void afterProcess() {
