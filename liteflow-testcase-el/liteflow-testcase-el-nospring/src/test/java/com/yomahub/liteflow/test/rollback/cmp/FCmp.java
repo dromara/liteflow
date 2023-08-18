@@ -1,9 +1,7 @@
 package com.yomahub.liteflow.test.rollback.cmp;
 
 import com.yomahub.liteflow.core.NodeSwitchComponent;
-import org.springframework.stereotype.Component;
 
-@Component("f")
 public class FCmp extends NodeSwitchComponent {
 
     @Override

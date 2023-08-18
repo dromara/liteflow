@@ -8,4 +8,27 @@
         THEN( a, b, WHEN(c, d) );
     </chain>
 
+    <chain name="chain3">
+        THEN( IF(x, d, a), CATCH(IF(x, d, a)) );
+    </chain>
+
+    <chain name="chain4">
+        SWITCH(f).TO(a, b).DEFAULT(d);
+    </chain>
+
+    <chain name="chain5">
+        FOR(g).DO(THEN(b, c)).BREAK(h);;
+    </chain>
+
+    <chain name="chain6">
+        WHILE(w).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain7">
+        ITERATOR(i).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain8">
+        CATCH( THEN(b, c, d) ).DO(a);
+    </chain>
 </flow>
