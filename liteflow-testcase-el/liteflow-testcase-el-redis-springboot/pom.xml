@@ -35,6 +35,7 @@
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-groovy</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
