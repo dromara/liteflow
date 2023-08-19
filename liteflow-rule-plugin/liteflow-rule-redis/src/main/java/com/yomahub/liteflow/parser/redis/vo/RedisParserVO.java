@@ -1,9 +1,12 @@
 package com.yomahub.liteflow.parser.redis.vo;
 
+import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
 
+import java.util.List;
+
 /**
- * 用于解析RuleSourceExtData的vo类，用于Redis模式中
+ * 用于解析RuleSourceExtData的vo类, 用于Redis模式中
  *
  * @author hxinyu
  * @since  2.11.0
@@ -11,11 +14,23 @@ import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
 
 public class RedisParserVO {
 
-    /*连接地址*/
+    /*Redis配置模式 单点/哨兵, 默认为单点模式*/
+    private RedisMode redisMode = RedisMode.SINGLE;
+
+    /*单点模式 连接地址*/
     private String host;
 
-    /*端口号*/
+    /*单点模式 端口号*/
     private Integer port;
+
+    /*哨兵模式 主节点名*/
+    private String masterName;
+
+    /*哨兵模式 哨兵节点连接地址 ip:port, 可配置多个*/
+    private List<String> sentinelAddress;
+
+    /*用户名 需要Redis 6.0及以上*/
+    private String username;
 
     /*密码*/
     private String password;
@@ -41,6 +56,21 @@ public class RedisParserVO {
     /*脚本配置的键名 若没有脚本数据可不配置*/
     private String scriptKey;
 
+    public void setRedisMode(String redisMode) {
+        redisMode = redisMode.toUpperCase();
+        try{
+            RedisMode m = RedisMode.valueOf(redisMode);
+            this.redisMode = m;
+        }
+        catch (Exception ignored) {
+            //转换出错默认为单点模式
+        }
+    }
+
+    public RedisMode getRedisMode() {
+        return redisMode;
+    }
+
     public String getHost() {
         return host;
     }
@@ -55,6 +85,30 @@ public class RedisParserVO {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getMasterName() {
+        return masterName;
+    }
+
+    public void setMasterName(String masterName) {
+        this.masterName = masterName;
+    }
+
+    public List<String> getSentinelAddress() {
+        return sentinelAddress;
+    }
+
+    public void setSentinelAddress(List<String> sentinelAddress) {
+        this.sentinelAddress = sentinelAddress;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -126,5 +180,25 @@ public class RedisParserVO {
 
     public void setScriptKey(String scriptKey) {
         this.scriptKey = scriptKey;
+    }
+
+    @Override
+    public String toString() {
+        return "RedisParserVO{" +
+                "redisMode=" + redisMode +
+                ", host='" + host + '\'' +
+                ", port=" + port +
+                ", masterName=" + masterName +
+                ", sentinelAddress=" + sentinelAddress +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", mode=" + mode +
+                ", pollingInterval=" + pollingInterval +
+                ", pollingStartTime=" + pollingStartTime +
+                ", chainDataBase=" + chainDataBase +
+                ", chainKey='" + chainKey + '\'' +
+                ", scriptDataBase=" + scriptDataBase +
+                ", scriptKey='" + scriptKey + '\'' +
+                '}';
     }
 }

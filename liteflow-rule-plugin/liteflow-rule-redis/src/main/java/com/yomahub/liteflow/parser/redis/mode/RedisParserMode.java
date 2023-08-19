@@ -1,8 +1,9 @@
 package com.yomahub.liteflow.parser.redis.mode;
 
 /**
- * 用于定义redis规则存储和监听方式的枚举类
+ * 用于定义Redis规则存储和监听方式的枚举类
  *
+ * poll轮询拉取模式, sub监听模式
  * @author hxinyu
  * @since  2.11.0
  */

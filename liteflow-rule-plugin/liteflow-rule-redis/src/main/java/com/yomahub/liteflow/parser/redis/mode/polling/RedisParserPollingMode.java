@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
+import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
@@ -75,12 +76,28 @@ public class RedisParserPollingMode implements RedisParserHelper {
             catch (Exception ignored) {
             }
             if (ObjectUtil.isNull(chainClient)) {
-                Config config = getRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
-                this.chainClient = new RClient(Redisson.create(config));
-                //如果有脚本数据
-                if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
-                    config = getRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
-                    this.scriptClient = new RClient(Redisson.create(config));
+                RedisMode redisMode = redisParserVO.getRedisMode();
+                Config config;
+                //Redis单点模式
+                if (redisMode.equals(RedisMode.SINGLE)){
+                    config = getSingleRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
+                    this.chainClient = new RClient(Redisson.create(config));
+                    //如果有脚本数据
+                    if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
+                        config = getSingleRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
+                        this.scriptClient = new RClient(Redisson.create(config));
+                    }
+                }
+
+                //Redis哨兵模式
+                else if (redisMode.equals(RedisMode.SENTINEL)) {
+                    config = getSentinelRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
+                    this.chainClient = new RClient(Redisson.create(config));
+                    //如果有脚本数据
+                    if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
+                        config = getSentinelRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
+                        this.scriptClient = new RClient(Redisson.create(config));
+                    }
                 }
             }
             //创建定时任务线程池
