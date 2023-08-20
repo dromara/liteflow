@@ -71,6 +71,7 @@ public class GlobalAOPELDeclSpringbootTest extends BaseTest {
 		Assertions.assertEquals("before_after", context.getData("b"));
 		Assertions.assertEquals("before_after", context.getData("c"));
 		Assertions.assertEquals("before_after", context.getData("f"));
+		Assertions.assertEquals("test error", context.getData("f_error"));
 	}
 
 	@AfterAll

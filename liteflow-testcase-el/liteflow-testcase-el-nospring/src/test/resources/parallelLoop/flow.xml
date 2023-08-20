@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.parallelLoop.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.parallelLoop.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.parallelLoop.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.parallelLoop.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.parallelLoop.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.parallelLoop.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.parallelLoop.cmp.GCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.parallelLoop.cmp.HCmp"/>
+        <node id="it" class="com.yomahub.liteflow.test.parallelLoop.cmp.ITCmp"/>
+        <node id="x" class="com.yomahub.liteflow.test.parallelLoop.cmp.XCmp"/>
+        <node id="y" class="com.yomahub.liteflow.test.parallelLoop.cmp.YCmp"/>
+        <node id="z" class="com.yomahub.liteflow.test.parallelLoop.cmp.ZCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        FOR(2).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain2">
+        FOR(x).parallel(true).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain3">
+        FOR(100).parallel(true).DO(THEN(a,b,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain4">
+        FOR(x).parallel(true).DO(THEN(a,b,f));
+    </chain>
+
+    <chain name="chain5">
+        FOR(x).parallel(true).DO(THEN(a,b,g));
+    </chain>
+
+    <chain name="chain6">
+        WHILE(z).parallel(true).DO(THEN(a,d));
+    </chain>
+
+    <chain name="chain7">
+        ITERATOR(it).parallel(true).DO(THEN(a,b));
+    </chain>
+
+    <chain name="chain8">
+        FOR(5).parallel(true).DO(
+        WHEN(
+        THEN(a,e.tag("e1")),
+        THEN(c,e.tag("e2")),
+        THEN(b,e.tag("e3"))
+        )
+        );
+    </chain>
+
+
+    <chain name="chain9">
+        FOR(x).parallel(true).DO(THEN(a,b,h));
+    </chain>
+
+</flow>

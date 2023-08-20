@@ -81,6 +81,10 @@ public class Slot {
 
 	private String executeStepsStr;
 
+	private final Deque<CmpStep> rollbackSteps = new ConcurrentLinkedDeque<>();
+
+	private String rollbackStepsStr;
+
 	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
 	private List<Object> contextBeanList;
@@ -346,6 +350,43 @@ public class Slot {
 		}
 	}
 
+	public void addRollbackStep(CmpStep step) {
+		this.rollbackSteps.add(step);
+	}
+
+	public String getRollbackStepStr(boolean withRollbackTimeSpent) {
+		StringBuilder str = new StringBuilder();
+		CmpStep cmpStep;
+		for (Iterator<CmpStep> it = rollbackSteps.iterator(); it.hasNext();) {
+			cmpStep = it.next();
+			if (withRollbackTimeSpent) {
+				str.append(cmpStep.buildRollbackStringWithTime());
+			}
+			else {
+				str.append(cmpStep.buildString());
+			}
+			if (it.hasNext()) {
+				str.append("==>");
+			}
+		}
+		this.rollbackStepsStr = str.toString();
+		return this.rollbackStepsStr;
+	}
+
+	public String getRollbackStepStr() {
+		return getRollbackStepStr(false);
+	}
+
+	public void printRollbackStep() {
+		if (ObjectUtil.isNull(this.rollbackStepsStr)) {
+			this.rollbackStepsStr = getRollbackStepStr(true);
+		}
+		if (LiteflowConfigGetter.get().getPrintExecutionLog()) {
+			LOG.info("ROLLBACK_CHAIN_NAME[{}]\n{}", this.getChainName(), this.rollbackStepsStr);
+		}
+	}
+
+
 	public void generateRequestId() {
 		metaDataMap.put(REQUEST_ID, IdGeneratorHolder.getInstance().generate());
 	}
@@ -360,6 +401,10 @@ public class Slot {
 
 	public Deque<CmpStep> getExecuteSteps() {
 		return executeSteps;
+	}
+
+	public Deque<CmpStep> getRollbackSteps() {
+		return rollbackSteps;
 	}
 
 	public Exception getException() {

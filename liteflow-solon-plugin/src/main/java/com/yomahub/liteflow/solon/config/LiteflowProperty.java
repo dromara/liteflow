@@ -70,6 +70,15 @@ public class LiteflowProperty {
 	// 替补组件的class路径
 	private String substituteCmpClass;
 
+	//并行循环线程池类路径
+	private String parallelLoopExecutorClass;
+
+	//使用默认并行循环线程池时，最大线程数
+	private Integer parallelMaxWorkers;
+
+	//使用默认并行循环线程池时，最大队列数
+	private Integer parallelQueueLimit;
+
 	public boolean isEnable() {
 		return enable;
 	}
@@ -219,4 +228,27 @@ public class LiteflowProperty {
 		this.ruleSourceExtData = ruleSourceExtData;
 	}
 
+	public String getParallelLoopExecutorClass() {
+		return parallelLoopExecutorClass;
+	}
+
+	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
+		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
+	}
+
+	public Integer getParallelMaxWorkers() {
+		return parallelMaxWorkers;
+	}
+
+	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
+		this.parallelMaxWorkers = parallelMaxWorkers;
+	}
+
+	public Integer getParallelQueueLimit() {
+		return parallelQueueLimit;
+	}
+
+	public void setParallelQueueLimit(Integer parallelQueueLimit) {
+		this.parallelQueueLimit = parallelQueueLimit;
+	}
 }

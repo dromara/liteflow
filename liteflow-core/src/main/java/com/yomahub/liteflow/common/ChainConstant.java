@@ -6,6 +6,7 @@ package com.yomahub.liteflow.common;
  * @author tangkc
  */
 public interface ChainConstant {
+	String PARALLEL = "parallel";
 
 	String CHAIN = "chain";
 
@@ -80,5 +81,7 @@ public interface ChainConstant {
 	String OR = "OR";
 
 	String NOT = "NOT";
+
+	String MAX_WAIT_SECONDS = "maxWaitSeconds";
 
 }

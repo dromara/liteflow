@@ -47,6 +47,9 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setMainExecutorClass(property.getMainExecutorClass());
 		liteflowConfig.setPrintExecutionLog(property.isPrintExecutionLog());
 		liteflowConfig.setSubstituteCmpClass(property.getSubstituteCmpClass());
+		liteflowConfig.setParallelMaxWorkers(property.getParallelMaxWorkers());
+		liteflowConfig.setParallelQueueLimit(property.getParallelQueueLimit());
+		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		return liteflowConfig;
 	}
 

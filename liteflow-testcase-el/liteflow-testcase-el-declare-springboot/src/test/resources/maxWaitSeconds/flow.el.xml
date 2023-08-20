@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!--
+        a=>1s  b=>2s  c=>5s
+    -->
+    <!-- 串行编排测试 -->
+    <chain name="then1">
+        <!-- 超时 -->
+        THEN(a,b).maxWaitSeconds(2);
+    </chain>
+    <chain name="then2">
+        <!-- 不超时 -->
+        THEN(a,b).maxWaitSeconds(5);
+    </chain>
+
+    <!-- 并行编排测试 -->
+    <chain name="when1">
+        <!-- 超时 -->
+        WHEN(a,c).maxWaitSeconds(3);
+    </chain>
+    <chain name="when2">
+        <!-- 不超时 -->
+        WHEN(a,b).maxWaitSeconds(3);
+    </chain>
+
+    <!-- 循环编排测试 -->
+    <chain name="for1">
+        <!-- 超时 -->
+        FOR(2).DO(a).maxWaitSeconds(1);
+    </chain>
+    <chain name="for2">
+        <!-- 不超时 -->
+        FOR(2).DO(a).maxWaitSeconds(3);
+    </chain>
+    <!-- w 循环两次 -->
+    <chain name="while1">
+        <!-- 超时 -->
+        WHILE(w).DO(a).maxWaitSeconds(1);
+    </chain>
+    <chain name="while2">
+        <!-- 不超时 -->
+        WHILE(w).DO(a).maxWaitSeconds(3);
+    </chain>
+    <!-- x 迭代两次 -->
+    <chain name="iterator1">
+        <!-- 超时 -->
+        ITERATOR(x).DO(a).maxWaitSeconds(1);
+    </chain>
+    <chain name="iterator2">
+        <!-- 不超时 -->
+        ITERATOR(x).DO(a).maxWaitSeconds(3);
+    </chain>
+
+    <!-- 选择编排测试 -->
+    <!-- s 选择 b 组件 -->
+    <chain name="switch1">
+        <!-- 超时 -->
+        SWITCH(s).TO(a, b).maxWaitSeconds(1);
+    </chain>
+    <chain name="switch2">
+        <!-- 不超时 -->
+        SWITCH(s).TO(a, b).maxWaitSeconds(3);
+    </chain>
+
+    <!-- 条件编排测试 -->
+    <!-- f 返回 true -->
+    <chain name="if1">
+        <!-- 超时 -->
+        IF(f, b, c).maxWaitSeconds(1);
+    </chain>
+    <chain name="if2">
+        <!-- 不超时 -->
+        IF(f, b, c).maxWaitSeconds(3);
+    </chain>
+
+    <!-- 测试单个组件 -->
+    <chain name="component1">
+        <!-- 超时 -->
+        WHEN(
+            a.maxWaitSeconds(2),
+            c.maxWaitSeconds(3)
+        );
+    </chain>
+    <chain name="component2">
+        <!-- 不超时 -->
+        WHEN(
+            a.maxWaitSeconds(2),
+            b.maxWaitSeconds(3)
+        );
+    </chain>
+
+    <!-- 测试 FINALLY -->
+    <chain name="finally">
+        <!-- 超时，但 FINALLY 执行 -->
+        THEN(PRE(a), b, FINALLY(d)).maxWaitSeconds(2);
+    </chain>
+
+    <!-- 测试 chain -->
+    <chain name="testChain">
+        THEN(b)
+    </chain>
+    <chain name="chain1">
+        <!-- 超时 -->
+        testChain.maxWaitSeconds(1);
+    </chain>
+    <chain name="chain2">
+        <!-- 不超时 -->
+        testChain.maxWaitSeconds(3);
+    </chain>
+</flow>

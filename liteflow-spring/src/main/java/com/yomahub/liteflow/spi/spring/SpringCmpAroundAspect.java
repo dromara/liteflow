@@ -29,6 +29,20 @@ public class SpringCmpAroundAspect implements CmpAroundAspect {
 	}
 
 	@Override
+	public void onSuccess(NodeComponent cmp) {
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.onSuccess(cmp);
+		}
+	}
+
+	@Override
+	public void onError(NodeComponent cmp, Exception e) {
+		if (ObjectUtil.isNotNull(ComponentScanner.cmpAroundAspect)) {
+			ComponentScanner.cmpAroundAspect.onError(cmp, e);
+		}
+	}
+
+	@Override
 	public int priority() {
 		return 1;
 	}
