@@ -31,9 +31,12 @@ import javax.annotation.Resource;
 /**
  * springboot环境下的redis配置源订阅模式功能测试
  *
- * 由于redisson中RMapCache监听器功能无法mock测试
+ * 由于Redisson中RMapCache的监听器功能无法mock测试
  * 故Sub模式测试用例需本地启动Redis服务 连接地址: 127.0.0.1:6379
- * 若本地该端口号未启动Redis服务 则自动忽略本类中测试用例
+ * 若本地该端口号未启动Redis 则自动忽略本类中测试用例
+ *
+ * 测试用例会在1号database中添加测试数据 chainKey:testChainKey; scriptKey:testScriptKey
+ * 测试完成后清除测试数据
  *
  * @author hxinyu
  * @since 2.11.0
@@ -56,8 +59,8 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379").setDatabase(1);
         redissonClient = Redisson.create(config);
-        RMapCache<String, String> chainKey = redissonClient.getMapCache("chainKey");
-        RMapCache<String, String> scriptKey = redissonClient.getMapCache("scriptKey");
+        RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey");
+        RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey");
         scriptKey.put("s1:script:脚本s1:groovy", "defaultContext.setData(\"test1\",\"hello s1\");");
         scriptKey.put("s2:script:脚本s2:js", "defaultContext.setData(\"test2\",\"hello s2\");");
         scriptKey.put("s3:script:脚本s3", "defaultContext.setData(\"test3\",\"hello s3\");");
@@ -68,7 +71,6 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
 
     @AfterAll
     public static void after(){
-        System.out.println("after");
         testCleanData();
     }
 
@@ -179,17 +181,16 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
     //redis内规则数据数据清空
     public static void testCleanData(){
         if(ObjectUtil.isNotNull(redissonClient)){
-            RMapCache<String, String> scriptKey = redissonClient.getMapCache("chainKey");
-            RMapCache<String, String> chainKey = redissonClient.getMapCache("scriptKey");
+            RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey");
+            RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey");
             for (String key : chainKey.keySet()) {
                 chainKey.remove(key);
             }
             for (String key : scriptKey.keySet()) {
                 scriptKey.remove(key);
             }
-            chainKey.keySet().forEach(System.out::println);
-            System.out.println("");
-            scriptKey.keySet().forEach(System.out::println);
+            chainKey.delete();
+            scriptKey.delete();
         }
     }
 }

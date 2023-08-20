@@ -102,7 +102,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
             }
             //创建定时任务线程池
             if (ObjectUtil.isNull(pollExecutor)) {
-                ThreadFactory namedThreadFactory = new NamedThreadFactory("RedisParser-Polling-Thread-", false);
+                ThreadFactory namedThreadFactory = new NamedThreadFactory("Redis-Polling-", false);
                 pollExecutor = new ScheduledThreadPoolExecutor(
                         CORE_POOL_SIZE,
                         namedThreadFactory,

@@ -2,11 +2,16 @@ package com.yomahub.liteflow.test.redis;
 
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.thread.ExecutorHelper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -58,9 +63,13 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
             "local sha1 = redis.sha1hex(value);\n" +
             "return sha1;";
 
+
     @AfterEach
     public void after() {
         FlowBus.cleanCache();
+        FlowInitHook.cleanHook();
+        ExecutorHelper.loadInstance().clearExecutorServiceMap();
+        SpiFactoryCleaner.clean();
     }
 
     /**
@@ -94,7 +103,7 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
 
-        Thread.sleep(2000);
+        Thread.sleep(4000);
 
         //测试修改后的chain
         response = flowExecutor.execute2Resp("chain11", "arg");
@@ -106,10 +115,10 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
      * 测试script
      */
     @Test
-    public void testPollWithScriptXml() throws InterruptedException {
+    public void testPollWithScript() throws InterruptedException {
         Set<String> chainNameSet = new HashSet<>();
         chainNameSet.add("chain22");
-        String chainValue = "THEN(a, b, c, s11, s22, s33);";
+        String chainValue = "THEN(s11, s22, s33, a, b);";
         when(chainClient.hkeys("pollChainKey")).thenReturn(chainNameSet);
         when(chainClient.hget("pollChainKey", "chain22")).thenReturn(chainValue);
         when(chainClient.scriptLoad(luaOfKey)).thenReturn("keysha");
@@ -150,9 +159,9 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("hello s11", context.getData("test11"));
         Assertions.assertEquals("hello s22", context.getData("test22"));
-        Assertions.assertEquals("a==>b==>c==>s11[脚本s11]==>s22[脚本s22]==>s33[脚本s33]", response.getExecuteStepStrWithoutTime());
+        Assertions.assertEquals("s11[脚本s11]==>s22[脚本s22]==>s33[脚本s33]==>a==>b", response.getExecuteStepStrWithoutTime());
 
-        Thread.sleep(2000);
+        Thread.sleep(4000);
 
         //测试修改后的script
         response = flowExecutor.execute2Resp("chain22", "arg");
