@@ -86,20 +86,20 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         //修改redis中规则
         changeXMLData();
         //重新加载规则
-        Thread.sleep(50);
+        Thread.sleep(100);
         Assertions.assertEquals("a==>c==>b", flowExecutor.execute2Resp("chain1", "arg").getExecuteStepStr());
 
         //删除redis中规则
         deleteXMLData();
         //重新加载规则
-        Thread.sleep(50);
+        Thread.sleep(100);
         response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(!response.isSuccess());
 
         //添加redis中规则
         addXMLData();
         //重新加载规则
-        Thread.sleep(50);
+        Thread.sleep(100);
         Assertions.assertEquals("b==>c", flowExecutor.execute2Resp("chain4", "arg").getExecuteStepStr());
     }
 
@@ -118,7 +118,7 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         addAndDeleteScriptData();
         //修改redis脚本
         changeScriptData();
-        Thread.sleep(50);
+        Thread.sleep(100);
         context = flowExecutor.execute2Resp("chain3", "arg").getFirstContextBean();
         Assertions.assertEquals("hello s1 version2", context.getData("test1"));
         context = flowExecutor.execute2Resp("chain2", "arg").getFirstContextBean();
