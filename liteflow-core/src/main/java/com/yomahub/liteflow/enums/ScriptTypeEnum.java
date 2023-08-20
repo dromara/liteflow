@@ -7,7 +7,8 @@ public enum ScriptTypeEnum {
 	JS("javascript", "js"),
 	PYTHON("python", "python"),
 	LUA("luaj", "lua"),
-	AVIATOR("AviatorScript", "aviator");
+	AVIATOR("AviatorScript", "aviator"),
+	JAVA("java", "java");
 
 	private String engineName;
 
