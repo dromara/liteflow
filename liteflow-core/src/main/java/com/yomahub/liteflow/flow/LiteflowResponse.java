@@ -113,6 +113,34 @@ public class LiteflowResponse {
 		return map;
 	}
 
+	public Queue<CmpStep> getRollbackStepQueue() {
+		return this.getSlot().getRollbackSteps();
+	}
+
+	public String getRollbackStepStr() {
+		return getRollbackStepStrWithoutTime();
+	}
+
+	public String getRollbackStepStrWithTime() {
+		return this.getSlot().getRollbackStepStr(true);
+	}
+
+	public String getRollbackStepStrWithoutTime() {
+		return this.getSlot().getRollbackStepStr(false);
+	}
+
+	public Map<String, List<CmpStep>> getRollbackSteps() {
+		Map<String, List<CmpStep>> map = new LinkedHashMap<>();
+		this.getSlot().getRollbackSteps().forEach(cmpStep -> {
+			if (map.containsKey(cmpStep.getNodeId())){
+				map.get(cmpStep.getNodeId()).add(cmpStep);
+			}else{
+				map.put(cmpStep.getNodeId(), ListUtil.toList(cmpStep));
+			}
+		});
+		return map;
+	}
+
 	public Queue<CmpStep> getExecuteStepQueue() {
 		return this.getSlot().getExecuteSteps();
 	}

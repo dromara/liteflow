@@ -52,6 +52,12 @@ public class WhenCondition extends Condition {
 	// when单独的线程池名称
 	private String threadExecutorClass;
 
+	// 异步线程最⻓的等待时间
+	private Integer maxWaitTime;
+
+	// 等待时间单位
+	private TimeUnit maxWaitTimeUnit;
+
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
 		executeAsyncCondition(slotIndex);
@@ -86,15 +92,20 @@ public class WhenCondition extends Condition {
 		// 3.根据condition.getNodeList()的集合进行流处理，用map进行把executable对象转换成List<CompletableFuture<WhenFutureObj>>
 		// 4.在转的过程中，套入CompletableFutureTimeout方法进行超时判断，如果超时则用WhenFutureObj.timeOut返回超时的对象
 		// 5.第2个参数是主要的本体CompletableFuture，传入了ParallelSupplier和线程池对象
-		Integer whenMaxWaitTime;
-		TimeUnit whenMaxWaitTimeUnit;
+		if (ObjectUtil.isNull(this.getMaxWaitTime())) {
+			if (ObjectUtil.isNotNull(liteflowConfig.getWhenMaxWaitSeconds())) {
+				// 获取全局异步线程最长等待秒数
+				this.setMaxWaitTime(liteflowConfig.getWhenMaxWaitSeconds());
+				this.setMaxWaitTimeUnit(TimeUnit.SECONDS);
+			} else {
+				// 获取全局异步线程最⻓的等待时间
+				this.setMaxWaitTime(liteflowConfig.getWhenMaxWaitTime());
+			}
+		}
 
-		if (ObjectUtil.isNotNull(liteflowConfig.getWhenMaxWaitSeconds())){
-			whenMaxWaitTime = liteflowConfig.getWhenMaxWaitSeconds();
-			whenMaxWaitTimeUnit = TimeUnit.SECONDS;
-		}else{
-			whenMaxWaitTime = liteflowConfig.getWhenMaxWaitTime();
-			whenMaxWaitTimeUnit = liteflowConfig.getWhenMaxWaitTimeUnit();
+		if (ObjectUtil.isNull(this.getMaxWaitTimeUnit())) {
+			// 获取全局异步线程最⻓的等待时间单位
+			this.setMaxWaitTimeUnit(liteflowConfig.getWhenMaxWaitTimeUnit());
 		}
 
 		List<CompletableFuture<WhenFutureObj>> completableFutureList = this.getExecutableList()
@@ -112,7 +123,7 @@ public class WhenCondition extends Condition {
 						WhenFutureObj.timeOut(executable.getId()),
 						CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex),
 								parallelExecutor),
-						whenMaxWaitTime, whenMaxWaitTimeUnit))
+						this.getMaxWaitTime(), this.getMaxWaitTimeUnit()))
 				.collect(Collectors.toList());
 
 		CompletableFuture<?> resultCompletableFuture;
@@ -221,4 +232,19 @@ public class WhenCondition extends Condition {
 		this.threadExecutorClass = threadExecutorClass;
 	}
 
+	public Integer getMaxWaitTime() {
+		return maxWaitTime;
+	}
+
+	public void setMaxWaitTime(Integer maxWaitTime) {
+		this.maxWaitTime = maxWaitTime;
+	}
+
+	public TimeUnit getMaxWaitTimeUnit() {
+		return maxWaitTimeUnit;
+	}
+
+	public void setMaxWaitTimeUnit(TimeUnit maxWaitTimeUnit) {
+		this.maxWaitTimeUnit = maxWaitTimeUnit;
+	}
 }

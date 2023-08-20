@@ -15,4 +15,8 @@ public interface CmpAroundAspect extends SpiPriority {
 
 	void afterProcess(NodeComponent cmp);
 
+	void onSuccess(NodeComponent cmp);
+
+	void onError(NodeComponent cmp, Exception e);
+
 }

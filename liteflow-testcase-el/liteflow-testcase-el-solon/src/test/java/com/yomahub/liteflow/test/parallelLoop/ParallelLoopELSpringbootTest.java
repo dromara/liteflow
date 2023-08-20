@@ -13,7 +13,7 @@ import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
-import javax.annotation.Resource;
+//import javax.annotation.Resource;
 import java.util.List;
 import java.util.regex.Pattern;
 

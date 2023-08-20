@@ -20,4 +20,15 @@ public class CmpAspect implements ICmpAroundAspect {
 		context.setData(cmp.getNodeId(), StrUtil.format("{}_{}", context.getData(cmp.getNodeId()), "after"));
 	}
 
+	@Override
+	public void onSuccess(NodeComponent cmp) {
+
+	}
+
+	@Override
+	public void onError(NodeComponent cmp, Exception e) {
+		DefaultContext context = cmp.getFirstContextBean();
+		context.setData(cmp.getNodeId()+"_error", e.getMessage());
+	}
+
 }

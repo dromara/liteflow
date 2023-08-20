@@ -22,6 +22,6 @@ public class LiteFlowDefaultParallelLoopExecutorBuilder implements ExecutorBuild
             liteflowConfig = new LiteflowConfig();
         }
         return buildDefaultExecutor(liteflowConfig.getParallelMaxWorkers(), liteflowConfig.getParallelMaxWorkers(),
-                liteflowConfig.getParallelQueueLimit(), "loop-thead-");
+                liteflowConfig.getParallelQueueLimit(), "loop-thread-");
     }
 }

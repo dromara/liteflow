@@ -38,6 +38,20 @@ public class SolonCmpAroundAspect implements CmpAroundAspect {
 	}
 
 	@Override
+	public void onSuccess(NodeComponent cmp) {
+		if (ObjectUtil.isNotNull(cmpAroundAspect)) {
+			cmpAroundAspect.onSuccess(cmp);
+		}
+	}
+
+	@Override
+	public void onError(NodeComponent cmp, Exception e) {
+		if (ObjectUtil.isNotNull(cmpAroundAspect)) {
+			cmpAroundAspect.onError(cmp, e);
+		}
+	}
+
+	@Override
 	public int priority() {
 		return 1;
 	}

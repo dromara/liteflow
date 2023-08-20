@@ -17,6 +17,8 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.Rollbackable;
+import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -199,7 +201,7 @@ public class FlowExecutor {
 		}
 
 		// 文件监听
-		if (liteflowConfig.getEnableMonitorFile()) {
+		if (isStart && liteflowConfig.getEnableMonitorFile()) {
 			try {
 				addMonitorFilePaths(rulePathList);
 				MonitorFile.getInstance().create();
@@ -432,6 +434,22 @@ public class FlowExecutor {
 			}
 			else {
 				slot.setSubException(chainId, e);
+			}
+			Deque<CmpStep> executeSteps = slot.getExecuteSteps();
+			try {
+				Iterator<CmpStep> cmpStepIterator = executeSteps.descendingIterator();
+				while(cmpStepIterator.hasNext()) {
+					CmpStep cmpStep = cmpStepIterator.next();
+					if(cmpStep.getInstance().isRollback()) {
+						Rollbackable rollbackItem = new Node(cmpStep.getInstance());
+						rollbackItem.rollback(slotIndex);
+					}
+				}
+			} catch (Exception exception) {
+				LOG.error(exception.getMessage());
+			}
+			finally {
+				slot.printRollbackStep();
 			}
 		}
 		finally {

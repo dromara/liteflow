@@ -31,7 +31,7 @@ import com.yomahub.liteflow.exception.FlowSystemException;
  *
  * @author Bryan.Zhang
  */
-public class Node implements Executable, Cloneable{
+public class Node implements Executable, Cloneable, Rollbackable{
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(Node.class);
 
@@ -171,6 +171,28 @@ public class Node implements Executable, Cloneable{
 			instance.removeIsEnd();
 			instance.removeRefNode();
 			removeLoopIndex();
+		}
+	}
+
+	// 回滚的主要逻辑
+	@Override
+	public void rollback(Integer slotIndex) throws Exception {
+
+		Slot slot = DataBus.getSlot(slotIndex);
+		try {
+			// 把线程属性赋值给组件对象
+			instance.setSlotIndex(slotIndex);
+			instance.setRefNode(this);
+			instance.doRollback();
+		}
+		catch (Exception e) {
+			String errorMsg = StrUtil.format("component[{}] rollback error,error:{}", id, e.getMessage());
+			LOG.error(errorMsg);
+		}
+		finally {
+			// 移除threadLocal里的信息
+			instance.removeSlotIndex();
+			instance.removeRefNode();
 		}
 	}
 

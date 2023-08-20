@@ -23,6 +23,16 @@ public class LocalCmpAroundAspect implements CmpAroundAspect {
 	}
 
 	@Override
+	public void onSuccess(NodeComponent cmp) {
+		// 无spring环境下为空实现
+	}
+
+	@Override
+	public void onError(NodeComponent cmp, Exception e) {
+		// 无spring环境下为空实现
+	}
+
+	@Override
 	public int priority() {
 		return 2;
 	}
