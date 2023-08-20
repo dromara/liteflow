@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.rollback.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.rollback.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.rollback.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.rollback.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.rollback.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.rollback.cmp.FCmp"/>
+        <node id="g" class="com.yomahub.liteflow.test.rollback.cmp.GCmp"/>
+        <node id="h" class="com.yomahub.liteflow.test.rollback.cmp.HCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.rollback.cmp.ICmp"/>
+        <node id="w" class="com.yomahub.liteflow.test.rollback.cmp.WCmp"/>
+        <node id="x" class="com.yomahub.liteflow.test.rollback.cmp.XCmp"/>
+    </nodes>
+    <chain name="chain1">
+        THEN( a, b, WHEN(c, d).ignoreError(true), CATCH(e) );
+    </chain>
+
+    <chain name="chain2">
+        THEN( a, b, WHEN(c, d) );
+    </chain>
+
+    <chain name="chain3">
+        THEN( IF(x, d, a), CATCH(IF(x, d, a)) );
+    </chain>
+
+    <chain name="chain4">
+        SWITCH(f).TO(a, b).DEFAULT(d);
+    </chain>
+
+    <chain name="chain5">
+        FOR(g).DO(THEN(b, c)).BREAK(h);;
+    </chain>
+
+    <chain name="chain6">
+        WHILE(w).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain7">
+        ITERATOR(i).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain8">
+        CATCH( THEN(b, c, d) ).DO(a);
+    </chain>
+</flow>
