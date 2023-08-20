@@ -16,6 +16,7 @@
         <module>liteflow-rule-nacos</module>
         <module>liteflow-rule-etcd</module>
         <module>liteflow-rule-apollo</module>
+        <module>liteflow-rule-redis</module>
     </modules>
 
     <artifactId>liteflow-rule-plugin</artifactId>
