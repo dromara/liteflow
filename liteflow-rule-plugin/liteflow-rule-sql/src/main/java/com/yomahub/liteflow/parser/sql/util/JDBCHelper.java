@@ -243,7 +243,7 @@ public class JDBCHelper {
                 }
 
                 if (!ScriptTypeEnum.checkScriptType(language)) {
-                    throw new ELSQLException(StrUtil.format("The language value[{}] is error", language));
+                    throw new ELSQLException(StrUtil.format("The language value[{}] is invalid", language));
                 }
 
                 result.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name),
