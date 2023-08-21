@@ -17,29 +17,27 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 /**
- * springboot环境下的redis配置源script轮询拉取模式功能测试
+ * springboot环境下的redis配置源chain轮询拉取模式功能测试
  *
  * @author hxinyu
  * @since 2.11.0
  */
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/redis/application-poll-script-xml.properties")
-@SpringBootTest(classes = RedisWithXmlELPollScriptSpringbootTest.class)
+@TestPropertySource(value = "classpath:/redis/application-poll-xml.properties")
+@SpringBootTest(classes = RedisWithXmlELPollSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.redis.cmp"})
-public class RedisWithXmlELPollScriptSpringbootTest extends BaseTest {
+public class RedisWithXmlELPollSpringbootTest extends BaseTest {
 
     @MockBean(name = "chainClient")
     private static RClient chainClient;
@@ -64,7 +62,7 @@ public class RedisWithXmlELPollScriptSpringbootTest extends BaseTest {
             "local sha1 = redis.sha1hex(value);\n" +
             "return sha1;";
 
-    static LFLog LOG = LFLoggerManager.getLogger(RedisWithXmlELPollChainSpringbootTest.class);
+    static LFLog LOG = LFLoggerManager.getLogger(RedisWithXmlELPollSpringbootTest.class);
 
 
     @AfterAll
@@ -81,21 +79,32 @@ public class RedisWithXmlELPollScriptSpringbootTest extends BaseTest {
     }
 
     /**
-     * 测试script
+     * 统一测试chain和script
+     *
+     * 测试数据流程：
+     * 1、执行chain1值："THEN(a, b, c);"
+     * 2、修改chain1值为："THEN(s11, s22, s33, a, b);", 执行新chain 验证chain的轮询拉取功能
+     * 3、修改chain1其中的script11值 执行chain 验证script的轮询拉取功能
      */
     @Test
-    public void testPollWithScriptXml() throws InterruptedException {
+    public void testPollWithXml() throws InterruptedException {
         Set<String> chainNameSet = new HashSet<>();
-        chainNameSet.add("chain22");
-        String chainValue = "THEN(s11, s22, s33, a, b);";
+        chainNameSet.add("chain11");
+        String chainValue = "THEN(a, b, c);";
         String chainSHA = DigestUtil.sha1Hex(chainValue);
+
+        //修改chain并更新SHA值
+        String changeChainValue = "THEN(s11, s22, s33, a, b);";
+        String changeChainSHA = DigestUtil.sha1Hex(changeChainValue);
+
         when(chainClient.hkeys("pollChainKey")).thenReturn(chainNameSet);
-        when(chainClient.hget("pollChainKey", "chain22")).thenReturn(chainValue);
+        when(chainClient.hget("pollChainKey", "chain11")).thenReturn(chainValue).thenReturn(changeChainValue);
         when(chainClient.scriptLoad(luaOfKey)).thenReturn("keysha");
         when(chainClient.scriptLoad(luaOfValue)).thenReturn("valuesha");
-        when(chainClient.evalSha(eq("keysha"), anyString())).thenReturn(null);
-        when(chainClient.evalSha(eq("valuesha"), anyString(), anyString())).thenReturn(chainSHA);
+        when(chainClient.evalSha(eq("keysha"), anyString())).thenReturn("1");
+        when(chainClient.evalSha(eq("valuesha"), anyString(), anyString())).thenReturn(chainSHA).thenReturn(changeChainSHA);
 
+        //添加script
         Set<String> scriptFieldSet = new HashSet<>();
         scriptFieldSet.add("s11:script:脚本s11:groovy");
         scriptFieldSet.add("s22:script:脚本s22:js");
@@ -112,19 +121,34 @@ public class RedisWithXmlELPollScriptSpringbootTest extends BaseTest {
         String changeS11SHA = DigestUtil.sha1Hex(changeS11);
 
         when(scriptClient.hkeys("pollScriptKey")).thenReturn(scriptFieldSet);
-        when(scriptClient.hget("pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11).thenReturn(changeS11);
+        //这里休眠一段时间是为了防止在未修改脚本的chain还没有执行前 轮询线程就拉取了新script值
+        when(scriptClient.hget("pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11).thenAnswer(invocation -> {
+            Thread.sleep(2000);
+            return changeS11;
+        }).thenReturn(changeS11);
         when(scriptClient.hget("pollScriptKey", "s22:script:脚本s22:js")).thenReturn(s22);
         when(scriptClient.hget("pollScriptKey", "s33:script:脚本s33")).thenReturn(s33);
+
         //分别模拟三个script的evalsha指纹值计算的返回值, 其中s11脚本修改 指纹值变化
         when(scriptClient.scriptLoad(luaOfKey)).thenReturn("keysha");
         when(scriptClient.scriptLoad(luaOfValue)).thenReturn("valuesha");
         when(scriptClient.evalSha(eq("keysha"), anyString())).thenReturn("3");
-        when(scriptClient.evalSha("valuesha", "pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11SHA).thenReturn(changeS11SHA);
+        when(scriptClient.evalSha("valuesha", "pollScriptKey", "s11:script:脚本s11:groovy")).thenReturn(s11SHA).thenAnswer(invocation -> {
+            Thread.sleep(2000);
+            return changeS11SHA;
+        }).thenReturn(changeS11SHA);
         when(scriptClient.evalSha("valuesha", "pollScriptKey", "s22:script:脚本s22:js")).thenReturn(s22SHA);
         when(scriptClient.evalSha("valuesha", "pollScriptKey", "s33:script:脚本s33")).thenReturn(s33SHA);
 
-        //测试修改前的script
-        LiteflowResponse response = flowExecutor.execute2Resp("chain22", "arg");
+        //测试修改前的chain
+        LiteflowResponse response = flowExecutor.execute2Resp("chain11", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
+
+        Thread.sleep(4000);
+
+        //测试加了script的chain
+        response = flowExecutor.execute2Resp("chain11", "arg");
         DefaultContext context = response.getFirstContextBean();
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("hello s11", context.getData("test11"));
@@ -133,8 +157,8 @@ public class RedisWithXmlELPollScriptSpringbootTest extends BaseTest {
 
         Thread.sleep(4000);
 
-        //测试修改后的script
-        response = flowExecutor.execute2Resp("chain22", "arg");
+        //测试修改script后的chain
+        response = flowExecutor.execute2Resp("chain11", "arg");
         context  = response.getFirstContextBean();
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("hello world", context.getData("test11"));

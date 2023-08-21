@@ -94,6 +94,7 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         deleteXMLData();
         //重新加载规则
         Thread.sleep(100);
+        //由于chain1已被删除 这里会报ChainNotFoundException异常
         response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(!response.isSuccess());
 
