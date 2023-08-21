@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.redis;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -30,11 +31,11 @@ import javax.annotation.Resource;
 
 /**
  * springboot环境下的redis配置源订阅模式功能测试
- *
+ * <p>
  * 由于Redisson中RMapCache的监听器功能无法mock测试
  * 故Sub模式测试用例需本地启动Redis服务 连接地址: 127.0.0.1:6379
  * 若本地该端口号未启动Redis 则自动忽略本类中测试用例
- *
+ * <p>
  * 测试用例会在1号database中添加测试数据 chainKey:testChainKey; scriptKey:testScriptKey
  * 测试完成后清除测试数据
  *
@@ -70,7 +71,7 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
     }
 
     @AfterAll
-    public static void after(){
+    public static void after() {
         testCleanData();
     }
 
@@ -153,7 +154,7 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         RedisParserVO redisParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), RedisParserVO.class);
         RMapCache<String, String> chainKey = redissonClient.getMapCache(redisParserVO.getChainKey());
-        chainKey.put("chain4","THEN(b, c);");
+        chainKey.put("chain4", "THEN(b, c);");
     }
 
     /**
@@ -179,8 +180,8 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
     }
 
     //redis内规则数据数据清空
-    public static void testCleanData(){
-        if(ObjectUtil.isNotNull(redissonClient)){
+    public static void testCleanData() {
+        if (ObjectUtil.isNotNull(redissonClient)) {
             RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey");
             RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey");
             for (String key : chainKey.keySet()) {
