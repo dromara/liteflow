@@ -49,7 +49,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
     private static final int CORE_POOL_SIZE = 2;
 
     //定时任务线程池
-    private ScheduledThreadPoolExecutor pollExecutor;
+    private static ScheduledThreadPoolExecutor pollExecutor;
 
     //计算hash中field数量的lua脚本
     private final String luaOfKey = "local keys = redis.call(\"hkeys\", KEYS[1]);\n" +
