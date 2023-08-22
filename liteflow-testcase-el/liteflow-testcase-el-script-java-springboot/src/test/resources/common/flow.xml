@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+            import com.yomahub.liteflow.test.script.java.common.cmp.TestDomain;
+
+            int v1 = 2;
+            int v2 = 3;
+            System.out.println(_meta.cmp);
+            DefaultContext ctx = (DefaultContext) _meta.cmp.getFirstContextBean();
+            ctx.setData("s1", v1 * v2);
+
+            TestDomain domain = (TestDomain)ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
+
+            String str = domain.sayHello("jack");
+            ctx.setData("hi", str);
+            return null;
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>

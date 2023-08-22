@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.script;
 
+import com.yomahub.liteflow.core.NodeComponent;
+
 /**
  * script执行前的包装元参数
  *
@@ -8,19 +10,21 @@ package com.yomahub.liteflow.script;
  */
 public class ScriptExecuteWrap {
 
-	private int slotIndex;
+	public int slotIndex;
 
-	private String currChainId;
+	public String currChainId;
 
-	private String nodeId;
+	public String nodeId;
 
-	private String tag;
+	public String tag;
 
-	private Object cmpData;
+	public Object cmpData;
 
-	private Integer loopIndex;
+	public Integer loopIndex;
 
-	private Object loopObject;
+	public Object loopObject;
+
+	public NodeComponent cmp;
 
 	public int getSlotIndex() {
 		return slotIndex;
@@ -92,5 +96,13 @@ public class ScriptExecuteWrap {
 
 	public void setLoopObject(Object loopObject) {
 		this.loopObject = loopObject;
+	}
+
+	public NodeComponent getCmp() {
+		return cmp;
+	}
+
+	public void setCmp(NodeComponent cmp) {
+		this.cmp = cmp;
 	}
 }

@@ -43,6 +43,7 @@ public interface ScriptComponent {
 		wrap.setCmpData(cmp.getCmpData(Map.class));
 		wrap.setLoopIndex(cmp.getLoopIndex());
 		wrap.setLoopObject(cmp.getCurrLoopObj());
+		wrap.setCmp(cmp);
 		return wrap;
 	}
 

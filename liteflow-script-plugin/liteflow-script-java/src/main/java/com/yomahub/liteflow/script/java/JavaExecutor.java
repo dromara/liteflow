@@ -1,38 +1,51 @@
 package com.yomahub.liteflow.script.java;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
+import com.yomahub.liteflow.script.exception.ScriptLoadException;
+import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IScriptEvaluator;
+import java.util.Map;
 
 public class JavaExecutor extends ScriptExecutor {
+
+    private final Map<String, IScriptEvaluator> compiledScriptMap = new CopyOnWriteHashMap<>();
+
     @Override
     public void load(String nodeId, String script) {
-        // 创建Janino脚本Evaluator
-        /*IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory().newScriptEvaluator();
-        // 返回值类型指定为Object以支持不同脚本
-        se.setReturnType(Object.class);
-        // 指定Janino脚本里的变量名及类型，为通用起见，只设置一个Object类型的变量
-        se.setParameters(new String[] { JANINO_SCRIPT_PARAMETER_NAME }, new Class[] { Object.class });
-        // 编译
-        se.cook(script);
-        // 缓存编译过的Evaluator
-        compiledScriptMap.put(nodeId, se);*/
+        try{
+            IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory(this.getClass().getClassLoader()).newScriptEvaluator();
+            se.setReturnType(Object.class);
+            se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
+            se.cook(script);
+            compiledScriptMap.put(nodeId, se);
+        }catch (Exception e){
+            String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
+            throw new ScriptLoadException(errorMsg);
+        }
+
     }
 
     @Override
     public Object executeScript(ScriptExecuteWrap wrap) throws Exception {
-        return null;
+        if (!compiledScriptMap.containsKey(wrap.getNodeId())) {
+            String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
+            throw new ScriptLoadException(errorMsg);
+        }
+        IScriptEvaluator se = compiledScriptMap.get(wrap.getNodeId());
+        return se.evaluate(wrap);
     }
 
     @Override
     public void cleanCache() {
-
+        compiledScriptMap.clear();
     }
 
     @Override
     public ScriptTypeEnum scriptType() {
-        return null;
+        return ScriptTypeEnum.JAVA;
     }
 }
