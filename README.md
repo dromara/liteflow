@@ -54,7 +54,7 @@ These processes can be easily solved with LiteFlow! The framework has a very low
 
 LiteFlow has an extremely detailed and easy-to-understand documentation， it can help you solve more than 95% of your problems when using the framework.
 
-LiteFlow has 658 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
+LiteFlow has 1100 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
 Looking forward to your use！
 
