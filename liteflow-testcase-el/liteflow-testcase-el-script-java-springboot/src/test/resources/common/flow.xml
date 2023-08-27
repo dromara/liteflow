@@ -7,23 +7,42 @@
             import com.yomahub.liteflow.slot.DefaultContext;
             import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
             import com.yomahub.liteflow.test.script.java.common.cmp.TestDomain;
+            import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
 
-            int v1 = 2;
-            int v2 = 3;
-            System.out.println(_meta.cmp);
-            DefaultContext ctx = (DefaultContext) _meta.cmp.getFirstContextBean();
-            ctx.setData("s1", v1 * v2);
+            public class Demo implements JaninoCommonScriptBody{
+                public Void body(ScriptExecuteWrap wrap){
+                    int v1 = 2;
+                    int v2 = 3;
+                    DefaultContext ctx = (DefaultContext)wrap.cmp.getFirstContextBean();
+                    ctx.setData("s1", v1 * v2);
 
-            TestDomain domain = (TestDomain)ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
+                    TestDomain domain = (TestDomain)ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
 
-            String str = domain.sayHello("jack");
-            ctx.setData("hi", str);
-            return null;
+                    String str = domain.sayHello("jack");
+                    ctx.setData("hi", str);
+
+                    return null;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本2" type="for_script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.script.body.JaninoForScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements JaninoForScriptBody{
+                public Integer body(ScriptExecuteWrap wrap){
+                    return 2;
+                }
+            }
             ]]>
         </node>
     </nodes>
 
     <chain name="chain1">
-        THEN(a, b, c, s1);
+        FOR(s2).DO(THEN(a, b, c, s1));
     </chain>
 </flow>
