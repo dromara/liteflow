@@ -28,7 +28,7 @@
             ]]>
         </node>
 
-        <node id="s2" name="普通脚本2" type="for_script" language="java">
+        <node id="s2" name="循环脚本1" type="for_script" language="java">
             <![CDATA[
             import com.yomahub.liteflow.script.body.JaninoForScriptBody;
             import com.yomahub.liteflow.script.ScriptExecuteWrap;
