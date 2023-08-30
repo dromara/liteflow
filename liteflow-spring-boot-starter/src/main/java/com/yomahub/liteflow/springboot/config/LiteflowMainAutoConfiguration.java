@@ -8,6 +8,7 @@ import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.springboot.LiteflowExecutorInit;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,7 @@ public class LiteflowMainAutoConfiguration {
 	// 实例化FlowExecutor
 	// 多加一个SpringAware的意义是，确保在执行这个的时候，SpringAware这个bean已经被初始化
 	@Bean
+	@ConditionalOnMissingBean
 	public FlowExecutor flowExecutor(LiteflowConfig liteflowConfig, SpringAware springAware) {
 		FlowExecutor flowExecutor = new FlowExecutor();
 		flowExecutor.setLiteflowConfig(liteflowConfig);
