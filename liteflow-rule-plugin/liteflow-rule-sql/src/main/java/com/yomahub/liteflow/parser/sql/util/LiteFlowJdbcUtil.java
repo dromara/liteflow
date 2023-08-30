@@ -91,10 +91,10 @@ public class LiteFlowJdbcUtil {
      * @param rs   rs
      */
     public static void close(Connection conn, PreparedStatement stmt, ResultSet rs) {
-        // 关闭连接
-        if (conn != null) {
+        // 关闭结果集
+        if (rs != null) {
             try {
-                conn.close();
+                rs.close();
             } catch (SQLException e) {
                 throw new ELSQLException(e.getMessage());
             }
@@ -107,10 +107,10 @@ public class LiteFlowJdbcUtil {
                 throw new ELSQLException(e.getMessage());
             }
         }
-        // 关闭结果集
-        if (rs != null) {
+        // 关闭连接
+        if (conn != null) {
             try {
-                rs.close();
+                conn.close();
             } catch (SQLException e) {
                 throw new ELSQLException(e.getMessage());
             }
