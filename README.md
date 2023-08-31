@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://liteflow.yomahub.com/">
+<a href="https://liteflow.cc/">
     <img src="static/img/logo-main.svg" width="50%" height="auto" alt="logo">
 </a>
 </p>
@@ -17,8 +17,8 @@ LiteFlow is a community-driven project. We take community building very seriousl
 
 You can find out how to join the community on the official website!
 
-## Website url: [Click here to access the official website](https://liteflow.yomahub.com)
-## Documents url: [Click here to enter the documentation to learn](https://liteflow.yomahub.com/pages/5816c5/)
+## Website url: [Click here to access the official website](https://liteflow.cc)
+## Documents url: [Click here to enter the documentation to learn](https://liteflow.cc/pages/5816c5/)
 ## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
 ## Feature
