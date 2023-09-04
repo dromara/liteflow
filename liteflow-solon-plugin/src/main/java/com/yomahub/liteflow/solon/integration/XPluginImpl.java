@@ -10,7 +10,7 @@ import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
 import com.yomahub.liteflow.solon.config.LiteflowProperty;
 import org.noear.solon.Utils;
-import org.noear.solon.core.AopContext;
+import org.noear.solon.core.AppContext;
 import org.noear.solon.core.Plugin;
 
 import java.util.Properties;
@@ -22,7 +22,7 @@ import java.util.Properties;
 public class XPluginImpl implements Plugin {
 
 	@Override
-	public void start(AopContext context) {
+	public void start(AppContext context) {
 		// 加载默认配置
 		Properties defProps = Utils.loadProperties("META-INF/liteflow-default.properties");
 		if (defProps != null && defProps.size() > 0) {
@@ -92,7 +92,7 @@ public class XPluginImpl implements Plugin {
 				FlowBus.addManagedNode(nodeId, node1);
 			}
 			else {
-				context.beanExtract(bw); // 尝试提取 LiteflowMethod 函数
+				context.beanExtractOrProxy(bw); // 尝试提取 LiteflowMethod 函数，并支持自动代理
 			}
 		});
 	}
