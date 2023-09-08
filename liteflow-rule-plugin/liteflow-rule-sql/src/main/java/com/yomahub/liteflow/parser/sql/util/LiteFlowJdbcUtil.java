@@ -19,8 +19,8 @@ public class LiteFlowJdbcUtil {
      * 获取链接
      * 此方法会根据配置，判读使用指定数据源，还是IOC容器中已有的数据源
      *
-     * @param sqlParserVO
-     * @return
+     * @param sqlParserVO sql解析器参数
+     * @return 返回数据库连接
      */
     public static Connection getConn(SQLParserVO sqlParserVO) {
         Connection connection = null;
