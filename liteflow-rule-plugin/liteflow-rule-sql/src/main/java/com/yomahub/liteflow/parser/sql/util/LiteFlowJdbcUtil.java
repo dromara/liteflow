@@ -13,14 +13,14 @@ import java.util.Map;
 
 public class LiteFlowJdbcUtil {
     private static final Logger LOG = LoggerFactory.getLogger(LiteFlowJdbcUtil.class);
-    private static final String CHECK_SQL_PATTERN = "SELECT {},{} FROM {} WHERE {}='{}'";
+    private static final String CHECK_SQL_PATTERN = "SELECT {},{} FROM {}";
 
     /**
      * 获取链接
      * 此方法会根据配置，判读使用指定数据源，还是IOC容器中已有的数据源
      *
-     * @param sqlParserVO
-     * @return
+     * @param sqlParserVO sql解析器参数
+     * @return 返回数据库连接
      */
     public static Connection getConn(SQLParserVO sqlParserVO) {
         Connection connection = null;
@@ -74,7 +74,7 @@ public class LiteFlowJdbcUtil {
             stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             stmt.setFetchSize(1);
             rs = stmt.executeQuery();
-            return rs.next();
+            return true;
         } catch (Exception e) {
             return false;
         } finally {
@@ -86,7 +86,6 @@ public class LiteFlowJdbcUtil {
     /**
      * 关闭
      *
-     * @param conn conn
      * @param conn conn
      * @param rs   rs
      */
@@ -120,15 +119,13 @@ public class LiteFlowJdbcUtil {
     /**
      * 构建检查 sql
      *
-     * @param sqlParserVO
-     * @return
+     * @param sqlParserVO sql解析器参数
+     * @return 返回组合完成的检查sql
      */
     private static String buildCheckSql(SQLParserVO sqlParserVO) {
         String chainTableName = sqlParserVO.getChainTableName();
         String elDataField = sqlParserVO.getElDataField();
         String chainNameField = sqlParserVO.getChainNameField();
-        String chainApplicationNameField = sqlParserVO.getChainApplicationNameField();
-        String applicationName = sqlParserVO.getApplicationName();
-        return StrUtil.format(CHECK_SQL_PATTERN, chainNameField, elDataField, chainTableName, chainApplicationNameField, applicationName);
+        return StrUtil.format(CHECK_SQL_PATTERN, chainNameField, elDataField, chainTableName);
     }
 }
