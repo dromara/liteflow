@@ -9,6 +9,9 @@
         <node id="f" class="com.yomahub.liteflow.test.component.cmp2.FSwitchCmp"/>
         <node id="g" class="com.yomahub.liteflow.test.component.cmp1.GCmp"/>
         <node id="h" class="com.yomahub.liteflow.test.component.cmp1.HCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.component.cmp1.ICmp"/>
+        <node id="j" class="com.yomahub.liteflow.test.component.cmp1.JCmp"/>
+        <node id="k" class="com.yomahub.liteflow.test.component.cmp1.KCmp"/>
     </nodes>
 
     <chain name="chain1">
@@ -37,5 +40,9 @@
 
     <chain name="chain7">
         THEN(g, h);
+    </chain>
+
+    <chain name="chain8">
+        THEN(i, j, k);
     </chain>
 </flow>
