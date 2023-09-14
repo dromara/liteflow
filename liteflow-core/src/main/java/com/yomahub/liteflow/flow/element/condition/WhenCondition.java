@@ -15,6 +15,7 @@ import com.yomahub.liteflow.flow.parallel.strategy.ParallelStrategyExecutor;
 import com.yomahub.liteflow.flow.parallel.strategy.ParallelStrategyHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.thread.ExecutorHelper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -59,13 +60,16 @@ public class WhenCondition extends Condition {
 		return ConditionTypeEnum.TYPE_WHEN;
 	}
 
-	// 使用线程池执行when并发流程
+	// 使用线程池执行 when 并发流程
 	// 这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception {
+
 		// 获取并发执行策略
 		ParallelStrategyExecutor parallelStrategyExecutor = ParallelStrategyHelper.loadInstance().buildParallelExecutor(this.getParallelStrategy());
-		// 执行逻辑
+
+		// 执行并发逻辑
 		parallelStrategyExecutor.execute(this, slotIndex);
+
 	}
 
 	public boolean isIgnoreError() {

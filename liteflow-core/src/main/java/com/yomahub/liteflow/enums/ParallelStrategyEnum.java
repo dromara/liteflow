@@ -17,7 +17,7 @@ public enum ParallelStrategyEnum {
 
     ALL("allOf", "完成全部任务", AllOfParallelExecutor.class),
 
-    SPECIFY("must", "完成指定任务", SpecifyParallelExecutor.class);
+    SPECIFY("must", "完成指定 ID 任务", SpecifyParallelExecutor.class);
 
     private String strategyType;
 
