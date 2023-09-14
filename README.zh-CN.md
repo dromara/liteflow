@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://liteflow.yomahub.com/">
+<a href="https://liteflow.cc/">
     <img src="static/img/logo-main.svg" width="50%" height="auto" alt="logo">
 </a>
 </p>
@@ -15,8 +15,8 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 
 你在官网中可以找到加入社区的方式！
 
-## 官网链接：[点这里进入官网](https://liteflow.yomahub.com/)
-## 文档链接：[点这里进入文档进行学习](https://liteflow.yomahub.com/pages/5816c5/)
+## 官网链接：[点这里进入官网](https://liteflow.cc/)
+## 文档链接：[点这里进入文档进行学习](https://liteflow.cc/pages/5816c5/)
 ## 示例工程：[DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
 ## 🍬特性
