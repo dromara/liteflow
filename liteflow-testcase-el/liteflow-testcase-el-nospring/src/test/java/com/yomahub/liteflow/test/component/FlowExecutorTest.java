@@ -83,4 +83,12 @@ public class FlowExecutorTest extends BaseTest {
 		Assertions.assertEquals("g", response.getExecuteStepStr());
 	}
 
+	// 测试setIsEnd如果为true，continueError也为true，那不应该continue了,并且都在同一个 cmp 中
+	@Test
+	public void testSetIsEnd3() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain8", 10);
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("i", response.getExecuteStepStr());
+	}
+
 }

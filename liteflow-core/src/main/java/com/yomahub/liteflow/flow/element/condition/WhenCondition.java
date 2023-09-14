@@ -105,6 +105,8 @@ public class WhenCondition extends Condition {
 	}
 
 	public void setThreadExecutorClass(String threadExecutorClass) {
+		// #I7G6BB 初始化的时候即创建线程池，避免运行时获取导致并发问题
+		ExecutorHelper.loadInstance().buildWhenExecutor(threadExecutorClass);
 		this.threadExecutorClass = threadExecutorClass;
 	}
 
