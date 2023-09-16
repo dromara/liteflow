@@ -90,6 +90,15 @@ public class SQLParserVO {
      */
     private String scriptLanguageField;
 
+    /*是否开启轮询机制 默认不开启*/
+    private Boolean ifPolling = false;
+
+    /*轮询时间间隔(s) 默认60s*/
+    private Integer pollingInterval = 60;
+
+    /*规则配置后首次轮询的起始时间 默认为60s*/
+    private Integer pollingStartTime = 60;
+
     public String getUrl() {
         return url;
     }
@@ -225,4 +234,27 @@ public class SQLParserVO {
         return StrUtil.isBlank(url) && StrUtil.isBlank(username) && StrUtil.isBlank(password) && StrUtil.isBlank(driverClassName);
     }
 
+    public Boolean getIfPolling() {
+        return ifPolling;
+    }
+
+    public void setIfPolling(Boolean ifPolling) {
+        this.ifPolling = ifPolling;
+    }
+
+    public Integer getPollingInterval() {
+        return pollingInterval;
+    }
+
+    public void setPollingInterval(Integer pollingInterval) {
+        this.pollingInterval = pollingInterval;
+    }
+
+    public Integer getPollingStartTime() {
+        return pollingStartTime;
+    }
+
+    public void setPollingStartTime(Integer pollingStartTime) {
+        this.pollingStartTime = pollingStartTime;
+    }
 }
