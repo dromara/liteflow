@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,8 +50,6 @@ public class ChainPollingTask implements Runnable {
     @Override
     public void run() {
         try{
-            PreparedStatement stmt;
-            ResultSet rs;
             String chainTableName = sqlParserVO.getChainTableName();
             String elDataField = sqlParserVO.getElDataField();
             String chainNameField = sqlParserVO.getChainNameField();
@@ -60,11 +59,11 @@ public class ChainPollingTask implements Runnable {
             String SHAField = StrUtil.format(SHA_PATTERN, elDataField);
             String sqlCmd = StrUtil.format(SQL_PATTERN, chainNameField, SHAField, chainTableName,
                     chainApplicationNameField);
-            stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            PreparedStatement stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(FETCH_SIZE_MAX);
             stmt.setString(1, applicationName);
-            rs = stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             Set<String> newChainSet = new HashSet<>();
 
@@ -81,7 +80,7 @@ public class ChainPollingTask implements Runnable {
                         String newELData = getStringFromResultSet(newChainRS, elDataField);
                         //新增chain
                         LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(newELData).build();
-                        LOG.info("starting reload flow config... create key={} new value={},", chainName, newELData);
+                        LOG.info("starting reload flow config... create chain={} new value={},", chainName, newELData);
                         //加入到shaMap
                         chainSHAMap.put(chainName, newSHA);
                     }
@@ -94,7 +93,7 @@ public class ChainPollingTask implements Runnable {
                         String newELData = getStringFromResultSet(newChainRS, elDataField);
                         //修改chain
                         LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(newELData).build();
-                        LOG.info("starting reload flow config... update key={} new value={},", chainName, newELData);
+                        LOG.info("starting reload flow config... update chain={} new value={},", chainName, newELData);
                         //修改shaMap
                         chainSHAMap.put(chainName, newSHA);
                     }
@@ -108,17 +107,20 @@ public class ChainPollingTask implements Runnable {
                 // 2、修改了chainName:因为遍历到新的name时会加到SHAMap里,但没有机会删除旧的chain
                 // 3、上述两者结合
                 //在此处遍历chainSHAMap,把不在newChainSet中的chain删除
-                for (String chainName : chainSHAMap.keySet()) {
-                    if(!newChainSet.contains(chainName)){
+                //这里用iterator是为避免在遍历集合时删除元素导致ConcurrentModificationException
+                Iterator<String> iterator = chainSHAMap.keySet().iterator();
+                while(iterator.hasNext()) {
+                    String chainName = iterator.next();
+                    if(!newChainSet.contains(chainName)) {
                         FlowBus.removeChain(chainName);
                         LOG.info("starting reload flow config... delete chain={}", chainName);
                         //修改SHAMap
-                        chainSHAMap.remove(chainName);
+                        iterator.remove();
                     }
                 }
             }
-
-        }catch (Exception e) {
+        }
+        catch (Exception e) {
             LOG.error("[Exception during SQL chain polling] " + e.getMessage(), e);
         }
     }

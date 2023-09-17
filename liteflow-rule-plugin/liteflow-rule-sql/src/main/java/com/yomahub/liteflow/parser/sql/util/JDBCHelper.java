@@ -59,8 +59,11 @@ public class JDBCHelper {
     //定时任务线程池
     private static ScheduledThreadPoolExecutor pollExecutor;
 
-    //chain的SHA1加密值 用于轮询时确定elDataField是否变化
+    //chain的SHA1加密值 用于轮询时确定chain是否变化
     private Map<String, String> chainSHAMap = new HashMap<>();
+
+    //script的SHA1加密值 用于轮询时确定script是否变化
+    private Map<String, String> scriptSHAMap = new HashMap<>();
 
     /**
      * 初始化 INSTANCE
@@ -162,9 +165,16 @@ public class JDBCHelper {
      * 定时轮询拉取SQL中变化的数据
      */
     public void listenSQL() {
+        //添加轮询chain的定时任务
         ChainPollingTask chainTask = new ChainPollingTask(sqlParserVO, chainSHAMap);
         pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartTime().longValue(),
                 sqlParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+        if (hasScriptData()) {
+            //添加轮询script的定时任务
+            ScriptPollingTask scriptTask = new ScriptPollingTask(sqlParserVO, scriptSHAMap);
+            pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartTime().longValue(),
+                    sqlParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+        }
     }
 
 
@@ -220,6 +230,13 @@ public class JDBCHelper {
                 }
 
                 result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, data));
+
+                //如果需要轮询 计算该scriptData的SHA值
+                if(sqlParserVO.getIfPolling()){
+                    String scriptKey = StrUtil.join(":", id, name, type);
+                    String scriptSHA = DigestUtil.sha1Hex(data);
+                    scriptSHAMap.put(scriptKey, scriptSHA);
+                }
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
@@ -287,6 +304,13 @@ public class JDBCHelper {
 
                 result.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name),
                         type, language, data));
+
+                //如果需要轮询 计算该scriptData的SHA值
+                if(sqlParserVO.getIfPolling()){
+                    String scriptKey = StrUtil.join(":", id, name, type, language);
+                    String scriptSHA = DigestUtil.sha1Hex(data);
+                    scriptSHAMap.put(scriptKey, scriptSHA);
+                }
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
