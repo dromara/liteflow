@@ -90,7 +90,7 @@ public class SQLParserVO {
      */
     private String scriptLanguageField;
 
-    /*是否开启轮询机制 默认不开启*/
+    /*轮询机制是否开启 默认不开启*/
     private Boolean ifPolling = false;
 
     /*轮询时间间隔(s) 默认120s*/
