@@ -16,11 +16,10 @@ public class IdGeneratorHolder {
 
 	private RequestIdGenerator requestIdGenerator;
 
-	private static IdGeneratorHolder INSTANCE;
+	private static IdGeneratorHolder INSTANCE = new IdGeneratorHolder();
 
 	public static void init() {
 		try {
-			INSTANCE = new IdGeneratorHolder();
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 			String requestIdGeneratorClass = liteflowConfig.getRequestIdGeneratorClass();
 
