@@ -4,6 +4,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
@@ -215,6 +216,10 @@ public class ParserHelper {
 
 	public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet,
 			Consumer<JsonNode> parseOneChainConsumer) {
+		//用于存放抽象chain的map
+		Map<String,JsonNode> abstratChainMap = new HashMap<>();
+		//用于存放已经解析过的实现chain
+		Set<JsonNode> implChainSet = new HashSet<>();
 		// 先在元数据里放上chain
 		// 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
 		// 这样就不用去像之前的版本那样回归调用
@@ -237,6 +242,10 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
+
+				if(innerJsonObject.hasNonNull(ABSTRACT) && innerJsonObject.get(ABSTRACT).asBoolean()) {
+					abstratChainMap.put(chainName,innerJsonObject);
+				}
 			}
 		});
 		// 清空
@@ -246,8 +255,21 @@ public class ParserHelper {
 			// 解析每一个chain
 			Iterator<JsonNode> chainIterator = flowJsonNode.get(FLOW).get(CHAIN).elements();
 			while (chainIterator.hasNext()) {
-				JsonNode jsonNode = chainIterator.next();
-				parseOneChainConsumer.accept(jsonNode);
+				JsonNode chainNode = chainIterator.next();
+				//首先需要对继承自抽象Chain的chain进行字符串替换
+				if(chainNode.hasNonNull(EXTENDS)){
+					String baseChainId = chainNode.get(EXTENDS).textValue();
+					if(abstratChainMap.containsKey(baseChainId)) {
+						JsonNode baseChain = abstratChainMap.get(baseChainId);
+						parseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
+					}else{
+						throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+					}
+				}
+				//如果一个chain不为抽象chain，则进行解析
+				if(chainNode.get(ABSTRACT) == null || !chainNode.get(ABSTRACT).asBoolean()){
+					parseOneChainConsumer.accept(chainNode);
+				}
 			}
 		}
 	}
@@ -289,7 +311,38 @@ public class ParserHelper {
 	}
 
 	/**
-	 * 解析一个继承自baseChain的implChain
+	 * 解析一个继承自baseChain的implChain,xml格式
+	 * @param baseChain 父Chain
+	 * @param implChain 实现Chain
+	 * @param abstractChainMap 所有的抽象Chain
+	 * @param implChainSet 已经解析过的实现Chain
+	 */
+	private static void parseImplChain(JsonNode baseChain,JsonNode implChain,Map<String,JsonNode> abstractChainMap,Set<JsonNode> implChainSet) {
+		//如果已经解析过了，就不再解析
+		if(implChainSet.contains(implChain)) return;
+		//如果baseChainId也是继承自其他的chain，需要递归解析
+		if(baseChain.get(EXTENDS)!=null){
+			String pBaseChainId = baseChain.get(EXTENDS).textValue();
+			if(abstractChainMap.containsKey(pBaseChainId)) {
+				JsonNode pBaseChain = abstractChainMap.get(pBaseChainId);
+				parseImplChain(pBaseChain, baseChain, abstractChainMap, implChainSet);
+			}else{
+				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", pBaseChainId));
+			}
+		}
+		//否则根据baseChainId解析implChainId
+		String implChainEl = implChain.get(VALUE).textValue();
+		String baseChainEl = baseChain.get(VALUE).textValue();
+		//替换baseChainId中的implChainId
+		// 使用正则表达式匹配占位符并替换
+		String parsedEl = RegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
+		ObjectNode objectNode = (ObjectNode) implChain;
+		objectNode.put(VALUE,parsedEl);
+		implChainSet.add(implChain);
+	}
+
+	/**
+	 * 解析一个继承自baseChain的implChain,json格式
 	 * @param baseChain 父Chain
 	 * @param implChain 实现Chain
 	 * @param abstractChainMap 所有的抽象Chain

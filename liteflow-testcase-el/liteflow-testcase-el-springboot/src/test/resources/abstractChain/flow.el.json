@@ -1,0 +1,16 @@
+{
+  "flow": {
+    "chain": [
+      {
+        "name": "base",
+        "abstract": true,
+        "value": "THEN(a, b, {0}, {1});"
+      },
+      {
+        "name": "implA",
+        "extends": "base",
+        "value": "{0}=IF(c, d, e);\n  {1}=SWITCH(f).to(j,k);"
+      }
+    ]
+  }
+}
