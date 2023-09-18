@@ -86,7 +86,7 @@ public abstract class ParallelStrategyExecutor {
      * @param slotIndex
      * @return
      */
-    protected List<CompletableFuture<WhenFutureObj>> getAllTaskList(WhenCondition whenCondition, Integer slotIndex) {
+    protected List<CompletableFuture<WhenFutureObj>> getWhenAllTaskList(WhenCondition whenCondition, Integer slotIndex) {
 
         String currChainName = whenCondition.getCurrChainId();
 
@@ -121,11 +121,11 @@ public abstract class ParallelStrategyExecutor {
      * 任务结果处理
      * @param whenCondition 并行组件对象
      * @param slotIndex 当前 slot 的 index
-     * @param allTaskList 并行组件中所有任务列表
+     * @param whenAllTaskList 并行组件中所有任务列表
      * @param specifyTask 指定预先完成的任务，详见 {@link ParallelStrategyEnum}
      * @throws Exception
      */
-    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> allTaskList,
+    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllTaskList,
                                     CompletableFuture<?> specifyTask) throws Exception {
 
         Slot slot = DataBus.getSlot(slotIndex);
@@ -147,7 +147,7 @@ public abstract class ParallelStrategyExecutor {
         // 如果 any 为 true，那么这里拿到的是第一个完成的任务
         // 如果为 must，那么这里获取到的就是指定的任务
         // 这里过滤和转换一起用 lambda 做了
-        List<WhenFutureObj> allCompletableWhenFutureObjList = allTaskList.stream().filter(f -> {
+        List<WhenFutureObj> allCompletableWhenFutureObjList = whenAllTaskList.stream().filter(f -> {
             // 过滤出已经完成的，没完成的就直接终止
             if (f.isDone()) {
                 return true;

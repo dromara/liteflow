@@ -18,13 +18,13 @@ public class AnyOfParallelExecutor extends ParallelStrategyExecutor {
     public void execute(WhenCondition whenCondition, Integer slotIndex) throws Exception {
 
         // 获取所有 CompletableFuture 任务
-        List<CompletableFuture<WhenFutureObj>> allTaskList = this.getAllTaskList(whenCondition, slotIndex);
+        List<CompletableFuture<WhenFutureObj>> whenAllTaskList = this.getWhenAllTaskList(whenCondition, slotIndex);
 
         // 把这些 CompletableFuture 通过 anyOf 合成一个 CompletableFuture，表明完成任一任务
-        CompletableFuture<?> specifyTask = CompletableFuture.anyOf(allTaskList.toArray(new CompletableFuture[] {}));
+        CompletableFuture<?> specifyTask = CompletableFuture.anyOf(whenAllTaskList.toArray(new CompletableFuture[] {}));
 
         // 结果处理
-        this.handleTaskResult(whenCondition, slotIndex, allTaskList, specifyTask);
+        this.handleTaskResult(whenCondition, slotIndex, whenAllTaskList, specifyTask);
 
     }
 
