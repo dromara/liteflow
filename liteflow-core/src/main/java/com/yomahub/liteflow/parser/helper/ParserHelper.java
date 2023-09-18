@@ -15,6 +15,7 @@ import org.dom4j.Element;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
@@ -127,6 +128,10 @@ public class ParserHelper {
 
 	public static void parseChainDocument(List<Document> documentList, Set<String> chainNameSet,
 			Consumer<Element> parseOneChainConsumer) {
+		//用于存放抽象chain的map
+		Map<String,Element> abstratChainMap = new HashMap<>();
+		//用于存放已经解析过的实现chain
+		Set<Element> implChainSet = new HashSet<>();
 		// 先在元数据里放上chain
 		// 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
 		// 这样就不用去像之前的版本那样回归调用
@@ -147,6 +152,9 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
+				if(e.attributeValue(ABSTRACT) != null && e.attributeValue(ABSTRACT).equals("true")){
+					abstratChainMap.put(chainName,e);
+				}
 			});
 		});
 		// 清空
@@ -156,7 +164,22 @@ public class ParserHelper {
 		for (Document document : documentList) {
 			Element rootElement = document.getRootElement();
 			List<Element> chainList = rootElement.elements(CHAIN);
-			chainList.forEach(parseOneChainConsumer);
+			//先对继承自抽象Chain的chain进行字符串替换
+			chainList.stream()
+					.filter(e -> e.attributeValue(EXTENDS)!=null)
+					.forEach(e->{
+						String baseChainId = e.attributeValue(EXTENDS);
+						if(abstratChainMap.containsKey(baseChainId)) {
+							Element baseChain = abstratChainMap.get(baseChainId);
+							parseImplChain(baseChain,e,abstratChainMap,implChainSet);
+						}else{
+							throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+						}
+					});
+			//对所有非抽象chain进行解析
+			chainList.stream()
+					.filter(e -> e.attributeValue(ABSTRACT)==null || e.attributeValue(ABSTRACT).equals("false"))
+					.forEach(parseOneChainConsumer);
 		}
 	}
 
@@ -265,10 +288,44 @@ public class ParserHelper {
 		}
 	}
 
+	/**
+	 * 解析一个继承自baseChain的implChain
+	 * @param baseChain 父Chain
+	 * @param implChain 实现Chain
+	 * @param abstractChainMap 所有的抽象Chain
+	 * @param implChainSet 已经解析过的实现Chain
+	 */
+	private static void parseImplChain(Element baseChain,Element implChain,Map<String,Element> abstractChainMap,Set<Element> implChainSet) {
+		//如果已经解析过了，就不再解析
+		if(implChainSet.contains(implChain)) return;
+		//如果baseChainId也是继承自其他的chain，需要递归解析
+		if(baseChain.attributeValue(EXTENDS)!=null){
+			String pBaseChainId = baseChain.attributeValue(EXTENDS);
+			if(abstractChainMap.containsKey(pBaseChainId)) {
+				Element pBaseChain = abstractChainMap.get(pBaseChainId);
+				parseImplChain(pBaseChain, baseChain, abstractChainMap, implChainSet);
+			}else{
+				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", pBaseChainId));
+			}
+		}
+		//否则根据baseChainId解析implChainId
+		String implChainEl = implChain.getText();
+		String baseChainEl = baseChain.getText();
+		//替换baseChainId中的implChainId
+		// 使用正则表达式匹配占位符并替换
+		String parsedEl = RegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
+		implChain.setText(parsedEl);
+		implChainSet.add(implChain);
+	}
+
 	private static class RegexUtil {
 
 		// java 注释的正则表达式
 		private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
+
+		// abstractChain 占位符正则表达式
+		private static final String REGEX_ABSTRACT_HOLDER = "\\{(\\d+)\\}";
+
 
 		/**
 		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释， 会压缩字符串，移除空格和换行符
@@ -286,6 +343,30 @@ public class ParserHelper {
 				.replaceAll(CharSequenceUtil.EMPTY);
 		}
 
+		/**
+		 * 根据抽象EL和实现EL，替换抽象EL中的占位符
+		 * @param abstractChain 抽象EL
+		 * @param implChain 抽象EL对应的一个实现
+		 * @return 替换后的EL
+		 */
+		private static String replaceAbstractChain(String abstractChain,String implChain){
+			//匹配抽象chain的占位符
+			Pattern placeHolder = Pattern.compile(REGEX_ABSTRACT_HOLDER);
+			Matcher placeHolderMatcher = placeHolder.matcher(abstractChain);
+			while(placeHolderMatcher.find()){
+				//到implChain中找到对应的占位符实现
+				int index = Integer.parseInt(placeHolderMatcher.group(1));
+				Pattern placeHolderImpl = Pattern.compile("\\{" + index + "\\}=(.*?)(;|$)");
+				Matcher implMatcher = placeHolderImpl.matcher(implChain);
+				if (implMatcher.find()) {
+					String replacement = implMatcher.group(1).trim();
+					abstractChain = abstractChain.replace("{" + index + "}", replacement);
+				}else{
+					throw new ParseException("missing abstract chain in expression \r\n" + abstractChain);
+				}
+			}
+			return abstractChain;
+		}
 	}
 
 }
