@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain abstract="true" id="base">
+        THEN(a, b, {0}, {1})
+    </chain>
+
+    <chain id="implA" extends="base">
+        {0}=IF(c, d, e);
+        {1}=SWITCH(f).to(j,k);
+    </chain>
+</flow>
