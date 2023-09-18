@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
+    <chain id="implB" extends="base2">
+        {3}=THEN(a,b);
+        {4}=j;
+    </chain>
+
+    <chain id="implC" extends="base2">
+        {3}=THEN(a,b);
+        {4}=THEN(a,b).id("j");
+    </chain>
+
     <chain abstract="true" id="base">
         THEN(a, b, {0}, {1})
     </chain>
@@ -8,4 +18,11 @@
         {0}=IF(c, d, e);
         {1}=SWITCH(f).to(j,k);
     </chain>
+
+    <chain abstract="true" id="base2" extends="base">
+        {0}=THEN(a,b,{3});
+        {1}=SWITCH(f).to({4},k);
+    </chain>
+
+
 </flow>

@@ -26,11 +26,30 @@ public class AbstractChainXMLELSpringbootTest extends BaseTest {
 	@Resource
 	private FlowExecutor flowExecutor;
 
-	// XML文件单继承测试
+
+
+	// XML文件基本继承测试
 	@Test
 	public void test1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("implA", "arg");
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("a==>b==>c==>d==>f==>j", response.getExecuteStepStrWithoutTime());
 	}
+
+	//测试嵌套继承的baseChain是否重复解析
+	@Test
+	public void test2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("implB", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>a==>b==>a==>b==>f==>j", response.getExecuteStepStrWithoutTime());
+	}
+
+	//测试嵌套继承的baseChain是否重复解析
+	@Test
+	public void test3() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("implC", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>a==>b==>a==>b==>f==>a==>b", response.getExecuteStepStrWithoutTime());
+	}
+
 }
