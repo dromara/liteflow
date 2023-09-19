@@ -1,0 +1,36 @@
+flow:
+  nodes:
+    node:
+      - id: a
+        class: com.yomahub.liteflow.test.abstractChain.cmp.ACmp
+      - id: b
+        class: com.yomahub.liteflow.test.abstractChain.cmp.BCmp
+      - id: c
+        class: com.yomahub.liteflow.test.abstractChain.cmp.CCmp
+      - id: d
+        class: com.yomahub.liteflow.test.abstractChain.cmp.DCmp
+      - id: e
+        class: com.yomahub.liteflow.test.abstractChain.cmp.ECmp
+      - id: f
+        class: com.yomahub.liteflow.test.abstractChain.cmp.FSwitchCmp
+      - id: j
+        class: com.yomahub.liteflow.test.abstractChain.cmp.JCmp
+      - id: k
+        class: com.yomahub.liteflow.test.abstractChain.cmp.KCmp
+  chain:
+    - id: implB
+      extends: base2
+      value: "{3}=THEN(a,b);\n {4}=j;"
+    - id: implC
+      extends: base2
+      value: "{3}=THEN(a,b);\n {4}=THEN(a,b).id(\"j\");"
+    - id: base
+      abstract: true
+      value: "THEN(a, b, {0}, {1});"
+    - id: implA
+      extends: base
+      value: "{0}=IF(c, d, e);\n  {1}=SWITCH(f).to(j,k);"
+    - id: base2
+      extends: base
+      abstract: true
+      value: "{0}=THEN(a,b,{3});\n {1}=SWITCH(f).to({4},k);"

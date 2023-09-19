@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.abstractChain.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.abstractChain.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.abstractChain.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.abstractChain.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.abstractChain.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.abstractChain.cmp.FSwitchCmp"/>
+        <node id="j" class="com.yomahub.liteflow.test.abstractChain.cmp.JCmp"/>
+        <node id="k" class="com.yomahub.liteflow.test.abstractChain.cmp.KCmp"/>
+    </nodes>
+
+    <chain id="implB" extends="base2">
+        {3}=THEN(a,b);
+        {4}=j;
+    </chain>
+
+    <chain id="implC" extends="base2">
+        {3}=THEN(a,b);
+        {4}=THEN(a,b).id("j");
+    </chain>
+
+    <chain abstract="true" name="base">
+        THEN(a, b, {0}, {1})
+    </chain>
+
+    <chain id="implA" extends="base">
+        {0}=IF(c, d, e);
+        {1}=SWITCH(f).to(j,k);
+    </chain>
+
+    <chain abstract="true" id="base2" extends="base">
+        {0}=THEN(a,b,{3});
+        {1}=SWITCH(f).to({4},k);
+    </chain>
+
+
+</flow>
