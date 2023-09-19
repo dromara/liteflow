@@ -13,20 +13,22 @@ import org.springframework.test.context.TestPropertySource;
 import javax.annotation.Resource;
 
 /**
- * 测试显示调用子流程(json) 单元测试
+ * springboot环境EL常规的例子测试
  *
- * @author justin.xu
+ * @author Bryan.Zhang
  */
-@TestPropertySource(value = "classpath:/abstractChain/application-json.properties")
-@SpringBootTest(classes = AbstractChainJsonELSpringBootTest.class)
+@TestPropertySource(value = "classpath:/abstractChain/application.properties")
+@SpringBootTest(classes = AbstractChainXmlELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.abstractChain.cmp" })
-public class AbstractChainJsonELSpringBootTest extends BaseTest {
+public class AbstractChainXmlELSpringbootTest extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;
 
-	// 是否按照流程定义配置执行
+
+
+	// XML文件基本继承测试
 	@Test
 	public void test1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("implA", "arg");

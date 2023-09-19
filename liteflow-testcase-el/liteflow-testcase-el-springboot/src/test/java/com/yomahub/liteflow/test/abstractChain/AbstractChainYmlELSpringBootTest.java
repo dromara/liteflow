@@ -13,21 +13,20 @@ import org.springframework.test.context.TestPropertySource;
 import javax.annotation.Resource;
 
 /**
- * springboot环境EL常规的例子测试
+ * 测试显示调用子流程(yml) 单元测试
  *
- * @author Bryan.Zhang
+ * @author justin.xu
  */
-@TestPropertySource(value = "classpath:/abstractChain/application.properties")
-@SpringBootTest(classes = AbstractChainXMLELSpringbootTest.class)
+@TestPropertySource(value = "classpath:/abstractChain/application-yml.properties")
+@SpringBootTest(classes = AbstractChainYmlELSpringBootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.abstractChain.cmp" })
-public class AbstractChainXMLELSpringbootTest extends BaseTest {
+public class AbstractChainYmlELSpringBootTest extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;
 
-
-
+	// 是否按照流程定义配置执行
 	// XML文件基本继承测试
 	@Test
 	public void test1() throws Exception {

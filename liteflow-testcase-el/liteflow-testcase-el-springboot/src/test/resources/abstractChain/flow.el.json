@@ -2,14 +2,30 @@
   "flow": {
     "chain": [
       {
-        "name": "base",
+        "id": "implB",
+        "extends": "base2",
+        "value": "{3}=THEN(a,b);\n {4}=j;"
+      },
+      {
+        "id": "implC",
+        "extends": "base2",
+        "value": "{3}=THEN(a,b);\n {4}=THEN(a,b).id(\"j\");"
+      },
+      {
+        "id": "base",
         "abstract": true,
         "value": "THEN(a, b, {0}, {1});"
       },
       {
-        "name": "implA",
+        "id": "implA",
         "extends": "base",
         "value": "{0}=IF(c, d, e);\n  {1}=SWITCH(f).to(j,k);"
+      },
+      {
+        "id": "base2",
+        "extends": "base",
+        "abstract": true,
+        "value": "{0}=THEN(a,b,{3});\n {1}=SWITCH(f).to({4},k);"
       }
     ]
   }

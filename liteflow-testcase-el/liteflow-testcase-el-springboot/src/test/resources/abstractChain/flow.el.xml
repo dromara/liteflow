@@ -10,7 +10,7 @@
         {4}=THEN(a,b).id("j");
     </chain>
 
-    <chain abstract="true" id="base">
+    <chain abstract="true" name="base">
         THEN(a, b, {0}, {1})
     </chain>
 
