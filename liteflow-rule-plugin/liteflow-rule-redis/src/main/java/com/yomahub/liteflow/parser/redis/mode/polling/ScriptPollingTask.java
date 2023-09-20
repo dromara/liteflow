@@ -5,6 +5,7 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
@@ -68,7 +69,7 @@ public class ScriptPollingTask implements Runnable {
                 String newSHA = scriptClient.evalSha(valueLua, scriptKey, scriptFieldValue);
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该script,表示该script已被删除
-                    RedisParserHelper.NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
+                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
                     FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
                     LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
 

@@ -1,13 +1,11 @@
 package com.yomahub.liteflow.parser.sql.util;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
@@ -33,12 +31,6 @@ public class ScriptPollingTask implements Runnable {
 
     private static final String CONCAT_WITH_LANGUAGE_PATTERN = "CONCAT_WS(':',{},{},{},{}) as script_concat";
 
-    private static final String SHA_PATTERN = "SHA1({}) AS SHA1";
-
-    private static final String SHA_PATTERN_FOR_H2 = "RAWTOHEX(HASH('SHA-1', {})) AS SHA1";
-
-    private static final String SHA_FIELD_NAME = "SHA1";
-
     private static final String SCRIPT_KEY_FIELD = "script_concat";
 
     public static Connection conn;
@@ -60,6 +52,8 @@ public class ScriptPollingTask implements Runnable {
 
     @Override
     public void run() {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         try {
             String scriptTableName = sqlParserVO.getScriptTableName();
             String scriptIdField = sqlParserVO.getScriptIdField();
@@ -70,12 +64,6 @@ public class ScriptPollingTask implements Runnable {
             String applicationName = sqlParserVO.getApplicationName();
             String scriptLanguageField = sqlParserVO.getScriptLanguageField();
 
-            String SHAField = StrUtil.format(SHA_PATTERN, scriptDataField);
-            //h2数据库计算SHA的函数与MySQL不同
-            if(StrUtil.equals(sqlParserVO.getDriverClassName(), "org.h2.Driver")){
-                SHAField = StrUtil.format(SHA_PATTERN_FOR_H2, scriptDataField);
-            }
-
             String KeyField;
             if (StrUtil.isNotBlank(scriptLanguageField)) {
                 KeyField = StrUtil.format(CONCAT_WITH_LANGUAGE_PATTERN, scriptIdField, scriptTypeField, scriptNameField, scriptLanguageField);
@@ -83,46 +71,37 @@ public class ScriptPollingTask implements Runnable {
                 KeyField = StrUtil.format(CONCAT_PATTERN, scriptIdField, scriptTypeField, scriptNameField);
             }
 
-            String sqlCmd = StrUtil.format(SQL_PATTERN, KeyField, SHAField, scriptTableName, scriptApplicationNameField);
-            PreparedStatement stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            String sqlCmd = StrUtil.format(SQL_PATTERN, KeyField, scriptDataField, scriptTableName, scriptApplicationNameField);
+            stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(FETCH_SIZE_MAX);
             stmt.setString(1, applicationName);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
 
             Set<String> newScriptSet = new HashSet<>();
 
             while (rs.next()) {
                 String scriptKey = getStringFromResultSet(rs, SCRIPT_KEY_FIELD);
-                String newSHA = getStringFromResultSet(rs, SHA_FIELD_NAME);
+                String newData = getStringFromResultSet(rs, scriptDataField);
+                String newSHA = DigestUtil.sha1Hex(newData);
                 newScriptSet.add(scriptKey);
                 //如果封装的SHAMap中不存在该script 表示该script为新增
                 if (!scriptSHAMap.containsKey(scriptKey)) {
-                    //获取新script内容
-                    NodeSimpleVO scriptVO = convert(scriptKey);
-                    ResultSet newScriptRS = getNewScriptRS(scriptDataField, scriptTableName, scriptIdField,
-                            scriptVO.getNodeId(), scriptApplicationNameField, applicationName);
-                    if(newScriptRS.next()) {
-                        String newScriptData = getStringFromResultSet(newScriptRS, scriptDataField);
-                        //新增script
-                        changeScriptNode(scriptVO, newScriptData);
-                        LOG.info("starting reload flow config... create script={}, new value={},", scriptKey, newScriptData);
-                    }
+                    NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
+                    //新增script
+                    NodeConvertHelper.changeScriptNode(scriptVO, newData);
+                    LOG.info("starting reload flow config... create script={}, new value={},", scriptKey, newData);
+
                     //加入到shaMap
                     scriptSHAMap.put(scriptKey, newSHA);
                 }
                 else if (!StrUtil.equals(newSHA, scriptSHAMap.get(scriptKey))) {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
-                    //获取新script内容
-                    NodeSimpleVO scriptVO = convert(scriptKey);
-                    ResultSet newScriptRS = getNewScriptRS(scriptDataField, scriptTableName, scriptIdField,
-                            scriptVO.getNodeId(), scriptApplicationNameField, applicationName);
-                    if(newScriptRS.next()) {
-                        String newScriptData = getStringFromResultSet(newScriptRS, scriptDataField);
-                        //修改script
-                        changeScriptNode(scriptVO, newScriptData);
-                        LOG.info("starting reload flow config... update scriptId={}, new value={},", scriptVO.getNodeId(), newScriptData);
-                    }
+                    NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
+                    //修改script
+                    NodeConvertHelper.changeScriptNode(scriptVO, newData);
+                    LOG.info("starting reload flow config... update scriptId={}, new value={},", scriptVO.getNodeId(), newData);
+
                     //修改shaMap
                     scriptSHAMap.put(scriptKey, newSHA);
                 }
@@ -140,7 +119,7 @@ public class ScriptPollingTask implements Runnable {
                 while(iterator.hasNext()){
                     String scriptKey = iterator.next();
                     if (!newScriptSet.contains(scriptKey)) {
-                        NodeSimpleVO scriptVO = convert(scriptKey);
+                        NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
                         //删除script
                         FlowBus.getNodeMap().remove(scriptVO.getNodeId());
                         LOG.info("starting reload flow config... delete script={}", scriptKey);
@@ -152,23 +131,10 @@ public class ScriptPollingTask implements Runnable {
 
         } catch (Exception e) {
             LOG.error("[Exception during SQL script polling] " + e.getMessage(), e);
+        } finally {
+            // 关闭连接
+            LiteFlowJdbcUtil.close(null, stmt, rs);
         }
-    }
-
-    private ResultSet getNewScriptRS(String scriptDataField, String scriptTableName, String scriptIdField,
-                                     String scriptId, String scriptApplicationNameField, String applicationName) {
-        ResultSet rs = null;
-        String sqlCmd = StrUtil.format(NEW_SCRIPT_PATTERN, scriptDataField, scriptTableName,
-                scriptIdField, scriptApplicationNameField);
-        try{
-            PreparedStatement stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            stmt.setString(1, scriptId);
-            stmt.setString(2, applicationName);
-            rs = stmt.executeQuery();
-        }catch (Exception e) {
-            throw new ELSQLException(e.getMessage());
-        }
-        return rs;
     }
 
     private String getStringFromResultSet(ResultSet rs, String field) throws SQLException {
@@ -177,93 +143,5 @@ public class ScriptPollingTask implements Runnable {
             throw new ELSQLException(StrUtil.format("exist {} field value is empty", field));
         }
         return data;
-    }
-
-    /*script节点的修改/添加*/
-    private void changeScriptNode(NodeSimpleVO nodeSimpleVO, String newValue) {
-        // 有语言类型
-        if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .setLanguage(nodeSimpleVO.getLanguage())
-                    .build();
-        }
-        // 没有语言类型
-        else {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .build();
-        }
-    }
-
-    private NodeSimpleVO convert(String scriptKey){
-        List<String> matchItemList = ReUtil.findAllGroup0("(?<=[^:]:)[^:]+|[^:]+(?=:[^:])", scriptKey);
-        if (CollUtil.isEmpty(matchItemList)) {
-            return null;
-        }
-        NodeSimpleVO nodeSimpleVO = new NodeSimpleVO();
-        if (matchItemList.size() > 1) {
-            nodeSimpleVO.setNodeId(matchItemList.get(0));
-            nodeSimpleVO.setType(matchItemList.get(1));
-        }
-
-        if (matchItemList.size() > 2) {
-            nodeSimpleVO.setName(matchItemList.get(2));
-        }
-
-        if (matchItemList.size() > 3) {
-            nodeSimpleVO.setLanguage(matchItemList.get(3));
-        }
-
-        return nodeSimpleVO;
-    }
-
-    class NodeSimpleVO {
-
-        private String nodeId;
-
-        private String type;
-
-        private String name = StrUtil.EMPTY;
-
-        private String language;
-
-        public String getNodeId() {
-            return nodeId;
-        }
-
-        public void setNodeId(String nodeId) {
-            this.nodeId = nodeId;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getLanguage() {
-            return language;
-        }
-
-        public void setLanguage(String language) {
-            this.language = language;
-        }
     }
 }

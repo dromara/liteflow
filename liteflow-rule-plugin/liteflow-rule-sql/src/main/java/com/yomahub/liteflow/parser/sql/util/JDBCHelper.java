@@ -60,10 +60,10 @@ public class JDBCHelper {
     private static ScheduledThreadPoolExecutor pollExecutor;
 
     //chain的SHA1加密值 用于轮询时确定chain是否变化
-    private Map<String, String> chainSHAMap = new HashMap<>();
+    private Map<String/*chainId*/, String/*chain的SHA1加密值*/> chainSHAMap = new HashMap<>();
 
     //script的SHA1加密值 用于轮询时确定script是否变化
-    private Map<String, String> scriptSHAMap = new HashMap<>();
+    private Map<String/*id:type:name*/, String/*script的SHA1加密值*/> scriptSHAMap = new HashMap<>();
 
     /**
      * 初始化 INSTANCE
