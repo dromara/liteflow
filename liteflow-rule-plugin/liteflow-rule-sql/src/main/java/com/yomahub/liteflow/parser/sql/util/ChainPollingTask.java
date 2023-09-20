@@ -29,7 +29,11 @@ public class ChainPollingTask implements Runnable {
 
     private static final String NEW_CHAIN_PATTERN = "SELECT {} FROM {} WHERE {}=? AND {}=?";
 
-    private static final String SHA_PATTERN = "SHA1({})";
+    private static final String SHA_PATTERN = "SHA1({}) AS SHA1";
+
+    private static final String SHA_PATTERN_FOR_H2 = "RAWTOHEX(HASH('SHA-1', {})) AS SHA1";
+
+    private static final String SHA_FIELD_NAME = "SHA1";
 
     public static Connection conn;
 
@@ -57,6 +61,11 @@ public class ChainPollingTask implements Runnable {
             String applicationName = sqlParserVO.getApplicationName();
 
             String SHAField = StrUtil.format(SHA_PATTERN, elDataField);
+            //h2数据库计算SHA的函数与MySQL不同
+            if(StrUtil.equals(sqlParserVO.getDriverClassName(), "org.h2.Driver")){
+                SHAField = StrUtil.format(SHA_PATTERN_FOR_H2, elDataField);
+            }
+
             String sqlCmd = StrUtil.format(SQL_PATTERN, chainNameField, SHAField, chainTableName,
                     chainApplicationNameField);
             PreparedStatement stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -69,7 +78,7 @@ public class ChainPollingTask implements Runnable {
 
             while(rs.next()) {
                 String chainName = getStringFromResultSet(rs, chainNameField);
-                String newSHA = getStringFromResultSet(rs, SHAField);
+                String newSHA = getStringFromResultSet(rs, SHA_FIELD_NAME);
                 newChainSet.add(chainName);
                 //如果封装的SHAMap中不存在该chain, 表示该chain为新增
                 if(!chainSHAMap.containsKey(chainName)) {
@@ -80,7 +89,7 @@ public class ChainPollingTask implements Runnable {
                         String newELData = getStringFromResultSet(newChainRS, elDataField);
                         //新增chain
                         LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(newELData).build();
-                        LOG.info("starting reload flow config... create chain={} new value={},", chainName, newELData);
+                        LOG.info("starting reload flow config... create chain={}, new value={},", chainName, newELData);
                         //加入到shaMap
                         chainSHAMap.put(chainName, newSHA);
                     }
@@ -93,7 +102,7 @@ public class ChainPollingTask implements Runnable {
                         String newELData = getStringFromResultSet(newChainRS, elDataField);
                         //修改chain
                         LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(newELData).build();
-                        LOG.info("starting reload flow config... update chain={} new value={},", chainName, newELData);
+                        LOG.info("starting reload flow config... update chain={}, new value={},", chainName, newELData);
                         //修改shaMap
                         chainSHAMap.put(chainName, newSHA);
                     }

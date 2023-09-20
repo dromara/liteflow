@@ -172,7 +172,7 @@ public class JDBCHelper {
         if (hasScriptData()) {
             //添加轮询script的定时任务
             ScriptPollingTask scriptTask = new ScriptPollingTask(sqlParserVO, scriptSHAMap);
-            pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartTime().longValue(),
+            pollExecutor.scheduleAtFixedRate(scriptTask, sqlParserVO.getPollingStartTime().longValue(),
                     sqlParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
         }
     }
@@ -233,7 +233,7 @@ public class JDBCHelper {
 
                 //如果需要轮询 计算该scriptData的SHA值
                 if(sqlParserVO.getIfPolling()){
-                    String scriptKey = StrUtil.join(":", id, name, type);
+                    String scriptKey = StrUtil.join(":", id, type, name);
                     String scriptSHA = DigestUtil.sha1Hex(data);
                     scriptSHAMap.put(scriptKey, scriptSHA);
                 }
@@ -307,7 +307,7 @@ public class JDBCHelper {
 
                 //如果需要轮询 计算该scriptData的SHA值
                 if(sqlParserVO.getIfPolling()){
-                    String scriptKey = StrUtil.join(":", id, name, type, language);
+                    String scriptKey = StrUtil.join(":", id, type, name, language);
                     String scriptSHA = DigestUtil.sha1Hex(data);
                     scriptSHAMap.put(scriptKey, scriptSHA);
                 }

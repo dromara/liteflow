@@ -33,7 +33,11 @@ public class ScriptPollingTask implements Runnable {
 
     private static final String CONCAT_WITH_LANGUAGE_PATTERN = "CONCAT_WS(':',{},{},{},{}) as script_concat";
 
-    private static final String SHA_PATTERN = "SHA1({})";
+    private static final String SHA_PATTERN = "SHA1({}) AS SHA1";
+
+    private static final String SHA_PATTERN_FOR_H2 = "RAWTOHEX(HASH('SHA-1', {})) AS SHA1";
+
+    private static final String SHA_FIELD_NAME = "SHA1";
 
     private static final String SCRIPT_KEY_FIELD = "script_concat";
 
@@ -67,11 +71,16 @@ public class ScriptPollingTask implements Runnable {
             String scriptLanguageField = sqlParserVO.getScriptLanguageField();
 
             String SHAField = StrUtil.format(SHA_PATTERN, scriptDataField);
+            //h2数据库计算SHA的函数与MySQL不同
+            if(StrUtil.equals(sqlParserVO.getDriverClassName(), "org.h2.Driver")){
+                SHAField = StrUtil.format(SHA_PATTERN_FOR_H2, scriptDataField);
+            }
+
             String KeyField;
             if (StrUtil.isNotBlank(scriptLanguageField)) {
-                KeyField = StrUtil.format(CONCAT_WITH_LANGUAGE_PATTERN, scriptIdField, scriptNameField, scriptTypeField, scriptLanguageField);
+                KeyField = StrUtil.format(CONCAT_WITH_LANGUAGE_PATTERN, scriptIdField, scriptTypeField, scriptNameField, scriptLanguageField);
             } else {
-                KeyField = StrUtil.format(CONCAT_PATTERN, scriptIdField, scriptNameField, scriptTypeField);
+                KeyField = StrUtil.format(CONCAT_PATTERN, scriptIdField, scriptTypeField, scriptNameField);
             }
 
             String sqlCmd = StrUtil.format(SQL_PATTERN, KeyField, SHAField, scriptTableName, scriptApplicationNameField);
@@ -85,7 +94,7 @@ public class ScriptPollingTask implements Runnable {
 
             while (rs.next()) {
                 String scriptKey = getStringFromResultSet(rs, SCRIPT_KEY_FIELD);
-                String newSHA = getStringFromResultSet(rs, SHAField);
+                String newSHA = getStringFromResultSet(rs, SHA_FIELD_NAME);
                 newScriptSet.add(scriptKey);
                 //如果封装的SHAMap中不存在该script 表示该script为新增
                 if (!scriptSHAMap.containsKey(scriptKey)) {
@@ -97,7 +106,7 @@ public class ScriptPollingTask implements Runnable {
                         String newScriptData = getStringFromResultSet(newScriptRS, scriptDataField);
                         //新增script
                         changeScriptNode(scriptVO, newScriptData);
-                        LOG.info("starting reload flow config... create script={} new value={},", scriptKey, newScriptData);
+                        LOG.info("starting reload flow config... create script={}, new value={},", scriptKey, newScriptData);
                     }
                     //加入到shaMap
                     scriptSHAMap.put(scriptKey, newSHA);
@@ -112,7 +121,7 @@ public class ScriptPollingTask implements Runnable {
                         String newScriptData = getStringFromResultSet(newScriptRS, scriptDataField);
                         //修改script
                         changeScriptNode(scriptVO, newScriptData);
-                        LOG.info("starting reload flow config... update scriptId={} new value={},", scriptVO.getNodeId(), newScriptData);
+                        LOG.info("starting reload flow config... update scriptId={}, new value={},", scriptVO.getNodeId(), newScriptData);
                     }
                     //修改shaMap
                     scriptSHAMap.put(scriptKey, newSHA);
