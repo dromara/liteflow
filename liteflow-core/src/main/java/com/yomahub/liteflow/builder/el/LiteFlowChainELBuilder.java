@@ -15,8 +15,8 @@ import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 
@@ -108,12 +108,15 @@ public class LiteFlowChainELBuilder {
 		return this;
 	}
 
+	/**
+	 * <p>原来逻辑从 FlowBus 中获取相应的 chain，如果 EL 表达式中出现嵌套引用 chain，那么在构建 Condition 的时候可能会出现 chain 死循环引用情况</p>
+	 * <p>故删掉从 FlowBus 中获取的逻辑，直接使用新的 {@link LiteFlowChainELBuilder} 对象。</p>
+	 *
+	 * @param chainId
+	 * @return LiteFlowChainELBuilder
+	 */
 	public LiteFlowChainELBuilder setChainId(String chainId) {
-		if (FlowBus.containChain(chainId)) {
-			this.chain = FlowBus.getChain(chainId);
-		} else {
-			this.chain.setChainId(chainId);
-		}
+		this.chain.setChainId(chainId);
 		return this;
 	}
 
