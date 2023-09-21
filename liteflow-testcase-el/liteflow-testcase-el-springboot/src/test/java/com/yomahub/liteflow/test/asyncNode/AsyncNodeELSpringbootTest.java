@@ -139,4 +139,40 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(context.getData("check").toString().startsWith("habc"));
 	}
 
+	// 测试 must 关键字
+	@Test
+	public void testAsyncFlow9() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain9", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertTrue(context.getData("check").toString().startsWith("habc"));
+	}
+
+	// 测试 must 与 ignoreError 关键字，不忽略异常
+	@Test
+	public void testAsyncFlow10() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain10", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(context.getData("check").toString().startsWith("kg"));
+		Assertions.assertFalse(response.isSuccess());
+	}
+
+	// 测试 must 与 ignoreError 关键字，忽略异常
+	@Test
+	public void testAsyncFlow11() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain11", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertTrue(context.getData("check").toString().startsWith("kgdabc"));
+	}
+
+	// 测试 must 、 ignoreError 、 id 关键字
+	@Test
+	public void testAsyncFlow12() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain12", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertTrue(context.getData("check").toString().startsWith("akbc"));
+	}
+
 }
