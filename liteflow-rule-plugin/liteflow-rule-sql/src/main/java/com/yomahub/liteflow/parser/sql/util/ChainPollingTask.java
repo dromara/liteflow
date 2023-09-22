@@ -30,7 +30,7 @@ public class ChainPollingTask implements Runnable {
 
     private static final String NEW_CHAIN_PATTERN = "SELECT {} FROM {} WHERE {}=? AND {}=?";
 
-    public static Connection conn;
+    private Connection conn;
 
     private SQLParserVO sqlParserVO;
 
@@ -43,11 +43,11 @@ public class ChainPollingTask implements Runnable {
     public ChainPollingTask(SQLParserVO sqlParserVO, Map<String, String> chainSHAMap) {
         this.sqlParserVO = sqlParserVO;
         this.chainSHAMap = chainSHAMap;
-        conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
     }
 
     @Override
     public void run() {
+        conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try{
@@ -114,7 +114,7 @@ public class ChainPollingTask implements Runnable {
             LOG.error("[Exception during SQL chain polling] " + e.getMessage(), e);
         } finally {
             // 关闭连接
-            LiteFlowJdbcUtil.close(null, stmt, rs);
+            LiteFlowJdbcUtil.close(conn, stmt, rs);
         }
     }
 

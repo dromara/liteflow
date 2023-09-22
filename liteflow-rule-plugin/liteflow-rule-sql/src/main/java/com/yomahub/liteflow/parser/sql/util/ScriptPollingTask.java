@@ -33,7 +33,7 @@ public class ScriptPollingTask implements Runnable {
 
     private static final String SCRIPT_KEY_FIELD = "script_concat";
 
-    public static Connection conn;
+    private Connection conn;
 
     private SQLParserVO sqlParserVO;
 
@@ -46,12 +46,12 @@ public class ScriptPollingTask implements Runnable {
     public ScriptPollingTask(SQLParserVO sqlParserVO, Map<String, String> scriptSHAMap) {
         this.sqlParserVO = sqlParserVO;
         this.scriptSHAMap = scriptSHAMap;
-        conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
     }
 
 
     @Override
     public void run() {
+        conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -133,7 +133,7 @@ public class ScriptPollingTask implements Runnable {
             LOG.error("[Exception during SQL script polling] " + e.getMessage(), e);
         } finally {
             // 关闭连接
-            LiteFlowJdbcUtil.close(null, stmt, rs);
+            LiteFlowJdbcUtil.close(conn, stmt, rs);
         }
     }
 
