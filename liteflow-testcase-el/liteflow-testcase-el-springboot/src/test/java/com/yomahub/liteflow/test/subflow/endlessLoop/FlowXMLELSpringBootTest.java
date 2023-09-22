@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * 测试 xml 文件情况下 chain 死循环逻辑
  *
  * @author luo yi
- * @since 2.11.0
+ * @since 2.11.1
  */
 @TestPropertySource(value = "classpath:/subflow/endlessLoop/application-xml.properties")
 @SpringBootTest(classes = FlowXMLELSpringBootTest.class)
