@@ -1,0 +1,28 @@
+flow:
+  nodes:
+    node:
+      - id: a
+        class: com.yomahub.liteflow.test.subflow.cmp1.ACmp
+      - id: b
+        class: com.yomahub.liteflow.test.subflow.cmp1.BCmp
+      - id: c
+        class: com.yomahub.liteflow.test.subflow.cmp1.CCmp
+      - id: d
+        class: com.yomahub.liteflow.test.subflow.cmp1.DCmp
+      - id: e
+        class: com.yomahub.liteflow.test.subflow.cmp1.ECmp
+      - id: f
+        class: com.yomahub.liteflow.test.subflow.cmp2.FCmp
+      - id: g
+        class: com.yomahub.liteflow.test.subflow.cmp2.GCmp
+      - id: h
+        class: com.yomahub.liteflow.test.subflow.cmp2.HCmp
+      - id: h
+        class: com.yomahub.liteflow.test.subflow.cmp2.MCmp
+  chain:
+    - name: chain4
+      value: "THEN(a, chain5);"
+    - name: chain5
+      value: "THEN(b, chain6);"
+    - name: chain6
+      value: "THEN(c, chain5);"
