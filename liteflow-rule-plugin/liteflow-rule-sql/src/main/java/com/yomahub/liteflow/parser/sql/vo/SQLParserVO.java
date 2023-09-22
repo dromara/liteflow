@@ -91,13 +91,13 @@ public class SQLParserVO {
     private String scriptLanguageField;
 
     /*轮询机制是否开启 默认不开启*/
-    private Boolean ifPolling = false;
+    private Boolean pollingEnabled = false;
 
     /*轮询时间间隔(s) 默认120s*/
-    private Integer pollingInterval = 120;
+    private Integer pollingIntervalSeconds = 120;
 
     /*规则配置后首次轮询的起始时间 默认为60s*/
-    private Integer pollingStartTime = 60;
+    private Integer pollingStartSeconds = 60;
 
     public String getUrl() {
         return url;
@@ -234,27 +234,27 @@ public class SQLParserVO {
         return StrUtil.isBlank(url) && StrUtil.isBlank(username) && StrUtil.isBlank(password) && StrUtil.isBlank(driverClassName);
     }
 
-    public Boolean getIfPolling() {
-        return ifPolling;
+    public Boolean getPollingEnabled() {
+        return pollingEnabled;
     }
 
-    public void setIfPolling(Boolean ifPolling) {
-        this.ifPolling = ifPolling;
+    public void setPollingEnabled(Boolean pollingEnabled) {
+        this.pollingEnabled = pollingEnabled;
     }
 
-    public Integer getPollingInterval() {
-        return pollingInterval;
+    public Integer getPollingIntervalSeconds() {
+        return pollingIntervalSeconds;
     }
 
-    public void setPollingInterval(Integer pollingInterval) {
-        this.pollingInterval = pollingInterval;
+    public void setPollingIntervalSeconds(Integer pollingIntervalSeconds) {
+        this.pollingIntervalSeconds = pollingIntervalSeconds;
     }
 
-    public Integer getPollingStartTime() {
-        return pollingStartTime;
+    public Integer getPollingStartSeconds() {
+        return pollingStartSeconds;
     }
 
-    public void setPollingStartTime(Integer pollingStartTime) {
-        this.pollingStartTime = pollingStartTime;
+    public void setPollingStartSeconds(Integer pollingStartSeconds) {
+        this.pollingStartSeconds = pollingStartSeconds;
     }
 }

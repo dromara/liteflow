@@ -68,7 +68,7 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 		try{
 			JDBCHelper jdbcHelper = JDBCHelper.getInstance();
 			String content = jdbcHelper.getContent();
-			if(sqlParserVO.getIfPolling()) {
+			if(sqlParserVO.getPollingEnabled()) {
 				FlowInitHook.addHook(() -> {
 					jdbcHelper.listenSQL();
 					return true;

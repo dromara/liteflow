@@ -76,7 +76,7 @@ public class JDBCHelper {
             }
             INSTANCE.setSqlParserVO(sqlParserVO);
             //创建定时任务线程池
-            if (sqlParserVO.getIfPolling() && ObjectUtil.isNull(getPollExecutor())) {
+            if (sqlParserVO.getPollingEnabled() && ObjectUtil.isNull(getPollExecutor())) {
                 ThreadFactory namedThreadFactory = new NamedThreadFactory("SQL-Polling-", false);
                 ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(
                         CORE_POOL_SIZE,
@@ -137,7 +137,7 @@ public class JDBCHelper {
                 result.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(chainName), elData));
 
                 //如果需要轮询 计算该chainData的SHA值
-                if(sqlParserVO.getIfPolling()){
+                if(sqlParserVO.getPollingEnabled()){
                     String chainSHA = DigestUtil.sha1Hex(elData);
                     chainSHAMap.put(chainName, chainSHA);
                 }
@@ -167,13 +167,13 @@ public class JDBCHelper {
     public void listenSQL() {
         //添加轮询chain的定时任务
         ChainPollingTask chainTask = new ChainPollingTask(sqlParserVO, chainSHAMap);
-        pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartTime().longValue(),
-                sqlParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+        pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartSeconds().longValue(),
+                sqlParserVO.getPollingIntervalSeconds().longValue(), TimeUnit.SECONDS);
         if (hasScriptData()) {
             //添加轮询script的定时任务
             ScriptPollingTask scriptTask = new ScriptPollingTask(sqlParserVO, scriptSHAMap);
-            pollExecutor.scheduleAtFixedRate(scriptTask, sqlParserVO.getPollingStartTime().longValue(),
-                    sqlParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
+            pollExecutor.scheduleAtFixedRate(scriptTask, sqlParserVO.getPollingStartSeconds().longValue(),
+                    sqlParserVO.getPollingIntervalSeconds().longValue(), TimeUnit.SECONDS);
         }
     }
 
@@ -232,7 +232,7 @@ public class JDBCHelper {
                 result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, data));
 
                 //如果需要轮询 计算该scriptData的SHA值
-                if(sqlParserVO.getIfPolling()){
+                if(sqlParserVO.getPollingEnabled()){
                     String scriptKey = StrUtil.join(":", id, type, name);
                     String scriptSHA = DigestUtil.sha1Hex(data);
                     scriptSHAMap.put(scriptKey, scriptSHA);
@@ -306,7 +306,7 @@ public class JDBCHelper {
                         type, language, data));
 
                 //如果需要轮询 计算该scriptData的SHA值
-                if(sqlParserVO.getIfPolling()){
+                if(sqlParserVO.getPollingEnabled()){
                     String scriptKey = StrUtil.join(":", id, type, name, language);
                     String scriptSHA = DigestUtil.sha1Hex(data);
                     scriptSHAMap.put(scriptKey, scriptSHA);

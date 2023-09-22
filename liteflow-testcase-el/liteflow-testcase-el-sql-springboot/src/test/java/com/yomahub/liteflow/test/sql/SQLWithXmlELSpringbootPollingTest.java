@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.sql;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.core.FlowInitHook;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -12,10 +10,7 @@ import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.spi.holder.SpiFactoryCleaner;
-import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.thread.ExecutorHelper;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +24,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
