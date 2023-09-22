@@ -28,8 +28,6 @@ public class ChainPollingTask implements Runnable {
 
     private static final String SQL_PATTERN = "SELECT {},{} FROM {} WHERE {}=?";
 
-    private static final String NEW_CHAIN_PATTERN = "SELECT {} FROM {} WHERE {}=? AND {}=?";
-
     private Connection conn;
 
     private SQLParserVO sqlParserVO;

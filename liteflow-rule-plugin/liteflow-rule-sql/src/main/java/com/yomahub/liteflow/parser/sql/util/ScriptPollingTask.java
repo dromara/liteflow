@@ -25,8 +25,6 @@ public class ScriptPollingTask implements Runnable {
 
     private static final String SQL_PATTERN = "SELECT {},{} FROM {} WHERE {}=?";
 
-    private static final String NEW_SCRIPT_PATTERN = "SELECT {} FROM {} WHERE {}=? AND {}=?";
-
     private static final String CONCAT_PATTERN = "CONCAT_WS(':',{},{},{}) as script_concat";
 
     private static final String CONCAT_WITH_LANGUAGE_PATTERN = "CONCAT_WS(':',{},{},{},{}) as script_concat";
