@@ -46,4 +46,20 @@
         THEN(WHEN(d, g, h).any(true), THEN(a, b, c));
     </chain>
 
+    <chain name="chain9">
+        THEN(WHEN(d, g, h).must("h"), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain10">
+        THEN(WHEN(d, g, k, l).must("g").ignoreError(false), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain11">
+        THEN(WHEN(d, g, k, l).ignoreError(true).must("d"), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain12">
+        THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z"), c);
+    </chain>
+
 </flow>

@@ -6,12 +6,12 @@ import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
 /**
- * EL规则中的any的操作符
+ * EL 规则中的 must 的操作符
  *
- * @author Bryan.Zhang
- * @since 2.8.0
+ * @author luo yi
+ * @since 2.11.0
  */
-public class AnyOperator extends BaseOperator<WhenCondition> {
+public class MustOperator extends BaseOperator<WhenCondition> {
 
 	@Override
 	public WhenCondition build(Object[] objects) throws Exception {
@@ -19,8 +19,9 @@ public class AnyOperator extends BaseOperator<WhenCondition> {
 
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
-		Boolean any = OperatorHelper.convert(objects[1], Boolean.class);
-		whenCondition.setParallelStrategy(any ? ParallelStrategyEnum.ANY : ParallelStrategyEnum.ALL);
+		String specifyId = OperatorHelper.convert(objects[1], String.class);
+		whenCondition.setSpecifyId(specifyId);
+		whenCondition.setParallelStrategy(ParallelStrategyEnum.SPECIFY);
 		return whenCondition;
 	}
 
