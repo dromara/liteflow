@@ -90,7 +90,9 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 
 		// 新増script
 		insertScriptData();
-		Thread.sleep(4000);
+		Thread.sleep(2500);
+		insertChainData();
+		Thread.sleep(2500);
 		response = flowExecutor.execute2Resp("chain6", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertEquals("a==>x3[x3脚本]", response.getExecuteStepStrWithoutTime());
@@ -169,6 +171,20 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate(
 					"INSERT INTO SCRIPT_NODE_TABLE (APPLICATION_NAME,SCRIPT_NODE_ID,SCRIPT_NODE_NAME,SCRIPT_NODE_TYPE,SCRIPT_NODE_DATA,SCRIPT_LANGUAGE) values ('demo','x3','x3脚本','script','defaultContext.setData(\"test\",\"hello\");','groovy');");
+		}
+		catch (SQLException e) {
+			throw new ELSQLException(e.getMessage());
+		}
+	}
+
+	private void insertChainData() {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+		Connection connection;
+		try {
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+					sqlParserVO.getPassword());
+			Statement statement = connection.createStatement();
 			statement.executeUpdate(
 					"INSERT INTO EL_TABLE (APPLICATION_NAME,CHAIN_NAME,EL_DATA) values ('demo','chain6','THEN(a, x3);');");
 		}
