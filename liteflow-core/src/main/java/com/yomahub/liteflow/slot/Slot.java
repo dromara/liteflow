@@ -13,6 +13,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
@@ -26,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 /**
  * Slot的抽象类实现
@@ -88,6 +88,8 @@ public class Slot {
 	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
 	private List<Object> contextBeanList;
+	
+	private final Deque<Condition> conditionStack = new ConcurrentLinkedDeque<>();
 
 	public Slot() {
 	}
@@ -286,6 +288,18 @@ public class Slot {
 
 	public Iterator<?> getIteratorResult(String key) {
 		return getThreadMetaData(ITERATOR_PREFIX + key);
+	}
+	
+	public Condition getCurrentCondition() {
+		return this.conditionStack.peek();
+	}
+	
+	public void pushCondition(Condition condition) {
+		this.conditionStack.push(condition);
+	}
+	
+	public void popCondition() {
+		this.conditionStack.pop();
 	}
 
 	/**
