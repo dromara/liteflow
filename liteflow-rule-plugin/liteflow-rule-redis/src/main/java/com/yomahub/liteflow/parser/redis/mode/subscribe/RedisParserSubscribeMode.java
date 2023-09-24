@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisMode;
@@ -109,7 +110,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
                 for (Map.Entry<String, String> entry : scriptMap.entrySet()) {
                     String scriptFieldValue = entry.getKey();
                     String scriptData = entry.getValue();
-                    NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
+                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
                     if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
@@ -193,7 +194,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             //删除 script
             scriptClient.addListener(scriptKey, (EntryRemovedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... delete key={}", event.getKey());
-                NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(event.getKey());
+                NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(event.getKey());
                 FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
             });
         }
