@@ -94,7 +94,7 @@ public class SQLParserVO {
     private Boolean pollingEnabled = false;
 
     /*轮询时间间隔(s) 默认120s*/
-    private Integer pollingIntervalSeconds = 120;
+    private Integer pollingIntervalSeconds = 60;
 
     /*规则配置后首次轮询的起始时间 默认为60s*/
     private Integer pollingStartSeconds = 60;
