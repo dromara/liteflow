@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
+import com.yomahub.liteflow.flow.element.Node;
 
 /**
  * 组件步骤对象
@@ -42,6 +43,10 @@ public class CmpStep {
 
 	// 回滚消耗的时间
 	private Long rollbackTimeSpent;
+
+	// 当前执行的node
+	private Node refNode;
+
 
 	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
 		this.nodeId = nodeId;
@@ -111,6 +116,14 @@ public class CmpStep {
 
 	public void setRollbackTimeSpent(Long rollbackTimeSpent) {
 		this.rollbackTimeSpent = rollbackTimeSpent;
+	}
+
+	public Node getRefNode() {
+		return refNode;
+	}
+
+	public void setRefNode(Node refNode) {
+		this.refNode = refNode;
 	}
 
 	public String buildString() {
