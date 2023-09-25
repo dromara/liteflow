@@ -120,10 +120,12 @@ public abstract class Condition implements Executable{
 
 	public abstract ConditionTypeEnum getConditionType();
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
+	@Override
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -133,6 +135,7 @@ public abstract class Condition implements Executable{
 		return tag;
 	}
 
+	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
 	}
