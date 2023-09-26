@@ -153,7 +153,7 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
-				if(e.attributeValue(ABSTRACT) != null && e.attributeValue(ABSTRACT).equals("true")){
+				if(!("true".equals(e.attributeValue(ABSTRACT)))) {
 					abstratChainMap.put(chainName,e);
 				}
 			});
@@ -303,8 +303,8 @@ public class ParserHelper {
 	private static void parseImplChain(Map<String, Element> abstratChainMap, Set<Element> implChainSet, Element chain) {
 		if(chain.attributeValue(EXTENDS)!=null){
 			String baseChainId = chain.attributeValue(EXTENDS);
-			if(abstratChainMap.containsKey(baseChainId)) {
-				Element baseChain = abstratChainMap.get(baseChainId);
+			Element baseChain = abstratChainMap.get(baseChainId);
+			if(baseChain!=null) {
 				internalParseImplChain(baseChain,chain,abstratChainMap,implChainSet);
 			}else{
 				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
@@ -321,8 +321,8 @@ public class ParserHelper {
 	private static void parseImplChain(Map<String, JsonNode> abstratChainMap, Set<JsonNode> implChainSet, JsonNode chainNode) {
 		if(chainNode.hasNonNull(EXTENDS)){
 			String baseChainId = chainNode.get(EXTENDS).textValue();
-			if(abstratChainMap.containsKey(baseChainId)) {
-				JsonNode baseChain = abstratChainMap.get(baseChainId);
+			JsonNode baseChain= abstratChainMap.get(baseChainId);
+			if(baseChain!=null) {
 				internalParseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
 			}else{
 				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
