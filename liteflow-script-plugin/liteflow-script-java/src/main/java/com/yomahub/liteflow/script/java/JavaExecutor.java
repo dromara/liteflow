@@ -16,12 +16,11 @@ public class JavaExecutor extends ScriptExecutor {
 
     private final Map<String, IScriptEvaluator> compiledScriptMap = new CopyOnWriteHashMap<>();
 
-
-
     @Override
     public void load(String nodeId, String script) {
         try{
             IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory(this.getClass().getClassLoader()).newScriptEvaluator();
+            se.setTargetVersion(8);
             se.setReturnType(Object.class);
             se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
             se.cook(convertScript(script));
@@ -40,7 +39,7 @@ public class JavaExecutor extends ScriptExecutor {
             throw new ScriptLoadException(errorMsg);
         }
         IScriptEvaluator se = compiledScriptMap.get(wrap.getNodeId());
-        return se.evaluate(wrap);
+        return se.evaluate(new Object[]{wrap});
     }
 
     @Override
