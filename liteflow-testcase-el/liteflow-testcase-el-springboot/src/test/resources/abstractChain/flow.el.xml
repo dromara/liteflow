@@ -23,6 +23,4 @@
         {0}=THEN(a,b,{3});
         {1}=SWITCH(f).to({4},k);
     </chain>
-
-
 </flow>

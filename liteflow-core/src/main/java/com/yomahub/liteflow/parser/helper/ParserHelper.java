@@ -165,22 +165,14 @@ public class ParserHelper {
 		for (Document document : documentList) {
 			Element rootElement = document.getRootElement();
 			List<Element> chainList = rootElement.elements(CHAIN);
-			//先对继承自抽象Chain的chain进行字符串替换
-			chainList.stream()
-					.filter(e -> e.attributeValue(EXTENDS)!=null)
-					.forEach(e->{
-						String baseChainId = e.attributeValue(EXTENDS);
-						if(abstratChainMap.containsKey(baseChainId)) {
-							Element baseChain = abstratChainMap.get(baseChainId);
-							parseImplChain(baseChain,e,abstratChainMap,implChainSet);
-						}else{
-							throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
-						}
-					});
-			//对所有非抽象chain进行解析
-			chainList.stream()
-					.filter(e -> e.attributeValue(ABSTRACT)==null || e.attributeValue(ABSTRACT).equals("false"))
-					.forEach(parseOneChainConsumer);
+			for(Element chain:chainList){
+				//首先需要对继承自抽象Chain的chain进行字符串替换
+				parseImplChain(abstratChainMap, implChainSet, chain);
+				//如果一个chain不为抽象chain，则进行解析
+				if(chain.attributeValue(ABSTRACT) == null || !chain.attributeValue(ABSTRACT).equals("true")){
+					parseOneChainConsumer.accept(chain);
+				}
+			}
 		}
 	}
 
@@ -257,15 +249,7 @@ public class ParserHelper {
 			while (chainIterator.hasNext()) {
 				JsonNode chainNode = chainIterator.next();
 				//首先需要对继承自抽象Chain的chain进行字符串替换
-				if(chainNode.hasNonNull(EXTENDS)){
-					String baseChainId = chainNode.get(EXTENDS).textValue();
-					if(abstratChainMap.containsKey(baseChainId)) {
-						JsonNode baseChain = abstratChainMap.get(baseChainId);
-						parseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
-					}else{
-						throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
-					}
-				}
+				parseImplChain(abstratChainMap, implChainSet, chainNode);
 				//如果一个chain不为抽象chain，则进行解析
 				if(chainNode.get(ABSTRACT) == null || !chainNode.get(ABSTRACT).asBoolean()){
 					parseOneChainConsumer.accept(chainNode);
@@ -311,25 +295,53 @@ public class ParserHelper {
 	}
 
 	/**
+	 * 解析一个带继承关系的Chain,xml格式
+	 * @param chain 实现Chain
+	 * @param abstratChainMap 所有的抽象Chain
+	 * @param implChainSet 已经解析过的实现Chain
+	 */
+	private static void parseImplChain(Map<String, Element> abstratChainMap, Set<Element> implChainSet, Element chain) {
+		if(chain.attributeValue(EXTENDS)!=null){
+			String baseChainId = chain.attributeValue(EXTENDS);
+			if(abstratChainMap.containsKey(baseChainId)) {
+				Element baseChain = abstratChainMap.get(baseChainId);
+				internalParseImplChain(baseChain,chain,abstratChainMap,implChainSet);
+			}else{
+				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+			}
+		}
+	}
+
+	/**
+	 * 解析一个带继承关系的Chain,json格式
+	 * @param chainNode 实现Chain
+	 * @param abstratChainMap 所有的抽象Chain
+	 * @param implChainSet 已经解析过的实现Chain
+	 */
+	private static void parseImplChain(Map<String, JsonNode> abstratChainMap, Set<JsonNode> implChainSet, JsonNode chainNode) {
+		if(chainNode.hasNonNull(EXTENDS)){
+			String baseChainId = chainNode.get(EXTENDS).textValue();
+			if(abstratChainMap.containsKey(baseChainId)) {
+				JsonNode baseChain = abstratChainMap.get(baseChainId);
+				internalParseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
+			}else{
+				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+			}
+		}
+	}
+
+	/**
 	 * 解析一个继承自baseChain的implChain,xml格式
 	 * @param baseChain 父Chain
 	 * @param implChain 实现Chain
 	 * @param abstractChainMap 所有的抽象Chain
 	 * @param implChainSet 已经解析过的实现Chain
 	 */
-	private static void parseImplChain(JsonNode baseChain,JsonNode implChain,Map<String,JsonNode> abstractChainMap,Set<JsonNode> implChainSet) {
+	private static void internalParseImplChain(JsonNode baseChain,JsonNode implChain,Map<String,JsonNode> abstractChainMap,Set<JsonNode> implChainSet) {
 		//如果已经解析过了，就不再解析
 		if(implChainSet.contains(implChain)) return;
 		//如果baseChainId也是继承自其他的chain，需要递归解析
-		if(baseChain.get(EXTENDS)!=null){
-			String pBaseChainId = baseChain.get(EXTENDS).textValue();
-			if(abstractChainMap.containsKey(pBaseChainId)) {
-				JsonNode pBaseChain = abstractChainMap.get(pBaseChainId);
-				parseImplChain(pBaseChain, baseChain, abstractChainMap, implChainSet);
-			}else{
-				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", pBaseChainId));
-			}
-		}
+		parseImplChain(abstractChainMap, implChainSet, baseChain);
 		//否则根据baseChainId解析implChainId
 		String implChainEl = implChain.get(VALUE).textValue();
 		String baseChainEl = baseChain.get(VALUE).textValue();
@@ -348,19 +360,11 @@ public class ParserHelper {
 	 * @param abstractChainMap 所有的抽象Chain
 	 * @param implChainSet 已经解析过的实现Chain
 	 */
-	private static void parseImplChain(Element baseChain,Element implChain,Map<String,Element> abstractChainMap,Set<Element> implChainSet) {
+	private static void internalParseImplChain(Element baseChain,Element implChain,Map<String,Element> abstractChainMap,Set<Element> implChainSet) {
 		//如果已经解析过了，就不再解析
 		if(implChainSet.contains(implChain)) return;
 		//如果baseChainId也是继承自其他的chain，需要递归解析
-		if(baseChain.attributeValue(EXTENDS)!=null){
-			String pBaseChainId = baseChain.attributeValue(EXTENDS);
-			if(abstractChainMap.containsKey(pBaseChainId)) {
-				Element pBaseChain = abstractChainMap.get(pBaseChainId);
-				parseImplChain(pBaseChain, baseChain, abstractChainMap, implChainSet);
-			}else{
-				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", pBaseChainId));
-			}
-		}
+		parseImplChain(abstractChainMap, implChainSet, baseChain);
 		//否则根据baseChainId解析implChainId
 		String implChainEl = implChain.getText();
 		String baseChainEl = baseChain.getText();
