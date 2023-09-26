@@ -381,7 +381,7 @@ public class ParserHelper {
 		private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
 
 		// abstractChain 占位符正则表达式
-		private static final String REGEX_ABSTRACT_HOLDER = "\\{(\\d+)\\}";
+		private static final String REGEX_ABSTRACT_HOLDER = "\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}";
 
 
 		/**
@@ -412,14 +412,14 @@ public class ParserHelper {
 			Matcher placeHolderMatcher = placeHolder.matcher(abstractChain);
 			while(placeHolderMatcher.find()){
 				//到implChain中找到对应的占位符实现
-				int index = Integer.parseInt(placeHolderMatcher.group(1));
-				Pattern placeHolderImpl = Pattern.compile("\\{" + index + "\\}=(.*?)(;|$)");
+				String holder = placeHolderMatcher.group(1);
+				Pattern placeHolderImpl = Pattern.compile("\\s*\\{" + holder + "\\}\\s*=\\s*(.*?);");
 				Matcher implMatcher = placeHolderImpl.matcher(implChain);
 				if (implMatcher.find()) {
 					String replacement = implMatcher.group(1).trim();
-					abstractChain = abstractChain.replace("{" + index + "}", replacement);
+					abstractChain = abstractChain.replace("{" + holder + "}", replacement);
 				}else{
-					throw new ParseException("missing abstract chain in expression \r\n" + abstractChain);
+					throw new ParseException("missing implementation of {"+holder+"} in expression \r\n" + implChain);
 				}
 			}
 			return abstractChain;
