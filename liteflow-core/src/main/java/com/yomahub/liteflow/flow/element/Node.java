@@ -8,23 +8,23 @@
 package com.yomahub.liteflow.flow.element;
 
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.ChainEndException;
+import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
+import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.flow.executor.NodeExecutor;
-import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.ChainEndException;
-import com.yomahub.liteflow.exception.FlowSystemException;
 
 /**
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
@@ -47,6 +47,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String language;
 
+	@JsonIgnore
 	private NodeComponent instance;
 
 	private String tag;

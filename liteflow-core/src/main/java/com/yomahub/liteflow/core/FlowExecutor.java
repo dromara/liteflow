@@ -15,7 +15,9 @@ import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.element.*;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.Rollbackable;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
@@ -193,9 +195,6 @@ public class FlowExecutor {
 			}
 		}
 
-		// 检查构建生成的 chain 的有效性
-		checkValidOfChain();
-
 		// 执行钩子
 		if (isStart) {
 			FlowInitHook.executeHook();
@@ -213,80 +212,6 @@ public class FlowExecutor {
 			}
 
 		}
-	}
-
-	/**
-	 * 检查 chain 的有效性，同时重新构建 FlowBus 的 chain，将其子 chain 引用连起来
-	 * @throws CyclicDependencyException
-	 */
-	private void checkValidOfChain() {
-
-		// 存储已经构建完的有效的 chain 对应 Id
-		Set<String> validChainIdSet = new HashSet<>();
-
-		// 遍历所有解析的 chain
-		for (Chain rootChain : FlowBus.getChainMap().values()) {
-
-			// 不存在 validChainIdSet 中的 chain，说明还未检查
-			if (!validChainIdSet.contains(rootChain.getChainId())) {
-
-				// 与 rootChain 相关联的 chain 的 ID
-				Set<String> associatedChainIdSet = new HashSet<>();
-
-				// 检查 chain 的有效性，是否存在死循环情况
-				checkValidOfChain(rootChain, associatedChainIdSet);
-
-				// 检查完当前 chain 后，能走到这里说明当前相关的 chain 是有效的
-				validChainIdSet.addAll(associatedChainIdSet);
-
-			}
-		}
-
-	}
-
-	/**
-	 * 检查 chain 的有效性
-	 * @param currentChain 当前遍历到的 chain 节点
-	 * @param associatedChainIdSet 与 rootChain 相关联的 chainId 集合
-	 * @throws CyclicDependencyException
-	 */
-	private void checkValidOfChain(Chain currentChain, Set<String> associatedChainIdSet) {
-
-		// 判断 associatedChainIdSet 中是否已经存在对应的 chain
-		if (associatedChainIdSet.add(currentChain.getChainId())) {
-
-			// Set 中不存在则说明可能是父 chain 或者子 chain 未引用自身，又或者子 chain 未引用其父 chain，继续判断其子 chain
-			for (Condition condition : currentChain.getConditionList()) {
-
-				// 遍历所有 executable 列表
-				for (Executable executable : condition.getExecutableList()) {
-
-					// 只需判断 chain，因为只有 chain 才会存在死循环依赖情况
-					if (executable instanceof Chain) {
-
-						// 能执行到此处，必能从 FlowBus 中获取到对应的 chain，故无需做非空判断
-						Chain childrenChain = FlowBus.getChainMap().get(executable.getId());
-
-						// 递归检查 chain 有效性
-						checkValidOfChain(childrenChain, associatedChainIdSet);
-
-						// 重新构建 chain 的 condition 列表
-						((Chain) executable).setConditionList(childrenChain.getConditionList());
-
-					}
-				}
-			}
-		} else {
-
-			String errorMessage = StrUtil.format("There is a circular dependency in the chain[{}], please check carefully.", currentChain.getChainId());
-
-			LOG.error(errorMessage);
-
-			// chain 重复，说明子 chain 中引用了自身或其父 chain，存在死循环情况
-			throw new CyclicDependencyException(errorMessage);
-
-		}
-
 	}
 
 	// 此方法就是从原有的配置源主动拉取新的进行刷新
