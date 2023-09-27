@@ -202,9 +202,8 @@ public class LiteFlowChainELBuilder {
 		try {
 			objectMapper.writeValueAsString(this.chain);
 		} catch (Exception e) {
-			e.printStackTrace();
 			if (e instanceof JsonMappingException) {
-				throw new CyclicDependencyException(StrUtil.format("There is a circular dependency in the chain[{}], please check carefully.", chain.getChainId()));
+				throw new CyclicDependencyException(StrUtil.format("There is a circular dependency in the chain[{}], please check carefully.", chain.getChainId(), e));
 			} else {
 				throw new ParseException(e.getMessage());
 			}

@@ -47,6 +47,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String language;
 
+	// 增加该注解，避免在使用 Jackson 序列化检测循环引用时出现不必要异常
 	@JsonIgnore
 	private NodeComponent instance;
 
