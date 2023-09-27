@@ -17,6 +17,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,8 +39,8 @@ public class WhenCondition extends Condition {
 	// 当前 When 对应并行策略，默认为 ALL
 	private ParallelStrategyEnum parallelStrategy;
 
-	// 只有 must 条件下，才会赋值 specifyId
-	private String specifyId;
+	// 只有 must 条件下，才会赋值 specifyIdSet
+	private Set<String> specifyIdSet;
 
 	// when单独的线程池名称
 	private String threadExecutorClass;
@@ -96,12 +97,12 @@ public class WhenCondition extends Condition {
 		this.parallelStrategy = parallelStrategy;
 	}
 
-	public String getSpecifyId() {
-		return specifyId;
+	public Set<String> getSpecifyIdSet() {
+		return specifyIdSet;
 	}
 
-	public void setSpecifyId(String specifyId) {
-		this.specifyId = specifyId;
+	public void setSpecifyIdSet(Set<String> specifyIdSet) {
+		this.specifyIdSet = specifyIdSet;
 	}
 
 	public String getThreadExecutorClass() {

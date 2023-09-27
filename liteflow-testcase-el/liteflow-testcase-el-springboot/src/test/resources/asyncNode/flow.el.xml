@@ -62,4 +62,8 @@
         THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z"), c);
     </chain>
 
+    <chain name="chain13">
+        THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z, g, task1, task2"), c);
+    </chain>
+
 </flow>
