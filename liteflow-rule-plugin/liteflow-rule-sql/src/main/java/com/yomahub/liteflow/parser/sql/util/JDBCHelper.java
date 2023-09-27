@@ -1,8 +1,11 @@
 package com.yomahub.liteflow.parser.sql.util;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.thread.NamedThreadFactory;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -12,9 +15,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * jdbc 工具类
@@ -48,6 +53,18 @@ public class JDBCHelper {
 
     private static JDBCHelper INSTANCE;
 
+    //定时任务线程池核心线程数
+    private static final int CORE_POOL_SIZE = 2;
+
+    //定时任务线程池
+    private static ScheduledThreadPoolExecutor pollExecutor;
+
+    //chain的SHA1加密值 用于轮询时确定chain是否变化
+    private Map<String/*chainId*/, String/*chain的SHA1加密值*/> chainSHAMap = new HashMap<>();
+
+    //script的SHA1加密值 用于轮询时确定script是否变化
+    private Map<String/*id:type:name*/, String/*script的SHA1加密值*/> scriptSHAMap = new HashMap<>();
+
     /**
      * 初始化 INSTANCE
      */
@@ -58,6 +75,15 @@ public class JDBCHelper {
                 Class.forName(sqlParserVO.getDriverClassName());
             }
             INSTANCE.setSqlParserVO(sqlParserVO);
+            //创建定时任务线程池
+            if (sqlParserVO.getPollingEnabled() && ObjectUtil.isNull(getPollExecutor())) {
+                ThreadFactory namedThreadFactory = new NamedThreadFactory("SQL-Polling-", false);
+                ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(
+                        CORE_POOL_SIZE,
+                        namedThreadFactory,
+                        new ThreadPoolExecutor.DiscardOldestPolicy());
+                setPollExecutor(threadPoolExecutor);
+            }
         } catch (ClassNotFoundException e) {
             throw new ELSQLException(e.getMessage());
         }
@@ -109,6 +135,12 @@ public class JDBCHelper {
                 String chainName = getStringFromResultSet(rs, chainNameField);
 
                 result.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(chainName), elData));
+
+                //如果需要轮询 计算该chainData的SHA值
+                if(sqlParserVO.getPollingEnabled()){
+                    String chainSHA = DigestUtil.sha1Hex(elData);
+                    chainSHAMap.put(chainName, chainSHA);
+                }
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
@@ -128,6 +160,23 @@ public class JDBCHelper {
 
         return StrUtil.format(XML_PATTERN, nodesContent, chainsContent);
     }
+
+    /**
+     * 定时轮询拉取SQL中变化的数据
+     */
+    public void listenSQL() {
+        //添加轮询chain的定时任务
+        ChainPollingTask chainTask = new ChainPollingTask(sqlParserVO, chainSHAMap);
+        pollExecutor.scheduleAtFixedRate(chainTask, sqlParserVO.getPollingStartSeconds().longValue(),
+                sqlParserVO.getPollingIntervalSeconds().longValue(), TimeUnit.SECONDS);
+        if (hasScriptData()) {
+            //添加轮询script的定时任务
+            ScriptPollingTask scriptTask = new ScriptPollingTask(sqlParserVO, scriptSHAMap);
+            pollExecutor.scheduleAtFixedRate(scriptTask, sqlParserVO.getPollingStartSeconds().longValue(),
+                    sqlParserVO.getPollingIntervalSeconds().longValue(), TimeUnit.SECONDS);
+        }
+    }
+
 
     /**
      * 获取脚本节点内容
@@ -181,6 +230,13 @@ public class JDBCHelper {
                 }
 
                 result.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, data));
+
+                //如果需要轮询 计算该scriptData的SHA值
+                if(sqlParserVO.getPollingEnabled()){
+                    String scriptKey = StrUtil.join(":", id, type, name);
+                    String scriptSHA = DigestUtil.sha1Hex(data);
+                    scriptSHAMap.put(scriptKey, scriptSHA);
+                }
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
@@ -248,6 +304,13 @@ public class JDBCHelper {
 
                 result.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name),
                         type, language, data));
+
+                //如果需要轮询 计算该scriptData的SHA值
+                if(sqlParserVO.getPollingEnabled()){
+                    String scriptKey = StrUtil.join(":", id, type, name, language);
+                    String scriptSHA = DigestUtil.sha1Hex(data);
+                    scriptSHAMap.put(scriptKey, scriptSHA);
+                }
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
@@ -299,4 +362,11 @@ public class JDBCHelper {
         this.sqlParserVO = sqlParserVO;
     }
 
+    public static ScheduledThreadPoolExecutor getPollExecutor() {
+        return pollExecutor;
+    }
+
+    public static void setPollExecutor(ScheduledThreadPoolExecutor pollExecutor) {
+        JDBCHelper.pollExecutor = pollExecutor;
+    }
 }

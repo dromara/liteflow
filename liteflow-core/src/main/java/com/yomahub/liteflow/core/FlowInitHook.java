@@ -14,20 +14,20 @@ import java.util.function.BooleanSupplier;
  */
 public class FlowInitHook {
 
-	private static final List<BooleanSupplier> supplierList = new ArrayList<>();
+	private static final List<BooleanSupplier> SUPPLIER_LIST = new ArrayList<>();
 
 	public static void executeHook() {
-		if (CollUtil.isNotEmpty(supplierList)) {
-			supplierList.forEach(BooleanSupplier::getAsBoolean);
+		if (CollUtil.isNotEmpty(SUPPLIER_LIST)) {
+			SUPPLIER_LIST.forEach(BooleanSupplier::getAsBoolean);
 		}
 	}
 
 	public static void addHook(BooleanSupplier hookSupplier) {
-		supplierList.add(hookSupplier);
+		SUPPLIER_LIST.add(hookSupplier);
 	}
 
 	public static void cleanHook() {
-		supplierList.clear();
+		SUPPLIER_LIST.clear();
 	}
 
 }

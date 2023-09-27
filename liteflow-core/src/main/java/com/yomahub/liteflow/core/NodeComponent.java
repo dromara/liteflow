@@ -87,10 +87,10 @@ public abstract class NodeComponent {
 		Class<?> clazz = this.getClass();
 		try {
 			Method method = clazz.getDeclaredMethod("rollback");
-			if(ObjectUtil.isNotNull(method))
+			if(ObjectUtil.isNotNull(method)){
 				this.setRollback(true);
-		} catch (Exception e) {
-		}
+			}
+		} catch (Exception ignored) {}
 	}
 
 	public void execute() throws Exception {

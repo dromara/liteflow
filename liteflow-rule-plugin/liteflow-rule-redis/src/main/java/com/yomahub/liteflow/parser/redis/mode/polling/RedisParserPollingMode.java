@@ -6,6 +6,7 @@ import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.RedisMode;
@@ -148,7 +149,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
 
                 List<String> scriptItemContentList = new ArrayList<>();
                 for (String scriptFieldValue : scriptFieldSet) {
-                    NodeSimpleVO nodeSimpleVO = RedisParserHelper.convert(scriptFieldValue);
+                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
                     if (ObjectUtil.isNull(nodeSimpleVO)) {
                         throw new RedisException(
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
