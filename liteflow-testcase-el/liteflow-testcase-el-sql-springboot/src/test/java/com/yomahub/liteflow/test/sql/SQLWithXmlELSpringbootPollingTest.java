@@ -148,7 +148,7 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 			Statement statement = connection.createStatement();
 			//修改script data
 			statement.executeUpdate(
-					"UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false;' WHERE SCRIPT_NODE_ID='x1'");
+					"UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_DATA='return false' WHERE SCRIPT_NODE_ID='x1'");
 			//修改script名
 			statement.executeUpdate(
 					"UPDATE SCRIPT_NODE_TABLE SET SCRIPT_NODE_NAME='x0_script' WHERE SCRIPT_NODE_ID='x0'");

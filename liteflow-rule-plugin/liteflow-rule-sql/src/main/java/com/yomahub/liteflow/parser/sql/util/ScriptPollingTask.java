@@ -23,13 +23,9 @@ import java.util.*;
  */
 public class ScriptPollingTask implements Runnable {
 
-    private static final String SQL_PATTERN = "SELECT {},{} FROM {} WHERE {}=?";
+    private static final String SCRIPT_PATTERN = "SELECT {},{},{},{} FROM {} WHERE {}=?";
 
-    private static final String CONCAT_PATTERN = "CONCAT_WS(':',{},{},{}) as script_concat";
-
-    private static final String CONCAT_WITH_LANGUAGE_PATTERN = "CONCAT_WS(':',{},{},{},{}) as script_concat";
-
-    private static final String SCRIPT_KEY_FIELD = "script_concat";
+    private static final String SCRIPT_PATTERN_WITH_LANGUAGE = "SELECT {},{},{},{},{} FROM {} WHERE {}=?";
 
     private Connection conn;
 
@@ -62,14 +58,16 @@ public class ScriptPollingTask implements Runnable {
             String applicationName = sqlParserVO.getApplicationName();
             String scriptLanguageField = sqlParserVO.getScriptLanguageField();
 
-            String KeyField;
+            String sqlCmd = null;
             if (StrUtil.isNotBlank(scriptLanguageField)) {
-                KeyField = StrUtil.format(CONCAT_WITH_LANGUAGE_PATTERN, scriptIdField, scriptTypeField, scriptNameField, scriptLanguageField);
+                //脚本有语言
+                sqlCmd = StrUtil.format(SCRIPT_PATTERN_WITH_LANGUAGE, scriptDataField, scriptIdField, scriptTypeField, scriptNameField,
+                        scriptLanguageField, scriptTableName, scriptApplicationNameField);
             } else {
-                KeyField = StrUtil.format(CONCAT_PATTERN, scriptIdField, scriptTypeField, scriptNameField);
+                sqlCmd = StrUtil.format(SCRIPT_PATTERN, scriptDataField, scriptIdField, scriptTypeField, scriptNameField,
+                        scriptTableName, scriptApplicationNameField);
             }
 
-            String sqlCmd = StrUtil.format(SQL_PATTERN, KeyField, scriptDataField, scriptTableName, scriptApplicationNameField);
             stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(FETCH_SIZE_MAX);
@@ -79,7 +77,7 @@ public class ScriptPollingTask implements Runnable {
             Set<String> newScriptSet = new HashSet<>();
 
             while (rs.next()) {
-                String scriptKey = getStringFromResultSet(rs, SCRIPT_KEY_FIELD);
+                String scriptKey = getScriptKeyFromRS(rs, sqlParserVO);
                 String newData = getStringFromResultSet(rs, scriptDataField);
                 String newSHA = DigestUtil.sha1Hex(newData);
                 newScriptSet.add(scriptKey);
@@ -92,8 +90,7 @@ public class ScriptPollingTask implements Runnable {
 
                     //加入到shaMap
                     scriptSHAMap.put(scriptKey, newSHA);
-                }
-                else if (!StrUtil.equals(newSHA, scriptSHAMap.get(scriptKey))) {
+                } else if (!StrUtil.equals(newSHA, scriptSHAMap.get(scriptKey))) {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
                     NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
                     //修改script
@@ -106,7 +103,7 @@ public class ScriptPollingTask implements Runnable {
                 //SHA值无变化,表示该chain未改变
             }
 
-            if(scriptSHAMap.size() > newScriptSet.size()) {
+            if (scriptSHAMap.size() > newScriptSet.size()) {
                 //如果遍历prepareStatement后修改过的SHAMap数量比最新script总数多, 说明有两种情况：
                 // 1、删除了script
                 // 2、修改了script的id/name/type:因为遍历到新的script_key时会加到SHAMap里,但没有机会删除旧的script
@@ -114,7 +111,7 @@ public class ScriptPollingTask implements Runnable {
                 //在此处遍历scriptSHAMap,把不在newScriptSet中的script删除
                 //这里用iterator是为避免在遍历集合时删除元素导致ConcurrentModificationException
                 Iterator<String> iterator = scriptSHAMap.keySet().iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     String scriptKey = iterator.next();
                     if (!newScriptSet.contains(scriptKey)) {
                         NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
@@ -141,5 +138,17 @@ public class ScriptPollingTask implements Runnable {
             throw new ELSQLException(StrUtil.format("exist {} field value is empty", field));
         }
         return data;
+    }
+
+    private String getScriptKeyFromRS(ResultSet rs, SQLParserVO sqlParserVO) throws SQLException {
+        String id = getStringFromResultSet(rs, sqlParserVO.getScriptIdField());
+        String type = getStringFromResultSet(rs, sqlParserVO.getScriptTypeField());
+        String name = getStringFromResultSet(rs, sqlParserVO.getScriptNameField());
+        String scriptKey = StrUtil.join(":", id, type, name);
+        if (StrUtil.isNotBlank(sqlParserVO.getScriptLanguageField())) {
+            String language = getStringFromResultSet(rs, sqlParserVO.getScriptLanguageField());
+            scriptKey = StrUtil.join(":", id, type, name, language);
+        }
+        return scriptKey;
     }
 }
