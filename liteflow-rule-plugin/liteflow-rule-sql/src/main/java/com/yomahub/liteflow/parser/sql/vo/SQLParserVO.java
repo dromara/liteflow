@@ -90,14 +90,25 @@ public class SQLParserVO {
      */
     private String scriptLanguageField;
 
-    /*轮询机制是否开启 默认不开启*/
+    /**
+     * 轮询机制是否开启 默认不开启
+     */
     private Boolean pollingEnabled = false;
 
-    /*轮询时间间隔(s) 默认120s*/
+    /**
+     * 轮询时间间隔(s) 默认60s
+     */
     private Integer pollingIntervalSeconds = 60;
 
-    /*规则配置后首次轮询的起始时间 默认为60s*/
+    /**
+     * 规则配置后首次轮询的起始时间 默认为60s
+     */
     private Integer pollingStartSeconds = 60;
+
+    /**
+     * 是否开启sql日志
+     */
+    private Boolean sqlLogEnabled = true;
 
     public String getUrl() {
         return url;
@@ -256,5 +267,13 @@ public class SQLParserVO {
 
     public void setPollingStartSeconds(Integer pollingStartSeconds) {
         this.pollingStartSeconds = pollingStartSeconds;
+    }
+
+    public Boolean getSqlLogEnabled() {
+        return sqlLogEnabled;
+    }
+
+    public void setSqlLogEnabled(Boolean sqlLogEnabled) {
+        this.sqlLogEnabled = sqlLogEnabled;
     }
 }

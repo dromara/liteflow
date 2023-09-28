@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
+import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -53,6 +54,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 			// 初始化 JDBCHelper
 			JDBCHelper.init(sqlParserVO);
+
+			// 初始化 SqlReadFactory
+			SqlReadFactory.registerRead(sqlParserVO);
 		}
 		catch (ELSQLException elsqlException) {
 			throw elsqlException;
