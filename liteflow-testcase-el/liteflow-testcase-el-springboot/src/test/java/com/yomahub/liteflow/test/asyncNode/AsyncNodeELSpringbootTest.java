@@ -175,4 +175,13 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(context.getData("check").toString().startsWith("akbc"));
 	}
 
+	// 测试 must 指定多个任务, ignoreError 以及 id 关键字
+	@Test
+	public void testAsyncFlow13() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain13", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertTrue(context.getData("check").toString().startsWith("akbgc"));
+	}
+
 }
