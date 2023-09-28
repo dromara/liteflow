@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.parser.sql.polling;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -14,12 +13,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Copyright (C), 2021, 北京同创永益科技发展有限公司
+ * sql 轮询任务抽象类，维护公共方法
  *
- * @author tangkc
- * @version 3.0.0
- * @description
- * @date 2023/9/28 14:12
+ * @author tangkc huxinyu
+ * @date 2023/9/28 11:49
+ * @since 2.11.1
  */
 public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
     private final Map<String/*唯一键*/, String/*data-xml的sha1值*/> DATA_SHA_MAP;

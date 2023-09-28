@@ -2,11 +2,8 @@ package com.yomahub.liteflow.parser.sql.read.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.XmlUtil;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
-import com.yomahub.liteflow.log.LFLog;
-import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -21,12 +18,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Copyright (C), 2021, 北京同创永益科技发展有限公司
+ * 脚本读取
  *
- * @author tangkc
- * @version 3.0.0
- * @description
+ * @author tangkc huxinyu
  * @date 2023/9/28 11:49
+ * @since 2.11.1
  */
 public class ScriptRead extends AbstractSqlRead {
 

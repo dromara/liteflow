@@ -5,7 +5,6 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
-import com.yomahub.liteflow.parser.sql.read.impl.ScriptRead;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
@@ -17,12 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Copyright (C), 2021, 北京同创永益科技发展有限公司
+ * sql 读取抽象类，维护公共方法
  *
- * @author tangkc
- * @version 3.0.0
- * @description
- * @date 2023/9/28 11:26
+ * @author tangkc huxinyu
+ * @date 2023/9/28 11:49
+ * @since 2.11.1
  */
 public abstract class AbstractSqlRead implements SqlRead {
     public final SQLParserVO config;

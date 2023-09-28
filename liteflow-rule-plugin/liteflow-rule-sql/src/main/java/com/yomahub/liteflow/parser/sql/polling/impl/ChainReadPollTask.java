@@ -3,27 +3,18 @@ package com.yomahub.liteflow.parser.sql.polling.impl;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.constant.ReadType;
-import com.yomahub.liteflow.parser.helper.ParserHelper;
 import com.yomahub.liteflow.parser.sql.polling.AbstractSqlReadPollTask;
-import com.yomahub.liteflow.parser.sql.polling.SqlReadPollTask;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import static com.yomahub.liteflow.common.ChainConstant.ID;
-import static com.yomahub.liteflow.common.ChainConstant.NAME;
 
 /**
- * Copyright (C), 2021, 北京同创永益科技发展有限公司
+ * chain 读取任务
  *
- * @author tangkc
- * @version 3.0.0
- * @description
- * @date 2023/9/28 14:46
+ * @author tangkc huxinyu
+ * @date 2023/9/28 11:49
+ * @since 2.11.1
  */
 public class ChainReadPollTask extends AbstractSqlReadPollTask {
 

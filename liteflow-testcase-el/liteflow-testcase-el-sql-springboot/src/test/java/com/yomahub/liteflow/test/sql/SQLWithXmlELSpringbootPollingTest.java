@@ -74,6 +74,8 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 		insertData();
 		Thread.sleep(4000);
 		Assertions.assertEquals("a==>b", flowExecutor.execute2Resp("chain5", "arg").getExecuteStepStr());
+
+
 	}
 
 
@@ -97,6 +99,24 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertEquals("a==>x3[x3脚本]", response.getExecuteStepStrWithoutTime());
 		Assertions.assertEquals("hello", context.getData("test"));
+	}
+
+	/**
+	 * 删除chain数据
+	 */
+	private void deleteData(){
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+		Connection connection;
+		try {
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+					sqlParserVO.getPassword());
+			Statement statement = connection.createStatement();
+			statement.executeUpdate("DELETE FROM  EL_TABLE WHERE chain_name='chain1'");
+		}
+		catch (SQLException e) {
+			throw new ELSQLException(e.getMessage());
+		}
 	}
 
 	/**

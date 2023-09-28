@@ -1,12 +1,11 @@
 package com.yomahub.liteflow.parser.constant;
 
 /**
- * Copyright (C), 2021, 北京同创永益科技发展有限公司
+ * sql 类型枚举
  *
- * @author tangkc
- * @version 3.0.0
- * @description
- * @date 2023/9/28 11:43
+ * @author tangkc huxinyu
+ * @date 2023/9/28 11:49
+ * @since 2.11.1
  */
 public enum ReadType {
     CHAIN,
