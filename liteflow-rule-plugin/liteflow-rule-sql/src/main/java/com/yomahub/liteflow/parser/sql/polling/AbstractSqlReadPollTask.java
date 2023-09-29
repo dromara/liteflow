@@ -36,7 +36,7 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
     public void execute() {
         Map<String/*唯一键*/, String/*data-xml*/> newData = read.read();
         // 新增或者更新的元素
-        Map<String, String> saveElementMap = new HashMap();
+        Map<String, String> saveElementMap = new HashMap<>();
         // 删除的元素
         List<String> deleteElementIds = new ArrayList<>();
 

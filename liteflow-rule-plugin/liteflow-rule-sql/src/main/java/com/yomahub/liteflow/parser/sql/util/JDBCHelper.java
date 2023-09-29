@@ -126,7 +126,7 @@ public class JDBCHelper {
                     try {
                         SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute();
                     } catch (Exception ex) {
-                        LOG.info("poll chain fail", ex);
+                        LOG.error("poll chain fail", ex);
                     }
                 },
                 sqlParserVO.getPollingStartSeconds().longValue(),
@@ -140,7 +140,7 @@ public class JDBCHelper {
                     try {
                         SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute();
                     } catch (Exception ex) {
-                        LOG.info("poll script fail", ex);
+                        LOG.error("poll script fail", ex);
                     }
                 },
                 sqlParserVO.getPollingStartSeconds().longValue(),
