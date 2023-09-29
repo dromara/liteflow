@@ -64,9 +64,9 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
         Set<String> oldIdList = DATA_SHA_MAP.keySet();  // 旧的 id 列表
         Set<String> newIdList = newData.keySet();       // 新的 id 列表
         // 计算单差集
-        // 计算集合的单差集，即只返回【newIdList】中有，但是【oldIdList】中没有的元素，例如：
+        // 计算集合的单差集，即只返回【oldIdList】中有，但是【newIdList】中没有的元素，例如：
         //  subtractToList([1,2,3,4],[2,3,4,5]) -》 [1]
-        deleteElementIds = CollUtil.subtractToList(newIdList, oldIdList);
+        deleteElementIds = CollUtil.subtractToList(oldIdList, newIdList);
 
         for (String id : deleteElementIds) {
             DATA_SHA_MAP.remove(id);

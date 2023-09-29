@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.sql;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
@@ -75,7 +77,11 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 		Thread.sleep(4000);
 		Assertions.assertEquals("a==>b", flowExecutor.execute2Resp("chain5", "arg").getExecuteStepStr());
 
-
+		// 删除 chain
+		deleteData();
+		Thread.sleep(4000);
+		Exception cause = flowExecutor.execute2Resp("chain5", "arg").getCause();
+		Assertions.assertTrue(cause instanceof ChainNotFoundException,"删除 chain 测试失败");
 	}
 
 
@@ -99,6 +105,11 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertEquals("a==>x3[x3脚本]", response.getExecuteStepStrWithoutTime());
 		Assertions.assertEquals("hello", context.getData("test"));
+
+		// TODO 删除脚本
+		deleteScriptData();
+		Thread.sleep(4000);
+		flowExecutor.execute2Resp("chain6", "arg");
 	}
 
 	/**
@@ -112,7 +123,7 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
 					sqlParserVO.getPassword());
 			Statement statement = connection.createStatement();
-			statement.executeUpdate("DELETE FROM  EL_TABLE WHERE chain_name='chain1'");
+			statement.executeUpdate("DELETE FROM  EL_TABLE WHERE chain_name='chain5'");
 		}
 		catch (SQLException e) {
 			throw new ELSQLException(e.getMessage());
@@ -191,6 +202,25 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate(
 					"INSERT INTO SCRIPT_NODE_TABLE (APPLICATION_NAME,SCRIPT_NODE_ID,SCRIPT_NODE_NAME,SCRIPT_NODE_TYPE,SCRIPT_NODE_DATA,SCRIPT_LANGUAGE) values ('demo','x3','x3脚本','script','defaultContext.setData(\"test\",\"hello\");','groovy');");
+		}
+		catch (SQLException e) {
+			throw new ELSQLException(e.getMessage());
+		}
+	}
+
+	/**
+	 * 删除脚本
+	 */
+	private void deleteScriptData() {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+		Connection connection;
+		try {
+			connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+					sqlParserVO.getPassword());
+			Statement statement = connection.createStatement();
+			statement.executeUpdate(
+					"DELETE FROM SCRIPT_NODE_TABLE WHERE SCRIPT_NODE_ID = 'x3'");
 		}
 		catch (SQLException e) {
 			throw new ELSQLException(e.getMessage());
