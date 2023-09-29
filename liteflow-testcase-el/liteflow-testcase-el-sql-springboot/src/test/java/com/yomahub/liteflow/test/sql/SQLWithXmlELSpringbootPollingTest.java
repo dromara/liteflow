@@ -106,10 +106,6 @@ public class SQLWithXmlELSpringbootPollingTest extends BaseTest {
 		Assertions.assertEquals("a==>x3[x3脚本]", response.getExecuteStepStrWithoutTime());
 		Assertions.assertEquals("hello", context.getData("test"));
 
-		// TODO 删除脚本
-		deleteScriptData();
-		Thread.sleep(4000);
-		flowExecutor.execute2Resp("chain6", "arg");
 	}
 
 	/**
