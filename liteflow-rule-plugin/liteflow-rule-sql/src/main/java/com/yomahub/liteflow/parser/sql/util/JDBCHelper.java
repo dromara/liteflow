@@ -5,14 +5,18 @@ import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.constant.ReadType;
 
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
+import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import org.apache.commons.lang.StringUtils;
+
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -20,6 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.yomahub.liteflow.parser.constant.SqlReadConstant.*;
+
 /**
  * jdbc 工具类
  *
@@ -32,11 +37,17 @@ public class JDBCHelper {
 
     private static JDBCHelper INSTANCE;
 
-    //定时任务线程池核心线程数
+    /**
+     * 定时任务线程池核心线程数
+     */
     private static final int CORE_POOL_SIZE = 2;
 
-    //定时任务线程池
+    /**
+     * 定时任务线程池
+     */
     private static ScheduledThreadPoolExecutor pollExecutor;
+
+    private static LFLog LOG = LFLoggerManager.getLogger(JDBCHelper.class);
 
     /**
      * 初始化 INSTANCE
@@ -92,7 +103,7 @@ public class JDBCHelper {
             String language = scriptVO.getLanguage();
 
             if (StringUtils.isNotBlank(scriptVO.getLanguage())) {
-                scriptList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name),type, language, elData));
+                scriptList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, language, elData));
             } else {
                 scriptList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, elData));
             }
@@ -111,7 +122,13 @@ public class JDBCHelper {
     public void listenSQL() {
         // 添加轮询chain的定时任务
         pollExecutor.scheduleAtFixedRate(
-                () -> SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute(),
+                () -> {
+                    try {
+                        SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute();
+                    } catch (Exception ex) {
+                        LOG.info("poll chain fail", ex);
+                    }
+                },
                 sqlParserVO.getPollingStartSeconds().longValue(),
                 sqlParserVO.getPollingIntervalSeconds().longValue(),
                 TimeUnit.SECONDS
@@ -119,7 +136,13 @@ public class JDBCHelper {
 
         // 添加轮询script的定时任务
         pollExecutor.scheduleAtFixedRate(
-                () -> SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute(),
+                () -> {
+                    try {
+                        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute();
+                    } catch (Exception ex) {
+                        LOG.info("poll script fail", ex);
+                    }
+                },
                 sqlParserVO.getPollingStartSeconds().longValue(),
                 sqlParserVO.getPollingIntervalSeconds().longValue(),
                 TimeUnit.SECONDS
