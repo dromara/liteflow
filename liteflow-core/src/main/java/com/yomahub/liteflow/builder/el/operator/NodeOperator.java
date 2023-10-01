@@ -10,6 +10,7 @@ import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.FallbackNodeProxy;
 import com.yomahub.liteflow.flow.element.Node;
@@ -26,7 +27,13 @@ public class NodeOperator extends BaseOperator<Node> {
 	
 	@Override
 	public Node build(Object[] objects) throws Exception {
-
+		// 检查是否开启了组件降级功能
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		Boolean enable = liteflowConfig.getFallbackCmpEnable();
+		if (!enable) {
+			throw new ELParseException("The fallback component is disabled");
+		}
+		
 		OperatorHelper.checkObjectSizeEqOne(objects);
 		String nodeId = OperatorHelper.convert(objects[0], String.class);
 		

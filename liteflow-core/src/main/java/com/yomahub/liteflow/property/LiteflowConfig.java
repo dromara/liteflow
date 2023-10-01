@@ -97,9 +97,6 @@ public class LiteflowConfig {
 	// 是否打印执行中的日志
 	private Boolean printExecutionLog;
 
-	// 替补组件class路径
-	private String substituteCmpClass;
-
 	// 规则文件/脚本文件变更监听
 	private Boolean enableMonitorFile = Boolean.FALSE;
 
@@ -111,6 +108,9 @@ public class LiteflowConfig {
 
 	//使用默认并行循环线程池时，最大队列数
 	private Integer parallelQueueLimit;
+	
+	// 是否启用组件降级
+	private Boolean fallbackCmpEnable;
 
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
@@ -373,14 +373,6 @@ public class LiteflowConfig {
 		this.printExecutionLog = printExecutionLog;
 	}
 
-	public String getSubstituteCmpClass() {
-		return substituteCmpClass;
-	}
-
-	public void setSubstituteCmpClass(String substituteCmpClass) {
-		this.substituteCmpClass = substituteCmpClass;
-	}
-
 	public String getRuleSourceExtData() {
 		return ruleSourceExtData;
 	}
@@ -453,5 +445,17 @@ public class LiteflowConfig {
 	}
 	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
 		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
+	}
+	
+	public Boolean getFallbackCmpEnable() {
+		if (ObjectUtil.isNull(this.fallbackCmpEnable)) {
+			return false;
+		} else {
+			return fallbackCmpEnable;
+		}
+	}
+	
+	public void setFallbackCmpEnable(Boolean fallbackCmpEnable) {
+		this.fallbackCmpEnable = fallbackCmpEnable;
 	}
 }
