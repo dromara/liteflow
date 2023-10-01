@@ -154,8 +154,13 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			throw e;
 		}
 		catch (Exception e) {
+			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
+			if (instance.isEnd()) {
+				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
+				throw new ChainEndException(errorInfo);
+			}
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
-			if (instance.isContinueOnError()) {
+			else if (instance.isContinueOnError()) {
 				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
 				LOG.error(errorMsg);
 			}

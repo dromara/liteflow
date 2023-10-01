@@ -5,6 +5,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
@@ -23,6 +24,8 @@ import java.util.Objects;
  */
 public class SQLXmlELParser extends ClassXmlFlowELParser {
 
+	private static SQLParserVO sqlParserVO;
+
 	private static final String ERROR_MSG_PATTERN = "rule-source-ext-data {} is blank";
 
 	private static final String ERROR_COMMON_MSG = "rule-source-ext-data is empty";
@@ -34,7 +37,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
 		try {
-			SQLParserVO sqlParserVO = null;
 			if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
 				sqlParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(), SQLParserVO.class,
 						CopyOptions.create());
@@ -63,7 +65,20 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
 	@Override
 	public String parseCustom() {
-		return JDBCHelper.getInstance().getContent();
+		try{
+			JDBCHelper jdbcHelper = JDBCHelper.getInstance();
+			String content = jdbcHelper.getContent();
+			if(sqlParserVO.getPollingEnabled()) {
+				FlowInitHook.addHook(() -> {
+					jdbcHelper.listenSQL();
+					return true;
+				});
+			}
+			return content;
+		}
+		catch (Exception ex) {
+			throw new ELSQLException(ex.getMessage());
+		}
 	}
 
 	/**

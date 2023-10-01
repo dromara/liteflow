@@ -4,12 +4,12 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.zk.exception.ZkException;
 import com.yomahub.liteflow.parser.zk.vo.ZkParserVO;
 import org.apache.curator.framework.CuratorFramework;
@@ -87,7 +87,7 @@ public class ZkParserHelper {
 
 				List<String> scriptItemContentList = new ArrayList<>();
 				for (String scriptNodeValue : scriptNodeValueList) {
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
 					if (Objects.isNull(nodeSimpleVO)) {
 						throw new ZkException(StrUtil.format("The name of the zk node is invalid:{}", scriptNodeValue));
 					}
@@ -179,12 +179,12 @@ public class ZkParserHelper {
 					.contains(type)) {
 					LOG.info("starting reload flow config... {} path={} value={},", type.name(), path, value);
 					String scriptNodeValue = FileNameUtil.getName(path);
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
 					// 有语言类型
 					if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
 						LiteFlowNodeBuilder.createScriptNode()
 							.setId(nodeSimpleVO.getNodeId())
-							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
 							.setName(nodeSimpleVO.getName())
 							.setScript(value)
 							.setLanguage(nodeSimpleVO.getLanguage())
@@ -194,7 +194,7 @@ public class ZkParserHelper {
 					else {
 						LiteFlowNodeBuilder.createScriptNode()
 							.setId(nodeSimpleVO.getNodeId())
-							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
+							.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
 							.setName(nodeSimpleVO.getName())
 							.setScript(value)
 							.build();
@@ -203,80 +203,10 @@ public class ZkParserHelper {
 				else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
 					LOG.info("starting reload flow config... delete path={}", path);
 					String scriptNodeValue = FileNameUtil.getName(path);
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
+					NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
 					FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
 				}
 			});
 		}
 	}
-
-	public NodeSimpleVO convert(String str) {
-		// 不需要去理解这串正则，就是一个匹配冒号的
-		// 一定得是a:b，或是a:b:c...这种完整类型的字符串的
-		List<String> matchItemList = ReUtil.findAllGroup0("(?<=[^:]:)[^:]+|[^:]+(?=:[^:])", str);
-		if (CollUtil.isEmpty(matchItemList)) {
-			return null;
-		}
-
-		NodeSimpleVO nodeSimpleVO = new NodeSimpleVO();
-		if (matchItemList.size() > 1) {
-			nodeSimpleVO.setNodeId(matchItemList.get(0));
-			nodeSimpleVO.setType(matchItemList.get(1));
-		}
-
-		if (matchItemList.size() > 2) {
-			nodeSimpleVO.setName(matchItemList.get(2));
-		}
-
-		if (matchItemList.size() > 3) {
-			nodeSimpleVO.setLanguage(matchItemList.get(3));
-		}
-
-		return nodeSimpleVO;
-	}
-
-	private static class NodeSimpleVO {
-
-		private String nodeId;
-
-		private String type;
-
-		private String name = "";
-
-		private String language;
-
-		public String getNodeId() {
-			return nodeId;
-		}
-
-		public void setNodeId(String nodeId) {
-			this.nodeId = nodeId;
-		}
-
-		public String getType() {
-			return type;
-		}
-
-		public void setType(String type) {
-			this.type = type;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getLanguage() {
-			return language;
-		}
-
-		public void setLanguage(String language) {
-			this.language = language;
-		}
-
-	}
-
 }

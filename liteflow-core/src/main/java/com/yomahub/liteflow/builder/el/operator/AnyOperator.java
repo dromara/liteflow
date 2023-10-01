@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
+import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 
 /**
@@ -19,7 +20,7 @@ public class AnyOperator extends BaseOperator<WhenCondition> {
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
 
 		Boolean any = OperatorHelper.convert(objects[1], Boolean.class);
-		whenCondition.setAny(any);
+		whenCondition.setParallelStrategy(any ? ParallelStrategyEnum.ANY : ParallelStrategyEnum.ALL);
 		return whenCondition;
 	}
 
