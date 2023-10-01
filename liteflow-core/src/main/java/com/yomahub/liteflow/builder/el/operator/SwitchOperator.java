@@ -15,20 +15,20 @@ import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
  * @since 2.8.0
  */
 public class SwitchOperator extends BaseOperator<SwitchCondition> {
-
-	@Override
-	public SwitchCondition build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeEqOne(objects);
-
-		Node switchNode = OperatorHelper.convert(objects[0], Node.class);
-		if (!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(switchNode.getType())) {
-			throw new QLException("The caller must be Switch item");
-		}
-
-		SwitchCondition switchCondition = new SwitchCondition();
-		switchCondition.setSwitchNode(switchNode);
-
-		return switchCondition;
-	}
-
+    
+    @Override
+    public SwitchCondition build(Object[] objects) throws Exception {
+        OperatorHelper.checkObjectSizeEqOne(objects);
+        
+        Node switchNode = OperatorHelper.convert(objects[0], Node.class);
+        if (!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT, NodeTypeEnum.FALLBACK)
+                .contains(switchNode.getType())) {
+            throw new QLException("The caller must be Switch item");
+        }
+        
+        SwitchCondition switchCondition = new SwitchCondition();
+        switchCondition.setSwitchNode(switchNode);
+        
+        return switchCondition;
+    }
 }

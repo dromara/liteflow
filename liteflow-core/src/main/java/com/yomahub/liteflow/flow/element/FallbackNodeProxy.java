@@ -19,15 +19,19 @@ import com.yomahub.liteflow.slot.Slot;
 
 public class FallbackNodeProxy extends Node {
     
-    private String originalNodeId;
+    // 原节点 id
+    private String expectedNodeId;
     
-    private Node fallbackNode;`
+    // 降级节点
+    private Node fallbackNode;
     
     public FallbackNodeProxy() {
+        this.setType(NodeTypeEnum.FALLBACK);
     }
     
-    public FallbackNodeProxy(String originalNodeId) {
-        this.originalNodeId = originalNodeId;
+    public FallbackNodeProxy(String expectedNodeId) {
+        this();
+        this.expectedNodeId = expectedNodeId;
     }
     
     @Override
@@ -44,14 +48,14 @@ public class FallbackNodeProxy extends Node {
         }
         Slot slot = DataBus.getSlot(slotIndex);
         Condition curCondition = slot.getCurrentCondition();
-        if (ObjectUtil.isNotNull(curCondition)) {
+        if (ObjectUtil.isNull(curCondition)) {
             throw new FlowSystemException("The current executing condition could not be found.");
         }
         Node node = findFallbackNode(curCondition);
         if (ObjectUtil.isNull(node)) {
             throw new FallbackCmpNotFoundException(
-                    StrFormatter.format("No fallback component found for \"{}\" in {}.",
-                            this.originalNodeId, this.getCurrChainId()));
+                    StrFormatter.format("No fallback component found for [{}] in chain[{}].", this.expectedNodeId,
+                            this.getCurrChainId()));
         }
         // 使用 node 的副本
         this.fallbackNode = node.copy();
@@ -119,27 +123,22 @@ public class FallbackNodeProxy extends Node {
             return FlowBus.getFallBackNode(NodeTypeEnum.WHILE);
         }
         
-        Executable breakItem = whileCondition.getExecutableOne(ConditionKey.BREAK_KEY);
-        if (breakItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.BREAK);
-        }
-        
         return findNodeInLoop(whileCondition);
-    }
-    
-    private Node findNodeInLoop(LoopCondition loopCondition) {
-        Executable breakItem = loopCondition.getExecutableOne(ConditionKey.BREAK_KEY);
-        if (breakItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.BREAK);
-        }
-        
-        return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
     }
     
     private Node findNodeInIterator(IteratorCondition iteratorCondition) {
         Node iteratorNode = iteratorCondition.getIteratorNode();
         if (iteratorNode == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.ITERATOR);
+        }
+        
+        return findNodeInLoop(iteratorCondition);
+    }
+    
+    private Node findNodeInLoop(LoopCondition loopCondition) {
+        Executable breakItem = loopCondition.getExecutableOne(ConditionKey.BREAK_KEY);
+        if (breakItem == this) {
+            return FlowBus.getFallBackNode(NodeTypeEnum.BREAK);
         }
         
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
@@ -152,14 +151,14 @@ public class FallbackNodeProxy extends Node {
     
     @Override
     public boolean isAccess(Integer slotIndex) throws Exception {
-        // WHEN 可能会先访问这个方法，所以在这里就要加载降级节点
+        // 可能会先访问这个方法，所以在这里就要加载降级节点
         loadFallBackNode(slotIndex);
         return this.fallbackNode.isAccess(slotIndex);
     }
     
     @Override
     public String getId() {
-        return this.fallbackNode.getId();
+        return this.fallbackNode == null ? null : this.fallbackNode.getId();
     }
     
     @Override
@@ -168,11 +167,16 @@ public class FallbackNodeProxy extends Node {
         return this;
     }
     
-    public String getOriginalNodeId() {
-        return originalNodeId;
+    @Override
+    public NodeTypeEnum getType() {
+        return NodeTypeEnum.FALLBACK;
     }
     
-    public void setOriginalNodeId(String originalNodeId) {
-        this.originalNodeId = originalNodeId;
+    public String getExpectedNodeId() {
+        return expectedNodeId;
+    }
+    
+    public void setExpectedNodeId(String expectedNodeId) {
+        this.expectedNodeId = expectedNodeId;
     }
 }

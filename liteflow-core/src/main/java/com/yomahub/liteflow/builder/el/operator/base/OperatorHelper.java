@@ -145,7 +145,8 @@ public class OperatorHelper {
 		if (!(object instanceof Node && ListUtil.toList(
 				NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT,
 				NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT,
-				NodeTypeEnum.BREAK, NodeTypeEnum.BREAK_SCRIPT).contains(((Node) object).getType())
+				NodeTypeEnum.BREAK, NodeTypeEnum.BREAK_SCRIPT, NodeTypeEnum.FALLBACK)
+				.contains(((Node) object).getType())
 				|| object instanceof AndOrCondition || object instanceof NotCondition)) {
 			throw new QLException("The first parameter must be boolean type Node or boolean type condition");
 		}
