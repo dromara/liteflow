@@ -3,8 +3,8 @@ package com.yomahub.liteflow.parser.constant;
 /**
  * sql 读取常量类
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public class SqlReadConstant {

@@ -72,6 +72,8 @@ public class JDBCHelper {
 
     /**
      * 获取 INSTANCE
+     *
+     * @return 实例
      */
     public static JDBCHelper getInstance() {
         return INSTANCE;
@@ -79,6 +81,8 @@ public class JDBCHelper {
 
     /**
      * 获取 ElData 数据内容
+     *
+     * @return 数据内容
      */
     public String getContent() {
         SqlRead chainRead = SqlReadFactory.getSqlRead(ReadType.CHAIN);
@@ -110,9 +114,9 @@ public class JDBCHelper {
         });
         String nodesContent = StrUtil.format(NODE_XML_PATTERN, CollUtil.join(scriptList, StrUtil.EMPTY));
 
-        // 注册
-        SqlReadFactory.registerSqlReadPollTask(ReadType.CHAIN, chainMap);
-        SqlReadFactory.registerSqlReadPollTask(ReadType.SCRIPT, scriptMap);
+        // 初始化轮询任务
+        SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).initData(chainMap);
+        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).initData(scriptMap);
         return StrUtil.format(XML_PATTERN, nodesContent, chainsContent);
     }
 

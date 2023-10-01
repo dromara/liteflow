@@ -12,13 +12,13 @@ import java.util.Map;
 /**
  * 脚本轮询任务
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public class ScriptReadPollTask extends AbstractSqlReadPollTask {
-    public ScriptReadPollTask(Map<String, String> dataMap, SqlRead read) {
-        super(dataMap, read);
+    public ScriptReadPollTask(SqlRead read) {
+        super(read);
     }
 
     @Override

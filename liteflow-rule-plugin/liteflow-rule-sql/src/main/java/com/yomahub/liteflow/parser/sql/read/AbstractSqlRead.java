@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * sql 读取抽象类，维护公共方法
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public abstract class AbstractSqlRead implements SqlRead {
@@ -80,6 +80,7 @@ public abstract class AbstractSqlRead implements SqlRead {
      * 是否可以读取
      * chain 默认可以读取
      * script 需要判断是否有配置
+     * @return 布尔值
      */
     public boolean needRead() {
         return true;

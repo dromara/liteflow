@@ -12,14 +12,14 @@ import java.util.Map;
 /**
  * chain 读取任务
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public class ChainReadPollTask extends AbstractSqlReadPollTask {
 
-    public ChainReadPollTask(Map<String, String> dataMap, SqlRead read) {
-        super(dataMap, read);
+    public ChainReadPollTask(SqlRead read) {
+        super(read);
     }
 
     @Override

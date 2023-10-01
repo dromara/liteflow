@@ -14,8 +14,8 @@ import java.util.Map;
 /**
  * sql 读取工厂类
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public class SqlReadFactory {
@@ -27,14 +27,13 @@ public class SqlReadFactory {
         READ_MAP.put(ReadType.SCRIPT, new ScriptRead(config));
     }
 
-    public static void registerSqlReadPollTask(ReadType readType, Map<String, String> dataMap) {
+    public static void registerSqlReadPollTask(ReadType readType) {
         SqlRead sqlRead = getSqlRead(readType);
         if (ReadType.CHAIN.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.CHAIN, new ChainReadPollTask(dataMap, sqlRead));
+            POLL_TASK_MAP.put(ReadType.CHAIN, new ChainReadPollTask(sqlRead));
         } else if (ReadType.SCRIPT.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.SCRIPT, new ScriptReadPollTask(dataMap, sqlRead));
+            POLL_TASK_MAP.put(ReadType.SCRIPT, new ScriptReadPollTask(sqlRead));
         }
-
     }
 
     public static SqlRead getSqlRead(ReadType readType) {

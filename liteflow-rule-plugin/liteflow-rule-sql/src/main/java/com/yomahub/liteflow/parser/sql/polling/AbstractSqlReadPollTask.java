@@ -15,17 +15,16 @@ import java.util.Set;
 /**
  * sql 轮询任务抽象类，维护公共方法
  *
- * @author tangkc huxinyu
- * @date 2023/9/28 11:49
+ * @author tangkc
+ * @author houxinyu
  * @since 2.11.1
  */
 public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
-    private final Map<String/*唯一键*/, String/*data-xml的sha1值*/> DATA_SHA_MAP;
+    private final Map<String/*唯一键*/, String/*data-xml的sha1值*/> DATA_SHA_MAP = new HashMap<>();
     private final SqlRead read;
 
-    public AbstractSqlReadPollTask(Map<String, String> dataMap, SqlRead read) {
+    public AbstractSqlReadPollTask(SqlRead read) {
         this.read = read;
-        this.DATA_SHA_MAP = shaMapValue(dataMap);
 
         if (!read.type().equals(type())) {
             throw new ELSQLException("SqlReadPollTask type not match");
@@ -79,6 +78,11 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
         if (CollUtil.isNotEmpty(deleteElementIds)) {
             doDelete(deleteElementIds);
         }
+    }
+
+    @Override
+    public void initData(Map<String/*唯一键*/, String/*data-xml的数据*/> dataMap) {
+        DATA_SHA_MAP.putAll(shaMapValue(dataMap));
     }
 
     public abstract void doSave(Map<String, String> saveElementMap);
