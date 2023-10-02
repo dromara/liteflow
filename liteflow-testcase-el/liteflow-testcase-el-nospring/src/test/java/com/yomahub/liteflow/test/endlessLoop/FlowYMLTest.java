@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.subflow.endlessLopp;
+package com.yomahub.liteflow.test.endlessLoop;
 
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.exception.CyclicDependencyException;
@@ -21,7 +21,7 @@ public class FlowYMLTest extends BaseTest {
 	public void testChainEndlessLoop() {
 		Assertions.assertThrows(CyclicDependencyException.class, () -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
-			config.setRuleSource("subflow/endlessLoop/flow.el.yml");
+			config.setRuleSource("endlessLoop/flow.el.yml");
 			FlowExecutorHolder.loadInstance(config);
 		});
 	}

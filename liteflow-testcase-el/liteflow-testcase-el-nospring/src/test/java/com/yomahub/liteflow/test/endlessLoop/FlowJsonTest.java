@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.subflow.endlessLopp;
+package com.yomahub.liteflow.test.endlessLoop;
 
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.exception.CyclicDependencyException;
@@ -9,19 +9,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * 测试 xml 文件情况下 chain 死循环逻辑
+ * 测试 json 文件情况下 chain 死循环逻辑
  *
  * @author luo yi
  * @since 2.11.1
  */
-public class FlowXMLTest extends BaseTest {
+public class FlowJsonTest extends BaseTest {
 
 	// 测试 chain 死循环
 	@Test
 	public void testChainEndlessLoop() {
 		Assertions.assertThrows(CyclicDependencyException.class, () -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
-			config.setRuleSource("subflow/endlessLoop/flow.el.xml");
+			config.setRuleSource("endlessLoop/flow.el.json");
 			FlowExecutorHolder.loadInstance(config);
 		});
 	}

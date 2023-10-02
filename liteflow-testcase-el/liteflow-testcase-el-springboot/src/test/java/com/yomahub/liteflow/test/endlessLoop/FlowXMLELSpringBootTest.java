@@ -1,14 +1,15 @@
-package com.yomahub.liteflow.test.subflow.endlessLoop;
+package com.yomahub.liteflow.test.endlessLoop;
 
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.exception.CyclicDependencyException;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
 
@@ -18,10 +19,9 @@ import javax.annotation.Resource;
  * @author luo yi
  * @since 2.11.1
  */
-@TestPropertySource(value = "classpath:/subflow/endlessLoop/application-xml.properties")
 @SpringBootTest(classes = FlowXMLELSpringBootTest.class)
 @EnableAutoConfiguration
-@ComponentScan({ "com.yomahub.liteflow.test.subflow.cmp1" })
+@ComponentScan({ "com.yomahub.liteflow.test.endlessLoop.cmp" })
 public class FlowXMLELSpringBootTest extends BaseTest {
 
 	@Resource
@@ -30,8 +30,11 @@ public class FlowXMLELSpringBootTest extends BaseTest {
 	// 测试 chain 死循环
 	@Test
 	public void testChainEndlessLoop() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a request");
-		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertThrows(CyclicDependencyException.class, () -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource("endlessLoop/flow.el.xml");
+			flowExecutor.reloadRule();
+		});
 	}
 
 }
