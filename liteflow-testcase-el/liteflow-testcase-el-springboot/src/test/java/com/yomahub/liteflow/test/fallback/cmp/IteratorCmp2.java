@@ -10,7 +10,7 @@ import java.util.Iterator;
 @LiteflowComponent("itn2")
 @FallbackCmp
 public class IteratorCmp2 extends NodeIteratorComponent {
-    
+
     @Override
     public Iterator<?> processIterator() throws Exception {
         return Collections.emptyIterator();

@@ -9,10 +9,10 @@ import java.util.Set;
 @LiteflowComponent("wn1")
 public class WhileCmp1 extends NodeWhileComponent {
     private int count = 0;
-    
+
     // 执行过的 chain
     Set<String> executedChain = new HashSet<>();
-    
+
     @Override
     public boolean processWhile() throws Exception {
         // 判断是否切换了 chain

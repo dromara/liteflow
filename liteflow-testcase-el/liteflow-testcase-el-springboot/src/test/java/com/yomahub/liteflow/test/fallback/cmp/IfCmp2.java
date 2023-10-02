@@ -7,7 +7,7 @@ import com.yomahub.liteflow.core.NodeIfComponent;
 @LiteflowComponent("ifn2")
 @FallbackCmp
 public class IfCmp2 extends NodeIfComponent {
-    
+
     @Override
     public boolean processIf() throws Exception {
         return false;

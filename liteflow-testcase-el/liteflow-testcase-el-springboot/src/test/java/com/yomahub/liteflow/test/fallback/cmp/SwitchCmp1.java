@@ -5,7 +5,7 @@ import com.yomahub.liteflow.core.NodeSwitchComponent;
 
 @LiteflowComponent("swn1")
 public class SwitchCmp1 extends NodeSwitchComponent {
-    
+
     @Override
     public String processSwitch() throws Exception {
         return "a";

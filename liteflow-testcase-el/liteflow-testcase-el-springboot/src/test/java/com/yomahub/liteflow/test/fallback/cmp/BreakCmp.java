@@ -7,7 +7,7 @@ import com.yomahub.liteflow.core.NodeBreakComponent;
 @LiteflowComponent("bn1")
 @FallbackCmp
 public class BreakCmp extends NodeBreakComponent {
-    
+
     @Override
     public boolean processBreak() throws Exception {
         return true;

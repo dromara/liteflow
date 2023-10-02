@@ -18,29 +18,29 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
 public class FallbackNodeProxy extends Node {
-    
+
     // 原节点 id
     private String expectedNodeId;
-    
+
     // 降级节点
     private Node fallbackNode;
-    
+
     public FallbackNodeProxy() {
         this.setType(NodeTypeEnum.FALLBACK);
     }
-    
+
     public FallbackNodeProxy(String expectedNodeId) {
         this();
         this.expectedNodeId = expectedNodeId;
     }
-    
+
     @Override
     public void execute(Integer slotIndex) throws Exception {
         loadFallBackNode(slotIndex);
         this.fallbackNode.setCurrChainId(this.getCurrChainId());
         this.fallbackNode.execute(slotIndex);
     }
-    
+
     private void loadFallBackNode(Integer slotIndex) throws Exception {
         if (ObjectUtil.isNotNull(this.fallbackNode)) {
             // 已经加载过了
@@ -60,7 +60,7 @@ public class FallbackNodeProxy extends Node {
         // 使用 node 的副本
         this.fallbackNode = node.copy();
     }
-    
+
     private Node findFallbackNode(Condition condition) {
         ConditionTypeEnum conditionType = condition.getConditionType();
         switch (conditionType) {
@@ -87,95 +87,95 @@ public class FallbackNodeProxy extends Node {
                 return null;
         }
     }
-    
+
     private Node findNodeInIf(IfCondition ifCondition) {
         Executable ifItem = ifCondition.getIfItem();
         if (ifItem == this) {
             // 需要条件组件
             return FlowBus.getFallBackNode(NodeTypeEnum.IF);
         }
-        
+
         // 需要普通组件
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
     }
-    
+
     private Node findNodeInSwitch(SwitchCondition switchCondition) {
         Node switchNode = switchCondition.getSwitchNode();
         if (switchNode == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.SWITCH);
         }
-        
+
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
     }
-    
+
     private Node findNodeInFor(ForCondition forCondition) {
         Node forNode = forCondition.getForNode();
         if (forNode == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.FOR);
         }
-        
+
         return findNodeInLoop(forCondition);
     }
-    
+
     private Node findNodeInWhile(WhileCondition whileCondition) {
         Executable whileItem = whileCondition.getWhileItem();
         if (whileItem == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.WHILE);
         }
-        
+
         return findNodeInLoop(whileCondition);
     }
-    
+
     private Node findNodeInIterator(IteratorCondition iteratorCondition) {
         Node iteratorNode = iteratorCondition.getIteratorNode();
         if (iteratorNode == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.ITERATOR);
         }
-        
+
         return findNodeInLoop(iteratorCondition);
     }
-    
+
     private Node findNodeInLoop(LoopCondition loopCondition) {
         Executable breakItem = loopCondition.getExecutableOne(ConditionKey.BREAK_KEY);
         if (breakItem == this) {
             return FlowBus.getFallBackNode(NodeTypeEnum.BREAK);
         }
-        
+
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
     }
-    
+
     @Override
     public <T> T getItemResultMetaValue(Integer slotIndex) {
         return this.fallbackNode.getItemResultMetaValue(slotIndex);
     }
-    
+
     @Override
     public boolean isAccess(Integer slotIndex) throws Exception {
         // 可能会先访问这个方法，所以在这里就要加载降级节点
         loadFallBackNode(slotIndex);
         return this.fallbackNode.isAccess(slotIndex);
     }
-    
+
     @Override
     public String getId() {
         return this.fallbackNode == null ? null : this.fallbackNode.getId();
     }
-    
+
     @Override
     public Node copy() {
         // 代理节点不复制
         return this;
     }
-    
+
     @Override
     public NodeTypeEnum getType() {
         return NodeTypeEnum.FALLBACK;
     }
-    
+
     public String getExpectedNodeId() {
         return expectedNodeId;
     }
-    
+
     public void setExpectedNodeId(String expectedNodeId) {
         this.expectedNodeId = expectedNodeId;
     }

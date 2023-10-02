@@ -47,63 +47,63 @@ import java.util.stream.Collectors;
  * @author Bryan.Zhang
  */
 public class FlowBus {
-    
+
     private static final LFLog LOG = LFLoggerManager.getLogger(FlowBus.class);
-    
+
     private static final Map<String, Chain> chainMap = new CopyOnWriteHashMap<>();
-    
+
     private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
-    
+
     private static final Map<NodeTypeEnum, Node> fallbackNodeMap = new CopyOnWriteHashMap<>();
-    
+
     private FlowBus() {
     }
-    
+
     public static Chain getChain(String id) {
         return chainMap.get(id);
     }
-    
+
     // 这一方法主要用于第一阶段chain的预装载
     public static void addChain(String chainName) {
         if (!chainMap.containsKey(chainName)) {
             chainMap.put(chainName, new Chain(chainName));
         }
     }
-    
+
     // 这个方法主要用于第二阶段的替换chain
     public static void addChain(Chain chain) {
         chainMap.put(chain.getChainId(), chain);
     }
-    
+
     public static boolean containChain(String chainId) {
         return chainMap.containsKey(chainId);
     }
-    
+
     public static boolean needInit() {
         return MapUtil.isEmpty(chainMap);
     }
-    
+
     public static boolean containNode(String nodeId) {
         return nodeMap.containsKey(nodeId);
     }
-    
+
     /**
      * 添加已托管的节点（如：Spring、Solon 管理的节点）
      */
     public static void addManagedNode(String nodeId, NodeComponent nodeComponent) {
         // 根据class来猜测类型
         NodeTypeEnum type = NodeTypeEnum.guessType(nodeComponent.getClass());
-        
+
         if (type == null) {
             throw new NullNodeTypeException(StrUtil.format("node type is null for node[{}]", nodeId));
         }
-        
+
         Node node = new Node(ComponentInitializer.loadInstance()
                 .initComponent(nodeComponent, type, nodeComponent.getName(), nodeId));
         nodeMap.put(nodeId, node);
         addFallbackNode(node);
     }
-    
+
     /**
      * 添加 node
      *
@@ -115,7 +115,7 @@ public class FlowBus {
     public static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz) {
         addNode(nodeId, name, type, cmpClazz, null, null);
     }
-    
+
     /**
      * 添加 node
      *
@@ -133,7 +133,7 @@ public class FlowBus {
         }
         addNode(nodeId, name, nodeType, cmpClazz, null, null);
     }
-    
+
     /**
      * 添加脚本 node
      *
@@ -143,12 +143,12 @@ public class FlowBus {
      * @param script   脚本
      */
     public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script,
-            String language) {
+                                     String language) {
         addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
     }
-    
+
     private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script,
-            String language) {
+                                String language) {
         try {
             // 判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
             // 如果不是声明式的，就用传统的方式进行判断
@@ -188,10 +188,10 @@ public class FlowBus {
                             .initComponent(cmpInstance, type, name,
                                     cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId()))
                     .collect(Collectors.toList());
-            
+
             // 初始化Node，把component放到Node里去
             List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
-            
+
             for (int i = 0; i < nodes.size(); i++) {
                 Node node = nodes.get(i);
                 NodeComponent cmpInstance = cmpInstances.get(i);
@@ -206,12 +206,12 @@ public class FlowBus {
                         throw new ScriptLoadException(errorMsg);
                     }
                 }
-                
+
                 String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
                 nodeMap.put(activeNodeId, node);
                 addFallbackNode(node);
             }
-            
+
         } catch (Exception e) {
             String error = StrUtil.format("component[{}] register error",
                     StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
@@ -219,30 +219,30 @@ public class FlowBus {
             throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
         }
     }
-    
+
     public static Node getNode(String nodeId) {
         return nodeMap.get(nodeId);
     }
-    
+
     public static Map<String, Node> getNodeMap() {
         return nodeMap;
     }
-    
+
     public static Map<String, Chain> getChainMap() {
         return chainMap;
     }
-    
+
     public static Node getFallBackNode(NodeTypeEnum nodeType) {
         return fallbackNodeMap.get(nodeType);
     }
-    
+
     public static void cleanCache() {
         chainMap.clear();
         nodeMap.clear();
         fallbackNodeMap.clear();
         cleanScriptCache();
     }
-    
+
     public static void cleanScriptCache() {
         // 如果引入了脚本组件SPI，则还需要清理脚本的缓存
         try {
@@ -250,7 +250,7 @@ public class FlowBus {
         } catch (ScriptSpiException ignored) {
         }
     }
-    
+
     public static void refreshFlowMetaData(FlowParserTypeEnum type, String content) throws Exception {
         if (type.equals(FlowParserTypeEnum.TYPE_EL_XML)) {
             new LocalXmlFlowELParser().parse(content);
@@ -260,7 +260,7 @@ public class FlowBus {
             new LocalYmlFlowELParser().parse(content);
         }
     }
-    
+
     public static boolean removeChain(String chainId) {
         if (containChain(chainId)) {
             chainMap.remove(chainId);
@@ -271,23 +271,23 @@ public class FlowBus {
             return false;
         }
     }
-    
+
     public static void removeChain(String... chainIds) {
         Arrays.stream(chainIds).forEach(FlowBus::removeChain);
     }
-    
+
     private static void addFallbackNode(Node node) {
         NodeComponent nodeComponent = node.getInstance();
         FallbackCmp fallbackCmp = AnnoUtil.getAnnotation(nodeComponent.getClass(), FallbackCmp.class);
         if (fallbackCmp == null) {
             return;
         }
-        
+
         NodeTypeEnum nodeType = node.getType();
         if (nodeType == null) {
             nodeType = fallbackCmp.type();
         }
         fallbackNodeMap.put(nodeType, node);
     }
-    
+
 }

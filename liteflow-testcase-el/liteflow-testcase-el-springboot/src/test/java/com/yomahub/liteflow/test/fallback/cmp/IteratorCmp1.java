@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 @LiteflowComponent("itn1")
 public class IteratorCmp1 extends NodeIteratorComponent {
-    
+
     @Override
     public Iterator<?> processIterator() throws Exception {
         return Arrays.asList("a", "b", "c").iterator();

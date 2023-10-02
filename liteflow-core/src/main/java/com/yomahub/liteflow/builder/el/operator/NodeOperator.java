@@ -24,26 +24,26 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
  * @since 2.8.3
  */
 public class NodeOperator extends BaseOperator<Node> {
-	
-	@Override
-	public Node build(Object[] objects) throws Exception {
-		// 检查是否开启了组件降级功能
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		Boolean enable = liteflowConfig.getFallbackCmpEnable();
-		if (!enable) {
-			throw new ELParseException("The fallback component is disabled");
-		}
-		
-		OperatorHelper.checkObjectSizeEqOne(objects);
-		String nodeId = OperatorHelper.convert(objects[0], String.class);
-		
-		if (FlowBus.containNode(nodeId)) {
-			// 找到对应节点
-			return FlowBus.getNode(nodeId);
-		} else {
-			// 生成代理节点
-			return new FallbackNodeProxy(nodeId);
-		}
-	}
+
+    @Override
+    public Node build(Object[] objects) throws Exception {
+        // 检查是否开启了组件降级功能
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        Boolean enable = liteflowConfig.getFallbackCmpEnable();
+        if (!enable) {
+            throw new ELParseException("The fallback component is disabled");
+        }
+
+        OperatorHelper.checkObjectSizeEqOne(objects);
+        String nodeId = OperatorHelper.convert(objects[0], String.class);
+
+        if (FlowBus.containNode(nodeId)) {
+            // 找到对应节点
+            return FlowBus.getNode(nodeId);
+        } else {
+            // 生成代理节点
+            return new FallbackNodeProxy(nodeId);
+        }
+    }
 
 }

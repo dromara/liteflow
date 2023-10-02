@@ -7,7 +7,7 @@ import com.yomahub.liteflow.core.NodeForComponent;
 @LiteflowComponent("for1")
 @FallbackCmp
 public class ForCmp extends NodeForComponent {
-    
+
     @Override
     public int processFor() throws Exception {
         return 3;

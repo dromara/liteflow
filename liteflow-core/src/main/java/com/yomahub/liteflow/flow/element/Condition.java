@@ -30,21 +30,21 @@ import java.util.Map;
  * @author Bryan.Zhang
  */
 public abstract class Condition implements Executable {
-    
+
     private String id;
-    
+
     private String tag;
-    
+
     /**
      * 可执行元素的集合
      */
     private final Map<String, List<Executable>> executableGroup = new HashMap<>();
-    
+
     /**
      * 当前所在的ChainName 如果对于子流程来说，那这个就是子流程所在的Chain
      */
     private String currChainId;
-    
+
     @Override
     public void execute(Integer slotIndex) throws Exception {
         // 当前 Condition 入栈
@@ -70,18 +70,18 @@ public abstract class Condition implements Executable {
             slot.popCondition();
         }
     }
-    
+
     public abstract void executeCondition(Integer slotIndex) throws Exception;
-    
+
     @Override
     public ExecuteTypeEnum getExecuteType() {
         return ExecuteTypeEnum.CONDITION;
     }
-    
+
     public List<Executable> getExecutableList() {
         return getExecutableList(ConditionKey.DEFAULT_KEY);
     }
-    
+
     public List<Executable> getExecutableList(String groupKey) {
         List<Executable> executableList = this.executableGroup.get(groupKey);
         if (CollUtil.isEmpty(executableList)) {
@@ -89,7 +89,7 @@ public abstract class Condition implements Executable {
         }
         return executableList;
     }
-    
+
     public Executable getExecutableOne(String groupKey) {
         List<Executable> list = getExecutableList(groupKey);
         if (CollUtil.isEmpty(list)) {
@@ -98,15 +98,15 @@ public abstract class Condition implements Executable {
             return list.get(0);
         }
     }
-    
+
     public void setExecutableList(List<Executable> executableList) {
         this.executableGroup.put(ConditionKey.DEFAULT_KEY, executableList);
     }
-    
+
     public void addExecutable(Executable executable) {
         addExecutable(ConditionKey.DEFAULT_KEY, executable);
     }
-    
+
     public void addExecutable(String groupKey, Executable executable) {
         if (ObjectUtil.isNull(executable)) {
             return;
@@ -118,29 +118,29 @@ public abstract class Condition implements Executable {
             this.executableGroup.get(groupKey).add(executable);
         }
     }
-    
+
     public abstract ConditionTypeEnum getConditionType();
-    
-	@Override
+
+    @Override
     public String getId() {
         return id;
     }
-    
-	@Override
+
+    @Override
     public void setId(String id) {
         this.id = id;
     }
-    
+
     @Override
     public String getTag() {
         return tag;
     }
-    
-	@Override
+
+    @Override
     public void setTag(String tag) {
         this.tag = tag;
     }
-    
+
     /**
      * 请使用 {@link #setCurrChainId(String)}
      */
@@ -148,16 +148,16 @@ public abstract class Condition implements Executable {
     public String getCurrChainName() {
         return currChainId;
     }
-    
+
     public String getCurrChainId() {
         return currChainId;
     }
-    
+
     @Override
     public void setCurrChainId(String currChainId) {
         this.currChainId = currChainId;
     }
-    
+
     public Map<String, List<Executable>> getExecutableGroup() {
         return executableGroup;
     }
