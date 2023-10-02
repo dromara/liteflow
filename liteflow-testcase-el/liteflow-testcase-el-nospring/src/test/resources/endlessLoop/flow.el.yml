@@ -1,0 +1,20 @@
+flow:
+  nodes:
+    node:
+      - id: a
+        class: com.yomahub.liteflow.test.endlessLoop.cmp.ACmp
+      - id: b
+        class: com.yomahub.liteflow.test.endlessLoop.cmp.BCmp
+      - id: c
+        class: com.yomahub.liteflow.test.endlessLoop.cmp.CCmp
+      - id: d
+        class: com.yomahub.liteflow.test.endlessLoop.cmp.DCmp
+      - id: e
+        class: com.yomahub.liteflow.test.endlessLoop.cmp.ECmp
+  chain:
+    - name: chain4
+      value: "THEN(a, chain5);"
+    - name: chain5
+      value: "THEN(b, chain6);"
+    - name: chain6
+      value: "THEN(c, chain5);"

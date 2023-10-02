@@ -13,7 +13,10 @@ import com.yomahub.liteflow.flow.FlowBus;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -237,8 +240,10 @@ public class ParserHelper {
 		// 构建chainBuilder
 		String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 		String el = chainNode.get(VALUE).textValue();
-		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
-		chainELBuilder.setEL(el).build();
+		LiteFlowChainELBuilder.createChain()
+				.setChainId(chainId)
+				.setEL(el)
+				.build();
 	}
 
 	/**
@@ -250,8 +255,10 @@ public class ParserHelper {
 		String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 		String text = e.getText();
 		String el = RegexUtil.removeComments(text);
-		LiteFlowChainELBuilder chainELBuilder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
-		chainELBuilder.setEL(el).build();
+		LiteFlowChainELBuilder.createChain()
+				.setChainId(chainId)
+				.setEL(el)
+				.build();
 	}
 
 	/**

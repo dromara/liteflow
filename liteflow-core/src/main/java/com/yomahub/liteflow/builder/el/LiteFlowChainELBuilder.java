@@ -4,15 +4,15 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.DataNotFoundException;
-import com.yomahub.liteflow.exception.ELParseException;
-import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -33,6 +33,8 @@ import java.util.Objects;
 public class LiteFlowChainELBuilder {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowChainELBuilder.class);
+
+	private static ObjectMapper objectMapper =new ObjectMapper();
 
 	private Chain chain;
 
@@ -195,6 +197,16 @@ public class LiteFlowChainELBuilder {
 		}
 		if (CollUtil.isNotEmpty(errorList)) {
 			throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
+		}
+		// 对每一个 chain 进行循环引用检测
+		try {
+			objectMapper.writeValueAsString(this.chain);
+		} catch (Exception e) {
+			if (e instanceof JsonMappingException) {
+				throw new CyclicDependencyException(StrUtil.format("There is a circular dependency in the chain[{}], please check carefully.", chain.getChainId(), e));
+			} else {
+				throw new ParseException(e.getMessage());
+			}
 		}
 	}
 
