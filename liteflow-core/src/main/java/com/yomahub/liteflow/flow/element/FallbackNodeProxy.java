@@ -17,6 +17,12 @@ import com.yomahub.liteflow.flow.element.condition.WhileCondition;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
+/**
+ * 降级组件代理
+ *
+ * @author DaleLee
+ * @since
+ */
 public class FallbackNodeProxy extends Node {
 
     // 原节点 id

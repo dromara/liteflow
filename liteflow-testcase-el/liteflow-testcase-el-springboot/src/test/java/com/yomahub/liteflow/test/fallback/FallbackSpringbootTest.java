@@ -11,6 +11,11 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
 
+/**
+ * SpringBoot 降级组件测试
+ *
+ * @author DaleLee
+ */
 @TestPropertySource(value = "classpath:/fallback/application.properties")
 @SpringBootTest(classes = FallbackSpringbootTest.class)
 @EnableAutoConfiguration

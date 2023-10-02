@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
  * 流程元数据类
  *
  * @author Bryan.Zhang
+ * @author DaleLee
  */
 public class FlowBus {
 

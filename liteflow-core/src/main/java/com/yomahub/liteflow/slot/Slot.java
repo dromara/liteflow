@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @author Bryan.Zhang
  * @author LeoLee
+ * @author DaleLee
  */
 @SuppressWarnings("unchecked")
 public class Slot {

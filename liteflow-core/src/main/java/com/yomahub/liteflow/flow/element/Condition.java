@@ -28,6 +28,7 @@ import java.util.Map;
  * Condition的抽象类
  *
  * @author Bryan.Zhang
+ * @author DaleLee
  */
 public abstract class Condition implements Executable {
 
