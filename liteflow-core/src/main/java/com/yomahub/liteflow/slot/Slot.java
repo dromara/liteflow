@@ -19,8 +19,10 @@ import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -90,7 +92,7 @@ public class Slot {
 
 	private List<Object> contextBeanList;
 	
-	private final Deque<Condition> conditionStack = new ConcurrentLinkedDeque<>();
+	private static final ThreadLocal<Deque<Condition>> conditionStack = ThreadLocal.withInitial(LinkedList::new);
 
 	public Slot() {
 	}
@@ -292,15 +294,15 @@ public class Slot {
 	}
 	
 	public Condition getCurrentCondition() {
-		return this.conditionStack.peek();
+		return conditionStack.get().peek();
 	}
 	
 	public void pushCondition(Condition condition) {
-		this.conditionStack.push(condition);
+		conditionStack.get().push(condition);
 	}
 	
 	public void popCondition() {
-		this.conditionStack.pop();
+		conditionStack.get().pop();
 	}
 
 	/**

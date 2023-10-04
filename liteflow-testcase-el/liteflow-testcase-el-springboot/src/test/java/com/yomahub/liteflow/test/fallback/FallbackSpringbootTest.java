@@ -10,6 +10,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * SpringBoot 降级组件测试
@@ -185,5 +187,37 @@ public class FallbackSpringbootTest {
         LiteflowResponse response = flowExecutor.execute2Resp("multi3", "arg");
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("for1==>b==>c==>b==>c==>b==>c", response.getExecuteStepStrWithoutTime());
+    }
+
+    @Test
+    public void testConcurrent1() {
+        LiteflowResponse response = flowExecutor.execute2Resp("concurrent1", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        String stepStr = response.getExecuteStepStrWithoutTime();
+        Assertions.assertTrue("c==>ifn2".equals(stepStr) || "ifn2==>c".equals(stepStr));
+    }
+
+    @Test
+    public void testConcurrent2() {
+        LiteflowResponse response = flowExecutor.execute2Resp("concurrent2", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        String stepStr = response.getExecuteStepStrWithoutTime();
+        Assertions.assertTrue("c==>ifn2".equals(stepStr) || "ifn2==>c".equals(stepStr));
+    }
+
+    @Test
+    public void testConcurrent3() throws ExecutionException, InterruptedException {
+        // 执行多条 chain
+        Future<LiteflowResponse> future1 = flowExecutor.execute2Future("concurrent1", "arg", new Object());
+        Future<LiteflowResponse> future2 = flowExecutor.execute2Future("concurrent2", "arg", new Object());
+        Thread.sleep(1000);
+        LiteflowResponse response1 = future1.get();
+        LiteflowResponse response2 = future2.get();
+        Assertions.assertTrue(response1.isSuccess());
+        String stepStr1 = response1.getExecuteStepStrWithoutTime();
+        Assertions.assertTrue("c==>ifn2".equals(stepStr1) || "ifn2==>c".equals(stepStr1));
+        Assertions.assertTrue(response2.isSuccess());
+        String stepStr2 = response2.getExecuteStepStrWithoutTime();
+        Assertions.assertTrue("c==>ifn2".equals(stepStr2) || "ifn2==>c".equals(stepStr2));
     }
 }

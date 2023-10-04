@@ -8,6 +8,7 @@
     <chain name="then2">
         THEN(PRE(node("x1")), node("x2"), FINALLY(node("x3")));
     </chain>
+
     <!-- WHEN 普通组件降级 -->
     <chain name="when1">
         WHEN(b, node("x"));
@@ -33,12 +34,12 @@
         FOR(3).DO(node("x"));
     </chain>
     
-    <!-- WHILE 条件组件降级 -->
+    <!-- WHILE 条件循环组件降级 -->
     <chain name="while1">
         WHILE(node("x")).DO(a)
     </chain>
     
-    <!-- WHILE 条件普通降级 -->
+    <!-- WHILE 普通组件降级 -->
     <chain name="while2">
         WHILE(wn1).DO(node("x"))
     </chain>
@@ -116,5 +117,20 @@
         FOR(node("x1")).DO(
             THEN(b, node("x2"))
         );
+    </chain>
+
+    <!-- 并发降级测试 -->
+    <chain name="concurrent1">
+        WHEN(
+            THEN(node("x1")),
+            IF(node("x2"), b)
+        ).maxWaitSeconds(10000);
+    </chain>
+
+    <chain name="concurrent2">
+        WHEN(
+            node("x1"),
+            IF(node("x2"), b)
+        ).maxWaitSeconds(10000);
     </chain>
 </flow>
