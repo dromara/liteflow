@@ -23,6 +23,7 @@ public class AbsoluteConfigPathTest extends BaseTest {
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("/usr/local/flow2.xml");
+//		config.setRuleSource("/usr/**/*.xml");
 		flowExecutor = FlowExecutorHolder.loadInstance(config);
 	}
 

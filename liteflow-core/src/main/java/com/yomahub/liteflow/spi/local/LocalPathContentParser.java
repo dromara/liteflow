@@ -9,6 +9,7 @@ import cn.hutool.core.util.ClassLoaderUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
+import com.yomahub.liteflow.util.PathMatchUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,11 @@ public class LocalPathContentParser implements PathContentParser {
 		if (CollectionUtil.isEmpty(pathList)) {
 			throw new ConfigErrorException("rule source must not be null");
 		}
+		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
 
 		List<String> contentList = new ArrayList<>();
 
-		for (String path : pathList) {
+		for (String path : absolutePathList) {
 			if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
 				path = FILE_URL_PREFIX + path;
 			}
@@ -50,10 +52,10 @@ public class LocalPathContentParser implements PathContentParser {
 		if (CollectionUtil.isEmpty(pathList)) {
 			throw new ConfigErrorException("rule source must not be null");
 		}
-
+		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
 		List<String> result = new ArrayList<>();
 
-		for (String path : pathList) {
+		for (String path : absolutePathList) {
 			if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
 				path = FILE_URL_PREFIX + path;
 				result.add(new FileResource(path).getFile().getAbsolutePath());
