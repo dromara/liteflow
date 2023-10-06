@@ -6,6 +6,7 @@ import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.slot.DefaultContext;
 
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,17 @@ public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "a")
     public void rollbackA(NodeComponent bindCmp) throws Exception {
+        String testKey = "test";
+
+        DefaultContext context = bindCmp.getFirstContextBean();
+        if (context.getData(testKey) == null) {
+            context.setData(testKey, bindCmp.getTag());
+        }
+        else {
+            String s = context.getData(testKey);
+            s += bindCmp.getTag();
+            context.setData(testKey, s);
+        }
         System.out.println("ACmp rollback!");
     }
 
