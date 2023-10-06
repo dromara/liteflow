@@ -21,7 +21,7 @@ import com.yomahub.liteflow.slot.Slot;
  * 降级组件代理
  *
  * @author DaleLee
- * @since
+ * @since 2.11.1
  */
 public class FallbackNodeProxy extends Node {
 

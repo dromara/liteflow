@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.fallback;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -17,12 +18,13 @@ import java.util.concurrent.Future;
  * SpringBoot 降级组件测试
  *
  * @author DaleLee
+ * @since 2.11.1
  */
 @TestPropertySource(value = "classpath:/fallback/application.properties")
-@SpringBootTest(classes = FallbackSpringbootTest.class)
+@SpringBootTest(classes = FallbackELDeclSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.fallback.cmp"})
-public class FallbackSpringbootTest {
+public class FallbackELDeclSpringbootTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;

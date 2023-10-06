@@ -294,9 +294,6 @@ public class FlowBus {
 		}
 
 		NodeTypeEnum nodeType = node.getType();
-		if (nodeType == null) {
-			nodeType = fallbackCmp.type();
-		}
 		fallbackNodeMap.put(nodeType, node);
 	}
 

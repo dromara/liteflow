@@ -12,7 +12,8 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 /**
  * EL规则中的node的操作符
  *
- * @author Bryan.Zhang,DaleLee
+ * @author Bryan.Zhang
+ * @author DaleLee
  * @since 2.8.3
  */
 public class NodeOperator extends BaseOperator<Node> {

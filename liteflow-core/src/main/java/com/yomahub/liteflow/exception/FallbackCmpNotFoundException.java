@@ -4,6 +4,7 @@ package com.yomahub.liteflow.exception;
  * 没有找到降级组件异常
  *
  * @author DaleLee
+ * @since 2.11.1
  */
 public class FallbackCmpNotFoundException extends RuntimeException {
 
