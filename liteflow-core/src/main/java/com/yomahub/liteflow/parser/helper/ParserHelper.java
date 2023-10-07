@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.helper;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,7 +25,7 @@ import static com.yomahub.liteflow.common.ChainConstant.*;
 /**
  * Parser 通用 Helper
  *
- * @author tangkc
+ * @author tangkc,zy
  */
 public class ParserHelper {
 
@@ -149,11 +150,11 @@ public class ParserHelper {
 				// 检查 chainName
 				checkChainId(chainName, e.getText());
 				if (!chainNameSet.add(chainName)) {
-					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
+					throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainName));
 				}
 
 				FlowBus.addChain(chainName);
-				if(!("true".equals(e.attributeValue(ABSTRACT)))) {
+				if(BooleanUtil.toBoolean(e.attributeValue(ABSTRACT))==true){
 					abstratChainMap.put(chainName,e);
 				}
 			});
@@ -169,7 +170,7 @@ public class ParserHelper {
 				//首先需要对继承自抽象Chain的chain进行字符串替换
 				parseImplChain(abstratChainMap, implChainSet, chain);
 				//如果一个chain不为抽象chain，则进行解析
-				if(chain.attributeValue(ABSTRACT) == null || !chain.attributeValue(ABSTRACT).equals("true")){
+				if(BooleanUtil.toBoolean(chain.attributeValue(ABSTRACT))==false){
 					parseOneChainConsumer.accept(chain);
 				}
 			}
@@ -307,7 +308,7 @@ public class ParserHelper {
 			if(baseChain!=null) {
 				internalParseImplChain(baseChain,chain,abstratChainMap,implChainSet);
 			}else{
-				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+				throw new ChainNotFoundException(StrUtil.format("[abstract chain not found] chainName={}", baseChainId));
 			}
 		}
 	}
@@ -325,7 +326,7 @@ public class ParserHelper {
 			if(baseChain!=null) {
 				internalParseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
 			}else{
-				throw new ChainNotFoundException(String.format("[abstract chain not found] chainName=%s", baseChainId));
+				throw new ChainNotFoundException(StrUtil.format("[abstract chain not found] chainName={}", baseChainId));
 			}
 		}
 	}
