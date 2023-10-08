@@ -13,26 +13,29 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 /**
  * Slot的抽象类实现
  *
  * @author Bryan.Zhang
  * @author LeoLee
+ * @author DaleLee
  */
 @SuppressWarnings("unchecked")
 public class Slot {
@@ -88,6 +91,8 @@ public class Slot {
 	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
 	private List<Object> contextBeanList;
+	
+	private static final ThreadLocal<Deque<Condition>> conditionStack = ThreadLocal.withInitial(LinkedList::new);
 
 	public Slot() {
 	}
@@ -286,6 +291,18 @@ public class Slot {
 
 	public Iterator<?> getIteratorResult(String key) {
 		return getThreadMetaData(ITERATOR_PREFIX + key);
+	}
+	
+	public Condition getCurrentCondition() {
+		return conditionStack.get().peek();
+	}
+	
+	public void pushCondition(Condition condition) {
+		conditionStack.get().push(condition);
+	}
+	
+	public void popCondition() {
+		conditionStack.get().pop();
 	}
 
 	/**

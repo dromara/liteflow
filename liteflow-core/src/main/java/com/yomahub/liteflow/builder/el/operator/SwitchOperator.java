@@ -21,7 +21,7 @@ public class SwitchOperator extends BaseOperator<SwitchCondition> {
 		OperatorHelper.checkObjectSizeEqOne(objects);
 
 		Node switchNode = OperatorHelper.convert(objects[0], Node.class);
-		if (!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT).contains(switchNode.getType())) {
+		if (!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT, NodeTypeEnum.FALLBACK).contains(switchNode.getType())) {
 			throw new QLException("The caller must be Switch item");
 		}
 

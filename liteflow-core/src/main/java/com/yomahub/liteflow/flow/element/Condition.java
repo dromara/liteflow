@@ -10,10 +10,9 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
-import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.condition.ConditionKey;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
@@ -27,6 +26,7 @@ import java.util.Map;
  * Condition的抽象类
  *
  * @author Bryan.Zhang
+ * @author DaleLee
  */
 public abstract class Condition implements Executable{
 
@@ -46,7 +46,10 @@ public abstract class Condition implements Executable{
 
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
+		Slot slot = DataBus.getSlot(slotIndex);
 		try {
+			// 当前 Condition 入栈
+			slot.pushCondition(this);
 			executeCondition(slotIndex);
 		}
 		catch (ChainEndException e) {
@@ -55,7 +58,6 @@ public abstract class Condition implements Executable{
 			throw e;
 		}
 		catch (Exception e) {
-			Slot slot = DataBus.getSlot(slotIndex);
 			String chainId = this.getCurrChainId();
 			// 这里事先取到exception set到slot里，为了方便finally取到exception
 			if (slot.isSubChain(chainId)) {
@@ -65,6 +67,9 @@ public abstract class Condition implements Executable{
 				slot.setException(e);
 			}
 			throw e;
+		} finally {
+			// 当前 Condition 出栈
+			slot.popCondition();
 		}
 	}
 
