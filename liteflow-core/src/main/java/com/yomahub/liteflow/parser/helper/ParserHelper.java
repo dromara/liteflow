@@ -154,7 +154,7 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
-				if(BooleanUtil.toBoolean(e.attributeValue(ABSTRACT))==true){
+				if(RegexUtil.isAbstractChain(e.getText())){
 					abstratChainMap.put(chainName,e);
 				}
 			});
@@ -170,7 +170,8 @@ public class ParserHelper {
 				//首先需要对继承自抽象Chain的chain进行字符串替换
 				parseImplChain(abstratChainMap, implChainSet, chain);
 				//如果一个chain不为抽象chain，则进行解析
-				if(BooleanUtil.toBoolean(chain.attributeValue(ABSTRACT))==false){
+				String chainName = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
+				if(!abstratChainMap.containsKey(chainName)){
 					parseOneChainConsumer.accept(chain);
 				}
 			}
@@ -235,8 +236,7 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
-
-				if(innerJsonObject.hasNonNull(ABSTRACT) && innerJsonObject.get(ABSTRACT).asBoolean()) {
+				if(RegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
 					abstratChainMap.put(chainName,innerJsonObject);
 				}
 			}
@@ -252,7 +252,8 @@ public class ParserHelper {
 				//首先需要对继承自抽象Chain的chain进行字符串替换
 				parseImplChain(abstratChainMap, implChainSet, chainNode);
 				//如果一个chain不为抽象chain，则进行解析
-				if(chainNode.get(ABSTRACT) == null || !chainNode.get(ABSTRACT).asBoolean()){
+				String chainName = Optional.ofNullable(chainNode).map(JsonNode::textValue).orElse(null);
+				if(!abstratChainMap.containsKey(chainName)){
 					parseOneChainConsumer.accept(chainNode);
 				}
 			}
@@ -302,7 +303,7 @@ public class ParserHelper {
 	 * @param implChainSet 已经解析过的实现Chain
 	 */
 	private static void parseImplChain(Map<String, Element> abstratChainMap, Set<Element> implChainSet, Element chain) {
-		if(chain.attributeValue(EXTENDS)!=null){
+		if(ObjectUtil.isNotNull(chain.attributeValue(EXTENDS))){
 			String baseChainId = chain.attributeValue(EXTENDS);
 			Element baseChain = abstratChainMap.get(baseChainId);
 			if(baseChain!=null) {
@@ -320,7 +321,7 @@ public class ParserHelper {
 	 * @param implChainSet 已经解析过的实现Chain
 	 */
 	private static void parseImplChain(Map<String, JsonNode> abstratChainMap, Set<JsonNode> implChainSet, JsonNode chainNode) {
-		if(chainNode.hasNonNull(EXTENDS)){
+		if(ObjectUtil.isNotNull(chainNode.hasNonNull(EXTENDS))){
 			String baseChainId = chainNode.get(EXTENDS).textValue();
 			JsonNode baseChain= abstratChainMap.get(baseChainId);
 			if(baseChain!=null) {
@@ -382,8 +383,7 @@ public class ParserHelper {
 		private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
 
 		// abstractChain 占位符正则表达式
-		private static final String REGEX_ABSTRACT_HOLDER = "\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}";
-
+		private static final String REGEX_ABSTRACT_HOLDER = "\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}(?![\\s]*=)";
 
 		/**
 		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释， 会压缩字符串，移除空格和换行符
@@ -424,6 +424,15 @@ public class ParserHelper {
 				}
 			}
 			return abstractChain;
+		}
+
+		/**
+		 * 判断某个Chain是否为抽象EL，判断依据是是否包含未实现的占位符
+		 * @param elStr EL表达式
+		 * @return 判断结果，true为抽象EL，false为非抽象EL
+		 */
+		private static boolean isAbstractChain(String elStr) {
+			return Pattern.compile(REGEX_ABSTRACT_HOLDER).matcher(elStr).find();
 		}
 	}
 
