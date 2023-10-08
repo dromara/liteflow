@@ -13,7 +13,6 @@
       },
       {
         "id": "base",
-        "abstract": true,
         "value": "THEN(a, b, {0}, {1});"
       },
       {
@@ -24,7 +23,6 @@
       {
         "id": "base2",
         "extends": "base",
-        "abstract": true,
         "value": "{0}=THEN(a,b,{3});\n {1}=SWITCH(f).to({4},k);"
       }
     ]

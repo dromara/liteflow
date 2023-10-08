@@ -10,7 +10,7 @@
         {4}=THEN(a,b).id("j");
     </chain>
 
-    <chain abstract="true" name="base">
+    <chain name="base">
         THEN(a, b, {0}, {1})
     </chain>
 
@@ -19,12 +19,12 @@
         {1}=SWITCH(f).to(j,k);
     </chain>
 
-    <chain abstract="true" id="base2" extends="base">
+    <chain id="base2" extends="base">
         {0}=THEN(a,b,{3});
         {1}=SWITCH(f).to({4},k);
     </chain>
 
-    <chain abstract="true" name="base3">
+    <chain name="base3">
         THEN({_pre},{mainChain}, {subChain1},{subChain2},{end_chain})
     </chain>
 

@@ -252,7 +252,8 @@ public class ParserHelper {
 				//首先需要对继承自抽象Chain的chain进行字符串替换
 				parseImplChain(abstratChainMap, implChainSet, chainNode);
 				//如果一个chain不为抽象chain，则进行解析
-				String chainName = Optional.ofNullable(chainNode).map(JsonNode::textValue).orElse(null);
+				JsonNode chainNameJsonNode = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME));
+				String chainName = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
 				if(!abstratChainMap.containsKey(chainName)){
 					parseOneChainConsumer.accept(chainNode);
 				}
@@ -321,7 +322,7 @@ public class ParserHelper {
 	 * @param implChainSet 已经解析过的实现Chain
 	 */
 	private static void parseImplChain(Map<String, JsonNode> abstratChainMap, Set<JsonNode> implChainSet, JsonNode chainNode) {
-		if(ObjectUtil.isNotNull(chainNode.hasNonNull(EXTENDS))){
+		if(chainNode.hasNonNull(EXTENDS)){
 			String baseChainId = chainNode.get(EXTENDS).textValue();
 			JsonNode baseChain= abstratChainMap.get(baseChainId);
 			if(baseChain!=null) {
