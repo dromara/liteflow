@@ -43,7 +43,7 @@ public class MonitorFileELSpringbootTest extends BaseTest {
      */
     @Test
     public void testMonitorAbsolutePath() throws Exception {
-        String absolutePath = "/your/path/dir";
+        String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
         FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         String content = FileUtil.readUtf8String(absolutePath);
         String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");

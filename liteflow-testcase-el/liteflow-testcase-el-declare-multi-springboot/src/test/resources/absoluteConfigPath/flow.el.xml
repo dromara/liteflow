@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--这里只是内容，文件目录支持绝对路径的模糊匹配-->
-<flow>
-    <chain name="chain1">
-        WHEN(a,b,c);
-    </chain>
-</flow>

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.absoluteConfigPath;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -18,6 +19,8 @@ import org.noear.solon.test.annotation.TestPropertySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 /**
  * springboot环境下异步线程超时日志打印测试
  *
@@ -27,6 +30,7 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(SolonJUnit5Extension.class)
 public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 
+	private static String rootDir;
 
 	@Inject
 	private FlowExecutor flowExecutor;
@@ -35,7 +39,7 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 	public void testAbsoluteConfig() throws Exception {
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
-			config.setRuleSource("C:/LiteFlow/Test/a/b/c/flow.el.xml");
+			config.setRuleSource(StrUtil.format("{}/sub/a/flow1.xml",rootDir));
 			flowExecutor.reloadRule();
 			return flowExecutor.execute2Resp("chain1", "arg").isSuccess();
 		});
@@ -45,7 +49,7 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 	public void testAbsolutePathMatch() throws Exception {
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
-			config.setRuleSource("C:/LiteFlow/Tes*/**/c/*.el.xml");
+			config.setRuleSource(StrUtil.format("{}/sub/**/*.xml",rootDir));
 			flowExecutor.reloadRule();
 			return flowExecutor.execute2Resp("chain1", "arg").isSuccess();
 		});
@@ -53,15 +57,24 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 
 	@BeforeAll
 	public static void createFiles() {
-		String filePath = "C:/LiteFlow/Test/a/b/c";
-		String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">WHEN(a, b, c);</chain></flow>";
-		FileUtil.mkdir(filePath);
-		FileUtil.writeString(content, filePath + "/flow.el.xml", CharsetUtil.CHARSET_UTF_8);
+		rootDir = Objects.requireNonNull(AbsoluteConfigPathELSpringbootTest.class.getResource("/")).getPath();
+
+		String path1 = StrUtil.format("{}/sub/a", rootDir);
+		String path2 = StrUtil.format("{}/sub/b", rootDir);
+
+		FileUtil.mkdir(path1);
+		FileUtil.mkdir(path2);
+
+		String content1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">WHEN(a, b, c);</chain></flow>";
+		String content2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain2\">THEN(c, chain1);</chain></flow>";
+
+		FileUtil.writeString(content1, path1 + "/flow1.xml", CharsetUtil.CHARSET_UTF_8);
+		FileUtil.writeString(content2, path2 + "/flow2.xml", CharsetUtil.CHARSET_UTF_8);
 	}
 
 	@AfterAll
 	public static void removeFiles() {
-		FileUtil.del("C:/LiteFlow");
+		FileUtil.del(StrUtil.format("{}/sub", rootDir));
 	}
 
 }
