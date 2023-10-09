@@ -1,0 +1,18 @@
+{
+  "flow": {
+    "chain": [
+      {
+        "name": "chain7",
+        "value": "THEN(a, chain8);"
+      },
+      {
+        "name": "chain8",
+        "value": "THEN(b, chain9);"
+      },
+      {
+        "name": "chain9",
+        "value": "WHEN(c, chain7);"
+      }
+    ]
+  }
+}

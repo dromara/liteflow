@@ -14,7 +14,6 @@
     <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
-        <property name="ruleSource" value="/usr/local/flow.el.xml"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

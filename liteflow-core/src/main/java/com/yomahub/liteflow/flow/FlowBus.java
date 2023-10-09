@@ -11,7 +11,11 @@ package com.yomahub.liteflow.flow;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.core.*;
+import com.yomahub.liteflow.annotation.FallbackCmp;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
+import com.yomahub.liteflow.core.ComponentInitializer;
+import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
@@ -31,6 +35,7 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.local.LocalContextAware;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +46,7 @@ import java.util.stream.Collectors;
  * 流程元数据类
  *
  * @author Bryan.Zhang
+ * @author DaleLee
  */
 public class FlowBus {
 
@@ -49,6 +55,8 @@ public class FlowBus {
 	private static final Map<String, Chain> chainMap = new CopyOnWriteHashMap<>();
 
 	private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
+
+	private static final Map<NodeTypeEnum, Node> fallbackNodeMap = new CopyOnWriteHashMap<>();
 
 	private FlowBus() {
 	}
@@ -92,8 +100,10 @@ public class FlowBus {
 			throw new NullNodeTypeException(StrUtil.format("node type is null for node[{}]", nodeId));
 		}
 
-		nodeMap.put(nodeId,
-				new Node(ComponentInitializer.loadInstance().initComponent(nodeComponent, type, nodeComponent.getName(), nodeId)));
+		Node node = new Node(ComponentInitializer.loadInstance()
+				.initComponent(nodeComponent, type, nodeComponent.getName(), nodeId));
+		nodeMap.put(nodeId, node);
+		addFallbackNode(node);
 	}
 
 	/**
@@ -203,6 +213,7 @@ public class FlowBus {
 
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
 				nodeMap.put(activeNodeId, node);
+				addFallbackNode(node);
 			}
 
 		}
@@ -226,9 +237,14 @@ public class FlowBus {
 		return chainMap;
 	}
 
+	public static Node getFallBackNode(NodeTypeEnum nodeType) {
+		return fallbackNodeMap.get(nodeType);
+	}
+
 	public static void cleanCache() {
 		chainMap.clear();
 		nodeMap.clear();
+		fallbackNodeMap.clear();
 		cleanScriptCache();
 	}
 
@@ -267,6 +283,18 @@ public class FlowBus {
 
 	public static void removeChain(String... chainIds) {
 		Arrays.stream(chainIds).forEach(FlowBus::removeChain);
+	}
+
+	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
+	private static void addFallbackNode(Node node) {
+		NodeComponent nodeComponent = node.getInstance();
+		FallbackCmp fallbackCmp = AnnoUtil.getAnnotation(nodeComponent.getClass(), FallbackCmp.class);
+		if (fallbackCmp == null) {
+			return;
+		}
+
+		NodeTypeEnum nodeType = node.getType();
+		fallbackNodeMap.put(nodeType, node);
 	}
 
 }

@@ -30,6 +30,8 @@ public interface ChainConstant {
 
 	String ANY = "any";
 
+	String MUST = "must";
+
 	String TYPE = "type";
 
 	String THEN = "THEN";

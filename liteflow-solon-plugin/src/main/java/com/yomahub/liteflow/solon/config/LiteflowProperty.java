@@ -67,9 +67,6 @@ public class LiteflowProperty {
 	// 是否打印执行过程中的日志
 	private boolean printExecutionLog;
 
-	// 替补组件的class路径
-	private String substituteCmpClass;
-
 	//并行循环线程池类路径
 	private String parallelLoopExecutorClass;
 
@@ -78,6 +75,9 @@ public class LiteflowProperty {
 
 	//使用默认并行循环线程池时，最大队列数
 	private Integer parallelQueueLimit;
+	
+	// 是否启用组件降级
+	private Boolean fallbackCmpEnable;
 
 	public boolean isEnable() {
 		return enable;
@@ -212,14 +212,6 @@ public class LiteflowProperty {
 		this.requestIdGeneratorClass = requestIdGeneratorClass;
 	}
 
-	public String getSubstituteCmpClass() {
-		return substituteCmpClass;
-	}
-
-	public void setSubstituteCmpClass(String substituteCmpClass) {
-		this.substituteCmpClass = substituteCmpClass;
-	}
-
 	public String getRuleSourceExtData() {
 		return ruleSourceExtData;
 	}
@@ -250,5 +242,13 @@ public class LiteflowProperty {
 
 	public void setParallelQueueLimit(Integer parallelQueueLimit) {
 		this.parallelQueueLimit = parallelQueueLimit;
+	}
+	
+	public Boolean isFallbackCmpEnable() {
+		return fallbackCmpEnable;
+	}
+	
+	public void setFallbackCmpEnable(Boolean fallbackCmpEnable) {
+		this.fallbackCmpEnable = fallbackCmpEnable;
 	}
 }

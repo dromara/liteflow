@@ -441,7 +441,7 @@ public class FlowExecutor {
 				while(cmpStepIterator.hasNext()) {
 					CmpStep cmpStep = cmpStepIterator.next();
 					if(cmpStep.getInstance().isRollback()) {
-						Rollbackable rollbackItem = new Node(cmpStep.getInstance());
+						Rollbackable rollbackItem = cmpStep.getRefNode();
 						rollbackItem.rollback(slotIndex);
 					}
 				}

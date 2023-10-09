@@ -3,7 +3,9 @@ package com.yomahub.liteflow.test.rollback;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -88,5 +90,13 @@ public class RollbackTest extends BaseTest {
 		Assertions.assertEquals("", response.getRollbackStepStr());
 	}
 
+	@Test
+	// 对获取数据的测试
+	public void testData() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain9", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("321", context.getData("test"));
+	}
 
 }

@@ -4,19 +4,19 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.DataNotFoundException;
-import com.yomahub.liteflow.exception.ELParseException;
-import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 
@@ -33,6 +33,8 @@ import java.util.Objects;
 public class LiteFlowChainELBuilder {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowChainELBuilder.class);
+
+	private static ObjectMapper objectMapper =new ObjectMapper();
 
 	private Chain chain;
 
@@ -72,6 +74,7 @@ public class LiteFlowChainELBuilder {
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DEFAULT, Object.class, new DefaultOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TAG, Object.class, new TagOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ANY, Object.class, new AnyOperator());
+		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MUST, Object.class, new MustOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ID, Object.class, new IdOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.IGNORE_ERROR, Object.class, new IgnoreErrorOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.THREAD_POOL, Object.class, new ThreadPoolOperator());
@@ -194,6 +197,16 @@ public class LiteFlowChainELBuilder {
 		}
 		if (CollUtil.isNotEmpty(errorList)) {
 			throw new RuntimeException(CollUtil.join(errorList, ",", "[", "]"));
+		}
+		// 对每一个 chain 进行循环引用检测
+		try {
+			objectMapper.writeValueAsString(this.chain);
+		} catch (Exception e) {
+			if (e instanceof JsonMappingException) {
+				throw new CyclicDependencyException(StrUtil.format("There is a circular dependency in the chain[{}], please check carefully.", chain.getChainId(), e));
+			} else {
+				throw new ParseException(e.getMessage());
+			}
 		}
 	}
 

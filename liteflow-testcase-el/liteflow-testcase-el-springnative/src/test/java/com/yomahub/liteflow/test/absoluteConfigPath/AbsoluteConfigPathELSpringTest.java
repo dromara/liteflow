@@ -1,15 +1,23 @@
 package com.yomahub.liteflow.test.absoluteConfigPath;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * spring环境下，规则配置文件通过绝对路径获取
@@ -21,13 +29,51 @@ import javax.annotation.Resource;
 @ContextConfiguration("classpath:/absoluteConfigPath/application.xml")
 public class AbsoluteConfigPathELSpringTest extends BaseTest {
 
+	private static String rootDir;
+
 	@Resource
 	private FlowExecutor flowExecutor;
 
 	@Test
-	public void testAbsoluteConfig() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assertions.assertTrue(response.isSuccess());
+	public void testAbsoluteConfig() throws Exception {
+		Assertions.assertTrue(() -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource(StrUtil.format("{}/sub/a/flow1.xml",rootDir));
+			flowExecutor.reloadRule();
+			return flowExecutor.execute2Resp("chain1", "arg").isSuccess();
+		});
+	}
+
+	@Test
+	public void testAbsolutePathMatch() throws Exception {
+		Assertions.assertTrue(() -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource(StrUtil.format("{}/sub/**/*.xml",rootDir));
+			flowExecutor.reloadRule();
+			return flowExecutor.execute2Resp("chain1", "arg").isSuccess();
+		});
+	}
+
+	@BeforeAll
+	public static void createFiles() {
+		rootDir = Objects.requireNonNull(AbsoluteConfigPathELSpringTest.class.getResource("/")).getPath();
+
+		String path1 = StrUtil.format("{}/sub/a", rootDir);
+		String path2 = StrUtil.format("{}/sub/b", rootDir);
+
+		FileUtil.mkdir(path1);
+		FileUtil.mkdir(path2);
+
+		String content1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">WHEN(a, b, c);</chain></flow>";
+		String content2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain2\">THEN(c, chain1);</chain></flow>";
+
+		FileUtil.writeString(content1, path1 + "/flow1.xml", CharsetUtil.CHARSET_UTF_8);
+		FileUtil.writeString(content2, path2 + "/flow2.xml", CharsetUtil.CHARSET_UTF_8);
+	}
+
+	@AfterAll
+	public static void removeFiles() {
+		FileUtil.del(StrUtil.format("{}/sub", rootDir));
 	}
 
 }

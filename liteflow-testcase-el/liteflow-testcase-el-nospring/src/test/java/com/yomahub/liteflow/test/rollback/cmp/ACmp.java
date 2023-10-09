@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.rollback.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 
 public class ACmp extends NodeComponent {
 
@@ -18,6 +19,17 @@ public class ACmp extends NodeComponent {
 
 	@Override
 	public void rollback() throws Exception {
+		String testKey = "test";
+
+		DefaultContext context = this.getFirstContextBean();
+		if (context.getData(testKey) == null) {
+			context.setData(testKey, this.getTag());
+		}
+		else {
+			String s = context.getData(testKey);
+			s += this.getTag();
+			context.setData(testKey, s);
+		}
 		System.out.println("ACmp rollback!");
 	}
 }

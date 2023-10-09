@@ -87,10 +87,10 @@ public abstract class NodeComponent {
 		Class<?> clazz = this.getClass();
 		try {
 			Method method = clazz.getDeclaredMethod("rollback");
-			if(ObjectUtil.isNotNull(method))
+			if(ObjectUtil.isNotNull(method)){
 				this.setRollback(true);
-		} catch (Exception e) {
-		}
+			}
+		} catch (Exception ignored) {}
 	}
 
 	public void execute() throws Exception {
@@ -100,6 +100,7 @@ public abstract class NodeComponent {
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
+		cmpStep.setRefNode(this.getRefNode());
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -158,6 +159,7 @@ public abstract class NodeComponent {
 
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
+		cmpStep.setInstance(this);
 		slot.addRollbackStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();

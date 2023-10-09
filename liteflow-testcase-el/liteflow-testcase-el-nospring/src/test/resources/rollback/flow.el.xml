@@ -44,4 +44,8 @@
     <chain name="chain8">
         CATCH( THEN(b, c, d) ).DO(a);
     </chain>
+
+    <chain name="chain9">
+        THEN(a.tag("1"), a.tag("2"), a.tag("3"), d);
+    </chain>
 </flow>
