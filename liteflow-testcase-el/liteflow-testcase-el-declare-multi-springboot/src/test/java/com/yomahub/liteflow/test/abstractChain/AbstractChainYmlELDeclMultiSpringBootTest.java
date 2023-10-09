@@ -51,4 +51,11 @@ public class AbstractChainYmlELDeclMultiSpringBootTest extends BaseTest {
 		Assertions.assertEquals("a==>b==>a==>b==>a==>b==>f==>a==>b", response.getExecuteStepStrWithoutTime());
 	}
 
+	@Test
+	public void test4() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("implD", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>a==>b==>j==>k==>c==>d==>f==>j", response.getExecuteStepStrWithoutTime());
+	}
+
 }

@@ -54,7 +54,7 @@ public class AbstractChainJsonELSpringBootTest extends BaseTest {
 	public void test4() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("implD", "arg");
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertEquals("a==>b==>j==>k==>c==>d==>f==>j", response.getExecuteStepStrWithoutTime());
+		Assertions.assertEquals("a==>b==>a==>b==>j==>k==>c==>d==>f==>j", response.getExecuteStepStrWithoutTime());
 	}
 
 }

@@ -14,3 +14,8 @@ flow:
     - id: base2
       extends: base
       value: "{0}=THEN(a,b,{3});\n {1}=SWITCH(f).to({4},k);"
+    - id: base3
+      value: "THEN({_pre},{mainChain}, {subChain1},{subChain2},{end_chain})"
+    - id: implD
+      extends: base3
+      value: "{_pre} = THEN(a,b);\n {mainChain}=THEN(a,b);\n{subChain1}=THEN(j,k);\n{subChain2}=IF(c, d, e);\n{end_chain}=SWITCH(f).to(j,k);"
