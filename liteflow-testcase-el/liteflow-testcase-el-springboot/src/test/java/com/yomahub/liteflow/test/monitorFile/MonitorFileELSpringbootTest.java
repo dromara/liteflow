@@ -39,6 +39,22 @@ public class MonitorFileELSpringbootTest extends BaseTest {
 	}
 
     /**
+     * 对绝对路径模糊匹配功能的测试
+     */
+    @Test
+    public void testMonitorAbsolutePath() throws Exception {
+        String absolutePath = "/your/path/dir";
+        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+        String content = FileUtil.readUtf8String(absolutePath);
+        String newContent = content.replace("THEN(a, b, c);", "THEN(a, c, b);");
+        Thread.sleep(1000);
+        FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+        Thread.sleep(3000);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertEquals("a==>c==>b", response.getExecuteStepStr());
+    }
+
+    /**
      * 测试文件变更，但是 EL 规则错误情况
      * 输出 ERROR 日志异常信息，但是不会停止监听线程，当下一次变更正确后替换为新规则
      */

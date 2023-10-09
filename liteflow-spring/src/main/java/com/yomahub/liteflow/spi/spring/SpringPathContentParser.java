@@ -10,6 +10,7 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
+import com.yomahub.liteflow.util.PathMatchUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -26,7 +27,8 @@ public class SpringPathContentParser implements PathContentParser {
 
 	@Override
 	public List<String> parseContent(List<String> pathList) throws Exception {
-		List<Resource> allResource = getResources(pathList);
+		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
+		List<Resource> allResource = getResources(absolutePathList);
 
 		// 转换成内容List
 		List<String> contentList = new ArrayList<>();
@@ -42,7 +44,8 @@ public class SpringPathContentParser implements PathContentParser {
 
 	@Override
 	public List<String> getFileAbsolutePath(List<String> pathList) throws Exception {
-		List<Resource> allResource = getResources(pathList);
+		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
+		List<Resource> allResource = getResources(absolutePathList);
 
 		return StreamUtil.of(allResource)
 			// 过滤非 file 类型 Resource

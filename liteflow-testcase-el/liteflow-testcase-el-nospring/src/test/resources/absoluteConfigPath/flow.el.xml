@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--这里只是内容，在这个测试用例中这个文件请移到/usr/local/flow.xml中-->
+<!--这里只是内容，文件目录支持绝对路径的模糊匹配-->
 <flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.absoluteConfigPath.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.absoluteConfigPath.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.absoluteConfigPath.cmp.CCmp"/>
+    </nodes>
+
     <chain name="chain1">
         WHEN(a,b,c);
     </chain>
