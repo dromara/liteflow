@@ -15,10 +15,7 @@ import com.yomahub.liteflow.flow.FlowBus;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
