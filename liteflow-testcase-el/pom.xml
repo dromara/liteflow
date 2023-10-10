@@ -37,6 +37,7 @@
         <module>liteflow-testcase-el-script-aviator-springboot</module>
         <module>liteflow-testcase-el-sql-springboot-dynamic</module>
         <module>liteflow-testcase-el-script-java-springboot</module>
+        <module>liteflow-testcase-el-builder</module>
     </modules>
 
     <build>

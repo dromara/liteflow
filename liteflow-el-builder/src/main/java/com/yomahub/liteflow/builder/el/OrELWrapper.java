@@ -1,0 +1,98 @@
+package com.yomahub.liteflow.builder.el;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+
+import java.util.Map;
+
+/**
+ * 与或非表达式中的 或表达式
+ * 参数允许任意数量 参数必须返回true或false
+ *
+ * 使用or()方法加入新的表达式
+ * 支持设置 id tag data maxWaitSeconds 属性
+ *
+ * @author gezuao
+ * @since 2.11.1
+ */
+public class OrELWrapper extends ELWrapper{
+
+    public OrELWrapper(ELWrapper ... elWrappers){
+        this.addWrapper(elWrappers);
+    }
+
+    public OrELWrapper or(Object ... object){
+        ELWrapper[] elWrapper = ELBus.convertToLogicOpt(object);
+        this.addWrapper(elWrapper);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper tag(String tag) {
+        this.setTag(tag);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper id(String id) {
+        this.setId(id);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper data(String dataName, Object object) {
+        setData(JSONUtil.toJsonStr(object));
+        setDataName(dataName);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper data(String dataName, String jsonString) {
+        try {
+            JSONUtil.parseObj(jsonString);
+        } catch (Exception e){
+            throw new RuntimeException("字符串不符合Json格式！");
+        }
+        setData(jsonString);
+        setDataName(dataName);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        setData(JSONUtil.toJsonStr(jsonMap));
+        setDataName(dataName);
+        return this;
+    }
+
+    @Override
+    public OrELWrapper maxWaitSeconds(Integer maxWaitSeconds){
+        setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    @Override
+    protected String toEL(Integer depth, StringBuilder paramContext) {
+        Integer sonDepth = depth == null ? null : depth + 1;
+        StringBuilder sb = new StringBuilder();
+
+        processWrapperTabs(sb, depth);
+        sb.append("OR(");
+        processWrapperNewLine(sb, depth);
+        // 处理子表达式输出
+        for (int i = 0; i < this.getElWrapperList().size(); i++) {
+            if (i > 0){
+                sb.append(",");
+                processWrapperNewLine(sb, depth);
+            }
+            sb.append(this.getElWrapperList().get(i).toEL(sonDepth, paramContext));
+        }
+        processWrapperNewLine(sb, depth);
+        processWrapperTabs(sb, depth);
+        sb.append(")");
+
+        // 处理公共属性输出
+        processWrapperProperty(sb, paramContext);
+        return sb.toString();
+    }
+}
