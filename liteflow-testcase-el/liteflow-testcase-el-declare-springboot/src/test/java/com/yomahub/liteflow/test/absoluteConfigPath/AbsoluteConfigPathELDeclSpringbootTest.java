@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.absoluteConfigPath;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -8,6 +9,8 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.util.PathMatchUtil;
+import org.apache.commons.collections.ListUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,7 +67,7 @@ public class AbsoluteConfigPathELDeclSpringbootTest extends BaseTest {
 
 	@BeforeAll
 	public static void createFiles() {
-		rootDir = Objects.requireNonNull(AbsoluteConfigPathELDeclSpringbootTest.class.getResource("/")).getPath();
+		rootDir = FileUtil.getAbsolutePath(ResourceUtil.getResource("").getPath());
 
 		String path1 = StrUtil.format("{}/sub/a", rootDir);
 		String path2 = StrUtil.format("{}/sub/b", rootDir);
