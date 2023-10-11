@@ -16,13 +16,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-core</artifactId>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-core</artifactId>
+            <version>${revision}</version>
         </dependency>
-
         <dependency>
             <groupId>cn.hutool</groupId>
-            <artifactId>hutool-json</artifactId>
+            <artifactId>hutool-core</artifactId>
         </dependency>
     </dependencies>
 </project>

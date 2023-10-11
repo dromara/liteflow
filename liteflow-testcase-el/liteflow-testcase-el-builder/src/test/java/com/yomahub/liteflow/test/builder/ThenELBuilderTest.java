@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.builder;
 
-import cn.hutool.json.JSONUtil;
 import com.yomahub.liteflow.builder.el.ELBus;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -111,7 +111,7 @@ public class ThenELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        System.out.println(JSONUtil.toJsonStr(name2Value));
+        System.out.println(JsonUtil.toJsonString(name2Value));
         Assertions.assertEquals(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then("d").data("thenData", name2Value).pre("p").finallyOpt("f").toEL(),
                 "thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\"),FINALLY(node(\"f\"))).tag(\"this is a tag\").data(thenData)");
         System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\"),FINALLY(node(\"f\"))).tag(\"this is a tag\").data(thenData)");

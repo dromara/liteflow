@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
+import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Map;
 
@@ -42,7 +42,7 @@ public class CatchELWrapper extends ELWrapper{
 
     @Override
     public CatchELWrapper data(String dataName, Object object) {
-        setData(JSONUtil.toJsonStr(object));
+        setData(JsonUtil.toJsonString(object));
         setDataName(dataName);
         return this;
     }
@@ -50,7 +50,7 @@ public class CatchELWrapper extends ELWrapper{
     @Override
     public CatchELWrapper data(String dataName, String jsonString) {
         try {
-            JSONUtil.parseObj(jsonString);
+            JsonUtil.parseObject(jsonString);
         } catch (Exception e){
             throw new RuntimeException("字符串不符合Json格式！");
         }
@@ -61,7 +61,7 @@ public class CatchELWrapper extends ELWrapper{
 
     @Override
     public CatchELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JSONUtil.toJsonStr(jsonMap));
+        setData(JsonUtil.toJsonString(jsonMap));
         setDataName(dataName);
         return this;
     }

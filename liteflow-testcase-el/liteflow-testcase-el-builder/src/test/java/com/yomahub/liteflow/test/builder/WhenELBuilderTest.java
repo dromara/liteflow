@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.test.builder;
 
-import cn.hutool.json.JSONUtil;
 import com.yomahub.liteflow.builder.el.ELBus;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -118,7 +118,7 @@ public class WhenELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        System.out.println(JSONUtil.toJsonStr(name2Value));
+        System.out.println(JsonUtil.toJsonString(name2Value));
         String actualStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\")).id(\"this is a id\").data(whenData),node(\"d\")).tag(\"this is a tag\")";
         Assertions.assertEquals(ELBus.when("a", ELBus.when("b").when("c").data("whenData", name2Value).id("this is a id")).when("d").tag("this is a tag").toEL(false),
                 actualStr);
