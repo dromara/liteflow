@@ -12,6 +12,8 @@ import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.condition.AbstractCondition;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -25,7 +27,8 @@ import static com.yomahub.liteflow.common.ChainConstant.*;
 /**
  * Parser 通用 Helper
  *
- * @author tangkc,zy
+ * @author tangkc
+ * @author zy
  */
 public class ParserHelper {
 
@@ -156,6 +159,9 @@ public class ParserHelper {
 				FlowBus.addChain(chainName);
 				if(RegexUtil.isAbstractChain(e.getText())){
 					abstratChainMap.put(chainName,e);
+					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
+					Chain chain = FlowBus.getChain(chainName);
+					chain.getConditionList().add(new AbstractCondition());
 				}
 			});
 		});
@@ -238,6 +244,9 @@ public class ParserHelper {
 				FlowBus.addChain(chainName);
 				if(RegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
 					abstratChainMap.put(chainName,innerJsonObject);
+					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
+					Chain chain = FlowBus.getChain(chainName);
+					chain.getConditionList().add(new AbstractCondition());
 				}
 			}
 		});

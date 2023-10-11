@@ -27,7 +27,9 @@ public enum ConditionTypeEnum {
 
 	TYPE_AND_OR_OPT("and_or_opt", "and_or_opt"),
 
-	TYPE_NOT_OPT("not_opt", "not_opt");
+	TYPE_NOT_OPT("not_opt", "not_opt"),
+
+	TYPE_ABSTRACT("abstract", "abstract");
 
 	private String type;
 
