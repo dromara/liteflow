@@ -425,6 +425,7 @@
 		<module>liteflow-spring</module>
 		<module>liteflow-solon-plugin</module>
 		<module>liteflow-testcase-el</module>
+        <module>liteflow-el-builder</module>
 	</modules>
 
 	<distributionManagement>
