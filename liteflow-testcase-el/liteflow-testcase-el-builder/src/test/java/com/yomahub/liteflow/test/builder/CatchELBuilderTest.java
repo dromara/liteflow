@@ -22,47 +22,47 @@ public class CatchELBuilderTest extends BaseTest {
     // catch捕获异常调用测试
     @Test
     public void testCatch1(){
-        String actualStr = "CATCH(THEN(node(\"a\"),node(\"b\"))).DO(node(\"c\"))";
-        Assertions.assertEquals(ELBus.catchException(ELBus.then("a", "b")).doOpt("c").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "CATCH(THEN(node(\"a\"),node(\"b\"))).DO(node(\"c\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException(ELBus.then("a", "b")).doOpt("c").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testCatch2(){
-        String actualStr = "CATCH(\n\tTHEN(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n)";
-        Assertions.assertEquals(ELBus.catchException(ELBus.then("a", "b")).doOpt("c").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "CATCH(\n\tTHEN(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException(ELBus.then("a", "b")).doOpt("c").toEL(true));
+        System.out.println(expectedStr);
     }
     // 属性设置测试
     @Test
     public void testCatch3(){
-        String actualStr = "CATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "CATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testCatch4(){
-        String actualStr = "CATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "CATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true));
+        System.out.println(expectedStr);
     }
     // data 设置 jsonStr
     @Test
     public void testCatch5(){
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", "{\"name\":\"zhangsan\",\"age\":18}").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testCatch6(){
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true));
+        System.out.println(expectedStr);
     }
     // data 设置 map
     @Test
@@ -70,20 +70,20 @@ public class CatchELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testCatch8(){
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(true));
+        System.out.println(expectedStr);
     }
     private static class ParamClass{
         private String name;
@@ -101,19 +101,19 @@ public class CatchELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testCatch10(){
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String actualStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
-        Assertions.assertEquals(ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(catchData)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.catchException("a").doOpt(ELBus.then("b", "c")).data("catchData", name2Value).toEL(true));
+        System.out.println(expectedStr);
     }
 }
