@@ -20,7 +20,7 @@ import javax.annotation.Resource;
  *
  * @author ssss
  */
-@TestPropertySource(value = "classpath:/asyncNode/application.properties")
+@TestPropertySource(value = "classpath:/asyncNode/application1.properties")
 @SpringBootTest(classes = AsyncNodeELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.asyncNode.cmp" })
