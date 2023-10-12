@@ -16,4 +16,5 @@
 <!ATTLIST chain
         id CDATA #IMPLIED
         name CDATA #IMPLIED
+        extends CDATA #IMPLIED
         >
