@@ -22,159 +22,159 @@ public class LoopELBuilderTest extends BaseTest {
     // for 限定次数循环
     @Test
     public void testLoop1(){
-        String actualStr = "FOR(3).DO(THEN(node(\"a\"),node(\"b\"),node(\"c\"))).BREAK(node(\"d\"))";
-        Assertions.assertEquals(ELBus.forOpt(3).doOpt(ELBus.then("a", "b", "c")).breakOpt("d").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(3).DO(THEN(node(\"a\"),node(\"b\"),node(\"c\"))).BREAK(node(\"d\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt(3).doOpt(ELBus.then("a", "b", "c")).breakOpt("d").toEL());
+        System.out.println(expectedStr);
     }
     // 格式化输出
     @Test
     public void testLoop2(){
-        String actualStr = "FOR(3).DO(\n\tTHEN(\n\t\tnode(\"a\"),\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\")\n)";
-        Assertions.assertEquals(ELBus.forOpt(3).doOpt(ELBus.then("a", "b", "c")).breakOpt("d").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(3).DO(\n\tTHEN(\n\t\tnode(\"a\"),\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt(3).doOpt(ELBus.then("a", "b", "c")).breakOpt("d").toEL(true));
+        System.out.println(expectedStr);
     }
     // for 单节点循环测试
     @Test
     public void testLoop3(){
-        String actualStr = "FOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(AND(node(\"e\"),node(\"f\")))";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.and("e", "f")).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(AND(node(\"e\"),node(\"f\")))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.and("e", "f")).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop4(){
-        String actualStr = "FOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tAND(\n\t\tnode(\"e\"),\n\t\tnode(\"f\")\n\t)\n)";
-        Assertions.assertEquals(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.and("e", "f")).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tAND(\n\t\tnode(\"e\"),\n\t\tnode(\"f\")\n\t)\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.and("e", "f")).toEL(true));
+        System.out.println(expectedStr);
     }
     // parallel语句测试
     @Test
     public void testLoop5(){
-        String actualStr = "FOR(node(\"a\")).parallel(true).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\"))";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").parallel(true).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(node(\"a\")).parallel(true).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").parallel(true).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop6(){
-        String actualStr = "FOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\")\n)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").parallel(true).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "FOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").parallel(true).toEL(true));
+        System.out.println(expectedStr);
     }
     // 属性测试
     @Test
     public void testLoop7(){
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\")).id(\"this is a id\").tag(\"this is a tag\").data(forData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").id("this is a id").tag("this is a tag").maxWaitSeconds(3).data("forData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\")).id(\"this is a id\").tag(\"this is a tag\").data(forData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt("e").id("this is a id").tag("this is a tag").maxWaitSeconds(3).data("forData", "{\"name\":\"zhangsan\",\"age\":18}").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop8(){
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\")\n).id(\"this is a id\").tag(\"this is a tag\").data(forData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt("e").id("this is a id").tag("this is a tag").maxWaitSeconds(3).data("forData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\")\n).id(\"this is a id\").tag(\"this is a tag\").data(forData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt("e").id("this is a id").tag("this is a tag").maxWaitSeconds(3).data("forData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true));
+        System.out.println(expectedStr);
     }
     // while调用测试
     @Test
     public void testLoop9(){
-        String actualStr = "WHILE(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).BREAK(node(\"f\"))";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(),
-                actualStr);
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.node("a")).doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(AND(node(\"a\"),node(\"b\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.and("a", "b")).doOpt("c").breakOpt("d").toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(OR(node(\"a\"),node(\"b\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.or("a", "b")).doOpt("c").breakOpt("d").toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(NOT(node(\"a\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.not("a")).doOpt("c").breakOpt("d").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "WHILE(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).BREAK(node(\"f\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("f").toEL());
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.node("a")).doOpt(ELBus.then("b", "c")).breakOpt("f").toEL());
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(AND(node(\"a\"),node(\"b\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.and("a", "b")).doOpt("c").breakOpt("d").toEL());
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(OR(node(\"a\"),node(\"b\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.or("a", "b")).doOpt("c").breakOpt("d").toEL());
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(NOT(node(\"a\"))).DO(node(\"c\")).BREAK(node(\"d\"))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.not("a")).doOpt("c").breakOpt("d").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop10(){
-        String actualStr = "WHILE(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"f\")\n)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(true),
-                actualStr);
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.node("a")).doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(\n\tAND(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.and("a", "b")).doOpt("c").breakOpt("d").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(\n\tOR(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.or("a", "b")).doOpt("c").breakOpt("d").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "WHILE(\n\tNOT(\n\t\tnode(\"a\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
-        Assertions.assertEquals(ELBus.whileOpt(ELBus.not("a")).doOpt("c").breakOpt("d").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "WHILE(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"f\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(true));
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.node("a")).doOpt(ELBus.then("b", "c")).breakOpt("f").toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(\n\tAND(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.and("a", "b")).doOpt("c").breakOpt("d").toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(\n\tOR(\n\t\tnode(\"a\"),\n\t\tnode(\"b\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.or("a", "b")).doOpt("c").breakOpt("d").toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "WHILE(\n\tNOT(\n\t\tnode(\"a\")\n\t)\n).DO(\n\tnode(\"c\")\n).BREAK(\n\tnode(\"d\")\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt(ELBus.not("a")).doOpt("c").breakOpt("d").toEL(true));
+        System.out.println(expectedStr);
     }
     // while属性调用测试
     @Test
     public void testLoop11(){
-        String actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\"))).BREAK(node(\"d\")).id(\"this is a ig\").tag(\"this is a tag\").data(whileData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("d").id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("whileData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\"))).BREAK(node(\"d\")).id(\"this is a ig\").tag(\"this is a tag\").data(whileData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("d").id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("whileData", "{\"name\":\"zhangsan\",\"age\":18}").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop12(){
-        String actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\")\n).id(\"this is a ig\").tag(\"this is a tag\").data(whileData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("d").id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("whileData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\")\n).id(\"this is a ig\").tag(\"this is a tag\").data(whileData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt("d").id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("whileData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true));
+        System.out.println(expectedStr);
     }
     // Iterator 调用测试
     @Test
     public void testLoop13(){
-        String actualStr = "ITERATOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\")))";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.when("b", "c")).toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "ITERATOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\")))";
-        Assertions.assertEquals(ELBus.iteratorOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c")).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "ITERATOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\")))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.when("b", "c")).toEL());
+        System.out.println(expectedStr);
+        expectedStr = "ITERATOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\")))";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c")).toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop14(){
-        String actualStr = "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.when("b", "c")).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n)";
-        Assertions.assertEquals(ELBus.iteratorOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c")).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.when("b", "c")).toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c")).toEL(true));
+        System.out.println(expectedStr);
     }
     // iterator 属性测试
     @Test
     public void testLoop15(){
-        String actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\"))).id(\"this is a ig\").tag(\"this is a tag\").data(iteratorData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\"))).id(\"this is a ig\").tag(\"this is a tag\").data(iteratorData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}").toEL());
+        System.out.println(expectedStr);
     }
     @Test
     public void testLoop16(){
-        String actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).id(\"this is a ig\").tag(\"this is a tag\").data(iteratorData).maxWaitSeconds(3)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).id(\"this is a ig\").tag(\"this is a tag\").data(iteratorData).maxWaitSeconds(3)";
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}").toEL(true));
+        System.out.println(expectedStr);
     }
     // data Map 参数 测试
     @Test
@@ -182,21 +182,21 @@ public class LoopELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "FOR(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(forData)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL());
+        System.out.println(expectedStr);
+        expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "WHILE(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(whileData)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL());
+        System.out.println(expectedStr);
+        expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "ITERATOR(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(iteratorData)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL());
+        System.out.println(expectedStr);
     }
 
     @Test
@@ -204,21 +204,21 @@ public class LoopELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "FOR(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(forData)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "WHILE(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(whileData)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(iteratorData)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(true));
+        System.out.println(expectedStr);
     }
     private static class ParamClass{
         private String name;
@@ -236,21 +236,21 @@ public class LoopELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.age = 18;
         name2Value.name = "zhangsan";
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "FOR(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(forData)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL());
+        System.out.println(expectedStr);
+        expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "WHILE(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(whileData)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL());
+        System.out.println(expectedStr);
+        expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "ITERATOR(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\"))).data(iteratorData)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL());
+        System.out.println(expectedStr);
     }
 
     @Test
@@ -258,21 +258,21 @@ public class LoopELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.age = 18;
         name2Value.name = "zhangsan";
-        String actualStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "FOR(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(forData)";
-        Assertions.assertEquals(ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.forOpt("a").doOpt(ELBus.then("b", "c")).data("forData", name2Value).toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "WHILE(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(whileData)";
-        Assertions.assertEquals(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
-        actualStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        Assertions.assertEquals(expectedStr,
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).data("whileData", name2Value).toEL(true));
+        System.out.println(expectedStr);
+        expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "ITERATOR(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).data(iteratorData)";
-        Assertions.assertEquals(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        Assertions.assertEquals(expectedStr,
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", "c")).data("iteratorData", name2Value).toEL(true));
+        System.out.println(expectedStr);
     }
 
 }

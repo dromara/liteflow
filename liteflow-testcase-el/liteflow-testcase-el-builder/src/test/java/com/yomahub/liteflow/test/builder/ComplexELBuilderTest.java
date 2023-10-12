@@ -52,15 +52,15 @@ public class ComplexELBuilderTest extends BaseTest {
                 ),
                 "Z"
         );
-        String actualStr = "THEN(node(\"A\"),WHEN(THEN(node(\"B\"),node(\"C\")),THEN(node(\"D\"),node(\"E\"),node(\"F\")),THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\"),WHEN(node(\"J\"),node(\"K\"))).id(\"t1\"),THEN(node(\"L\"),node(\"M\")).id(\"t2\")),node(\"N\"))),node(\"Z\"))";
-        Assertions.assertEquals(complexEl1.toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "THEN(node(\"A\"),WHEN(THEN(node(\"B\"),node(\"C\")),THEN(node(\"D\"),node(\"E\"),node(\"F\")),THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\"),WHEN(node(\"J\"),node(\"K\"))).id(\"t1\"),THEN(node(\"L\"),node(\"M\")).id(\"t2\")),node(\"N\"))),node(\"Z\"))";
+        Assertions.assertEquals(expectedStr,
+                complexEl1.toEL());
+        System.out.println(expectedStr);
 
-        actualStr = "THEN(\n\tnode(\"A\"),\n\tWHEN(\n\t\tTHEN(\n\t\t\tnode(\"B\"),\n\t\t\tnode(\"C\")\n\t\t),\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t),\n\t\tTHEN(\n\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\tnode(\"I\"),\n\t\t\t\t\tWHEN(\n\t\t\t\t\t\tnode(\"J\"),\n\t\t\t\t\t\tnode(\"K\")\n\t\t\t\t\t)\n\t\t\t\t).id(\"t1\"),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t).id(\"t2\")\n\t\t\t),\n\t\t\tnode(\"N\")\n\t\t)\n\t),\n\tnode(\"Z\")\n)";
-        Assertions.assertEquals(complexEl1.toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        expectedStr = "THEN(\n\tnode(\"A\"),\n\tWHEN(\n\t\tTHEN(\n\t\t\tnode(\"B\"),\n\t\t\tnode(\"C\")\n\t\t),\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t),\n\t\tTHEN(\n\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\tnode(\"I\"),\n\t\t\t\t\tWHEN(\n\t\t\t\t\t\tnode(\"J\"),\n\t\t\t\t\t\tnode(\"K\")\n\t\t\t\t\t)\n\t\t\t\t).id(\"t1\"),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t).id(\"t2\")\n\t\t\t),\n\t\t\tnode(\"N\")\n\t\t)\n\t),\n\tnode(\"Z\")\n)";
+        Assertions.assertEquals(expectedStr,
+                complexEl1.toEL(true));
+        System.out.println(expectedStr);
 
     }
 
@@ -106,15 +106,15 @@ public class ComplexELBuilderTest extends BaseTest {
                 ),
                 ELBus.node("Z")
         );
-        String actualStr = "THEN(node(\"A\"),SWITCH(node(\"B\")).TO(THEN(node(\"D\"),node(\"E\"),node(\"F\")).id(\"t1\"),THEN(node(\"C\"),WHEN(THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\")).id(\"t2\"),node(\"J\")),node(\"K\")),THEN(node(\"L\"),node(\"M\")))).id(\"t3\")),node(\"Z\"))";
-        Assertions.assertEquals(complexEl2.toEL(),
-                actualStr);
-        System.out.println(actualStr);
+        String expectedStr = "THEN(node(\"A\"),SWITCH(node(\"B\")).TO(THEN(node(\"D\"),node(\"E\"),node(\"F\")).id(\"t1\"),THEN(node(\"C\"),WHEN(THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\")).id(\"t2\"),node(\"J\")),node(\"K\")),THEN(node(\"L\"),node(\"M\")))).id(\"t3\")),node(\"Z\"))";
+        Assertions.assertEquals(expectedStr,
+                complexEl2.toEL());
+        System.out.println(expectedStr);
 
-        actualStr = "THEN(\n\tnode(\"A\"),\n\tSWITCH(node(\"B\")).TO(\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t).id(\"t1\"),\n\t\tTHEN(\n\t\t\tnode(\"C\"),\n\t\t\tWHEN(\n\t\t\t\tTHEN(\n\t\t\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\t\t\tTHEN(\n\t\t\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\t\t\tnode(\"I\")\n\t\t\t\t\t\t).id(\"t2\"),\n\t\t\t\t\t\tnode(\"J\")\n\t\t\t\t\t),\n\t\t\t\t\tnode(\"K\")\n\t\t\t\t),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t)\n\t\t\t)\n\t\t).id(\"t3\")\n\t),\n\tnode(\"Z\")\n)";
-        Assertions.assertEquals(complexEl2.toEL(true),
-                actualStr);
-        System.out.println(actualStr);
+        expectedStr = "THEN(\n\tnode(\"A\"),\n\tSWITCH(node(\"B\")).TO(\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t).id(\"t1\"),\n\t\tTHEN(\n\t\t\tnode(\"C\"),\n\t\t\tWHEN(\n\t\t\t\tTHEN(\n\t\t\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\t\t\tTHEN(\n\t\t\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\t\t\tnode(\"I\")\n\t\t\t\t\t\t).id(\"t2\"),\n\t\t\t\t\t\tnode(\"J\")\n\t\t\t\t\t),\n\t\t\t\t\tnode(\"K\")\n\t\t\t\t),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t)\n\t\t\t)\n\t\t).id(\"t3\")\n\t),\n\tnode(\"Z\")\n)";
+        Assertions.assertEquals(expectedStr,
+                complexEl2.toEL(true));
+        System.out.println(expectedStr);
     }
 
 }
