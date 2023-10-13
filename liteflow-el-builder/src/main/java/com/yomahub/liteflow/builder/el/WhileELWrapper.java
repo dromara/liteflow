@@ -15,7 +15,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class WhileELWrapper extends LoopELWrapper{
+public class WhileELWrapper extends LoopELWrapper {
     public WhileELWrapper(ELWrapper elWrapper, String loopFunction){
         super(elWrapper, loopFunction);
     }

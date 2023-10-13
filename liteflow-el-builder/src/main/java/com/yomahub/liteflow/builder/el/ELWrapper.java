@@ -28,7 +28,7 @@ public abstract class ELWrapper {
         this.elWrapperList.add(wrapper);
     }
 
-    protected void addWrapper(ELWrapper ... wrappers){
+    protected void addWrapper(ELWrapper... wrappers){
         this.elWrapperList.addAll(Arrays.asList(wrappers));
     }
 
@@ -88,31 +88,46 @@ public abstract class ELWrapper {
         return this.maxWaitSeconds;
     }
 
+    /**
+     * 设置组件标记内容
+     *
+     * @param tag 标记内容
+     * @return {@link ELWrapper}
+     */
     protected abstract ELWrapper tag(String tag);
 
+    /**
+     * 设置组件的id
+     *
+     * @param id 编号
+     * @return {@link ELWrapper}
+     */
     protected abstract ELWrapper id(String id);
 
     /**
-     * 设置data属性，参数为
-     * @param dataName
-     * @param object JavaBean
-     * @return
+     * 设置表达式data属性
+     *
+     * @param dataName 数据名称
+     * @param object   JavaBean
+     * @return {@link ELWrapper}
      */
     protected abstract ELWrapper data(String dataName, Object object);
 
     /**
-     * 设置data属性，参数为
-     * @param dataName
-     * @param jsonString json格式字符串
-     * @return
+     * 设置表达式data属性
+     *
+     * @param dataName   数据名称
+     * @param jsonString JSON格式字符串
+     * @return {@link ELWrapper}
      */
     protected abstract ELWrapper data(String dataName, String jsonString);
 
     /**
-     * 设置data属性，参数为
-     * @param dataName
-     * @param jsonMap Map映射
-     * @return
+     * 设置data属性
+     *
+     * @param dataName 数据名称
+     * @param jsonMap  键值映射
+     * @return {@link ELWrapper}
      */
     protected abstract ELWrapper data(String dataName, Map<String, Object> jsonMap);
 
@@ -122,47 +137,47 @@ public abstract class ELWrapper {
     }
 
     /**
-     * 输出EL表达式的默认方法
      * 非格式化输出EL表达式
      *
      * @return {@link String}
      */
     public String toEL(){
         StringBuilder paramContext = new StringBuilder();
-        String ELContext = toEL(null, paramContext);
-        return paramContext.append(ELContext).toString();
+        String elContext = toEL(null, paramContext);
+        return paramContext.append(elContext).toString();
     }
 
     /**
-     * 是否格式化输出树形结构的规则表达式
+     * 是否格式化输出树形结构的表达式
      *
      * @param format 格式
      * @return {@link String}
      */
     public String toEL(boolean format){
         StringBuilder paramContext = new StringBuilder();
-        String ELContext;
+        String elContext;
         if(!format){
-            ELContext = toEL(null, paramContext);
+            elContext = toEL(null, paramContext);
         } else {
-            ELContext = toEL(0, paramContext);
+            elContext = toEL(0, paramContext);
         }
-        return paramContext.append(ELContext).toString();
+        return paramContext.append(elContext).toString();
     }
 
     /**
      * 格式化输出EL表达式
-     * @param depth 深度
-     * @param paramContext 参数输出内容，用于输出data属性
-     * @return
+     *
+     * @param depth        深度
+     * @param paramContext 参数上下文，用于输出data参数内容
+     * @return {@link String}
      */
     protected abstract String toEL(Integer depth, StringBuilder paramContext);
 
     /**
-     * 处理EL表达式的属性
+     * 处理EL表达式的共有属性
      *
-     * @param elContext    EL 输出内容
-     * @param paramContext 参数 输出内容
+     * @param elContext    EL表达式上下文
+     * @param paramContext 参数上下文
      */
     protected void processWrapperProperty(StringBuilder elContext, StringBuilder paramContext){
         if(this.getId() != null){

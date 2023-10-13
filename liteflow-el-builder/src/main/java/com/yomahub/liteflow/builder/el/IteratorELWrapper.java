@@ -14,7 +14,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class IteratorELWrapper extends LoopELWrapper{
+public class IteratorELWrapper extends LoopELWrapper {
     public IteratorELWrapper(ELWrapper elWrapper, String loopFunction){
         super(elWrapper, loopFunction);
     }

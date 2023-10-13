@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Map;
@@ -15,9 +14,9 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class OrELWrapper extends ELWrapper{
+public class OrELWrapper extends ELWrapper {
 
-    public OrELWrapper(ELWrapper ... elWrappers){
+    public OrELWrapper(ELWrapper... elWrappers){
         this.addWrapper(elWrappers);
     }
 

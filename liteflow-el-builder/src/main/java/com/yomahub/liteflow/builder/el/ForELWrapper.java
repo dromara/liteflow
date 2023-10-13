@@ -15,7 +15,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class ForELWrapper extends LoopELWrapper{
+public class ForELWrapper extends LoopELWrapper {
 
     public ForELWrapper(Integer loopNumber, String loopFunction){
         super(loopNumber, loopFunction);

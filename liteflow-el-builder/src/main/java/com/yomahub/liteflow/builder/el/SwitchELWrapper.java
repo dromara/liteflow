@@ -17,11 +17,11 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class SwitchELWrapper extends ELWrapper{
+public class SwitchELWrapper extends ELWrapper {
     /**
      * default语句的表达式
      */
-    private ELWrapper defaultELWrapper;
+    private ELWrapper defaultElWrapper;
 
     public SwitchELWrapper(ELWrapper elWrapper){
         this.addWrapper(elWrapper, 0);
@@ -34,7 +34,7 @@ public class SwitchELWrapper extends ELWrapper{
     }
 
     public SwitchELWrapper defaultOpt(Object object){
-        defaultELWrapper = ELBus.convertToNonLogicOpt(object);
+        defaultElWrapper = ELBus.convertToNonLogicOpt(object);
         return this;
     }
 
@@ -105,10 +105,10 @@ public class SwitchELWrapper extends ELWrapper{
             sb.append(")");
         }
         // default可以不存在
-        if(defaultELWrapper != null){
+        if(defaultElWrapper != null){
             sb.append(".DEFAULT(");
             processWrapperNewLine(sb, depth);
-            sb.append(defaultELWrapper.toEL(sonDepth, paramContext));
+            sb.append(defaultElWrapper.toEL(sonDepth, paramContext));
             processWrapperNewLine(sb, depth);
             processWrapperTabs(sb, depth);
             sb.append(")");

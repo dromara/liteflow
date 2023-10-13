@@ -48,8 +48,9 @@ public class NodeELWrapper extends ELWrapper {
 
     /**
      * 单节点不允许定义 id，重载为protected修饰
-     * @param id
-     * @return
+     *
+     * @param id 节点id
+     * @return {@link NodeELWrapper}
      */
     @Override
     protected NodeELWrapper id(String id) {
@@ -91,10 +92,10 @@ public class NodeELWrapper extends ELWrapper {
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
-        NodeELWrapper nodeELWrapper = this.getNodeWrapper();
+        NodeELWrapper nodeElWrapper = this.getNodeWrapper();
         StringBuilder sb = new StringBuilder();
         processWrapperTabs(sb, depth);
-        sb.append(StrUtil.format("node(\"{}\")", nodeELWrapper.getNodeId()));
+        sb.append(StrUtil.format("node(\"{}\")", nodeElWrapper.getNodeId()));
 
         processWrapperProperty(sb, paramContext);
         return sb.toString();

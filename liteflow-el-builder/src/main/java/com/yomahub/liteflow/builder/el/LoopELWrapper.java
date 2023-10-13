@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public abstract class LoopELWrapper extends ELWrapper{
+public abstract class LoopELWrapper extends ELWrapper {
 
     protected Integer loopNumber;
 
