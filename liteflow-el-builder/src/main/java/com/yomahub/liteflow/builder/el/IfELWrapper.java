@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 条件表达式
@@ -260,7 +261,7 @@ public class IfELWrapper extends ELWrapper {
                 processWrapperNewLine(sb, depth);
                 sb.append(this.getTrueWrapper().toEL(sonDepth, paramContext)).append(",");
                 processWrapperNewLine(sb, depth);
-                sb.append(this.getFalseWrapper().toEL(sonDepth, paramContext));
+                sb.append(Objects.requireNonNull(this.getFalseWrapper()).toEL(sonDepth, paramContext));
                 processWrapperNewLine(sb, depth);
                 processWrapperTabs(sb, depth);
                 sb.append(")");
