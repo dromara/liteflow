@@ -13,7 +13,7 @@ LiteFlow is a lightweight and powerful rules engine framework, which can be used
 
 LiteFlow was officially open source in 2020 and won the title of "the Most Popular Open Source software" in China in 2021. Gitee-GVP award in 2022. It is an open source project that is growing rapidly.
 
-LiteFlow is a community-driven project. We take community building very seriously. We have a community of more than 800 users who can respond to any problems or suggestions they encounter.
+LiteFlow is a community-driven project. We take community building very seriously. We have a community of more than 4000 users who can respond to any problems or suggestions they encounter.
 
 You can find out how to join the community on the official website!
 
@@ -54,7 +54,7 @@ These processes can be easily solved with LiteFlow! The framework has a very low
 
 LiteFlow has an extremely detailed and easy-to-understand documentation， it can help you solve more than 95% of your problems when using the framework.
 
-LiteFlow has 1100 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
+LiteFlow has 1500 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
 Looking forward to your use！
 
