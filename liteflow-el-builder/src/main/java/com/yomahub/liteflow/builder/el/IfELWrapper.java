@@ -15,7 +15,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class IfELWrapper extends ELWrapper{
+public class IfELWrapper extends ELWrapper {
 
     /**
      * 定义当前条件组件的输出格式
@@ -29,9 +29,9 @@ public class IfELWrapper extends ELWrapper{
     /**
      * 单节点作为判断条件
      *
-     * @param ifWrapper    如果包装器
-     * @param trueWrapper  真正包装器
-     * @param falseWrapper 假包装器
+     * @param ifWrapper    判断节点
+     * @param trueWrapper  判断节点返回true时执行的表达式
+     * @param falseWrapper 判断节点返回false时执行的表达式
      */
     public IfELWrapper(NodeELWrapper ifWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
         this.setIfWrapper(ifWrapper);
@@ -40,12 +40,6 @@ public class IfELWrapper extends ELWrapper{
         this.format = IF_FORMAT;
     }
 
-    /**
-     * 如果缠绕器
-     *
-     * @param ifWrapper   如果包装器
-     * @param trueWrapper 真正包装器
-     */
     public IfELWrapper(NodeELWrapper ifWrapper, ELWrapper trueWrapper) {
         this.setIfWrapper(ifWrapper);
         this.setTrueWrapper(trueWrapper);
@@ -55,59 +49,59 @@ public class IfELWrapper extends ELWrapper{
     /**
      * 与节点作为判断条件
      *
-     * @param andELWrapper 和缠绕器
-     * @param trueWrapper
-     * @param falseWrapper
+     * @param andElWrapper 与表达式
+     * @param trueWrapper  判断节点返回true时执行的表达式
+     * @param falseWrapper 判断节点返回false时执行的表达式
      */
-    public IfELWrapper(AndELWrapper andELWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(AndELWrapper andElWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.setFalseWrapper(falseWrapper);
         this.format = IF_FORMAT;
     }
 
-    public IfELWrapper(AndELWrapper andELWrapper, ELWrapper trueWrapper){
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(AndELWrapper andElWrapper, ELWrapper trueWrapper){
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.format = IF_ELSE_FORMAT;
     }
 
     /**
-     * 如果缠绕器
      * 或节点作为判断条件
      *
-     * @param andELWrapper 和缠绕器
-     * @param trueWrapper  真正包装器
-     * @param falseWrapper 假包装器
+     * @param andElWrapper 或节点
+     * @param trueWrapper  判断节点返回true时执行的表达式
+     * @param falseWrapper 判断节点返回false时执行的表达式
      */
-    public IfELWrapper(OrELWrapper andELWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(OrELWrapper andElWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.setFalseWrapper(falseWrapper);
         this.format = IF_FORMAT;
     }
 
-    public IfELWrapper(OrELWrapper andELWrapper, ELWrapper trueWrapper){
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(OrELWrapper andElWrapper, ELWrapper trueWrapper){
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.format = IF_ELSE_FORMAT;
     }
 
     /**
      * 非节点作为判断条件
-     * @param andELWrapper
-     * @param trueWrapper
-     * @param falseWrapper
+     *
+     * @param andElWrapper 非节点
+     * @param trueWrapper  判断节点返回true时执行的表达式
+     * @param falseWrapper 判断节点返回false时执行的表达式
      */
-    public IfELWrapper(NotELWrapper andELWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(NotELWrapper andElWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.setFalseWrapper(falseWrapper);
         this.format = IF_FORMAT;
     }
 
-    public IfELWrapper(NotELWrapper andELWrapper, ELWrapper trueWrapper){
-        this.setIfWrapper(andELWrapper);
+    public IfELWrapper(NotELWrapper andElWrapper, ELWrapper trueWrapper){
+        this.setIfWrapper(andElWrapper);
         this.setTrueWrapper(trueWrapper);
         this.format = IF_ELSE_FORMAT;
     }
@@ -307,7 +301,7 @@ public class IfELWrapper extends ELWrapper{
 
     /**
      * if(a,b) 和 elif(a,b) 的 else 处理方法相同
-     * 抽象出处理ELSE输出方法
+     * 抽象出处理ELSE输出的方法
      *
      * @param depth        深度
      * @param sonDepth     儿子深度

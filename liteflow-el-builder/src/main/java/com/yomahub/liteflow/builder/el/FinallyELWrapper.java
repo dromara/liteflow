@@ -14,7 +14,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class FinallyELWrapper extends ELWrapper{
+public class FinallyELWrapper extends ELWrapper {
     public FinallyELWrapper(Object ... objects){
         super.addWrapper(ELBus.convertToNonLogicOpt(objects));
     }
@@ -59,8 +59,9 @@ public class FinallyELWrapper extends ELWrapper{
 
     /**
      * 后置组件无法设置maxWaitSeconds属性，重载用protected修饰
-     * @param maxWaitSeconds
-     * @return
+     *
+     * @param maxWaitSeconds 最长等待秒数
+     * @return {@link FinallyELWrapper}
      */
     @Override
     protected FinallyELWrapper maxWaitSeconds(Integer maxWaitSeconds){

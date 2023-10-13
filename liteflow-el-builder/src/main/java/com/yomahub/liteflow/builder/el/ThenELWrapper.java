@@ -15,14 +15,13 @@ import java.util.Map;
  * 支持定义 id tag data maxWaitSeconds属性
  *
  * @author gezuao
- * @date 2023/10/10
  * @since 2.11.1
  */
 public class ThenELWrapper extends ELWrapper {
     private final List<PreELWrapper> preELWrapperList;
     private final List<FinallyELWrapper> finallyELWrapperList;
 
-    public ThenELWrapper(ELWrapper ... elWrappers) {
+    public ThenELWrapper(ELWrapper... elWrappers) {
         preELWrapperList = new ArrayList<>();
         finallyELWrapperList = new ArrayList<>();
         this.addWrapper(elWrappers);
@@ -35,31 +34,33 @@ public class ThenELWrapper extends ELWrapper {
         return this;
     }
 
-    protected void addPreELWrapper(PreELWrapper preELWrapper){
-        this.preELWrapperList.add(preELWrapper);
+    protected void addPreElWrapper(PreELWrapper preElWrapper){
+        this.preELWrapperList.add(preElWrapper);
     }
 
-    protected void addFinallyELWrapper(FinallyELWrapper finallyELWrapper){
-        this.finallyELWrapperList.add(finallyELWrapper);
+    protected void addFinallyElWrapper(FinallyELWrapper finallyElWrapper){
+        this.finallyELWrapperList.add(finallyElWrapper);
     }
 
     /**
-     * 定义子前置组件
-     * @param objects
-     * @return
+     * 在当前串行组件下创建前置组件
+     *
+     * @param objects 前置组件的子组件
+     * @return {@link ThenELWrapper}
      */
     public ThenELWrapper pre(Object ... objects){
-        addPreELWrapper(new PreELWrapper(objects));
+        addPreElWrapper(new PreELWrapper(objects));
         return this;
     }
 
     /**
-     * 定义子后置组件
-     * @param objects
-     * @return
+     * 在当前串行组件下创建前置组件
+     *
+     * @param objects 后置组件的子组件
+     * @return {@link ThenELWrapper}
      */
     public ThenELWrapper finallyOpt(Object ... objects){
-        addFinallyELWrapper(new FinallyELWrapper(objects));
+        addFinallyElWrapper(new FinallyELWrapper(objects));
         return this;
     }
 
@@ -75,7 +76,13 @@ public class ThenELWrapper extends ELWrapper {
         return this;
     }
 
-    // data关键字的约束：允许以Bean、jsonString、map类型输入数据，必须包含dataName参数。
+    /**
+     * data关键字的约束：允许以Bean、jsonString、map类型输入数据，必须包含dataName参数。
+     *
+     * @param dataName data名称
+     * @param javaBean JavaBean
+     * @return {@link ThenELWrapper}
+     */
     @Override
     public ThenELWrapper data(String dataName, Object javaBean) {
         setData(JsonUtil.toJsonString(javaBean));
@@ -118,8 +125,8 @@ public class ThenELWrapper extends ELWrapper {
         processWrapperNewLine(sb, depth);
 
         // 处理前置组件输出
-        for (PreELWrapper preELWrapper : this.preELWrapperList) {
-            sb.append(StrUtil.format("{},", preELWrapper.toEL(sonDepth, paramContext)));
+        for (PreELWrapper preElWrapper : this.preELWrapperList) {
+            sb.append(StrUtil.format("{},", preElWrapper.toEL(sonDepth, paramContext)));
             processWrapperNewLine(sb, depth);
         }
         // 处理子表达式输出
@@ -131,10 +138,10 @@ public class ThenELWrapper extends ELWrapper {
             sb.append(this.getElWrapperList().get(i).toEL(sonDepth, paramContext));
         }
         // 处理后置组件输出
-        for (FinallyELWrapper finallyELWrapper : this.finallyELWrapperList) {
+        for (FinallyELWrapper finallyElWrapper : this.finallyELWrapperList) {
             sb.append(",");
             processWrapperNewLine(sb, depth);
-            sb.append(finallyELWrapper.toEL(sonDepth, paramContext));
+            sb.append(finallyElWrapper.toEL(sonDepth, paramContext));
         }
         processWrapperNewLine(sb, depth);
         processWrapperTabs(sb, depth);

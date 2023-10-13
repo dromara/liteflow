@@ -25,7 +25,7 @@ public class WhenELWrapper extends ELWrapper {
     private String customThreadExecutor;
     private final List<String> mustExecuteList;
 
-    public WhenELWrapper(ELWrapper ... elWrappers) {
+    public WhenELWrapper(ELWrapper... elWrappers) {
         this.addWrapper(elWrappers);
         this.mustExecuteList = new ArrayList<>();
     }

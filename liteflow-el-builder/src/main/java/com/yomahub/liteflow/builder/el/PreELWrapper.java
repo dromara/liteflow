@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Map;
@@ -14,7 +13,7 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class PreELWrapper extends ELWrapper{
+public class PreELWrapper extends ELWrapper {
     public PreELWrapper(Object ... objects){
         super.addWrapper(ELBus.convert(objects));
     }

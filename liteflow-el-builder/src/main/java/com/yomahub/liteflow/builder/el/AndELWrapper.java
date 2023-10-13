@@ -14,9 +14,9 @@ import java.util.Map;
  * @author gezuao
  * @since 2.11.1
  */
-public class AndELWrapper extends ELWrapper{
+public class AndELWrapper extends ELWrapper {
 
-    public AndELWrapper(ELWrapper ... elWrappers){
+    public AndELWrapper(ELWrapper... elWrappers){
         this.addWrapper(elWrappers);
     }
 

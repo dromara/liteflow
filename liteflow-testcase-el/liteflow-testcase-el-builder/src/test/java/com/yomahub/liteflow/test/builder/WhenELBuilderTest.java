@@ -70,7 +70,7 @@ public class WhenELBuilderTest extends BaseTest {
     public void testWhen7(){
         String expectedStr = "WHEN(node(\"a\"),node(\"b\"),WHEN(node(\"c\"),node(\"d\")).any(true).threadPool(\"WhenELBuilderTest.customThreadPool\").id(\"node1\")).ignoreError(true).must(\"a\", \"task1\", \"node1\")";
         Assertions.assertEquals(expectedStr,
-                ELBus.when("a", "b",ELBus.when("c").when("d").customThreadExecutor("WhenELBuilderTest.customThreadPool").id("node1").any(true)).ignoreError(true).must("a", "task1", "node1").toEL());
+                ELBus.when("a", "b", ELBus.when("c").when("d").customThreadExecutor("WhenELBuilderTest.customThreadPool").id("node1").any(true)).ignoreError(true).must("a", "task1", "node1").toEL());
         System.out.println(expectedStr);
     }
     // 格式化输出测试
@@ -78,7 +78,7 @@ public class WhenELBuilderTest extends BaseTest {
     public void testWhen8(){
         String expectedStr = "WHEN(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tWHEN(\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t).any(true).threadPool(\"WhenELBuilderTest.customThreadPool\").id(\"node1\")\n).ignoreError(true).must(\"a\", \"task1\", \"node1\")";
         Assertions.assertEquals(expectedStr,
-                ELBus.when("a", "b",ELBus.when("c").when("d").customThreadExecutor("WhenELBuilderTest.customThreadPool").id("node1").any(true)).ignoreError(true).must("a", "task1", "node1").toEL(true));
+                ELBus.when("a", "b", ELBus.when("c").when("d").customThreadExecutor("WhenELBuilderTest.customThreadPool").id("node1").any(true)).ignoreError(true).must("a", "task1", "node1").toEL(true));
         System.out.println(expectedStr);
     }
     // maxWaitSeconds 属性测试
@@ -116,7 +116,7 @@ public class WhenELBuilderTest extends BaseTest {
     // data属性测试
     @Test
     public void testWhen13(){
-        Map<String, Object> name2Value = new HashMap<String, Object>();
+        Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         System.out.println(JsonUtil.toJsonString(name2Value));
@@ -128,7 +128,7 @@ public class WhenELBuilderTest extends BaseTest {
     // 格式化输出测试
     @Test
     public void testWhen14(){
-        Map<String, Object> name2Value = new HashMap<String, Object>();
+        Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\").data(whenData),\n\tnode(\"d\")\n).tag(\"this is a tag\")";
