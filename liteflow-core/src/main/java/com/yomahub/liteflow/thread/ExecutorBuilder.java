@@ -18,8 +18,8 @@ public interface ExecutorBuilder {
 	// 构建默认的线程池对象
 	default ExecutorService buildDefaultExecutor(int corePoolSize, int maximumPoolSize, int queueCapacity,
 			String threadName) {
-		return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 0L,
-				TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueCapacity), new ThreadFactory() {
+		return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
+				TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueCapacity), new ThreadFactory() {
 					private final AtomicLong number = new AtomicLong();
 
 					@Override

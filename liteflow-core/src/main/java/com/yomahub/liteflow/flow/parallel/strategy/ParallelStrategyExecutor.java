@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
@@ -90,8 +91,17 @@ public abstract class ParallelStrategyExecutor {
 
         String currChainName = whenCondition.getCurrChainId();
 
-        // 此方法其实只会初始化一次 Executor，不会每次都会初始化。Executor是唯一的
-        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+
+        // 如果设置了线程池隔离，则每个when都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
+        // 如果when没有超多层的嵌套，还是用默认的比较好。
+        // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在when的情况下，全局一个线程池。
+        ExecutorService parallelExecutor;
+        if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())){
+            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
+        }else{
+            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
+        }
 
         // 设置 whenCondition 参数
         setWhenConditionParams(whenCondition);

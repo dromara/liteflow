@@ -100,6 +100,20 @@ public class ExecutorHelper {
 		return getExecutorService(clazz);
 	}
 
+	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	public ExecutorService buildWhenExecutorWithHash(String conditionHash) {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		return buildWhenExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+	}
+
+	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	public ExecutorService buildWhenExecutorWithHash(String clazz, String conditionHash) {
+		if (StrUtil.isBlank(clazz)) {
+			return buildWhenExecutorWithHash(conditionHash);
+		}
+		return getExecutorService(clazz, conditionHash);
+	}
+
 	// 构建默认的FlowExecutor线程池，用于execute2Future方法
 	public ExecutorService buildMainExecutor() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
@@ -119,12 +133,23 @@ public class ExecutorHelper {
 		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
 	}
 
+	private ExecutorService getExecutorService(String clazz){
+		return getExecutorService(clazz, null);
+	}
+
 	/**
 	 * 根据线程执行构建者Class类名获取ExecutorService实例
 	 */
-	private ExecutorService getExecutorService(String clazz) {
+	private ExecutorService getExecutorService(String clazz, String conditionHash) {
 		try {
-			ExecutorService executorServiceFromCache = executorServiceMap.get(clazz);
+			String key;
+			if (StrUtil.isBlank(conditionHash)){
+				key = clazz;
+			}else{
+				key = StrUtil.format("{}_{}", clazz, conditionHash);
+			}
+
+			ExecutorService executorServiceFromCache = executorServiceMap.get(key);
 			if (ObjectUtil.isNotNull(executorServiceFromCache)) {
 				return executorServiceFromCache;
 			}

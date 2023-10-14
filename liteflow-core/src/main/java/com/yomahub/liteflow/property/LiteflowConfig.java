@@ -50,6 +50,9 @@ public class LiteflowConfig {
 
 	private TimeUnit whenMaxWaitTimeUnit;
 
+	// 异步线程池是否隔离
+	private Boolean whenThreadPoolIsolate;
+
 	// 是否打印监控log
 	private Boolean enableLog;
 
@@ -457,5 +460,18 @@ public class LiteflowConfig {
 	
 	public void setFallbackCmpEnable(Boolean fallbackCmpEnable) {
 		this.fallbackCmpEnable = fallbackCmpEnable;
+	}
+
+	public Boolean getWhenThreadPoolIsolate() {
+		if (ObjectUtil.isNull(whenThreadPoolIsolate)) {
+			return Boolean.FALSE;
+		}
+		else {
+			return whenThreadPoolIsolate;
+		}
+	}
+
+	public void setWhenThreadPoolIsolate(Boolean whenThreadPoolIsolate) {
+		this.whenThreadPoolIsolate = whenThreadPoolIsolate;
 	}
 }

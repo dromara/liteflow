@@ -20,6 +20,7 @@ public class AsyncNodeThreadPoolELSpringbootTest {
     @Resource
     private FlowExecutor flowExecutor;
 
+    // 测试当when嵌套层数大于最大线程个数时，并开启线程池隔离机制的正确性
     @Test
     public void testAsyncFlow1() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a base request");

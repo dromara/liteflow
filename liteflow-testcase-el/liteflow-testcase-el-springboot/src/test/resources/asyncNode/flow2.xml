@@ -2,6 +2,6 @@
 <flow>
     <!-- base test -->
     <chain name="chain1">
-        WHEN(f, f, WHEN(f, WHEN(f, f, f, f, WHEN(f, f, f, f, f, f, f))), f, f);
+        WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f)))))));
     </chain>
 </flow>

@@ -20,7 +20,7 @@ public class LiteFlowDefaultMainExecutorBuilder implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(liteflowConfig.getMainExecutorWorks(), liteflowConfig.getMainExecutorWorks(), 200,
+		return buildDefaultExecutor(liteflowConfig.getMainExecutorWorks(), liteflowConfig.getMainExecutorWorks()*2, 200,
 				"main-thread-");
 	}
 

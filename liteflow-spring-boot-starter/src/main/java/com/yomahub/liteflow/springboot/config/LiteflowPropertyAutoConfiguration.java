@@ -30,12 +30,9 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setWhenMaxWaitSeconds(property.getWhenMaxWaitSeconds());
 		liteflowConfig.setWhenMaxWaitTime(property.getWhenMaxWaitTime());
 		liteflowConfig.setWhenMaxWaitTimeUnit(property.getWhenMaxWaitTimeUnit());
-		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
-		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
-		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
-		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
 		liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
+		liteflowConfig.setWhenThreadPoolIsolate(property.isWhenThreadPoolIsolate());
 		liteflowConfig.setParseOnStart(property.isParseOnStart());
 		liteflowConfig.setEnable(property.isEnable());
 		liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
@@ -51,6 +48,10 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setParallelQueueLimit(property.getParallelQueueLimit());
 		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		liteflowConfig.setFallbackCmpEnable(property.isFallbackCmpEnable());
+		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
+		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
+		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
+		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		return liteflowConfig;
 	}
 

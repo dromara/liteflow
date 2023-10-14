@@ -8,7 +8,6 @@ public class FCmp extends NodeComponent {
 
 	@Override
 	public void process() throws Exception {
-		Thread.sleep(1500);
 		System.out.println("Fcomp executed!");
 	}
 
