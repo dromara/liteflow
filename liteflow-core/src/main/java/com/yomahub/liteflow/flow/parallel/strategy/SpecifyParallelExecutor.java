@@ -1,11 +1,8 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
 import cn.hutool.core.collection.CollUtil;
-import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
-import com.yomahub.liteflow.flow.element.condition.PreCondition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
-import com.yomahub.liteflow.thread.ExecutorHelper;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -27,8 +24,8 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         // 设置 whenCondition 参数
         this.setWhenConditionParams(whenCondition);
 
-        // 此方法其实只会初始化一次Executor，不会每次都会初始化。Executor 是唯一的
-        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
+        // 获取 WHEN 所需线程池
+        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
 
         // 指定完成的任务
         CompletableFuture<?> specifyTask;
@@ -43,17 +40,7 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         List<CompletableFuture<WhenFutureObj>> allTaskList = new ArrayList<>();
 
         // 遍历 when 所有 node，进行筛选及处理
-        whenCondition.getExecutableList()
-                .stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        return executable.isAccess(slotIndex);
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                })
+        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex)
                 .forEach(executable -> {
                     // 处理 task，封装成 CompletableFuture 对象
                     CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex);
