@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 并发策略执行器抽象类
@@ -82,6 +83,51 @@ public abstract class ParallelStrategyExecutor {
     }
 
     /**
+     * 过滤 WHEN 待执行任务
+     * @param executableList 所有任务列表
+     * @param slotIndex
+     * @return
+     */
+    protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex) {
+        // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
+        // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
+        return executableList.stream()
+                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
+                .filter(executable -> {
+                    try {
+                        return executable.isAccess(slotIndex);
+                    } catch (Exception e) {
+                        LOG.error("there was an error when executing the when component isAccess", e);
+                        return false;
+                    }
+                });
+    }
+
+    /**
+     * 获取 WHEN 所需线程池
+     * @param whenCondition
+     * @return
+     */
+    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition) {
+
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+
+        // 如果设置了线程池隔离，则每个 when 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
+        // 如果 when 没有超多层的嵌套，还是用默认的比较好。
+        // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在 when 的情况下，全局一个线程池。
+        ExecutorService parallelExecutor;
+
+        if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
+            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
+        } else {
+            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
+        }
+
+        return parallelExecutor;
+
+    }
+
+    /**
      * 获取所有任务 CompletableFuture 集合
      * @param whenCondition
      * @param slotIndex
@@ -91,36 +137,15 @@ public abstract class ParallelStrategyExecutor {
 
         String currChainName = whenCondition.getCurrChainId();
 
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-
-        // 如果设置了线程池隔离，则每个when都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
-        // 如果when没有超多层的嵌套，还是用默认的比较好。
-        // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在when的情况下，全局一个线程池。
-        ExecutorService parallelExecutor;
-        if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())){
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
-        }else{
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
-        }
-
         // 设置 whenCondition 参数
         setWhenConditionParams(whenCondition);
 
-        // 这里主要是做了封装 CompletableFuture 对象，用 lumbda 表达式做了很多事情，这句代码要仔细理清
-        // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
-        // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
-        // 3.根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>
-        List<CompletableFuture<WhenFutureObj>> completableFutureList = whenCondition.getExecutableList()
-                .stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        return executable.isAccess(slotIndex);
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                })
+        // 获取 WHEN 所需线程池
+        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
+
+        // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
+        // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>
+        List<CompletableFuture<WhenFutureObj>> completableFutureList = filterWhenTaskList(whenCondition.getExecutableList(), slotIndex)
                 .map(executable -> wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex))
                 .collect(Collectors.toList());
 
