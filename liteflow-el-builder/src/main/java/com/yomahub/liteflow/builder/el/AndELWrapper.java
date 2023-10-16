@@ -39,40 +39,15 @@ public class AndELWrapper extends ELWrapper {
     }
 
     @Override
-    public AndELWrapper data(String dataName, Object object) {
-        setData(JsonUtil.toJsonString(object));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public AndELWrapper data(String dataName, String jsonString) {
-        // 校验字符串符合Json格式
-        try {
-            JsonUtil.parseObject(jsonString);
-        } catch (Exception e){
-            throw new RuntimeException("字符串不符合Json格式！");
-        }
-        setData(jsonString);
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public AndELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JsonUtil.toJsonString(jsonMap));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    protected AndELWrapper maxWaitSeconds(Integer maxWaitSeconds){
+    public AndELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
         return this;
     }
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
+        checkMaxWaitSeconds();
+
         // 根据depth是否为null，决定输出是否格式化
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();

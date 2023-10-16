@@ -31,32 +31,6 @@ public class FinallyELWrapper extends ELWrapper {
         return this;
     }
 
-    @Override
-    public FinallyELWrapper data(String dataName, Object object) {
-        setData(JsonUtil.toJsonString(object));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public FinallyELWrapper data(String dataName, String jsonString) {
-        try {
-            JsonUtil.parseObject(jsonString);
-        } catch (Exception e){
-            throw new RuntimeException("字符串不符合Json格式！");
-        }
-        setData(jsonString);
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public FinallyELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JsonUtil.toJsonString(jsonMap));
-        setDataName(dataName);
-        return this;
-    }
-
     /**
      * 后置组件无法设置maxWaitSeconds属性，重载用protected修饰
      *
@@ -71,6 +45,8 @@ public class FinallyELWrapper extends ELWrapper {
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
+        checkMaxWaitSeconds();
+
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();
 
@@ -107,10 +83,6 @@ public class FinallyELWrapper extends ELWrapper {
         }
         if(this.getTag() != null){
             elContext.append(StrUtil.format(".tag(\"{}\")", this.getTag()));
-        }
-        if(this.getData() != null){
-            elContext.append(StrUtil.format(".data({})", this.getDataName()));
-            paramContext.append(StrUtil.format("{} = '{}'\n", this.getDataName(), this.getData()));
         }
     }
 }
