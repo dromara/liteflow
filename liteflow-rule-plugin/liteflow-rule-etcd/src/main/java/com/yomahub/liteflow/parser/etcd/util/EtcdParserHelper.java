@@ -77,10 +77,6 @@ public class EtcdParserHelper {
 		try {
 			// 检查chainPath路径下有没有子节点
 			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getChainPath(), SEPARATOR);
-			if (CollectionUtil.isEmpty(chainNameList)) {
-				throw new EtcdException(
-						StrUtil.format("There are no chains in path [{}]", etcdParserVO.getChainPath()));
-			}
 
 			// 获取chainPath路径下的所有子节点内容List
 			List<String> chainItemContentList = new ArrayList<>();

@@ -86,10 +86,6 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
         try {
             // 检查chainKey下有没有子节点
             Map<String, String> chainMap = chainClient.getMap(redisParserVO.getChainKey());
-            if (CollectionUtil.isEmpty(chainMap)) {
-                throw new RedisException(StrUtil.format("There are no chains in key [{}]",
-                        redisParserVO.getChainKey()));
-            }
             // 获取chainKey下的所有子节点内容List
             List<String> chainItemContentList = new ArrayList<>();
             for (Map.Entry<String, String> entry : chainMap.entrySet()) {

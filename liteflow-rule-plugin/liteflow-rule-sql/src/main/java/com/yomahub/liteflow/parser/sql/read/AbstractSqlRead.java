@@ -87,10 +87,14 @@ public abstract class AbstractSqlRead implements SqlRead {
     }
 
 
-    public String getStringFromResultSet(ResultSet rs, String field) throws SQLException {
-        String data = rs.getString(field);
+    public String getStringFromRs(ResultSet rs, String field) throws SQLException {
+        return rs.getString(field);
+    }
+
+    public String getStringFromRsWithCheck(ResultSet rs, String field) throws SQLException {
+        String data = getStringFromRs(rs, field);
         if (StrUtil.isBlank(data)) {
-            throw new ELSQLException(StrUtil.format("exist {} field value is empty", field));
+            throw new ELSQLException(StrUtil.format("field[{}] value is empty", field));
         }
         return data;
     }
