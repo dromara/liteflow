@@ -95,7 +95,10 @@ public abstract class ELWrapper {
      * @param tag 标记内容
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper tag(String tag);
+    public ELWrapper tag(String tag){
+        this.setTag(tag);
+        return this;
+    }
 
     /**
      * 设置组件的id
@@ -103,7 +106,10 @@ public abstract class ELWrapper {
      * @param id 编号
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper id(String id);
+    public ELWrapper id(String id){
+        this.setId(id);
+        return this;
+    }
 
     /**
      * 设置表达式data属性

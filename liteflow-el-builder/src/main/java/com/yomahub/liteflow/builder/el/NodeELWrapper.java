@@ -53,7 +53,7 @@ public class NodeELWrapper extends ELWrapper {
      * @return {@link NodeELWrapper}
      */
     @Override
-    protected NodeELWrapper id(String id) {
+    public NodeELWrapper id(String id) {
         this.setId(id);
         return this;
     }
