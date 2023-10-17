@@ -44,32 +44,6 @@ public class IteratorELWrapper extends LoopELWrapper {
     }
 
     @Override
-    public IteratorELWrapper data(String dataName, Object object) {
-        setData(JsonUtil.toJsonString(object));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public IteratorELWrapper data(String dataName, String jsonString) {
-        try {
-            JsonUtil.parseObject(jsonString);
-        } catch (Exception e){
-            throw new RuntimeException("字符串不符合Json格式！");
-        }
-        setData(jsonString);
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public IteratorELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JsonUtil.toJsonString(jsonMap));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
     public IteratorELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
         return this;

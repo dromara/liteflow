@@ -60,18 +60,18 @@ public class NodeELWrapper extends ELWrapper {
 
     @Override
     public NodeELWrapper data(String dataName, Object object) {
-        setData(JsonUtil.toJsonString(object));
+        setData("'" + JsonUtil.toJsonString(object) + "'");
         setDataName(dataName);
         return this;
     }
 
     @Override
     public NodeELWrapper data(String dataName, String jsonString) {
-        try {
-            JsonUtil.parseObject(jsonString);
-        } catch (Exception e){
-            throw new RuntimeException("字符串不符合Json格式！");
-        }
+//        try {
+//            JsonUtil.parseObject(jsonString);
+//        } catch (Exception e){
+//            throw new RuntimeException("字符串不符合Json格式！");
+//        }
         setData(jsonString);
         setDataName(dataName);
         return this;
@@ -79,7 +79,7 @@ public class NodeELWrapper extends ELWrapper {
 
     @Override
     public NodeELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JsonUtil.toJsonString(jsonMap));
+        setData("'" + JsonUtil.toJsonString(jsonMap) + "'");
         setDataName(dataName);
         return this;
     }
@@ -114,7 +114,8 @@ public class NodeELWrapper extends ELWrapper {
         }
         if(this.getData() != null){
             elContext.append(StrUtil.format(".data({})", this.getDataName()));
-            paramContext.append(StrUtil.format("{} = '{}'\n", this.getDataName(), this.getData()));
+//            paramContext.append(StrUtil.format("{} = '{}'\n", this.getDataName(), this.getData()));
+            paramContext.append(StrUtil.format("{} = {}", this.getDataName(), this.getData())).append(";\n");
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));
