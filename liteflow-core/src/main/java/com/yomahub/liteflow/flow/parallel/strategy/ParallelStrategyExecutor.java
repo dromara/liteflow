@@ -207,7 +207,7 @@ public abstract class ParallelStrategyExecutor {
 
         // 输出超时信息
         timeOutWhenFutureObjList.forEach(whenFutureObj -> LOG.warn(
-                "executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", whenFutureObj.getExecutorName()));
+                "executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", whenFutureObj.getExecutorId()));
 
         // 当配置了 ignoreError = false，出现 interrupted 或者 !f.get() 的情况，将抛出 WhenExecuteException
         if (!whenCondition.isIgnoreError()) {
@@ -219,7 +219,7 @@ public abstract class ParallelStrategyExecutor {
             // 循环判断CompletableFuture的返回值，如果异步执行失败，则抛出相应的业务异常
             for (WhenFutureObj whenFutureObj : allCompletableWhenFutureObjList) {
                 if (!whenFutureObj.isSuccess()) {
-                    LOG.info(StrUtil.format("when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorName()));
+                    LOG.info(StrUtil.format("when-executor[{}] execute failed. errorResume [false].", whenFutureObj.getExecutorId()));
                     throw whenFutureObj.getEx();
                 }
             }
