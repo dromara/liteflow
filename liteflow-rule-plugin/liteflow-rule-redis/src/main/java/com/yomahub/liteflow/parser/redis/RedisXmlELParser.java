@@ -40,13 +40,17 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
 
         try {
             RedisParserVO redisParserVO = null;
+            String configJson;
             if (MapUtil.isNotEmpty((liteflowConfig.getRuleSourceExtDataMap()))) {
-                redisParserVO = BeanUtil.toBean(liteflowConfig.getRuleSourceExtDataMap(),
-                        RedisParserVO.class, CopyOptions.create());
+                configJson = JsonUtil.toJsonString(liteflowConfig.getRuleSourceExtDataMap());
+            }else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
+                configJson = liteflowConfig.getRuleSourceExtData();
+            }else{
+                throw new RedisException(ERROR_COMMON_MSG);
             }
-            else if (StrUtil.isNotBlank(liteflowConfig.getRuleSourceExtData())) {
-                redisParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), RedisParserVO.class);
-            }
+
+            redisParserVO = JsonUtil.parseObject(configJson, RedisParserVO.class);
+
             if (Objects.isNull(redisParserVO)) {
                 throw new RedisException(ERROR_COMMON_MSG);
             }

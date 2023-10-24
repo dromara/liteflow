@@ -37,7 +37,7 @@ public class RClient {
      * @return hashmap
      */
     public Map<String, String> getMap(String key) {
-        RMapCache<String, String> mapCache = redissonClient.getMapCache(key);
+        RMapCache<String, String> mapCache = redissonClient.getMapCache(key, StringCodec.INSTANCE);
         Set<String> mapFieldSet = mapCache.keySet();
         if (CollectionUtil.isEmpty(mapFieldSet)) {
             return map;
@@ -69,7 +69,7 @@ public class RClient {
      * @return keySet
      */
     public Set<String> hkeys(String key) {
-        RMap<String, String> map = redissonClient.getMap(key, new StringCodec());
+        RMap<String, String> map = redissonClient.getMap(key, StringCodec.INSTANCE);
         return map.readAllKeySet();
     }
 
@@ -81,7 +81,7 @@ public class RClient {
      * @return hash value
      */
     public String hget(String key, String field) {
-        RMap<String, String> map = redissonClient.getMap(key, new StringCodec());
+        RMap<String, String> map = redissonClient.getMap(key, StringCodec.INSTANCE);
         return map.get(field);
     }
 
@@ -91,7 +91,7 @@ public class RClient {
      * @return shaDigest
      */
     public String scriptLoad(String luaScript) {
-        RScript script = redissonClient.getScript(new StringCodec());
+        RScript script = redissonClient.getScript(StringCodec.INSTANCE);
         return script.scriptLoad(luaScript);
     }
 
@@ -102,7 +102,7 @@ public class RClient {
      * @return string
      */
     public String evalSha(String shaDigest, String... args){
-        RScript script = redissonClient.getScript(new StringCodec());
+        RScript script = redissonClient.getScript(StringCodec.INSTANCE);
         return  script.evalSha(RScript.Mode.READ_ONLY, shaDigest, RScript.ReturnType.VALUE,
                 Arrays.asList(args)).toString();
     }
