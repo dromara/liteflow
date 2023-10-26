@@ -3,6 +3,7 @@ package com.yomahub.liteflow.builder.el;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,17 +146,21 @@ public class LiteFlowChainELBuilder {
 			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
 			Condition condition = (Condition) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
 
+			if (Objects.isNull(condition)){
+				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
+			}
+
 			// 把主要的condition加入
 			this.conditionList.add(condition);
 			return this;
 		} catch (QLException e) {
 			// EL 底层会包装异常，这里是曲线处理
-			if (Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+			if (ObjectUtil.isNotNull(e.getCause()) && Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
 				// 构建错误信息
 				String msg = buildDataNotFoundExceptionMsg(elStr);
 				throw new ELParseException(msg);
 			}
-			throw new ELParseException(e.getCause().getMessage());
+			throw new ELParseException(e.getMessage());
 		} catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
@@ -172,7 +177,7 @@ public class LiteFlowChainELBuilder {
 			LiteFlowChainELBuilder.createChain().setEL(elStr);
 			return Boolean.TRUE;
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("validate error",e);
 		}
 		return Boolean.FALSE;
 	}
