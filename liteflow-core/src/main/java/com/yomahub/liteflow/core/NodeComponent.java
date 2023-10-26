@@ -178,11 +178,6 @@ public abstract class NodeComponent {
 
 			// 往CmpStep中放入时间消耗信息
 			cmpStep.setRollbackTimeSpent(timeSpent);
-			// 性能统计
-			if (ObjectUtil.isNotNull(monitorBus)) {
-				CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
-				monitorBus.addStatistics(statistics);
-			}
 		}
 	}
 
