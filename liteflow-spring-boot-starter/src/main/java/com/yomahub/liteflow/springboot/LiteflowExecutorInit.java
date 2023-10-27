@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.springboot;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.flow.FlowBus;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -19,6 +20,7 @@ public class LiteflowExecutorInit implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		flowExecutor.init(true);
+		FlowBus.needInit();
 	}
 
 }
