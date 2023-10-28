@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.redis;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
@@ -9,6 +10,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
+import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
 import com.yomahub.liteflow.parser.redis.mode.subscribe.RedisParserSubscribeMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
@@ -97,11 +99,17 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
     }
 
     private void checkParserVO(RedisParserVO redisParserVO) {
-        if (StrUtil.isBlank(redisParserVO.getHost())) {
+        if (redisParserVO.getRedisMode().equals(RedisMode.SINGLE) && StrUtil.isBlank(redisParserVO.getHost())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "host"));
         }
-        if (ObjectUtil.isNull(redisParserVO.getPort())) {
+        if (redisParserVO.getRedisMode().equals(RedisMode.SINGLE) && ObjectUtil.isNull(redisParserVO.getPort())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "port"));
+        }
+        if (redisParserVO.getRedisMode().equals(RedisMode.SENTINEL) && StrUtil.isBlank(redisParserVO.getMasterName())) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "master name"));
+        }
+        if (redisParserVO.getRedisMode().equals(RedisMode.SENTINEL) && CollectionUtil.isEmpty(redisParserVO.getSentinelAddress())) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "sentinel address list"));
         }
         if (ObjectUtil.isNull(redisParserVO.getChainDataBase())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "chainDataBase"));
