@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.rollback.cmp;
 import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
+import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -143,6 +144,34 @@ public class CmpConfig {
     @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "x", nodeType = NodeTypeEnum.IF)
     public void rollbackX() throws Exception {
         System.out.println("XCmp rollback!");
+    }
+
+    private int flag = 0;
+    @LiteflowRetry(5)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "m")
+    public void processM(NodeComponent bindCmp) {
+        if(flag < 2) {
+            flag ++;
+            throw new RuntimeException();
+        }
+        System.out.println("MCmp executed!");
+    }
+
+    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "m")
+    public void rollbackM() throws Exception {
+        System.out.println("MCmp rollback!");
+    }
+
+    @LiteflowRetry(3)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "n")
+    public void processN(NodeComponent bindCmp) {
+        System.out.println("NCmp executed!");
+        throw new RuntimeException();
+    }
+
+    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "n")
+    public void rollbackN() throws Exception {
+        System.out.println("NCmp rollback!");
     }
 
 }

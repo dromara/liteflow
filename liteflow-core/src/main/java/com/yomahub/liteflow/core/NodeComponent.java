@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -32,6 +33,7 @@ import com.yomahub.liteflow.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
 
 import java.lang.reflect.Method;
+import java.util.Deque;
 import java.util.Map;
 
 /**
@@ -156,10 +158,15 @@ public abstract class NodeComponent {
 
 	public void doRollback() throws Exception {
 		Slot slot = this.getSlot();
-
+		Deque<CmpStep> rollbackSteps = slot.getRollbackSteps();
+		if(!CollUtil.isEmpty(rollbackSteps)) {
+			Node refNode = rollbackSteps.peekLast().getRefNode();
+			if(refNode == this.getRefNode()) return;
+		}
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
+		cmpStep.setRefNode(this.getRefNode());
 		slot.addRollbackStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();

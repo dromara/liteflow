@@ -102,4 +102,12 @@ public class RollbackELDeclSpringbootTest extends BaseTest {
 		Assertions.assertEquals("321", context.getData("test"));
 	}
 
+	@Test
+	// 对重试的测试
+	public void testRetry() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain10", "arg");
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("n==>m", response.getRollbackStepStr());
+	}
+
 }
