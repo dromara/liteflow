@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
  * 用于解析 RuleSourceExtData 的 VO 类，用于 sql 模式中
  *
  * @author tangkc
+ * @author Bryan.Zhang
  * @since 2.9.0
  */
 public class SQLParserVO {
@@ -56,6 +57,11 @@ public class SQLParserVO {
     private String elDataField = "el_data";
 
     /**
+     * 是否启动某一条chain
+     */
+    private String chainEnableField;
+
+    /**
      * 脚本 node 表名
      */
     private String scriptTableName;
@@ -89,6 +95,11 @@ public class SQLParserVO {
      * 脚本 node language 字段
      */
     private String scriptLanguageField;
+
+    /**
+     * 是否启动这一条脚本
+     */
+    private String scriptEnableField;
 
     /**
      * 轮询机制是否开启 默认不开启
@@ -275,5 +286,21 @@ public class SQLParserVO {
 
     public void setSqlLogEnabled(Boolean sqlLogEnabled) {
         this.sqlLogEnabled = sqlLogEnabled;
+    }
+
+    public String getChainEnableField() {
+        return chainEnableField;
+    }
+
+    public void setChainEnableField(String chainEnableField) {
+        this.chainEnableField = chainEnableField;
+    }
+
+    public String getScriptEnableField() {
+        return scriptEnableField;
+    }
+
+    public void setScriptEnableField(String scriptEnableField) {
+        this.scriptEnableField = scriptEnableField;
     }
 }

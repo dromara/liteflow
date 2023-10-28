@@ -30,6 +30,7 @@ public class ChainRead extends AbstractSqlRead {
         String chainNameField = super.config.getChainNameField();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
         String applicationName = super.config.getApplicationName();
+        String chainEnableField = super.config.getChainEnableField();
 
         if (StrUtil.isBlank(chainTableName)) {
             throw new ELSQLException("You did not define the chainTableName property");
@@ -39,8 +40,14 @@ public class ChainRead extends AbstractSqlRead {
             throw new ELSQLException("You did not define the applicationName or chainApplicationNameField property");
         }
 
-        return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainNameField, elDataField, chainTableName,
+        String sqlCmd = StrUtil.format(SqlReadConstant.SQL_PATTERN, chainNameField, elDataField, chainTableName,
                 chainApplicationNameField);
+
+        if (StrUtil.isNotBlank(chainEnableField)){
+            sqlCmd = StrUtil.format("{} {}", sqlCmd, StrUtil.format(SqlReadConstant.SQL_ENABLE_PATTERN, chainEnableField));
+        }
+
+        return sqlCmd;
     }
 
     @Override

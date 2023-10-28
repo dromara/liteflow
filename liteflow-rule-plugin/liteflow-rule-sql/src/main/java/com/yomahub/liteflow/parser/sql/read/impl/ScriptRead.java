@@ -40,6 +40,7 @@ public class ScriptRead extends AbstractSqlRead {
         String scriptTypeField = super.config.getScriptTypeField();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
         String applicationName = super.config.getApplicationName();
+        String scriptEnableField = super.config.getScriptEnableField();
 
         if (StrUtil.isBlank(applicationName) || StrUtil.isBlank(scriptApplicationNameField)) {
             throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
@@ -74,6 +75,9 @@ public class ScriptRead extends AbstractSqlRead {
             );
         }
 
+        if (StrUtil.isNotBlank(scriptEnableField)){
+            sqlCmd = StrUtil.format("{} {}", sqlCmd, StrUtil.format(SqlReadConstant.SQL_ENABLE_PATTERN, scriptEnableField));
+        }
 
         return sqlCmd;
     }
