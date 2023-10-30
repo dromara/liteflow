@@ -160,8 +160,10 @@ public abstract class NodeComponent {
 		Slot slot = this.getSlot();
 		Deque<CmpStep> rollbackSteps = slot.getRollbackSteps();
 		if(!CollUtil.isEmpty(rollbackSteps)) {
-			Node refNode = rollbackSteps.peekLast().getRefNode();
-			if(refNode == this.getRefNode()) return;
+			for (CmpStep rollbackStep : rollbackSteps) {
+				Node refNode = rollbackStep.getRefNode();
+				if(refNode == this.getRefNode()) return;
+			}
 		}
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
