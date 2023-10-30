@@ -12,6 +12,8 @@
         <node id="i" class="com.yomahub.liteflow.test.rollback.cmp.ICmp"/>
         <node id="w" class="com.yomahub.liteflow.test.rollback.cmp.WCmp"/>
         <node id="x" class="com.yomahub.liteflow.test.rollback.cmp.XCmp"/>
+        <node id="m" class="com.yomahub.liteflow.test.rollback.cmp.MCmp"/>
+        <node id="n" class="com.yomahub.liteflow.test.rollback.cmp.NCmp"/>
     </nodes>
     <chain name="chain1">
         THEN( a, b, WHEN(c, d).ignoreError(true), CATCH(e) );
@@ -47,5 +49,9 @@
 
     <chain name="chain9">
         THEN(a.tag("1"), a.tag("2"), a.tag("3"), d);
+    </chain>
+
+    <chain name="chain10">
+        THEN( m, n );
     </chain>
 </flow>

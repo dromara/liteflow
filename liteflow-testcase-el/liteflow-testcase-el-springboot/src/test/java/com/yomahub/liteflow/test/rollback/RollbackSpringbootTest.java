@@ -2,6 +2,8 @@ package com.yomahub.liteflow.test.rollback;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
@@ -96,5 +98,13 @@ public class RollbackSpringbootTest extends BaseTest {
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertFalse(response.isSuccess());
 		Assertions.assertEquals("321", context.getData("test"));
+	}
+
+	@Test
+	// 对重试的测试
+	public void testRetry() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain10", "arg");
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("n==>m", response.getRollbackStepStr());
 	}
 }
