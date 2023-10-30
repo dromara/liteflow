@@ -35,6 +35,7 @@ import com.yomahub.liteflow.monitor.MonitorBus;
 import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * 普通组件抽象类
@@ -158,13 +159,12 @@ public abstract class NodeComponent {
 
 	public void doRollback() throws Exception {
 		Slot slot = this.getSlot();
-		Deque<CmpStep> rollbackSteps = slot.getRollbackSteps();
-		if(!CollUtil.isEmpty(rollbackSteps)) {
-			for (CmpStep rollbackStep : rollbackSteps) {
-				Node refNode = rollbackStep.getRefNode();
-				if(refNode == this.getRefNode()) return;
-			}
+
+		boolean alreadyRollback = slot.getRollbackSteps().stream().anyMatch(cmpStep -> cmpStep.getRefNode().equals(getRefNode()));
+		if (alreadyRollback){
+			return;
 		}
+
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
