@@ -159,8 +159,11 @@ public class LiteFlowChainELBuilder {
 				// 构建错误信息
 				String msg = buildDataNotFoundExceptionMsg(elStr);
 				throw new ELParseException(msg);
+			}else if (ObjectUtil.isNotNull(e.getCause())){
+				throw new ELParseException(e.getCause().getMessage());
+			}else{
+				throw new ELParseException(e.getMessage());
 			}
-			throw new ELParseException(e.getMessage());
 		} catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
