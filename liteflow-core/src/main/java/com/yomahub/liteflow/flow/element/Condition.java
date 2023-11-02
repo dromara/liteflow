@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
@@ -127,7 +128,11 @@ public abstract class Condition implements Executable{
 
 	@Override
 	public String getId() {
-		return id;
+		if (StrUtil.isBlank(this.id)){
+			return StrUtil.format("condition-{}",this.getConditionType().getName());
+		}else{
+			return id;
+		}
 	}
 
 	@Override

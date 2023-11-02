@@ -66,15 +66,14 @@ public class ZkParserHelper {
 
 			// 检查chainPath路径下有没有子节点
 			List<String> chainNameList = client.getChildren().forPath(zkParserVO.getChainPath());
-			if (CollectionUtil.isEmpty(chainNameList)) {
-				throw new ZkException(StrUtil.format("There are no chains in path [{}]", zkParserVO.getChainPath()));
-			}
-
 			// 获取chainPath路径下的所有子节点内容List
 			List<String> chainItemContentList = new ArrayList<>();
 			for (String chainName : chainNameList) {
 				String chainData = new String(
 						client.getData().forPath(StrUtil.format("{}/{}", zkParserVO.getChainPath(), chainName)));
+				if (StrUtil.isBlank(chainData)){
+					continue;
+				}
 				chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, chainData));
 			}
 			// 合并成所有chain的xml内容

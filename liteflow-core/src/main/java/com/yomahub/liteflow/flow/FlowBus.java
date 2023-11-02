@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +58,8 @@ public class FlowBus {
 	private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
 
 	private static final Map<NodeTypeEnum, Node> fallbackNodeMap = new CopyOnWriteHashMap<>();
+
+	private static AtomicBoolean initStat = new AtomicBoolean(false);
 
 	private FlowBus() {
 	}
@@ -82,7 +85,7 @@ public class FlowBus {
 	}
 
 	public static boolean needInit() {
-		return MapUtil.isEmpty(chainMap);
+		return initStat.compareAndSet(false, true);
 	}
 
 	public static boolean containNode(String nodeId) {
@@ -295,6 +298,10 @@ public class FlowBus {
 
 		NodeTypeEnum nodeType = node.getType();
 		fallbackNodeMap.put(nodeType, node);
+	}
+
+	public static void clearStat(){
+		initStat.set(false);
 	}
 
 }

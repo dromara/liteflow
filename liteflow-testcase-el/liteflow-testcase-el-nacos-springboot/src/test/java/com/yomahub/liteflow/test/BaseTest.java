@@ -18,6 +18,6 @@ public class BaseTest {
 		SpiFactoryCleaner.clean();
 		LiteflowConfigGetter.clean();
 		FlowInitHook.cleanHook();
+		FlowBus.clearStat();
 	}
-
 }

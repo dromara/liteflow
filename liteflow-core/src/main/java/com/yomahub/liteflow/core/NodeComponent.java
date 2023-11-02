@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -32,7 +33,9 @@ import com.yomahub.liteflow.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
 
 import java.lang.reflect.Method;
+import java.util.Deque;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * 普通组件抽象类
@@ -157,9 +160,15 @@ public abstract class NodeComponent {
 	public void doRollback() throws Exception {
 		Slot slot = this.getSlot();
 
+		boolean alreadyRollback = slot.getRollbackSteps().stream().anyMatch(cmpStep -> cmpStep.getRefNode().equals(getRefNode()));
+		if (alreadyRollback){
+			return;
+		}
+
 		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
+		cmpStep.setRefNode(this.getRefNode());
 		slot.addRollbackStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -178,11 +187,6 @@ public abstract class NodeComponent {
 
 			// 往CmpStep中放入时间消耗信息
 			cmpStep.setRollbackTimeSpent(timeSpent);
-			// 性能统计
-			if (ObjectUtil.isNotNull(monitorBus)) {
-				CompStatistics statistics = new CompStatistics(this.getClass().getSimpleName(), timeSpent);
-				monitorBus.addStatistics(statistics);
-			}
 		}
 	}
 

@@ -42,6 +42,7 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
 	@AfterEach
 	public void after() {
 		FlowBus.cleanCache();
+		FlowBus.clearStat();
 	}
 
 	@Test
@@ -55,17 +56,17 @@ public class NacosWithXmlELSpringbootTest extends BaseTest {
 
 	@Test
 	public void testNacosWithXml2() throws Exception {
-		String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>";
-		String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, c);</chain></flow>";
+		String flowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain2\">THEN(a, b, c);</chain></flow>";
+		String changedFlowXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain2\">THEN(a, c);</chain></flow>";
 		when(nacosConfigService.getConfig(anyString(), anyString(), anyLong())).thenReturn(flowXml)
 			.thenReturn(changedFlowXml);
 
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
 
 		FlowBus.refreshFlowMetaData(FlowParserTypeEnum.TYPE_EL_XML, changedFlowXml);
 
-		response = flowExecutor.execute2Resp("chain1", "arg");
+		response = flowExecutor.execute2Resp("chain2", "arg");
 		Assertions.assertEquals("a==>c", response.getExecuteStepStrWithoutTime());
 	}
 

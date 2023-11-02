@@ -35,4 +35,8 @@
     <chain name="chain9">
         THEN(a.tag("1"), a.tag("2"), a.tag("3"), d);
     </chain>
+
+    <chain name="chain10">
+        THEN( m, n );
+    </chain>
 </flow>

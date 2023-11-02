@@ -22,6 +22,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static com.yomahub.liteflow.parser.constant.SqlReadConstant.*;
 
@@ -91,9 +93,13 @@ public class JDBCHelper {
         // 获取 chain 数据
         Map<String, String> chainMap = chainRead.read();
         List<String> chainList = new ArrayList<>();
-        chainMap.forEach((chainName, elData) -> {
-            chainList.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(chainName), elData));
-        });
+
+        chainMap.entrySet().stream()
+                .filter(entry -> StrUtil.isNotBlank(entry.getValue()))
+                .forEach(
+                    entry -> chainList.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(entry.getKey()), entry.getValue()))
+                );
+
         String chainsContent = CollUtil.join(chainList, StrUtil.EMPTY);
 
         // 获取脚本数据

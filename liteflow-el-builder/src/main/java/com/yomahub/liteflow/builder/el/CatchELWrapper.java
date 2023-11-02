@@ -40,32 +40,6 @@ public class CatchELWrapper extends ELWrapper {
     }
 
     @Override
-    public CatchELWrapper data(String dataName, Object object) {
-        setData(JsonUtil.toJsonString(object));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public CatchELWrapper data(String dataName, String jsonString) {
-        try {
-            JsonUtil.parseObject(jsonString);
-        } catch (Exception e){
-            throw new RuntimeException("字符串不符合Json格式！");
-        }
-        setData(jsonString);
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
-    public CatchELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData(JsonUtil.toJsonString(jsonMap));
-        setDataName(dataName);
-        return this;
-    }
-
-    @Override
     public CatchELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
         return this;
@@ -73,6 +47,8 @@ public class CatchELWrapper extends ELWrapper {
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
+        checkMaxWaitSeconds();
+
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();
 

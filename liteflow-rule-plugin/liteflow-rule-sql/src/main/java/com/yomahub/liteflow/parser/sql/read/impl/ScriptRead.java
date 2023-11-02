@@ -40,6 +40,7 @@ public class ScriptRead extends AbstractSqlRead {
         String scriptTypeField = super.config.getScriptTypeField();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
         String applicationName = super.config.getApplicationName();
+        String scriptEnableField = super.config.getScriptEnableField();
 
         if (StrUtil.isBlank(applicationName) || StrUtil.isBlank(scriptApplicationNameField)) {
             throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
@@ -74,6 +75,9 @@ public class ScriptRead extends AbstractSqlRead {
             );
         }
 
+        if (StrUtil.isNotBlank(scriptEnableField)){
+            sqlCmd = StrUtil.format("{} {}", sqlCmd, StrUtil.format(SqlReadConstant.SQL_ENABLE_PATTERN, scriptEnableField));
+        }
 
         return sqlCmd;
     }
@@ -82,7 +86,7 @@ public class ScriptRead extends AbstractSqlRead {
     public String buildXmlElement(ResultSet rs) throws SQLException {
         String scriptDataField = super.config.getScriptDataField();
 
-        return getStringFromResultSet(rs, scriptDataField);
+        return getStringFromRs(rs, scriptDataField);
 
     }
 
@@ -93,10 +97,10 @@ public class ScriptRead extends AbstractSqlRead {
         String scriptTypeField = super.config.getScriptTypeField();
         String scriptLanguageField = super.config.getScriptLanguageField();
 
-        String id = getStringFromResultSet(rs, scriptIdField);
-        String name = getStringFromResultSet(rs, scriptNameField);
-        String type = getStringFromResultSet(rs, scriptTypeField);
-        String language = withLanguage() ? getStringFromResultSet(rs, scriptLanguageField) : null;
+        String id = getStringFromRsWithCheck(rs, scriptIdField);
+        String name = getStringFromRsWithCheck(rs, scriptNameField);
+        String type = getStringFromRsWithCheck(rs, scriptTypeField);
+        String language = withLanguage() ? getStringFromRs(rs, scriptLanguageField) : null;
 
         NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
         if (Objects.isNull(nodeTypeEnum)) {

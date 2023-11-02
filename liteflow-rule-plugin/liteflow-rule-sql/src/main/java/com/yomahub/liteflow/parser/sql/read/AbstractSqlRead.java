@@ -8,10 +8,7 @@ import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +17,7 @@ import java.util.Map;
  *
  * @author tangkc
  * @author houxinyu
+ * @author Bryan.Zhang
  * @since 2.11.1
  */
 public abstract class AbstractSqlRead implements SqlRead {
@@ -52,6 +50,10 @@ public abstract class AbstractSqlRead implements SqlRead {
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
             stmt.setString(1, config.getApplicationName());
+            ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
+            if (parameterMetaData.getParameterCount() == 2){
+                stmt.setBoolean(2, true);
+            }
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -87,10 +89,14 @@ public abstract class AbstractSqlRead implements SqlRead {
     }
 
 
-    public String getStringFromResultSet(ResultSet rs, String field) throws SQLException {
-        String data = rs.getString(field);
+    public String getStringFromRs(ResultSet rs, String field) throws SQLException {
+        return rs.getString(field);
+    }
+
+    public String getStringFromRsWithCheck(ResultSet rs, String field) throws SQLException {
+        String data = getStringFromRs(rs, field);
         if (StrUtil.isBlank(data)) {
-            throw new ELSQLException(StrUtil.format("exist {} field value is empty", field));
+            throw new ELSQLException(StrUtil.format("field[{}] value is empty", field));
         }
         return data;
     }

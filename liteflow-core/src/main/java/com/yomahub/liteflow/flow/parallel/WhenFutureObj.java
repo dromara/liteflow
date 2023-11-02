@@ -2,7 +2,6 @@ package com.yomahub.liteflow.flow.parallel;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.WhenTimeoutException;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
 /**
  * 并行异步CompletableFuture里的值对象
@@ -16,34 +15,34 @@ public class WhenFutureObj {
 
 	private boolean timeout;
 
-	private String executorName;
+	private String executorId;
 
 	private Exception ex;
 
-	public static WhenFutureObj success(String executorName) {
+	public static WhenFutureObj success(String executorId) {
 		WhenFutureObj result = new WhenFutureObj();
 		result.setSuccess(true);
 		result.setTimeout(false);
-		result.setExecutorName(executorName);
+		result.setExecutorId(executorId);
 		return result;
 	}
 
-	public static WhenFutureObj fail(String executorName, Exception ex) {
+	public static WhenFutureObj fail(String executorId, Exception ex) {
 		WhenFutureObj result = new WhenFutureObj();
 		result.setSuccess(false);
 		result.setTimeout(false);
-		result.setExecutorName(executorName);
+		result.setExecutorId(executorId);
 		result.setEx(ex);
 		return result;
 	}
 
-	public static WhenFutureObj timeOut(String executorName) {
+	public static WhenFutureObj timeOut(String executorId) {
 		WhenFutureObj result = new WhenFutureObj();
 		result.setSuccess(false);
 		result.setTimeout(true);
-		result.setExecutorName(executorName);
+		result.setExecutorId(executorId);
 		result.setEx(new WhenTimeoutException(
-				StrUtil.format("Timed out when executing the component[{}]",executorName)));
+				StrUtil.format("Timed out when executing the component[{}]",executorId)));
 		return result;
 	}
 
@@ -55,12 +54,12 @@ public class WhenFutureObj {
 		this.success = success;
 	}
 
-	public String getExecutorName() {
-		return executorName;
+	public String getExecutorId() {
+		return executorId;
 	}
 
-	public void setExecutorName(String executorName) {
-		this.executorName = executorName;
+	public void setExecutorId(String executorId) {
+		this.executorId = executorId;
 	}
 
 	public Exception getEx() {

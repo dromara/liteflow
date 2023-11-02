@@ -18,6 +18,7 @@ public class BaseTest {
 		LiteflowConfigGetter.clean();
 		FlowExecutorHolder.clean();
 		FlowInitHook.cleanHook();
+		FlowBus.clearStat();
 	}
 
 }

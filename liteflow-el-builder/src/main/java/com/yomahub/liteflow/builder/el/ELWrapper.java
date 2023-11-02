@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,7 +95,10 @@ public abstract class ELWrapper {
      * @param tag 标记内容
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper tag(String tag);
+    public ELWrapper tag(String tag){
+        this.setTag(tag);
+        return this;
+    }
 
     /**
      * 设置组件的id
@@ -102,7 +106,10 @@ public abstract class ELWrapper {
      * @param id 编号
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper id(String id);
+    public ELWrapper id(String id){
+        this.setId(id);
+        return this;
+    }
 
     /**
      * 设置表达式data属性
@@ -111,7 +118,11 @@ public abstract class ELWrapper {
      * @param object   JavaBean
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper data(String dataName, Object object);
+    protected ELWrapper data(String dataName, Object object){
+        setData("'" + JsonUtil.toJsonString(object) + "'");
+        setDataName(dataName);
+        return this;
+    }
 
     /**
      * 设置表达式data属性
@@ -120,7 +131,11 @@ public abstract class ELWrapper {
      * @param jsonString JSON格式字符串
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper data(String dataName, String jsonString);
+    protected ELWrapper data(String dataName, String jsonString){
+        setData(jsonString);
+        setDataName(dataName);
+        return this;
+    }
 
     /**
      * 设置data属性
@@ -129,7 +144,12 @@ public abstract class ELWrapper {
      * @param jsonMap  键值映射
      * @return {@link ELWrapper}
      */
-    protected abstract ELWrapper data(String dataName, Map<String, Object> jsonMap);
+    protected ELWrapper data(String dataName, Map<String, Object> jsonMap){
+        setData("'" + JsonUtil.toJsonString(jsonMap) + "'");
+        setDataName(dataName);
+        return this;
+    }
+
 
     protected ELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
@@ -144,7 +164,7 @@ public abstract class ELWrapper {
     public String toEL(){
         StringBuilder paramContext = new StringBuilder();
         String elContext = toEL(null, paramContext);
-        return paramContext.append(elContext).toString();
+        return paramContext.append(elContext).append(";").toString();
     }
 
     /**
@@ -161,7 +181,7 @@ public abstract class ELWrapper {
         } else {
             elContext = toEL(0, paramContext);
         }
-        return paramContext.append(elContext).toString();
+        return paramContext.append(elContext).append(";").toString();
     }
 
     /**
@@ -185,10 +205,6 @@ public abstract class ELWrapper {
         }
         if(this.getTag() != null){
             elContext.append(StrUtil.format(".tag(\"{}\")", this.getTag()));
-        }
-        if(this.getData() != null){
-            elContext.append(StrUtil.format(".data({})", this.getDataName()));
-            paramContext.append(StrUtil.format("{} = '{}';\n", this.getDataName(), this.getData()));
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));
@@ -216,6 +232,17 @@ public abstract class ELWrapper {
     protected void processWrapperTabs(StringBuilder elContext, Integer depth){
         if(depth != null) {
             elContext.append(StrUtil.repeat(ELBus.TAB, depth));
+        }
+    }
+
+    /**
+     * 检查子表达式是否有最长等待秒数定义
+     */
+    protected void checkMaxWaitSeconds(){
+        for(ELWrapper sonElWrapper : this.getElWrapperList()){
+            if(sonElWrapper != null && sonElWrapper.getMaxWaitSeconds() != null){
+                throw new IllegalArgumentException("maxWaitSeconds必须定义在完整的语义之后！");
+            }
         }
     }
 }

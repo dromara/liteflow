@@ -80,10 +80,6 @@ public class ApolloParseHelper {
         try {
             // 1. handle chain
             Set<String> propertyNames = chainConfig.getPropertyNames();
-            if (CollectionUtil.isEmpty(propertyNames)) {
-                throw new ApolloException(StrUtil.format("There are no chains in namespace : {}",
-                        apolloParserConfigVO.getChainNamespace()));
-            }
             List<String> chainItemContentList = propertyNames.stream()
                     .map(item -> StrUtil.format(CHAIN_XML_PATTERN, item, chainConfig.getProperty(item, StrUtil.EMPTY)))
                     .collect(Collectors.toList());

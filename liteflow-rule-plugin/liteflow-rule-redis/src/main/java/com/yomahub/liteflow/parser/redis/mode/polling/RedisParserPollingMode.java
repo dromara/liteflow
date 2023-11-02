@@ -121,9 +121,6 @@ public class RedisParserPollingMode implements RedisParserHelper {
             // 检查chainKey下有没有子节点
             String chainKey = redisParserVO.getChainKey();
             Set<String> chainNameSet = chainClient.hkeys(chainKey);
-            if (CollectionUtil.isEmpty(chainNameSet)) {
-                throw new RedisException(StrUtil.format("There are no chains in key [{}]", chainKey));
-            }
             chainNum = chainNameSet.size();
             // 获取chainKey下的所有子节点内容List
             List<String> chainItemContentList = new ArrayList<>();
@@ -131,6 +128,8 @@ public class RedisParserPollingMode implements RedisParserHelper {
                 String chainData = chainClient.hget(chainKey, chainName);
                 if (StrUtil.isNotBlank(chainData)) {
                     chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, chainData));
+                }else{
+                    continue;
                 }
 
                 //计算该chainData的SHA值

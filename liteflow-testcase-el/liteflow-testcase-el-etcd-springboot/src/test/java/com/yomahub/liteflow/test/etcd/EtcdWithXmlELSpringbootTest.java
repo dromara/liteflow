@@ -50,6 +50,7 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 	@AfterEach
 	public void after() {
 		FlowBus.cleanCache();
+		FlowBus.clearStat();
 	}
 
 	@Test

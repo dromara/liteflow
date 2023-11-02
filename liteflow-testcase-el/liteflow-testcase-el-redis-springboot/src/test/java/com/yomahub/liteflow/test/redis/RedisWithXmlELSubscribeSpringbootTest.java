@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.redisson.Redisson;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,8 +61,8 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379").setDatabase(1);
         redissonClient = Redisson.create(config);
-        RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey");
-        RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey");
+        RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey", StringCodec.INSTANCE);
+        RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey", StringCodec.INSTANCE);
         scriptKey.put("s1:script:脚本s1:groovy", "defaultContext.setData(\"test1\",\"hello s1\");");
         scriptKey.put("s2:script:脚本s2:js", "defaultContext.setData(\"test2\",\"hello s2\");");
         scriptKey.put("s3:script:脚本s3", "defaultContext.setData(\"test3\",\"hello s3\");");
@@ -183,8 +184,8 @@ public class RedisWithXmlELSubscribeSpringbootTest extends BaseTest {
     //redis内规则数据数据清空
     public static void testCleanData() {
         if (ObjectUtil.isNotNull(redissonClient)) {
-            RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey");
-            RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey");
+            RMapCache<String, String> chainKey = redissonClient.getMapCache("testChainKey", StringCodec.INSTANCE);
+            RMapCache<String, String> scriptKey = redissonClient.getMapCache("testScriptKey", StringCodec.INSTANCE);
             for (String key : chainKey.keySet()) {
                 chainKey.remove(key);
             }
