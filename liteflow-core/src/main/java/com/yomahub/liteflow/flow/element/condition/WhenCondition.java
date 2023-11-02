@@ -8,13 +8,17 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import com.yomahub.liteflow.common.LocalDefaultFlowConstant;
+import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.parallel.strategy.ParallelStrategyExecutor;
 import com.yomahub.liteflow.flow.parallel.strategy.ParallelStrategyHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 
 import java.util.Set;
@@ -64,13 +68,15 @@ public class WhenCondition extends Condition {
 	// 使用线程池执行 when 并发流程
 	// 这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception {
-
+		Slot slot = DataBus.getSlot(slotIndex);
+		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.THEN_START));
 		// 获取并发执行策略
 		ParallelStrategyExecutor parallelStrategyExecutor = ParallelStrategyHelper.loadInstance().buildParallelExecutor(this.getParallelStrategy());
 
 		// 执行并发逻辑
 		parallelStrategyExecutor.execute(this, slotIndex);
 
+		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.THEN_END));
 	}
 
 	public boolean isIgnoreError() {
