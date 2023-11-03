@@ -72,11 +72,12 @@ public class WhenCondition extends Condition {
 		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.WHEN_START));
 		// 获取并发执行策略
 		ParallelStrategyExecutor parallelStrategyExecutor = ParallelStrategyHelper.loadInstance().buildParallelExecutor(this.getParallelStrategy());
-
-		// 执行并发逻辑
-		parallelStrategyExecutor.execute(this, slotIndex);
-
-		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.WHEN_END));
+		try {
+			// 执行并发逻辑
+			parallelStrategyExecutor.execute(this, slotIndex);
+		} finally {
+			slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.WHEN_END));
+		}
 	}
 
 	public boolean isIgnoreError() {
