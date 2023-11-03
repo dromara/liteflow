@@ -69,14 +69,14 @@ public class WhenCondition extends Condition {
 	// 这块涉及到挺多的多线程逻辑，所以注释比较详细，看到这里的童鞋可以仔细阅读
 	private void executeAsyncCondition(Integer slotIndex) throws Exception {
 		Slot slot = DataBus.getSlot(slotIndex);
-		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.THEN_START));
+		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.WHEN_START));
 		// 获取并发执行策略
 		ParallelStrategyExecutor parallelStrategyExecutor = ParallelStrategyHelper.loadInstance().buildParallelExecutor(this.getParallelStrategy());
 
 		// 执行并发逻辑
 		parallelStrategyExecutor.execute(this, slotIndex);
 
-		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.THEN_END));
+		slot.addStep(new CmpStep("-1", "-1", CmpStepTypeEnum.WHEN_END));
 	}
 
 	public boolean isIgnoreError() {
