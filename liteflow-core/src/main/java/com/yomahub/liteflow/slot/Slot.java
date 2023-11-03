@@ -342,11 +342,11 @@ public class Slot {
 		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
-            if (CmpStepTypeEnum.THEN_START.equals(cmpStep.getStepType())) {
+            if (CmpStepTypeEnum.WHEN_START.equals(cmpStep.getStepType())) {
                 str.append("【");
                 continue;
             }
-            if (CmpStepTypeEnum.THEN_END.equals(cmpStep.getStepType())) {
+            if (CmpStepTypeEnum.WHEN_END.equals(cmpStep.getStepType())) {
                 // 如果最后一个是==>则移除最后一个==>
                 if (str.toString().endsWith("==>")) {
                     str.delete(str.length() - 3, str.length());
@@ -393,11 +393,11 @@ public class Slot {
 		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = rollbackSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
-            if (CmpStepTypeEnum.THEN_START.equals(cmpStep.getStepType())) {
+            if (CmpStepTypeEnum.WHEN_START.equals(cmpStep.getStepType())) {
                 str.append("【");
                 continue;
             }
-            if (CmpStepTypeEnum.THEN_END.equals(cmpStep.getStepType())) {
+            if (CmpStepTypeEnum.WHEN_END.equals(cmpStep.getStepType())) {
                 // 如果最后一个是==>则移除最后一个==>
                 if (str.toString().endsWith("==>")) {
                     str.delete(str.length() - 3, str.length());
