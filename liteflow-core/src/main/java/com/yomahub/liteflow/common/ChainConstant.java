@@ -85,6 +85,9 @@ public interface ChainConstant {
 	String NOT = "NOT";
 
 	String MAX_WAIT_SECONDS = "maxWaitSeconds";
+
+    String MAX_WAIT_MILLISECONDS = "maxWaitMilliseconds";
+
 	String EXTENDS = "extends";
 
 }

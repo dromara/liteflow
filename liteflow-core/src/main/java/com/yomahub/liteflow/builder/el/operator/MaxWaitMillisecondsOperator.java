@@ -5,20 +5,20 @@ import com.yomahub.liteflow.common.ChainConstant;
 import java.util.concurrent.TimeUnit;
 
 /**
- * EL 规则中的 maxWaitSeconds 的操作符
+ * EL 规则中的 maxWaitMilliseconds 的操作符
  *
- * @author DaleLee
- * @since 2.11.0
+ * @author Kugaaa
+ * @since 2.11.1
  */
-public class MaxWaitSecondsOperator extends MaxWaitTimeOperator {
+public class MaxWaitMillisecondsOperator extends MaxWaitTimeOperator {
 
     @Override
     TimeUnit getMaxWaitTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MILLISECONDS;
     }
 
     @Override
     String operatorName() {
-        return ChainConstant.MAX_WAIT_SECONDS;
+        return ChainConstant.MAX_WAIT_MILLISECONDS;
     }
 }
