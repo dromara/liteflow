@@ -19,6 +19,11 @@
                 var result = addByArray([a,b,c,d]);
 
                 defaultContext.setData("s1",parseInt(result));
+
+                /*fetch('https://jsonplaceholder.typicode.com/posts')
+                        .then(response => response.json())
+                        .then(data => console.log(data))
+                        .catch(error => console.error(error));*/
             ]]>
         </node>
     </nodes>
