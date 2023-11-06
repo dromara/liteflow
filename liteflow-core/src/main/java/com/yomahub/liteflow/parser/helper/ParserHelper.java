@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.parser.helper;
 
-import cn.hutool.core.text.CharSequenceUtil;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,19 +8,40 @@ import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.*;
+import com.yomahub.liteflow.exception.ChainDuplicateException;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
+import com.yomahub.liteflow.exception.NodeClassNotFoundException;
+import com.yomahub.liteflow.exception.NodeTypeCanNotGuessException;
+import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
+import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.condition.AbstractCondition;
+import com.yomahub.liteflow.util.ElRegexUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static com.yomahub.liteflow.common.ChainConstant.*;
+import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
+import static com.yomahub.liteflow.common.ChainConstant.EXTENDS;
+import static com.yomahub.liteflow.common.ChainConstant.FILE;
+import static com.yomahub.liteflow.common.ChainConstant.FLOW;
+import static com.yomahub.liteflow.common.ChainConstant.ID;
+import static com.yomahub.liteflow.common.ChainConstant.LANGUAGE;
+import static com.yomahub.liteflow.common.ChainConstant.NAME;
+import static com.yomahub.liteflow.common.ChainConstant.NODE;
+import static com.yomahub.liteflow.common.ChainConstant.NODES;
+import static com.yomahub.liteflow.common.ChainConstant.TYPE;
+import static com.yomahub.liteflow.common.ChainConstant.VALUE;
+import static com.yomahub.liteflow.common.ChainConstant._CLASS;
 
 /**
  * Parser 通用 Helper
@@ -157,7 +176,7 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
-				if(RegexUtil.isAbstractChain(e.getText())){
+				if(ElRegexUtil.isAbstractChain(e.getText())){
 					abstratChainMap.put(chainName,e);
 					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
 					Chain chain = FlowBus.getChain(chainName);
@@ -242,7 +261,7 @@ public class ParserHelper {
 				}
 
 				FlowBus.addChain(chainName);
-				if(RegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
+				if(ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
 					abstratChainMap.put(chainName,innerJsonObject);
 					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
 					Chain chain = FlowBus.getChain(chainName);
@@ -292,7 +311,7 @@ public class ParserHelper {
 		// 构建chainBuilder
 		String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 		String text = e.getText();
-		String el = RegexUtil.removeComments(text);
+		String el = ElRegexUtil.removeComments(text);
 		LiteFlowChainELBuilder.createChain()
 				.setChainId(chainId)
 				.setEL(el)
@@ -363,7 +382,7 @@ public class ParserHelper {
 		String baseChainEl = baseChain.get(VALUE).textValue();
 		//替换baseChainId中的implChainId
 		// 使用正则表达式匹配占位符并替换
-		String parsedEl = RegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
+		String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
 		ObjectNode objectNode = (ObjectNode) implChain;
 		objectNode.put(VALUE,parsedEl);
 		implChainSet.add(implChain);
@@ -386,68 +405,9 @@ public class ParserHelper {
 		String baseChainEl = baseChain.getText();
 		//替换baseChainId中的implChainId
 		// 使用正则表达式匹配占位符并替换
-		String parsedEl = RegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
+		String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
 		implChain.setText(parsedEl);
 		implChainSet.add(implChain);
-	}
-
-	private static class RegexUtil {
-
-		// java 注释的正则表达式
-		private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
-
-		// abstractChain 占位符正则表达式
-		private static final String REGEX_ABSTRACT_HOLDER = "\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}(?![\\s]*=)";
-
-		/**
-		 * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释， 会压缩字符串，移除空格和换行符
-		 * @param elStr el 表达式
-		 * @return 移除注释后的 el 表达式
-		 */
-		private static String removeComments(String elStr) {
-			if (StrUtil.isBlank(elStr)) {
-				return elStr;
-			}
-
-			return Pattern.compile(REGEX_COMMENT)
-				.matcher(elStr)
-				// 移除注释
-				.replaceAll(CharSequenceUtil.EMPTY);
-		}
-
-		/**
-		 * 根据抽象EL和实现EL，替换抽象EL中的占位符
-		 * @param abstractChain 抽象EL
-		 * @param implChain 抽象EL对应的一个实现
-		 * @return 替换后的EL
-		 */
-		private static String replaceAbstractChain(String abstractChain,String implChain){
-			//匹配抽象chain的占位符
-			Pattern placeHolder = Pattern.compile(REGEX_ABSTRACT_HOLDER);
-			Matcher placeHolderMatcher = placeHolder.matcher(abstractChain);
-			while(placeHolderMatcher.find()){
-				//到implChain中找到对应的占位符实现
-				String holder = placeHolderMatcher.group(1);
-				Pattern placeHolderImpl = Pattern.compile("\\s*\\{" + holder + "\\}\\s*=\\s*(.*?);");
-				Matcher implMatcher = placeHolderImpl.matcher(implChain);
-				if (implMatcher.find()) {
-					String replacement = implMatcher.group(1).trim();
-					abstractChain = abstractChain.replace("{" + holder + "}", replacement);
-				}else{
-					throw new ParseException("missing implementation of {"+holder+"} in expression \r\n" + implChain);
-				}
-			}
-			return abstractChain;
-		}
-
-		/**
-		 * 判断某个Chain是否为抽象EL，判断依据是是否包含未实现的占位符
-		 * @param elStr EL表达式
-		 * @return 判断结果，true为抽象EL，false为非抽象EL
-		 */
-		private static boolean isAbstractChain(String elStr) {
-			return Pattern.compile(REGEX_ABSTRACT_HOLDER).matcher(elStr).find();
-		}
 	}
 
 }
