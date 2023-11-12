@@ -303,4 +303,11 @@ public class SQLParserVO {
     public void setScriptEnableField(String scriptEnableField) {
         this.scriptEnableField = scriptEnableField;
     }
+
+    /**
+     * 是否包含启停字段（chain 和 script）
+     */
+    public boolean hasEnableField() {
+        return StrUtil.isNotBlank(chainEnableField) || StrUtil.isNotBlank(scriptEnableField);
+    }
 }
