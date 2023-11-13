@@ -37,7 +37,7 @@ public class RClient {
      * @return hashmap
      */
     public Map<String, String> getMap(String key) {
-        RMapCache<String, String> mapCache = redissonClient.getMapCache(key, StringCodec.INSTANCE);
+        RMapCache<String, String> mapCache = redissonClient.getMapCache(key);
         Set<String> mapFieldSet = mapCache.keySet();
         if (CollectionUtil.isEmpty(mapFieldSet)) {
             return map;
