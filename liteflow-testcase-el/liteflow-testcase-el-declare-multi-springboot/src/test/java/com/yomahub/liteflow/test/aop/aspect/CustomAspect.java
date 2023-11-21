@@ -11,7 +11,7 @@ import org.aspectj.lang.annotation.Pointcut;
 @Aspect
 public class CustomAspect {
 
-	@Pointcut("execution(* com.yomahub.liteflow.test.aop.cmp1.*.process(*))")
+	@Pointcut("execution(* com.yomahub.liteflow.test.aop.cmp1.*.process(..))")
 	public void cut() {
 	}
 

@@ -8,7 +8,9 @@
        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
     <context:component-scan base-package="com.yomahub.liteflow.test.parsecustom.cmp" />
-    
+
+    <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
+
     <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">

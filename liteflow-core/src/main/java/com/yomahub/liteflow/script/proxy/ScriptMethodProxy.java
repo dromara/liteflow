@@ -7,6 +7,7 @@ import com.yomahub.liteflow.exception.ScriptBeanMethodInvokeException;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
@@ -46,11 +47,12 @@ public class ScriptMethodProxy {
 		try {
 			return new ByteBuddy().subclass(orignalClass)
 				.name(buildClassName()) // 设置生成的类名
+				.implement(bean.getClass().getInterfaces())
 				.method(ElementMatchers.any())
 				.intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean, scriptMethods)))
 				.annotateType(orignalClass.getAnnotations())
 				.make()
-				.load(ScriptBeanProxy.class.getClassLoader())
+				.load(ScriptBeanProxy.class.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
 				.getLoaded()
 				.newInstance();
 		}

@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.slot.Slot;
 
 public class CmpAspect implements ICmpAroundAspect {
 

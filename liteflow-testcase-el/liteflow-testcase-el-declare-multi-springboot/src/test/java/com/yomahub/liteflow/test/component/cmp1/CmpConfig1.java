@@ -98,7 +98,7 @@ public class CmpConfig1 {
 		bindCmp.setIsEnd(true);
 	}
 
-	@LiteflowMethod(LiteFlowMethodEnum.IS_CONTINUE_ON_ERROR)
+	@LiteflowMethod(value = LiteFlowMethodEnum.IS_CONTINUE_ON_ERROR, nodeId = "g")
 	public boolean isContinueOnError(NodeComponent bindCmp) {
 		return true;
 	}

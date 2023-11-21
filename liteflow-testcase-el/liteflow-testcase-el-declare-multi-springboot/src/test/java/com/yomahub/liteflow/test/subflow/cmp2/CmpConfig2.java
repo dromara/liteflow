@@ -56,11 +56,6 @@ public class CmpConfig2 {
 		System.out.println("Mcomp executed!");
 	}
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "e")
-	public void processE(NodeComponent bindCmp) {
-		System.out.println("ECmp executed!");
-	}
-
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "p")
 	public void processP(NodeComponent bindCmp) throws Exception {
 		int slotIndex = bindCmp.getSlotIndex();

@@ -11,7 +11,7 @@
 
     <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
 
-    <bean class="com.yomahub.liteflow.spring.ComponentScanner"/>
+    <bean class="com.yomahub.liteflow.spring.ComponentScanner" depends-on="springAware"/>
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="requestId/flow.el.xml"/>

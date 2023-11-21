@@ -17,6 +17,7 @@ import com.yomahub.liteflow.spi.holder.LiteflowComponentSupportHolder;
 import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
@@ -155,14 +156,13 @@ public class ComponentProxy {
 				// 生成的对象也加了上被代理对象拥有的注解
 				// 被拦截的对象也根据被代理对象根据@LiteFlowMethod所标注的进行了动态判断
 				Object instance = new ByteBuddy().subclass(cmpClazz)
-					.name(StrUtil.format("{}.ByteBuddy${}${}", ClassUtil.getPackage(beanClazz), activeNodeId,
-							SerialsUtil.generateShortUUID()))
-					.method(ElementMatchers
-						.namedOneOf(methodList.stream().map(m -> m.value().getMethodName()).toArray(String[]::new)))
+					.name(StrUtil.format("{}ByteBuddy${}${}", beanClazz.getName(), activeNodeId, SerialsUtil.generateShortUUID()))
+					.implement(bean.getClass().getInterfaces())
+					.method(ElementMatchers.namedOneOf(methodList.stream().map(m -> m.value().getMethodName()).toArray(String[]::new)))
 					.intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean)))
 					.annotateType(beanClassAnnotation)
 					.make()
-					.load(ComponentProxy.class.getClassLoader())
+					.load(ComponentProxy.class.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
 					.getLoaded()
 					.newInstance();
 				NodeComponent nodeComponent = (NodeComponent) instance;

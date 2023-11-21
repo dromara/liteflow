@@ -5,6 +5,7 @@ import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.spi.spring.SpringAware;
 import com.yomahub.liteflow.spring.ComponentScanner;
+import com.yomahub.liteflow.spring.MethodDeclBeanDefinition;
 import com.yomahub.liteflow.springboot.LiteflowExecutorInit;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -12,7 +13,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -60,4 +60,8 @@ public class LiteflowMainAutoConfiguration {
 		return new MonitorBus(liteflowConfig);
 	}
 
+	@Bean
+	public MethodDeclBeanDefinition methodDeclBeanDefinitionRegister(){
+		return new MethodDeclBeanDefinition();
+	}
 }

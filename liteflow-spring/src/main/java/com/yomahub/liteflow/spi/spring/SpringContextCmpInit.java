@@ -6,6 +6,7 @@ import com.yomahub.liteflow.spi.ContextCmpInit;
 import com.yomahub.liteflow.spring.ComponentScanner;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Spring环境容器上下文组件初始化实现
@@ -17,11 +18,7 @@ public class SpringContextCmpInit implements ContextCmpInit {
 
 	@Override
 	public void initCmp() {
-		for (Map.Entry<String, NodeComponent> componentEntry : ComponentScanner.nodeComponentMap.entrySet()) {
-			if (!FlowBus.containNode(componentEntry.getKey())) {
-				FlowBus.addManagedNode(componentEntry.getKey(), componentEntry.getValue());
-			}
-		}
+		ComponentScanner.nodeComponentSet.forEach(FlowBus::addManagedNode);
 	}
 
 	@Override

@@ -10,13 +10,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
@@ -30,7 +29,7 @@ import javax.annotation.Resource;
 @SpringBootTest(classes = GlobalAOPELDeclSpringbootTest.class)
 @EnableAutoConfiguration
 @Import(CmpAspect.class)
-@ComponentScan({ "com.yomahub.liteflow.test.aop.cmp1", "com.yomahub.liteflow.test.aop.cmp2" })
+@ComponentScan({"com.yomahub.liteflow.test.aop.cmp1", "com.yomahub.liteflow.test.aop.cmp2" })
 public class GlobalAOPELDeclSpringbootTest extends BaseTest {
 
 	@Resource

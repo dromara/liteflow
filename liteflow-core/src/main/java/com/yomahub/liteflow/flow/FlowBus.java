@@ -92,6 +92,13 @@ public class FlowBus {
 		return nodeMap.containsKey(nodeId);
 	}
 
+	public static void addManagedNode(String nodeId) {
+		ContextAware contextAware = ContextAwareHolder.loadContextAware();
+		if (contextAware.hasBean(nodeId)){
+			addManagedNode(nodeId, contextAware.getBean(nodeId));
+		}
+	}
+
 	/**
 	 * 添加已托管的节点（如：Spring、Solon 管理的节点）
 	 * */

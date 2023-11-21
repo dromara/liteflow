@@ -14,6 +14,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.ParameterDescription;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
@@ -68,11 +69,12 @@ public class ScriptBeanProxy {
 
 		try {
 			Class<?> c = new ByteBuddy().subclass(orignalClass).name(StrUtil.format("{}.ByteBuddy${}", ClassUtil.getPackage(orignalClass),SerialsUtil.generateShortUUID()))
+				.implement(bean.getClass().getInterfaces())
 				.method(ElementMatchers.any())
 				.intercept(InvocationHandlerAdapter.of(new AopInvocationHandler(bean, methodNameList)))
 				.annotateType(orignalClass.getAnnotations())
 				.make()
-				.load(ScriptBeanProxy.class.getClassLoader())
+				.load(ScriptBeanProxy.class.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
 				.getLoaded();
 
 			return ReflectUtil.newInstanceIfPossible(c);
