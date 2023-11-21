@@ -61,11 +61,11 @@ LiteFlow期待你的了解！
 
 **MISBoot低代码开发平台**
 
-<a href="https://www.misboot.com/?from=LiteFlow"><img src="static/img/misboot-banner.png" style="width:200px"></a>
+<a href="https://www.misboot.com/?from=LiteFlow"><img src="static/img/misboot-banner.png"></a>
 
 **云程企业级低代码平台**
 
-<a href="http://www.yunchengxc.com/"><img src="static/img/yuncheng-banner.png" style="width:200px"></a>
+<a href="http://www.yunchengxc.com/"><img src="static/img/yuncheng-banner.png"></a>
 
 **微信公众号**
 
