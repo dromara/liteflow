@@ -16,6 +16,10 @@ public class NacosParserVO {
 
 	private String group;
 
+	private String accessKey;
+
+	private String secretKey;
+
 	private String username;
 
 	private String password;
@@ -68,11 +72,33 @@ public class NacosParserVO {
 		this.password = password;
 	}
 
-	@Override
-	public String toString() {
-		return "NacosParserVO{" + "serverAddr='" + serverAddr + '\'' + ", namespace='" + namespace + '\'' + ", dataId='"
-				+ dataId + '\'' + ", group='" + group + '\'' + ", username='" + username + '\'' + ", password='"
-				+ password + '\'' + '}';
+	public String getAccessKey() {
+		return accessKey;
 	}
 
+	public void setAccessKey(String accessKey) {
+		this.accessKey = accessKey;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+
+	@Override
+	public String toString() {
+		return "NacosParserVO{" +
+				"serverAddr='" + serverAddr + '\'' +
+				", namespace='" + namespace + '\'' +
+				", dataId='" + dataId + '\'' +
+				", group='" + group + '\'' +
+				", accessKey='" + accessKey + '\'' +
+				", secretKey='" + secretKey + '\'' +
+				", username='" + username + '\'' +
+				", password='" + password + '\'' +
+				'}';
+	}
 }
