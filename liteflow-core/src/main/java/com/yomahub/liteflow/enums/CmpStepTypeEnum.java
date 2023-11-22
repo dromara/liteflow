@@ -15,6 +15,6 @@ package com.yomahub.liteflow.enums;
  */
 public enum CmpStepTypeEnum {
 
-    START, END, SINGLE, THEN_START, THEN_END;
+    START, END, SINGLE, WHEN_START, WHEN_END;
 
 }
