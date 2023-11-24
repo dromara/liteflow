@@ -146,17 +146,17 @@ public class ThenELBuilderTest extends BaseTest {
     @Test
     public void testThen15(){
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).pre("p").finallyOpt("f").toEL());
-        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).pre("p").finallyOpt("f").toEL()));
+                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL());
+//        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL()));
     }
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testThen16(){
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).pre("p").finallyOpt("f").toEL(true));
-        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).pre("p").finallyOpt("f").toEL(true)));
+                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL(true));
+//        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL(true)));
     }
     private static class ParamClass{
         private String name;

@@ -67,12 +67,7 @@ public class NodeELWrapper extends ELWrapper {
 
     @Override
     public NodeELWrapper data(String dataName, String jsonString) {
-//        try {
-//            JsonUtil.parseObject(jsonString);
-//        } catch (Exception e){
-//            throw new RuntimeException("字符串不符合Json格式！");
-//        }
-        setData(jsonString);
+        setData("'" + jsonString + "'");
         setDataName(dataName);
         return this;
     }
@@ -114,7 +109,6 @@ public class NodeELWrapper extends ELWrapper {
         }
         if(this.getData() != null){
             elContext.append(StrUtil.format(".data({})", this.getDataName()));
-//            paramContext.append(StrUtil.format("{} = '{}'\n", this.getDataName(), this.getData()));
             paramContext.append(StrUtil.format("{} = {}", this.getDataName(), this.getData())).append(";\n");
         }
         if(this.getMaxWaitSeconds() != null){

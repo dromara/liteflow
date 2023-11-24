@@ -59,17 +59,17 @@ public class CatchELBuilderTest extends BaseTest {
     public void testCatch5(){
         String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(node(\"a\")).DO(THEN(node(\"b\"),node(\"c\").data(catchData)));";
         Assertions.assertEquals(expectedStr,
-                ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL());
+                ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL()));
     }
     @Test
     public void testCatch6(){
         String expectedStr = "catchData = '{\"name\":\"zhangsan\",\"age\":18}';\nCATCH(\n\tnode(\"a\")\n).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(catchData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL(true));
+                ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.catchException("a").doOpt(ELBus.then("b", ELBus.node("c").data("catchData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true)));
    }
     // data 设置 map
     @Test

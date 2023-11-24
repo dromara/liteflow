@@ -158,18 +158,18 @@ public class WhenELBuilderTest extends BaseTest {
     public void testWhen15(){
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id")).when("d").tag("this is a tag").toEL());
+                ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when("d").tag("this is a tag").toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id")).when("d").tag("this is a tag").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when("d").tag("this is a tag").toEL()));
     }
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testWhen16(){
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id")).when("d").tag("this is a tag").toEL(true));
+                ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when("d").tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id")).when("d").tag("this is a tag").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.when("a", ELBus.when("b").when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when("d").tag("this is a tag").toEL(true)));
     }
     private static class ParamClass{
         private String name;
