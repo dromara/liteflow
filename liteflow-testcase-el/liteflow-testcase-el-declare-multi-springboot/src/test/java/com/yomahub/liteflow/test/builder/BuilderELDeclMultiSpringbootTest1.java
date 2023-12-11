@@ -7,9 +7,11 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp1.*;
+import com.yomahub.liteflow.test.builder.domain.TestDomain;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,10 +25,12 @@ import javax.annotation.Resource;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = BuilderELDeclMultiSpringbootTest1.class)
 @EnableAutoConfiguration
+@ComponentScan({ "com.yomahub.liteflow.test.builder.domain" })
 public class BuilderELDeclMultiSpringbootTest1 extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;
+
 
 	// 基于普通组件的builder模式测试
 	@Test

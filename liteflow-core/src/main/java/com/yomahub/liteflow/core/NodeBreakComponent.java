@@ -2,7 +2,7 @@ package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 /**
  * 循环跳出节点逻辑抽象类

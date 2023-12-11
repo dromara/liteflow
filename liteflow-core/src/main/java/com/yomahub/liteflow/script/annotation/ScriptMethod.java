@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.script.annotation;
 
-import com.yomahub.liteflow.annotation.AliasFor;
+import com.yomahub.liteflow.annotation.LFAliasFor;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface ScriptMethod {
 
-	@AliasFor("name")
+	@LFAliasFor("name")
 	String value() default "";
 
 }

@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.spi;
 
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+
 import java.util.Map;
 
 /**
@@ -32,5 +34,7 @@ public interface ContextAware extends SpiPriority {
     <T> Map<String, T> getBeansOfType(Class<T> type);
 
     boolean hasBean(String beanName);
+
+    Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean);
 
 }

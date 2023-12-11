@@ -10,12 +10,18 @@ package com.yomahub.liteflow.test.builder.cmp1;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
+import com.yomahub.liteflow.test.builder.domain.TestDomain;
+
+import javax.annotation.Resource;
 
 public class ACmp {
 
+	@Resource
+	private TestDomain testDomain;
+
 	@LiteflowMethod(LiteFlowMethodEnum.PROCESS)
 	public void process(NodeComponent bindCmp) {
-		System.out.println("ACmp executed!");
+		testDomain.sayHi();
 	}
 
 }

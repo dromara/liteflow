@@ -2,6 +2,7 @@ package com.yomahub.liteflow.spi.solon;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.spi.ContextAware;
 import org.noear.solon.Solon;
 import org.noear.solon.core.BeanWrap;
@@ -61,6 +62,13 @@ public class SolonContextAware implements ContextAware {
         BeanWrap beanWrap = new BeanWrap(Solon.context(), bean.getClass(), bean, beanName);
         Solon.context().putWrap(beanName, beanWrap);
 
+        return beanWrap.get();
+    }
+
+    @Override
+    public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean) {
+        BeanWrap beanWrap = new BeanWrap(Solon.context(), declWarpBean.getClass(), declWarpBean, beanName);
+        Solon.context().putWrap(beanName, beanWrap);
         return beanWrap.get();
     }
 

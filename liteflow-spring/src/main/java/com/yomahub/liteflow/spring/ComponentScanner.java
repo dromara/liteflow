@@ -13,7 +13,6 @@ import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -23,24 +22,17 @@ import com.yomahub.liteflow.script.annotation.ScriptBean;
 import com.yomahub.liteflow.script.annotation.ScriptMethod;
 import com.yomahub.liteflow.script.proxy.ScriptBeanProxy;
 import com.yomahub.liteflow.script.proxy.ScriptMethodProxy;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
-import com.yomahub.liteflow.spi.spring.SpringAware;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.util.LOGOPrinter;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 
-import javax.annotation.Resource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +40,7 @@ import java.util.stream.Collectors;
  *
  * @author Bryan.Zhang
  */
-public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
+public class ComponentScanner implements BeanPostProcessor {
 
 	/**
 	 * @RefreshScope 注解 bean 的前缀
@@ -80,37 +72,18 @@ public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
 		}
 	}
 
-	@Override
-	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-		return InstantiationAwareBeanPostProcessor.super.postProcessBeforeInstantiation(beanClass, beanName);
-	}
-
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		Class clazz = LiteFlowProxyUtil.getUserClass(bean.getClass());
 
-		// 判断是不是声明式组件
-		// 如果是，就缓存到类属性的map中
-		if (LiteFlowProxyUtil.isDeclareCmp(bean.getClass())) {
+		//声明式组件
+		if (bean instanceof DeclWarpBean){
+			NodeComponent nodeComponent = LiteFlowProxyUtil.proxy2NodeComponent((DeclWarpBean) bean);
+			String nodeId = StrUtil.isEmpty(nodeComponent.getNodeId()) ? getRealBeanName(clazz, beanName) : nodeComponent.getNodeId();
+			nodeComponentSet.add(nodeId);
 			LOG.info("proxy component[{}] has been found", beanName);
-			List<NodeComponent> nodeComponents = LiteFlowProxyUtil.proxy2NodeComponent(bean, beanName);
-			nodeComponents.forEach(nodeComponent -> {
-				String nodeId = nodeComponent.getNodeId();
-				nodeId = StrUtil.isEmpty(nodeId) ? getRealBeanName(clazz, beanName) : nodeId;
-				nodeComponentSet.add(nodeId);
-			});
-
-			LiteflowCmpDefine liteflowCmpDefine = AnnotationUtil.getAnnotation(clazz, LiteflowCmpDefine.class);
-			//liteflowCmpDefine为null说明是方法级别声明
-			if (liteflowCmpDefine == null){
-				nodeComponents.forEach(nodeComponent -> {
-					String nodeId = nodeComponent.getNodeId();
-					nodeId = StrUtil.isEmpty(nodeId) ? getRealBeanName(clazz, beanName) : nodeId;
-					ContextAwareHolder.loadContextAware().registerBean(nodeId, nodeComponent);
-				});
-			}
-			return nodeComponents.get(0);
+			return nodeComponent;
 		}
 
 		// 组件的扫描发现，扫到之后缓存到类属性map中
@@ -162,11 +135,6 @@ public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
 		return bean;
 	}
 
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
-	}
-
 	/**
 	 * 用于清除 spring 上下文扫描到的组件实体
 	 */
@@ -188,7 +156,6 @@ public class ComponentScanner implements InstantiationAwareBeanPostProcessor {
 				if (REFRESH_SCOPE_ANN_CLASS_PATH.equals(name)) {
 					return beanName.replace(REFRESH_SCOPE_ANN_BEAN_PREFIX, "");
 				}
-
 			}
 		}
 		return beanName;

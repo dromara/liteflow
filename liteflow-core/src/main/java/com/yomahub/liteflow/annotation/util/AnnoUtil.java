@@ -3,8 +3,7 @@ package com.yomahub.liteflow.annotation.util;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
-import com.yomahub.liteflow.annotation.AliasFor;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.annotation.LFAliasFor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -28,7 +27,7 @@ public class AnnoUtil {
 		Map<String, String> aliasMap = new HashMap<>();
 		Map<String, Object> defaultValueMap = new HashMap<>();
 		Arrays.stream(ReflectUtil.getMethods(annotationType)).forEach(method -> {
-			AliasFor aliasFor = AnnotationUtil.getAnnotation(method, AliasFor.class);
+			LFAliasFor aliasFor = AnnotationUtil.getAnnotation(method, LFAliasFor.class);
 			if (ObjectUtil.isNotNull(aliasFor)) {
 				aliasMap.put(method.getName(), aliasFor.value());
 				defaultValueMap.put(method.getName(), getDefaultValue(annotationType, method.getName()));

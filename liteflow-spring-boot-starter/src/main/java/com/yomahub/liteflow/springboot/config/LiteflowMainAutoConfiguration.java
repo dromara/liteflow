@@ -5,7 +5,7 @@ import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.spi.spring.SpringAware;
 import com.yomahub.liteflow.spring.ComponentScanner;
-import com.yomahub.liteflow.spring.MethodDeclBeanDefinition;
+import com.yomahub.liteflow.spring.DeclBeanDefinition;
 import com.yomahub.liteflow.springboot.LiteflowExecutorInit;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -27,6 +27,11 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(prefix = "liteflow", name = "enable", havingValue = "true")
 @Import(SpringAware.class)
 public class LiteflowMainAutoConfiguration {
+
+	@Bean
+	public DeclBeanDefinition declBeanDefinition(){
+		return new DeclBeanDefinition();
+	}
 
 	// 实例化ComponentScanner
 	// 多加一个SpringAware的意义是，确保在执行这个的时候，SpringAware这个bean已经被初始化
@@ -58,10 +63,5 @@ public class LiteflowMainAutoConfiguration {
 	@ConditionalOnProperty(prefix = "liteflow", name = "monitor.enable-log", havingValue = "true")
 	public MonitorBus monitorBus(LiteflowConfig liteflowConfig, SpringAware springAware) {
 		return new MonitorBus(liteflowConfig);
-	}
-
-	@Bean
-	public MethodDeclBeanDefinition methodDeclBeanDefinitionRegister(){
-		return new MethodDeclBeanDefinition();
 	}
 }

@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.spi.local;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.spi.ContextAware;
 
 import java.util.Map;
@@ -51,6 +52,11 @@ public class LocalContextAware implements ContextAware {
     @Override
     public boolean hasBean(String beanName) {
         return false;
+    }
+
+    @Override
+    public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean) {
+        return null;
     }
 
     @Override

@@ -29,7 +29,7 @@ public class BuilderELDeclMultiSpringbootTest2 extends BaseTest {
 	// 通过spring去扫描组件，通过代码去构建chain
 	@Test
 	public void testBuilder() throws Exception {
-		LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL("THEN(h, i, j)").build();
+		LiteFlowChainELBuilder.createChain().setChainId("chain1").setEL("THEN(h, i, j)").build();
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1");
 		Assertions.assertTrue(response.isSuccess());

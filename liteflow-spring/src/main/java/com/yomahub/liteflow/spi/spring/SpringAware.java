@@ -1,11 +1,16 @@
 package com.yomahub.liteflow.spi.spring;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.spi.ContextAware;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -62,6 +67,28 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
         BeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setBeanClassName(c.getName());
         beanFactory.setAllowBeanDefinitionOverriding(true);
+        beanFactory.registerBeanDefinition(beanName, beanDefinition);
+        return getBean(beanName);
+    }
+
+    @Override
+    public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean){
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext
+                .getAutowireCapableBeanFactory();
+        beanFactory.setAllowBeanDefinitionOverriding(true);
+
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+        beanDefinition.setBeanClass(DeclWarpBean.class);
+        beanDefinition.setScope(ConfigurableBeanFactory.SCOPE_SINGLETON);
+        MutablePropertyValues mutablePropertyValues = new MutablePropertyValues();
+        mutablePropertyValues.add("nodeId", declWarpBean.getNodeId());
+        mutablePropertyValues.add("nodeName", declWarpBean.getNodeName());
+        mutablePropertyValues.add("nodeType", declWarpBean.getNodeType());
+        mutablePropertyValues.add("rawClazz", declWarpBean.getRawClazz());
+        mutablePropertyValues.add("methodWrapBeanList", declWarpBean.getMethodWrapBeanList());
+        mutablePropertyValues.add("rawBean", declWarpBean.getRawBean());
+        beanDefinition.setPropertyValues(mutablePropertyValues);
+
         beanFactory.registerBeanDefinition(beanName, beanDefinition);
         return getBean(beanName);
     }

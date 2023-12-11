@@ -14,10 +14,10 @@ import java.lang.annotation.*;
 @Inherited
 public @interface LiteflowComponent {
 
-	@AliasFor("id")
+	@LFAliasFor("id")
 	String value() default "";
 
-	@AliasFor("value")
+	@LFAliasFor("value")
 	String id() default "";
 
 	String name() default "";

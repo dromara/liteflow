@@ -7,7 +7,7 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-    <context:component-scan base-package="com.yomahub.liteflow.test.requestId.cmp" />
+    <context:component-scan base-package="com.yomahub.liteflow.test.declCmp.cmp" />
 
     <bean id="springAware" class="com.yomahub.liteflow.spi.spring.SpringAware"/>
 
@@ -16,8 +16,7 @@
     <bean class="com.yomahub.liteflow.spring.ComponentScanner" depends-on="springAware"/>
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
-        <property name="ruleSource" value="requestId/flow.el.xml"/>
-        <property name="requestIdGeneratorClass" value="com.yomahub.liteflow.test.requestId.config.CustomRequestIdGenerator"/>
+        <property name="ruleSource" value="declCmp/flow.xml"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

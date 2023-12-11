@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/comments/application.xml")
-public class LiteflowNodeELSpringbootTest extends BaseTest {
+public class LiteflowNodeELSpringTest extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;

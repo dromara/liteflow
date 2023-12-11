@@ -9,13 +9,13 @@
 package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
@@ -32,9 +32,9 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
 import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
-import com.yomahub.liteflow.spi.local.LocalContextAware;
+import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,52 +162,46 @@ public class FlowBus {
 		try {
 			// 判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
 			// 如果不是声明式的，就用传统的方式进行判断
-			List<NodeComponent> cmpInstances = new ArrayList<>();
+			List<NodeComponent> cmpInstanceList = new ArrayList<>();
 			if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)) {
-				// 这里的逻辑要仔细看下
 				// 如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
 				// 由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
 				// 所以spring体系下，无需再对这个bean做二次代理
-				// 但是在非spring体系下，这个bean依旧是原来那个bean，所以需要对这个bean做一次代理
-				// 这里用ContextAware的spi机制来判断是否spring体系
-				ContextAware contextAware = ContextAwareHolder.loadContextAware();
-				Object bean = ContextAwareHolder.loadContextAware().registerBean(nodeId, cmpClazz);
-				if (LocalContextAware.class.isAssignableFrom(contextAware.getClass())) {
-					cmpInstances = LiteFlowProxyUtil.proxy2NodeComponent(bean, nodeId);
-				}
-				else {
-					cmpInstances = ListUtil.toList((NodeComponent) bean);
-				}
+				// 非spring体系下，从2.11.4开始不再支持声明式组件
+				List<DeclWarpBean> declWarpBeanList = DeclComponentParserHolder.loadDeclComponentParser().parseDeclBean(cmpClazz, nodeId, name);
+
+				cmpInstanceList = declWarpBeanList.stream().map(
+						declWarpBean -> (NodeComponent)ContextAwareHolder.loadContextAware().registerDeclWrapBean(nodeId, declWarpBean)
+				).collect(Collectors.toList());
 			}
 			else {
 				// 以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
 				// 这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
 				// 如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
 				if (!type.isScript()) {
-					cmpInstances = ListUtil
-						.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
+					cmpInstanceList = ListUtil
+							.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
 				}
-				// 去除null元素
-				cmpInstances.remove(null);
 				// 如果为空
-				if (cmpInstances.isEmpty()) {
+				if (cmpInstanceList.isEmpty()) {
 					NodeComponent cmpInstance = (NodeComponent) cmpClazz.newInstance();
-					cmpInstances.add(cmpInstance);
+					cmpInstanceList.add(cmpInstance);
 				}
 			}
 			// 进行初始化component
-			cmpInstances = cmpInstances.stream()
-				.map(cmpInstance -> ComponentInitializer.loadInstance()
-					.initComponent(cmpInstance, type, name,
-							cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId()))
-				.collect(Collectors.toList());
+			cmpInstanceList = cmpInstanceList.stream()
+					.map(cmpInstance -> ComponentInitializer.loadInstance()
+							.initComponent(cmpInstance, type, name,
+									cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId()))
+					.collect(Collectors.toList());
+
 
 			// 初始化Node，把component放到Node里去
-			List<Node> nodes = cmpInstances.stream().map(Node::new).collect(Collectors.toList());
+			List<Node> nodes = cmpInstanceList.stream().map(Node::new).collect(Collectors.toList());
 
 			for (int i = 0; i < nodes.size(); i++) {
 				Node node = nodes.get(i);
-				NodeComponent cmpInstance = cmpInstances.get(i);
+				NodeComponent cmpInstance = cmpInstanceList.get(i);
 				// 如果是脚本节点，则还要加载script脚本
 				if (type.isScript()) {
 					if (StrUtil.isNotBlank(script)) {
@@ -225,7 +219,6 @@ public class FlowBus {
 				nodeMap.put(activeNodeId, node);
 				addFallbackNode(node);
 			}
-
 		}
 		catch (Exception e) {
 			String error = StrUtil.format("component[{}] register error",

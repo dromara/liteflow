@@ -14,10 +14,10 @@ import java.lang.annotation.*;
 @Inherited
 public @interface LiteflowRetry {
 
-	@AliasFor("retry")
+	@LFAliasFor("retry")
 	int value() default 0;
 
-	@AliasFor("value")
+	@LFAliasFor("value")
 	int retry() default 0;
 
 	Class<? extends Exception>[] forExceptions() default { Exception.class };

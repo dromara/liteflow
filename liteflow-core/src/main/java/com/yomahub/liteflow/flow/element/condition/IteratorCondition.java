@@ -10,7 +10,6 @@ import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.thread.ExecutorHelper;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;

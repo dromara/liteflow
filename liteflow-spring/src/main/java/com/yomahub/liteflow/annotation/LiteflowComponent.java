@@ -18,9 +18,11 @@ import java.lang.annotation.*;
 public @interface LiteflowComponent {
 
 	@AliasFor(annotation = Component.class, attribute = "value")
+	@LFAliasFor("id")
 	String value() default "";
 
 	@AliasFor(annotation = Component.class, attribute = "value")
+	@LFAliasFor("value")
 	String id() default "";
 
 	String name() default "";

@@ -7,7 +7,7 @@ import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.*;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;

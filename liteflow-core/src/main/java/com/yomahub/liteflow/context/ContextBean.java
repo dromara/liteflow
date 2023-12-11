@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.context;
 
-import com.yomahub.liteflow.annotation.AliasFor;
+import com.yomahub.liteflow.annotation.LFAliasFor;
 
 import java.lang.annotation.*;
 
@@ -16,10 +16,10 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ContextBean {
 
-	@AliasFor("name")
+	@LFAliasFor("name")
 	String value() default "";
 
-	@AliasFor("value")
+	@LFAliasFor("value")
 	String name() default "";
 
 }

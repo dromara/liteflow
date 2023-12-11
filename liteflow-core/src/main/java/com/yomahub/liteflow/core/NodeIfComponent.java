@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.util.LiteFlowProxyUtil;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 /**
  * IF节点抽象类
