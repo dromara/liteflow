@@ -37,9 +37,8 @@ public abstract class AbstractSqlRead implements SqlRead {
 
         Map<String/*规则唯一键*/, String/*规则*/> result = new HashMap<>();
         String sqlCmd = buildQuerySql();
-        if (config.getSqlLogEnabled()) {
-            LOG.info("query sql:{}", sqlCmd.replace("?", "'" + config.getApplicationName() + "'"));
-        }
+        // 如果允许，就打印 sql 语句
+        logSqlIfEnable(sqlCmd);
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -51,7 +50,7 @@ public abstract class AbstractSqlRead implements SqlRead {
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
             stmt.setString(1, config.getApplicationName());
             ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
-            if (parameterMetaData.getParameterCount() == 2){
+            if (parameterMetaData.getParameterCount() == 2) {
                 stmt.setBoolean(2, true);
             }
             rs = stmt.executeQuery();
@@ -82,6 +81,7 @@ public abstract class AbstractSqlRead implements SqlRead {
      * 是否可以读取
      * chain 默认可以读取
      * script 需要判断是否有配置
+     *
      * @return 布尔值
      */
     public boolean needRead() {
@@ -99,5 +99,23 @@ public abstract class AbstractSqlRead implements SqlRead {
             throw new ELSQLException(StrUtil.format("field[{}] value is empty", field));
         }
         return data;
+    }
+
+    private void logSqlIfEnable(String sqlCmd) {
+        if (!config.getSqlLogEnabled()) {
+            return;
+        }
+        StringBuilder strBuilder = new StringBuilder("query sql: ");
+        // 如果包含启停字段
+        if (config.hasEnableField()) {
+            String replaceAppName = StrUtil.replaceFirst(sqlCmd, "?", "'" + config.getApplicationName() + "'");
+            String executeSql = StrUtil.replaceFirst(replaceAppName, "?", Boolean.TRUE.toString());
+            strBuilder.append(executeSql);
+        }
+        // 如果不包含启停字段
+        else {
+            strBuilder.append(sqlCmd.replace("?", "'" + config.getApplicationName() + "'"));
+        }
+        LOG.info(strBuilder.toString());
     }
 }
