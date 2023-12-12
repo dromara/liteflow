@@ -5,6 +5,11 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * 声明式组件BeanDefinition的包装类
+ * @author Bryan.Zhang
+ * @since 2.11.4
+ */
 public class DeclWarpBean {
 
     private String nodeId;

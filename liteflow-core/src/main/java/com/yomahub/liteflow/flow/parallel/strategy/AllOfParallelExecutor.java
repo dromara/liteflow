@@ -1,15 +1,18 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 /**
  * 完成全部任务
  *
  * @author luo yi
+ * @author Bryan.Zhang
  * @since 2.11.0
  */
 public class AllOfParallelExecutor extends ParallelStrategyExecutor {
@@ -28,4 +31,9 @@ public class AllOfParallelExecutor extends ParallelStrategyExecutor {
 
     }
 
+    //在allOf这个场景中，不需要过滤
+    @Override
+    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex) {
+        return stream;
+    }
 }

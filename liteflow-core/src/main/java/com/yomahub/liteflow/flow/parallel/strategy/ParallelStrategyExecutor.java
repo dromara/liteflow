@@ -32,6 +32,7 @@ import java.util.stream.Stream;
  * 并发策略执行器抽象类
  *
  * @author luo yi
+ * @author Bryan.Zhang
  * @since 2.11.0
  */
 public abstract class ParallelStrategyExecutor {
@@ -91,7 +92,7 @@ public abstract class ParallelStrategyExecutor {
     protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex) {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
         // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
-        return executableList.stream()
+        Stream<Executable> stream = executableList.stream()
                 .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
                 .filter(executable -> {
                     try {
@@ -101,7 +102,11 @@ public abstract class ParallelStrategyExecutor {
                         return false;
                     }
                 });
+        return filterAccess(stream, slotIndex);
     }
+
+    //过滤isAccess的抽象接口方法
+    protected abstract Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex);
 
     /**
      * 获取 WHEN 所需线程池
