@@ -27,6 +27,8 @@ import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.exception.ScriptSpiException;
@@ -36,10 +38,7 @@ import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -53,15 +52,25 @@ public class FlowBus {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(FlowBus.class);
 
-	private static final Map<String, Chain> chainMap = new CopyOnWriteHashMap<>();
+	private static final Map<String, Chain> chainMap;
 
-	private static final Map<String, Node> nodeMap = new CopyOnWriteHashMap<>();
+	private static final Map<String, Node> nodeMap;
 
-	private static final Map<NodeTypeEnum, Node> fallbackNodeMap = new CopyOnWriteHashMap<>();
+	private static final Map<NodeTypeEnum, Node> fallbackNodeMap;
 
 	private static AtomicBoolean initStat = new AtomicBoolean(false);
 
-	private FlowBus() {
+	static {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		if (liteflowConfig.getFastLoad()){
+			chainMap = new HashMap<>();
+			nodeMap = new HashMap<>();
+			fallbackNodeMap = new HashMap<>();
+		}else{
+			chainMap = new CopyOnWriteHashMap<>();
+			nodeMap = new CopyOnWriteHashMap<>();
+			fallbackNodeMap = new CopyOnWriteHashMap<>();
+		}
 	}
 
 	public static Chain getChain(String id) {

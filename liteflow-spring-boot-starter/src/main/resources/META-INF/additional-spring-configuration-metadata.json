@@ -146,6 +146,20 @@
       "defaultValue": true
     },
     {
+      "name": "liteflow.fallback-cmp-enable",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable component fallback.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.fast-load",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable fast load mode.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
       "name": "liteflow.monitor.enable-log",
       "type": "java.lang.Boolean",
       "description": "Enable monitor log.",

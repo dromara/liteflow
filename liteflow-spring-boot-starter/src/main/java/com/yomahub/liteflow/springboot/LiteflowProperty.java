@@ -78,24 +78,27 @@ public class LiteflowProperty {
 	private boolean printExecutionLog;
 
 	// 规则文件/脚本文件变更监听
-	private Boolean enableMonitorFile;
+	private boolean enableMonitorFile;
 
 	private String parallelLoopExecutorClass;
 
 	//使用默认并行循环线程池时，最大线程数
-	private Integer parallelMaxWorkers;
+	private int parallelMaxWorkers;
 
 	//使用默认并行循环线程池时，最大队列数
-	private Integer parallelQueueLimit;
+	private int parallelQueueLimit;
 	
 	// 是否启用组件降级
-	private Boolean fallbackCmpEnable;
+	private boolean fallbackCmpEnable;
 
-	public Boolean getEnableMonitorFile() {
+	//是否快速加载规则，如果快速加载规则意味着不用copyOnWrite机制了
+	private boolean fastLoad;
+
+	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
 
-	public void setEnableMonitorFile(Boolean enableMonitorFile) {
+	public void setEnableMonitorFile(boolean enableMonitorFile) {
 		this.enableMonitorFile = enableMonitorFile;
 	}
 
@@ -269,27 +272,27 @@ public class LiteflowProperty {
 		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
 	}
 
-	public Integer getParallelMaxWorkers() {
+	public int getParallelMaxWorkers() {
 		return parallelMaxWorkers;
 	}
 
-	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
+	public void setParallelMaxWorkers(int parallelMaxWorkers) {
 		this.parallelMaxWorkers = parallelMaxWorkers;
 	}
 
-	public Integer getParallelQueueLimit() {
+	public int getParallelQueueLimit() {
 		return parallelQueueLimit;
 	}
 
-	public void setParallelQueueLimit(Integer parallelQueueLimit) {
+	public void setParallelQueueLimit(int parallelQueueLimit) {
 		this.parallelQueueLimit = parallelQueueLimit;
 	}
-	
-	public Boolean isFallbackCmpEnable() {
+
+	public boolean isFallbackCmpEnable() {
 		return fallbackCmpEnable;
 	}
-	
-	public void setFallbackCmpEnable(Boolean fallbackCmpEnable) {
+
+	public void setFallbackCmpEnable(boolean fallbackCmpEnable) {
 		this.fallbackCmpEnable = fallbackCmpEnable;
 	}
 
@@ -299,5 +302,13 @@ public class LiteflowProperty {
 
 	public void setWhenThreadPoolIsolate(boolean whenThreadPoolIsolate) {
 		this.whenThreadPoolIsolate = whenThreadPoolIsolate;
+	}
+
+	public boolean isFastLoad() {
+		return fastLoad;
+	}
+
+	public void setFastLoad(boolean fastLoad) {
+		this.fastLoad = fastLoad;
 	}
 }

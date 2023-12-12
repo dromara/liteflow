@@ -115,6 +115,9 @@ public class LiteflowConfig {
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
 
+	//是否快速加载规则，如果快速加载规则意味着不用copyOnWrite机制了
+	private Boolean fastLoad;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -452,7 +455,7 @@ public class LiteflowConfig {
 	
 	public Boolean getFallbackCmpEnable() {
 		if (ObjectUtil.isNull(this.fallbackCmpEnable)) {
-			return false;
+			return Boolean.FALSE;
 		} else {
 			return fallbackCmpEnable;
 		}
@@ -473,5 +476,18 @@ public class LiteflowConfig {
 
 	public void setWhenThreadPoolIsolate(Boolean whenThreadPoolIsolate) {
 		this.whenThreadPoolIsolate = whenThreadPoolIsolate;
+	}
+
+	public Boolean getFastLoad() {
+		if (ObjectUtil.isNull(fastLoad)) {
+			return Boolean.FALSE;
+		}
+		else {
+			return fastLoad;
+		}
+	}
+
+	public void setFastLoad(Boolean fastLoad) {
+		this.fastLoad = fastLoad;
 	}
 }
