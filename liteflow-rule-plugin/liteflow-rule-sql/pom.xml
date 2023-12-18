@@ -24,7 +24,6 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-crypto</artifactId>
-            <version>${hutool-crypto.version}</version>
         </dependency>
     </dependencies>
 </project>
