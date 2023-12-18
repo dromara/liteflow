@@ -132,7 +132,7 @@ public abstract class ELWrapper {
      * @return {@link ELWrapper}
      */
     protected ELWrapper data(String dataName, String jsonString){
-        setData(jsonString);
+        setData("'" + jsonString + "'");
         setDataName(dataName);
         return this;
     }

@@ -108,7 +108,7 @@ public class SwitchELBuilderTest extends BaseTest {
 
     @Test
     public void testSwitch9(){
-        String jsonStr = "'{\"name\":\"zhangsan\",\"age\":18}'";
+        String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt("a").to("b", "c", ELBus.node("d").data("switchData", jsonStr)).toEL());
@@ -118,7 +118,7 @@ public class SwitchELBuilderTest extends BaseTest {
 
     @Test
     public void testSwitch10(){
-        String jsonStr = "'{\"name\":\"zhangsan\",\"age\":18}'";
+        String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt("a").to("b", "c", ELBus.node("d").data("switchData", jsonStr)).toEL(true));

@@ -271,18 +271,18 @@ public class IfELBuilderTest extends BaseTest {
     public void testIf21(){
         String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
         Assertions.assertEquals(expectedStr,
-                ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "'{\"name\":\"zhangsan\",\"age\":18}'")).toEL());
+                ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "'{\"name\":\"zhangsan\",\"age\":18}'")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL()));
     }
     // 格式化输出
     @Test
     public void testIf22(){
         String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "'{\"name\":\"zhangsan\",\"age\":18}'")).toEL(true));
+                ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "'{\"name\":\"zhangsan\",\"age\":18}'")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.ifOpt("a", "b", ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL(true)));
     }
     private static class ParamClass{
         private String name;

@@ -157,11 +157,11 @@ public class ComplexELBuilderTest extends BaseTest {
                 .setClazz(BCmp.class)
                 .build();
 
-        ELWrapper el = ELBus.then(ELBus.node("a").data("sql", "\"select * from member t where t.id=10001\""),
-                ELBus.node("b").data("cmpData", "'{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}'"));
+        ELWrapper el = ELBus.then(ELBus.node("a").data("sql", "select * from member t where t.id=10001"),
+                ELBus.node("b").data("cmpData", "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}"));
 
-        String expectStr = "sql = \"select * from member t\n" +
-                "                where t.id=10001\";\n" +
+        String expectStr = "sql = 'select * from member t\n" +
+                "                where t.id=10001';\n" +
                 "                cmpData = '{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}';\n" +
                 "\n" +
                 "        THEN(\n" +

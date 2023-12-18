@@ -77,17 +77,17 @@ public class LoopELBuilderTest extends BaseTest {
     public void testLoop7(){
         String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\").data(forData)).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL());
+                ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt("a").doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL()));
     }
     @Test
     public void testLoop8(){
         String expectedStr = "forData = '{\"name\":\"zhangsan\",\"age\":18}';\nFOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\").data(forData)\n).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true));
+                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when("b", "c", "d")).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true)));
     }
     // while调用测试
     @Test
@@ -151,17 +151,17 @@ public class LoopELBuilderTest extends BaseTest {
     public void testLoop11(){
         String expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\"))).BREAK(node(\"d\").data(whileData)).id(\"this is a ig\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL());
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL()));
     }
     @Test
     public void testLoop12(){
         String expectedStr = "whileData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHILE(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\").data(whileData)\n).id(\"this is a ig\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true));
+                ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "'{\"name\":\"zhangsan\",\"age\":18}'")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.whileOpt("a").doOpt(ELBus.then("b", "c")).breakOpt(ELBus.node("d").data("whileData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true)));
     }
     // Iterator 调用测试
     @Test
@@ -195,17 +195,17 @@ public class LoopELBuilderTest extends BaseTest {
     public void testLoop15(){
         String expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(node(\"a\")).parallel(true).DO(THEN(node(\"b\"),node(\"c\").data(iteratorData))).id(\"this is a ig\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL());
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL()));
     }
     @Test
     public void testLoop16(){
         String expectedStr = "iteratorData = '{\"name\":\"zhangsan\",\"age\":18}';\nITERATOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(iteratorData)\n\t)\n).id(\"this is a ig\").tag(\"this is a tag\").maxWaitSeconds(3);";
         Assertions.assertEquals(expectedStr,
-                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true));
+                ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.iteratorOpt("a").doOpt(ELBus.then("b", ELBus.node("c").data("iteratorData", "{\"name\":\"zhangsan\",\"age\":18}"))).id("this is a ig").tag("this is a tag").maxWaitSeconds(3).parallel(true).toEL(true)));
     }
     // data Map 参数 测试
     @Test

@@ -75,17 +75,17 @@ public class LogicELBuilderTest extends BaseTest {
     public void testlogic7(){
         String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(andData)));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL());
+                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL()));
     }
     @Test
     public void testlogic8(){
         String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(andData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL(true));
+                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "'{\"name\":\"zhangsan\",\"age\":18}'"))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true)));
     }
     @Test
     public void testlogic9(){
