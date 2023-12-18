@@ -59,8 +59,6 @@ public class ScriptRead extends AbstractSqlRead {
                     scriptTableName,
                     scriptApplicationNameField
             );
-
-            return sqlCmd;
         }
         // 脚本节点（不带语言）
         else {
