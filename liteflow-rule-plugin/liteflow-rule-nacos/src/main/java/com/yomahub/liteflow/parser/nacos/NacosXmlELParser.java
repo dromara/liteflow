@@ -60,6 +60,12 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
 			if (StrUtil.isBlank(nacosParserVO.getPassword())) {
 				nacosParserVO.setPassword("");
 			}
+			if (StrUtil.isBlank(nacosParserVO.getAccessKey())){
+				nacosParserVO.setAccessKey("");
+			}
+			if (StrUtil.isBlank(nacosParserVO.getSecretKey())){
+				nacosParserVO.setSecretKey("");
+			}
 			helper = new NacosParserHelper(nacosParserVO);
 		}
 		catch (Exception e) {
