@@ -11,7 +11,6 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -40,18 +39,37 @@ public class NacosParserHelper {
 			catch (Exception ignored) {
 			}
 			if (this.configService == null) {
-				Properties properties = new Properties();
-				properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
-				properties.put(PropertyKeyConst.NAMESPACE, nacosParserVO.getNamespace());
-				properties.put(PropertyKeyConst.USERNAME, nacosParserVO.getUsername());
-				properties.put(PropertyKeyConst.PASSWORD, nacosParserVO.getPassword());
-				this.configService = new NacosConfigService(properties);
+                Properties properties = getProperties(nacosParserVO);
+                this.configService = new NacosConfigService(properties);
 			}
 		}
 		catch (Exception e) {
 			throw new NacosException(e.getMessage());
 		}
 	}
+
+    private static Properties getProperties(NacosParserVO nacosParserVO) {
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.SERVER_ADDR, nacosParserVO.getServerAddr());
+        properties.put(PropertyKeyConst.NAMESPACE, nacosParserVO.getNamespace());
+        if (StrUtil.isNotEmpty(nacosParserVO.getUsername())) {
+			// 用户名密码模式 填写用户名就必有密码
+            if (StrUtil.isEmpty(PropertyKeyConst.PASSWORD)){
+                throw new NacosException("Nacos config password is empty");
+            }
+            // 历史版本会使用用户名密码
+            properties.put(PropertyKeyConst.USERNAME, nacosParserVO.getUsername());
+            properties.put(PropertyKeyConst.PASSWORD, nacosParserVO.getPassword());
+        } else if (StrUtil.isNotEmpty(PropertyKeyConst.ACCESS_KEY)){
+            // 以下为阿里云RAM子账号使用 填写了ak就必有sk
+            if (StrUtil.isEmpty(PropertyKeyConst.SECRET_KEY)){
+                throw new NacosException("Nacos config secretKey is empty");
+            }
+            properties.put(PropertyKeyConst.ACCESS_KEY, nacosParserVO.getAccessKey());
+            properties.put(PropertyKeyConst.SECRET_KEY, nacosParserVO.getSecretKey());
+        }
+        return properties;
+    }
 
 	public String getContent() {
 		try {

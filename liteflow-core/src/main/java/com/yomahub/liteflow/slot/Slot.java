@@ -1,6 +1,7 @@
 /**
  * <p>Title: liteflow</p>
  * <p>Description: 轻量级的组件式流程框架</p>
+ *
  * @author Bryan.Zhang
  * @email weenyc31@163.com
  * @Date 2020/4/1
@@ -11,6 +12,7 @@ import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -340,6 +342,21 @@ public class Slot {
 		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
+            if (CmpStepTypeEnum.WHEN_START.equals(cmpStep.getStepType())) {
+                str.append("【");
+                continue;
+            }
+            if (CmpStepTypeEnum.WHEN_END.equals(cmpStep.getStepType())) {
+                // 如果最后一个是==>则移除最后一个==>
+                if (str.toString().endsWith("==>")) {
+                    str.delete(str.length() - 3, str.length());
+                }
+                str.append("】");
+                if (it.hasNext()) {
+                    str.append("==>");
+                }
+                continue;
+            }
 			if (withTimeSpent) {
 				str.append(cmpStep.buildStringWithTime());
 			}
@@ -376,6 +393,21 @@ public class Slot {
 		CmpStep cmpStep;
 		for (Iterator<CmpStep> it = rollbackSteps.iterator(); it.hasNext();) {
 			cmpStep = it.next();
+            if (CmpStepTypeEnum.WHEN_START.equals(cmpStep.getStepType())) {
+                str.append("【");
+                continue;
+            }
+            if (CmpStepTypeEnum.WHEN_END.equals(cmpStep.getStepType())) {
+                // 如果最后一个是==>则移除最后一个==>
+                if (str.toString().endsWith("==>")) {
+                    str.delete(str.length() - 3, str.length());
+                }
+                str.append("】");
+                if (it.hasNext()) {
+                    str.append("==>");
+                }
+                continue;
+            }
 			if (withRollbackTimeSpent) {
 				str.append(cmpStep.buildRollbackStringWithTime());
 			}
