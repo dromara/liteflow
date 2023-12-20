@@ -14,6 +14,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.flow.element.Node;
 
+import java.util.Date;
+
 /**
  * 组件步骤对象
  *
@@ -28,6 +30,10 @@ public class CmpStep {
 	private String tag;
 
 	private CmpStepTypeEnum stepType;
+
+	private Date startTime;
+
+	private Date endTime;
 
 	// 消耗的时间，毫秒为单位
 	private Long timeSpent;
@@ -219,4 +225,19 @@ public class CmpStep {
 		this.tag = tag;
 	}
 
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
 }
