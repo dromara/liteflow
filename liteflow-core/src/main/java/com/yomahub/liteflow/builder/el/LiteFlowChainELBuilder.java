@@ -11,15 +11,48 @@ import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
-import com.yomahub.liteflow.builder.el.operator.*;
+import com.yomahub.liteflow.builder.el.operator.AndOperator;
+import com.yomahub.liteflow.builder.el.operator.AnyOperator;
+import com.yomahub.liteflow.builder.el.operator.BreakOperator;
+import com.yomahub.liteflow.builder.el.operator.CatchOperator;
+import com.yomahub.liteflow.builder.el.operator.DataOperator;
+import com.yomahub.liteflow.builder.el.operator.DefaultOperator;
+import com.yomahub.liteflow.builder.el.operator.DoOperator;
+import com.yomahub.liteflow.builder.el.operator.ElifOperator;
+import com.yomahub.liteflow.builder.el.operator.ElseOperator;
+import com.yomahub.liteflow.builder.el.operator.FinallyOperator;
+import com.yomahub.liteflow.builder.el.operator.ForOperator;
+import com.yomahub.liteflow.builder.el.operator.IdOperator;
+import com.yomahub.liteflow.builder.el.operator.IfOperator;
+import com.yomahub.liteflow.builder.el.operator.IgnoreErrorOperator;
+import com.yomahub.liteflow.builder.el.operator.IteratorOperator;
+import com.yomahub.liteflow.builder.el.operator.MaxWaitSecondsOperator;
+import com.yomahub.liteflow.builder.el.operator.MustOperator;
+import com.yomahub.liteflow.builder.el.operator.NodeOperator;
+import com.yomahub.liteflow.builder.el.operator.NotOperator;
+import com.yomahub.liteflow.builder.el.operator.OrOperator;
+import com.yomahub.liteflow.builder.el.operator.ParallelOperator;
+import com.yomahub.liteflow.builder.el.operator.PreOperator;
+import com.yomahub.liteflow.builder.el.operator.SwitchOperator;
+import com.yomahub.liteflow.builder.el.operator.TagOperator;
+import com.yomahub.liteflow.builder.el.operator.ThenOperator;
+import com.yomahub.liteflow.builder.el.operator.ThreadPoolOperator;
+import com.yomahub.liteflow.builder.el.operator.ToOperator;
+import com.yomahub.liteflow.builder.el.operator.WhenOperator;
+import com.yomahub.liteflow.builder.el.operator.WhileOperator;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.*;
+import com.yomahub.liteflow.exception.CyclicDependencyException;
+import com.yomahub.liteflow.exception.DataNotFoundException;
+import com.yomahub.liteflow.exception.ELParseException;
+import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -178,6 +211,8 @@ public class LiteFlowChainELBuilder {
 	 */
 	public static boolean validate(String elStr) {
 		try {
+			// 移除注释
+			elStr = ElRegexUtil.removeComments(elStr);
 			LiteFlowChainELBuilder.createChain().setEL(elStr);
 			return Boolean.TRUE;
 		} catch (Exception e) {
