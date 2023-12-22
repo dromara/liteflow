@@ -54,11 +54,11 @@ public class AndOrCondition extends Condition {
         }
 
         @Override
-        public boolean test(Executable condition) {
+        public boolean test(Executable executable) {
             try {
-                condition.setCurrChainId(getCurrChainId());
-                condition.execute(slotIndex);
-                return condition.getItemResultMetaValue(slotIndex);
+                executable.setCurrChainId(getCurrChainId());
+                executable.execute(slotIndex);
+                return executable.getItemResultMetaValue(slotIndex);
             } catch (Exception e) {
                 throw new AndOrConditionException(e.getMessage());
             }
