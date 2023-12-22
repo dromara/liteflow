@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="chain1">
+        SER(a,b,PAR(c,d));
+    </chain>
+
+    <chain name="chain2">
+        SER(
+            a,b,
+            SWITCH(e).to(d,f)
+        );
+    </chain>
+
+    <chain name="chain3">
+        SER(
+            a,
+            PAR(
+                c,
+                SWITCH(g).to(b, d, SER(h,i).id("then_1001"))
+            )
+        );
+    </chain>
+
+    <chain name="chain4">
+        SER(
+            a,b,
+            PAR(
+                SER(c, PAR(j,k)),
+                d,
+                SER(h, i)
+            ),
+            SWITCH(x).to(
+                m,
+                n,
+                PAR(q, SER(p, r)).id("w01")
+            ),
+            z
+        );
+    </chain>
+
+    <chain name="chain5">
+        t1 = SER(c, PAR(j,k));
+        w1 = PAR(q, SER(p, r)).id("w01");
+        t2 = SER(h, i);
+
+        SER(
+            a,b,
+            PAR(t1, d, t2 ),
+            SWITCH(x).to(m, n, w1),
+            z
+        );
+    </chain>
+</flow>

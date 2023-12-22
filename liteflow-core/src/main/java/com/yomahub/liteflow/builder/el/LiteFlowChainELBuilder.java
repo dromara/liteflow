@@ -60,6 +60,8 @@ public class LiteFlowChainELBuilder {
 		// 初始化QLExpress的Runner
 		EXPRESS_RUNNER.addFunction(ChainConstant.THEN, new ThenOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.WHEN, new WhenOperator());
+		EXPRESS_RUNNER.addFunction(ChainConstant.SER, new ThenOperator());
+		EXPRESS_RUNNER.addFunction(ChainConstant.PAR, new WhenOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.SWITCH, new SwitchOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.PRE, new PreOperator());
 		EXPRESS_RUNNER.addFunction(ChainConstant.FINALLY, new FinallyOperator());

@@ -38,6 +38,10 @@ public interface ChainConstant {
 
 	String WHEN = "WHEN";
 
+	String SER = "SER";
+
+	String PAR = "PAR";
+
 	String SWITCH = "SWITCH";
 
 	String PRE = "PRE";

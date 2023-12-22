@@ -45,6 +45,32 @@ public class ELBus {
         return new WhenELWrapper(elWrappers);
     }
 
+    public static SerELWrapper ser(ELWrapper... elWrappers){
+        checkNotBooleanArgs(elWrappers);
+        return new SerELWrapper(elWrappers);
+    }
+
+    public static SerELWrapper ser(Object ... objects){
+        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        return new SerELWrapper(elWrappers);
+    }
+
+    /**
+     * 创建 when 并行组件
+     *
+     * @param elWrappers 并行组件的子组件
+     * @return {@link WhenELWrapper}
+     */
+    public static ParELWrapper par(ELWrapper... elWrappers){
+        checkNotBooleanArgs(elWrappers);
+        return new ParELWrapper(elWrappers);
+    }
+
+    public static ParELWrapper par(Object ... objects){
+        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        return new ParELWrapper(elWrappers);
+    }
+
 
     /**
      * 创建 if 条件判断表达式
