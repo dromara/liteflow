@@ -8,6 +8,8 @@ import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import javax.script.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +48,16 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 			throw new ScriptLoadException(errorMsg);
 		}
 
+	}
+
+	@Override
+	public void unLoad(String nodeId) {
+		compiledScriptMap.remove(nodeId);
+	}
+
+	@Override
+	public List<String> getNodeIds() {
+		return new ArrayList<>(compiledScriptMap.keySet());
 	}
 
 	@Override

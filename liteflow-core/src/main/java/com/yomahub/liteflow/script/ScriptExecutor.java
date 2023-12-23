@@ -7,9 +7,11 @@ import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -26,6 +28,12 @@ public abstract class ScriptExecutor {
 	}
 
 	public abstract void load(String nodeId, String script);
+
+	// 卸载脚本（不包含 node）
+	public abstract void unLoad(String nodeId);
+
+	// 获取该执行器下的所有 nodeId
+	public abstract List<String> getNodeIds();
 
 	public Object execute(ScriptExecuteWrap wrap) throws Exception{
 		try {

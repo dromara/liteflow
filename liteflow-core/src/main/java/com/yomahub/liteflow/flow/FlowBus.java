@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
@@ -295,6 +296,24 @@ public class FlowBus {
 
 	public static void removeChain(String... chainIds) {
 		Arrays.stream(chainIds).forEach(FlowBus::removeChain);
+	}
+
+	// 移除节点
+	public static boolean removeNode(String nodeId) {
+		Node node = getNode(nodeId);
+		// node 不存在或不是脚本节点
+		if (ObjectUtil.isNull(node)) {
+			return false;
+		}
+		// 移除 node
+		nodeMap.remove(nodeId);
+		// 如果是脚本节点，移除脚本
+		if (node.getType().isScript()) {
+			ScriptExecutorFactory.loadInstance()
+					.getScriptExecutor(node.getLanguage())
+					.unLoad(nodeId);
+		}
+		return true;
 	}
 
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
