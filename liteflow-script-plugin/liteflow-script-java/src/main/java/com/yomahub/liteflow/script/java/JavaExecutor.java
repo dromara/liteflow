@@ -3,6 +3,7 @@ package com.yomahub.liteflow.script.java;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
@@ -10,6 +11,9 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IScriptEvaluator;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class JavaExecutor extends ScriptExecutor {
@@ -25,11 +29,27 @@ public class JavaExecutor extends ScriptExecutor {
             se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
             se.cook(convertScript(script));
             compiledScriptMap.put(nodeId, se);
+            // 更新 node
+            if (FlowBus.containNode(nodeId)) {
+                FlowBus.getNode(nodeId).setScript(script);
+            }
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
         }
 
+    }
+
+    @Override
+    public void unLoad(String nodeId) {
+        compiledScriptMap.remove(nodeId);
+        // 移除节点
+        FlowBus.removeNode(nodeId);
+    }
+
+    @Override
+    public List<String> getNodeIds() {
+        return new ArrayList<>(compiledScriptMap.keySet());
     }
 
     @Override

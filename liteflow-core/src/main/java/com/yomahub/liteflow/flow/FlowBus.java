@@ -300,20 +300,14 @@ public class FlowBus {
 
 	// 移除节点
 	public static boolean removeNode(String nodeId) {
-		Node node = getNode(nodeId);
-		// node 不存在或不是脚本节点
-		if (ObjectUtil.isNull(node)) {
+		if (containNode(nodeId)) {
+			nodeMap.remove(nodeId);
+			return true;
+		} else {
+			String errMsg = StrUtil.format("cannot find the node[{}]", nodeId);
+			LOG.error(errMsg);
 			return false;
 		}
-		// 移除 node
-		nodeMap.remove(nodeId);
-		// 如果是脚本节点，移除脚本
-		if (node.getType().isScript()) {
-			ScriptExecutorFactory.loadInstance()
-					.getScriptExecutor(node.getLanguage())
-					.unLoad(nodeId);
-		}
-		return true;
 	}
 
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
