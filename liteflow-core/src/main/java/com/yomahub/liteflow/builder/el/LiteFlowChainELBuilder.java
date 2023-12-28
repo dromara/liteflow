@@ -198,7 +198,8 @@ public class LiteFlowChainELBuilder {
 	public void build() {
 		this.chain.setConditionList(this.conditionList);
 
-		checkBuild();
+		//暂且去掉循环依赖检测，因为有发现循环依赖检测在对大的EL进行检测的时候，会导致CPU飙升，也或许是jackson低版本的问题
+		//checkBuild();
 
 		FlowBus.addChain(this.chain);
 	}
