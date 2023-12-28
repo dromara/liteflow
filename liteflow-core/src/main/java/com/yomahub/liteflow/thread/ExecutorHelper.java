@@ -157,7 +157,7 @@ public class ExecutorHelper {
 				Class<ExecutorBuilder> executorClass = (Class<ExecutorBuilder>) Class.forName(clazz);
 				ExecutorBuilder executorBuilder = ContextAwareHolder.loadContextAware().registerBean(executorClass);
 				ExecutorService executorService = executorBuilder.buildExecutor();
-				executorServiceMap.put(clazz, executorService);
+				executorServiceMap.put(key, executorService);
 				return executorService;
 			}
 		}
