@@ -72,6 +72,10 @@ Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
 <a href="http://www.yunchengxc.com/"><img src="static/img/yuncheng-banner.png"></a>
 
+**驰骋工作流引擎**
+
+<a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
+
 **WECHAT OFFICIAL ACCOUNT**
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group

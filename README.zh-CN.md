@@ -67,6 +67,10 @@ LiteFlow期待你的了解！
 
 <a href="http://www.yunchengxc.com/"><img src="static/img/yuncheng-banner.png"></a>
 
+**驰骋工作流引擎**
+
+<a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
+
 **微信公众号**
 
 社区群需要邀请入群。关注公众号后点击`个人微信`加我，我可以拉你入群
