@@ -34,8 +34,6 @@ public enum NodeTypeEnum {
 	BREAK("break", "循环跳出", false, NodeBreakComponent.class),
 
 	ITERATOR("iterator", "循环迭代", false, NodeIteratorComponent.class),
-	
-	FALLBACK("fallback", "降级", false, null),
 
 	SCRIPT("script", "脚本", true, ScriptCommonComponent.class),
 
@@ -47,7 +45,9 @@ public enum NodeTypeEnum {
 
 	WHILE_SCRIPT("while_script", "循环条件脚本", true, ScriptWhileComponent.class),
 
-	BREAK_SCRIPT("break_script", "循环跳出脚本", true, ScriptBreakComponent.class);
+	BREAK_SCRIPT("break_script", "循环跳出脚本", true, ScriptBreakComponent.class),
+
+	FALLBACK("fallback", "降级", false, null);
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(NodeTypeEnum.class);
 
@@ -120,7 +120,7 @@ public enum NodeTypeEnum {
 		}
 
 		for (NodeTypeEnum e : NodeTypeEnum.values()) {
-			if (e.getMappingClazz().equals(superClazz)) {
+			if (e.getMappingClazz() != null && e.getMappingClazz().equals(superClazz)) {
 				return e;
 			}
 		}
