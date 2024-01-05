@@ -1,12 +1,8 @@
 package com.yomahub.liteflow.builder.el.operator;
 
-import cn.hutool.core.collection.ListUtil;
-import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 
 /**
@@ -26,8 +22,8 @@ public class BreakOperator extends BaseOperator<LoopCondition> {
 		LoopCondition condition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 
 		// 获得需要执行的可执行表达式
+		OperatorHelper.checkObjMustBeBooleanTypeItem(objects[1]);
 		Executable breakItem = OperatorHelper.convert(objects[1], Executable.class);
-		OperatorHelper.checkObjectMustBeBooleanItem(breakItem);
 		condition.setBreakItem(breakItem);
 		return condition;
 	}

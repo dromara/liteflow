@@ -17,7 +17,8 @@ public class IgnoreErrorOperator extends BaseOperator<WhenCondition> {
 	public WhenCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		WhenCondition condition = OperatorHelper.convert(objects[0], WhenCondition.class);
+		String errorMsg = "The caller must be WhenCondition item";
+		WhenCondition condition = OperatorHelper.convert(objects[0], WhenCondition.class, errorMsg);
 
 		Boolean ignoreError = OperatorHelper.convert(objects[1], Boolean.class);
 		condition.setIgnoreError(ignoreError);

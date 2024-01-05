@@ -24,6 +24,7 @@ public class DoOperator extends BaseOperator<Condition> {
 			String errorMsg = "The caller must be CatchCondition item";
 			CatchCondition condition = OperatorHelper.convert(objects[0], CatchCondition.class, errorMsg);
 			// 获得需要执行的可执行表达式
+			OperatorHelper.checkObjMustBeCommonTypeItem(objects[1]);
 			Executable doExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
 			condition.setDoItem(doExecutableItem);
 			return condition;
@@ -33,6 +34,7 @@ public class DoOperator extends BaseOperator<Condition> {
 			// DO关键字有可能用在FOR后面，也有可能用于WHILE后面，所以这里要进行判断是不是这两种类型的超类LoopCondition
 			LoopCondition condition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 			// 获得需要执行的可执行表达式
+			OperatorHelper.checkObjMustBeCommonTypeItem(objects[1]);
 			Executable doExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
 			condition.setDoExecutor(doExecutableItem);
 			return condition;

@@ -3,8 +3,12 @@ package com.yomahub.liteflow.builder.el.operator.base;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.DataNotFoundException;
+import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
 import com.yomahub.liteflow.flow.element.condition.NotCondition;
@@ -138,17 +142,99 @@ public class OperatorHelper {
 	}
 
 	/**
+	 * 检查对象是否为一个正常可执行的对象。
+	 * 大部分的Node,Condition,Chain都是正常可执行的对象，这个检查是为了避免THEN(sw,if)类的情况(sw是选择组件，if是条件组件)，这种就不能放在THEN里
+	 */
+	public static void checkObjMustBeCommonTypeItem(Object object) throws Exception{
+		if (!(object instanceof Executable)){
+			throw new QLException("The parameter must be Executable item.");
+		}
+		Executable item = (Executable) object;
+		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+			Node node = (Node) item;
+			if (!ListUtil.toList(NodeTypeEnum.COMMON, NodeTypeEnum.SCRIPT, NodeTypeEnum.FALLBACK).contains(node.getType())){
+				throw new QLException(StrUtil.format("The node[{}] must be a common type component", node.getId()));
+			}
+		}
+	}
+
+	/**
 	 * 所谓Boolean item，指的是那些最终的结果值为布尔类型的Item
 	 * 布尔类型的items有，if，while，break类型的Node，以及AndOrCondition以及NotCondition
 	 */
-	public static void checkObjectMustBeBooleanItem(Object object) throws Exception{
-		if (!(object instanceof Node && ListUtil.toList(
-				NodeTypeEnum.IF, NodeTypeEnum.IF_SCRIPT,
-				NodeTypeEnum.WHILE, NodeTypeEnum.WHILE_SCRIPT,
-				NodeTypeEnum.BREAK, NodeTypeEnum.BREAK_SCRIPT, NodeTypeEnum.FALLBACK)
-				.contains(((Node) object).getType())
-				|| object instanceof AndOrCondition || object instanceof NotCondition)) {
-			throw new QLException("The first parameter must be boolean type Node or boolean type condition");
+	public static void checkObjMustBeBooleanTypeItem(Object object) throws Exception{
+		if (!(object instanceof Executable)){
+			throw new QLException("The parameter must be Executable item.");
+		}
+		Executable item = (Executable) object;
+		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+			Node node = (Node) item;
+			if (!ListUtil.toList(NodeTypeEnum.IF,
+					NodeTypeEnum.IF_SCRIPT,
+					NodeTypeEnum.WHILE,
+					NodeTypeEnum.WHILE_SCRIPT,
+					NodeTypeEnum.BREAK,
+					NodeTypeEnum.BREAK_SCRIPT,
+					NodeTypeEnum.FALLBACK).contains(node.getType())){
+				throw new QLException(StrUtil.format("The node[{}] must be boolean type Node.", node.getId()));
+			}
+		}else if(item.getExecuteType().equals(ExecuteTypeEnum.CONDITION)){
+			Condition condition = (Condition) item;
+			if (!ListUtil.toList(ConditionTypeEnum.TYPE_AND_OR_OPT, ConditionTypeEnum.TYPE_NOT_OPT).contains(condition.getConditionType())){
+				throw new QLException(StrUtil.format("The condition[{}] must be boolean type Condition.", condition.getId()));
+			}
+		}else{
+			throw new QLException("The parameter error.");
+		}
+	}
+
+	public static void checkObjMustBeForTypeItem(Object object) throws Exception{
+		if (!(object instanceof Executable)){
+			throw new QLException("The parameter must be Executable item.");
+		}
+		Executable item = (Executable) object;
+		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+			Node node = (Node) item;
+			if (!ListUtil.toList(NodeTypeEnum.FOR,
+					NodeTypeEnum.FOR_SCRIPT,
+					NodeTypeEnum.FALLBACK).contains(node.getType())){
+				throw new QLException(StrUtil.format("The node[{}] must be For type Node.", node.getId()));
+			}
+		}else{
+			throw new QLException("The parameter error.");
+		}
+	}
+
+	public static void checkObjMustBeIteratorTypeItem(Object object) throws Exception{
+		if (!(object instanceof Executable)){
+			throw new QLException("The parameter must be Executable item.");
+		}
+		Executable item = (Executable) object;
+		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+			Node node = (Node) item;
+			if (!ListUtil.toList(NodeTypeEnum.ITERATOR,
+					NodeTypeEnum.FALLBACK).contains(node.getType())){
+				throw new QLException(StrUtil.format("The node[{}] must be Iterator type Node.", node.getId()));
+			}
+		}else{
+			throw new QLException("The parameter error.");
+		}
+	}
+
+	public static void checkObjMustBeSwitchTypeItem(Object object) throws Exception{
+		if (!(object instanceof Executable)){
+			throw new QLException("The parameter must be Executable item.");
+		}
+		Executable item = (Executable) object;
+		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+			Node node = (Node) item;
+			if (!ListUtil.toList(NodeTypeEnum.SWITCH,
+					NodeTypeEnum.SWITCH_SCRIPT,
+					NodeTypeEnum.FALLBACK).contains(node.getType())){
+				throw new QLException(StrUtil.format("The node[{}] must be Switch type Node.", node.getId()));
+			}
+		}else{
+			throw new QLException("The parameter error.");
 		}
 	}
 }

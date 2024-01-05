@@ -19,6 +19,7 @@ public class ThenOperator extends BaseOperator<ThenCondition> {
 
 		ThenCondition thenCondition = new ThenCondition();
 		for (Object obj : objects) {
+			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
 			thenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return thenCondition;

@@ -23,7 +23,7 @@ import com.yomahub.liteflow.slot.Slot;
  * @author DaleLee
  * @since 2.11.1
  */
-public class FallbackNodeProxy extends Node {
+public class FallbackNode extends Node {
 
     // 原节点 id
     private String expectedNodeId;
@@ -31,11 +31,11 @@ public class FallbackNodeProxy extends Node {
     // 降级节点
     private Node fallbackNode;
 
-    public FallbackNodeProxy() {
+    public FallbackNode() {
         this.setType(NodeTypeEnum.FALLBACK);
     }
 
-    public FallbackNodeProxy(String expectedNodeId) {
+    public FallbackNode(String expectedNodeId) {
         this();
         this.expectedNodeId = expectedNodeId;
     }

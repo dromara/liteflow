@@ -19,6 +19,7 @@ public class WhenOperator extends BaseOperator<WhenCondition> {
 
 		WhenCondition whenCondition = new WhenCondition();
 		for (Object obj : objects) {
+			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
 			whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return whenCondition;

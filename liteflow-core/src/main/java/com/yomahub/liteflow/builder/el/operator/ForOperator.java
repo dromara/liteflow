@@ -26,10 +26,8 @@ public class ForOperator extends BaseOperator<ForCondition> {
 
 		Node node;
 		if (objects[0] instanceof Node) {
+			OperatorHelper.checkObjMustBeForTypeItem(objects[0]);
 			node = OperatorHelper.convert(objects[0], Node.class);
-			if (!ListUtil.toList(NodeTypeEnum.FOR, NodeTypeEnum.FOR_SCRIPT, NodeTypeEnum.FALLBACK).contains(node.getType())) {
-				throw new QLException("The parameter must be for-node item");
-			}
 		}
 		else if (objects[0] instanceof Integer) {
 			Integer forCount = OperatorHelper.convert(objects[0], Integer.class);

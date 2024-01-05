@@ -16,7 +16,8 @@ public class ParallelOperator extends BaseOperator<LoopCondition> {
     public LoopCondition build(Object[] objects) throws Exception {
         OperatorHelper.checkObjectSizeEqTwo(objects);
 
-        LoopCondition loopCondition = OperatorHelper.convert(objects[0], LoopCondition.class);
+        String errorMsg = "The caller must be LoopCondition item";
+        LoopCondition loopCondition = OperatorHelper.convert(objects[0], LoopCondition.class, errorMsg);
 
         Boolean parallel = OperatorHelper.convert(objects[1], Boolean.class);
         loopCondition.setParallel(parallel);
