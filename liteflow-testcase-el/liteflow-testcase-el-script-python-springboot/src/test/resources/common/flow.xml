@@ -16,7 +16,7 @@
                 b=10
                 if a>5:
                     b=5
-                    print 'hello'
+                    print '你好'.decode('UTF-8')
                 else:
                     print 'hi'
                 defaultContext.setData("s1",a*b)
