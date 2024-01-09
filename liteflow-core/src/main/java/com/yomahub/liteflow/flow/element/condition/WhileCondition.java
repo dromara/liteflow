@@ -82,10 +82,10 @@ public class WhileCondition extends LoopCondition {
 	}
 
 	private boolean getWhileResult(Integer slotIndex, int loopIndex) throws Exception {
-		Node whileItem = (Node) this.getWhileItem();
+		Executable whileItem = this.getWhileItem();
 		// 执行while组件
 		whileItem.setCurrChainId(this.getCurrChainId());
-		whileItem.setLoopIndex(loopIndex);
+		setLoopIndex(whileItem, loopIndex);
 		whileItem.execute(slotIndex);
 
 		return whileItem.getItemResultMetaValue(slotIndex);
