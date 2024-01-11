@@ -26,7 +26,7 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/common/application.properties")
 @SpringBootTest(classes = ScriptPythonCommonELTest.class)
 @EnableAutoConfiguration
-@ComponentScan({ "com.yomahub.liteflow.test.script.python.common.cmp" })
+@ComponentScan({ "com.yomahub.liteflow.test.script.python.common.cmp","com.yomahub.liteflow.test.script.python.common.domain" })
 public class ScriptPythonCommonELTest extends BaseTest {
 
 	@Resource
@@ -40,6 +40,7 @@ public class ScriptPythonCommonELTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals(Integer.valueOf(30), context.getData("s1"));
 		Assertions.assertEquals("杰克", context.getData("name"));
+		Assertions.assertEquals("hi,jack", context.getData("td"));
 	}
 
 }

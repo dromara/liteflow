@@ -20,6 +20,7 @@
                 else:
                     print 'hi'
                 defaultContext.setData("s1",a*b)
+                defaultContext.setData("td", td.sayHi("jack"))
             ]]>
         </node>
 
