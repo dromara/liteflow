@@ -24,6 +24,8 @@ public interface ChainConstant {
 
 	String NAME = "name";
 
+	String ENABLE = "enable";
+
 	String LANGUAGE = "language";
 
 	String VALUE = "value";

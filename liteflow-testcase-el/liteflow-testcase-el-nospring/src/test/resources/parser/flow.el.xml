@@ -17,4 +17,7 @@
     <chain name="chain2">
         THEN(c, g, f);
     </chain>
+    <chain name="chain3" enable="false">
+        THEN(c, g, f);
+    </chain>
 </flow>
