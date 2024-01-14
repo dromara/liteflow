@@ -2,8 +2,8 @@ package com.yomahub.liteflow.parser.apollo.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
@@ -17,6 +17,7 @@ import com.yomahub.liteflow.parser.apollo.exception.ApolloException;
 import com.yomahub.liteflow.parser.apollo.vo.ApolloParserConfigVO;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,11 +36,7 @@ public class ApolloParseHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApolloParseHelper.class);
 
-    private final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-
     private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
-
-    private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
 
     private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -81,7 +78,7 @@ public class ApolloParseHelper {
             // 1. handle chain
             Set<String> propertyNames = chainConfig.getPropertyNames();
             List<String> chainItemContentList = propertyNames.stream()
-                    .map(item -> StrUtil.format(CHAIN_XML_PATTERN, item, chainConfig.getProperty(item, StrUtil.EMPTY)))
+                    .map(item -> RuleParsePluginUtil.parseChainKey(item).toElXml(chainConfig.getProperty(item, StrUtil.EMPTY)))
                     .collect(Collectors.toList());
             // merge all chain content
             String chainAllContent = CollUtil.join(chainItemContentList, StrUtil.EMPTY);
@@ -95,8 +92,7 @@ public class ApolloParseHelper {
                 List<String> scriptItemContentList = scriptNamespaces.stream()
                         .map(item -> convert(item, scriptConfig.getProperty(item, StrUtil.EMPTY)))
                         .filter(Objects::nonNull)
-                        .map(item -> StrUtil.format(NODE_ITEM_XML_PATTERN, item.getNodeId(), item.getName(), item.getType(),
-                                item.getScript()))
+                        .map(RuleParsePluginUtil::toScriptXml)
                         .collect(Collectors.toList());
 
                 scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
@@ -118,16 +114,25 @@ public class ApolloParseHelper {
             ConfigChange configChange = changeEvent.getChange(changeKey);
             String newValue = configChange.getNewValue();
             PropertyChangeType changeType = configChange.getChangeType();
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(changeKey);
+            String id = pair.getValue();
             switch (changeType) {
                 case ADDED:
                 case MODIFIED:
                     LOG.info("starting reload flow config... {} key={} value={},", changeType.name(), changeKey,
                             newValue);
-                    LiteFlowChainELBuilder.createChain().setChainId(changeKey).setEL(newValue).build();
+                    // 如果是启用，就正常更新
+                    if (pair.getKey()) {
+                        LiteFlowChainELBuilder.createChain().setChainId(id).setEL(newValue).build();
+                    }
+                    // 如果是禁用，就删除
+                    else {
+                        FlowBus.removeChain(id);
+                    }
                     break;
                 case DELETED:
                     LOG.info("starting reload flow config... delete key={}", changeKey);
-                    FlowBus.removeChain(changeKey);
+                    FlowBus.removeChain(id);
                     break;
                 default:
             }
@@ -142,7 +147,7 @@ public class ApolloParseHelper {
                 if (DELETED.equals(changeType)) {
                     newValue = null;
                 }
-                NodeSimpleVO nodeSimpleVO = convert(changeKey, newValue);
+                NodeConvertHelper.NodeSimpleVO nodeSimpleVO = convert(changeKey, newValue);
                 if (Objects.isNull(nodeSimpleVO)) {
                     // key不符合规范的时候，直接忽略
                     LOG.error("key={} is not a valid node config, ignore it", changeKey);
@@ -154,12 +159,19 @@ public class ApolloParseHelper {
                         LOG.info("starting reload flow config... {} key={} value={},", changeType.name(), changeKey,
                                 newValue);
 
-                        LiteFlowNodeBuilder.createScriptNode()
-                                .setId(nodeSimpleVO.getNodeId())
-                                .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                                .setName(nodeSimpleVO.getName())
-                                .setScript(nodeSimpleVO.getScript())
-                                .build();
+                        // 启用就正常更新
+                        if (nodeSimpleVO.getEnable()) {
+                            LiteFlowNodeBuilder.createScriptNode()
+                                    .setId(nodeSimpleVO.getNodeId())
+                                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                                    .setName(nodeSimpleVO.getName())
+                                    .setScript(nodeSimpleVO.getScript())
+                                    .build();
+                        }
+                        // 禁用就删除
+                        else {
+                            FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                        }
                         break;
                     case DELETED:
                         LOG.info("starting reload flow config... delete key={}", changeKey);
@@ -171,72 +183,13 @@ public class ApolloParseHelper {
         }
     }
 
-    private NodeSimpleVO convert(String key, String value) {
-        // 不需要去理解这串正则，就是一个匹配冒号的
-        // 一定得是a:b，或是a:b:c...这种完整类型的字符串的
-        List<String> matchItemList = ReUtil.findAllGroup0("(?<=[^:]:)[^:]+|[^:]+(?=:[^:])", key);
-        if (CollUtil.isEmpty(matchItemList)) {
-            return null;
-        }
-
-        NodeSimpleVO nodeSimpleVO = new NodeSimpleVO();
-        if (matchItemList.size() > 1) {
-            nodeSimpleVO.setNodeId(matchItemList.get(0));
-            nodeSimpleVO.setType(matchItemList.get(1));
-        }
-
-        if (matchItemList.size() > 2) {
-            nodeSimpleVO.setName(matchItemList.get(2));
-        }
-
+    private NodeConvertHelper.NodeSimpleVO convert(String key, String value) {
+        NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(key);
         // set script
         nodeSimpleVO.setScript(value);
 
         return nodeSimpleVO;
     }
 
-    private static class NodeSimpleVO {
-
-        private String nodeId;
-
-        private String type;
-
-        private String name = StrUtil.EMPTY;
-
-        private String script;
-
-        public String getNodeId() {
-            return nodeId;
-        }
-
-        public void setNodeId(String nodeId) {
-            this.nodeId = nodeId;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getScript() {
-            return script;
-        }
-
-        public void setScript(String script) {
-            this.script = script;
-        }
-
-    }
 
 }
