@@ -17,9 +17,13 @@ public class DefaultOperator extends BaseOperator<SwitchCondition> {
 	public SwitchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);
+		String errorMsg = "The caller must be SwitchCondition item";
+		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class, errorMsg);
+
+		OperatorHelper.checkObjMustBeCommonTypeItem(objects[1]);
 
 		Executable target = OperatorHelper.convert(objects[1], Executable.class);
+
 		switchCondition.setDefaultExecutor(target);
 
 		return switchCondition;

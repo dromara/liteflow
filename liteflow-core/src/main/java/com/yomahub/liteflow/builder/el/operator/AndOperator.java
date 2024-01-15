@@ -22,7 +22,7 @@ public class AndOperator extends BaseOperator<AndOrCondition> {
         andOrCondition.setBooleanConditionType(BooleanConditionTypeEnum.AND);
 
         for (Object object : objects){
-            OperatorHelper.checkObjectMustBeBooleanItem(object);
+            OperatorHelper.checkObjMustBeBooleanTypeItem(object);
 
             Executable item = OperatorHelper.convert(object, Executable.class);
             andOrCondition.addItem(item);

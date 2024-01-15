@@ -20,7 +20,9 @@ public class FinallyOperator extends BaseOperator<FinallyCondition> {
 
 		FinallyCondition finallyCondition = new FinallyCondition();
 		for (Object obj : objects) {
-			finallyCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
+			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
+			Executable item = OperatorHelper.convert(obj, Executable.class);
+			finallyCondition.addExecutable(item);
 		}
 		return finallyCondition;
 	}

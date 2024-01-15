@@ -214,13 +214,6 @@
       "description": "Custom thread pool implement for parallel-loop executor.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder"
-    },
-    {
-      "name": "liteflow.fallback-cmp-enable",
-      "type": "java.lang.Boolean",
-      "description": "Enable fallback component.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": false
     }
   ]
 }

@@ -19,6 +19,8 @@ public class CatchOperator extends BaseOperator<CatchCondition> {
 	public CatchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEq(objects, 1);
 
+		OperatorHelper.checkObjMustBeCommonTypeItem(objects[0]);
+
 		Executable catchItem = OperatorHelper.convert(objects[0], Executable.class);
 
 		CatchCondition catchCondition = new CatchCondition();

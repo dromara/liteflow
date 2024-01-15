@@ -16,7 +16,8 @@ public class ThreadPoolOperator extends BaseOperator<WhenCondition> {
 	public WhenCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
+		String errorMsg = "The caller must be WhenCondition item";
+		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class, errorMsg);
 
 		whenCondition.setThreadExecutorClass(OperatorHelper.convert(objects[1], String.class));
 

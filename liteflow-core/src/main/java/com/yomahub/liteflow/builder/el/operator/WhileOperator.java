@@ -1,12 +1,8 @@
 package com.yomahub.liteflow.builder.el.operator;
 
-import cn.hutool.core.collection.ListUtil;
-import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.WhileCondition;
 
 /**
@@ -21,8 +17,8 @@ public class WhileOperator extends BaseOperator<WhileCondition> {
 	public WhileCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqOne(objects);
 
+		OperatorHelper.checkObjMustBeBooleanTypeItem(objects[0]);
 		Executable whileItem = OperatorHelper.convert(objects[0], Executable.class);
-		OperatorHelper.checkObjectMustBeBooleanItem(whileItem);
 
 		WhileCondition whileCondition = new WhileCondition();
 		whileCondition.setWhileItem(whileItem);

@@ -17,9 +17,11 @@ public class ToOperator extends BaseOperator<SwitchCondition> {
 	public SwitchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtTwo(objects);
 
-		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class);
+		String errorMsg = "The caller must be SwitchCondition item";
+		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class, errorMsg);
 
 		for (int i = 1; i < objects.length; i++) {
+			OperatorHelper.checkObjMustBeCommonTypeItem(objects[i]);
 			Executable target = OperatorHelper.convert(objects[i], Executable.class);
 			switchCondition.addTargetItem(target);
 		}

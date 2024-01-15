@@ -19,6 +19,7 @@ public class PreOperator extends BaseOperator<PreCondition> {
 
 		PreCondition preCondition = new PreCondition();
 		for (Object obj : objects) {
+			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
 			preCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 		}
 		return preCondition;

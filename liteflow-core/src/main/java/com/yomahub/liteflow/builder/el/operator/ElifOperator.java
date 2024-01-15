@@ -1,12 +1,8 @@
 package com.yomahub.liteflow.builder.el.operator;
 
-import cn.hutool.core.collection.ListUtil;
-import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.IfCondition;
 
 /**
@@ -22,13 +18,15 @@ public class ElifOperator extends BaseOperator<IfCondition> {
 		OperatorHelper.checkObjectSizeEqThree(objects);
 
 		// 解析caller
-		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class);
+		String errorMsg = "The caller must be IfCondition item";
+		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class, errorMsg);
 
 		// 解析第一个参数
+		OperatorHelper.checkObjMustBeBooleanTypeItem(objects[1]);
 		Executable ifItem = OperatorHelper.convert(objects[1], Executable.class);
-		OperatorHelper.checkObjectMustBeBooleanItem(ifItem);
 
 		// 解析第二个参数
+		OperatorHelper.checkObjMustBeCommonTypeItem(objects[2]);
 		Executable trueCaseExecutableItem = OperatorHelper.convert(objects[2], Executable.class);
 
 		// 构建一个内部的IfCondition

@@ -3,8 +3,6 @@ package com.yomahub.liteflow.builder.el.operator;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
-import com.yomahub.liteflow.flow.element.condition.BooleanConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.condition.NotCondition;
 
 /**
@@ -20,7 +18,7 @@ public class NotOperator extends BaseOperator<NotCondition> {
         OperatorHelper.checkObjectSizeEqOne(objects);
 
         Object object = objects[0];
-        OperatorHelper.checkObjectMustBeBooleanItem(object);
+        OperatorHelper.checkObjMustBeBooleanTypeItem(object);
         Executable item = OperatorHelper.convert(object, Executable.class);
 
         NotCondition notCondition = new NotCondition();

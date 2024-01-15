@@ -21,7 +21,8 @@ public class MustOperator extends BaseOperator<WhenCondition> {
 	public WhenCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeGtTwo(objects);
 
-		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class);
+		String errorMsg = "The caller must be WhenCondition item";
+		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class, errorMsg);
 
 		// 解析指定完成的任务 ID 集合
 		Set<String> specifyIdSet = new HashSet<>();

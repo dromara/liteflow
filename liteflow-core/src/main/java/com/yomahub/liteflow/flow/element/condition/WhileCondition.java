@@ -39,7 +39,7 @@ public class WhileCondition extends LoopCondition {
 		int index = 0;
 		if(!this.isParallel()){
 			//串行循环
-			while (getWhileResult(slotIndex)) {
+			while (getWhileResult(slotIndex, index)) {
 				executableItem.setCurrChainId(this.getCurrChainId());
 				setLoopIndex(executableItem, index);
 				executableItem.execute(slotIndex);
@@ -60,7 +60,7 @@ public class WhileCondition extends LoopCondition {
 			List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
 			//获取并行循环的线程池
 			ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor();
-			while (getWhileResult(slotIndex)){
+			while (getWhileResult(slotIndex, index)){
 				CompletableFuture<LoopFutureObj> future =
 						CompletableFuture.supplyAsync(new LoopParallelSupplier(executableItem, this.getCurrChainId(), slotIndex, index), parallelExecutor);
 				futureList.add(future);
@@ -81,10 +81,11 @@ public class WhileCondition extends LoopCondition {
 		}
 	}
 
-	private boolean getWhileResult(Integer slotIndex) throws Exception {
+	private boolean getWhileResult(Integer slotIndex, int loopIndex) throws Exception {
 		Executable whileItem = this.getWhileItem();
 		// 执行while组件
 		whileItem.setCurrChainId(this.getCurrChainId());
+		setLoopIndex(whileItem, loopIndex);
 		whileItem.execute(slotIndex);
 
 		return whileItem.getItemResultMetaValue(slotIndex);
