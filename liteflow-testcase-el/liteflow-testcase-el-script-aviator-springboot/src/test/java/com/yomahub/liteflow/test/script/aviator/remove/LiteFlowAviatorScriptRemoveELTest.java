@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.script.graaljs.remove;
+package com.yomahub.liteflow.test.script.aviator.remove;
 
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -29,15 +29,15 @@ import java.util.List;
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/remove/application.properties")
-@SpringBootTest(classes = LiteFlowJsScriptRemoveELTest.class)
+@SpringBootTest(classes = LiteFlowAviatorScriptRemoveELTest.class)
 @EnableAutoConfiguration
-public class LiteFlowJsScriptRemoveELTest extends BaseTest {
+public class LiteFlowAviatorScriptRemoveELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
     private ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance()
-            .getScriptExecutor(ScriptTypeEnum.JS.getDisplayName());
+            .getScriptExecutor(ScriptTypeEnum.AVIATOR.getDisplayName());
 
     // 仅卸载脚本
     @Test
@@ -54,7 +54,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(response.isSuccess());
         DefaultContext context = response.getFirstContextBean();
-        Assertions.assertEquals(Integer.valueOf(6), context.getData("s1"));
+        Assertions.assertEquals(Long.valueOf(6), context.getData("s1"));
 
         // 卸载脚本
         scriptExecutor.unLoad("s1");
@@ -76,7 +76,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assertions.assertTrue(response.isSuccess());
         DefaultContext context = response.getFirstContextBean();
-        Assertions.assertEquals(Integer.valueOf(5), context.getData("s2"));
+        Assertions.assertEquals(Long.valueOf(5), context.getData("s2"));
 
         // 卸载节点
         FlowBus.removeNode("s2");
@@ -102,7 +102,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
     @Test
     public void testReloadScript() {
         flowExecutor.reloadRule();
-        String script = "defaultContext.setData(\"s1\",\"abc\");";
+        String script = "setData(defaultContext,\"s1\",\"abc\");";
         FlowBus.reloadScript("s1", script);
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         DefaultContext context = response.getFirstContextBean();

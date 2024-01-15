@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.script.graaljs.remove;
+package com.yomahub.liteflow.test.script.lua.remove;
 
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -29,15 +29,15 @@ import java.util.List;
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/remove/application.properties")
-@SpringBootTest(classes = LiteFlowJsScriptRemoveELTest.class)
+@SpringBootTest(classes = LiteFlowLuaScriptRemoveELTest.class)
 @EnableAutoConfiguration
-public class LiteFlowJsScriptRemoveELTest extends BaseTest {
+public class LiteFlowLuaScriptRemoveELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
     private ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance()
-            .getScriptExecutor(ScriptTypeEnum.JS.getDisplayName());
+            .getScriptExecutor(ScriptTypeEnum.LUA.getDisplayName());
 
     // 仅卸载脚本
     @Test
@@ -102,7 +102,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
     @Test
     public void testReloadScript() {
         flowExecutor.reloadRule();
-        String script = "defaultContext.setData(\"s1\",\"abc\");";
+        String script = "defaultContext:setData(\"s1\",\"abc\");";
         FlowBus.reloadScript("s1", script);
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         DefaultContext context = response.getFirstContextBean();

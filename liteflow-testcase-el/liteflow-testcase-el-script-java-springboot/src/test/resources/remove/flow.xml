@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements JaninoCommonScriptBody {
+                public Void body(ScriptExecuteWrap wrap) {
+                    int a = 1;
+                    int b = 2;
+                    int c = 3;
+                    DefaultContext ctx = (DefaultContext) wrap.getCmp().getFirstContextBean();
+                    ctx.setData("s1", a + b + c);
+                    return null;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements JaninoCommonScriptBody {
+                public Void body(ScriptExecuteWrap wrap) {
+                    int a = 1;
+                    int b = 2;
+                    int c = 3;
+                    DefaultContext ctx = (DefaultContext) wrap.getCmp().getFirstContextBean();
+                    ctx.setData("s2", a * b + c);
+                    return null;
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(s1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(s2);
+    </chain>
+</flow>

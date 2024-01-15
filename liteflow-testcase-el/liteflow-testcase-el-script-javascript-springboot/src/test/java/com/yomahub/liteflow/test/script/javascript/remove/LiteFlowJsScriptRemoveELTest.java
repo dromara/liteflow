@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -47,7 +46,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
 
         // 获取节点id
         List<String> nodeIds = scriptExecutor.getNodeIds();
-        Assertions.assertEquals(nodeIds.size(), 2);
+        Assertions.assertEquals(2, nodeIds.size());
         Assertions.assertTrue(nodeIds.contains("s1"));
         Assertions.assertTrue(nodeIds.contains("s2"));
 
@@ -55,7 +54,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(response.isSuccess());
         DefaultContext context = response.getFirstContextBean();
-        Assertions.assertEquals(Integer.valueOf(6), context.getData("s1"));
+        Assertions.assertEquals(Double.valueOf(6), context.getData("s1"));
 
         // 卸载脚本
         scriptExecutor.unLoad("s1");
@@ -77,7 +76,7 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assertions.assertTrue(response.isSuccess());
         DefaultContext context = response.getFirstContextBean();
-        Assertions.assertEquals(Integer.valueOf(5), context.getData("s2"));
+        Assertions.assertEquals(Double.valueOf(5), context.getData("s2"));
 
         // 卸载节点
         FlowBus.removeNode("s2");
@@ -88,13 +87,28 @@ public class LiteFlowJsScriptRemoveELTest extends BaseTest {
 
         // 新 chian 会找不到节点
         Assertions.assertThrows(ELParseException.class,
-                () -> LiteFlowChainELBuilder.createChain().setChainId("chain3").setEL(
-                        "THEN(s2)"
-                ).build());
+                () -> LiteFlowChainELBuilder.createChain()
+                        .setChainId("chain3")
+                        .setEL("THEN(s2)")
+                        .build());
 
         // 节点已卸载
         Assertions.assertFalse(FlowBus.containNode("s2"));
         // 脚本已卸载
         Assertions.assertFalse(scriptExecutor.getNodeIds().contains("s2"));
+    }
+
+    // 重载脚本
+    @Test
+    public void testReloadScript() {
+        flowExecutor.reloadRule();
+        String script = "defaultContext.setData(\"s1\",\"abc\");";
+        FlowBus.reloadScript("s1", script);
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        DefaultContext context = response.getFirstContextBean();
+        // 执行结果变更
+        Assertions.assertEquals("abc", context.getData("s1"));
+        // 脚本变更
+        Assertions.assertEquals(FlowBus.getNode("s1").getScript(), script);
     }
 }

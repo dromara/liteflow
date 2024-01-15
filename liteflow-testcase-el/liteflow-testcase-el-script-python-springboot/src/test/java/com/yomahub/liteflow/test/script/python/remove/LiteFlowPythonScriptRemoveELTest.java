@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.script.graaljs.remove;
+package com.yomahub.liteflow.test.script.python.remove;
 
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -29,15 +29,15 @@ import java.util.List;
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/remove/application.properties")
-@SpringBootTest(classes = LiteFlowJsScriptRemoveELTest.class)
+@SpringBootTest(classes = LiteFlowPythonScriptRemoveELTest.class)
 @EnableAutoConfiguration
-public class LiteFlowJsScriptRemoveELTest extends BaseTest {
+public class LiteFlowPythonScriptRemoveELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
 
     private ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance()
-            .getScriptExecutor(ScriptTypeEnum.JS.getDisplayName());
+            .getScriptExecutor(ScriptTypeEnum.PYTHON.getDisplayName());
 
     // 仅卸载脚本
     @Test

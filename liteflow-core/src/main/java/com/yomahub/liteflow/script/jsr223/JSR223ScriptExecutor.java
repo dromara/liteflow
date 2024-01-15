@@ -1,14 +1,19 @@
 package com.yomahub.liteflow.script.jsr223;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import javax.script.*;
+
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +48,6 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 		try {
 			CompiledScript compiledScript = ((Compilable) scriptEngine).compile(convertScript(script));
 			compiledScriptMap.put(nodeId, compiledScript);
-			// 更新 node
-			if (FlowBus.containNode(nodeId)) {
-				FlowBus.getNode(nodeId).setScript(script);
-			}
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
@@ -57,8 +58,6 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 	@Override
 	public void unLoad(String nodeId) {
 		compiledScriptMap.remove(nodeId);
-		// 移除节点
-		FlowBus.removeNode(nodeId);
 	}
 
 	@Override

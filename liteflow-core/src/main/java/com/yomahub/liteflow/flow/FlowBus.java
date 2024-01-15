@@ -300,14 +300,19 @@ public class FlowBus {
 
 	// 移除节点
 	public static boolean removeNode(String nodeId) {
-		if (containNode(nodeId)) {
-			nodeMap.remove(nodeId);
-			return true;
-		} else {
-			String errMsg = StrUtil.format("cannot find the node[{}]", nodeId);
-			LOG.error(errMsg);
+		Node node = getNode(nodeId);
+		if (node == null) {
+			// 节点不存在
 			return false;
 		}
+		nodeMap.remove(nodeId);
+		// 如果是脚本节点，移除脚本
+		if (node.getType().isScript()) {
+			ScriptExecutorFactory.loadInstance()
+					.getScriptExecutor(node.getLanguage())
+					.unLoad(nodeId);
+		}
+		return true;
 	}
 
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
@@ -320,6 +325,19 @@ public class FlowBus {
 
 		NodeTypeEnum nodeType = node.getType();
 		fallbackNodeMap.put(nodeType, node);
+	}
+
+    // 重新加载脚本
+	public static void reloadScript(String nodeId, String script) {
+		Node node = getNode(nodeId);
+		if (node == null) {
+			return;
+		}
+        // 更新脚本
+		node.setScript(script);
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.load(nodeId, script);
 	}
 
 	public static void clearStat(){

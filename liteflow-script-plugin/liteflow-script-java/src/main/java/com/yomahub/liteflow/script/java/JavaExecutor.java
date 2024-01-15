@@ -29,10 +29,6 @@ public class JavaExecutor extends ScriptExecutor {
             se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
             se.cook(convertScript(script));
             compiledScriptMap.put(nodeId, se);
-            // 更新 node
-            if (FlowBus.containNode(nodeId)) {
-                FlowBus.getNode(nodeId).setScript(script);
-            }
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -43,8 +39,6 @@ public class JavaExecutor extends ScriptExecutor {
     @Override
     public void unLoad(String nodeId) {
         compiledScriptMap.remove(nodeId);
-        // 移除节点
-        FlowBus.removeNode(nodeId);
     }
 
     @Override

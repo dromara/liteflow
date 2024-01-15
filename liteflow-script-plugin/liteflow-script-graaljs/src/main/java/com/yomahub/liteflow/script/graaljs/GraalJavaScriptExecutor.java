@@ -40,10 +40,6 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 		try {
 			String wrapScript = StrUtil.format("function process(){{}} process();", script);
 			scriptMap.put(nodeId, Source.create("js", wrapScript));
-			// 更新 node
-			if (FlowBus.containNode(nodeId)) {
-				FlowBus.getNode(nodeId).setScript(script);
-			}
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
@@ -54,8 +50,6 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 	@Override
 	public void unLoad(String nodeId) {
 		scriptMap.remove(nodeId);
-		// 移除节点
-		FlowBus.removeNode(nodeId);
 	}
 
 	@Override
