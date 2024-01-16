@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 import java.util.concurrent.Future;
 
 /**
@@ -19,7 +19,7 @@ import java.util.concurrent.Future;
  * @since 2.6.13
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/execute2Future/application.properties")
+@Import(profiles="classpath:/execute2Future/application.properties")
 public class Executor2FutureELSpringbootTest extends BaseTest {
 
 	@Inject

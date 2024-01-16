@@ -14,9 +14,9 @@ import com.yomahub.liteflow.test.maxWaitSeconds.cmp.CCmp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 import java.util.concurrent.TimeoutException;
 
@@ -29,7 +29,7 @@ import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.DCmp.CONTENT_KEY;
  * @since 2.11.0
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/maxWaitSeconds/application.properties")
+@Import(profiles="classpath:/maxWaitSeconds/application.properties")
 public class MaxWaitSecondsSolonTest extends BaseTest {
 
     @Inject

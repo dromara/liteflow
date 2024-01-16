@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 测试springboot下的组件重试
@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.5.10
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/nodeExecutor/application.properties")
+@Import(profiles="classpath:/nodeExecutor/application.properties")
 public class LiteflowNodeExecutorELSpringbootTest extends BaseTest {
 
 	@Inject
