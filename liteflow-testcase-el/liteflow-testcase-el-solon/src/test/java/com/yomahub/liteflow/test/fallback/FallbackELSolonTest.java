@@ -6,9 +6,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
  * @since 2.11.1
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/fallback/application.properties")
+@Import(profiles="classpath:/fallback/application.properties")
 public class FallbackELSolonTest extends BaseTest {
 
     @Inject

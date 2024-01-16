@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 在when异步节点的情况下去拿ThreadLocal里的测试场景
@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.6.3
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/useTTLInWhen/application.properties")
+@Import(profiles ="classpath:/useTTLInWhen/application.properties")
 public class UseTTLInWhenELSpringbootTest extends BaseTest {
 
 	@Inject

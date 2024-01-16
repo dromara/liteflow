@@ -7,13 +7,14 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
 import org.noear.solon.test.annotation.TestPropertySource;
 
 
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/rollback/application.properties")
+@Import(profiles="classpath:/rollback/application.properties")
 public class RollbackSpringbootTest extends BaseTest {
 
 	@Inject
