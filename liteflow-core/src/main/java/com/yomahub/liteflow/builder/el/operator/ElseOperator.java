@@ -18,8 +18,10 @@ public class ElseOperator extends BaseOperator<IfCondition> {
 		// 参数只能是1个，但这里为什么是2个呢？第一个是caller，第二个才是参数
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class);
+		String errorMsg = "The caller must be IfCondition item";
+		IfCondition ifCondition = OperatorHelper.convert(objects[0], IfCondition.class, errorMsg);
 
+		OperatorHelper.checkObjMustBeCommonTypeItem(objects[1]);
 		Executable elseExecutableItem = OperatorHelper.convert(objects[1], Executable.class);
 
 		// 因为当中可能会有多个ELIF，所以并不知道这个ELSE前面有没有ELIF，

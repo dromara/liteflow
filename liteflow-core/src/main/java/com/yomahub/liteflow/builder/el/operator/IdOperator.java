@@ -16,7 +16,8 @@ public class IdOperator extends BaseOperator<Condition> {
 	public Condition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqTwo(objects);
 
-		Condition condition = OperatorHelper.convert(objects[0], Condition.class);
+		String errorMsg = "The caller must be Condition item";
+		Condition condition = OperatorHelper.convert(objects[0], Condition.class, errorMsg);
 
 		String id = OperatorHelper.convert(objects[1], String.class);
 

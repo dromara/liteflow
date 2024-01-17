@@ -20,10 +20,8 @@ public class SwitchOperator extends BaseOperator<SwitchCondition> {
 	public SwitchCondition build(Object[] objects) throws Exception {
 		OperatorHelper.checkObjectSizeEqOne(objects);
 
+		OperatorHelper.checkObjMustBeSwitchTypeItem(objects[0]);
 		Node switchNode = OperatorHelper.convert(objects[0], Node.class);
-		if (!ListUtil.toList(NodeTypeEnum.SWITCH, NodeTypeEnum.SWITCH_SCRIPT, NodeTypeEnum.FALLBACK).contains(switchNode.getType())) {
-			throw new QLException("The caller must be Switch item");
-		}
 
 		SwitchCondition switchCondition = new SwitchCondition();
 		switchCondition.setSwitchNode(switchNode);

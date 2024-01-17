@@ -10,9 +10,7 @@ public class YCmp extends NodeBreakComponent {
 
 	@Override
 	public boolean processBreak() throws Exception {
-		DefaultContext context = this.getFirstContextBean();
-		int count = context.getData("test");
-		return count > 3;
+		return this.getLoopIndex() > 2;
 	}
 
 }

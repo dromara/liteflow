@@ -16,13 +16,13 @@ import com.yomahub.liteflow.flow.element.condition.BooleanConditionTypeEnum;
 public class OrOperator extends BaseOperator<AndOrCondition> {
     @Override
     public AndOrCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtTwo(objects);
+        OperatorHelper.checkObjectSizeGteTwo(objects);
 
         AndOrCondition andOrCondition = new AndOrCondition();
         andOrCondition.setBooleanConditionType(BooleanConditionTypeEnum.OR);
 
         for (Object object : objects){
-            OperatorHelper.checkObjectMustBeBooleanItem(object);
+            OperatorHelper.checkObjMustBeBooleanTypeItem(object);
 
             Executable item = OperatorHelper.convert(object, Executable.class);
             andOrCondition.addItem(item);

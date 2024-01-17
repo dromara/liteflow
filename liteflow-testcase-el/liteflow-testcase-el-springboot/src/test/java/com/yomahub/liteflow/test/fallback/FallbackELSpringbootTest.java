@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.test.fallback;
 
+import com.yomahub.liteflow.builder.el.ELBus;
+import com.yomahub.liteflow.builder.el.ELWrapper;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
@@ -221,5 +224,14 @@ public class FallbackELSpringbootTest extends BaseTest {
         Assertions.assertTrue(response2.isSuccess());
         String stepStr2 = response2.getExecuteStepStrWithoutTime();
         Assertions.assertTrue("c==>ifn2".equals(stepStr2) || "ifn2==>c".equals(stepStr2));
+    }
+
+    @Test
+    public void testWithElBuild(){
+        ELWrapper el = ELBus.then("a", "b", "az");
+        LiteFlowChainELBuilder.createChain().setChainId("elBuilder").setEL(el.toEL()).build();
+        LiteflowResponse response = flowExecutor.execute2Resp("elBuilder");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
     }
 }
