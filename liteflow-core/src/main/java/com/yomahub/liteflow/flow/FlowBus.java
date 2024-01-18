@@ -330,7 +330,7 @@ public class FlowBus {
     // 重新加载脚本
 	public static void reloadScript(String nodeId, String script) {
 		Node node = getNode(nodeId);
-		if (node == null) {
+		if (node == null || !node.getType().isScript()) {
 			return;
 		}
         // 更新脚本
