@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.retryTimes.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.retryTimes.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.retryTimes.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.retryTimes.cmp.DCmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.retryTimes.cmp.FCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.retryTimes.cmp.ICmp"/>
+        <node id="n" class="com.yomahub.liteflow.test.retryTimes.cmp.NCmp"/>
+    </nodes>
+    <chain name="chain1">
+        THEN( a, b ).retryTimes(3);
+    </chain>
+
+    <chain name="chain2">
+        WHEN( a, b ).retryTimes(3);
+    </chain>
+
+    <chain name="chain3">
+        THEN( a, b.retryTimes(3) );
+    </chain>
+
+    <chain name="chain4">
+        FOR(c).DO(a).retryTimes(3);
+    </chain>
+
+    <chain name="chain5">
+        SWITCH(d).TO(a).retryTimes(3);
+    </chain>
+
+    <chain name="chain6">
+        IF(f, a).retryTimes(3);
+    </chain>
+
+    <chain name="chain7">
+        WHILE(n).DO(a).retryTimes(3);
+    </chain>
+
+    <chain name="chain8">
+        ITERATOR(i).DO(a).retryTimes(3);
+    </chain>
+
+    <chain name="chain9">
+        THEN( a, b ).retryTimes(1);
+    </chain>
+
+    <chain name="chain10">
+        THEN( a, FINALLY(b, a).retryTimes(3) );
+    </chain>
+
+</flow>
