@@ -93,15 +93,7 @@ public abstract class ParallelStrategyExecutor {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
         // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
         Stream<Executable> stream = executableList.stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        return executable.isAccess(slotIndex);
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                });
+                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition));
         return filterAccess(stream, slotIndex);
     }
 
