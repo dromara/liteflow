@@ -19,7 +19,7 @@ public class MustOperator extends BaseOperator<WhenCondition> {
 
 	@Override
 	public WhenCondition build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeGtTwo(objects);
+		OperatorHelper.checkObjectSizeGteTwo(objects);
 
 		String errorMsg = "The caller must be WhenCondition item";
 		WhenCondition whenCondition = OperatorHelper.convert(objects[0], WhenCondition.class, errorMsg);

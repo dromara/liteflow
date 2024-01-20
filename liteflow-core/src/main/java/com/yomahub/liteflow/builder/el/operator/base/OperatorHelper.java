@@ -10,8 +10,6 @@ import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
-import com.yomahub.liteflow.flow.element.condition.NotCondition;
 
 import java.util.Objects;
 
@@ -35,13 +33,13 @@ public class OperatorHelper {
 	}
 
 	/**
-	 * 检查参数数量，大于 2
+	 * 检查参数数量，大于等于 2
 	 * @param objects objects
 	 * @throws QLException QLException
 	 */
-	public static void checkObjectSizeGtTwo(Object[] objects) throws QLException {
+	public static void checkObjectSizeGteTwo(Object[] objects) throws QLException {
 		checkObjectSizeGtZero(objects);
-		if (objects.length <= 1) {
+		if (objects.length < 2) {
 			throw new QLException("parameter error");
 		}
 	}

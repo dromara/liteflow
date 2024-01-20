@@ -16,7 +16,7 @@ import com.yomahub.liteflow.flow.element.condition.BooleanConditionTypeEnum;
 public class OrOperator extends BaseOperator<AndOrCondition> {
     @Override
     public AndOrCondition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtTwo(objects);
+        OperatorHelper.checkObjectSizeGteTwo(objects);
 
         AndOrCondition andOrCondition = new AndOrCondition();
         andOrCondition.setBooleanConditionType(BooleanConditionTypeEnum.OR);
