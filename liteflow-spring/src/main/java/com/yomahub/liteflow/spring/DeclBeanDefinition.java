@@ -30,7 +30,11 @@ public class DeclBeanDefinition implements BeanDefinitionRegistryPostProcessor {
 
         beanDefinitionHolderMap.entrySet().stream().filter(entry -> {
             Class<?> rawClass = entry.getValue().getResolvableType().getRawClass();
-            return Arrays.stream(rawClass.getMethods()).anyMatch(method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class) != null);
+            if (rawClass == null){
+                return false;
+            }else{
+                return Arrays.stream(rawClass.getMethods()).anyMatch(method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class) != null);
+            }
         }).forEach(entry -> {
             Class<?> rawClass = entry.getValue().getResolvableType().getRawClass();
             List<DeclWarpBean> declWarpBeanList = DeclComponentParserHolder.loadDeclComponentParser().parseDeclBean(rawClass);

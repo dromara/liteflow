@@ -15,7 +15,7 @@ public class ToOperator extends BaseOperator<SwitchCondition> {
 
 	@Override
 	public SwitchCondition build(Object[] objects) throws Exception {
-		OperatorHelper.checkObjectSizeGtTwo(objects);
+		OperatorHelper.checkObjectSizeGteTwo(objects);
 
 		String errorMsg = "The caller must be SwitchCondition item";
 		SwitchCondition switchCondition = OperatorHelper.convert(objects[0], SwitchCondition.class, errorMsg);

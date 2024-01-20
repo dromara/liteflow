@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.exception;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
-import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -10,10 +9,10 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.core.AopContext;
+import org.noear.solon.core.AppContext;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 流程执行异常 单元测试
@@ -21,14 +20,14 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author zendwang
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/exception/application.properties")
+@Import(profiles="classpath:/exception/application.properties")
 public class Exception2ELSpringBootTest extends BaseTest {
 
 	@Inject
 	private FlowExecutor flowExecutor;
 
 	@Inject
-	private AopContext context;
+	private AppContext context;
 
 	@Test
 	public void testChainNotFoundException() throws Exception {

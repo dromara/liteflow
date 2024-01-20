@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot环境下pre节点和finally节点的测试
@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.6.4
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/preAndFinally/application.properties")
+@Import(profiles="classpath:/preAndFinally/application.properties")
 public class PreAndFinallyELSpringbootTest extends BaseTest {
 
 	@Inject

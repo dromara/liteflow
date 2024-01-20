@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot环境事件回调测试
@@ -18,7 +18,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.7.1
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/event/application.properties")
+@Import(profiles="classpath:/event/application.properties")
 public class EventELSpringbootTest extends BaseTest {
 
 	@Inject

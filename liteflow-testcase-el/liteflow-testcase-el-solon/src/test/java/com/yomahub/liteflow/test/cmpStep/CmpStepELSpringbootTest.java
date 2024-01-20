@@ -7,9 +7,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 import java.util.*;
 
@@ -20,7 +20,7 @@ import java.util.*;
  * @since 2.7.0
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/cmpStep/application.properties")
+@Import(profiles="classpath:/cmpStep/application.properties")
 public class CmpStepELSpringbootTest extends BaseTest {
 
 	@Inject
