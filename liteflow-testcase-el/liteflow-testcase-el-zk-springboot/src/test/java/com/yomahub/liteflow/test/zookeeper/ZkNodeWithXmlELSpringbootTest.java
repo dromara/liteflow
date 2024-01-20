@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.test.zookeeper;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
@@ -66,6 +68,10 @@ public class ZkNodeWithXmlELSpringbootTest extends BaseTest {
 		zkClient.createPersistent(chain2Path, true);
 		zkClient.writeData(chain2Path, "THEN(a, b, c, s3);");
 
+		String chain3Path = ZK_CHAIN_PATH + "/chain3:false";
+		zkClient.createPersistent(chain3Path, true);
+		zkClient.writeData(chain3Path, "THEN(a, b, c, s3);");
+
 		String script1Path = ZK_SCRIPT_PATH + "/s1:script:脚本s1:groovy";
 		zkClient.createPersistent(script1Path, true);
 		zkClient.writeData(script1Path, "defaultContext.setData(\"test\",\"hello\");");
@@ -77,6 +83,10 @@ public class ZkNodeWithXmlELSpringbootTest extends BaseTest {
 		String script3Path = ZK_SCRIPT_PATH + "/s3:script:脚本s3";
 		zkClient.createPersistent(script3Path, true);
 		zkClient.writeData(script3Path, "defaultContext.setData(\"test\",\"hello\");");
+
+		String script4Path = ZK_SCRIPT_PATH + "/s4:script:脚本s3:groovy:false";
+		zkClient.createPersistent(script4Path, true);
+		zkClient.writeData(script4Path, "defaultContext.setData(\"test\",\"hello\");");
 	}
 
 	@Test
@@ -94,6 +104,14 @@ public class ZkNodeWithXmlELSpringbootTest extends BaseTest {
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("hello", context.getData("test"));
+
+		// 测试 chain 停用
+		Assertions.assertThrows(ChainNotFoundException.class, () -> {
+			throw flowExecutor.execute2Resp("chain3", "arg").getCause();
+		});
+
+		// 测试 script 停用
+		Assertions.assertTrue(!FlowBus.getNodeMap().containsKey("s4"));
 	}
 
 	@AfterAll

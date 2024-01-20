@@ -174,6 +174,7 @@ public class EtcdParserHelper {
                             .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
                             .setName(nodeSimpleVO.getName())
                             .setScript(nodeSimpleVO.getScript())
+                            .setLanguage(nodeSimpleVO.getLanguage())
                             .build();
                 }
                 // 禁用就删除

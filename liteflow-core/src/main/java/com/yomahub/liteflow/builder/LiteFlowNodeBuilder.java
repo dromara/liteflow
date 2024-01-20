@@ -151,7 +151,9 @@ public class LiteFlowNodeBuilder {
 	}
 
 	public LiteFlowNodeBuilder setLanguage(String language) {
-		this.node.setLanguage(language);
+		if (StrUtil.isNotBlank(language)){
+			this.node.setLanguage(language);
+		}
 		return this;
 	}
 
