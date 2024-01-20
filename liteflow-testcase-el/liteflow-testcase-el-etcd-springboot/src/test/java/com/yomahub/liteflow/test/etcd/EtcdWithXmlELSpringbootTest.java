@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.etcd;
 
 import com.google.common.collect.Lists;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
@@ -55,20 +56,29 @@ public class EtcdWithXmlELSpringbootTest extends BaseTest {
 
 	@Test
 	public void testEtcdNodeWithXml1() throws Exception {
-		List<String> chainNameList = Lists.newArrayList("chain1");
-		List<String> scriptNodeValueList = Lists.newArrayList("s1:script:脚本s1");
+		List<String> chainNameList = Lists.newArrayList("chain1","chain2:false");
+		List<String> scriptNodeValueList = Lists.newArrayList("s1:script:脚本s1", "s2:script:脚本s1:groovy:false");
 		when(etcdClient.getChildrenKeys(anyString(), anyString())).thenReturn(chainNameList)
 			.thenReturn(scriptNodeValueList);
 
-		String chain1Data = "THEN(a, b, c, s1);";
-		String scriptNodeValue = "defaultContext.setData(\"test\",\"hello\");";
-		when(etcdClient.get(anyString())).thenReturn(chain1Data).thenReturn(scriptNodeValue);
+		when(etcdClient.get("chain1")).thenReturn("THEN(a, b, c, s1);");
+		when(etcdClient.get("chain2:false")).thenReturn("THEN(a, b, c, s1);");
+		when(etcdClient.get("s1:script:脚本s1")).thenReturn("defaultContext.setData(\"test\",\"hello\");");
+		when(etcdClient.get("s2:script:脚本s1:groovy:false")).thenReturn("defaultContext.setData(\"test\",\"hello\");");
 
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("a==>b==>c==>s1[脚本s1]", response.getExecuteStepStr());
 		Assertions.assertEquals("hello", context.getData("test"));
+
+		// 测试 chain 停用
+		Assertions.assertThrows(ChainNotFoundException.class, () -> {
+			throw flowExecutor.execute2Resp("chain2", "arg").getCause();
+		});
+
+		// 测试 script 停用
+		Assertions.assertTrue(!FlowBus.getNodeMap().containsKey("s2"));
 	}
 
 	@Test
