@@ -33,13 +33,7 @@ public class ZkParserHelper {
 
     private final CuratorFramework client;
 
-    private final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-
     private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
-
-    private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
-
-    private final String NODE_ITEM_XML_WITH_LANGUAGE_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\" language=\"{}\"><![CDATA[{}]]></node>";
 
     private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -72,7 +66,7 @@ public class ZkParserHelper {
                 RuleParsePluginUtil.ChainDto chainDto = RuleParsePluginUtil.parseChainKey(chainName);
                 String chainData = new String(
                         client.getData().forPath(StrUtil.format("{}/{}", zkParserVO.getChainPath(), chainName)));
-                if (StrUtil.isNotBlank(chainData) && chainDto.isEnable()) {
+                if (StrUtil.isNotBlank(chainData)) {
                     chainItemContentList.add(chainDto.toElXml(chainData));
                 }
             }

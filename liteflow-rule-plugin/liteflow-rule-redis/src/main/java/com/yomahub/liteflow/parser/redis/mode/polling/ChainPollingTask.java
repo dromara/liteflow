@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser.redis.mode.polling;
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -8,6 +9,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 
 import java.util.*;
 
@@ -61,11 +63,19 @@ public class ChainPollingTask implements Runnable {
             for (Map.Entry<String, String> entry : chainSHAMap.entrySet()) {
                 String chainId = entry.getKey();
                 String oldSHA = entry.getValue();
+                Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainId);
+                // 如果是停用，就直接进删除
+                if (pair.getKey()){
+                    FlowBus.removeChain(pair.getValue());
+                    needDelete.add(chainId);
+                    continue;
+                }
+
                 //在redis服务端通过Lua脚本计算SHA值
                 String newSHA = chainClient.evalSha(valueLua, chainKey, chainId);
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该chain,表示该chain已被删除
-                    FlowBus.removeChain(chainId);
+                    FlowBus.removeChain(pair.getValue());
                     LOG.info("starting reload flow config... delete key={}", chainId);
 
                     //添加到待删除的list 后续统一从SHAMap中移除
@@ -75,7 +85,7 @@ public class ChainPollingTask implements Runnable {
                 else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该chain的值已被修改,重新拉取变化的chain
                     String chainData = chainClient.hget(chainKey, chainId);
-                    LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
+                    LiteFlowChainELBuilder.createChain().setChainId(pair.getValue()).setEL(chainData).build();
                     LOG.info("starting reload flow config... update key={} new value={},", chainId, chainData);
 
                     //修改SHAMap
@@ -98,12 +108,17 @@ public class ChainPollingTask implements Runnable {
                 //在此处重新拉取所有chainId集合,补充添加新chain
                 Set<String> newChainSet = chainClient.hkeys(chainKey);
                 for (String chainId : newChainSet) {
+                    Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainId);
+
                     if (!chainSHAMap.containsKey(chainId)) {
                         //将新chainId添加到LiteFlowChainELBuilder和SHAMap
                         String chainData = chainClient.hget(chainKey, chainId);
-                        LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(chainData).build();
-                        LOG.info("starting reload flow config... create key={} new value={},", chainId, chainData);
-                        chainSHAMap.put(chainId, DigestUtil.sha1Hex(chainData));
+                        // 如果是启用，才装配
+                        if (pair.getKey()){
+                            LiteFlowChainELBuilder.createChain().setChainId(pair.getValue()).setEL(chainData).build();
+                            LOG.info("starting reload flow config... create key={} new value={},", chainId, chainData);
+                            chainSHAMap.put(chainId, DigestUtil.sha1Hex(chainData));
+                        }
                     }
                 }
             }

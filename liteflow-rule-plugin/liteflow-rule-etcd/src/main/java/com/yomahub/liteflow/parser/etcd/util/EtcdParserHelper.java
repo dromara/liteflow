@@ -34,11 +34,7 @@ public class EtcdParserHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtcdParserHelper.class);
 
-    private final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
-
     private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
-
-    private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
 
     private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
@@ -82,7 +78,7 @@ public class EtcdParserHelper {
             for (String chainName : chainNameList) {
                 RuleParsePluginUtil.ChainDto chainDto = RuleParsePluginUtil.parseChainKey(chainName);
                 String chainData = client.get(StrUtil.format("{}/{}", etcdParserVO.getChainPath(), chainName));
-                if (StrUtil.isNotBlank(chainData) && chainDto.isEnable()) {
+                if (StrUtil.isNotBlank(chainData)) {
                     chainItemContentList.add(chainDto.toElXml(chainData));
                 }
             }

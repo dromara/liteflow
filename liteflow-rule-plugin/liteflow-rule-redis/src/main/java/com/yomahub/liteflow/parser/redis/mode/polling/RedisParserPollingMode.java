@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.parser.redis.mode.polling;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -13,11 +12,15 @@ import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.redisson.Redisson;
 import org.redisson.config.Config;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Redis 轮询机制实现类
@@ -126,8 +129,9 @@ public class RedisParserPollingMode implements RedisParserHelper {
             List<String> chainItemContentList = new ArrayList<>();
             for (String chainName : chainNameSet) {
                 String chainData = chainClient.hget(chainKey, chainName);
+                RuleParsePluginUtil.ChainDto chainDto = RuleParsePluginUtil.parseChainKey(chainName);
                 if (StrUtil.isNotBlank(chainData)) {
-                    chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, chainData));
+                    chainItemContentList.add(chainDto.toElXml(chainData));
                 }else{
                     continue;
                 }
@@ -154,19 +158,10 @@ public class RedisParserPollingMode implements RedisParserHelper {
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
                                         scriptFieldValue, scriptKey));
                     }
-                    String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
 
-                    // 有语言类型
-                    if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-                        scriptItemContentList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN,
-                                nodeSimpleVO.getNodeId(), nodeSimpleVO.getName(), nodeSimpleVO.getType(),
-                                nodeSimpleVO.getLanguage(), scriptData));
-                    }
-                    // 没有语言类型
-                    else {
-                        scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
-                                nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
-                    }
+                    String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
+                    nodeSimpleVO.setScript(scriptData);
+                    scriptItemContentList.add(RuleParsePluginUtil.toScriptXml(nodeSimpleVO));
 
                     //计算scriptData的SHA值
                     String scriptSHA = DigestUtil.sha1Hex(scriptData);
