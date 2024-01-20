@@ -6,9 +6,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 单元测试:传递null param导致NPE的优化代码
@@ -17,7 +17,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.6.6
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/nullParam/application.properties")
+@Import(profiles="classpath:/nullParam/application.properties")
 public class NullParamELSpringbootTest extends BaseTest {
 
 	@Inject

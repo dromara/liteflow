@@ -93,21 +93,25 @@ public abstract class ParallelStrategyExecutor {
     protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex) {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
         // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
-        // 3.为避免同一个 node 的 isAccess 方法重复执行，给 node 设置 isAccess 方法执行结果
-        return executableList.stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        boolean access = executable.isAccess(slotIndex);
-                        if (executable instanceof Node) {
-                            ((Node) executable).setAccessResult(access);
-                        }
-                        return access;
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                });
+        Stream<Executable> stream = executableList.stream()
+                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition));
+        return filterAccess(stream, slotIndex);
+    }
+
+    // 过滤 isAccess 的方法，默认实现，同时为避免同一个 node 的 isAccess 方法重复执行，给 node 设置 isAccess 方法执行结果
+    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex) {
+        return stream.filter(executable -> {
+            try {
+                boolean access = executable.isAccess(slotIndex);
+                if (executable instanceof Node) {
+                    ((Node) executable).setAccessResult(access);
+                }
+                return access;
+            } catch (Exception e) {
+                LOG.error("there was an error when executing the when component isAccess", e);
+                return false;
+            }
+        });
     }
 
     /**

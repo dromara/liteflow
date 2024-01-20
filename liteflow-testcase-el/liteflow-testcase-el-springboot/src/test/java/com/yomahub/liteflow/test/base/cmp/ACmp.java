@@ -17,5 +17,4 @@ public class ACmp extends NodeComponent {
 	public void process() {
 		System.out.println("ACmp executed!");
 	}
-
 }

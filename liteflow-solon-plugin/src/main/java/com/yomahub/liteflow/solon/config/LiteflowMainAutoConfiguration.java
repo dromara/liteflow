@@ -5,7 +5,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Init;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.core.AopContext;
+import org.noear.solon.core.AppContext;
 
 /**
  * 主要的业务装配器 在这个装配器里装配了执行器，执行器初始化类，监控器
@@ -22,7 +22,7 @@ public class LiteflowMainAutoConfiguration {
 	boolean parseOnStart;
 
 	@Inject
-	AopContext aopContext;
+	AppContext appContext;
 
 	@Inject
 	LiteflowConfig liteflowConfig;
@@ -39,7 +39,7 @@ public class LiteflowMainAutoConfiguration {
 			flowExecutor.init(true);
 		}
 
-		aopContext.wrapAndPut(FlowExecutor.class, flowExecutor);
+		appContext.wrapAndPut(FlowExecutor.class, flowExecutor);
 	}
 
 }

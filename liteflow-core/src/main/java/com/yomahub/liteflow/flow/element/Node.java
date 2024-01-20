@@ -57,7 +57,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String currChainId;
 
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
-	private boolean accessResult;
+	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
 	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
@@ -133,7 +133,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			instance.setRefNode(this);
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
-			if (accessResult || instance.isAccess()) {
+			if (getAccessResult() || instance.isAccess()) {
 				LOG.info("[O]start component[{}] execution", instance.getDisplayName());
 
 				// 这里开始进行重试的逻辑和主逻辑的运行
@@ -176,6 +176,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			instance.removeIsEnd();
 			instance.removeRefNode();
 			removeLoopIndex();
+			removeAccessResult();
 		}
 	}
 
@@ -252,11 +253,16 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public boolean getAccessResult() {
-		return accessResult;
+		Boolean result = this.accessResult.get();
+		return result == null ? false : result;
 	}
 
 	public void setAccessResult(boolean accessResult) {
-		this.accessResult = accessResult;
+		this.accessResult.set(accessResult);
+	}
+
+	public void removeAccessResult() {
+		this.accessResult.remove();
 	}
 
 	public void setLoopIndex(int index) {
@@ -305,6 +311,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		Node node = (Node)this.clone();
 		node.loopIndexTL = new TransmittableThreadLocal<>();
 		node.currLoopObject = new TransmittableThreadLocal<>();
+		node.accessResult = new TransmittableThreadLocal<>();
 		return node;
 	}
 }

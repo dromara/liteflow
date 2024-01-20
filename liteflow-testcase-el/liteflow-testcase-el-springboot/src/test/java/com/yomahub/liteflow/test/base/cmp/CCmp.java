@@ -18,4 +18,9 @@ public class CCmp extends NodeComponent {
 		System.out.println("CCmp executed!");
 	}
 
+	@Override
+	public boolean isAccess() {
+		System.out.println("hello");
+		return true;
+	}
 }
