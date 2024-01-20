@@ -444,7 +444,7 @@ public class ParserHelper {
     }
 
     private static Boolean getEnableByJsonNode(JsonNode nodeObject) {
-        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).textValue() : "";
+        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).toString() : "";
         if (StrUtil.isBlank(enableStr)) {
             return true;
         }
