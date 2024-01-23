@@ -62,7 +62,7 @@ Looking forward to your use！
 
 Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
-## LF CLUB Community
+## 👑LF CLUB Community
 
 LF CLUB is a premium paid community founded by the author of LiteFlow.
 

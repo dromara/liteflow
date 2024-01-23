@@ -57,7 +57,7 @@ LiteFlow拥有极其详细易懂的文档体系，能帮助你解决在使用框
 
 LiteFlow期待你的了解！
 
-## LF CLUB社区
+## 👑LF CLUB社区
 
 LF CLUB是由LiteFlow作者创办的高级付费社区
 
