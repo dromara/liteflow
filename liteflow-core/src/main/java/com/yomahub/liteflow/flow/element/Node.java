@@ -21,8 +21,6 @@ import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.property.LiteflowConfig;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
@@ -30,6 +28,7 @@ import com.yomahub.liteflow.slot.Slot;
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
  *
  * @author Bryan.Zhang
+ * @author luo yi
  */
 public class Node implements Executable, Cloneable, Rollbackable{
 
@@ -56,6 +55,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String cmpData;
 
 	private String currChainId;
+
+	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
+	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
 	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
@@ -125,16 +127,13 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
 
-		Slot slot = DataBus.getSlot(slotIndex);
 		try {
 			// 把线程属性赋值给组件对象
 			instance.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
 
-			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
-			if (instance.isAccess()) {
+			if (getAccessResult() || instance.isAccess()) {
 				LOG.info("[O]start component[{}] execution", instance.getDisplayName());
 
 				// 这里开始进行重试的逻辑和主逻辑的运行
@@ -142,8 +141,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
-			}
-			else {
+			} else {
 				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
@@ -178,6 +176,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			instance.removeIsEnd();
 			instance.removeRefNode();
 			removeLoopIndex();
+			removeAccessResult();
 		}
 	}
 
@@ -253,6 +252,19 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return currChainId;
 	}
 
+	public boolean getAccessResult() {
+		Boolean result = this.accessResult.get();
+		return result == null ? false : result;
+	}
+
+	public void setAccessResult(boolean accessResult) {
+		this.accessResult.set(accessResult);
+	}
+
+	public void removeAccessResult() {
+		this.accessResult.remove();
+	}
+
 	public void setLoopIndex(int index) {
 		this.loopIndexTL.set(index);
 	}
@@ -299,6 +311,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		Node node = (Node)this.clone();
 		node.loopIndexTL = new TransmittableThreadLocal<>();
 		node.currLoopObject = new TransmittableThreadLocal<>();
+		node.accessResult = new TransmittableThreadLocal<>();
 		return node;
 	}
 }
