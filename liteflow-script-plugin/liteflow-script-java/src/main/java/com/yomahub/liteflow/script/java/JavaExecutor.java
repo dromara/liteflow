@@ -19,12 +19,7 @@ public class JavaExecutor extends ScriptExecutor {
     @Override
     public void load(String nodeId, String script) {
         try{
-            IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory(this.getClass().getClassLoader()).newScriptEvaluator();
-            se.setTargetVersion(8);
-            se.setReturnType(Object.class);
-            se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
-            se.cook(convertScript(script));
-            compiledScriptMap.put(nodeId, se);
+            compiledScriptMap.put(nodeId, (IScriptEvaluator) compile(script));
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -50,6 +45,16 @@ public class JavaExecutor extends ScriptExecutor {
     @Override
     public ScriptTypeEnum scriptType() {
         return ScriptTypeEnum.JAVA;
+    }
+
+    @Override
+    public Object compile(String script) throws Exception {
+        IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory(this.getClass().getClassLoader()).newScriptEvaluator();
+        se.setTargetVersion(8);
+        se.setReturnType(Object.class);
+        se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
+        se.cook(convertScript(script));
+        return se;
     }
 
     private String convertScript(String script){

@@ -10,6 +10,7 @@ import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
+import javax.script.ScriptException;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -86,4 +87,12 @@ public abstract class ScriptExecutor {
 		ScriptBeanManager.getScriptBeanMap().forEach(putIfAbsentConsumer);
 	}
 
+	/**
+	 * 利用相应框架编译脚本
+	 *
+	 * @param script 脚本
+	 * @return boolean
+	 * @throws Exception 例外
+	 */
+	public abstract Object compile(String script) throws Exception;
 }

@@ -33,8 +33,7 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 	@Override
 	public void load(String nodeId, String script) {
 		try {
-			String wrapScript = StrUtil.format("function process(){{}} process();", script);
-			scriptMap.put(nodeId, Source.create("js", wrapScript));
+			scriptMap.put(nodeId, Source.create("js", (CharSequence) compile(script)));
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
@@ -82,6 +81,14 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 	@Override
 	public ScriptTypeEnum scriptType() {
 		return ScriptTypeEnum.JS;
+	}
+
+	@Override
+	public Object compile(String script) throws Exception {
+		String wrapScript = StrUtil.format("function process(){{}} process();", script);
+		Context context = Context.newBuilder().allowAllAccess(true).engine(engine).build();
+		context.parse(Source.create("js", wrapScript));
+		return wrapScript;
 	}
 
 }
