@@ -9,7 +9,6 @@
 package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
@@ -38,6 +37,7 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
+import com.yomahub.liteflow.util.NodeScanner;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -241,6 +241,12 @@ public class FlowBus {
 	public static Node getNode(String nodeId) {
 		return nodeMap.get(nodeId);
 	}
+
+    // 获取某一个 chainId 下的所有 nodeId
+    public static List<Node> getNodeByChainId(String chainId) {
+        Chain chain = getChain(chainId);
+		return NodeScanner.getNodesInChain(chain);
+    }
 
 	public static Map<String, Node> getNodeMap() {
 		return nodeMap;
