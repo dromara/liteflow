@@ -94,6 +94,6 @@ public interface ChainConstant {
 
 	String EXTENDS = "extends";
 
-	String RETRY_TIMES = "retryTimes";
+	String RETRY = "retry";
 
 }

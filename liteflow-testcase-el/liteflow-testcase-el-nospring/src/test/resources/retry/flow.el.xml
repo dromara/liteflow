@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.retry.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.retry.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.retry.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.retry.cmp.DCmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.retry.cmp.FCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.retry.cmp.ICmp"/>
+        <node id="n" class="com.yomahub.liteflow.test.retry.cmp.NCmp"/>
+        <node id="m" class="com.yomahub.liteflow.test.retry.cmp.MCmp"/>
+    </nodes>
+    <chain name="chain1">
+        THEN( a, b ).retry(3);
+    </chain>
+
+    <chain name="chain2">
+        WHEN( a, b ).retry(3);
+    </chain>
+
+    <chain name="chain3">
+        THEN( a, b.retry(3) );
+    </chain>
+
+    <chain name="chain4">
+        FOR(c).DO(a).retry(3);
+    </chain>
+
+    <chain name="chain5">
+        SWITCH(d).TO(a).retry(3);
+    </chain>
+
+    <chain name="chain6">
+        IF(f, a).retry(3);
+    </chain>
+
+    <chain name="chain7">
+        WHILE(n).DO(a).retry(3);
+    </chain>
+
+    <chain name="chain8">
+        ITERATOR(i).DO(a).retry(3);
+    </chain>
+
+    <chain name="chain9">
+        THEN( a, b ).retry(1);
+    </chain>
+
+    <chain name="chain10">
+        THEN( a, FINALLY(b, a).retry(3) );
+    </chain>
+
+    <chain name="chain11">
+        THEN( a, m ).retry(3, "com.yomahub.liteflow.exception.ELParseException", "com.yomahub.liteflow.exception.FlowSystemException");
+    </chain>
+
+    <chain name="chain12">
+        THEN( a, m ).retry(3, "com.yomahub.liteflow.exception.AndOrConditionException");
+    </chain>
+
+</flow>

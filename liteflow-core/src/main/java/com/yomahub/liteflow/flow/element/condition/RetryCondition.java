@@ -3,7 +3,6 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.exception.ChainEndException;
-import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
@@ -12,11 +11,24 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class RetryCondition extends ThenCondition{
 
     private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
     private Integer retryTimes;
+
+    private Class<? extends Exception>[] retryForExceptions = new Class[] { Exception.class };
+
+    public Class<? extends Exception>[] getRetryForExceptions() {
+        return retryForExceptions;
+    }
+
+    public void setRetryForExceptions(Class<? extends Exception>[] retryForExceptions) {
+        this.retryForExceptions = retryForExceptions;
+    }
 
     public Integer getRetryTimes() {
         return retryTimes;
@@ -29,6 +41,7 @@ public class RetryCondition extends ThenCondition{
     @Override
     public void executeCondition(Integer slotIndex) throws Exception {
         int retryTimes = this.getRetryTimes() < 0 ? 0 : this.getRetryTimes();
+        List<Class<? extends Exception>> forExceptions = Arrays.asList(this.getRetryForExceptions());
         for (int i = 0; i <= retryTimes; i ++) {
             try {
                 if(i == 0) {
@@ -40,7 +53,9 @@ public class RetryCondition extends ThenCondition{
             } catch (ChainEndException e) {
                 throw e;
             } catch (Exception e) {
-                if(i >= retryTimes) {
+                // 判断抛出的异常是不是指定异常的子类
+                boolean flag = forExceptions.stream().anyMatch(clazz -> clazz.isAssignableFrom(e.getClass()));
+                if(!flag || i >= retryTimes) {
                     if(retryTimes > 0) {
                         String retryFailMsg = StrFormatter.format("retry fail when executing the chain[{}] because {} occurs {}.",
                                 this.getCurrChainId(), this.getCurrentExecutableId(), e);
