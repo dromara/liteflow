@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.graaljs.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.graaljs.GraalJavaScriptExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -47,5 +48,8 @@ public class ValidateGraaljsScriptComponentTest {
                 "                defaultContext.setData(\"s1\",parseInt(result));";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.JS));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.AVIATOR));
     }
 }

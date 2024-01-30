@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.python.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.python.PythonScriptExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -49,5 +50,8 @@ public class ValidatePythonScriptComponentTest {
                 "                defaultContext.setData(\"td\", td.sayHi(\"jack\"))";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.PYTHON));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.LUA));
     }
 }

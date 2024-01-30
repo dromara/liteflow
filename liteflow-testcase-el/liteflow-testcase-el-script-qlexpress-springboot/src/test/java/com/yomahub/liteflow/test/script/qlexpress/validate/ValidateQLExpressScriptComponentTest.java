@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.qlexpress.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.qlexpress.QLExpressScriptExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -27,5 +28,8 @@ public class ValidateQLExpressScriptComponentTest {
                 "                }";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.QLEXPRESS));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.PYTHON));
     }
 }

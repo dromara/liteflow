@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.lua.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.lua.LuaScriptExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -33,5 +34,8 @@ public class ValidateLuaScriptComponentTest {
                 "                defaultContext:setData(\"s2\",_meta:get(\"nodeId\"))";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.LUA));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.JS));
     }
 }

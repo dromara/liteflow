@@ -46,17 +46,17 @@ public class ValidateMultiLanguageScriptComponentTest {
         Assertions.assertFalse(ScriptValidator.validate(correctGroovyScript));
 
         // 多语言脚本验证 正确样例
-        Map<String, ScriptTypeEnum> correctData = new HashMap<>();
-        correctData.put(correctGroovyScript, ScriptTypeEnum.GROOVY);
-        correctData.put(correctJavascriptScript, ScriptTypeEnum.JS);
-        correctData.put(correctPythonScript, ScriptTypeEnum.PYTHON);
+        Map<ScriptTypeEnum, String> correctData = new HashMap<>();
+        correctData.put(ScriptTypeEnum.GROOVY, correctGroovyScript);
+        correctData.put(ScriptTypeEnum.JS, correctJavascriptScript);
+        correctData.put(ScriptTypeEnum.PYTHON, correctPythonScript);
         Assertions.assertTrue(ScriptValidator.validate(correctData));
 
         // 多语言脚本验证 错误样例
-        Map<String, ScriptTypeEnum> wrongData = new HashMap<>();
-        wrongData.put(correctGroovyScript, ScriptTypeEnum.GROOVY);
-        wrongData.put(correctJavascriptScript, ScriptTypeEnum.JS);
-        wrongData.put(wrongPythonScript, ScriptTypeEnum.PYTHON);
+        Map<ScriptTypeEnum, String> wrongData = new HashMap<>();
+        wrongData.put(ScriptTypeEnum.GROOVY, correctGroovyScript);
+        wrongData.put(ScriptTypeEnum.JS, correctJavascriptScript);
+        wrongData.put(ScriptTypeEnum.PYTHON, wrongPythonScript);
         Assertions.assertFalse(ScriptValidator.validate(wrongData));
     }
 }

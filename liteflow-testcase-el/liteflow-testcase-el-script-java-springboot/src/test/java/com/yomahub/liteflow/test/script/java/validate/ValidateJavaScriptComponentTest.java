@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.java.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.java.JavaExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -59,5 +60,8 @@ public class ValidateJavaScriptComponentTest {
                 "            }";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.JAVA));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.GROOVY));
     }
 }

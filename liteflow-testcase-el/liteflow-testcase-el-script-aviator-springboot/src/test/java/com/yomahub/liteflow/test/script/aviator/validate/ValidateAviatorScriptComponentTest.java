@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.script.aviator.validate;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.aviator.AviatorScriptExecutor;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
@@ -37,5 +38,10 @@ public class ValidateAviatorScriptComponentTest {
                 "                setData(defaultContext, \"s1\", a*b);";
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
+
+        Assertions.assertTrue(ScriptValidator.validate(correctScript, ScriptTypeEnum.AVIATOR));
+        Assertions.assertFalse(ScriptValidator.validate(correctScript, ScriptTypeEnum.PYTHON));
+
+
     }
 }
