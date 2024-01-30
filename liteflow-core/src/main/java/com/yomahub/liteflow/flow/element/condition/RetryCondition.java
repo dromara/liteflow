@@ -14,6 +14,12 @@ import com.yomahub.liteflow.slot.DataBus;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ *
+ * @author Rain
+ * @since 2.12.0
+ *
+ */
 public class RetryCondition extends ThenCondition{
 
     private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());

@@ -9,7 +9,7 @@ import com.yomahub.liteflow.flow.element.condition.RetryCondition;
 /**
  *
  * @author Rain
- * @since 2.11.5
+ * @since 2.12.0
  *
  */
 public class RetryOperator extends BaseOperator<Condition> {

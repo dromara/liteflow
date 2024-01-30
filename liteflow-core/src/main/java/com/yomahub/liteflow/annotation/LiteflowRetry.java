@@ -12,6 +12,11 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
+/**
+ * This class has been deprecated due to its only component retry function. Please use the retry method in the EL expression.
+ * @Deprecated
+ * @see # retry(int retryTimes)   e.g. THEN( a, b.retry(3) ); WHEN( a, b ).retry(3);
+ */
 @Deprecated
 public @interface LiteflowRetry {
 
