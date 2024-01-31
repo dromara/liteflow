@@ -54,17 +54,7 @@ public abstract class ScriptExecutor {
 		// key的规则为自定义上下文的simpleName
 		// 比如你的自定义上下文为AbcContext，那么key就为:abcContext
 		// 这里不统一放一个map的原因是考虑到有些用户会调用上下文里的方法，而不是参数，所以脚本语言的绑定表里也是放多个上下文
-		DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(o -> {
-			ContextBean contextBean = AnnoUtil.getAnnotation(o.getClass(), ContextBean.class);
-			String key;
-			if (contextBean != null && contextBean.value().trim().length() > 0) {
-				key = contextBean.value();
-			}
-			else {
-				key = StrUtil.lowerFirst(o.getClass().getSimpleName());
-			}
-			putConsumer.accept(key, o);
-		});
+		DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(tuple -> putConsumer.accept(tuple.get(0), tuple.get(1)));
 
 		// 把wrap对象转换成元数据map
 		Map<String, Object> metaMap = BeanUtil.beanToMap(wrap);

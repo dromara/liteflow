@@ -280,6 +280,10 @@ public abstract class NodeComponent {
 		return this.getSlot().getContextBean(contextBeanClazz);
 	}
 
+	public <T> T getContextBean(String contextName) {
+		return this.getSlot().getContextBean(contextName);
+	}
+
 	public String getNodeId() {
 		return nodeId;
 	}

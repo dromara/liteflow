@@ -101,6 +101,10 @@ public class LiteflowResponse {
 		return this.getSlot().getContextBean(contextBeanClazz);
 	}
 
+	public <T> T getContextBean(String contextName) {
+		return this.getSlot().getContextBean(contextName);
+	}
+
 	public Map<String, List<CmpStep>> getExecuteSteps() {
 		Map<String, List<CmpStep>> map = new LinkedHashMap<>();
 		this.getSlot().getExecuteSteps().forEach(cmpStep -> {
