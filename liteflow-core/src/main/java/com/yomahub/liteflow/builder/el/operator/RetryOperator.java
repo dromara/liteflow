@@ -15,7 +15,7 @@ import com.yomahub.liteflow.flow.element.condition.RetryCondition;
 public class RetryOperator extends BaseOperator<Condition> {
     @Override
     public Condition build(Object[] objects) throws Exception {
-        OperatorHelper.checkObjectSizeGtTwo(objects);
+        OperatorHelper.checkObjectSizeGteTwo(objects);
         Executable executable = OperatorHelper.convert(objects[0], Executable.class);
         Integer retryTimes = OperatorHelper.convert(objects[1], Integer.class);
         RetryCondition retryCondition = new RetryCondition();
