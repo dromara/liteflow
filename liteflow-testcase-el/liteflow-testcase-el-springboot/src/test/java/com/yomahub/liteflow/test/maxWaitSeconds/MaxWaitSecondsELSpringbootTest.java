@@ -182,6 +182,16 @@ public class MaxWaitSecondsELSpringbootTest extends BaseTest {
         assertNotTimeout("chain2");
     }
 
+    // 测试超时情况下组件还在运行的场景是否会报错
+    @Test
+    public void testChain3() {
+        DefaultContext context = new DefaultContext();
+        context.setData("test", "123");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg", context);
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(TimeoutException.class, response.getCause().getClass());
+    }
+
     private void assertTimeout(String chainId) {
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
         Assertions.assertFalse(response.isSuccess());
