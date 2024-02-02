@@ -243,7 +243,7 @@ public class FlowBus {
 	}
 
     // 获取某一个 chainId 下的所有 nodeId
-    public static List<Node> getNodeByChainId(String chainId) {
+    public static List<Node> getNodesByChainId(String chainId) {
         Chain chain = getChain(chainId);
 		return NodeScanner.getNodesInChain(chain);
     }
