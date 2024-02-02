@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
 import com.yomahub.liteflow.flow.element.condition.PreCondition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
@@ -93,20 +94,25 @@ public abstract class ParallelStrategyExecutor {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
         // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
         Stream<Executable> stream = executableList.stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        return executable.isAccess(slotIndex);
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                });
+                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition));
         return filterAccess(stream, slotIndex);
     }
 
-    //过滤isAccess的抽象接口方法
-    protected abstract Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex);
+    // 过滤 isAccess 的方法，默认实现，同时为避免同一个 node 的 isAccess 方法重复执行，给 node 设置 isAccess 方法执行结果
+    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex) {
+        return stream.filter(executable -> {
+            try {
+                boolean access = executable.isAccess(slotIndex);
+                if (executable instanceof Node) {
+                    ((Node) executable).setAccessResult(access);
+                }
+                return access;
+            } catch (Exception e) {
+                LOG.error("there was an error when executing the when component isAccess", e);
+                return false;
+            }
+        });
+    }
 
     /**
      * 获取 WHEN 所需线程池

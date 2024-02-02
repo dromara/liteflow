@@ -62,6 +62,31 @@ Looking forward to your use！
 
 Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
 
+## 👑LF CLUB Community
+
+LF CLUB is a premium paid community founded by the author of LiteFlow.
+
+LF CLUB can help all users of the LiteFlow framework, as well as potential developers who want to use LiteFlow.
+
+LF CLUB provides the following services:
+
+**1.Weekly releases of a condensed analysis series for LF. As long as users study along with the Planet series articles, they will definitely be able to fully grasp LF.**
+
+**2.Provide a Q&A service where members can ask unlimited questions and receive detailed replies and guidance on the same day.**
+
+**3.Each enrolled user is entitled to two remote one-on-one tutoring sessions per year as part of the remote assistance service.**
+
+**4.Every 1 to 2 days, there will be updates on LF's current progress and the focus of the next version.**
+
+The LF CLUB can solve all the problems you encounter when using the LiteFlow framework. It offers a series of courses to help you gain a deep understanding of the LiteFlow framework. Unlike the WeChat community, the LF CLUB prioritizes the importance of questions and provides detailed answers.
+
+Exclusive content helps you gain a profound understanding without the need to search for answers on other platforms. The author personally teaches, providing expert guidance at your fingertips, eliminating the need to seek help from others.
+
+To join the LF CLUB, please scan the QR code below or click on the image to go directly to the website.
+
+<a href="https://t.zsxq.com/16VxfATen"><img src="static/img/zsxq-github.png"></a>
+
+
 ## 🦾Sponsor
 
 **MISBoot低代码开发平台**

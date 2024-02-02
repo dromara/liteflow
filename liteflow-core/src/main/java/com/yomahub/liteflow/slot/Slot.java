@@ -9,8 +9,10 @@ package com.yomahub.liteflow.slot;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -29,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Predicate;
 
 /**
  * Slot的抽象类实现
@@ -90,14 +93,14 @@ public class Slot {
 
 	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
-	private List<Object> contextBeanList;
+	private List<Tuple> contextBeanList;
 	
-	private static final ThreadLocal<Deque<Condition>> conditionStack = ThreadLocal.withInitial(LinkedList::new);
+	private static final TransmittableThreadLocal<Deque<Condition>> conditionStack = TransmittableThreadLocal.withInitial(ConcurrentLinkedDeque::new);
 
 	public Slot() {
 	}
 
-	public Slot(List<Object> contextBeanList) {
+	public Slot(List<Tuple> contextBeanList) {
 		this.contextBeanList = contextBeanList;
 	}
 
@@ -448,21 +451,30 @@ public class Slot {
 		metaDataMap.remove(SUB_EXCEPTION_PREFIX + chainId);
 	}
 
-	public List<Object> getContextBeanList() {
+	public List<Tuple> getContextBeanList() {
 		return this.contextBeanList;
 	}
 
 	public <T> T getContextBean(Class<T> contextBeanClazz) {
-		T t = (T) contextBeanList.stream().filter(o -> o.getClass().getName().equals(contextBeanClazz.getName())).findFirst().orElse(null);
-		if (t == null) {
+		Tuple contextTuple = contextBeanList.stream().filter(tuple -> tuple.get(1).getClass().getName().equals(contextBeanClazz.getName())).findFirst().orElse(null);
+		if (contextTuple == null) {
 			contextBeanList.forEach(o -> LOG.info("ChainId[{}], Context class:{},Request class:{}", this.getChainId(), o.getClass().getName(), contextBeanClazz.getName()));
 			throw new NoSuchContextBeanException("this type is not in the context type passed in");
 		}
-		return t;
+		return contextTuple.get(1);
+	}
+
+	public <T> T getContextBean(String contextBeanKey) {
+		Tuple contextTuple = contextBeanList.stream().filter(tuple -> tuple.get(0).equals(contextBeanKey)).findFirst().orElse(null);
+		if (contextTuple == null) {
+			contextBeanList.forEach(o -> LOG.info("ChainId[{}], Context class:{},Request contextBeanKey:{}", this.getChainId(), o.getClass().getName(), contextBeanKey));
+			throw new NoSuchContextBeanException("this context key is not defined");
+		}
+		return contextTuple.get(1);
 	}
 
 	public <T> T getFirstContextBean() {
-		Class<T> firstContextBeanClazz = (Class<T>) this.getContextBeanList().get(0).getClass();
+		Class<T> firstContextBeanClazz = (Class<T>) this.getContextBeanList().get(0).get(1).getClass();
 		return this.getContextBean(firstContextBeanClazz);
 	}
 

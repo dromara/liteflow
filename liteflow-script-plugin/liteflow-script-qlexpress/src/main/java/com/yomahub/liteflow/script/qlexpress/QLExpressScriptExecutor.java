@@ -13,6 +13,8 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,8 +43,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public void load(String nodeId, String script) {
 		try {
-			InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(script);
-			compiledScriptMap.put(nodeId, instructionSet);
+			compiledScriptMap.put(nodeId, (InstructionSet) compile(script));
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
@@ -94,6 +95,11 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public ScriptTypeEnum scriptType() {
 		return ScriptTypeEnum.QLEXPRESS;
+	}
+
+	@Override
+	public Object compile(String script) throws Exception {
+		return expressRunner.getInstructionSetFromLocalCache(script);
 	}
 
 }
