@@ -79,7 +79,7 @@ public class LiteFlowLuaScriptRemoveELTest extends BaseTest {
         Assertions.assertEquals(Integer.valueOf(5), context.getData("s2"));
 
         // 卸载节点
-        FlowBus.removeNode("s2");
+        FlowBus.unloadScriptNode("s2");
 
         // 旧 chain 报脚本加载错误
         response = flowExecutor.execute2Resp("chain2", "arg");

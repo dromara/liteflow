@@ -306,19 +306,7 @@ public class FlowBus {
 
 	// 移除节点
 	public static boolean removeNode(String nodeId) {
-		Node node = getNode(nodeId);
-		if (node == null) {
-			// 节点不存在
-			return false;
-		}
-		nodeMap.remove(nodeId);
-		// 如果是脚本节点，移除脚本
-		if (node.getType().isScript()) {
-			ScriptExecutorFactory.loadInstance()
-					.getScriptExecutor(node.getLanguage())
-					.unLoad(nodeId);
-		}
-		return true;
+		return nodeMap.remove(nodeId) != null;
 	}
 
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
@@ -344,6 +332,20 @@ public class FlowBus {
 		ScriptExecutorFactory.loadInstance()
 				.getScriptExecutor(node.getLanguage())
 				.load(nodeId, script);
+	}
+
+	// 卸载脚本节点
+	public static boolean unloadScriptNode(String nodeId) {
+		Node node = getNode(nodeId);
+		if (node == null || !node.getType().isScript()) {
+			return false;
+		}
+		// 卸载脚本
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.unLoad(nodeId);
+		// 移除脚本
+		return removeNode(nodeId);
 	}
 
 	public static void clearStat(){
