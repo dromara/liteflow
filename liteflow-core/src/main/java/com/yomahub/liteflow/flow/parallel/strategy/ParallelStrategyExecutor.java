@@ -10,6 +10,7 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
 import com.yomahub.liteflow.flow.element.condition.PreCondition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
+import com.yomahub.liteflow.flow.parallel.CompletableFutureExpand;
 import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
 import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
@@ -53,11 +54,11 @@ public abstract class ParallelStrategyExecutor {
                                                                 WhenCondition whenCondition, String currChainName, Integer slotIndex) {
         // 套入 CompletableFutureTimeout 方法进行超时判断，如果超时则用 WhenFutureObj.timeOut 返回超时的对象
         // 第 2 个参数是主要的本体 CompletableFuture，传入了 ParallelSupplier 和线程池对象
-        return CompletableFutureTimeout.completeOnTimeout(
-                WhenFutureObj.timeOut(executable.getId()),
+        return CompletableFutureExpand.completeOnTimeout(
                 CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
                 whenCondition.getMaxWaitTime(),
-                whenCondition.getMaxWaitTimeUnit());
+                whenCondition.getMaxWaitTimeUnit(),
+                WhenFutureObj.timeOut(executable.getId()));
     }
 
     /**
@@ -167,11 +168,11 @@ public abstract class ParallelStrategyExecutor {
      * 任务结果处理
      * @param whenCondition 并行组件对象
      * @param slotIndex 当前 slot 的 index
-     * @param whenAllTaskList 并行组件中所有任务列表
+     * @param whenAllFutureList 并行组件中所有任务列表
      * @param specifyTask 指定预先完成的任务，详见 {@link ParallelStrategyEnum}
      * @throws Exception
      */
-    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllTaskList,
+    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllFutureList,
                                     CompletableFuture<?> specifyTask) throws Exception {
 
         Slot slot = DataBus.getSlot(slotIndex);
@@ -193,17 +194,23 @@ public abstract class ParallelStrategyExecutor {
         // 如果 any 为 true，那么这里拿到的是第一个完成的任务
         // 如果为 must，那么这里获取到的就是指定的任务
         // 这里过滤和转换一起用 lambda 做了
-        List<WhenFutureObj> allCompletableWhenFutureObjList = whenAllTaskList.stream().filter(f -> {
+        List<WhenFutureObj> allCompletableWhenFutureObjList = whenAllFutureList.stream().filter(f -> {
             // 过滤出已经完成的，没完成的就直接终止
             if (f.isDone()) {
                 return true;
             } else {
+                //事实上CompletableFuture并不能cancel掉底层的线程
                 f.cancel(true);
                 return false;
             }
         }).map(f -> {
             try {
-                return f.get();
+                WhenFutureObj whenFutureObj = f.get();
+                if (whenFutureObj.isTimeout()){
+                    //事实上CompletableFuture并不能cancel掉底层的线程
+                    f.cancel(true);
+                }
+                return whenFutureObj;
             } catch (InterruptedException | ExecutionException e) {
                 interrupted[0] = true;
                 return null;
