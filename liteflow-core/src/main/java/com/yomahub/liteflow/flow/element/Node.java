@@ -59,9 +59,17 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
+	// 循环下标
 	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
 
+	// 迭代对象
 	private TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
+
+	// 当前slot的index
+	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
+
+	// 是否结束整个流程，这个只对串行流程有效，并行流程无效
+	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public Node() {
 
@@ -129,7 +137,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 		try {
 			// 把线程属性赋值给组件对象
-			instance.setSlotIndex(slotIndex);
+			this.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
@@ -172,9 +180,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		}
 		finally {
 			// 移除threadLocal里的信息
-			instance.removeSlotIndex();
-			instance.removeIsEnd();
 			instance.removeRefNode();
+			removeSlotIndex();
+			removeIsEnd();
 			removeLoopIndex();
 			removeAccessResult();
 		}
@@ -187,7 +195,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		Slot slot = DataBus.getSlot(slotIndex);
 		try {
 			// 把线程属性赋值给组件对象
-			instance.setSlotIndex(slotIndex);
+			this.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
 			instance.doRollback();
 		}
@@ -197,7 +205,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		}
 		finally {
 			// 移除threadLocal里的信息
-			instance.removeSlotIndex();
+			this.removeSlotIndex();
 			instance.removeRefNode();
 		}
 	}
@@ -209,7 +217,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public boolean isAccess(Integer slotIndex) throws Exception {
 		// 把线程属性赋值给组件对象
-		instance.setSlotIndex(slotIndex);
+		this.setSlotIndex(slotIndex);
 		instance.setRefNode(this);
 		return instance.isAccess();
 	}
@@ -289,6 +297,30 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		this.currLoopObject.remove();
 	}
 
+	public Integer getSlotIndex(){
+		return this.slotIndexTL.get();
+	}
+
+	public void setSlotIndex(Integer slotIndex){
+		this.slotIndexTL.set(slotIndex);
+	}
+
+	public void removeSlotIndex(){
+		this.slotIndexTL.remove();
+	}
+
+	public Boolean getIsEnd(){
+		return this.isEndTL.get();
+	}
+
+	public void setIsEnd(Boolean isEnd){
+		this.isEndTL.set(isEnd);
+	}
+
+	public void removeIsEnd(){
+		this.isEndTL.remove();
+	}
+
 	public String getLanguage() {
 		return language;
 	}
@@ -303,15 +335,13 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
-
-	public Node copy() throws Exception {
-		Node node = (Node)this.clone();
+	public Node clone() throws CloneNotSupportedException {
+		Node node = (Node)super.clone();
 		node.loopIndexTL = new TransmittableThreadLocal<>();
 		node.currLoopObject = new TransmittableThreadLocal<>();
 		node.accessResult = new TransmittableThreadLocal<>();
+		node.slotIndexTL = new TransmittableThreadLocal<>();
+		node.isEndTL = new TransmittableThreadLocal<>();
 		return node;
 	}
 }

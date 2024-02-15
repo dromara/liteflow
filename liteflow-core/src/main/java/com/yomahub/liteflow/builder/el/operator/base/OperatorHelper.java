@@ -117,7 +117,7 @@ public class OperatorHelper {
 			if (clazz.isAssignableFrom(object.getClass())) {
 				if (object instanceof Node) {
 					Node node = (Node) object;
-					return (T) node.copy();
+					return (T) node.clone();
 				}
 				else {
 					return (T) object;

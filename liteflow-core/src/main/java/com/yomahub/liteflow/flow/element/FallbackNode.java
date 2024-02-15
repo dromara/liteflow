@@ -64,7 +64,7 @@ public class FallbackNode extends Node {
                             this.getCurrChainId()));
         }
         // 使用 node 的副本
-        this.fallbackNode = node.copy();
+        this.fallbackNode = node.clone();
     }
 
     private Node findFallbackNode(Condition condition) {
@@ -168,7 +168,7 @@ public class FallbackNode extends Node {
     }
 
     @Override
-    public Node copy() {
+    public Node clone() {
         // 代理节点不复制
         return this;
     }

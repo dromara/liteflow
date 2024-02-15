@@ -7,13 +7,10 @@
  */
 package com.yomahub.liteflow.core;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
-import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
@@ -23,28 +20,21 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
-
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.Deque;
-import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * 普通组件抽象类
  *
  * @author Bryan.Zhang
  */
-public abstract class NodeComponent {
+public abstract class NodeComponent{
 
 	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
 
@@ -77,15 +67,10 @@ public abstract class NodeComponent {
 	private final TransmittableThreadLocal<Node> refNodeTL = new TransmittableThreadLocal<>();
 
 	/**
-	 ******************* 以下的属性为线程附加属性******************** 线程属性是指每一个request的值都是不一样的
+	 ******************* 以下的属性为线程附加属性********************
+	 * 线程属性是指每一个request的值都是不一样的
 	 * 这里NodeComponent是单例，所以要用ThreadLocal来修饰
 	 */
-
-	// 当前slot的index
-	private final TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
-
-	// 是否结束整个流程，这个只对串行流程有效，并行流程无效
-	private final TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
 	public NodeComponent() {
 		// 反射判断是否重写了rollback方法
@@ -237,39 +222,25 @@ public abstract class NodeComponent {
 
 	// 是否结束整个流程(不往下继续执行)
 	public boolean isEnd() {
-		Boolean isEnd = isEndTL.get();
+		Boolean isEnd = this.refNodeTL.get().getIsEnd();
 		if (ObjectUtil.isNull(isEnd)) {
 			return false;
-		}
-		else {
-			return isEndTL.get();
+		}else {
+			return isEnd;
 		}
 	}
 
 	// 设置是否结束整个流程
 	public void setIsEnd(boolean isEnd) {
-		this.isEndTL.set(isEnd);
-	}
-
-	public void removeIsEnd() {
-		this.isEndTL.remove();
-	}
-
-	public NodeComponent setSlotIndex(Integer slotIndex) {
-		this.slotIndexTL.set(slotIndex);
-		return this;
+		this.refNodeTL.get().setIsEnd(isEnd);
 	}
 
 	public Integer getSlotIndex() {
-		return this.slotIndexTL.get();
-	}
-
-	public void removeSlotIndex() {
-		this.slotIndexTL.remove();
+		return this.refNodeTL.get().getSlotIndex();
 	}
 
 	public Slot getSlot() {
-		return DataBus.getSlot(this.slotIndexTL.get());
+		return DataBus.getSlot(this.getSlotIndex());
 	}
 
 	public <T> T getFirstContextBean() {
