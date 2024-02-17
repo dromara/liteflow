@@ -10,6 +10,9 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,6 +42,16 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
 			throw new ScriptLoadException(errorMsg);
 		}
+	}
+
+	@Override
+	public void unLoad(String nodeId) {
+		scriptMap.remove(nodeId);
+	}
+
+	@Override
+	public List<String> getNodeIds() {
+		return new ArrayList<>(scriptMap.keySet());
 	}
 
 	@Override

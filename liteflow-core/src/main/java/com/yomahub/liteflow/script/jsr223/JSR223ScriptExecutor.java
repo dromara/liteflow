@@ -7,7 +7,16 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import javax.script.*;
+
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
+import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +53,16 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
 			throw new ScriptLoadException(errorMsg);
 		}
+	}
 
+	@Override
+	public void unLoad(String nodeId) {
+		compiledScriptMap.remove(nodeId);
+	}
+
+	@Override
+	public List<String> getNodeIds() {
+		return new ArrayList<>(compiledScriptMap.keySet());
 	}
 
 	@Override

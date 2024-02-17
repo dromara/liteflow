@@ -3,6 +3,7 @@ package com.yomahub.liteflow.script.java;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
@@ -10,6 +11,9 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IScriptEvaluator;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class JavaExecutor extends ScriptExecutor {
@@ -25,6 +29,16 @@ public class JavaExecutor extends ScriptExecutor {
             throw new ScriptLoadException(errorMsg);
         }
 
+    }
+
+    @Override
+    public void unLoad(String nodeId) {
+        compiledScriptMap.remove(nodeId);
+    }
+
+    @Override
+    public List<String> getNodeIds() {
+        return new ArrayList<>(compiledScriptMap.keySet());
     }
 
     @Override

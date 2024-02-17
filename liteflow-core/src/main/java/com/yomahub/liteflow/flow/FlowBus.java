@@ -37,6 +37,7 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
+import com.yomahub.liteflow.util.NodeScanner;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -241,6 +242,12 @@ public class FlowBus {
 		return nodeMap.get(nodeId);
 	}
 
+    // 获取某一个 chainId 下的所有 nodeId
+    public static List<Node> getNodesByChainId(String chainId) {
+        Chain chain = getChain(chainId);
+		return NodeScanner.getNodesInChain(chain);
+    }
+
 	public static Map<String, Node> getNodeMap() {
 		return nodeMap;
 	}
@@ -297,6 +304,11 @@ public class FlowBus {
 		Arrays.stream(chainIds).forEach(FlowBus::removeChain);
 	}
 
+	// 移除节点
+	public static boolean removeNode(String nodeId) {
+		return nodeMap.remove(nodeId) != null;
+	}
+
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
 	private static void addFallbackNode(Node node) {
 		NodeComponent nodeComponent = node.getInstance();
@@ -307,6 +319,33 @@ public class FlowBus {
 
 		NodeTypeEnum nodeType = node.getType();
 		fallbackNodeMap.put(nodeType, node);
+	}
+
+    // 重新加载脚本
+	public static void reloadScript(String nodeId, String script) {
+		Node node = getNode(nodeId);
+		if (node == null || !node.getType().isScript()) {
+			return;
+		}
+        // 更新脚本
+		node.setScript(script);
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.load(nodeId, script);
+	}
+
+	// 卸载脚本节点
+	public static boolean unloadScriptNode(String nodeId) {
+		Node node = getNode(nodeId);
+		if (node == null || !node.getType().isScript()) {
+			return false;
+		}
+		// 卸载脚本
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.unLoad(nodeId);
+		// 移除脚本
+		return removeNode(nodeId);
 	}
 
 	public static void clearStat(){

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,16 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 			String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
 			throw new ScriptLoadException(errorMsg);
 		}
+	}
+
+	@Override
+	public void unLoad(String nodeId) {
+		compiledScriptMap.remove(nodeId);
+	}
+
+	@Override
+	public List<String> getNodeIds() {
+		return new ArrayList<>(compiledScriptMap.keySet());
 	}
 
 	@Override

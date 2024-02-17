@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.script.java.common;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
+import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,7 @@ import javax.annotation.Resource;
 @SpringBootTest(classes = ScriptJavaCommonELTest.class)
 @EnableAutoConfiguration
 @ComponentScan({ "com.yomahub.liteflow.test.script.java.common.cmp" })
-public class ScriptJavaCommonELTest {
+public class ScriptJavaCommonELTest extends BaseTest {
 
     @Resource
     private FlowExecutor flowExecutor;
