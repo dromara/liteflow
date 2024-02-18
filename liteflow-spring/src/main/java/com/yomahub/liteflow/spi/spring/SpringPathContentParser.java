@@ -29,6 +29,7 @@ public class SpringPathContentParser implements PathContentParser {
 	public List<String> parseContent(List<String> pathList) throws Exception {
 		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
 		List<Resource> allResource = getResources(absolutePathList);
+		verifyFileExtName(allResource);
 
 		// 转换成内容List
 		List<String> contentList = new ArrayList<>();
@@ -90,14 +91,16 @@ public class SpringPathContentParser implements PathContentParser {
 				allResource.addAll(ListUtil.toList(resources));
 			}
 		}
+		return allResource;
+	}
 
+	private void verifyFileExtName(List<Resource> allResource) {
 		// 检查资源都是同一个类型，如果出现不同类型的配置，则抛出错误提示
 		Set<String> fileTypeSet = new HashSet<>();
 		allResource.forEach(resource -> fileTypeSet.add(FileUtil.extName(resource.getFilename())));
 		if (fileTypeSet.size() > 1) {
 			throw new ConfigErrorException("config error,please use the same type of configuration");
 		}
-		return allResource;
 	}
 
 	@Override
