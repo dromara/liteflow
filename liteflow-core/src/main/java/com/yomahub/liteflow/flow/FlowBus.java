@@ -21,6 +21,7 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -37,11 +38,12 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
-import com.yomahub.liteflow.util.NodeScanner;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 流程元数据类
@@ -245,7 +247,9 @@ public class FlowBus {
     // 获取某一个 chainId 下的所有 nodeId
     public static List<Node> getNodesByChainId(String chainId) {
         Chain chain = getChain(chainId);
-		return NodeScanner.getNodesInChain(chain);
+		return chain.getConditionList().stream().flatMap(
+				(Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
+		).collect(Collectors.toList());
     }
 
 	public static Map<String, Node> getNodeMap() {

@@ -16,8 +16,7 @@ public abstract class NodeBreakComponent extends NodeComponent {
 	public void process() throws Exception {
 		boolean breakFlag = processBreak();
 		Slot slot = this.getSlot();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		slot.setBreakResult(originalClass.getName(), breakFlag);
+		slot.setBreakResult(this.getMetaValueKey(), breakFlag);
 	}
 
 	public abstract boolean processBreak() throws Exception;
@@ -25,8 +24,7 @@ public abstract class NodeBreakComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Boolean getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getBreakResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getBreakResult(this.getMetaValueKey());
 	}
 
 }

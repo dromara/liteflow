@@ -11,6 +11,7 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
@@ -428,5 +429,10 @@ public abstract class NodeComponent{
 
 	public <T> T getItemResultMetaValue(Integer slotIndex){
 		return null;
+	}
+
+	protected String getMetaValueKey(){
+		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
+		return originalClass.getName();
 	}
 }

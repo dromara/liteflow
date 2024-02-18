@@ -180,7 +180,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		}
 		finally {
 			// 移除threadLocal里的信息
-			instance.removeRefNode();
+			this.getInstance().removeRefNode();
 			removeSlotIndex();
 			removeIsEnd();
 			removeLoopIndex();

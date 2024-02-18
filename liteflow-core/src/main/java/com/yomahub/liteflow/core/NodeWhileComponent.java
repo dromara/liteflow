@@ -16,8 +16,7 @@ public abstract class NodeWhileComponent extends NodeComponent {
 	public void process() throws Exception {
 		boolean whileFlag = processWhile();
 		Slot slot = this.getSlot();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		slot.setWhileResult(originalClass.getName(), whileFlag);
+		slot.setWhileResult(this.getMetaValueKey(), whileFlag);
 	}
 
 	public abstract boolean processWhile() throws Exception;
@@ -25,8 +24,7 @@ public abstract class NodeWhileComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Boolean getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getWhileResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getWhileResult(this.getMetaValueKey());
 	}
 
 }

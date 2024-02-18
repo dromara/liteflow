@@ -20,8 +20,7 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 	@Override
 	public void process() throws Exception {
 		String nodeId = this.processSwitch();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		this.getSlot().setSwitchResult(originalClass.getName(), nodeId);
+		this.getSlot().setSwitchResult(this.getMetaValueKey(), nodeId);
 	}
 
 	// 用以返回路由节点的beanId
@@ -30,8 +29,7 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public String getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getSwitchResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getSwitchResult(this.getMetaValueKey());
 	}
 
 }

@@ -14,8 +14,7 @@ public abstract class NodeIfComponent extends NodeComponent {
 	@Override
 	public void process() throws Exception {
 		boolean result = this.processIf();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		this.getSlot().setIfResult(originalClass.getName(), result);
+		this.getSlot().setIfResult(this.getMetaValueKey(), result);
 	}
 
 	public abstract boolean processIf() throws Exception;
@@ -23,7 +22,6 @@ public abstract class NodeIfComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Boolean getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getIfResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getIfResult(this.getMetaValueKey());
 	}
 }

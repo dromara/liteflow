@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Condition的抽象类
@@ -101,6 +106,24 @@ public abstract class Condition implements Executable{
 		else {
 			return list.get(0);
 		}
+	}
+
+	public List<Node> getAllNodeInCondition(){
+		List<Executable> executableList = this.executableGroup.entrySet().stream().flatMap(
+				(Function<Map.Entry<String, List<Executable>>, Stream<Executable>>) entry -> entry.getValue().stream()
+		).collect(Collectors.toList());
+
+		List<Node> resultList = new ArrayList<>();
+
+		executableList.stream().forEach(executable -> {
+            if (executable instanceof Condition){
+                resultList.addAll(((Condition)executable).getAllNodeInCondition());
+            }else if(executable instanceof Node){
+                resultList.add((Node)executable);
+            }
+        });
+
+		return resultList;
 	}
 
 	public void setExecutableList(List<Executable> executableList) {

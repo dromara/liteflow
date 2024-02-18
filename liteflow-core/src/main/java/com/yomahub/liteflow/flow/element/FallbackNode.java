@@ -2,6 +2,7 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.FallbackCmpNotFoundException;
@@ -160,6 +161,14 @@ public class FallbackNode extends Node {
         // 可能会先访问这个方法，所以在这里就要加载降级节点
         loadFallBackNode(slotIndex);
         return this.fallbackNode.isAccess(slotIndex);
+    }
+
+    @Override
+    public NodeComponent getInstance() {
+        if (fallbackNode == null){
+            return null;
+        }
+        return fallbackNode.getInstance();
     }
 
     @Override
