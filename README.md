@@ -101,6 +101,10 @@ To join the LF CLUB, please scan the QR code below or click on the image to go d
 
 <a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
 
+**FastBee物联网平台**
+
+<a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
+
 **WECHAT OFFICIAL ACCOUNT**
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group
