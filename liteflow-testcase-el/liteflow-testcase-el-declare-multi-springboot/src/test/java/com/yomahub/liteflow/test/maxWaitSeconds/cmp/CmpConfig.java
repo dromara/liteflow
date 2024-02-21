@@ -69,7 +69,7 @@ public class CmpConfig {
         System.out.println("DCmp executed!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeId = "f", nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "f", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processIf(NodeComponent bindCmp) throws Exception {
         return true;
     }
@@ -79,7 +79,7 @@ public class CmpConfig {
         return "b";
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "w", nodeType = NodeTypeEnum.WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "w", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processWhile(NodeComponent bindCmp) throws Exception {
         // 判断是否切换了 chain
         if (!executedChain.contains(bindCmp.getCurrChainId())) {

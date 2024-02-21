@@ -34,20 +34,12 @@ public class LiteFlowNodeBuilder {
 		return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH);
 	}
 
-	public static LiteFlowNodeBuilder createIfNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.IF);
+	public static LiteFlowNodeBuilder createBooleanNode() {
+		return new LiteFlowNodeBuilder(NodeTypeEnum.BOOLEAN);
 	}
 
 	public static LiteFlowNodeBuilder createForNode() {
 		return new LiteFlowNodeBuilder(NodeTypeEnum.FOR);
-	}
-
-	public static LiteFlowNodeBuilder createWhileNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.WHILE);
-	}
-
-	public static LiteFlowNodeBuilder createBreakNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.BREAK);
 	}
 
 	public static LiteFlowNodeBuilder createIteratorNode() {
@@ -62,20 +54,12 @@ public class LiteFlowNodeBuilder {
 		return new LiteFlowNodeBuilder(NodeTypeEnum.SWITCH_SCRIPT);
 	}
 
-	public static LiteFlowNodeBuilder createScriptIfNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.IF_SCRIPT);
+	public static LiteFlowNodeBuilder createScriptBooleanNode() {
+		return new LiteFlowNodeBuilder(NodeTypeEnum.BOOLEAN_SCRIPT);
 	}
 
 	public static LiteFlowNodeBuilder createScriptForNode() {
 		return new LiteFlowNodeBuilder(NodeTypeEnum.FOR_SCRIPT);
-	}
-
-	public static LiteFlowNodeBuilder createScriptWhileNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.WHILE_SCRIPT);
-	}
-
-	public static LiteFlowNodeBuilder createScriptBreakNode() {
-		return new LiteFlowNodeBuilder(NodeTypeEnum.BREAK_SCRIPT);
 	}
 
 	public LiteFlowNodeBuilder() {

@@ -167,12 +167,8 @@ public class OperatorHelper {
 		Executable item = (Executable) object;
 		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
 			Node node = (Node) item;
-			if (!ListUtil.toList(NodeTypeEnum.IF,
-					NodeTypeEnum.IF_SCRIPT,
-					NodeTypeEnum.WHILE,
-					NodeTypeEnum.WHILE_SCRIPT,
-					NodeTypeEnum.BREAK,
-					NodeTypeEnum.BREAK_SCRIPT,
+			if (!ListUtil.toList(NodeTypeEnum.BOOLEAN,
+					NodeTypeEnum.BOOLEAN_SCRIPT,
 					NodeTypeEnum.FALLBACK).contains(node.getType())){
 				throw new QLException(StrUtil.format("The node[{}] must be boolean type Node.", node.getId()));
 			}

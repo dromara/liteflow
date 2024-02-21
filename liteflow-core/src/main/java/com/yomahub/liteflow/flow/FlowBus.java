@@ -16,6 +16,7 @@ import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+import com.yomahub.liteflow.enums.BooleanTypeEnum;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
@@ -59,7 +60,7 @@ public class FlowBus {
 
 	private static final Map<String, Node> nodeMap;
 
-	private static final Map<NodeTypeEnum, Node> fallbackNodeMap;
+	private static final Map<String, Node> fallbackNodeMap;
 
 	private static AtomicBoolean initStat = new AtomicBoolean(false);
 
@@ -261,7 +262,12 @@ public class FlowBus {
 	}
 
 	public static Node getFallBackNode(NodeTypeEnum nodeType) {
-		return fallbackNodeMap.get(nodeType);
+		return getFallBackNode(nodeType, BooleanTypeEnum.NOT_BOOL);
+	}
+
+	public static Node getFallBackNode(NodeTypeEnum nodeType, BooleanTypeEnum booleanTypeEnum){
+		String key = StrUtil.format("{}_{}", nodeType.name(), booleanTypeEnum.name());
+		return fallbackNodeMap.get(key);
 	}
 
 	public static void cleanCache() {
@@ -322,7 +328,8 @@ public class FlowBus {
 		}
 
 		NodeTypeEnum nodeType = node.getType();
-		fallbackNodeMap.put(nodeType, node);
+		String key = StrUtil.format("{}_{}", nodeType.name(), fallbackCmp.value().name());
+		fallbackNodeMap.put(key, node);
 	}
 
     // 重新加载脚本

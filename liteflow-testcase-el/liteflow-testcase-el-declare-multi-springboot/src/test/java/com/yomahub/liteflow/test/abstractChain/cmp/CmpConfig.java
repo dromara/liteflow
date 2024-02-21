@@ -25,7 +25,7 @@ public class CmpConfig {
         System.out.println("BCmp executed!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeId = "c", nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "c", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processIfC(NodeComponent bindCmp) throws Exception{
         return true;
     }

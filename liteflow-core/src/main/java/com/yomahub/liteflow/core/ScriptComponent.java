@@ -21,10 +21,8 @@ public interface ScriptComponent {
 		{
 			put(NodeTypeEnum.SCRIPT, ScriptCommonComponent.class);
 			put(NodeTypeEnum.SWITCH_SCRIPT, ScriptSwitchComponent.class);
-			put(NodeTypeEnum.IF_SCRIPT, ScriptIfComponent.class);
+			put(NodeTypeEnum.BOOLEAN_SCRIPT, ScriptBooleanComponent.class);
 			put(NodeTypeEnum.FOR_SCRIPT, ScriptForComponent.class);
-			put(NodeTypeEnum.WHILE_SCRIPT, ScriptWhileComponent.class);
-			put(NodeTypeEnum.BREAK_SCRIPT, ScriptBreakComponent.class);
 		}
 	};
 

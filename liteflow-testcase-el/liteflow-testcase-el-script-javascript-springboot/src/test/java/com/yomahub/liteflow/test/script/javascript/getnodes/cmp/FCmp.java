@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.script.javascript.getnodes.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.springframework.stereotype.Component;
 
 @Component("f")
-public class FCmp extends NodeIfComponent {
+public class FCmp extends NodeBooleanComponent {
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         return true;
     }
 }

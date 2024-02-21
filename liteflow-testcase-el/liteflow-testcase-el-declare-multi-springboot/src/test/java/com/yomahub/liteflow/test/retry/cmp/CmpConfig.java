@@ -51,7 +51,7 @@ public class CmpConfig {
         else return "a";
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeId = "f", nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "f", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processF(NodeComponent bindCmp) {
         System.out.println("FCmp executed!");
         flagf ++;
@@ -77,7 +77,7 @@ public class CmpConfig {
         else flagm = 0;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "n", nodeType = NodeTypeEnum.WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "n", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processN(NodeComponent bindCmp) {
         flagn ++;
         System.out.println("NCmp executed!");

@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.booleanOpt.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.springframework.stereotype.Component;
 
 @Component("x2")
-public class X2 extends NodeIfComponent {
+public class X2 extends NodeBooleanComponent {
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         return true;
     }
 }

@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.test.fallback.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 
-public class IfCmp1 extends NodeIfComponent {
+public class IfCmp1 extends NodeBooleanComponent {
 
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         return true;
     }
 }

@@ -5,15 +5,16 @@ import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.enums.BooleanTypeEnum;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 @LiteflowComponent("ifn2")
-@LiteflowCmpDefine(NodeTypeEnum.IF)
-@FallbackCmp
+@LiteflowCmpDefine(NodeTypeEnum.BOOLEAN)
+@FallbackCmp(BooleanTypeEnum.IF)
 public class IfCmp2 {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN)
     public boolean processIf(NodeComponent bindCmp) throws Exception {
         return false;
     }

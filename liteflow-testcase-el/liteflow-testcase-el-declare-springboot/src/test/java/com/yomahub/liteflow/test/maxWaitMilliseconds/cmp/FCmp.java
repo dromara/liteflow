@@ -8,10 +8,10 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 @LiteflowComponent("f")
-@LiteflowCmpDefine(NodeTypeEnum.IF)
+@LiteflowCmpDefine(NodeTypeEnum.BOOLEAN)
 public class FCmp {
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processIf(NodeComponent bindCmp) throws Exception {
         return true;
     }

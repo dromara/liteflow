@@ -1,13 +1,13 @@
 package com.yomahub.liteflow.test.retry.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.noear.solon.annotation.Component;
 
 @Component("f")
-public class FCmp extends NodeIfComponent {
+public class FCmp extends NodeBooleanComponent {
     int flag = 0;
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         System.out.println("FCmp executed!");
         flag ++;
         if(flag < 4) throw new RuntimeException();

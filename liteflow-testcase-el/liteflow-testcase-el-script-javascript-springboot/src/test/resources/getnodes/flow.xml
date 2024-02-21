@@ -19,13 +19,13 @@
             ]]>
         </node>
 
-        <node id="x" name="条件循环脚本" type="while_script" language="js">
+        <node id="x" name="条件循环脚本" type="boolean_script" language="js">
             <![CDATA[
                 return true;
             ]]>
         </node>
 
-        <node id="y" name="退出循环脚本" type="break_script" language="js">
+        <node id="y" name="退出循环脚本" type="boolean_script" language="js">
             <![CDATA[
                 return true;
             ]]>

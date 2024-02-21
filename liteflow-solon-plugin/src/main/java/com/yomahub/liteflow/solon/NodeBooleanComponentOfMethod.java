@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.solon;
 
-import com.yomahub.liteflow.core.NodeBreakComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import org.noear.solon.core.BeanWrap;
@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * @author noear
  * @since 1.11
  */
-public class NodeBreakComponentOfMethod extends NodeBreakComponent {
+public class NodeBooleanComponentOfMethod extends NodeBooleanComponent {
 
 	final BeanWrap beanWrap;
 
@@ -19,20 +19,19 @@ public class NodeBreakComponentOfMethod extends NodeBreakComponent {
 
 	final LiteFlowMethodEnum methodEnum;
 
-	public NodeBreakComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
+	public NodeBooleanComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
 		this.beanWrap = beanWrap;
 		this.method = method;
 		this.methodEnum = methodEnum;
 
 		if (method.getParameterCount() > 1) {
 			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-			throw new LiteFlowException(
-					"NodeBreakComponent method parameter cannot be more than one: " + methodFullName);
+			throw new LiteFlowException("NodeIfComponent method parameter cannot be more than one: " + methodFullName);
 		}
 
 		if (method.getReturnType() != Boolean.class && method.getReturnType() != boolean.class) {
 			String methodFullName = beanWrap.clz().getName() + "::" + method.getName();
-			throw new LiteFlowException("NodeBreakComponent method returnType can only be boolean: " + methodFullName);
+			throw new LiteFlowException("NodeIfComponent method returnType can only be boolean: " + methodFullName);
 		}
 	}
 
@@ -46,7 +45,7 @@ public class NodeBreakComponentOfMethod extends NodeBreakComponent {
 	}
 
 	@Override
-	public boolean processBreak() throws Exception {
+	public boolean processBoolean() throws Exception {
 		return (boolean) exec();
 	}
 

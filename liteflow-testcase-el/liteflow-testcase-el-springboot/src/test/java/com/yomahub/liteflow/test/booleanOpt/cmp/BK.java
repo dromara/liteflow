@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.booleanOpt.cmp;
 
-import com.yomahub.liteflow.core.NodeBreakComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.springframework.stereotype.Component;
 
 @Component("bk")
-public class BK extends NodeBreakComponent {
+public class BK extends NodeBooleanComponent {
     @Override
-    public boolean processBreak() throws Exception {
+    public boolean processBoolean() throws Exception {
         int index = this.getLoopIndex();
         return index > 2;
     }

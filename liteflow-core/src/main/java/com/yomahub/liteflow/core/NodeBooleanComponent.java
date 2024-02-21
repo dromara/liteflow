@@ -1,23 +1,22 @@
 package com.yomahub.liteflow.core;
 
 import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 /**
- * IF节点抽象类
+ * BOOLEAN类型的抽象节点
  *
  * @author Bryan.Zhang
- * @since 2.8.5
+ * @since 2.12.0
  */
-public abstract class NodeIfComponent extends NodeComponent {
+public abstract class NodeBooleanComponent extends NodeComponent {
 
 	@Override
 	public void process() throws Exception {
-		boolean result = this.processIf();
+		boolean result = this.processBoolean();
 		this.getSlot().setIfResult(this.getMetaValueKey(), result);
 	}
 
-	public abstract boolean processIf() throws Exception;
+	public abstract boolean processBoolean() throws Exception;
 
 	@Override
 	@SuppressWarnings("unchecked")

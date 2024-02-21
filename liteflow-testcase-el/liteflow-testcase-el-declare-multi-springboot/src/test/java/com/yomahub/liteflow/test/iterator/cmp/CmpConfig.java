@@ -29,7 +29,7 @@ public class CmpConfig {
 		}
 	}
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "b", nodeType = NodeTypeEnum.BREAK)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "b", nodeType = NodeTypeEnum.BOOLEAN)
 	public boolean processB(NodeComponent bindCmp) {
 		return bindCmp.getLoopIndex() == 1;
 	}

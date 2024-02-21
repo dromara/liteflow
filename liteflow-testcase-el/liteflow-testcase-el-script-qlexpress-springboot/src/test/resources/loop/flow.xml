@@ -8,14 +8,14 @@
             ]]>
         </node>
 
-        <node id="y" type="break_script">
+        <node id="y" type="boolean_script">
             <![CDATA[
                 count = defaultContext.getData("test");
                 return count > 3;
             ]]>
         </node>
 
-        <node id="z" type="while_script">
+        <node id="z" type="boolean_script">
             <![CDATA[
                 key = "test";
                 if (defaultContext.hasData(key)){

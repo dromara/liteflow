@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.test.rollback.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 
-public class XCmp extends NodeIfComponent {
+public class XCmp extends NodeBooleanComponent {
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         System.out.println("XCmp executed!");
         return true;
     }

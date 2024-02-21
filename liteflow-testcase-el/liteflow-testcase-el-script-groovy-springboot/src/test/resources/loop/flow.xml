@@ -8,14 +8,14 @@
             ]]>
         </node>
 
-        <node id="y" type="break_script" language="groovy">
+        <node id="y" type="boolean_script" language="groovy">
             <![CDATA[
                 def count = defaultContext.getData("test")
                 return count > 3
             ]]>
         </node>
 
-        <node id="z" type="while_script" language="groovy">
+        <node id="z" type="boolean_script" language="groovy">
             <![CDATA[
                 def key = "test"
                 if (defaultContext.hasData(key)){

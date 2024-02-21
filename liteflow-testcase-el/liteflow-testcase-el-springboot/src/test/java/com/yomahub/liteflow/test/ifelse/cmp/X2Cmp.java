@@ -7,14 +7,14 @@
  */
 package com.yomahub.liteflow.test.ifelse.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.springframework.stereotype.Component;
 
 @Component("x2")
-public class X2Cmp extends NodeIfComponent {
+public class X2Cmp extends NodeBooleanComponent {
 
 	@Override
-	public boolean processIf() throws Exception {
+	public boolean processBoolean() throws Exception {
 		return true;
 	}
 

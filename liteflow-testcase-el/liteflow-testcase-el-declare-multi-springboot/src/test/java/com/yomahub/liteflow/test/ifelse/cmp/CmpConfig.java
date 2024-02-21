@@ -30,7 +30,7 @@ public class CmpConfig {
 		System.out.println("DCmp executed!");
 	}
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeId = "x1", nodeType = NodeTypeEnum.IF)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "x1", nodeType = NodeTypeEnum.BOOLEAN)
 	public boolean processIfX1(NodeComponent bindCmp) throws Exception {
 		return Boolean.parseBoolean(bindCmp.getTag());
 	}
