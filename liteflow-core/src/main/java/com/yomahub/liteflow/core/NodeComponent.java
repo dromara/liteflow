@@ -12,21 +12,22 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
+import com.yomahub.liteflow.enums.CmpStepTypeEnum;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.flow.executor.NodeExecutor;
+import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
-import com.yomahub.liteflow.util.JsonUtil;
-import com.yomahub.liteflow.flow.entity.CmpStep;
-import com.yomahub.liteflow.enums.CmpStepTypeEnum;
-import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.monitor.CompStatistics;
 import com.yomahub.liteflow.monitor.MonitorBus;
+import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
+import com.yomahub.liteflow.util.JsonUtil;
+
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -34,6 +35,7 @@ import java.util.Date;
  * 普通组件抽象类
  *
  * @author Bryan.Zhang
+ * @author luo yi
  */
 public abstract class NodeComponent{
 
@@ -234,6 +236,10 @@ public abstract class NodeComponent{
 	// 设置是否结束整个流程
 	public void setIsEnd(boolean isEnd) {
 		this.refNodeTL.get().setIsEnd(isEnd);
+	}
+
+	public void setIsContinueOnError(boolean isContinueOnError) {
+		this.refNodeTL.get().setIsContinueOnErrorResult(isContinueOnError);
 	}
 
 	public Integer getSlotIndex() {
