@@ -3,7 +3,6 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.Executable;
-import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 
@@ -23,6 +22,9 @@ public class WhileCondition extends LoopCondition {
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
 		Executable whileItem = this.getWhileItem();
+
+		// 提前设置 chainId，避免无法在 isAccess 方法中获取到
+		whileItem.setCurrChainId(this.getCurrChainId());
 
 		// 先去判断isAccess方法，如果isAccess方法都返回false，整个WHILE表达式不执行
 		if (!whileItem.isAccess(slotIndex)) {
@@ -84,7 +86,6 @@ public class WhileCondition extends LoopCondition {
 	private boolean getWhileResult(Integer slotIndex, int loopIndex) throws Exception {
 		Executable whileItem = this.getWhileItem();
 		// 执行while组件
-		whileItem.setCurrChainId(this.getCurrChainId());
 		setLoopIndex(whileItem, loopIndex);
 		whileItem.execute(slotIndex);
 

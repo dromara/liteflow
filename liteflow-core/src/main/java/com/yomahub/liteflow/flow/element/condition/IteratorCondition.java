@@ -29,13 +29,15 @@ public class IteratorCondition extends LoopCondition {
             throw new NoIteratorNodeException(errorInfo);
         }
 
+        // 提前设置 chainId，避免无法在 isAccess 方法中获取到
+        iteratorNode.setCurrChainId(this.getCurrChainId());
+
         // 先去判断isAccess方法，如果isAccess方法都返回false，整个ITERATOR表达式不执行
         if (!iteratorNode.isAccess(slotIndex)) {
             return;
         }
 
         // 执行Iterator组件
-        iteratorNode.setCurrChainId(this.getCurrChainId());
         iteratorNode.execute(slotIndex);
 
         Iterator<?> it = iteratorNode.getItemResultMetaValue(slotIndex);

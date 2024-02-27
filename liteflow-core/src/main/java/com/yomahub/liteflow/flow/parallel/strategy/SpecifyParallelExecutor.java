@@ -41,7 +41,7 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         List<CompletableFuture<WhenFutureObj>> allTaskList = new ArrayList<>();
 
         // 遍历 when 所有 node，进行筛选及处理
-        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex)
+        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainName)
                 .forEach(executable -> {
                     // 处理 task，封装成 CompletableFuture 对象
                     CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex);
