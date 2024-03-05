@@ -43,4 +43,10 @@ public class ScriptPythonCommonELTest extends BaseTest {
 		Assertions.assertEquals("hi,jack", context.getData("td"));
 	}
 
+	@Test
+	public void testCommon2() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assertions.assertTrue(response.isSuccess());
+	}
+
 }
