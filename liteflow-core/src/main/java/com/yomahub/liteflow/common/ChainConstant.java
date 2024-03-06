@@ -10,6 +10,10 @@ public interface ChainConstant {
 
 	String CHAIN = "chain";
 
+	String ROUTE = "route";
+
+	String BODY = "body";
+
 	String FLOW = "flow";
 
 	String NODES = "nodes";

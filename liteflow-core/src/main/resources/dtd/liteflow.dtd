@@ -3,7 +3,9 @@
 <!ELEMENT flow  ((nodes)? , (chain)+)>
 <!ELEMENT nodes  (node)+>
 <!ELEMENT node  (#PCDATA | EMPTY)*>
-<!ELEMENT chain (#PCDATA)>
+<!ELEMENT chain ((route)? | (body)? | #PCDATA)>
+<!ELEMENT route (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
 
 <!ATTLIST node
         id CDATA #REQUIRED

@@ -8,12 +8,7 @@ import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.ChainDuplicateException;
-import com.yomahub.liteflow.exception.ChainNotFoundException;
-import com.yomahub.liteflow.exception.NodeClassNotFoundException;
-import com.yomahub.liteflow.exception.NodeTypeCanNotGuessException;
-import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
-import com.yomahub.liteflow.exception.ParseException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.condition.AbstractCondition;
@@ -30,18 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.yomahub.liteflow.common.ChainConstant.CHAIN;
-import static com.yomahub.liteflow.common.ChainConstant.EXTENDS;
-import static com.yomahub.liteflow.common.ChainConstant.FILE;
-import static com.yomahub.liteflow.common.ChainConstant.FLOW;
-import static com.yomahub.liteflow.common.ChainConstant.ID;
-import static com.yomahub.liteflow.common.ChainConstant.LANGUAGE;
-import static com.yomahub.liteflow.common.ChainConstant.NAME;
-import static com.yomahub.liteflow.common.ChainConstant.NODE;
-import static com.yomahub.liteflow.common.ChainConstant.NODES;
-import static com.yomahub.liteflow.common.ChainConstant.TYPE;
-import static com.yomahub.liteflow.common.ChainConstant.VALUE;
-import static com.yomahub.liteflow.common.ChainConstant._CLASS;
+import static com.yomahub.liteflow.common.ChainConstant.*;
 
 /**
  * Parser 通用 Helper
@@ -296,11 +280,27 @@ public class ParserHelper {
 	public static void parseOneChainEl(JsonNode chainNode) {
 		// 构建chainBuilder
 		String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
-		String el = chainNode.get(VALUE).textValue();
-		LiteFlowChainELBuilder.createChain()
-				.setChainId(chainId)
-				.setEL(el)
-				.build();
+
+		JsonNode routeJsonNode = chainNode.get(ROUTE);
+
+		LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+
+		// 如果有route这个标签，说明是决策表chain
+		// 决策表链路必须有route和body这两个标签
+		if (routeJsonNode != null){
+			builder.setRoute(routeJsonNode.textValue());
+
+			JsonNode bodyJsonNode = chainNode.get(BODY);
+			if (bodyJsonNode == null){
+				String errMsg = StrUtil.format("If you have defined the field route, then you must define the field body in chain[{}]", chainId);
+				throw new FlowSystemException(errMsg);
+			}
+			builder.setEL(bodyJsonNode.textValue());
+		}else{
+			builder.setEL(chainNode.get(VALUE).textValue());
+		}
+
+		builder.build();
 	}
 
 	/**
@@ -310,12 +310,27 @@ public class ParserHelper {
 	public static void parseOneChainEl(Element e) {
 		// 构建chainBuilder
 		String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
-		String text = e.getText();
-		String el = ElRegexUtil.removeComments(text);
-		LiteFlowChainELBuilder.createChain()
-				.setChainId(chainId)
-				.setEL(el)
-				.build();
+
+		Element routeElement = e.element(ROUTE);
+
+		LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+
+		// 如果有route这个标签，说明是决策表chain
+		// 决策表链路必须有route和body这两个标签
+		if (routeElement != null){
+			builder.setRoute(ElRegexUtil.removeComments(routeElement.getText()));
+
+			Element bodyElement = e.element(BODY);
+			if (bodyElement == null){
+				String errMsg = StrUtil.format("If you have defined the tag <route>, then you must define the tag <body> in chain[{}]", chainId);
+				throw new FlowSystemException(errMsg);
+			}
+			builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
+		}else{
+			builder.setEL(ElRegexUtil.removeComments(e.getText()));
+		}
+
+		builder.build();
 	}
 
 	/**
