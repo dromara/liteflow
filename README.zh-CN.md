@@ -95,6 +95,10 @@ LF CLUB里能解决你在使用LiteFlow框架时碰到的所有问题，并有�
 
 <a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
 
+**FastBee物联网平台**
+
+<a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
+
 **微信公众号**
 
 社区群需要邀请入群。关注公众号后点击`个人微信`加我，我可以拉你入群
