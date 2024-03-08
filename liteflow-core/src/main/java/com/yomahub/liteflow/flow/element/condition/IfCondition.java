@@ -3,7 +3,8 @@ package com.yomahub.liteflow.flow.element.condition;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.exception.*;
+import com.yomahub.liteflow.exception.IfTargetCannotBePreOrFinallyException;
+import com.yomahub.liteflow.exception.NoIfTrueNodeException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.slot.DataBus;
@@ -21,13 +22,15 @@ public class IfCondition extends Condition {
 	public void executeCondition(Integer slotIndex) throws Exception {
 		Executable ifItem = this.getIfItem();
 
+		// 提前设置 chainId，避免无法在 isAccess 方法中获取到
+		ifItem.setCurrChainId(this.getCurrChainId());
+
 		// 先去判断isAccess方法，如果isAccess方法都返回false，整个IF表达式不执行
 		if (!ifItem.isAccess(slotIndex)) {
 			return;
 		}
 
 		// 先执行IF节点
-		ifItem.setCurrChainId(this.getCurrChainId());
 		ifItem.execute(slotIndex);
 
 		// 拿到If执行过的结果

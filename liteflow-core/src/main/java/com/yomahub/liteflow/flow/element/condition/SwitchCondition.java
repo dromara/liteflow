@@ -1,13 +1,10 @@
 package com.yomahub.liteflow.flow.element.condition;
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.NoSwitchTargetNodeException;
 import com.yomahub.liteflow.exception.SwitchTargetCannotBePreOrFinallyException;
-import com.yomahub.liteflow.exception.SwitchTypeErrorException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
@@ -35,13 +32,15 @@ public class SwitchCondition extends Condition {
 		// 获取target List
 		List<Executable> targetList = this.getTargetList();
 
+		// 提前设置 chainId，避免无法在 isAccess 方法中获取到
+		switchNode.setCurrChainId(this.getCurrChainId());
+
 		// 先去判断isAccess方法，如果isAccess方法都返回false，整个SWITCH表达式不执行
 		if (!switchNode.isAccess(slotIndex)) {
 			return;
 		}
 
 		// 先执行switch节点
-		switchNode.setCurrChainId(this.getCurrChainId());
 		switchNode.execute(slotIndex);
 
 		// 拿到switch节点的结果
