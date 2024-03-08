@@ -71,6 +71,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// 是否结束整个流程，这个只对串行流程有效，并行流程无效
 	private TransmittableThreadLocal<Boolean> isEndTL = new TransmittableThreadLocal<>();
 
+	// isContinueOnError 结果
+	private TransmittableThreadLocal<Boolean> isContinueOnErrorResult =  new TransmittableThreadLocal<>();
+
 	public Node() {
 
 	}
@@ -168,7 +171,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				throw new ChainEndException(errorInfo);
 			}
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
-			else if (instance.isContinueOnError()) {
+			else if (getIsContinueOnErrorResult() || instance.isContinueOnError()) {
 				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
 				LOG.error(errorMsg);
 			}
@@ -185,6 +188,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			removeIsEnd();
 			removeLoopIndex();
 			removeAccessResult();
+			removeIsContinueOnErrorResult();
 		}
 	}
 
@@ -262,7 +266,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public boolean getAccessResult() {
 		Boolean result = this.accessResult.get();
-		return result == null ? false : result;
+		return result != null && result;
 	}
 
 	public void setAccessResult(boolean accessResult) {
@@ -271,6 +275,19 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void removeAccessResult() {
 		this.accessResult.remove();
+	}
+
+	public boolean getIsContinueOnErrorResult() {
+		Boolean result = this.isContinueOnErrorResult.get();
+		return result != null && result;
+	}
+
+	public void setIsContinueOnErrorResult(boolean accessResult) {
+		this.isContinueOnErrorResult.set(accessResult);
+	}
+
+	public void removeIsContinueOnErrorResult() {
+		this.isContinueOnErrorResult.remove();
 	}
 
 	public void setLoopIndex(int index) {
@@ -342,6 +359,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.accessResult = new TransmittableThreadLocal<>();
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
+		node.isContinueOnErrorResult = new TransmittableThreadLocal<>();
 		return node;
 	}
 }

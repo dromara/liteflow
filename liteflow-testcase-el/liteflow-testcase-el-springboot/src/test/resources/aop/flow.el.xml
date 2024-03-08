@@ -11,4 +11,13 @@
     <chain name="chain3">
         THEN(a,b,c,f);
     </chain>
+
+    <chain name="chain4">
+        THEN(a, f, b, c);
+    </chain>
+
+    <chain name="chain5">
+        THEN(a, b, WHEN(f, e), c);
+    </chain>
+
 </flow>
