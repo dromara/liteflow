@@ -45,16 +45,16 @@ public abstract class ParallelStrategyExecutor {
      * @param executable
      * @param parallelExecutor
      * @param whenCondition
-     * @param currChainName
+     * @param currChainId
      * @param slotIndex
      * @return
      */
     protected CompletableFuture<WhenFutureObj> wrappedFutureObj(Executable executable, ExecutorService parallelExecutor,
-                                                                WhenCondition whenCondition, String currChainName, Integer slotIndex) {
+                                                                WhenCondition whenCondition, String currChainId, Integer slotIndex) {
         // 套入 CompletableFutureTimeout 方法进行超时判断，如果超时则用 WhenFutureObj.timeOut 返回超时的对象
         // 第 2 个参数是主要的本体 CompletableFuture，传入了 ParallelSupplier 和线程池对象
         return CompletableFutureExpand.completeOnTimeout(
-                CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
+                CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainId, slotIndex), parallelExecutor),
                 whenCondition.getMaxWaitTime(),
                 whenCondition.getMaxWaitTimeUnit(),
                 WhenFutureObj.timeOut(executable.getId()));
@@ -149,7 +149,7 @@ public abstract class ParallelStrategyExecutor {
      */
     protected List<CompletableFuture<WhenFutureObj>> getWhenAllTaskList(WhenCondition whenCondition, Integer slotIndex) {
 
-        String currChainName = whenCondition.getCurrChainId();
+        String currChainId = whenCondition.getCurrChainId();
 
         // 设置 whenCondition 参数
         this.setWhenConditionParams(whenCondition);
@@ -159,8 +159,8 @@ public abstract class ParallelStrategyExecutor {
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>
-        List<CompletableFuture<WhenFutureObj>> completableFutureList = filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainName)
-                .map(executable -> wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex))
+        List<CompletableFuture<WhenFutureObj>> completableFutureList = filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainId)
+                .map(executable -> wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainId, slotIndex))
                 .collect(Collectors.toList());
 
         return completableFutureList;

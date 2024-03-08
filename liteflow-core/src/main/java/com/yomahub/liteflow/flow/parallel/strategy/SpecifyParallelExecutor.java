@@ -20,7 +20,7 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
     @Override
     public void execute(WhenCondition whenCondition, Integer slotIndex) throws Exception {
 
-        String currChainName = whenCondition.getCurrChainId();
+        String currChainId = whenCondition.getCurrChainId();
 
         // 设置 whenCondition 参数
         this.setWhenConditionParams(whenCondition);
@@ -41,10 +41,10 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         List<CompletableFuture<WhenFutureObj>> allTaskList = new ArrayList<>();
 
         // 遍历 when 所有 node，进行筛选及处理
-        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainName)
+        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainId)
                 .forEach(executable -> {
                     // 处理 task，封装成 CompletableFuture 对象
-                    CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex);
+                    CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainId, slotIndex);
                     // 存在 must 指定 ID 的 task，且该任务只会有一个或者没有
                     if (whenCondition.getSpecifyIdSet().contains(executable.getId())) {
                         // 设置指定任务 future 对象
