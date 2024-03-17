@@ -134,7 +134,7 @@ public class ParserHelper {
 		}
 	}
 
-	public static void parseChainDocument(List<Document> documentList, Set<String> chainNameSet,
+	public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet,
 			Consumer<Element> parseOneChainConsumer) {
 		//用于存放抽象chain的map
 		Map<String,Element> abstratChainMap = new HashMap<>();
@@ -152,24 +152,24 @@ public class ParserHelper {
 			chainList.forEach(e -> {
 				// 校验加载的 chainName 是否有重复的
 				// TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-				String chainName = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
+				String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 				// 检查 chainName
-				checkChainId(chainName, e.getText());
-				if (!chainNameSet.add(chainName)) {
-					throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainName));
+				checkChainId(chainId, e.getText());
+				if (!chainIdSet.add(chainId)) {
+					throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainId));
 				}
 
-				FlowBus.addChain(chainName);
+				FlowBus.addChain(chainId);
 				if(ElRegexUtil.isAbstractChain(e.getText())){
-					abstratChainMap.put(chainName,e);
+					abstratChainMap.put(chainId,e);
 					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-					Chain chain = FlowBus.getChain(chainName);
+					Chain chain = FlowBus.getChain(chainId);
 					chain.getConditionList().add(new AbstractCondition());
 				}
 			});
 		});
 		// 清空
-		chainNameSet.clear();
+		chainIdSet.clear();
 
 		// 解析每一个chain
 		for (Document document : documentList) {
@@ -217,7 +217,7 @@ public class ParserHelper {
 		}
 	}
 
-	public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet,
+	public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet,
 			Consumer<JsonNode> parseOneChainConsumer) {
 		//用于存放抽象chain的map
 		Map<String,JsonNode> abstratChainMap = new HashMap<>();
@@ -237,24 +237,24 @@ public class ParserHelper {
 				// TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
 				JsonNode chainNameJsonNode = Optional.ofNullable(innerJsonObject.get(ID))
 					.orElse(innerJsonObject.get(NAME));
-				String chainName = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
+				String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
 				// 检查 chainName
-				checkChainId(chainName, innerJsonObject.toPrettyString());
-				if (!chainNameSet.add(chainName)) {
-					throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
+				checkChainId(chainId, innerJsonObject.toString());
+				if (!chainIdSet.add(chainId)) {
+					throw new ChainDuplicateException(String.format("[chain id duplicate] chainId=%s", chainId));
 				}
 
-				FlowBus.addChain(chainName);
+				FlowBus.addChain(chainId);
 				if(ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
-					abstratChainMap.put(chainName,innerJsonObject);
+					abstratChainMap.put(chainId,innerJsonObject);
 					//如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-					Chain chain = FlowBus.getChain(chainName);
+					Chain chain = FlowBus.getChain(chainId);
 					chain.getConditionList().add(new AbstractCondition());
 				}
 			}
 		});
 		// 清空
-		chainNameSet.clear();
+		chainIdSet.clear();
 
 		for (JsonNode flowJsonNode : flowJsonObjectList) {
 			// 解析每一个chain
@@ -265,8 +265,8 @@ public class ParserHelper {
 				parseImplChain(abstratChainMap, implChainSet, chainNode);
 				//如果一个chain不为抽象chain，则进行解析
 				JsonNode chainNameJsonNode = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME));
-				String chainName = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-				if(!abstratChainMap.containsKey(chainName)){
+				String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
+				if(!abstratChainMap.containsKey(chainId)){
 					parseOneChainConsumer.accept(chainNode);
 				}
 			}
