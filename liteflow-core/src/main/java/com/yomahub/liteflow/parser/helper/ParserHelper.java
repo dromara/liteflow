@@ -8,12 +8,7 @@ import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.prop.NodePropBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.exception.ChainDuplicateException;
-import com.yomahub.liteflow.exception.ChainNotFoundException;
-import com.yomahub.liteflow.exception.NodeClassNotFoundException;
-import com.yomahub.liteflow.exception.NodeTypeCanNotGuessException;
-import com.yomahub.liteflow.exception.NodeTypeNotSupportException;
-import com.yomahub.liteflow.exception.ParseException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.condition.AbstractCondition;
@@ -48,7 +43,6 @@ public class ParserHelper {
 
     /**
      * 构建 node
-     *
      * @param nodePropBean 构建 node 的中间属性
      */
     public static void buildNode(NodePropBean nodePropBean) {
@@ -71,7 +65,8 @@ public class ParserHelper {
                 if (nodeType != null) {
                     type = nodeType.getCode();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new NodeClassNotFoundException(StrUtil.format("cannot find the node[{}]", clazz));
             }
         }
@@ -105,7 +100,6 @@ public class ParserHelper {
      */
     /**
      * xml 形式的主要解析过程
-     *
      * @param documentList documentList
      */
     public static void parseNodeDocument(List<Document> documentList) {
@@ -125,7 +119,6 @@ public class ParserHelper {
                     file = e.attributeValue(FILE);
                     language = e.attributeValue(LANGUAGE);
 
-                    // 如果是禁用的，就不编译了
                     if (!getEnableByElement(e)) {
                         continue;
                     }
@@ -145,10 +138,10 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainDocument(List<Document> documentList, Set<String> chainNameSet,
+    public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet,
                                           Consumer<Element> parseOneChainConsumer) {
         //用于存放抽象chain的map
-        Map<String, Element> abstratChainMap = new HashMap<>();
+        Map<String,Element> abstratChainMap = new HashMap<>();
         //用于存放已经解析过的实现chain
         Set<Element> implChainSet = new HashSet<>();
         // 先在元数据里放上chain
@@ -163,34 +156,34 @@ public class ParserHelper {
             for (Element e : chainList) {
                 // 校验加载的 chainName 是否有重复的
                 // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-                String chainName = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
+                String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
                 // 检查 chainName
-                checkChainId(chainName, e.getText());
-                if (!chainNameSet.add(chainName)) {
-                    throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainName));
+                checkChainId(chainId, e.getText());
+                if (!chainIdSet.add(chainId)) {
+                    throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainId));
                 }
                 // 如果是禁用，就不解析了
                 if (!getEnableByElement(e)) {
                     continue;
                 }
 
-                FlowBus.addChain(chainName);
-                if (ElRegexUtil.isAbstractChain(e.getText())) {
-                    abstratChainMap.put(chainName, e);
+                FlowBus.addChain(chainId);
+                if(ElRegexUtil.isAbstractChain(e.getText())){
+                    abstratChainMap.put(chainId,e);
                     //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainName);
+                    Chain chain = FlowBus.getChain(chainId);
                     chain.getConditionList().add(new AbstractCondition());
                 }
-            }
+            };
         });
         // 清空
-        chainNameSet.clear();
+        chainIdSet.clear();
 
         // 解析每一个chain
         for (Document document : documentList) {
             Element rootElement = document.getRootElement();
             List<Element> chainList = rootElement.elements(CHAIN);
-            for (Element chain : chainList) {
+            for(Element chain:chainList){
                 // 如果是禁用，就不解析了
                 if (!getEnableByElement(chain)) {
                     continue;
@@ -200,7 +193,7 @@ public class ParserHelper {
                 parseImplChain(abstratChainMap, implChainSet, chain);
                 //如果一个chain不为抽象chain，则进行解析
                 String chainName = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
-                if (!abstratChainMap.containsKey(chainName)) {
+                if(!abstratChainMap.containsKey(chainName)){
                     parseOneChainConsumer.accept(chain);
                 }
             }
@@ -241,10 +234,10 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainNameSet,
+    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet,
                                       Consumer<JsonNode> parseOneChainConsumer) {
         //用于存放抽象chain的map
-        Map<String, JsonNode> abstratChainMap = new HashMap<>();
+        Map<String,JsonNode> abstratChainMap = new HashMap<>();
         //用于存放已经解析过的实现chain
         Set<JsonNode> implChainSet = new HashSet<>();
         // 先在元数据里放上chain
@@ -261,11 +254,11 @@ public class ParserHelper {
                 // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
                 JsonNode chainNameJsonNode = Optional.ofNullable(innerJsonObject.get(ID))
                         .orElse(innerJsonObject.get(NAME));
-                String chainName = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
+                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
                 // 检查 chainName
-                checkChainId(chainName, innerJsonObject.toPrettyString());
-                if (!chainNameSet.add(chainName)) {
-                    throw new ChainDuplicateException(String.format("[chain name duplicate] chainName=%s", chainName));
+                checkChainId(chainId, innerJsonObject.toString());
+                if (!chainIdSet.add(chainId)) {
+                    throw new ChainDuplicateException(String.format("[chain id duplicate] chainId=%s", chainId));
                 }
 
                 // 如果是禁用，就不解析了
@@ -273,17 +266,17 @@ public class ParserHelper {
                     continue;
                 }
 
-                FlowBus.addChain(chainName);
-                if (ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())) {
-                    abstratChainMap.put(chainName, innerJsonObject);
+                FlowBus.addChain(chainId);
+                if(ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
+                    abstratChainMap.put(chainId,innerJsonObject);
                     //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainName);
+                    Chain chain = FlowBus.getChain(chainId);
                     chain.getConditionList().add(new AbstractCondition());
                 }
             }
         });
         // 清空
-        chainNameSet.clear();
+        chainIdSet.clear();
 
         for (JsonNode flowJsonNode : flowJsonObjectList) {
             // 解析每一个chain
@@ -299,8 +292,8 @@ public class ParserHelper {
                 parseImplChain(abstratChainMap, implChainSet, chainNode);
                 //如果一个chain不为抽象chain，则进行解析
                 JsonNode chainNameJsonNode = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME));
-                String chainName = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-                if (!abstratChainMap.containsKey(chainName)) {
+                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
+                if(!abstratChainMap.containsKey(chainId)){
                     parseOneChainConsumer.accept(chainNode);
                 }
             }
@@ -309,40 +302,68 @@ public class ParserHelper {
 
     /**
      * 解析一个chain的过程
-     *
      * @param chainNode chain 节点
      */
     public static void parseOneChainEl(JsonNode chainNode) {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
-        String el = chainNode.get(VALUE).textValue();
-        LiteFlowChainELBuilder.createChain()
-                .setChainId(chainId)
-                .setEL(el)
-                .build();
+
+        JsonNode routeJsonNode = chainNode.get(ROUTE);
+
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+
+        // 如果有route这个标签，说明是决策表chain
+        // 决策表链路必须有route和body这两个标签
+        if (routeJsonNode != null){
+            builder.setRoute(routeJsonNode.textValue());
+
+            JsonNode bodyJsonNode = chainNode.get(BODY);
+            if (bodyJsonNode == null){
+                String errMsg = StrUtil.format("If you have defined the field route, then you must define the field body in chain[{}]", chainId);
+                throw new FlowSystemException(errMsg);
+            }
+            builder.setEL(bodyJsonNode.textValue());
+        }else{
+            builder.setEL(chainNode.get(VALUE).textValue());
+        }
+
+        builder.build();
     }
 
     /**
      * 解析一个chain的过程
-     *
      * @param e chain 节点
      */
     public static void parseOneChainEl(Element e) {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
-        String text = e.getText();
-        String el = ElRegexUtil.removeComments(text);
-        LiteFlowChainELBuilder.createChain()
-                .setChainId(chainId)
-                .setEL(el)
-                .build();
+
+        Element routeElement = e.element(ROUTE);
+
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+
+        // 如果有route这个标签，说明是决策表chain
+        // 决策表链路必须有route和body这两个标签
+        if (routeElement != null){
+            builder.setRoute(ElRegexUtil.removeComments(routeElement.getText()));
+
+            Element bodyElement = e.element(BODY);
+            if (bodyElement == null){
+                String errMsg = StrUtil.format("If you have defined the tag <route>, then you must define the tag <body> in chain[{}]", chainId);
+                throw new FlowSystemException(errMsg);
+            }
+            builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
+        }else{
+            builder.setEL(ElRegexUtil.removeComments(e.getText()));
+        }
+
+        builder.build();
     }
 
     /**
      * 检查 chainId
-     *
      * @param chainId chainId
-     * @param elData  elData
+     * @param elData elData
      */
     private static void checkChainId(String chainId, String elData) {
         if (StrUtil.isBlank(chainId)) {
@@ -352,18 +373,17 @@ public class ParserHelper {
 
     /**
      * 解析一个带继承关系的Chain,xml格式
-     *
-     * @param chain           实现Chain
+     * @param chain 实现Chain
      * @param abstratChainMap 所有的抽象Chain
-     * @param implChainSet    已经解析过的实现Chain
+     * @param implChainSet 已经解析过的实现Chain
      */
     private static void parseImplChain(Map<String, Element> abstratChainMap, Set<Element> implChainSet, Element chain) {
-        if (ObjectUtil.isNotNull(chain.attributeValue(EXTENDS))) {
+        if(ObjectUtil.isNotNull(chain.attributeValue(EXTENDS))){
             String baseChainId = chain.attributeValue(EXTENDS);
             Element baseChain = abstratChainMap.get(baseChainId);
-            if (baseChain != null) {
-                internalParseImplChain(baseChain, chain, abstratChainMap, implChainSet);
-            } else {
+            if(baseChain!=null) {
+                internalParseImplChain(baseChain,chain,abstratChainMap,implChainSet);
+            }else{
                 throw new ChainNotFoundException(StrUtil.format("[abstract chain not found] chainName={}", baseChainId));
             }
         }
@@ -371,18 +391,17 @@ public class ParserHelper {
 
     /**
      * 解析一个带继承关系的Chain,json格式
-     *
-     * @param chainNode       实现Chain
+     * @param chainNode 实现Chain
      * @param abstratChainMap 所有的抽象Chain
-     * @param implChainSet    已经解析过的实现Chain
+     * @param implChainSet 已经解析过的实现Chain
      */
     private static void parseImplChain(Map<String, JsonNode> abstratChainMap, Set<JsonNode> implChainSet, JsonNode chainNode) {
-        if (chainNode.hasNonNull(EXTENDS)) {
+        if(chainNode.hasNonNull(EXTENDS)){
             String baseChainId = chainNode.get(EXTENDS).textValue();
-            JsonNode baseChain = abstratChainMap.get(baseChainId);
-            if (baseChain != null) {
-                internalParseImplChain(baseChain, chainNode, abstratChainMap, implChainSet);
-            } else {
+            JsonNode baseChain= abstratChainMap.get(baseChainId);
+            if(baseChain!=null) {
+                internalParseImplChain(baseChain,chainNode,abstratChainMap,implChainSet);
+            }else{
                 throw new ChainNotFoundException(StrUtil.format("[abstract chain not found] chainName={}", baseChainId));
             }
         }
@@ -390,15 +409,14 @@ public class ParserHelper {
 
     /**
      * 解析一个继承自baseChain的implChain,xml格式
-     *
-     * @param baseChain        父Chain
-     * @param implChain        实现Chain
+     * @param baseChain 父Chain
+     * @param implChain 实现Chain
      * @param abstractChainMap 所有的抽象Chain
-     * @param implChainSet     已经解析过的实现Chain
+     * @param implChainSet 已经解析过的实现Chain
      */
-    private static void internalParseImplChain(JsonNode baseChain, JsonNode implChain, Map<String, JsonNode> abstractChainMap, Set<JsonNode> implChainSet) {
+    private static void internalParseImplChain(JsonNode baseChain,JsonNode implChain,Map<String,JsonNode> abstractChainMap,Set<JsonNode> implChainSet) {
         //如果已经解析过了，就不再解析
-        if (implChainSet.contains(implChain)) return;
+        if(implChainSet.contains(implChain)) return;
         //如果baseChainId也是继承自其他的chain，需要递归解析
         parseImplChain(abstractChainMap, implChainSet, baseChain);
         //否则根据baseChainId解析implChainId
@@ -406,23 +424,22 @@ public class ParserHelper {
         String baseChainEl = baseChain.get(VALUE).textValue();
         //替换baseChainId中的implChainId
         // 使用正则表达式匹配占位符并替换
-        String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl, implChainEl);
+        String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
         ObjectNode objectNode = (ObjectNode) implChain;
-        objectNode.put(VALUE, parsedEl);
+        objectNode.put(VALUE,parsedEl);
         implChainSet.add(implChain);
     }
 
     /**
      * 解析一个继承自baseChain的implChain,json格式
-     *
-     * @param baseChain        父Chain
-     * @param implChain        实现Chain
+     * @param baseChain 父Chain
+     * @param implChain 实现Chain
      * @param abstractChainMap 所有的抽象Chain
-     * @param implChainSet     已经解析过的实现Chain
+     * @param implChainSet 已经解析过的实现Chain
      */
-    private static void internalParseImplChain(Element baseChain, Element implChain, Map<String, Element> abstractChainMap, Set<Element> implChainSet) {
+    private static void internalParseImplChain(Element baseChain,Element implChain,Map<String,Element> abstractChainMap,Set<Element> implChainSet) {
         //如果已经解析过了，就不再解析
-        if (implChainSet.contains(implChain)) return;
+        if(implChainSet.contains(implChain)) return;
         //如果baseChainId也是继承自其他的chain，需要递归解析
         parseImplChain(abstractChainMap, implChainSet, baseChain);
         //否则根据baseChainId解析implChainId
@@ -430,7 +447,7 @@ public class ParserHelper {
         String baseChainEl = baseChain.getText();
         //替换baseChainId中的implChainId
         // 使用正则表达式匹配占位符并替换
-        String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl, implChainEl);
+        String parsedEl = ElRegexUtil.replaceAbstractChain(baseChainEl,implChainEl);
         implChain.setText(parsedEl);
         implChainSet.add(implChain);
     }
