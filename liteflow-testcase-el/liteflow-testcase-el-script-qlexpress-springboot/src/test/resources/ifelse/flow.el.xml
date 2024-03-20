@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
     <nodes>
-        <node id="x0" type="if_script">
+        <node id="x0" type="boolean_script">
             <![CDATA[
                 return true;
             ]]>
         </node>
 
-        <node id="x1" type="if_script">
+        <node id="x1" type="boolean_script">
             <![CDATA[
                 return false;
             ]]>

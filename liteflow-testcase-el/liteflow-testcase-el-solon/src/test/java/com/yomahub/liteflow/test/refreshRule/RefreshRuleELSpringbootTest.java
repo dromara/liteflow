@@ -9,9 +9,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * springboot环境下重新加载规则测试
@@ -20,7 +20,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.6.4
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/refreshRule/application.properties")
+@Import(profiles="classpath:/refreshRule/application.properties")
 public class RefreshRuleELSpringbootTest extends BaseTest {
 
 	@Inject

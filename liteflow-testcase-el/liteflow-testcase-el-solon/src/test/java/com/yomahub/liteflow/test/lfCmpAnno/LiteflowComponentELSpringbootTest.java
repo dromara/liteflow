@@ -6,9 +6,9 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 测试@LiteflowComponent标注
@@ -17,7 +17,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @since 2.5.10
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/lfCmpAnno/application.properties")
+@Import(profiles="classpath:/lfCmpAnno/application.properties")
 public class LiteflowComponentELSpringbootTest extends BaseTest {
 
 	@Inject

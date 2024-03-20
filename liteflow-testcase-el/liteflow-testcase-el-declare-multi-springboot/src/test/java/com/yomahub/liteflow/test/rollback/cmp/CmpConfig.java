@@ -102,13 +102,13 @@ public class CmpConfig {
         System.out.println("GCmp rollback!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeId = "h", nodeType = NodeTypeEnum.BREAK)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "h", nodeType = NodeTypeEnum.BOOLEAN)
     public int processH(NodeComponent bindCmp) {
         System.out.println("HCmp executed!");
         throw new RuntimeException();
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "h", nodeType = NodeTypeEnum.BREAK)
+    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "h", nodeType = NodeTypeEnum.BOOLEAN)
     public void rollbackH() throws Exception {
         System.out.println("HCmp rollback!");
     }
@@ -124,24 +124,24 @@ public class CmpConfig {
         System.out.println("ICmp rollback!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE, nodeId = "w", nodeType = NodeTypeEnum.WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "w", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processW(NodeComponent bindCmp) {
         System.out.println("WCmp executed!");
         return true;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "w", nodeType = NodeTypeEnum.WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "w", nodeType = NodeTypeEnum.BOOLEAN)
     public void rollbackW() throws Exception {
         System.out.println("WCmp rollback!");
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeId = "x", nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeId = "x", nodeType = NodeTypeEnum.BOOLEAN)
     public boolean processX(NodeComponent bindCmp) {
         System.out.println("XCmp executed!");
         return true;
     }
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "x", nodeType = NodeTypeEnum.IF)
+    @LiteflowMethod(value = LiteFlowMethodEnum.ROLLBACK, nodeId = "x", nodeType = NodeTypeEnum.BOOLEAN)
     public void rollbackX() throws Exception {
         System.out.println("XCmp rollback!");
     }

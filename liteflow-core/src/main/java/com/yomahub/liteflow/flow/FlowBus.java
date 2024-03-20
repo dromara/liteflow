@@ -16,11 +16,13 @@ import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+import com.yomahub.liteflow.enums.BooleanTypeEnum;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -40,7 +42,9 @@ import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 流程元数据类
@@ -56,7 +60,7 @@ public class FlowBus {
 
 	private static final Map<String, Node> nodeMap;
 
-	private static final Map<NodeTypeEnum, Node> fallbackNodeMap;
+	private static final Map<String, Node> fallbackNodeMap;
 
 	private static AtomicBoolean initStat = new AtomicBoolean(false);
 
@@ -241,6 +245,14 @@ public class FlowBus {
 		return nodeMap.get(nodeId);
 	}
 
+    // 获取某一个 chainId 下的所有 nodeId
+    public static List<Node> getNodesByChainId(String chainId) {
+        Chain chain = getChain(chainId);
+		return chain.getConditionList().stream().flatMap(
+				(Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
+		).collect(Collectors.toList());
+    }
+
 	public static Map<String, Node> getNodeMap() {
 		return nodeMap;
 	}
@@ -250,7 +262,12 @@ public class FlowBus {
 	}
 
 	public static Node getFallBackNode(NodeTypeEnum nodeType) {
-		return fallbackNodeMap.get(nodeType);
+		return getFallBackNode(nodeType, BooleanTypeEnum.NOT_BOOL);
+	}
+
+	public static Node getFallBackNode(NodeTypeEnum nodeType, BooleanTypeEnum booleanTypeEnum){
+		String key = StrUtil.format("{}_{}", nodeType.name(), booleanTypeEnum.name());
+		return fallbackNodeMap.get(key);
 	}
 
 	public static void cleanCache() {
@@ -297,6 +314,11 @@ public class FlowBus {
 		Arrays.stream(chainIds).forEach(FlowBus::removeChain);
 	}
 
+	// 移除节点
+	public static boolean removeNode(String nodeId) {
+		return nodeMap.remove(nodeId) != null;
+	}
+
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
 	private static void addFallbackNode(Node node) {
 		NodeComponent nodeComponent = node.getInstance();
@@ -306,7 +328,35 @@ public class FlowBus {
 		}
 
 		NodeTypeEnum nodeType = node.getType();
-		fallbackNodeMap.put(nodeType, node);
+		String key = StrUtil.format("{}_{}", nodeType.name(), fallbackCmp.value().name());
+		fallbackNodeMap.put(key, node);
+	}
+
+    // 重新加载脚本
+	public static void reloadScript(String nodeId, String script) {
+		Node node = getNode(nodeId);
+		if (node == null || !node.getType().isScript()) {
+			return;
+		}
+        // 更新脚本
+		node.setScript(script);
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.load(nodeId, script);
+	}
+
+	// 卸载脚本节点
+	public static boolean unloadScriptNode(String nodeId) {
+		Node node = getNode(nodeId);
+		if (node == null || !node.getType().isScript()) {
+			return false;
+		}
+		// 卸载脚本
+		ScriptExecutorFactory.loadInstance()
+				.getScriptExecutor(node.getLanguage())
+				.unLoad(nodeId);
+		// 移除脚本
+		return removeNode(nodeId);
 	}
 
 	public static void clearStat(){

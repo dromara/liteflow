@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="qlexpress">
+            <![CDATA[
+                a=1;
+                b=2;
+                c=3;
+                defaultContext.setData("s1",a+b+c);
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本2" type="script" language="qlexpress">
+            <![CDATA[
+                a=1;
+                b=2;
+                c=3;
+                defaultContext.setData("s2",a*b+c);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(s1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(s2);
+    </chain>
+</flow>

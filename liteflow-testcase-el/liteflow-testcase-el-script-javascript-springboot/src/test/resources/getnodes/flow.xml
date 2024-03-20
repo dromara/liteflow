@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="js">
+            <![CDATA[
+                var a=1;
+                var b=2;
+                var c=3;
+                defaultContext.setData("s1",a+b+c);
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本2" type="script" language="js">
+            <![CDATA[
+                var a=1;
+                var b=2;
+                var c=3;
+                defaultContext.setData("s2",a*b+c);
+            ]]>
+        </node>
+
+        <node id="x" name="条件循环脚本" type="boolean_script" language="js">
+            <![CDATA[
+                return true;
+            ]]>
+        </node>
+
+        <node id="y" name="退出循环脚本" type="boolean_script" language="js">
+            <![CDATA[
+                return true;
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1, s2);
+    </chain>
+
+    <!-- 重复 node -->
+    <chain name="chain2">
+        THEN(a.tag("a1"), a.tag("a2"), a.tag("a3"), b.tag("b1"), s1.tag("s11"), s1.tag("s12"));
+    </chain>
+
+    <!-- 多层 node -->
+    <chain name="chain3">
+        THEN(WHEN(a, b), IF(f, WHEN(THEN(c, s2, WHEN(s1, b)), a)));
+    </chain>
+
+    <chain name="chain4">
+        SWITCH(s).to(FOR(3).DO(a).id("f1"), b, c);
+    </chain>
+
+    <chain name="chain5">
+        WHILE(x).DO(s1).BREAK(y);
+    </chain>
+</flow>

@@ -10,6 +10,10 @@ public interface ChainConstant {
 
 	String CHAIN = "chain";
 
+	String ROUTE = "route";
+
+	String BODY = "body";
+
 	String FLOW = "flow";
 
 	String NODES = "nodes";
@@ -95,5 +99,7 @@ public interface ChainConstant {
     String MAX_WAIT_MILLISECONDS = "maxWaitMilliseconds";
 
 	String EXTENDS = "extends";
+
+	String RETRY = "retry";
 
 }

@@ -30,6 +30,8 @@ public class Chain implements Executable{
 
 	private String chainId;
 
+	private Executable routeItem;
+
 	private List<Condition> conditionList = new ArrayList<>();
 
 	public Chain(String chainName) {
@@ -132,5 +134,13 @@ public class Chain implements Executable{
 	@Override
 	public String getTag() {
 		return null;
+	}
+
+	public Executable getRouteItem() {
+		return routeItem;
+	}
+
+	public void setRouteItem(Executable routeItem) {
+		this.routeItem = routeItem;
 	}
 }

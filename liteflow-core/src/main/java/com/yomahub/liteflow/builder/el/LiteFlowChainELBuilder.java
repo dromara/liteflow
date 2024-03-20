@@ -21,6 +21,7 @@ import com.yomahub.liteflow.exception.ParseException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -43,6 +44,11 @@ public class LiteFlowChainELBuilder {
 	private static ObjectMapper objectMapper =new ObjectMapper();
 
 	private Chain chain;
+
+	/**
+	 * 这是route EL的文本
+	 */
+	private Executable route;
 
 	/**
 	 * 这是主体的Condition //声明这个变量，而不是用chain.getConditionList的目的，是为了辅助平滑加载
@@ -92,6 +98,7 @@ public class LiteFlowChainELBuilder {
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MAX_WAIT_SECONDS, Object.class, new MaxWaitSecondsOperator());
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MAX_WAIT_MILLISECONDS, Object.class, new MaxWaitMillisecondsOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.PARALLEL, Object.class, new ParallelOperator());
+		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.RETRY, Object.class, new RetryOperator());
 	}
 
 	public static LiteFlowChainELBuilder createChain() {
@@ -127,6 +134,45 @@ public class LiteFlowChainELBuilder {
 			this.chain.setChainId(chainId);
 		}
 		return this;
+	}
+
+	public LiteFlowChainELBuilder setRoute(String routeEl){
+		if (StrUtil.isBlank(routeEl)) {
+			String errMsg = StrUtil.format("You have defined the label <route> but there is no content in the chain[{}].", chain.getChainId());
+			throw new FlowSystemException(errMsg);
+		}
+		List<String> errorList = new ArrayList<>();
+		try {
+			DefaultContext<String, Object> context = new DefaultContext<>();
+
+			// 往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
+			FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
+
+			// 解析route el成为一个executable
+			Executable routeExecutable = (Executable) EXPRESS_RUNNER.execute(routeEl, context, errorList, true, true);
+
+			if (Objects.isNull(routeExecutable)){
+				throw new QLException(StrUtil.format("parse route el fail,el:[{}]", routeEl));
+			}
+
+			// 把主要的condition加入
+			this.route = routeExecutable;
+			return this;
+		} catch (QLException e) {
+			// EL 底层会包装异常，这里是曲线处理
+			if (ObjectUtil.isNotNull(e.getCause()) && Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+				// 构建错误信息
+				String msg = buildDataNotFoundExceptionMsg(routeEl);
+				throw new ELParseException(msg);
+			}else if (ObjectUtil.isNotNull(e.getCause())){
+				throw new ELParseException(e.getCause().getMessage());
+			}else{
+				throw new ELParseException(e.getMessage());
+			}
+		} catch (Exception e) {
+			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
+			throw new ELParseException(errMsg + e.getMessage());
+		}
 	}
 
 	public LiteFlowChainELBuilder setEL(String elStr) {
@@ -196,6 +242,7 @@ public class LiteFlowChainELBuilder {
 	}
 
 	public void build() {
+		this.chain.setRouteItem(this.route);
 		this.chain.setConditionList(this.conditionList);
 
 		//暂且去掉循环依赖检测，因为有发现循环依赖检测在对大的EL进行检测的时候，会导致CPU飙升，也或许是jackson低版本的问题

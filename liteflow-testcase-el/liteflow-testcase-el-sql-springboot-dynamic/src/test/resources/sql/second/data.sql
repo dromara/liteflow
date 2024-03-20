@@ -17,11 +17,11 @@ FROM SCRIPT_NODE_TABLE;
 
 INSERT INTO SCRIPT_NODE_TABLE (APPLICATION_NAME, SCRIPT_NODE_ID, SCRIPT_NODE_NAME, SCRIPT_NODE_TYPE, SCRIPT_NODE_DATA,
                                SCRIPT_LANGUAGE)
-values ('demo', 'x01', 'if 脚本', 'if_script', 'return true', 'groovy');
+values ('demo', 'x01', 'if 脚本', 'boolean_script', 'return true', 'groovy');
 INSERT INTO SCRIPT_NODE_TABLE (APPLICATION_NAME, SCRIPT_NODE_ID, SCRIPT_NODE_NAME, SCRIPT_NODE_TYPE, SCRIPT_NODE_DATA,
                                SCRIPT_LANGUAGE)
-values ('demo', 'x11', 'if 脚本', 'if_script', 'return false', 'groovy');
+values ('demo', 'x11', 'if 脚本', 'boolean_script', 'return false', 'groovy');
 
 INSERT INTO SCRIPT_NODE_TABLE (APPLICATION_NAME, SCRIPT_NODE_ID, SCRIPT_NODE_NAME, SCRIPT_NODE_TYPE, SCRIPT_NODE_DATA,
                                SCRIPT_LANGUAGE)
-values ('demo', 'x21', 'python脚本', 'if_script', 'return true', 'js');
+values ('demo', 'x21', 'python脚本', 'boolean_script', 'return true', 'js');

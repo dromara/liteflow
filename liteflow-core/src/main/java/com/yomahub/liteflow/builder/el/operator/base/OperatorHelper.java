@@ -10,8 +10,6 @@ import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
-import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
-import com.yomahub.liteflow.flow.element.condition.NotCondition;
 
 import java.util.Objects;
 
@@ -35,13 +33,13 @@ public class OperatorHelper {
 	}
 
 	/**
-	 * 检查参数数量，大于 2
+	 * 检查参数数量，大于等于 2
 	 * @param objects objects
 	 * @throws QLException QLException
 	 */
-	public static void checkObjectSizeGtTwo(Object[] objects) throws QLException {
+	public static void checkObjectSizeGteTwo(Object[] objects) throws QLException {
 		checkObjectSizeGtZero(objects);
-		if (objects.length <= 1) {
+		if (objects.length < 2) {
 			throw new QLException("parameter error");
 		}
 	}
@@ -119,7 +117,7 @@ public class OperatorHelper {
 			if (clazz.isAssignableFrom(object.getClass())) {
 				if (object instanceof Node) {
 					Node node = (Node) object;
-					return (T) node.copy();
+					return (T) node.clone();
 				}
 				else {
 					return (T) object;
@@ -169,12 +167,8 @@ public class OperatorHelper {
 		Executable item = (Executable) object;
 		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
 			Node node = (Node) item;
-			if (!ListUtil.toList(NodeTypeEnum.IF,
-					NodeTypeEnum.IF_SCRIPT,
-					NodeTypeEnum.WHILE,
-					NodeTypeEnum.WHILE_SCRIPT,
-					NodeTypeEnum.BREAK,
-					NodeTypeEnum.BREAK_SCRIPT,
+			if (!ListUtil.toList(NodeTypeEnum.BOOLEAN,
+					NodeTypeEnum.BOOLEAN_SCRIPT,
 					NodeTypeEnum.FALLBACK).contains(node.getType())){
 				throw new QLException(StrUtil.format("The node[{}] must be boolean type Node.", node.getId()));
 			}

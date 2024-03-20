@@ -7,10 +7,14 @@
  */
 package com.yomahub.liteflow.slot;
 
+import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.util.AnnoUtil;
+import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -74,13 +78,22 @@ public class DataBus {
 			.map((Function<Class<?>, Object>) ReflectUtil::newInstanceIfPossible)
 			.collect(Collectors.toList());
 
-		Slot slot = new Slot(contextBeanList);
-
-		return offerIndex(slot);
+		return offerSlotByBean(contextBeanList);
 	}
 
 	public static int offerSlotByBean(List<Object> contextList) {
-		Slot slot = new Slot(contextList);
+		List<Tuple> contextBeanList = contextList.stream().map(object -> {
+            ContextBean contextBean = AnnoUtil.getAnnotation(object.getClass(), ContextBean.class);
+            String contextKey;
+            if (contextBean != null && StrUtil.isNotBlank(contextBean.value())){
+                contextKey = contextBean.value();
+            }else{
+                contextKey = StrUtil.lowerFirst(object.getClass().getSimpleName());
+            }
+            return new Tuple(contextKey, object);
+        }).collect(Collectors.toList());
+
+		Slot slot = new Slot(contextBeanList);
 
 		return offerIndex(slot);
 	}
@@ -128,7 +141,7 @@ public class DataBus {
 		return SLOTS.get(slotIndex);
 	}
 
-	public static List<Object> getContextBeanList(int slotIndex) {
+	public static List<Tuple> getContextBeanList(int slotIndex) {
 		Slot slot = getSlot(slotIndex);
 		return slot.getContextBeanList();
 	}

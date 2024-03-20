@@ -14,14 +14,11 @@ import org.springframework.stereotype.Component;
 public class CCmp extends NodeComponent {
 
 	@Override
-	public void process() {
-		try {
-			Thread.sleep(3500);
+	public void process() throws Exception{
+		for (int i = 0; i < 10; i++) {
+			System.out.println("executing cmp c");
+			Thread.sleep(500);
 		}
-		catch (Exception ignored) {
-
-		}
-		System.out.println("CCmp executed!");
 	}
 
 }

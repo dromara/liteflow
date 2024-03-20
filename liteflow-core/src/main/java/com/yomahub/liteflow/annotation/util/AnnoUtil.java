@@ -3,6 +3,7 @@ package com.yomahub.liteflow.annotation.util;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.LFAliasFor;
 
 import java.lang.annotation.Annotation;
@@ -10,15 +11,25 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 注解工具类
+ * 此工具类带缓存
  *
  * @author Bryan.Zhang
  */
 public class AnnoUtil {
 
+	private static Map<String, Annotation> annoCacheMap = new ConcurrentHashMap<>();
+
 	public static <A extends Annotation> A getAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
+		String cacheKey = StrUtil.format("{}-{}", annotatedElement, annotationType.getSimpleName());
+
+		if (annoCacheMap.containsKey(cacheKey)){
+			return (A)annoCacheMap.get(cacheKey);
+		}
+
 		A annotation = AnnotationUtil.getAnnotation(annotatedElement, annotationType);
 		if (ObjectUtil.isNull(annotation)) {
 			return null;
@@ -42,6 +53,8 @@ public class AnnoUtil {
 			}
 		});
 
+		annoCacheMap.put(cacheKey, annotation);
+
 		return annotation;
 	}
 
@@ -53,5 +66,4 @@ public class AnnoUtil {
 			return null;
 		}
 	}
-
 }

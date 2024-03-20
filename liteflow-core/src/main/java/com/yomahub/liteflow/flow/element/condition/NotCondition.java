@@ -26,7 +26,7 @@ public class NotCondition extends Condition {
         Slot slot = DataBus.getSlot(slotIndex);
 
         String resultKey = StrUtil.format("{}_{}",this.getClass().getName(),this.hashCode());
-        slot.setAndOrResult(resultKey, !flag);
+        slot.setNotResult(resultKey, !flag);
     }
 
 
@@ -35,7 +35,7 @@ public class NotCondition extends Condition {
     public Boolean getItemResultMetaValue(Integer slotIndex) {
         Slot slot = DataBus.getSlot(slotIndex);
         String resultKey = StrUtil.format("{}_{}",this.getClass().getName(),this.hashCode());
-        return slot.getAndOrResult(resultKey);
+        return slot.getNotResult(resultKey);
     }
 
     @Override

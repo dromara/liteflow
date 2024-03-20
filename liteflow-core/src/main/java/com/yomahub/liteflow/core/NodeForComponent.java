@@ -16,8 +16,7 @@ public abstract class NodeForComponent extends NodeComponent {
 	public void process() throws Exception {
 		int forCount = processFor();
 		Slot slot = this.getSlot();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		slot.setForResult(originalClass.getName(), forCount);
+		slot.setForResult(this.getMetaValueKey(), forCount);
 	}
 
 	public abstract int processFor() throws Exception;
@@ -25,8 +24,7 @@ public abstract class NodeForComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Integer getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getForResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getForResult(this.getMetaValueKey());
 	}
 
 }

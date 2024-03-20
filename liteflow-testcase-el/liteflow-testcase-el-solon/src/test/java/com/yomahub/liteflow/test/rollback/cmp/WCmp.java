@@ -1,13 +1,13 @@
 package com.yomahub.liteflow.test.rollback.cmp;
 
-import com.yomahub.liteflow.core.NodeWhileComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.noear.solon.annotation.Component;
 
 @Component("w")
-public class WCmp extends NodeWhileComponent {
+public class WCmp extends NodeBooleanComponent {
 
     @Override
-    public boolean processWhile() throws Exception {
+    public boolean processBoolean() throws Exception {
         System.out.println("WCmp executed!");
         return true;
     }

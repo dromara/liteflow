@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component("x1")
 public class X1Cmp {
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_IF, nodeType = NodeTypeEnum.IF)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeType = NodeTypeEnum.BOOLEAN)
 	public boolean processIf(NodeComponent bindCmp) throws Exception {
 		return Boolean.parseBoolean(bindCmp.getTag());
 	}

@@ -7,7 +7,16 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import javax.script.*;
+
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
+import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,14 +47,22 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 	@Override
 	public void load(String nodeId, String script) {
 		try {
-			CompiledScript compiledScript = ((Compilable) scriptEngine).compile(convertScript(script));
-			compiledScriptMap.put(nodeId, compiledScript);
+			compiledScriptMap.put(nodeId, (CompiledScript) compile(script));
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}], error msg:{}", nodeId, e.getMessage());
 			throw new ScriptLoadException(errorMsg);
 		}
+	}
 
+	@Override
+	public void unLoad(String nodeId) {
+		compiledScriptMap.remove(nodeId);
+	}
+
+	@Override
+	public List<String> getNodeIds() {
+		return new ArrayList<>(compiledScriptMap.keySet());
 	}
 
 	@Override
@@ -66,6 +83,14 @@ public abstract class JSR223ScriptExecutor extends ScriptExecutor {
 	@Override
 	public void cleanCache() {
 		compiledScriptMap.clear();
+	}
+
+	@Override
+	public Object compile(String script) throws ScriptException {
+		if(scriptEngine == null) {
+			LOG.error("script engine has not init");
+		}
+		return ((Compilable) scriptEngine).compile(convertScript(script));
 	}
 
 }

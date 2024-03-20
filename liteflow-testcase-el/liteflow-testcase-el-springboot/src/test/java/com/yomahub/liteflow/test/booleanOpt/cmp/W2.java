@@ -7,14 +7,14 @@
  */
 package com.yomahub.liteflow.test.booleanOpt.cmp;
 
-import com.yomahub.liteflow.core.NodeWhileComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import org.springframework.stereotype.Component;
 
 @Component("w2")
-public class W2 extends NodeWhileComponent {
+public class W2 extends NodeBooleanComponent {
 
 	@Override
-	public boolean processWhile() throws Exception {
+	public boolean processBoolean() throws Exception {
 		return false;
 	}
 }

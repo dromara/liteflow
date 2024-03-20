@@ -107,4 +107,8 @@
         <!-- 不超时 -->
         testChain.maxWaitSeconds(3);
     </chain>
+
+    <chain name="chain3">
+        THEN(a, b, e).maxWaitSeconds(8);
+    </chain>
 </flow>

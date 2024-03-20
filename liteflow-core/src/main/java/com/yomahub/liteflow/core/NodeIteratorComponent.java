@@ -18,8 +18,7 @@ public abstract class NodeIteratorComponent extends NodeComponent {
 	public void process() throws Exception {
 		Iterator<?> it = processIterator();
 		Slot slot = this.getSlot();
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		slot.setIteratorResult(originalClass.getName(), it);
+		slot.setIteratorResult(this.getMetaValueKey(), it);
 	}
 
 	public abstract Iterator<?> processIterator() throws Exception;
@@ -27,8 +26,7 @@ public abstract class NodeIteratorComponent extends NodeComponent {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Iterator<?> getItemResultMetaValue(Integer slotIndex) {
-		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
-		return DataBus.getSlot(slotIndex).getIteratorResult(originalClass.getName());
+		return DataBus.getSlot(slotIndex).getIteratorResult(this.getMetaValueKey());
 	}
 
 }

@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.test.rollback.cmp;
 
-import com.yomahub.liteflow.core.NodeBreakComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 
-public class HCmp extends NodeBreakComponent {
+public class HCmp extends NodeBooleanComponent {
 
     @Override
-    public boolean processBreak() throws Exception {
+    public boolean processBoolean() throws Exception {
         System.out.println("HCmp executed!");
         throw new RuntimeException();
     }

@@ -2,14 +2,12 @@ package com.yomahub.liteflow.script;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.util.AnnoUtil;
-import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -26,6 +24,12 @@ public abstract class ScriptExecutor {
 	}
 
 	public abstract void load(String nodeId, String script);
+
+	// 卸载脚本（不包含 node）
+	public abstract void unLoad(String nodeId);
+
+	// 获取该执行器下的所有 nodeId
+	public abstract List<String> getNodeIds();
 
 	public Object execute(ScriptExecuteWrap wrap) throws Exception{
 		try {
@@ -54,17 +58,7 @@ public abstract class ScriptExecutor {
 		// key的规则为自定义上下文的simpleName
 		// 比如你的自定义上下文为AbcContext，那么key就为:abcContext
 		// 这里不统一放一个map的原因是考虑到有些用户会调用上下文里的方法，而不是参数，所以脚本语言的绑定表里也是放多个上下文
-		DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(o -> {
-			ContextBean contextBean = AnnoUtil.getAnnotation(o.getClass(), ContextBean.class);
-			String key;
-			if (contextBean != null && contextBean.value().trim().length() > 0) {
-				key = contextBean.value();
-			}
-			else {
-				key = StrUtil.lowerFirst(o.getClass().getSimpleName());
-			}
-			putConsumer.accept(key, o);
-		});
+		DataBus.getContextBeanList(wrap.getSlotIndex()).forEach(tuple -> putConsumer.accept(tuple.get(0), tuple.get(1)));
 
 		// 把wrap对象转换成元数据map
 		Map<String, Object> metaMap = BeanUtil.beanToMap(wrap);
@@ -86,4 +80,12 @@ public abstract class ScriptExecutor {
 		ScriptBeanManager.getScriptBeanMap().forEach(putIfAbsentConsumer);
 	}
 
+	/**
+	 * 利用相应框架编译脚本
+	 *
+	 * @param script 脚本
+	 * @return boolean
+	 * @throws Exception 例外
+	 */
+	public abstract Object compile(String script) throws Exception;
 }

@@ -1,14 +1,12 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
 import cn.hutool.core.collection.CollUtil;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Stream;
 
 /**
  * 完成指定任务执行器，使用 ID 进行比较
@@ -22,7 +20,7 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
     @Override
     public void execute(WhenCondition whenCondition, Integer slotIndex) throws Exception {
 
-        String currChainName = whenCondition.getCurrChainId();
+        String currChainId = whenCondition.getCurrChainId();
 
         // 设置 whenCondition 参数
         this.setWhenConditionParams(whenCondition);
@@ -43,10 +41,10 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         List<CompletableFuture<WhenFutureObj>> allTaskList = new ArrayList<>();
 
         // 遍历 when 所有 node，进行筛选及处理
-        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex)
+        filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainId)
                 .forEach(executable -> {
                     // 处理 task，封装成 CompletableFuture 对象
-                    CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex);
+                    CompletableFuture<WhenFutureObj> completableFutureTask = wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainId, slotIndex);
                     // 存在 must 指定 ID 的 task，且该任务只会有一个或者没有
                     if (whenCondition.getSpecifyIdSet().contains(executable.getId())) {
                         // 设置指定任务 future 对象
@@ -75,21 +73,6 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         // 结果处理
         this.handleTaskResult(whenCondition, slotIndex, allTaskList, specifyTask);
 
-    }
-
-    //在must这个场景中，需要过滤掉isAccess为false的场景
-    //因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
-    //换句话说，就是must这个场景，isAccess会被执行两次
-    @Override
-    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex) {
-        return stream.filter(executable -> {
-            try {
-                return executable.isAccess(slotIndex);
-            } catch (Exception e) {
-                LOG.error("there was an error when executing the when component isAccess", e);
-                return false;
-            }
-        });
     }
 
 }

@@ -31,9 +31,10 @@ public class AllOfParallelExecutor extends ParallelStrategyExecutor {
 
     }
 
-    //在allOf这个场景中，不需要过滤
+    // 在 allOf 这个场景中，不需要过滤
     @Override
-    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex) {
+    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex, String currentChainId) {
         return stream;
     }
+
 }

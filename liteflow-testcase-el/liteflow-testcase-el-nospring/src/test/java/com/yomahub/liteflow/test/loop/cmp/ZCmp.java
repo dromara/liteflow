@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.test.loop.cmp;
 
-import com.yomahub.liteflow.core.NodeWhileComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 
-public class ZCmp extends NodeWhileComponent {
+public class ZCmp extends NodeBooleanComponent {
 
 	@Override
-	public boolean processWhile() throws Exception {
+	public boolean processBoolean() throws Exception {
 		DefaultContext context = this.getFirstContextBean();
 		String key = "test";
 		if (context.hasData(key)) {

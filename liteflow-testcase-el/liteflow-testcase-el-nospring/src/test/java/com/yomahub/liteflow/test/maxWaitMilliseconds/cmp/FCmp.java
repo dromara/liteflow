@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.test.maxWaitMilliseconds.cmp;
 
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
 
-public class FCmp extends NodeIfComponent {
+public class FCmp extends NodeBooleanComponent {
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         return true;
     }
 }

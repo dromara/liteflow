@@ -25,13 +25,9 @@ public enum NodeTypeEnum {
 
 	SWITCH("switch", "选择", false, NodeSwitchComponent.class),
 
-	IF("if", "条件", false, NodeIfComponent.class),
+	BOOLEAN("boolean", "布尔", false, NodeBooleanComponent.class),
 
 	FOR("for", "循环次数", false, NodeForComponent.class),
-
-	WHILE("while", "循环条件", false, NodeWhileComponent.class),
-
-	BREAK("break", "循环跳出", false, NodeBreakComponent.class),
 
 	ITERATOR("iterator", "循环迭代", false, NodeIteratorComponent.class),
 
@@ -39,13 +35,9 @@ public enum NodeTypeEnum {
 
 	SWITCH_SCRIPT("switch_script", "选择脚本", true, ScriptSwitchComponent.class),
 
-	IF_SCRIPT("if_script", "条件脚本", true, ScriptIfComponent.class),
+	BOOLEAN_SCRIPT("boolean_script", "布尔脚本", true, ScriptBooleanComponent.class),
 
 	FOR_SCRIPT("for_script", "循环次数脚本", true, ScriptForComponent.class),
-
-	WHILE_SCRIPT("while_script", "循环条件脚本", true, ScriptWhileComponent.class),
-
-	BREAK_SCRIPT("break_script", "循环跳出脚本", true, ScriptBreakComponent.class),
 
 	FALLBACK("fallback", "降级", false, null);
 

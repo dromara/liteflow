@@ -11,14 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 @LiteflowComponent("wn1")
-@LiteflowCmpDefine(NodeTypeEnum.WHILE)
+@LiteflowCmpDefine(NodeTypeEnum.BOOLEAN)
 public class WhileCmp1 {
     private int count = 0;
 
     // 执行过的 chain
     Set<String> executedChain = new HashSet<>();
 
-    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_WHILE)
+    @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN)
     public boolean processWhile(NodeComponent bindCmp) throws Exception {
         // 判断是否切换了 chain
         if (!executedChain.contains(bindCmp.getCurrChainId())) {

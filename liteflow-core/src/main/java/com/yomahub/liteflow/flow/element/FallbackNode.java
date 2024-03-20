@@ -2,6 +2,8 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.enums.BooleanTypeEnum;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.FallbackCmpNotFoundException;
@@ -64,7 +66,7 @@ public class FallbackNode extends Node {
                             this.getCurrChainId()));
         }
         // 使用 node 的副本
-        this.fallbackNode = node.copy();
+        this.fallbackNode = node.clone();
     }
 
     private Node findFallbackNode(Condition condition) {
@@ -88,7 +90,8 @@ public class FallbackNode extends Node {
                 return findNodeInIterator((IteratorCondition) condition);
             case TYPE_NOT_OPT:
             case TYPE_AND_OR_OPT:
-                return FlowBus.getFallBackNode(NodeTypeEnum.IF);
+                //组件降级用在与并或中，只能用在IF表达式中
+                return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.IF);
             default:
                 return null;
         }
@@ -98,7 +101,7 @@ public class FallbackNode extends Node {
         Executable ifItem = ifCondition.getIfItem();
         if (ifItem == this) {
             // 需要条件组件
-            return FlowBus.getFallBackNode(NodeTypeEnum.IF);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.IF);
         }
 
         // 需要普通组件
@@ -126,7 +129,7 @@ public class FallbackNode extends Node {
     private Node findNodeInWhile(WhileCondition whileCondition) {
         Executable whileItem = whileCondition.getWhileItem();
         if (whileItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.WHILE);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.WHILE);
         }
 
         return findNodeInLoop(whileCondition);
@@ -144,7 +147,7 @@ public class FallbackNode extends Node {
     private Node findNodeInLoop(LoopCondition loopCondition) {
         Executable breakItem = loopCondition.getExecutableOne(ConditionKey.BREAK_KEY);
         if (breakItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.BREAK);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.BREAK);
         }
 
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
@@ -163,12 +166,20 @@ public class FallbackNode extends Node {
     }
 
     @Override
+    public NodeComponent getInstance() {
+        if (fallbackNode == null){
+            return null;
+        }
+        return fallbackNode.getInstance();
+    }
+
+    @Override
     public String getId() {
         return this.fallbackNode == null ? null : this.fallbackNode.getId();
     }
 
     @Override
-    public Node copy() {
+    public Node clone() {
         // 代理节点不复制
         return this;
     }

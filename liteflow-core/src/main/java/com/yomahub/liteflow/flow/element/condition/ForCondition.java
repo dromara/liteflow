@@ -33,13 +33,15 @@ public class ForCondition extends LoopCondition {
             throw new NoForNodeException(errorInfo);
         }
 
+        // 提前设置 chainId，避免无法在 isAccess 方法中获取到
+        forNode.setCurrChainId(this.getCurrChainId());
+
         // 先去判断isAccess方法，如果isAccess方法都返回false，整个FOR表达式不执行
-        if (!this.getForNode().isAccess(slotIndex)) {
+        if (!forNode.isAccess(slotIndex)) {
             return;
         }
 
         // 执行forCount组件
-        forNode.setCurrChainId(this.getCurrChainId());
         forNode.execute(slotIndex);
 
         // 获得循环次数

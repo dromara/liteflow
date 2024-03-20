@@ -10,7 +10,7 @@ import com.yomahub.liteflow.slot.DefaultContext;
 @LiteflowComponent("y")
 public class YCmp {
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BREAK, nodeType = NodeTypeEnum.BREAK)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_BOOLEAN, nodeType = NodeTypeEnum.BOOLEAN)
 	public boolean processBreak(NodeComponent bindCmp) throws Exception {
 		DefaultContext context = bindCmp.getFirstContextBean();
 		int count = context.getData("test");

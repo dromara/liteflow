@@ -25,9 +25,19 @@
         </node>
 
         <node id="s2" name="文件脚本" type="script" file="common/s2.py" language="python"/>
+
+        <node id="s3" name="普通脚本1" type="switch_script" language="python">
+            <![CDATA[
+                "a"
+            ]]>
+        </node>
     </nodes>
 
     <chain name="chain1">
         THEN(a, b, c, s1, s2);
+    </chain>
+
+    <chain name="chain2">
+        SWITCH(s3).TO(a,b);
     </chain>
 </flow>

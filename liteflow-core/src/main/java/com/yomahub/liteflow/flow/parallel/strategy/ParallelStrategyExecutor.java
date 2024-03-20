@@ -6,10 +6,11 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
 import com.yomahub.liteflow.flow.element.condition.PreCondition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
-import com.yomahub.liteflow.flow.parallel.CompletableFutureTimeout;
+import com.yomahub.liteflow.flow.parallel.CompletableFutureExpand;
 import com.yomahub.liteflow.flow.parallel.ParallelSupplier;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
 import com.yomahub.liteflow.log.LFLog;
@@ -44,19 +45,19 @@ public abstract class ParallelStrategyExecutor {
      * @param executable
      * @param parallelExecutor
      * @param whenCondition
-     * @param currChainName
+     * @param currChainId
      * @param slotIndex
      * @return
      */
     protected CompletableFuture<WhenFutureObj> wrappedFutureObj(Executable executable, ExecutorService parallelExecutor,
-                                                                WhenCondition whenCondition, String currChainName, Integer slotIndex) {
+                                                                WhenCondition whenCondition, String currChainId, Integer slotIndex) {
         // 套入 CompletableFutureTimeout 方法进行超时判断，如果超时则用 WhenFutureObj.timeOut 返回超时的对象
         // 第 2 个参数是主要的本体 CompletableFuture，传入了 ParallelSupplier 和线程池对象
-        return CompletableFutureTimeout.completeOnTimeout(
-                WhenFutureObj.timeOut(executable.getId()),
-                CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainName, slotIndex), parallelExecutor),
+        return CompletableFutureExpand.completeOnTimeout(
+                CompletableFuture.supplyAsync(new ParallelSupplier(executable, currChainId, slotIndex), parallelExecutor),
                 whenCondition.getMaxWaitTime(),
-                whenCondition.getMaxWaitTimeUnit());
+                whenCondition.getMaxWaitTimeUnit(),
+                WhenFutureObj.timeOut(executable.getId()));
     }
 
     /**
@@ -87,26 +88,34 @@ public abstract class ParallelStrategyExecutor {
      * 过滤 WHEN 待执行任务
      * @param executableList 所有任务列表
      * @param slotIndex
+     * @param currentChainId 当前执行的 chainId
      * @return
      */
-    protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex) {
+    protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex, String currentChainId) {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
         // 2.过滤 isAccess 为 false 的情况，因为不过滤这个的话，如果加上了 any，那么 isAccess 为 false 那就是最快的了
         Stream<Executable> stream = executableList.stream()
-                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition))
-                .filter(executable -> {
-                    try {
-                        return executable.isAccess(slotIndex);
-                    } catch (Exception e) {
-                        LOG.error("there was an error when executing the when component isAccess", e);
-                        return false;
-                    }
-                });
-        return filterAccess(stream, slotIndex);
+                .filter(executable -> !(executable instanceof PreCondition) && !(executable instanceof FinallyCondition));
+        return filterAccess(stream, slotIndex, currentChainId);
     }
 
-    //过滤isAccess的抽象接口方法
-    protected abstract Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex);
+    // 过滤 isAccess 的方法，默认实现，同时为避免同一个 node 的 isAccess 方法重复执行，给 node 设置 isAccess 方法执行结果
+    protected Stream<Executable> filterAccess(Stream<Executable> stream, Integer slotIndex, String currentChainId) {
+        return stream.filter(executable -> {
+            try {
+                // 提前设置 chainId，避免无法在 isAccess 方法中获取到
+                executable.setCurrChainId(currentChainId);
+                boolean access = executable.isAccess(slotIndex);
+                if (executable instanceof Node) {
+                    ((Node) executable).setAccessResult(access);
+                }
+                return access;
+            } catch (Exception e) {
+                LOG.error("there was an error when executing the when component isAccess", e);
+                return false;
+            }
+        });
+    }
 
     /**
      * 获取 WHEN 所需线程池
@@ -140,18 +149,18 @@ public abstract class ParallelStrategyExecutor {
      */
     protected List<CompletableFuture<WhenFutureObj>> getWhenAllTaskList(WhenCondition whenCondition, Integer slotIndex) {
 
-        String currChainName = whenCondition.getCurrChainId();
+        String currChainId = whenCondition.getCurrChainId();
 
         // 设置 whenCondition 参数
-        setWhenConditionParams(whenCondition);
+        this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
         ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>
-        List<CompletableFuture<WhenFutureObj>> completableFutureList = filterWhenTaskList(whenCondition.getExecutableList(), slotIndex)
-                .map(executable -> wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainName, slotIndex))
+        List<CompletableFuture<WhenFutureObj>> completableFutureList = filterWhenTaskList(whenCondition.getExecutableList(), slotIndex, currChainId)
+                .map(executable -> wrappedFutureObj(executable, parallelExecutor, whenCondition, currChainId, slotIndex))
                 .collect(Collectors.toList());
 
         return completableFutureList;
@@ -161,11 +170,11 @@ public abstract class ParallelStrategyExecutor {
      * 任务结果处理
      * @param whenCondition 并行组件对象
      * @param slotIndex 当前 slot 的 index
-     * @param whenAllTaskList 并行组件中所有任务列表
+     * @param whenAllFutureList 并行组件中所有任务列表
      * @param specifyTask 指定预先完成的任务，详见 {@link ParallelStrategyEnum}
      * @throws Exception
      */
-    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllTaskList,
+    protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllFutureList,
                                     CompletableFuture<?> specifyTask) throws Exception {
 
         Slot slot = DataBus.getSlot(slotIndex);
@@ -187,17 +196,23 @@ public abstract class ParallelStrategyExecutor {
         // 如果 any 为 true，那么这里拿到的是第一个完成的任务
         // 如果为 must，那么这里获取到的就是指定的任务
         // 这里过滤和转换一起用 lambda 做了
-        List<WhenFutureObj> allCompletableWhenFutureObjList = whenAllTaskList.stream().filter(f -> {
+        List<WhenFutureObj> allCompletableWhenFutureObjList = whenAllFutureList.stream().filter(f -> {
             // 过滤出已经完成的，没完成的就直接终止
             if (f.isDone()) {
                 return true;
             } else {
+                //事实上CompletableFuture并不能cancel掉底层的线程
                 f.cancel(true);
                 return false;
             }
         }).map(f -> {
             try {
-                return f.get();
+                WhenFutureObj whenFutureObj = f.get();
+                if (whenFutureObj.isTimeout()){
+                    //事实上CompletableFuture并不能cancel掉底层的线程
+                    f.cancel(true);
+                }
+                return whenFutureObj;
             } catch (InterruptedException | ExecutionException e) {
                 interrupted[0] = true;
                 return null;

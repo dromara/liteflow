@@ -8,10 +8,10 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.core.AopContext;
+import org.noear.solon.core.AppContext;
 import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
 
 /**
  * 测试主流程与子流程在不同的配置文件的场景
@@ -19,7 +19,7 @@ import org.noear.solon.test.annotation.TestPropertySource;
  * @author Bryan.Zhang
  */
 @ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/subflow/application-subInDifferentConfig1.properties")
+@Import(profiles = "classpath:/subflow/application-subInDifferentConfig1.properties")
 public class SubflowInDifferentConfigELSpringbootTest extends BaseTest {
 
 	@Inject
@@ -34,7 +34,7 @@ public class SubflowInDifferentConfigELSpringbootTest extends BaseTest {
 	}
 
 	@Inject
-	private AopContext context;
+	private AppContext context;
 
 	// 主要测试有不同的配置类型后会不会报出既定的错误
 	@Test

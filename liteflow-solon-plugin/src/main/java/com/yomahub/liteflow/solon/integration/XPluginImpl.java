@@ -58,17 +58,11 @@ public class XPluginImpl implements Plugin {
 				case PROCESS_SWITCH:
 					node1 = new NodeSwitchComponentOfMethod(bw, method, anno.value());
 					break;
-				case PROCESS_IF:
-					node1 = new NodeIfComponentOfMethod(bw, method, anno.value());
+				case PROCESS_BOOLEAN:
+					node1 = new NodeBooleanComponentOfMethod(bw, method, anno.value());
 					break;
 				case PROCESS_FOR:
 					node1 = new NodeForComponentOfMethod(bw, method, anno.value());
-					break;
-				case PROCESS_WHILE:
-					node1 = new NodeWhileComponentOfMethod(bw, method, anno.value());
-					break;
-				case PROCESS_BREAK:
-					node1 = new NodeBreakComponentOfMethod(bw, method, anno.value());
 					break;
 				default:
 					node1 = new NodeComponentOfMethod(bw, method, anno.value());

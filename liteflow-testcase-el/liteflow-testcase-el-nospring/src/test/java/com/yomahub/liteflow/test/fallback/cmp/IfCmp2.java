@@ -1,13 +1,14 @@
 package com.yomahub.liteflow.test.fallback.cmp;
 
 import com.yomahub.liteflow.annotation.FallbackCmp;
-import com.yomahub.liteflow.core.NodeIfComponent;
+import com.yomahub.liteflow.core.NodeBooleanComponent;
+import com.yomahub.liteflow.enums.BooleanTypeEnum;
 
-@FallbackCmp
-public class IfCmp2 extends NodeIfComponent {
+@FallbackCmp(BooleanTypeEnum.IF)
+public class IfCmp2 extends NodeBooleanComponent {
 
     @Override
-    public boolean processIf() throws Exception {
+    public boolean processBoolean() throws Exception {
         return false;
     }
 }
