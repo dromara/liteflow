@@ -24,13 +24,27 @@ public class ChainRead extends AbstractSqlRead {
     }
 
     @Override
+    public boolean hasEnableFiled() {
+        String chainEnableField = super.config.getChainEnableField();
+        return StrUtil.isNotBlank(chainEnableField);
+    }
+
+    @Override
+    public boolean getEnableFiledValue(ResultSet rs) throws SQLException {
+        String chainEnableField = super.config.getChainEnableField();
+        byte enable = rs.getByte(chainEnableField);
+
+        return enable == 1;
+    }
+
+    @Override
     public String buildQuerySql() {
         String chainTableName = super.config.getChainTableName();
         String elDataField = super.config.getElDataField();
         String chainNameField = super.config.getChainNameField();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
         String applicationName = super.config.getApplicationName();
-        String chainEnableField = super.config.getChainEnableField();
+
 
         if (StrUtil.isBlank(chainTableName)) {
             throw new ELSQLException("You did not define the chainTableName property");
@@ -42,10 +56,6 @@ public class ChainRead extends AbstractSqlRead {
 
         String sqlCmd = StrUtil.format(SqlReadConstant.SQL_PATTERN, chainNameField, elDataField, chainTableName,
                 chainApplicationNameField);
-
-        if (StrUtil.isNotBlank(chainEnableField)){
-            sqlCmd = StrUtil.format("{} {}", sqlCmd, StrUtil.format(SqlReadConstant.SQL_ENABLE_PATTERN, chainEnableField));
-        }
 
         return sqlCmd;
     }

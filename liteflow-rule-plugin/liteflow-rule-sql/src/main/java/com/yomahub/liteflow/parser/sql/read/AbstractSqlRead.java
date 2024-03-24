@@ -49,16 +49,20 @@ public abstract class AbstractSqlRead implements SqlRead {
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
             stmt.setString(1, config.getApplicationName());
-            ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
-            if (parameterMetaData.getParameterCount() == 2) {
-                stmt.setBoolean(2, true);
-            }
+
             rs = stmt.executeQuery();
 
             while (rs.next()) {
                 String xml = buildXmlElement(rs);
                 String uniqueKey = buildXmlElementUniqueKey(rs);
 
+                if (hasEnableFiled()){
+                    boolean enable = getEnableFiledValue(rs);
+                    // 如果停用，直接跳过
+                    if (!enable){
+                        continue;
+                    }
+                }
                 result.put(uniqueKey, xml);
             }
         } catch (Exception e) {
@@ -70,6 +74,16 @@ public abstract class AbstractSqlRead implements SqlRead {
 
         return result;
     }
+
+    /**
+     * 是否包含启停字段
+     */
+    public abstract boolean hasEnableFiled();
+
+    /**
+     * 获取启停字段对应的字段值
+     */
+    public abstract boolean getEnableFiledValue(ResultSet rs) throws SQLException;
 
     public abstract String buildQuerySql();
 

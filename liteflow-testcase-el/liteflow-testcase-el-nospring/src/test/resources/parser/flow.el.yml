@@ -20,3 +20,6 @@ flow:
       value: "THEN(a, c, WHEN(b, d, SWITCH(e).to(f, g)), chain2);"
     - name: chain2
       value: "THEN(c, g, f);"
+    - name: chain3
+      value: "THEN(c, g, f);"
+      enable: false

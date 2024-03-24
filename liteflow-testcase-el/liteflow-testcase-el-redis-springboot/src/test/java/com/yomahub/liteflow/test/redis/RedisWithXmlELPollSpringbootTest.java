@@ -2,6 +2,8 @@ package com.yomahub.liteflow.test.redis;
 
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -9,7 +11,9 @@ import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,13 +21,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
@@ -162,5 +168,28 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
         context  = response.getFirstContextBean();
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("hello world", context.getData("test11"));
+    }
+
+    @Test
+    public void testDisablePollWithXml() throws InterruptedException {
+        Set<String> chainNameSet = new HashSet<>();
+        chainNameSet.add("chain1122:false");
+        String chainValue = "THEN(a, b, c);";
+
+        when(chainClient.hkeys("pollChainKey")).thenReturn(chainNameSet);
+        when(chainClient.hget("pollChainKey", "chain1122:true")).thenReturn(chainValue);
+
+        Set<String> scriptFieldSet = new HashSet<>();
+        scriptFieldSet.add("s4:script:脚本s3:groovy:false");
+        when(scriptClient.hkeys("pollScriptKey")).thenReturn(scriptFieldSet);
+        when(scriptClient.hget("pollScriptKey", "s4:script:脚本s3:groovy:true")).thenReturn("defaultContext.setData(\"test\",\"hello\");");
+
+        // 测试 chain 停用
+        Assertions.assertThrows(ChainNotFoundException.class, () -> {
+            throw flowExecutor.execute2Resp("chain1122", "arg").getCause();
+        });
+
+        // 测试 script 停用
+        Assertions.assertTrue(!FlowBus.getNodeMap().containsKey("s4"));
     }
 }

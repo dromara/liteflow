@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.parser;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
@@ -31,6 +32,13 @@ public class JsonParserTest extends BaseTest {
 	public void testJsonParser() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		Assertions.assertTrue(response.isSuccess());
+	}
+
+	@Test
+	public void testJsonDisableParser() {
+		Assertions.assertThrows(ChainNotFoundException.class,()->{
+			throw flowExecutor.execute2Resp("chain3", "arg").getCause();
+		});
 	}
 
 }

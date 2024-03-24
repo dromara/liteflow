@@ -1,10 +1,9 @@
 package com.yomahub.liteflow.parser.etcd.util;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.CharsetUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -13,7 +12,9 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.etcd.EtcdClient;
 import com.yomahub.liteflow.parser.etcd.exception.EtcdException;
 import com.yomahub.liteflow.parser.etcd.vo.EtcdParserVO;
+import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
@@ -31,200 +32,159 @@ import java.util.stream.Collectors;
  */
 public class EtcdParserHelper {
 
-	private static final Logger LOG = LoggerFactory.getLogger(EtcdParserHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EtcdParserHelper.class);
 
-	private final String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
+    private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 
-	private final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
+    private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
 
-	private final String NODE_ITEM_XML_PATTERN = "<node id=\"{}\" name=\"{}\" type=\"{}\"><![CDATA[{}]]></node>";
+    private static final String SEPARATOR = "/";
 
-	private final String XML_PATTERN = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow>{}{}</flow>";
+    private final EtcdParserVO etcdParserVO;
 
-	private static final String SEPARATOR = "/";
+    private EtcdClient client;
 
-	private final EtcdParserVO etcdParserVO;
+    public EtcdParserHelper(EtcdParserVO etcdParserVO) {
+        this.etcdParserVO = etcdParserVO;
 
-	private EtcdClient client;
+        try {
+            try {
+                this.client = ContextAwareHolder.loadContextAware().getBean(EtcdClient.class);
+            } catch (Exception ignored) {
+            }
+            if (this.client == null) {
+                ClientBuilder clientBuilder = Client.builder().endpoints(etcdParserVO.getEndpoints().split(","));
+                if (StrUtil.isNotBlank(etcdParserVO.getNamespace())) {
+                    clientBuilder.namespace(ByteSequence.from(etcdParserVO.getNamespace(), CharsetUtil.CHARSET_UTF_8));
+                }
+                if (StrUtil.isAllNotBlank(etcdParserVO.getUser(), etcdParserVO.getPassword())) {
+                    clientBuilder.user(ByteSequence.from(etcdParserVO.getUser(), CharsetUtil.CHARSET_UTF_8));
+                    clientBuilder.password(ByteSequence.from(etcdParserVO.getPassword(), CharsetUtil.CHARSET_UTF_8));
+                }
+                this.client = new EtcdClient(clientBuilder.build());
+            }
+        } catch (Exception e) {
+            throw new EtcdException(e.getMessage());
+        }
+    }
 
-	public EtcdParserHelper(EtcdParserVO etcdParserVO) {
-		this.etcdParserVO = etcdParserVO;
+    public String getContent() {
+        try {
+            // 检查chainPath路径下有没有子节点
+            List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getChainPath(), SEPARATOR);
 
-		try {
-			try {
-				this.client = ContextAwareHolder.loadContextAware().getBean(EtcdClient.class);
-			}
-			catch (Exception ignored) {
-			}
-			if (this.client == null) {
-				ClientBuilder clientBuilder = Client.builder().endpoints(etcdParserVO.getEndpoints().split(","));
-				if (StrUtil.isNotBlank(etcdParserVO.getNamespace())) {
-					clientBuilder.namespace(ByteSequence.from(etcdParserVO.getNamespace(), CharsetUtil.CHARSET_UTF_8));
-				}
-				if (StrUtil.isAllNotBlank(etcdParserVO.getUser(), etcdParserVO.getPassword())) {
-					clientBuilder.user(ByteSequence.from(etcdParserVO.getUser(), CharsetUtil.CHARSET_UTF_8));
-					clientBuilder.password(ByteSequence.from(etcdParserVO.getPassword(), CharsetUtil.CHARSET_UTF_8));
-				}
-				this.client = new EtcdClient(clientBuilder.build());
-			}
-		}
-		catch (Exception e) {
-			throw new EtcdException(e.getMessage());
-		}
-	}
+            // 获取chainPath路径下的所有子节点内容List
+            List<String> chainItemContentList = new ArrayList<>();
+            for (String chainName : chainNameList) {
+                RuleParsePluginUtil.ChainDto chainDto = RuleParsePluginUtil.parseChainKey(chainName);
+                String chainData = client.get(StrUtil.format("{}/{}", etcdParserVO.getChainPath(), chainName));
+                if (StrUtil.isNotBlank(chainData)) {
+                    chainItemContentList.add(chainDto.toElXml(chainData));
+                }
+            }
+            // 合并成所有chain的xml内容
+            String chainAllContent = CollUtil.join(chainItemContentList, StrUtil.EMPTY);
 
-	public String getContent() {
-		try {
-			// 检查chainPath路径下有没有子节点
-			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getChainPath(), SEPARATOR);
+            // 检查是否有脚本内容，如果有，进行脚本内容的获取
+            String scriptAllContent = StrUtil.EMPTY;
+            if (hasScript()) {
+                List<String> scriptNodeValueList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR)
+                        .stream()
+                        .filter(StrUtil::isNotBlank)
+                        .collect(Collectors.toList());
 
-			// 获取chainPath路径下的所有子节点内容List
-			List<String> chainItemContentList = new ArrayList<>();
-			for (String chainName : chainNameList) {
-				String chainData = client.get(StrUtil.format("{}/{}", etcdParserVO.getChainPath(), chainName));
-				if (StrUtil.isNotBlank(chainData)) {
-					chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainName, chainData));
-				}
-			}
-			// 合并成所有chain的xml内容
-			String chainAllContent = CollUtil.join(chainItemContentList, StrUtil.EMPTY);
+                List<String> scriptItemContentList = new ArrayList<>();
+                for (String scriptNodeValue : scriptNodeValueList) {
+                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
+                    if (Objects.isNull(nodeSimpleVO)) {
+                        throw new EtcdException(
+                                StrUtil.format("The name of the etcd node is invalid:{}", scriptNodeValue));
+                    }
+                    String scriptData = client
+                            .get(StrUtil.format("{}/{}", etcdParserVO.getScriptPath(), scriptNodeValue));
 
-			// 检查是否有脚本内容，如果有，进行脚本内容的获取
-			String scriptAllContent = StrUtil.EMPTY;
-			if (hasScript()) {
-				List<String> scriptNodeValueList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR)
-					.stream()
-					.filter(StrUtil::isNotBlank)
-					.collect(Collectors.toList());
+                    nodeSimpleVO.setScript(scriptData);
+                    scriptItemContentList.add(RuleParsePluginUtil.toScriptXml(nodeSimpleVO));
+                }
 
-				List<String> scriptItemContentList = new ArrayList<>();
-				for (String scriptNodeValue : scriptNodeValueList) {
-					NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-					if (Objects.isNull(nodeSimpleVO)) {
-						throw new EtcdException(
-								StrUtil.format("The name of the etcd node is invalid:{}", scriptNodeValue));
-					}
-					String scriptData = client
-						.get(StrUtil.format("{}/{}", etcdParserVO.getScriptPath(), scriptNodeValue));
 
-					scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
-							nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
-				}
+                scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
+                        CollUtil.join(scriptItemContentList, StrUtil.EMPTY));
+            }
 
-				scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
-						CollUtil.join(scriptItemContentList, StrUtil.EMPTY));
-			}
+            return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
+        } catch (Exception e) {
+            throw new EtcdException(e.getMessage());
+        }
+    }
 
-			return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
-		}
-		catch (Exception e) {
-			throw new EtcdException(e.getMessage());
-		}
-	}
+    public boolean hasScript() {
+        // 没有配置scriptPath
+        if (StrUtil.isBlank(etcdParserVO.getScriptPath())) {
+            return false;
+        }
 
-	public boolean hasScript() {
-		// 没有配置scriptPath
-		if (StrUtil.isBlank(etcdParserVO.getScriptPath())) {
-			return false;
-		}
+        try {
+            // 存在这个节点，但是子节点不存在
+            List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR);
+            return !CollUtil.isEmpty(chainNameList);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-		try {
-			// 存在这个节点，但是子节点不存在
-			List<String> chainNameList = client.getChildrenKeys(etcdParserVO.getScriptPath(), SEPARATOR);
-			return !CollUtil.isEmpty(chainNameList);
-		}
-		catch (Exception e) {
-			return false;
-		}
-	}
+    /**
+     * 监听 etcd 节点
+     */
+    public void listen() {
+        this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
+            LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
+            String changeKey = FileNameUtil.getName(updatePath);
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(changeKey);
+            Boolean enable = pair.getKey();
+            String id = pair.getValue();
+            // 如果是启用，就正常更新
+            if (pair.getKey()) {
+                LiteFlowChainELBuilder.createChain().setChainId(id).setEL(updateValue).build();
+            }
+            // 如果是禁用，就删除
+            else {
+                FlowBus.removeChain(id);
+            }
+        }, (deletePath) -> {
+            LOG.info("starting reload flow config... delete path={}", deletePath);
+            String chainName = FileNameUtil.getName(deletePath);
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainName);
+            FlowBus.removeChain(pair.getValue());
+        });
 
-	/**
-	 * 监听 etcd 节点
-	 */
-	public void listen() {
-		this.client.watchChildChange(this.etcdParserVO.getChainPath(), (updatePath, updateValue) -> {
-			LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
-			String chainName = FileNameUtil.getName(updatePath);
-			LiteFlowChainELBuilder.createChain().setChainId(chainName).setEL(updateValue).build();
-		}, (deletePath) -> {
-			LOG.info("starting reload flow config... delete path={}", deletePath);
-			String chainName = FileNameUtil.getName(deletePath);
-			FlowBus.removeChain(chainName);
-		});
+        if (StrUtil.isNotBlank(this.etcdParserVO.getScriptPath())) {
+            this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
+                LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
+                String scriptNodeValue = FileNameUtil.getName(updatePath);
+                NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
+                // 启用就正常更新
+                if (nodeSimpleVO.getEnable()) {
+                    LiteFlowNodeBuilder.createScriptNode()
+                            .setId(nodeSimpleVO.getNodeId())
+                            .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                            .setName(nodeSimpleVO.getName())
+                            .setScript(nodeSimpleVO.getScript())
+                            .setLanguage(nodeSimpleVO.getLanguage())
+                            .build();
+                }
+                // 禁用就删除
+                else {
+                    FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                }
+            }, (deletePath) -> {
+                LOG.info("starting reload flow config... delete path={}", deletePath);
+                String scriptNodeValue = FileNameUtil.getName(deletePath);
+                NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
+                FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+            });
+        }
+    }
 
-		if (StrUtil.isNotBlank(this.etcdParserVO.getScriptPath())) {
-			this.client.watchChildChange(this.etcdParserVO.getScriptPath(), (updatePath, updateValue) -> {
-				LOG.info("starting reload flow config... update path={} value={}", updatePath, updateValue);
-				String scriptNodeValue = FileNameUtil.getName(updatePath);
-				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-				LiteFlowNodeBuilder.createScriptNode()
-					.setId(nodeSimpleVO.getNodeId())
-					.setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.type))
-					.setName(nodeSimpleVO.getName())
-					.setScript(updateValue)
-					.build();
-			}, (deletePath) -> {
-				LOG.info("starting reload flow config... delete path={}", deletePath);
-				String scriptNodeValue = FileNameUtil.getName(deletePath);
-				NodeSimpleVO nodeSimpleVO = convert(scriptNodeValue);
-				FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-			});
-		}
-	}
-
-	public NodeSimpleVO convert(String str) {
-		// 不需要去理解这串正则，就是一个匹配冒号的
-		// 一定得是a:b，或是a:b:c...这种完整类型的字符串的
-		List<String> matchItemList = ReUtil.findAllGroup0("(?<=[^:]:)[^:]+|[^:]+(?=:[^:])", str);
-		if (CollUtil.isEmpty(matchItemList)) {
-			return null;
-		}
-
-		NodeSimpleVO nodeSimpleVO = new NodeSimpleVO();
-		if (matchItemList.size() > 1) {
-			nodeSimpleVO.setNodeId(matchItemList.get(0));
-			nodeSimpleVO.setType(matchItemList.get(1));
-		}
-
-		if (matchItemList.size() > 2) {
-			nodeSimpleVO.setName(matchItemList.get(2));
-		}
-
-		return nodeSimpleVO;
-	}
-
-	private static class NodeSimpleVO {
-
-		private String nodeId;
-
-		private String type;
-
-		private String name = "";
-
-		public String getNodeId() {
-			return nodeId;
-		}
-
-		public void setNodeId(String nodeId) {
-			this.nodeId = nodeId;
-		}
-
-		public String getType() {
-			return type;
-		}
-
-		public void setType(String type) {
-			this.type = type;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-	}
 
 }

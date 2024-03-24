@@ -59,6 +59,10 @@ public class NodeConvertHelper {
             nodeSimpleVO.setLanguage(matchItemList.get(3));
         }
 
+        if (matchItemList.size() > 4) {
+            nodeSimpleVO.setEnable(Boolean.TRUE.toString().equalsIgnoreCase(matchItemList.get(4)));
+        }
+
         return nodeSimpleVO;
     }
 
@@ -72,6 +76,10 @@ public class NodeConvertHelper {
         private String name = StrUtil.EMPTY;
 
         private String language;
+
+        private Boolean enable = Boolean.TRUE;
+
+        private String script;
 
         public String getNodeId() {
             return nodeId;
@@ -103,6 +111,22 @@ public class NodeConvertHelper {
 
         public void setLanguage(String language) {
             this.language = language;
+        }
+
+        public Boolean getEnable() {
+            return enable;
+        }
+
+        public void setEnable(Boolean enable) {
+            this.enable = enable;
+        }
+
+        public String getScript() {
+            return script;
+        }
+
+        public void setScript(String script) {
+            this.script = script;
         }
     }
 }

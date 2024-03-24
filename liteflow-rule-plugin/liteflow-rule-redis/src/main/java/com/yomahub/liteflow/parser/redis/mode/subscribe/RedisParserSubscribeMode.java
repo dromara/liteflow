@@ -1,10 +1,12 @@
 package com.yomahub.liteflow.parser.redis.mode.subscribe;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
@@ -13,10 +15,10 @@ import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.redisson.Redisson;
 import org.redisson.api.map.event.EntryCreatedListener;
 import org.redisson.api.map.event.EntryRemovedListener;
-import org.redisson.api.map.event.EntryUpdatedListener;
 import org.redisson.config.Config;
 
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.Map;
  * 使用 Redisson客户端 RMapCache存储结构
  *
  * @author hxinyu
- * @since  2.11.0
+ * @since 2.11.0
  */
 
 public class RedisParserSubscribeMode implements RedisParserHelper {
@@ -46,14 +48,13 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             try {
                 this.chainClient = ContextAwareHolder.loadContextAware().getBean("chainClient");
                 this.scriptClient = ContextAwareHolder.loadContextAware().getBean("scriptClient");
-            }
-            catch (Exception ignored) {
+            } catch (Exception ignored) {
             }
             if (ObjectUtil.isNull(chainClient)) {
                 RedisMode redisMode = redisParserVO.getRedisMode();
                 Config config;
                 //Redis单点模式
-                if (redisMode.equals(RedisMode.SINGLE)){
+                if (redisMode.equals(RedisMode.SINGLE)) {
                     config = getSingleRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
                     this.chainClient = new RClient(Redisson.create(config));
                     //如果有脚本数据
@@ -74,8 +75,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
                     }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RedisException(e.getMessage());
         }
 
@@ -91,8 +91,9 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             for (Map.Entry<String, String> entry : chainMap.entrySet()) {
                 String chainId = entry.getKey();
                 String chainData = entry.getValue();
+                RuleParsePluginUtil.ChainDto chainDto = RuleParsePluginUtil.parseChainKey(chainId);
                 if (StrUtil.isNotBlank(chainData)) {
-                    chainItemContentList.add(StrUtil.format(CHAIN_XML_PATTERN, chainId, chainData));
+                    chainItemContentList.add(chainDto.toElXml(chainData));
                 }
             }
             // 合并成所有chain的xml内容
@@ -112,17 +113,9 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
                                 StrUtil.format("The name of the redis field [{}] in scriptKey [{}] is invalid",
                                         scriptFieldValue, redisParserVO.getScriptKey()));
                     }
-                    // 有语言类型
-                    if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-                        scriptItemContentList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN,
-                                nodeSimpleVO.getNodeId(), nodeSimpleVO.getName(), nodeSimpleVO.getType(),
-                                nodeSimpleVO.getLanguage(), scriptData));
-                    }
-                    // 没有语言类型
-                    else {
-                        scriptItemContentList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, nodeSimpleVO.getNodeId(),
-                                nodeSimpleVO.getName(), nodeSimpleVO.getType(), scriptData));
-                    }
+
+                    nodeSimpleVO.setScript(scriptData);
+                    scriptItemContentList.add(RuleParsePluginUtil.toScriptXml(nodeSimpleVO));
                 }
 
                 scriptAllContent = StrUtil.format(NODE_XML_PATTERN,
@@ -130,8 +123,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             }
 
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RedisException(e.getMessage());
         }
     }
@@ -145,8 +137,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
             // 存在这个节点，但是子节点不存在
             Map<String, String> scriptMap = scriptClient.getMap(redisParserVO.getScriptKey());
             return !CollUtil.isEmpty(scriptMap);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -158,35 +149,58 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
     public void listenRedis() {
         //监听 chain
         String chainKey = redisParserVO.getChainKey();
+        EntryCreatedListener<String, String> chainModifyFunc = event -> {
+            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
+            String chainName = event.getKey();
+            String value = event.getValue();
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainName);
+            String id = pair.getValue();
+            // 如果是启用，就正常更新
+            if (pair.getKey()) {
+                LiteFlowChainELBuilder.createChain().setChainId(id).setEL(value).build();
+            }
+            // 如果是禁用，就删除
+            else {
+                FlowBus.removeChain(id);
+            }
+        };
         //添加新 chain
-        chainClient.addListener(chainKey, (EntryCreatedListener<String, String>) event -> {
-            LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
-            LiteFlowChainELBuilder.createChain().setChainId(event.getKey()).setEL(event.getValue()).build();
-        });
+        chainClient.addListener(chainKey, chainModifyFunc);
         //修改 chain
-        chainClient.addListener(chainKey, (EntryUpdatedListener<String, String>) event -> {
-            LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
-            LiteFlowChainELBuilder.createChain().setChainId(event.getKey()).setEL(event.getValue()).build();
-        });
+        chainClient.addListener(chainKey, chainModifyFunc);
         //删除 chain
         chainClient.addListener(chainKey, (EntryRemovedListener<String, String>) event -> {
             LOG.info("starting reload flow config... delete key={}", event.getKey());
-            FlowBus.removeChain(event.getKey());
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(event.getKey());
+            FlowBus.removeChain(pair.getValue());
         });
 
         //监听 script
+        EntryCreatedListener<String, String> scriptModifyFunc = event -> {
+            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
+            NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(event.getKey());
+            nodeSimpleVO.setScript(event.getValue());
+            // 启用就正常更新
+            if (nodeSimpleVO.getEnable()) {
+                LiteFlowNodeBuilder.createScriptNode()
+                        .setId(nodeSimpleVO.getNodeId())
+                        .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                        .setName(nodeSimpleVO.getName())
+                        .setScript(nodeSimpleVO.getScript())
+                        .setLanguage(nodeSimpleVO.getLanguage())
+                        .build();
+            }
+            // 禁用就删除
+            else {
+                FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+            }
+        };
         if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
             String scriptKey = redisParserVO.getScriptKey();
             //添加 script
-            scriptClient.addListener(scriptKey, (EntryCreatedListener<String, String>) event -> {
-                LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
-                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
-            });
+            scriptClient.addListener(scriptKey, scriptModifyFunc);
             //修改 script
-            scriptClient.addListener(scriptKey, (EntryUpdatedListener<String, String>) event -> {
-                LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
-                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
-            });
+            scriptClient.addListener(scriptKey, scriptModifyFunc);
             //删除 script
             scriptClient.addListener(scriptKey, (EntryRemovedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... delete key={}", event.getKey());

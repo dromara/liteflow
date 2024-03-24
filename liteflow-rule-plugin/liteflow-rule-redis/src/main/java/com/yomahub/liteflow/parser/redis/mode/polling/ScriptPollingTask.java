@@ -76,15 +76,23 @@ public class ScriptPollingTask implements Runnable {
                     //添加到待删除的list 后续统一从SHAMap中移除
                     //不在这里直接移除是为了避免先删除导致scriptSHAMap并没有完全遍历完 script删除不全
                     needDelete.add(scriptFieldValue);
-                }
-                else if (!StrUtil.equals(newSHA, oldSHA)) {
+                } else if (!StrUtil.equals(newSHA, oldSHA)) {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
                     String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
-                    RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
-                    LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
 
-                    //修改SHAMap
-                    scriptSHAMap.put(scriptFieldValue, newSHA);
+                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
+                    nodeSimpleVO.setScript(scriptData);
+                    if (nodeSimpleVO.getEnable()) {
+                        RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
+                        LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
+
+                        //修改SHAMap
+                        scriptSHAMap.put(scriptFieldValue, newSHA);
+                    } else {
+                        FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                        LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
+                        needDelete.add(scriptFieldValue);
+                    }
                 }
                 //SHA值无变化,表示该script未改变
             }
@@ -106,9 +114,16 @@ public class ScriptPollingTask implements Runnable {
                     if (!scriptSHAMap.containsKey(scriptFieldValue)) {
                         //将新script添加到LiteFlowChainELBuilder和SHAMap
                         String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
-                        RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
-                        LOG.info("starting reload flow config... create key={} new value={},", scriptFieldValue, scriptData);
-                        scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));
+                        NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
+                        if (nodeSimpleVO.getEnable()) {
+                            RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
+                            LOG.info("starting reload flow config... create key={} new value={},", scriptFieldValue, scriptData);
+                            scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));
+                        } else {
+                            FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                            LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
+                            needDelete.add(scriptFieldValue);
+                        }
                     }
                 }
             }

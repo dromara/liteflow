@@ -40,6 +40,11 @@
       {
         "name": "chain1",
         "value": "THEN(a,c,WHEN(b,d,SWITCH(e).to(f,g)), chain2);"
+      },
+      {
+        "name": "chain3",
+        "enable": "false",
+        "value": "THEN(a,c,WHEN(b,d,SWITCH(e).to(f,g)), chain2);"
       }
     ]
   }
