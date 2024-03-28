@@ -6,7 +6,7 @@
             <![CDATA[
                 import json
 
-                x='{"name": "杰克", "age": 75, "nationality": "China"}'
+                x='{"name": "jack", "age": 75, "nationality": "China"}'
                 jsonData=json.loads(x)
                 name=jsonData['name']
                 defaultContext.setData("name", name.decode('utf-8'))
@@ -20,6 +20,7 @@
                 else:
                     print 'hi'
                 defaultContext.setData("s1",a*b)
+                defaultContext.setData("s2","中文".decode('UTF-8'))
                 defaultContext.setData("td", td.sayHi("jack"))
             ]]>
         </node>
@@ -28,7 +29,13 @@
 
         <node id="s3" name="普通脚本1" type="switch_script" language="python">
             <![CDATA[
-                "a"
+                return "t2"
+            ]]>
+        </node>
+
+        <node id="s4" name="布尔脚本" type="boolean_script" language="python">
+            <![CDATA[
+                return False
             ]]>
         </node>
     </nodes>
@@ -38,6 +45,6 @@
     </chain>
 
     <chain name="chain2">
-        SWITCH(s3).TO(a,b);
+        SWITCH(s3).TO(a,IF(s4, b, c).id("t2"));
     </chain>
 </flow>
