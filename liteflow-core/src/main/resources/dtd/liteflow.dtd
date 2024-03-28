@@ -10,7 +10,7 @@
 <!ATTLIST node
         id CDATA #REQUIRED
         name CDATA #IMPLIED
-        type (script|if_script|switch_script|while_script|for_script|break_script) #IMPLIED
+        type (script|boolean_script|switch_script|for_script) #IMPLIED
         class CDATA #IMPLIED
         file CDATA #IMPLIED
         language (qlexpress|groovy|js|python|lua|aviator|java) #IMPLIED
