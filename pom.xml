@@ -52,7 +52,7 @@
 		<dom4j.version>2.1.4</dom4j.version>
 		<curator.version>5.3.0</curator.version>
 		<junit.version>5.8.2</junit.version>
-		<hutool.version>5.8.23</hutool.version>
+		<hutool.version>5.8.26</hutool.version>
 		<transmittable-thread-local.version>2.12.3</transmittable-thread-local.version>
 		<curator-test.version>5.1.0</curator-test.version>
 		<zkclient.version>0.10</zkclient.version>
