@@ -12,7 +12,7 @@ package com.yomahub.liteflow.enums;
  *
  * @author Bryan.Zhang
  */
-public enum ExecuteTypeEnum {
+public enum ExecuteableTypeEnum {
 
 	CHAIN, CONDITION, NODE
 

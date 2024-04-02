@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="r_chain1">
+        <body>
+            THEN(b,a);
+        </body>
+    </chain>
+
+    <chain name="r_chain2">
+        <body>
+            THEN(a,b);
+        </body>
+    </chain>
+</flow>

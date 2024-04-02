@@ -12,7 +12,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.flow.element.condition.ConditionKey;
 import com.yomahub.liteflow.slot.DataBus;
@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,8 +80,8 @@ public abstract class Condition implements Executable{
 	public abstract void executeCondition(Integer slotIndex) throws Exception;
 
 	@Override
-	public ExecuteTypeEnum getExecuteType() {
-		return ExecuteTypeEnum.CONDITION;
+	public ExecuteableTypeEnum getExecuteType() {
+		return ExecuteableTypeEnum.CONDITION;
 	}
 
 	public List<Executable> getExecutableList() {

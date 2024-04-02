@@ -3,16 +3,16 @@
 <flow>
     <chain name="r_chain1">
         <route>
-            r1
+            THEN(b)
         </route>
         <body>
-            THEN(a,b);
+            THEN(b,a);
         </body>
     </chain>
 
     <chain name="r_chain2">
         <route>
-            OR(r1,r2)
+            IF(r1, a)
         </route>
         <body>
             THEN(a,b);

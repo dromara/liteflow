@@ -16,6 +16,8 @@ import java.util.function.Consumer;
  */
 public class LiteflowResponse {
 
+	private String chainId;
+
 	private boolean success;
 
 	private String code;
@@ -39,7 +41,8 @@ public class LiteflowResponse {
 
 	private static LiteflowResponse newResponse(Slot slot, Exception e) {
 		LiteflowResponse response = new LiteflowResponse();
-		if (slot != null && e != null) {
+		response.setChainId(slot.getChainId());
+		if (e != null) {
 			response.setSuccess(false);
 			response.setCause(e);
 			response.setMessage(response.getCause().getMessage());
@@ -165,4 +168,11 @@ public class LiteflowResponse {
 		return this.getSlot().getRequestId();
 	}
 
+	public String getChainId() {
+		return chainId;
+	}
+
+	public void setChainId(String chainId) {
+		this.chainId = chainId;
+	}
 }

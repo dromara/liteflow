@@ -177,5 +177,4 @@ public class LiteFlowNodeBuilder {
 			throw new NodeBuildException(CollUtil.join(errorList, ",", "[", "]"));
 		}
 	}
-
 }

@@ -13,7 +13,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
@@ -227,8 +227,8 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	@Override
-	public ExecuteTypeEnum getExecuteType() {
-		return ExecuteTypeEnum.NODE;
+	public ExecuteableTypeEnum getExecuteType() {
+		return ExecuteableTypeEnum.NODE;
 	}
 
 	public String getScript() {

@@ -8,9 +8,12 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
+import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -36,7 +39,12 @@ import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * 流程规则主要执行器类
@@ -177,6 +185,10 @@ public class FlowExecutor {
 				LOG.error(e.getMessage(), e);
 				throw e;
 			}
+			catch (RouteELInvalidException e) {
+				LOG.error(e.getMessage(), e);
+				throw e;
+			}
 			catch (Exception e) {
 				String errorMsg = StrUtil.format("init flow executor cause error for path {},reason: {}", rulePathList,
 						e.getMessage());
@@ -269,16 +281,32 @@ public class FlowExecutor {
 		return this.execute2Resp(chainId, param, null, contextBeanClazzArray, null);
 	}
 
+	public List<LiteflowResponse> executeRouteChain(Object param, Class<?>... contextBeanClazzArray){
+		return this.executeWithRoute(param, null, contextBeanClazzArray, null);
+	}
+
 	public LiteflowResponse execute2Resp(String chainId, Object param, Object... contextBeanArray) {
 		return this.execute2Resp(chainId, param, null, null, contextBeanArray);
+	}
+
+	public List<LiteflowResponse> executeRouteChain(Object param, Object... contextBeanArray){
+		return this.executeWithRoute(param, null, null, contextBeanArray);
 	}
 
 	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
 		return this.execute2Resp(chainId, param, requestId, contextBeanClazzArray, null);
 	}
 
+	public List<LiteflowResponse> executeRouteChainWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
+		return this.executeWithRoute(param, requestId, contextBeanClazzArray, null);
+	}
+
 	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
 		return this.execute2Resp(chainId, param, requestId, null, contextBeanArray);
+	}
+
+	public List<LiteflowResponse> executeRouteChainWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
+		return this.executeWithRoute(param, requestId, null, contextBeanArray);
 	}
 
 	// 调用一个流程并返回Future<LiteflowResponse>，允许多上下文的传入
@@ -320,18 +348,23 @@ public class FlowExecutor {
 
 	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray,
 			Object[] contextBeanArray) {
-		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE);
+		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY);
 		return LiteflowResponse.newMainResponse(slot);
+	}
+
+	private List<LiteflowResponse> executeWithRoute(Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
+		List<Slot> slotList = doExecuteWithRoute(param, requestId, contextBeanClazzArray, contextBeanArray);
+		return slotList.stream().map(LiteflowResponse::newMainResponse).collect(Collectors.toList());
 	}
 
 	private LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex,
 			InnerChainTypeEnum innerChainType) {
-		Slot slot = doExecute(chainId, param, null, null, null, slotIndex, innerChainType);
+		Slot slot = doExecute(chainId, param, null, null, null, slotIndex, innerChainType, ChainExecuteModeEnum.BODY);
 		return LiteflowResponse.newInnerResponse(chainId, slot);
 	}
 
 	private Slot doExecute(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
-			Integer slotIndex, InnerChainTypeEnum innerChainType) {
+						   Integer slotIndex, InnerChainTypeEnum innerChainType, ChainExecuteModeEnum chainExecuteModeEnum) {
 		if (FlowBus.needInit()) {
 			init(true);
 		}
@@ -399,8 +432,14 @@ public class FlowExecutor {
 				String errorMsg = StrUtil.format("couldn't find chain with the id[{}]", chainId);
 				throw new ChainNotFoundException(errorMsg);
 			}
-			// 执行chain
-			chain.execute(slotIndex);
+			// 根据chain执行模式执行chain
+			if (chainExecuteModeEnum.equals(ChainExecuteModeEnum.BODY)){
+				chain.execute(slotIndex);
+			}else if(chainExecuteModeEnum.equals(ChainExecuteModeEnum.ROUTE)){
+				chain.executeRoute(slotIndex);
+			}else{
+				throw new LiteFlowException("chain execute mode error");
+			}
 		}
 		catch (ChainEndException e) {
 			if (ObjectUtil.isNotNull(chain)) {
@@ -482,4 +521,80 @@ public class FlowExecutor {
 		MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
 	}
 
+	private List<Slot> doExecuteWithRoute(Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
+		if (FlowBus.needInit()) {
+			init(true);
+		}
+
+		List<Chain> routeChainList = FlowBus.getChainMap().values().stream().filter(chain -> chain.getRouteItem() != null).collect(Collectors.toList());
+
+		if (CollUtil.isEmpty(routeChainList)){
+			throw new RouteChainNotFoundException("cannot find any route chain");
+		}
+
+		// 异步执行route el
+		List<Tuple> routeTupleList = new ArrayList<>();
+		for (Chain routeChain : routeChainList){
+			CompletableFuture<Slot> f = CompletableFuture.supplyAsync(
+					() -> doExecute(routeChain.getChainId(), param, null, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE)
+			);
+
+			routeTupleList.add(new Tuple(routeChain, f));
+		}
+
+		CompletableFuture<?> resultRouteCf = CompletableFuture.allOf(routeTupleList.stream().map(
+				(Function<Tuple, CompletableFuture<?>>) tuple -> tuple.get(1)
+		).collect(Collectors.toList()).toArray(new CompletableFuture[] {}));
+		try{
+			resultRouteCf.get();
+		}catch (Exception e){
+			throw new LiteFlowException("There is An error occurred while executing the route.", e);
+		}
+
+		// 把route执行为true都过滤出来
+		List<Chain> matchedRouteChainList = routeTupleList.stream().filter(tuple -> {
+			try{
+				CompletableFuture<Slot> f = tuple.get(1);
+				Slot slot = f.get();
+				return BooleanUtil.isTrue(slot.getRouteResult());
+			}catch (Exception e){
+				return false;
+			}
+		}).map(
+				(Function<Tuple, Chain>) tuple -> tuple.get(0)
+		).collect(Collectors.toList());
+
+		if (CollUtil.isEmpty(matchedRouteChainList)){
+			throw new NoMatchedRouteChainException("there is no matched route chain");
+		}
+
+		// 异步分别执行这些chain
+		List<CompletableFuture<Slot>> executeChainCfList = new ArrayList<>();
+		for (Chain chain : matchedRouteChainList){
+			CompletableFuture<Slot> cf = CompletableFuture.supplyAsync(
+					() -> doExecute(chain.getChainId(), param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY)
+			);
+			executeChainCfList.add(cf);
+		}
+
+		CompletableFuture<?> resultChainCf = CompletableFuture.allOf(executeChainCfList.toArray(new CompletableFuture[] {}));
+		try{
+			resultChainCf.get();
+		}catch (Exception e){
+			throw new LiteFlowException("There is An error occurred while executing the matched chain.", e);
+		}
+
+
+		List<Slot> resultSlotList = executeChainCfList.stream().map(slotCompletableFuture -> {
+			try{
+				return slotCompletableFuture.get();
+			}catch (Exception e){
+				return null;
+			}
+		}).filter(Objects::nonNull).collect(Collectors.toList());
+
+		LOG.info("There are {} chains that matched the route.", resultSlotList.size());
+
+		return resultSlotList;
+	}
 }

@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.flow.element;
 
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 
 /**
  * 可执行器接口 目前实现这个接口的有3个，Chain，Condition，Node
@@ -15,7 +15,7 @@ public interface Executable{
 		return true;
 	}
 
-	ExecuteTypeEnum getExecuteType();
+	ExecuteableTypeEnum getExecuteType();
 
 	/**
 	 * @return

@@ -13,16 +13,14 @@ import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.exception.CyclicDependencyException;
-import com.yomahub.liteflow.exception.DataNotFoundException;
-import com.yomahub.liteflow.exception.ELParseException;
-import com.yomahub.liteflow.exception.FlowSystemException;
-import com.yomahub.liteflow.exception.ParseException;
+import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
+import com.yomahub.liteflow.flow.element.condition.NotCondition;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.ElRegexUtil;
@@ -41,7 +39,7 @@ public class LiteFlowChainELBuilder {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(LiteFlowChainELBuilder.class);
 
-	private static ObjectMapper objectMapper =new ObjectMapper();
+	private static ObjectMapper objectMapper = new ObjectMapper();
 
 	private Chain chain;
 
@@ -138,7 +136,7 @@ public class LiteFlowChainELBuilder {
 
 	public LiteFlowChainELBuilder setRoute(String routeEl){
 		if (StrUtil.isBlank(routeEl)) {
-			String errMsg = StrUtil.format("You have defined the label <route> but there is no content in the chain[{}].", chain.getChainId());
+			String errMsg = StrUtil.format("You have defined the label <route> but there is no el in the chain route[{}].", chain.getChainId());
 			throw new FlowSystemException(errMsg);
 		}
 		List<String> errorList = new ArrayList<>();
@@ -150,6 +148,11 @@ public class LiteFlowChainELBuilder {
 
 			// 解析route el成为一个executable
 			Executable routeExecutable = (Executable) EXPRESS_RUNNER.execute(routeEl, context, errorList, true, true);
+
+			// 判断routeEL是不是符合规范
+			if (!(routeExecutable instanceof AndOrCondition || routeExecutable instanceof NotCondition || routeExecutable instanceof Node)){
+				throw new RouteELInvalidException("the route EL can only be a boolean node, or an AND or OR expression.");
+			}
 
 			if (Objects.isNull(routeExecutable)){
 				throw new QLException(StrUtil.format("parse route el fail,el:[{}]", routeEl));
@@ -169,7 +172,9 @@ public class LiteFlowChainELBuilder {
 			}else{
 				throw new ELParseException(e.getMessage());
 			}
-		} catch (Exception e) {
+		}catch (RouteELInvalidException e){
+			throw e;
+		}catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
 		}
@@ -177,7 +182,7 @@ public class LiteFlowChainELBuilder {
 
 	public LiteFlowChainELBuilder setEL(String elStr) {
 		if (StrUtil.isBlank(elStr)) {
-			String errMsg = StrUtil.format("no content in this chain[{}]", chain.getChainId());
+			String errMsg = StrUtil.format("no el in this chain[{}]", chain.getChainId());
 			throw new FlowSystemException(errMsg);
 		}
 

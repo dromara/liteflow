@@ -4,7 +4,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -148,7 +148,7 @@ public class OperatorHelper {
 			throw new QLException("The parameter must be Executable item.");
 		}
 		Executable item = (Executable) object;
-		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+		if (item.getExecuteType().equals(ExecuteableTypeEnum.NODE)){
 			Node node = (Node) item;
 			if (!ListUtil.toList(NodeTypeEnum.COMMON, NodeTypeEnum.SCRIPT, NodeTypeEnum.FALLBACK).contains(node.getType())){
 				throw new QLException(StrUtil.format("The node[{}] must be a common type component", node.getId()));
@@ -165,14 +165,14 @@ public class OperatorHelper {
 			throw new QLException("The parameter must be Executable item.");
 		}
 		Executable item = (Executable) object;
-		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+		if (item.getExecuteType().equals(ExecuteableTypeEnum.NODE)){
 			Node node = (Node) item;
 			if (!ListUtil.toList(NodeTypeEnum.BOOLEAN,
 					NodeTypeEnum.BOOLEAN_SCRIPT,
 					NodeTypeEnum.FALLBACK).contains(node.getType())){
 				throw new QLException(StrUtil.format("The node[{}] must be boolean type Node.", node.getId()));
 			}
-		}else if(item.getExecuteType().equals(ExecuteTypeEnum.CONDITION)){
+		}else if(item.getExecuteType().equals(ExecuteableTypeEnum.CONDITION)){
 			Condition condition = (Condition) item;
 			if (!ListUtil.toList(ConditionTypeEnum.TYPE_AND_OR_OPT, ConditionTypeEnum.TYPE_NOT_OPT).contains(condition.getConditionType())){
 				throw new QLException(StrUtil.format("The condition[{}] must be boolean type Condition.", condition.getId()));
@@ -187,7 +187,7 @@ public class OperatorHelper {
 			throw new QLException("The parameter must be Executable item.");
 		}
 		Executable item = (Executable) object;
-		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+		if (item.getExecuteType().equals(ExecuteableTypeEnum.NODE)){
 			Node node = (Node) item;
 			if (!ListUtil.toList(NodeTypeEnum.FOR,
 					NodeTypeEnum.FOR_SCRIPT,
@@ -204,7 +204,7 @@ public class OperatorHelper {
 			throw new QLException("The parameter must be Executable item.");
 		}
 		Executable item = (Executable) object;
-		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+		if (item.getExecuteType().equals(ExecuteableTypeEnum.NODE)){
 			Node node = (Node) item;
 			if (!ListUtil.toList(NodeTypeEnum.ITERATOR,
 					NodeTypeEnum.FALLBACK).contains(node.getType())){
@@ -220,7 +220,7 @@ public class OperatorHelper {
 			throw new QLException("The parameter must be Executable item.");
 		}
 		Executable item = (Executable) object;
-		if (item.getExecuteType().equals(ExecuteTypeEnum.NODE)){
+		if (item.getExecuteType().equals(ExecuteableTypeEnum.NODE)){
 			Node node = (Node) item;
 			if (!ListUtil.toList(NodeTypeEnum.SWITCH,
 					NodeTypeEnum.SWITCH_SCRIPT,

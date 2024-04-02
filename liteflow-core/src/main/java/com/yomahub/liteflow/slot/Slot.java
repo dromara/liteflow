@@ -97,6 +97,8 @@ public class Slot {
 	
 	private static final TransmittableThreadLocal<Deque<Condition>> conditionStack = TransmittableThreadLocal.withInitial(ConcurrentLinkedDeque::new);
 
+	private Boolean routeResult;
+
 	public Slot() {
 	}
 
@@ -494,4 +496,11 @@ public class Slot {
 		}
 	}
 
+	public Boolean getRouteResult() {
+		return routeResult;
+	}
+
+	public void setRouteResult(Boolean routeResult) {
+		this.routeResult = routeResult;
+	}
 }

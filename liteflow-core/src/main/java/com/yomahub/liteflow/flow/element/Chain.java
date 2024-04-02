@@ -14,7 +14,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.enums.ExecuteTypeEnum;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,9 +111,35 @@ public class Chain implements Executable{
 		}
 	}
 
+	public void executeRoute(Integer slotIndex) throws Exception {
+		if (routeItem == null) {
+			throw new FlowSystemException("no route condition or node in this chain[" + chainId + "]");
+		}
+		Slot slot = DataBus.getSlot(slotIndex);
+		try {
+			// 设置主ChainName
+			slot.setChainId(chainId);
+
+			// 执行决策路由
+			routeItem.setCurrChainId(chainId);
+			routeItem.execute(slotIndex);
+
+			boolean routeResult = routeItem.getItemResultMetaValue(slotIndex);
+
+			slot.setRouteResult(routeResult);
+		}
+		catch (ChainEndException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			slot.setException(e);
+			throw e;
+		}
+	}
+
 	@Override
-	public ExecuteTypeEnum getExecuteType() {
-		return ExecuteTypeEnum.CHAIN;
+	public ExecuteableTypeEnum getExecuteType() {
+		return ExecuteableTypeEnum.CHAIN;
 	}
 
 	@Override

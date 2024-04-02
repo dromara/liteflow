@@ -354,7 +354,13 @@ public class ParserHelper {
             }
             builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
         }else{
-            builder.setEL(ElRegexUtil.removeComments(e.getText()));
+            // 即使没有route这个标签，body标签单独写也是被允许的
+            Element bodyElement = e.element(BODY);
+            if (bodyElement != null){
+                builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
+            }else{
+                builder.setEL(ElRegexUtil.removeComments(e.getText()));
+            }
         }
 
         builder.build();
