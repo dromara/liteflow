@@ -532,11 +532,18 @@ public class FlowExecutor {
 			throw new RouteChainNotFoundException("cannot find any route chain");
 		}
 
+		String finalRequestId;
+		if (StrUtil.isBlank(requestId)){
+			finalRequestId = IdGeneratorHolder.getInstance().generate();
+		}else{
+			finalRequestId = requestId;
+		}
+
 		// 异步执行route el
 		List<Tuple> routeTupleList = new ArrayList<>();
 		for (Chain routeChain : routeChainList){
 			CompletableFuture<Slot> f = CompletableFuture.supplyAsync(
-					() -> doExecute(routeChain.getChainId(), param, null, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE)
+					() -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE)
 			);
 
 			routeTupleList.add(new Tuple(routeChain, f));
@@ -572,7 +579,7 @@ public class FlowExecutor {
 		List<CompletableFuture<Slot>> executeChainCfList = new ArrayList<>();
 		for (Chain chain : matchedRouteChainList){
 			CompletableFuture<Slot> cf = CompletableFuture.supplyAsync(
-					() -> doExecute(chain.getChainId(), param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY)
+					() -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY)
 			);
 			executeChainCfList.add(cf);
 		}
