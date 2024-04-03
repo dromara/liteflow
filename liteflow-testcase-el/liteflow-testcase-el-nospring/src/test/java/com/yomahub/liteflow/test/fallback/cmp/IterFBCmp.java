@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 @FallbackCmp
-public class IteratorCmp2 extends NodeIteratorComponent {
+public class IterFBCmp extends NodeIteratorComponent {
 
     @Override
     public Iterator<?> processIterator() throws Exception {

@@ -7,9 +7,9 @@ import com.yomahub.liteflow.core.NodeIteratorComponent;
 import java.util.Collections;
 import java.util.Iterator;
 
-@LiteflowComponent("itn2")
+@LiteflowComponent("fb_iter_cmp")
 @FallbackCmp
-public class IteratorCmp2 extends NodeIteratorComponent {
+public class IterFBCmp extends NodeIteratorComponent {
 
     @Override
     public Iterator<?> processIterator() throws Exception {

@@ -20,6 +20,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-el-builder</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.noear</groupId>
             <artifactId>solon-test-junit5</artifactId>
             <version>${solon.version}</version>
