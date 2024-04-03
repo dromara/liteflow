@@ -15,6 +15,12 @@
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
             <artifactId>liteflow-solon-plugin</artifactId>
             <version>${revision}</version>
         </dependency>
