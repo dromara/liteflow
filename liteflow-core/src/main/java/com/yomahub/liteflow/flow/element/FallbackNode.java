@@ -43,7 +43,12 @@ public class FallbackNode extends Node {
 
     @Override
     public void execute(Integer slotIndex) throws Exception {
-        loadFallBackNode(slotIndex);
+        Node node = FlowBus.getNode(this.expectedNodeId);
+        if (node != null){
+            this.fallbackNode = node;
+        }else{
+            loadFallBackNode(slotIndex);
+        }
         this.fallbackNode.setCurrChainId(this.getCurrChainId());
         this.fallbackNode.execute(slotIndex);
     }
