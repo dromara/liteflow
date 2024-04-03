@@ -28,7 +28,7 @@ public class JsonParserELSpringbootTest extends BaseTest {
 	// 测试spring场景的json parser
 	@Test
 	public void testJsonParser() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertTrue(response.isSuccess());
 	}
 
