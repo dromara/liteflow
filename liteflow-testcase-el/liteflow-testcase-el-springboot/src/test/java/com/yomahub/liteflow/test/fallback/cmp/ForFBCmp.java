@@ -4,9 +4,9 @@ import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeForComponent;
 
-@LiteflowComponent("for1")
+@LiteflowComponent("fb_for_cmp")
 @FallbackCmp
-public class ForCmp extends NodeForComponent {
+public class ForFBCmp extends NodeForComponent {
 
     @Override
     public int processFor() throws Exception {

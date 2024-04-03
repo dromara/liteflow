@@ -4,9 +4,9 @@ import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeSwitchComponent;
 
-@LiteflowComponent("swn2")
+@LiteflowComponent("fb_sw_cmp")
 @FallbackCmp
-public class SwitchCmp2 extends NodeSwitchComponent {
+public class SwFBCmp extends NodeSwitchComponent {
 
     @Override
     public String processSwitch() throws Exception {

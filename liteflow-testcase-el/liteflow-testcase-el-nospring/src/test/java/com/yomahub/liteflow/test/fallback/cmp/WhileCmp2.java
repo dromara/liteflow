@@ -2,9 +2,8 @@ package com.yomahub.liteflow.test.fallback.cmp;
 
 import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.core.NodeBooleanComponent;
-import com.yomahub.liteflow.enums.BooleanTypeEnum;
 
-@FallbackCmp(BooleanTypeEnum.WHILE)
+@FallbackCmp
 public class WhileCmp2 extends NodeBooleanComponent {
     
     @Override

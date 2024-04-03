@@ -1,8 +1,5 @@
 package com.yomahub.liteflow.annotation;
 
-import com.yomahub.liteflow.enums.BooleanTypeEnum;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -22,5 +19,4 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface FallbackCmp {
 
-    BooleanTypeEnum value() default BooleanTypeEnum.NOT_BOOL;
 }

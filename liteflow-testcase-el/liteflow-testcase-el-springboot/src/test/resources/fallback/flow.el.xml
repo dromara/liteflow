@@ -39,19 +39,9 @@
         WHILE(node("x")).DO(a)
     </chain>
     
-    <!-- WHILE 普通组件降级 -->
-    <chain name="while2">
-        WHILE(wn1).DO(node("x"))
-    </chain>
-    
     <!-- ITERATOR 迭代组件降级 -->
     <chain name="iterator1">
         ITERATOR(node("x")).DO(a)
-    </chain>
-    
-    <!-- ITERATOR 普通组件降级 -->
-    <chain name="iterator2">
-        ITERATOR(itn1).DO(node("x"))
     </chain>
     
     <!-- BREAK 退出循环组件降级 -->
@@ -59,22 +49,9 @@
         FOR(3).DO(a).BREAK(node("x"));
     </chain>
     
-    <chain name="break2">
-        WHILE(wn1).DO(a).BREAK(node("x"));
-    </chain>
-    
-    <chain name="break3">
-        ITERATOR(itn1).DO(a).BREAK(node("x"));
-    </chain>
-    
     <!-- SWITCH 选择组件降级 -->
     <chain name="switch1">
         SWITCH(node("x")).to(a,b);
-    </chain>
-    
-    <!-- SWITCH 普通组件降级 -->
-    <chain name="switch2">
-        SWITCH(swn1).to(node("x"),a);
     </chain>
     
     <!-- AND 条件组件降级 -->

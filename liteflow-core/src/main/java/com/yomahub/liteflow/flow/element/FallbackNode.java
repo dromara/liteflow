@@ -3,7 +3,6 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.core.NodeComponent;
-import com.yomahub.liteflow.enums.BooleanTypeEnum;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.FallbackCmpNotFoundException;
@@ -91,7 +90,7 @@ public class FallbackNode extends Node {
             case TYPE_NOT_OPT:
             case TYPE_AND_OR_OPT:
                 //组件降级用在与并或中，只能用在IF表达式中
-                return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.IF);
+                return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN);
             default:
                 return null;
         }
@@ -101,7 +100,7 @@ public class FallbackNode extends Node {
         Executable ifItem = ifCondition.getIfItem();
         if (ifItem == this) {
             // 需要条件组件
-            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.IF);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN);
         }
 
         // 需要普通组件
@@ -129,7 +128,7 @@ public class FallbackNode extends Node {
     private Node findNodeInWhile(WhileCondition whileCondition) {
         Executable whileItem = whileCondition.getWhileItem();
         if (whileItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.WHILE);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN);
         }
 
         return findNodeInLoop(whileCondition);
@@ -147,7 +146,7 @@ public class FallbackNode extends Node {
     private Node findNodeInLoop(LoopCondition loopCondition) {
         Executable breakItem = loopCondition.getExecutableOne(ConditionKey.BREAK_KEY);
         if (breakItem == this) {
-            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN, BooleanTypeEnum.BREAK);
+            return FlowBus.getFallBackNode(NodeTypeEnum.BOOLEAN);
         }
 
         return FlowBus.getFallBackNode(NodeTypeEnum.COMMON);
