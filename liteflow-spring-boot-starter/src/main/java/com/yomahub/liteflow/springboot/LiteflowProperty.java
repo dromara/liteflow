@@ -94,6 +94,9 @@ public class LiteflowProperty {
 	//是否快速加载规则，如果快速加载规则意味着不用copyOnWrite机制了
 	private boolean fastLoad;
 
+	//是否检查节点存在
+	private boolean checkNodeExists;
+
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -310,5 +313,13 @@ public class LiteflowProperty {
 
 	public void setFastLoad(boolean fastLoad) {
 		this.fastLoad = fastLoad;
+	}
+
+	public boolean isCheckNodeExists() {
+		return checkNodeExists;
+	}
+
+	public void setCheckNodeExists(boolean checkNodeExists) {
+		this.checkNodeExists = checkNodeExists;
 	}
 }

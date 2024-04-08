@@ -9,6 +9,8 @@
 package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.BooleanUtil;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -33,6 +35,10 @@ public class Chain implements Executable{
 	private Executable routeItem;
 
 	private List<Condition> conditionList = new ArrayList<>();
+
+	private String el;
+
+	private boolean isCompiled = true;
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
@@ -81,6 +87,10 @@ public class Chain implements Executable{
 	// 执行chain的主方法
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
+		if (BooleanUtil.isFalse(isCompiled)) {
+			LiteFlowChainELBuilder.buildUnCompileChain(this);
+		}
+
 		if (CollUtil.isEmpty(conditionList)) {
 			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
 		}
@@ -168,5 +178,21 @@ public class Chain implements Executable{
 
 	public void setRouteItem(Executable routeItem) {
 		this.routeItem = routeItem;
+	}
+
+	public String getEl() {
+		return el;
+	}
+
+	public void setEl(String el) {
+		this.el = el;
+	}
+
+	public boolean isCompiled() {
+		return isCompiled;
+	}
+
+	public void setCompiled(boolean compiled) {
+		isCompiled = compiled;
 	}
 }

@@ -49,6 +49,7 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		liteflowConfig.setFallbackCmpEnable(property.isFallbackCmpEnable());
 		liteflowConfig.setFastLoad(property.isFastLoad());
+		liteflowConfig.setCheckNodeExists(property.isCheckNodeExists());
 		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
 		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());

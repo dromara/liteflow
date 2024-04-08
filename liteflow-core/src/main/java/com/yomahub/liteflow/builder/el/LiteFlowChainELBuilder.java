@@ -1,10 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.CharUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.*;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
@@ -23,6 +20,8 @@ import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
 import com.yomahub.liteflow.flow.element.condition.NotCondition;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
@@ -154,10 +153,6 @@ public class LiteFlowChainELBuilder {
 				throw new RouteELInvalidException("the route EL can only be a boolean node, or an AND or OR expression.");
 			}
 
-			if (Objects.isNull(routeExecutable)){
-				throw new QLException(StrUtil.format("parse route el fail,el:[{}]", routeEl));
-			}
-
 			// 把主要的condition加入
 			this.route = routeExecutable;
 			return this;
@@ -184,6 +179,14 @@ public class LiteFlowChainELBuilder {
 		if (StrUtil.isBlank(elStr)) {
 			String errMsg = StrUtil.format("no el in this chain[{}]", chain.getChainId());
 			throw new FlowSystemException(errMsg);
+		}
+
+		this.chain.setEl(elStr);
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		// 如果设置了不检查Node是否存在，那么这里是不解析的
+		if (BooleanUtil.isFalse(liteflowConfig.getCheckNodeExists())){
+			this.chain.setCompiled(false);
+			return this;
 		}
 
 		List<String> errorList = new ArrayList<>();
@@ -285,7 +288,7 @@ public class LiteFlowChainELBuilder {
 	 * 解析 EL 表达式，查找未定义的 id 并构建错误信息
 	 * @param elStr el 表达式
 	 */
-	private String buildDataNotFoundExceptionMsg(String elStr) {
+	private static String buildDataNotFoundExceptionMsg(String elStr) {
 		String msg = String.format("[node/chain is not exist or node/chain not register]\n EL: %s",
 				StrUtil.trim(elStr));
 		try {
@@ -336,6 +339,62 @@ public class LiteFlowChainELBuilder {
 		}
 		return msg;
 	}
-	// #endregion
+
+	public static void buildUnCompileChain(Chain chain){
+		if (StrUtil.isBlank(chain.getEl())){
+			throw new FlowSystemException(StrUtil.format("no el content in this unCompile chain[{}]", chain.getChainId()));
+		}
+
+		// 如果chain已经有Condition了，那说明已经解析过了，这里只对未解析的chain进行解析
+		if (CollUtil.isNotEmpty(chain.getConditionList())){
+			return;
+		}
+
+		List<String> errorList = new ArrayList<>();
+		try {
+			DefaultContext<String, Object> context = new DefaultContext<>();
+
+			// 这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
+			// 往上下文里放入所有的chain，是的el表达式可以直接引用到chain
+			FlowBus.getChainMap().values().forEach(chainItem -> context.put(chainItem.getChainId(), chainItem));
+
+			// 往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
+			FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
+
+			// 放入当前主chain的ID
+			context.put(ChainConstant.CURR_CHAIN_ID, chain.getChainId());
+
+			// 解析el成为一个Condition
+			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
+			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
+			Condition condition = (Condition) EXPRESS_RUNNER.execute(chain.getEl(), context, errorList, true, true);
+
+			if (Objects.isNull(condition)){
+				throw new QLException(StrUtil.format("parse el fail,el:[{}]", chain.getEl()));
+			}
+
+			// 把主要的condition加入
+			chain.setConditionList(CollUtil.toList(condition));
+
+			// 把chain的isCompiled设置为true
+			chain.setCompiled(true);
+
+			FlowBus.addChain(chain);
+		} catch (QLException e) {
+			// EL 底层会包装异常，这里是曲线处理
+			if (ObjectUtil.isNotNull(e.getCause()) && Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+				// 构建错误信息
+				String msg = buildDataNotFoundExceptionMsg(chain.getEl());
+				throw new ELParseException(msg);
+			}else if (ObjectUtil.isNotNull(e.getCause())){
+				throw new ELParseException(e.getCause().getMessage());
+			}else{
+				throw new ELParseException(e.getMessage());
+			}
+		} catch (Exception e) {
+			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
+			throw new ELParseException(errMsg + e.getMessage());
+		}
+	}
 
 }
