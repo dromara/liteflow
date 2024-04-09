@@ -33,7 +33,7 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
 		liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
 		liteflowConfig.setWhenThreadPoolIsolate(property.isWhenThreadPoolIsolate());
-		liteflowConfig.setParseOnStart(property.isParseOnStart());
+		liteflowConfig.setParseMode(property.getParseMode());
 		liteflowConfig.setEnable(property.isEnable());
 		liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
 		liteflowConfig.setRetryCount(property.getRetryCount());
@@ -49,7 +49,6 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		liteflowConfig.setFallbackCmpEnable(property.isFallbackCmpEnable());
 		liteflowConfig.setFastLoad(property.isFastLoad());
-		liteflowConfig.setCheckNodeExists(property.isCheckNodeExists());
 		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
 		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());

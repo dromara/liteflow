@@ -15,7 +15,7 @@
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="flowmeta/flow.el.xml"/>
-        <property name="parseOnStart" value="false"/>
+        <property name="parseMode" value="PARSE_ALL_ON_FIRST_EXEC"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

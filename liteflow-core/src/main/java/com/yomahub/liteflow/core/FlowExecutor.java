@@ -15,6 +15,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.InnerChainTypeEnum;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -72,7 +73,7 @@ public class FlowExecutor {
 		LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
 		// 设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
 		FlowExecutorHolder.setHolder(this);
-		if (BooleanUtil.isTrue(liteflowConfig.isParseOnStart())) {
+		if (!liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ALL_ON_FIRST_EXEC)) {
 			this.init(true);
 		}
 		// 初始化DataBus

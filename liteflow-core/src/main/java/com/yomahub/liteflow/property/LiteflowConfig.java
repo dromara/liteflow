@@ -10,6 +10,7 @@ package com.yomahub.liteflow.property;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -71,9 +72,8 @@ public class LiteflowConfig {
 	// 异步线程池最大队列数量
 	private Integer whenQueueLimit;
 
-	// 是否在启动时解析规则文件
-	// 这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
-	private Boolean parseOnStart;
+	// 解析模式，一共有三种，具体看其定义
+	private ParseModeEnum parseMode;
 
 	// 这个属性为true，则支持多种不同的类型的配置
 	// 但是要注意，不能将主流程和子流程分配在不同类型配置文件中
@@ -117,9 +117,6 @@ public class LiteflowConfig {
 
 	//是否快速加载规则，如果快速加载规则意味着不用copyOnWrite机制了
 	private Boolean fastLoad;
-
-	//检查node是否存在
-	private Boolean checkNodeExists;
 
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
@@ -252,19 +249,6 @@ public class LiteflowConfig {
 
 	public void setWhenQueueLimit(Integer whenQueueLimit) {
 		this.whenQueueLimit = whenQueueLimit;
-	}
-
-	public Boolean isParseOnStart() {
-		if (ObjectUtil.isNull(parseOnStart)) {
-			return Boolean.TRUE;
-		}
-		else {
-			return parseOnStart;
-		}
-	}
-
-	public void setParseOnStart(Boolean parseOnStart) {
-		this.parseOnStart = parseOnStart;
 	}
 
 	public Boolean isSupportMultipleType() {
@@ -494,15 +478,15 @@ public class LiteflowConfig {
 		this.fastLoad = fastLoad;
 	}
 
-	public Boolean getCheckNodeExists() {
-		if (ObjectUtil.isNull(checkNodeExists)){
-			return Boolean.TRUE;
+	public ParseModeEnum getParseMode() {
+		if (ObjectUtil.isNull(parseMode)) {
+			return ParseModeEnum.PARSE_ALL_ON_START;
 		}else{
-			return checkNodeExists;
+			return parseMode;
 		}
 	}
 
-	public void setCheckNodeExists(Boolean checkNodeExists) {
-		this.checkNodeExists = checkNodeExists;
+	public void setParseMode(ParseModeEnum parseMode) {
+		this.parseMode = parseMode;
 	}
 }

@@ -51,9 +51,17 @@ public class LiteflowMainAutoConfiguration {
 	}
 
 	// FlowExecutor的初始化工作，和实例化分开来
+	// 这里写2个几乎一样的是因为无论是在PARSE_ALL_ON_START或者PARSE_ONE_ON_FIRST_EXEC模式下，都需要初始化工作
+	// 换句话说，这两个只可能被执行一个
 	@Bean
-	@ConditionalOnProperty(prefix = "liteflow", name = "parse-on-start", havingValue = "true")
-	public LiteflowExecutorInit liteflowExecutorInit(FlowExecutor flowExecutor) {
+	@ConditionalOnProperty(prefix = "liteflow", name = "parse-mode", havingValue = "PARSE_ALL_ON_START")
+	public LiteflowExecutorInit liteflowExecutorInit1(FlowExecutor flowExecutor) {
+		return new LiteflowExecutorInit(flowExecutor);
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "liteflow", name = "parse-mode", havingValue = "PARSE_ONE_ON_FIRST_EXEC")
+	public LiteflowExecutorInit liteflowExecutorInit2(FlowExecutor flowExecutor) {
 		return new LiteflowExecutorInit(flowExecutor);
 	}
 

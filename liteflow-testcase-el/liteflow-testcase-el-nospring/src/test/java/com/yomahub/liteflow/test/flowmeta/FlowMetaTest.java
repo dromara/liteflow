@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.flowmeta;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -20,7 +21,7 @@ public class FlowMetaTest extends BaseTest {
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("flowmeta/flow.el.xml");
-		config.setParseOnStart(false);
+		config.setParseMode(ParseModeEnum.PARSE_ALL_ON_FIRST_EXEC);
 		flowExecutor = FlowExecutorHolder.loadInstance(config);
 	}
 

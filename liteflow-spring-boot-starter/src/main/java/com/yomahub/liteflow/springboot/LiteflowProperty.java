@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.springboot;
 
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
@@ -54,9 +55,8 @@ public class LiteflowProperty {
 	// 异步线程池是否隔离
 	private boolean whenThreadPoolIsolate;
 
-	// 是否在启动时解析规则文件
-	// 这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
-	private boolean parseOnStart;
+	// 解析模式，一共有三种，具体看其定义
+	private ParseModeEnum parseMode;
 
 	// 这个属性为true，则支持多种不同的类型的配置
 	// 但是要注意，不能将主流程和子流程分配在不同类型配置文件中
@@ -155,12 +155,12 @@ public class LiteflowProperty {
 		this.whenQueueLimit = whenQueueLimit;
 	}
 
-	public boolean isParseOnStart() {
-		return parseOnStart;
+	public ParseModeEnum getParseMode() {
+		return parseMode;
 	}
 
-	public void setParseOnStart(boolean parseOnStart) {
-		this.parseOnStart = parseOnStart;
+	public void setParseMode(ParseModeEnum parseMode) {
+		this.parseMode = parseMode;
 	}
 
 	public boolean isSupportMultipleType() {

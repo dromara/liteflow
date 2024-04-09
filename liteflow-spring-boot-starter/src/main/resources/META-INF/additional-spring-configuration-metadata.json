@@ -111,9 +111,9 @@
       "defaultValue": false
     },
     {
-      "name": "liteflow.parse-on-start",
-      "type": "java.lang.Boolean",
-      "description": "Set whether the rule file needs to be parsed at startup.",
+      "name": "liteflow.parse-mode",
+      "type": "com.yomahub.liteflow.enums.ParseModeEnum",
+      "description": "Set parse mode at startup.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": true
     },
@@ -158,13 +158,6 @@
       "description": "Whether to enable fast load mode.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": false
-    },
-    {
-      "name": "liteflow.check-node-exists",
-      "type": "java.lang.Boolean",
-      "description": "Whether to check the existence of a node or not.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": true
     },
     {
       "name": "liteflow.monitor.enable-log",

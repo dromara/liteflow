@@ -10,6 +10,7 @@ import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
@@ -184,7 +185,7 @@ public class LiteFlowChainELBuilder {
 		this.chain.setEl(elStr);
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		// 如果设置了不检查Node是否存在，那么这里是不解析的
-		if (BooleanUtil.isFalse(liteflowConfig.getCheckNodeExists())){
+		if (liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC)){
 			this.chain.setCompiled(false);
 			return this;
 		}

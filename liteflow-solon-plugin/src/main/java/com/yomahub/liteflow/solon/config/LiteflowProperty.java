@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.solon.config;
 
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
 
@@ -44,9 +45,8 @@ public class LiteflowProperty {
 	// 异步线程池最大队列数量
 	private int whenQueueLimit;
 
-	// 是否在启动时解析规则文件
-	// 这个参数主要给编码式注册元数据的场景用的，结合FlowBus.addNode一起用
-	private boolean parseOnStart;
+	// 解析模式，一共有三种，具体看其定义
+	private ParseModeEnum parseMode;
 
 	// 这个属性为true，则支持多种不同的类型的配置
 	// 但是要注意，不能将主流程和子流程分配在不同类型配置文件中
@@ -130,14 +130,6 @@ public class LiteflowProperty {
 
 	public void setWhenQueueLimit(int whenQueueLimit) {
 		this.whenQueueLimit = whenQueueLimit;
-	}
-
-	public boolean isParseOnStart() {
-		return parseOnStart;
-	}
-
-	public void setParseOnStart(boolean parseOnStart) {
-		this.parseOnStart = parseOnStart;
 	}
 
 	public boolean isSupportMultipleType() {
@@ -250,5 +242,13 @@ public class LiteflowProperty {
 	
 	public void setFallbackCmpEnable(Boolean fallbackCmpEnable) {
 		this.fallbackCmpEnable = fallbackCmpEnable;
+	}
+
+	public ParseModeEnum getParseMode() {
+		return parseMode;
+	}
+
+	public void setParseMode(ParseModeEnum parseMode) {
+		this.parseMode = parseMode;
 	}
 }

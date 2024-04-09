@@ -36,7 +36,7 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
 		liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
-		liteflowConfig.setParseOnStart(property.isParseOnStart());
+		liteflowConfig.setParseMode(property.getParseMode());
 		liteflowConfig.setEnable(property.isEnable());
 		liteflowConfig.setSupportMultipleType(property.isSupportMultipleType());
 		liteflowConfig.setRetryCount(property.getRetryCount());

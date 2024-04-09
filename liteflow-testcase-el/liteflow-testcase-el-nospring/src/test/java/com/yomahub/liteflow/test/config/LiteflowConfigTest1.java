@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.config;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -43,7 +44,7 @@ public class LiteflowConfigTest1 extends BaseTest {
 		Assertions.assertFalse(config.getEnableLog());
 		Assertions.assertEquals(16, config.getWhenMaxWorkers().longValue());
 		Assertions.assertEquals(512, config.getWhenQueueLimit().longValue());
-		Assertions.assertEquals(true, config.isParseOnStart());
+		Assertions.assertEquals(ParseModeEnum.PARSE_ALL_ON_START, config.getParseMode());
 	}
 
 }
