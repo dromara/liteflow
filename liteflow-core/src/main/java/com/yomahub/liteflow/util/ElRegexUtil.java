@@ -19,7 +19,7 @@ public class ElRegexUtil {
     private static final String REGEX_COMMENT = "(?<!(:|@))\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/";
 
     // abstractChain 占位符正则表达式
-    private static final String REGEX_ABSTRACT_HOLDER = "\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}(?![\\s]*=)";
+    private static final String REGEX_ABSTRACT_HOLDER = "\\{\\{\\s*([a-zA-Z_][a-zA-Z_\\d]*|\\d+)\\s*\\}\\}(?![\\s]*=)";
 
     /**
      * 移除 el 表达式中的注释，支持 java 的注释，包括单行注释、多行注释， 会压缩字符串，移除空格和换行符
@@ -52,13 +52,13 @@ public class ElRegexUtil {
         while (placeHolderMatcher.find()) {
             //到implChain中找到对应的占位符实现
             String holder = placeHolderMatcher.group(1);
-            Pattern placeHolderImpl = Pattern.compile("\\s*\\{" + holder + "\\}\\s*=\\s*(.*?);");
+            Pattern placeHolderImpl = Pattern.compile("\\s*\\{\\{" + holder + "\\}\\}\\s*=\\s*(.*?);");
             Matcher implMatcher = placeHolderImpl.matcher(implChain);
             if (implMatcher.find()) {
                 String replacement = implMatcher.group(1).trim();
-                abstractChain = abstractChain.replace("{" + holder + "}", replacement);
+                abstractChain = abstractChain.replace("{{" + holder + "}}", replacement);
             } else {
-                throw new ParseException("missing implementation of {" + holder + "} in expression \r\n" + implChain);
+                throw new ParseException("missing implementation of {{" + holder + "}} in expression \r\n" + implChain);
             }
         }
         return abstractChain;
