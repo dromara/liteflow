@@ -80,6 +80,7 @@ public class LiteflowConfig {
 	private Boolean supportMultipleType;
 
 	// 重试次数
+	@Deprecated
 	private Integer retryCount;
 
 	// 节点执行器的类全名
@@ -264,6 +265,7 @@ public class LiteflowConfig {
 		this.supportMultipleType = supportMultipleType;
 	}
 
+	@Deprecated
 	public Integer getRetryCount() {
 		if (ObjectUtil.isNull(retryCount) || retryCount < 0) {
 			return 0;
@@ -273,6 +275,7 @@ public class LiteflowConfig {
 		}
 	}
 
+	@Deprecated
 	public void setRetryCount(Integer retryCount) {
 		this.retryCount = retryCount;
 	}

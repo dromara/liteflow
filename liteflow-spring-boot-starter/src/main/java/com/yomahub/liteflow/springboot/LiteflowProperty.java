@@ -63,6 +63,7 @@ public class LiteflowProperty {
 	private boolean supportMultipleType;
 
 	// 重试次数
+	@Deprecated
 	private int retryCount;
 
 	// 是否打印liteflow banner
@@ -171,10 +172,12 @@ public class LiteflowProperty {
 		this.supportMultipleType = supportMultipleType;
 	}
 
+	@Deprecated
 	public int getRetryCount() {
 		return retryCount;
 	}
 
+	@Deprecated
 	public void setRetryCount(int retryCount) {
 		this.retryCount = retryCount;
 	}
