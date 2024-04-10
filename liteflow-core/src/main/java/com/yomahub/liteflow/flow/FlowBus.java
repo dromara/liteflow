@@ -12,6 +12,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
@@ -352,6 +353,11 @@ public class FlowBus {
 				.unLoad(nodeId);
 		// 移除脚本
 		return removeNode(nodeId);
+	}
+
+	// 重新加载规则
+	public static void reloadChain(String chainId, String elContent) {
+		LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(elContent).build();
 	}
 
 	public static void clearStat(){
