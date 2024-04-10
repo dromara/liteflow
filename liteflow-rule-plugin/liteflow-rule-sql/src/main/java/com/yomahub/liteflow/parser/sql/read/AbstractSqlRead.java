@@ -35,11 +35,12 @@ public abstract class AbstractSqlRead implements SqlRead {
             return new HashMap<>();
         }
 
-        Map<String/*规则唯一键*/, String/*规则*/> result = new HashMap<>();
+        checkConfig();
         String sqlCmd = buildQuerySql();
         // 如果允许，就打印 sql 语句
         logSqlIfEnable(sqlCmd);
 
+        Map<String/*规则唯一键*/, String/*规则*/> result = new HashMap<>();
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -90,6 +91,8 @@ public abstract class AbstractSqlRead implements SqlRead {
     public abstract String buildXmlElement(ResultSet rs) throws SQLException;
 
     public abstract String buildXmlElementUniqueKey(ResultSet rs) throws SQLException;
+
+    public abstract void checkConfig();
 
     /**
      * 是否可以读取

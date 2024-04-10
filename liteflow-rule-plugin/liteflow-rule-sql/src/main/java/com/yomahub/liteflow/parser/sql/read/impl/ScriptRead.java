@@ -46,48 +46,38 @@ public class ScriptRead extends AbstractSqlRead {
 
     @Override
     public String buildQuerySql() {
-        String scriptLanguageField = super.config.getScriptLanguageField();
+        String scriptTableName = super.config.getScriptTableName();
+        String scriptApplicationNameField = super.config.getScriptApplicationNameField();
+
+        return StrUtil.format(
+                SqlReadConstant.SCRIPT_SQL_PATTERN,
+                scriptTableName,
+                scriptApplicationNameField);
+    }
+
+    @Override
+    public void checkConfig() {
         String scriptTableName = super.config.getScriptTableName();
         String scriptIdField = super.config.getScriptIdField();
         String scriptDataField = super.config.getScriptDataField();
-        String scriptNameField = super.config.getScriptNameField();
         String scriptTypeField = super.config.getScriptTypeField();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
-        String applicationName = super.config.getApplicationName();
 
-
-        if (StrUtil.isBlank(applicationName) || StrUtil.isBlank(scriptApplicationNameField)) {
-            throw new ELSQLException("You did not define the applicationName or scriptApplicationNameField property");
+        if(StrUtil.isBlank(scriptTableName)){
+            throw new ELSQLException("You did not define the scriptTableName property");
         }
-
-        String sqlCmd = null;
-        // 脚本节点（带语言）
-        if (withLanguage()) {
-            sqlCmd = StrUtil.format(
-                    SqlReadConstant.SCRIPT_WITH_LANGUAGE_SQL_PATTERN,
-                    scriptIdField,
-                    scriptDataField,
-                    scriptNameField,
-                    scriptTypeField,
-                    scriptLanguageField,
-                    scriptTableName,
-                    scriptApplicationNameField
-            );
+        if(StrUtil.isBlank(scriptIdField)){
+            throw new ELSQLException("You did not define the scriptIdField property");
         }
-        // 脚本节点（不带语言）
-        else {
-            sqlCmd = StrUtil.format(
-                    SqlReadConstant.SCRIPT_SQL_PATTERN,
-                    scriptIdField,
-                    scriptDataField,
-                    scriptNameField,
-                    scriptTypeField,
-                    scriptTableName,
-                    scriptApplicationNameField
-            );
+        if(StrUtil.isBlank(scriptDataField)){
+            throw new ELSQLException("You did not define the scriptDataField property");
         }
-
-        return sqlCmd;
+        if(StrUtil.isBlank(scriptTypeField)){
+            throw new ELSQLException("You did not define the scriptTypeField property");
+        }
+        if(StrUtil.isBlank(scriptApplicationNameField)){
+            throw new ELSQLException("You did not define the scriptApplicationNameField property");
+        }
     }
 
     @Override

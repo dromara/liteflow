@@ -40,24 +40,34 @@ public class ChainRead extends AbstractSqlRead {
     @Override
     public String buildQuerySql() {
         String chainTableName = super.config.getChainTableName();
+        String chainApplicationNameField = super.config.getChainApplicationNameField();
+
+        return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
+    }
+
+    @Override
+    public void checkConfig() {
+        String chainTableName = super.config.getChainTableName();
         String elDataField = super.config.getElDataField();
         String chainNameField = super.config.getChainNameField();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
         String applicationName = super.config.getApplicationName();
 
-
-        if (StrUtil.isBlank(chainTableName)) {
+        if (StrUtil.isBlank(chainTableName)){
             throw new ELSQLException("You did not define the chainTableName property");
         }
-
-        if (StrUtil.isBlank(applicationName) || StrUtil.isBlank(chainApplicationNameField)) {
-            throw new ELSQLException("You did not define the applicationName or chainApplicationNameField property");
+        if (StrUtil.isBlank(elDataField)){
+            throw new ELSQLException("You did not define the elDataField property");
         }
-
-        String sqlCmd = StrUtil.format(SqlReadConstant.SQL_PATTERN, chainNameField, elDataField, chainTableName,
-                chainApplicationNameField);
-
-        return sqlCmd;
+        if (StrUtil.isBlank(chainNameField)){
+            throw new ELSQLException("You did not define the chainNameField property");
+        }
+        if (StrUtil.isBlank(chainApplicationNameField)){
+            throw new ELSQLException("You did not define the chainApplicationNameField property");
+        }
+        if (StrUtil.isBlank(applicationName)){
+            throw new ELSQLException("You did not define the applicationName property");
+        }
     }
 
     @Override
