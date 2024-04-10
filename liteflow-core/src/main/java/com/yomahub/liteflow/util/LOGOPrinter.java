@@ -31,7 +31,7 @@ public class LOGOPrinter {
 		str.append("		| |___ | |  | | | |__|_____|  _| | |__| |_| |\\ V  V /  \n");
 		str.append("		|_____|___| |_| |_____|    |_|   |_____\\___/  \\_/\\_/   \n\n");
 		str.append("		Version: " + VERSION_NO + "\n");
-		str.append("		This Is Our Rule.\n");
+		str.append("		Make your code amazing.\n");
 		str.append("		website：https://liteflow.cc\n");
 		str.append("		wechat：bryan_31\n");
 		str.append(
