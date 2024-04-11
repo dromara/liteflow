@@ -169,7 +169,7 @@ public class EtcdParserHelper {
                             .setId(nodeSimpleVO.getNodeId())
                             .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
                             .setName(nodeSimpleVO.getName())
-                            .setScript(nodeSimpleVO.getScript())
+                            .setScript(updateValue)
                             .setLanguage(nodeSimpleVO.getLanguage())
                             .build();
                 }

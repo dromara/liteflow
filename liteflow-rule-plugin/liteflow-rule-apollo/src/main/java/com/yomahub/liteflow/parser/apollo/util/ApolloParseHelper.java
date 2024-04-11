@@ -165,7 +165,7 @@ public class ApolloParseHelper {
                                     .setId(nodeSimpleVO.getNodeId())
                                     .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
                                     .setName(nodeSimpleVO.getName())
-                                    .setScript(nodeSimpleVO.getScript())
+                                    .setScript(newValue)
                                     .setLanguage(nodeSimpleVO.getLanguage())
                                     .build();
                         }

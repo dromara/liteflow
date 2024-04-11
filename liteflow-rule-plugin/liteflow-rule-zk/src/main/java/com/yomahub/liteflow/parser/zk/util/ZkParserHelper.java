@@ -178,7 +178,7 @@ public class ZkParserHelper {
                                 .setId(nodeSimpleVO.getNodeId())
                                 .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
                                 .setName(nodeSimpleVO.getName())
-                                .setScript(nodeSimpleVO.getScript())
+                                .setScript(value)
                                 .setLanguage(nodeSimpleVO.getLanguage())
                                 .build();
                     }
