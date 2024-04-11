@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.redis.mode.subscribe;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Pair;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
@@ -19,6 +20,7 @@ import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.redisson.Redisson;
 import org.redisson.api.map.event.EntryCreatedListener;
 import org.redisson.api.map.event.EntryRemovedListener;
+import org.redisson.api.map.event.EntryUpdatedListener;
 import org.redisson.config.Config;
 
 import java.util.ArrayList;
@@ -149,25 +151,23 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
     public void listenRedis() {
         //监听 chain
         String chainKey = redisParserVO.getChainKey();
-        EntryCreatedListener<String, String> chainModifyFunc = event -> {
-            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
-            String chainName = event.getKey();
-            String value = event.getValue();
-            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainName);
-            String id = pair.getValue();
-            // 如果是启用，就正常更新
-            if (pair.getKey()) {
-                LiteFlowChainELBuilder.createChain().setChainId(id).setEL(value).build();
-            }
-            // 如果是禁用，就删除
-            else {
-                FlowBus.removeChain(id);
-            }
-        };
+
         //添加新 chain
-        chainClient.addListener(chainKey, chainModifyFunc);
+        chainClient.addListener(chainKey, (EntryCreatedListener<String, String>) event -> {
+            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
+            String chainId = event.getKey();
+            String value = event.getValue();
+            RedisParserHelper.changeChain(chainId, value);
+        });
+
         //修改 chain
-        chainClient.addListener(chainKey, chainModifyFunc);
+        chainClient.addListener(chainKey, (EntryUpdatedListener<String, String>) event -> {
+            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
+            String chainId = event.getKey();
+            String value = event.getValue();
+            RedisParserHelper.changeChain(chainId, value);
+        });
+
         //删除 chain
         chainClient.addListener(chainKey, (EntryRemovedListener<String, String>) event -> {
             LOG.info("starting reload flow config... delete key={}", event.getKey());
@@ -176,36 +176,24 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
         });
 
         //监听 script
-        EntryCreatedListener<String, String> scriptModifyFunc = event -> {
-            LOG.info("starting modify flow config... create key={} value={},", event.getKey(), event.getValue());
-            NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(event.getKey());
-            nodeSimpleVO.setScript(event.getValue());
-            // 启用就正常更新
-            if (nodeSimpleVO.getEnable()) {
-                LiteFlowNodeBuilder.createScriptNode()
-                        .setId(nodeSimpleVO.getNodeId())
-                        .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                        .setName(nodeSimpleVO.getName())
-                        .setScript(nodeSimpleVO.getScript())
-                        .setLanguage(nodeSimpleVO.getLanguage())
-                        .build();
-            }
-            // 禁用就删除
-            else {
-                FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-            }
-        };
         if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
             String scriptKey = redisParserVO.getScriptKey();
+
             //添加 script
-            scriptClient.addListener(scriptKey, scriptModifyFunc);
+            scriptClient.addListener(scriptKey, (EntryCreatedListener<String, String>) event -> {
+                LOG.info("starting reload flow config... create key={} value={},", event.getKey(), event.getValue());
+                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
+            });
             //修改 script
-            scriptClient.addListener(scriptKey, scriptModifyFunc);
+            scriptClient.addListener(scriptKey, (EntryUpdatedListener<String, String>) event -> {
+                LOG.info("starting reload flow config... update key={} new value={},", event.getKey(), event.getValue());
+                RedisParserHelper.changeScriptNode(event.getKey(), event.getValue());
+            });
             //删除 script
             scriptClient.addListener(scriptKey, (EntryRemovedListener<String, String>) event -> {
                 LOG.info("starting reload flow config... delete key={}", event.getKey());
                 NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(event.getKey());
-                FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
             });
         }
     }

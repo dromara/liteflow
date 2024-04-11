@@ -38,7 +38,7 @@ public class ScriptReadPollTask extends AbstractSqlReadPollTask {
             NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(id);
 
             //  删除script
-            FlowBus.getNodeMap().remove(scriptVO.getNodeId());
+            FlowBus.unloadScriptNode(scriptVO.getNodeId());
         }
     }
 

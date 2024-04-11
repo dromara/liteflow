@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.ctrip.framework.apollo.enums.PropertyChangeType.DELETED;
@@ -91,7 +92,6 @@ public class ApolloParseHelper {
 
                 List<String> scriptItemContentList = scriptNamespaces.stream()
                         .map(item -> convert(item, scriptConfig.getProperty(item, StrUtil.EMPTY)))
-                        .filter(Objects::nonNull)
                         .map(RuleParsePluginUtil::toScriptXml)
                         .collect(Collectors.toList());
 
@@ -115,7 +115,7 @@ public class ApolloParseHelper {
             String newValue = configChange.getNewValue();
             PropertyChangeType changeType = configChange.getChangeType();
             Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(changeKey);
-            String id = pair.getValue();
+            String chainId = pair.getValue();
             switch (changeType) {
                 case ADDED:
                 case MODIFIED:
@@ -123,16 +123,16 @@ public class ApolloParseHelper {
                             newValue);
                     // 如果是启用，就正常更新
                     if (pair.getKey()) {
-                        LiteFlowChainELBuilder.createChain().setChainId(id).setEL(newValue).build();
+                        LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(newValue).build();
                     }
                     // 如果是禁用，就删除
                     else {
-                        FlowBus.removeChain(id);
+                        FlowBus.removeChain(chainId);
                     }
                     break;
                 case DELETED:
                     LOG.info("starting reload flow config... delete key={}", changeKey);
-                    FlowBus.removeChain(id);
+                    FlowBus.removeChain(chainId);
                     break;
                 default:
             }
@@ -148,11 +148,6 @@ public class ApolloParseHelper {
                     newValue = null;
                 }
                 NodeConvertHelper.NodeSimpleVO nodeSimpleVO = convert(changeKey, newValue);
-                if (Objects.isNull(nodeSimpleVO)) {
-                    // key不符合规范的时候，直接忽略
-                    LOG.error("key={} is not a valid node config, ignore it", changeKey);
-                    return;
-                }
                 switch (changeType) {
                     case ADDED:
                     case MODIFIED:
@@ -171,12 +166,12 @@ public class ApolloParseHelper {
                         }
                         // 禁用就删除
                         else {
-                            FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                            FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                         }
                         break;
                     case DELETED:
                         LOG.info("starting reload flow config... delete key={}", changeKey);
-                        FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                        FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                         break;
                     default:
                 }

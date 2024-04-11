@@ -141,20 +141,19 @@ public class EtcdParserHelper {
             LOG.info("starting reload flow config... update path={} value={},", updatePath, updateValue);
             String changeKey = FileNameUtil.getName(updatePath);
             Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(changeKey);
-            Boolean enable = pair.getKey();
-            String id = pair.getValue();
+            String chainId = pair.getValue();
             // 如果是启用，就正常更新
             if (pair.getKey()) {
-                LiteFlowChainELBuilder.createChain().setChainId(id).setEL(updateValue).build();
+                LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(updateValue).build();
             }
             // 如果是禁用，就删除
             else {
-                FlowBus.removeChain(id);
+                FlowBus.removeChain(chainId);
             }
         }, (deletePath) -> {
             LOG.info("starting reload flow config... delete path={}", deletePath);
-            String chainName = FileNameUtil.getName(deletePath);
-            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainName);
+            String chainKey = FileNameUtil.getName(deletePath);
+            Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainKey);
             FlowBus.removeChain(pair.getValue());
         });
 
@@ -175,13 +174,13 @@ public class EtcdParserHelper {
                 }
                 // 禁用就删除
                 else {
-                    FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                    FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                 }
             }, (deletePath) -> {
                 LOG.info("starting reload flow config... delete path={}", deletePath);
                 String scriptNodeValue = FileNameUtil.getName(deletePath);
                 NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
-                FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
             });
         }
     }

@@ -15,6 +15,7 @@ import com.yomahub.liteflow.parser.zk.vo.ZkParserVO;
 import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.RetryNTimes;
@@ -129,8 +130,9 @@ public class ZkParserHelper {
         CuratorCache cache1 = CuratorCache.build(client, zkParserVO.getChainPath());
         cache1.start();
         cache1.listenable().addListener((type, oldData, data) -> {
-            String path = data.getPath();
-            String value = new String(data.getData());
+            ChildData currChildData = data == null? oldData : data;
+            String path = currChildData.getPath();
+            String value = new String(currChildData.getData());
             if (StrUtil.isBlank(value)) {
                 return;
             }
@@ -161,8 +163,9 @@ public class ZkParserHelper {
             CuratorCache cache2 = CuratorCache.build(client, zkParserVO.getScriptPath());
             cache2.start();
             cache2.listenable().addListener((type, oldData, data) -> {
-                String path = data.getPath();
-                String value = new String(data.getData());
+                ChildData currChildData = data == null? oldData : data;
+                String path = currChildData.getPath();
+                String value = new String(currChildData.getData());
                 if (StrUtil.isBlank(value)) {
                     return;
                 }
@@ -184,13 +187,13 @@ public class ZkParserHelper {
                     }
                     // 禁用就删除
                     else {
-                        FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                        FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                     }
                 } else if (CuratorCacheListener.Type.NODE_DELETED.equals(type)) {
                     LOG.info("starting reload flow config... delete path={}", path);
                     String scriptNodeValue = FileNameUtil.getName(path);
                     NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptNodeValue);
-                    FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                    FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                 }
             });
         }

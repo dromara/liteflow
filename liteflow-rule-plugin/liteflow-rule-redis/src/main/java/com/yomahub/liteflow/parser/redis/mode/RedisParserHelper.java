@@ -1,13 +1,18 @@
 package com.yomahub.liteflow.parser.redis.mode;
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.text.StrFormatter;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
+import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
 
@@ -15,6 +20,7 @@ import org.redisson.config.SentinelServersConfig;
  * Redis 解析器通用接口
  *
  * @author hxinyu
+ * @author Bryan.Zhang
  * @since 2.11.0
  */
 
@@ -105,29 +111,48 @@ public interface RedisParserHelper {
     /**
      * script节点的修改/添加
      *
-     * @param scriptFieldValue 新的script名
+     * @param scriptKeyValue 新的script名
      * @param newValue         新的script值
      */
-    static void changeScriptNode(String scriptFieldValue, String newValue) {
-        NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
-        // 有语言类型
-        if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .setLanguage(nodeSimpleVO.getLanguage())
-                    .build();
+    static boolean changeScriptNode(String scriptKeyValue, String newValue) {
+        NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptKeyValue);
+
+        if (BooleanUtil.isTrue(nodeSimpleVO.getEnable())){
+            // 有语言类型
+            if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
+                LiteFlowNodeBuilder.createScriptNode()
+                        .setId(nodeSimpleVO.getNodeId())
+                        .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                        .setName(nodeSimpleVO.getName())
+                        .setScript(newValue)
+                        .setLanguage(nodeSimpleVO.getLanguage())
+                        .build();
+            }
+            // 没有语言类型
+            else {
+                LiteFlowNodeBuilder.createScriptNode()
+                        .setId(nodeSimpleVO.getNodeId())
+                        .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
+                        .setName(nodeSimpleVO.getName())
+                        .setScript(newValue)
+                        .build();
+            }
+            return true;
+        }else{
+            FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
+            return false;
         }
-        // 没有语言类型
+    }
+
+    static void changeChain(String chainId, String value) {
+        Pair<Boolean/*启停*/, String/*id*/> pair = RuleParsePluginUtil.parseIdKey(chainId);
+        // 如果是启用，就正常更新
+        if (BooleanUtil.isTrue(pair.getKey())) {
+            LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(value).build();
+        }
+        // 如果是禁用，就删除
         else {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .build();
+            FlowBus.removeChain(chainId);
         }
     }
 }

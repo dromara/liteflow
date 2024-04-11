@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser.redis.mode.polling;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -70,7 +71,7 @@ public class ScriptPollingTask implements Runnable {
                 if (StrUtil.equals(newSHA, "nil")) {
                     //新SHA值为nil, 即未获取到该script,表示该script已被删除
                     NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
-                    FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                    FlowBus.unloadScriptNode(nodeSimpleVO.getNodeId());
                     LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
 
                     //添加到待删除的list 后续统一从SHAMap中移除
@@ -80,17 +81,11 @@ public class ScriptPollingTask implements Runnable {
                     //SHA值发生变化,表示该script的值已被修改,重新拉取变化的script
                     String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
 
-                    NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
-                    nodeSimpleVO.setScript(scriptData);
-                    if (nodeSimpleVO.getEnable()) {
-                        RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
-                        LOG.info("starting reload flow config... update key={} new value={},", scriptFieldValue, scriptData);
+                    boolean changeSuccess = RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
 
-                        //修改SHAMap
+                    if (BooleanUtil.isTrue(changeSuccess)){
                         scriptSHAMap.put(scriptFieldValue, newSHA);
-                    } else {
-                        FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
-                        LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
+                    }else{
                         needDelete.add(scriptFieldValue);
                     }
                 }
@@ -114,13 +109,13 @@ public class ScriptPollingTask implements Runnable {
                     if (!scriptSHAMap.containsKey(scriptFieldValue)) {
                         //将新script添加到LiteFlowChainELBuilder和SHAMap
                         String scriptData = scriptClient.hget(scriptKey, scriptFieldValue);
-                        NodeConvertHelper.NodeSimpleVO nodeSimpleVO = NodeConvertHelper.convert(scriptFieldValue);
-                        if (nodeSimpleVO.getEnable()) {
-                            RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
+
+                        boolean isAddSuccess = RedisParserHelper.changeScriptNode(scriptFieldValue, scriptData);
+
+                        if (BooleanUtil.isTrue(isAddSuccess)){
                             LOG.info("starting reload flow config... create key={} new value={},", scriptFieldValue, scriptData);
                             scriptSHAMap.put(scriptFieldValue, DigestUtil.sha1Hex(scriptData));
-                        } else {
-                            FlowBus.getNodeMap().remove(nodeSimpleVO.getNodeId());
+                        }else{
                             LOG.info("starting reload flow config... delete key={}", scriptFieldValue);
                             needDelete.add(scriptFieldValue);
                         }
