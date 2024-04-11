@@ -105,6 +105,10 @@ To join the LF CLUB, please scan the QR code below or click on the image to go d
 
 <a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
 
+**JNPF低代码开发平台**
+
+<a href="https://www.jnpfsoft.com/index.html?from=liteflow"><img src="static/img/yinmai-banner.png"></a>
+
 **WECHAT OFFICIAL ACCOUNT**
 
 Since the community group is over 200 people, you need to be invited to join the group. Follow the WECHAT OFFICIAL ACCOUNT and click `Personal WeChat` to add me, I can invite you into the group
