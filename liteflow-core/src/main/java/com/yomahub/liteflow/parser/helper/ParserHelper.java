@@ -324,9 +324,15 @@ public class ParserHelper {
             }
             builder.setEL(bodyJsonNode.textValue());
         }else{
+            JsonNode bodyJsonNode = chainNode.get(BODY);
+            if (bodyJsonNode != null){
+                builder.setEL(bodyJsonNode.textValue());
+            }else{
+                builder.setEL(chainNode.textValue());
+            }
+
             builder.setEL(chainNode.get(VALUE).textValue());
         }
-
         builder.build();
     }
 
