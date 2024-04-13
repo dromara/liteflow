@@ -317,20 +317,13 @@ public class ParserHelper {
         if (routeJsonNode != null){
             builder.setRoute(routeJsonNode.textValue());
 
-            JsonNode bodyJsonNode = chainNode.get(BODY);
+            JsonNode bodyJsonNode = chainNode.get(VALUE);
             if (bodyJsonNode == null){
                 String errMsg = StrUtil.format("If you have defined the field route, then you must define the field body in chain[{}]", chainId);
                 throw new FlowSystemException(errMsg);
             }
             builder.setEL(bodyJsonNode.textValue());
         }else{
-            JsonNode bodyJsonNode = chainNode.get(BODY);
-            if (bodyJsonNode != null){
-                builder.setEL(bodyJsonNode.textValue());
-            }else{
-                builder.setEL(chainNode.textValue());
-            }
-
             builder.setEL(chainNode.get(VALUE).textValue());
         }
         builder.build();
