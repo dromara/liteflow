@@ -23,16 +23,16 @@ public class SqlReadFactory {
     private static final Map<ReadType, SqlReadPollTask> POLL_TASK_MAP = new HashMap<>();
 
     public static void registerRead(SQLParserVO config) {
-        READ_MAP.put(ReadType.CHAIN, new ChainRead(config));
-        READ_MAP.put(ReadType.SCRIPT, new ScriptRead(config));
+        READ_MAP.putIfAbsent(ReadType.CHAIN, new ChainRead(config));
+        READ_MAP.putIfAbsent(ReadType.SCRIPT, new ScriptRead(config));
     }
 
     public static void registerSqlReadPollTask(ReadType readType) {
         SqlRead sqlRead = getSqlRead(readType);
         if (ReadType.CHAIN.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.CHAIN, new ChainReadPollTask(sqlRead));
+            POLL_TASK_MAP.putIfAbsent(ReadType.CHAIN, new ChainReadPollTask(sqlRead));
         } else if (ReadType.SCRIPT.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.SCRIPT, new ScriptReadPollTask(sqlRead));
+            POLL_TASK_MAP.putIfAbsent(ReadType.SCRIPT, new ScriptReadPollTask(sqlRead));
         }
     }
 
