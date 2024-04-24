@@ -136,8 +136,8 @@ public class FlowExecutor {
 				// 查找对应的解析器
 				parser = FlowParserProvider.lookup(path);
 				parserNameSet.add(parser.getClass().getName());
-				// 替换掉前缀标识（如：xml:/json:），保留剩下的完整地址
-				path = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "");
+				// 替换掉前缀标识（如：xml:/json:），保留剩下的完整地址，并统一路径格式
+				path = ReUtil.replaceAll(path, PREFIX_FORMAT_CONFIG_REGEX, "").replace("\\", "/");
 				rulePathList.add(path);
 
 				// 支持多类型的配置文件，分别解析
