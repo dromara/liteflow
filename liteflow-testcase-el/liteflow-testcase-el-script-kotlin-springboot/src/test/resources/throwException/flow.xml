@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.test.script.kotlin.throwException.TestException
+
+                throw TestException("T01", "测试错误")
+            ]]>
+        </node>
+
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, s1);
+    </chain>
+</flow>

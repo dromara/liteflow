@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="选择脚本_改" type="switch_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun getId(): String {
+                    val context = bindings["defaultContext"] as DefaultContext
+                    var count = context.getData("count") as Int;
+                    if(count > 100) {
+                        return "b";
+                    } else {
+                        return "a";
+                    }
+                }
+                getId()
+            ]]>
+        </node>
+
+        <node id="s2" name="普通脚本_新增" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                var a = 3
+                var b = 2
+                var c = 10
+                (bindings["defaultContext"] as? DefaultContext)?.setData("s2", a*b+c)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(d, SWITCH(s1).to(a,b), s2);
+    </chain>
+</flow>

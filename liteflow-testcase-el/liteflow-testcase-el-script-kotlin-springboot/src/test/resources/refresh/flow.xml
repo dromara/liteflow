@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="选择脚本" type="switch_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun getId(): String {
+                    val context = bindings["defaultContext"] as DefaultContext
+                    var count = context.getData("count") as Int;
+                    if(count > 100) {
+                        return "a";
+                    } else {
+                        return "b";
+                    }
+                }
+                getId()
+            ]]>
+        </node>
+
+    </nodes>
+
+    <chain name="chain1">
+        THEN(d, SWITCH(s1).to(a,b));
+    </chain>
+
+</flow>
