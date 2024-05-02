@@ -23,6 +23,7 @@
         <module>liteflow-script-lua</module>
         <module>liteflow-script-aviator</module>
         <module>liteflow-script-java</module>
+        <module>liteflow-script-kotlin</module>
     </modules>
 
 </project>

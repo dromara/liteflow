@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun sum(a: Int, b: Int) = a + b
+                var a = 2
+                var b = 3
+                val defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("s1", sum(a, b))
+                println("Hello Kotlin!")
+            ]]>
+        </node>
+        <node id="s2" type="for_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun getCount(): Int {
+                    val ctx = bindings["defaultContext"] as DefaultContext
+                    var n1 = ctx.getData("k1") as Int;
+                    var n2 = ctx.getData("k2") as Int;
+                    return n1 + n2;
+                }
+                getCount()
+            ]]>
+        </node>
+        <node id="s3" type="boolean_script" language="kotlin">
+            <![CDATA[
+                fun getBoolean1() = 2 > 1
+                getBoolean1()
+            ]]>
+        </node>
+        <node id="s4" type="boolean_script" language="kotlin">
+            <![CDATA[
+                fun getBoolean2() = 2 < 1
+                getBoolean2()
+            ]]>
+        </node>
+        <node id="s5" type="switch_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun getId(ctx: DefaultContext) : String {
+                    return ctx.getData("id") as String
+                }
+                getId(bindings["defaultContext"] as DefaultContext)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+
+    <chain name="chain2">
+        FOR(s2).DO(a);
+    </chain>
+
+    <chain name="chain3">
+        IF(s3, b);
+    </chain>
+
+    <chain name="chain4">
+        IF(s4, b);
+    </chain>
+
+    <chain name="chain5">
+        SWITCH(s5).TO(a, b, c);
+    </chain>
+</flow>
