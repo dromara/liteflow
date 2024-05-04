@@ -23,19 +23,6 @@ public class ValidateKotlinScriptComponentTest {
         String wrongScript = "val number: Int = \"123\"";
         // 使用转换函数
         String correctScript = "val number: Int = \"123\".toInt()";
-//        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-//        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("kotlin");
-//        Compilable compilable = (Compilable) scriptEngine;
-//        compilable.compile(correctScript);
-
-//        try {
-//            ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance()
-//                    .getScriptExecutor(ScriptTypeEnum.KOTLIN.getDisplayName());
-//            scriptExecutor.compile(wrongScript);
-//        } catch (Exception e) {
-//
-//        }
-
 
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
