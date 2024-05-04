@@ -1,21 +1,41 @@
 package com.yomahub.liteflow.test.script.kotlin.validate;
 
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.script.ScriptExecutor;
+import com.yomahub.liteflow.script.ScriptExecutorFactory;
 import com.yomahub.liteflow.script.validator.ScriptValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.script.Compilable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 @SpringBootTest(classes = ValidateKotlinScriptComponentTest.class)
 @EnableAutoConfiguration
 public class ValidateKotlinScriptComponentTest {
     @Test
-    public void testGroovyScriptComponentValidateFunction(){
+    public void testScriptComponentValidateFunction() throws Exception {
         // 编译错误，字符串不能直接赋值给Int
         String wrongScript = "val number: Int = \"123\"";
         // 使用转换函数
         String correctScript = "val number: Int = \"123\".toInt()";
+//        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+//        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("kotlin");
+//        Compilable compilable = (Compilable) scriptEngine;
+//        compilable.compile(correctScript);
+
+//        try {
+//            ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance()
+//                    .getScriptExecutor(ScriptTypeEnum.KOTLIN.getDisplayName());
+//            scriptExecutor.compile(wrongScript);
+//        } catch (Exception e) {
+//
+//        }
+
 
         Assertions.assertTrue(ScriptValidator.validate(correctScript));
         Assertions.assertFalse(ScriptValidator.validate(wrongScript));
