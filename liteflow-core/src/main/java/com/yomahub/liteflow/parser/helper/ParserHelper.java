@@ -205,7 +205,7 @@ public class ParserHelper {
             // 当存在<nodes>节点定义时，解析node节点
             if (flowJsonNode.get(FLOW).has(NODES)) {
                 Iterator<JsonNode> nodeIterator = flowJsonNode.get(FLOW).get(NODES).get(NODE).elements();
-                String id, name, clazz, script, type, file;
+                String id, name, clazz, script, type, file, language;
                 while ((nodeIterator.hasNext())) {
                     JsonNode nodeObject = nodeIterator.next();
                     id = nodeObject.get(ID).textValue();
@@ -214,6 +214,7 @@ public class ParserHelper {
                     type = nodeObject.hasNonNull(TYPE) ? nodeObject.get(TYPE).textValue() : null;
                     script = nodeObject.hasNonNull(VALUE) ? nodeObject.get(VALUE).textValue() : "";
                     file = nodeObject.hasNonNull(FILE) ? nodeObject.get(FILE).textValue() : "";
+                    language = nodeObject.hasNonNull(LANGUAGE) ? nodeObject.get(LANGUAGE).textValue() : "";
 
                     // 如果是禁用的，就不编译了
                     if (!getEnableByJsonNode(nodeObject)) {
@@ -226,7 +227,8 @@ public class ParserHelper {
                             .setClazz(clazz)
                             .setScript(script)
                             .setType(type)
-                            .setFile(file);
+                            .setFile(file)
+                            .setLanguage(language);
 
                     ParserHelper.buildNode(nodePropBean);
                 }
