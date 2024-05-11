@@ -388,6 +388,10 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<!-- 默认不使用 gpg ，如果需要使用请在打包命令中增加 -Dgpg.skip=false -->
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 			<!-- version number -->
 			<plugin>
