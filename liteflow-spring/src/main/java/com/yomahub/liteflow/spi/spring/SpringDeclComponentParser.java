@@ -1,24 +1,27 @@
 package com.yomahub.liteflow.spi.spring;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.LiteflowCmpDefine;
-import com.yomahub.liteflow.annotation.LiteflowComponent;
-import com.yomahub.liteflow.annotation.LiteflowMethod;
-import com.yomahub.liteflow.annotation.LiteflowRetry;
+import com.yomahub.liteflow.annotation.*;
 import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.core.proxy.MethodWrapBean;
+import com.yomahub.liteflow.core.proxy.ParameterWrapBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.CmpDefinitionException;
 import com.yomahub.liteflow.spi.DeclComponentParser;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Spring环境声明式组件解析器实现
@@ -73,7 +76,16 @@ public class SpringDeclComponentParser implements DeclComponentParser {
                 nodeType = liteflowMethod.nodeType();
             }
 
-            return new DeclInfo(currNodeId, currNodeName, nodeType, method.getDeclaringClass(), new MethodWrapBean(method, liteflowMethod, liteflowRetry));
+
+            Parameter[] parameters = method.getParameters();
+            List<ParameterWrapBean> parameterList = IntStream.range(0, parameters.length).boxed().map(index -> {
+                Parameter parameter = parameters[index];
+                return new ParameterWrapBean(parameter.getType(), AnnotationUtil.getAnnotation(parameter, LiteflowFact.class), index);
+            }).collect(Collectors.toList());
+
+
+
+            return new DeclInfo(currNodeId, currNodeName, nodeType, method.getDeclaringClass(), new MethodWrapBean(method, liteflowMethod, liteflowRetry, parameterList));
         }).filter(declInfo -> StrUtil.isNotBlank(declInfo.getNodeId())).collect(Collectors.groupingBy(DeclInfo::getNodeId));
 
         return definitionMap.entrySet().stream().map(entry -> {

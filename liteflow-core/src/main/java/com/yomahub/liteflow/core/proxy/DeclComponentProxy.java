@@ -1,17 +1,24 @@
 package com.yomahub.liteflow.core.proxy;
 
 import cn.hutool.core.exceptions.InvocationTargetRuntimeException;
+import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.ql.util.express.DefaultContext;
+import com.ql.util.express.ExpressRunner;
+import com.ql.util.express.InstructionSet;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.exception.ComponentMethodDefineErrorException;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.exception.ParameterFactException;
 import com.yomahub.liteflow.exception.ProxyException;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -21,7 +28,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -112,6 +124,10 @@ public class DeclComponentProxy {
                     .findFirst()
                     .orElse(null);
 
+            if (currentMethodWrapBean == null){
+                throw new ProxyException("currentMethodWrapBean is null");
+            }
+
             // 如果被代理的对象里有此标注标的方法，则调用此被代理的对象里的方法，如果没有，则调用父类里的方法
             // 进行检查，检查被代理的bean里是否第一个参数为NodeComponent这个类型的
             boolean checkFlag = currentMethodWrapBean.getMethod().getParameterTypes().length > 0
@@ -124,18 +140,69 @@ public class DeclComponentProxy {
                 throw new ComponentMethodDefineErrorException(errMsg);
             }
 
+
+            // 这里是针对于参数的处理
+            // 首先需要保证第一个参数是NodeComponent
+            // 其次需要针对于@LiteflowFact做处理
             try {
-                if (args != null && args.length > 0){
-                    Object[] wrapArgs = ArrayUtil.insert(args, 0, proxy);
-                    return ReflectUtil.invoke(declWarpBean.getRawBean(), currentMethodWrapBean.getMethod(), wrapArgs);
-                }else{
-                    return ReflectUtil.invoke(declWarpBean.getRawBean(), currentMethodWrapBean.getMethod(), proxy);
-                }
+                Object[] realArgs = loadMethodParameter(proxy, currentMethodWrapBean);
+                return ReflectUtil.invoke(declWarpBean.getRawBean(), currentMethodWrapBean.getMethod(), realArgs);
             }catch (InvocationTargetRuntimeException e) {
                 InvocationTargetException targetEx = (InvocationTargetException) e.getCause();
                 throw targetEx.getTargetException();
             }
         }
 
+    }
+
+    private final ExpressRunner expressRunner = new ExpressRunner();
+
+    private Object[] loadMethodParameter(Object proxy, MethodWrapBean methodWrapBean){
+        NodeComponent thisNodeComponent = (NodeComponent) proxy;
+
+        return methodWrapBean.getParameterWrapBeanList().stream().map(parameterWrapBean -> {
+            // 如果参数是NodeComponent，那就返回proxy本身
+            if (parameterWrapBean.getParameterType().isAssignableFrom(NodeComponent.class)) {
+                return proxy;
+            }
+
+            // 如果没有@LiteflowFact标注，那么不处理，直接赋值null
+            if (parameterWrapBean.getFact() == null) {
+                return null;
+            }
+
+            // 把上下文数据转换成map形式的，key为别名，value为上下文
+            Map<String, Object> contextMap = DataBus.getSlot(thisNodeComponent.getSlotIndex()).getContextBeanList().stream().collect(
+                    Collectors.toMap(tuple -> tuple.get(0), tuple -> tuple.get(1))
+            );
+
+            List<String> errorList = new ArrayList<>();
+
+            Object result = null;
+            // 根据表达式去上下文里搜索相匹配的数据
+            for(Map.Entry<String, Object> entry : contextMap.entrySet()){
+                try{
+                    InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(entry.getKey() + "." + parameterWrapBean.getFact().value());
+                    DefaultContext<String, Object> context = new DefaultContext<>();
+                    context.put(entry.getKey(), entry.getValue());
+                    result = expressRunner.execute(instructionSet, context, errorList, false, false);
+                    if (result != null){
+                        break;
+                    }
+                }catch (Exception ignore){}
+            }
+
+            if (result == null){
+                try{
+                    // 如果没有搜到，那么尝试推断表达式是指定的上下文，按照指定上下文的方式去再获取
+                    InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache("contextMap." + parameterWrapBean.getFact().value());
+                    DefaultContext<String, Object> context = new DefaultContext<>();
+                    context.put("contextMap", contextMap);
+                    result = expressRunner.execute(instructionSet, context, errorList, false, false);
+                }catch (Exception ignore){}
+            }
+
+            return result;
+        }).toArray();
     }
 }
