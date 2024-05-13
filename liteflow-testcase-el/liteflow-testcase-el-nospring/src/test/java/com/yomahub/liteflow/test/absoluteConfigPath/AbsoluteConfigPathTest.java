@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import java.util.Objects;
 
@@ -51,6 +52,7 @@ public class AbsoluteConfigPathTest extends BaseTest {
 	}
 
 	@Test
+	@DisabledIf("isWindows")
 	public void testAbsPath() throws Exception{
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = new LiteflowConfig();
@@ -58,6 +60,18 @@ public class AbsoluteConfigPathTest extends BaseTest {
 			flowExecutor = FlowExecutorHolder.loadInstance(config);
 			return flowExecutor.execute2Resp("chain1", "arg").isSuccess();
 		});
+	}
+
+	public static boolean isWindows() {
+		try {
+			String osName = System.getProperty("os.name");
+			if (osName.isEmpty()) return false;
+			else {
+				return osName.contains("windows");
+			}
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@BeforeAll

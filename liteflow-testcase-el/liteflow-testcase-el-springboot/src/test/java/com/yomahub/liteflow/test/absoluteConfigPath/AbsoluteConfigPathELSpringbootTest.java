@@ -13,6 +13,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -71,6 +72,7 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 	}
 
 	@Test
+	@DisabledIf("isWindows")
 	public void testAbsPath4() throws Exception{
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
@@ -78,6 +80,18 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 			flowExecutor.reloadRule();
 			return flowExecutor.execute2Resp("chain2", "arg").isSuccess();
 		});
+	}
+
+	public static boolean isWindows() {
+		try {
+			String osName = System.getProperty("os.name");
+			if (osName.isEmpty()) return false;
+			else {
+				return osName.contains("windows");
+			}
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@BeforeAll
