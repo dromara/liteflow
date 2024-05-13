@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="d" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptmethod.bean.*
+
+                var demo = bindings["demo"] as DemoBean1
+                var str = demo.getDemoStr1()
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="e" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptmethod.bean.*
+
+                var demo2 = bindings["demo2"] as DemoBean1
+                var str = demo2.getDemoStr2("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,e);
+    </chain>
+</flow>

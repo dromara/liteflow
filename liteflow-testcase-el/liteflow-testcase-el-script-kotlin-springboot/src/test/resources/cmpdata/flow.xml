@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                var _meta = bindings["_meta"] as Map<String, *>
+                var cmpData = _meta["cmpData"] as Map<String, *>
+                var context = bindings["defaultContext"] as DefaultContext
+                context.setData("s1", cmpData["birth"])
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        cmpData = '{"name":"jack","age":27,"birth":"1995-10-01"}';
+
+        THEN(
+            s1.data(cmpData),
+            a
+        );
+    </chain>
+</flow>

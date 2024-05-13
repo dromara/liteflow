@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun sum(a: Int, b: Int) = a + b
+                var a = 2
+                var b = 3
+                // 从 bindings 中获取上下文
+                val defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("s1", sum(a, b))
+                println("Hello Kotlin!")
+            ]]>
+        </node>
+        <node id="s2" type="for_script" language="kotlin">
+            <![CDATA[
+                fun getCount(): Int {
+                    val ctx = bindings["defaultContext"] as DefaultContext
+                    var n1 = ctx.getData("k1") as Int;
+                    var n2 = ctx.getData("k2") as Int;
+                    return n1 + n2;
+                }
+                // 函数名可以自定义，但必须返回 Int
+                // 以最后调用的函数返回结果作为脚本的返回值
+                // 最后调用的函数结果不能赋值给其他变量
+                getCount()
+            ]]>
+        </node>
+        <node id="s3" type="boolean_script" language="kotlin">
+            <![CDATA[
+                fun getBoolean1() = 2 > 1
+                // 函数名可以自定义，但必须返回 Boolean
+                getBoolean1()
+            ]]>
+        </node>
+        <node id="s4" type="boolean_script" language="kotlin">
+            <![CDATA[
+                fun getBoolean2() = 2 < 1
+                getBoolean2()
+            ]]>
+        </node>
+        <node id="s5" type="switch_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun getId(ctx: DefaultContext) : String {
+                    return ctx.getData("id") as String
+                }
+                // 函数名可以自定义，但必须返回 String
+                getId(bindings["defaultContext"] as DefaultContext)
+            ]]>
+        </node>
+        <node id="s6" type="boolean_script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                fun isBreak() : Boolean {
+                    val ctx = bindings["defaultContext"] as DefaultContext
+                    var count = ctx.getData("count") as Int;
+                    ctx.setData("count", --count)
+                    println("count: $count")
+                    return count < 0;
+                }
+                isBreak()
+            ]]>
+        </node>
+        <node id="s7" type="script" language="kotlin" file="script-file/s7.kts"/>
+    </nodes>
+
+    <chain name="testCommonScript1">
+        THEN(a, b, c, s1);
+    </chain>
+
+    <chain name="testForScript1">
+        FOR(s2).DO(a);
+    </chain>
+
+    <chain name="testBooleanScript1">
+        IF(s3, b);
+    </chain>
+
+    <chain name="testBooleanScript2">
+        IF(s4, b);
+    </chain>
+
+    <chain name="testBooleanScript3">
+        WHILE(s3).DO(b).BREAK(s6);
+    </chain>
+
+    <chain name="testSwitchScript1">
+        SWITCH(s5).TO(a, b, c);
+    </chain>
+
+    <chain name="testFileScript1">
+        THEN(s7);
+    </chain>
+</flow>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+
+    <nodes>
+        <node id="d" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo = bindings["demo"] as DemoBean1
+                var str = demo.getDemoStr1()
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="e" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo = bindings["demo"] as DemoBean1
+                var str = demo.getDemoStr2("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo3 = bindings["demo3"] as DemoBean3
+                var str = demo3.test1("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s2" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo3 = bindings["demo3"] as DemoBean3
+                var str = demo3.test3("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s3" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo4 = bindings["demo4"] as DemoBean4
+                var str = demo4.test1("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s4" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo4 = bindings["demo4"] as DemoBean4
+                var str = demo4.test3("kobe")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+
+        <node id="s5" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+                import java.util.HashMap
+
+                var demo = bindings["demo"] as DemoBean1
+                var str = demo.getDemoStr1()
+                var abcCx = bindings["abcCx"] as HashMap<String, String>
+                abcCx.put("demo", str)
+            ]]>
+        </node>
+
+        <node id="f" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+                import com.yomahub.liteflow.test.script.kotlin.scriptbean.bean.*
+
+                var demo5 = bindings["demo5"] as DemoBean5
+                var str = demo5.getDemoStr2("jordan")
+                var defaultContext = bindings["defaultContext"] as DefaultContext
+                defaultContext.setData("demo", str)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,e);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a,b,c,s1);
+    </chain>
+
+    <chain name="chain4">
+        THEN(a,b,c,s2);
+    </chain>
+
+    <chain name="chain5">
+        THEN(a,b,c,s3);
+    </chain>
+
+    <chain name="chain6">
+        THEN(a,b,c,s4);
+    </chain>
+
+    <chain name="chain7">
+        THEN(a,b,c,s5);
+    </chain>
+
+    <chain name="chain8">
+        THEN(a,b,c,f);
+    </chain>
+</flow>

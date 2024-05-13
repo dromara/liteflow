@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="kotlin">
+            <![CDATA[
+                import com.yomahub.liteflow.slot.DefaultContext
+
+                var _meta = bindings["_meta"] as Map<String, *>
+                var nodeId = _meta["nodeId"]
+                var currChainId = _meta["currChainId"]
+                var requestData = _meta["requestData"]
+
+                var context = bindings["defaultContext"] as DefaultContext
+                context.setData("nodeId",nodeId)
+                context.setData("currChainId",currChainId)
+                context.setData("requestData",requestData)
+            ]]>
+        </node>
+    </nodes>
+
+    <chain id="chain1">
+        THEN(a, b, c, s1);
+    </chain>
+</flow>
