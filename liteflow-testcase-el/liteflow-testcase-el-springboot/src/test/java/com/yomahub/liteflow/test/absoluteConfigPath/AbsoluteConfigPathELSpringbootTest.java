@@ -70,6 +70,16 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 		});
 	}
 
+	@Test
+	public void testAbsPath4() throws Exception{
+		Assertions.assertTrue(() -> {
+			LiteflowConfig config = LiteflowConfigGetter.get();
+			config.setRuleSource(StrUtil.format("{}\\sub\\a\\*.xml,sub\\b\\*.xml",rootDir));
+			flowExecutor.reloadRule();
+			return flowExecutor.execute2Resp("chain2", "arg").isSuccess();
+		});
+	}
+
 	@BeforeAll
 	public static void createFiles() {
 		rootDir = FileUtil.getAbsolutePath(ResourceUtil.getResource("").getPath());
