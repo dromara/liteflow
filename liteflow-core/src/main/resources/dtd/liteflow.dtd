@@ -14,9 +14,12 @@
         class CDATA #IMPLIED
         file CDATA #IMPLIED
         language (qlexpress|groovy|js|python|lua|aviator|java) #IMPLIED
+        enable (true|false) #IMPLIED
         >
 <!ATTLIST chain
         id CDATA #IMPLIED
         name CDATA #IMPLIED
         extends CDATA #IMPLIED
+        enable (true|false) #IMPLIED
+        namespace CDATA #IMPLIED
         >

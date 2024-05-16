@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser.helper;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
 
@@ -310,9 +312,11 @@ public class ParserHelper {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 
+        String namespace = chainNode.get(NAMESPACE) == null? DEFAULT_NAMESPACE : chainNode.get(NAMESPACE).textValue();
+
         JsonNode routeJsonNode = chainNode.get(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -339,9 +343,11 @@ public class ParserHelper {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 
+        String namespace = StrUtil.blankToDefault(e.attributeValue(NAMESPACE), DEFAULT_NAMESPACE);
+
         Element routeElement = e.element(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -363,6 +369,7 @@ public class ParserHelper {
                 builder.setEL(ElRegexUtil.removeComments(e.getText()));
             }
         }
+
 
         builder.build();
     }

@@ -13,6 +13,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
@@ -283,7 +284,11 @@ public class FlowExecutor {
 	}
 
 	public List<LiteflowResponse> executeRouteChain(Object param, Class<?>... contextBeanClazzArray){
-		return this.executeWithRoute(param, null, contextBeanClazzArray, null);
+		return this.executeWithRoute(null, param, null, contextBeanClazzArray, null);
+	}
+
+	public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Class<?>... contextBeanClazzArray){
+		return this.executeWithRoute(namespace, param, null, contextBeanClazzArray, null);
 	}
 
 	public LiteflowResponse execute2Resp(String chainId, Object param, Object... contextBeanArray) {
@@ -291,23 +296,35 @@ public class FlowExecutor {
 	}
 
 	public List<LiteflowResponse> executeRouteChain(Object param, Object... contextBeanArray){
-		return this.executeWithRoute(param, null, null, contextBeanArray);
+		return this.executeWithRoute(null, param, null, null, contextBeanArray);
+	}
+
+	public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Object... contextBeanArray){
+		return this.executeWithRoute(namespace, param, null, null, contextBeanArray);
 	}
 
 	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
 		return this.execute2Resp(chainId, param, requestId, contextBeanClazzArray, null);
 	}
 
-	public List<LiteflowResponse> executeRouteChainWithRid(String chainId, Object param, String requestId, Class<?>... contextBeanClazzArray) {
-		return this.executeWithRoute(param, requestId, contextBeanClazzArray, null);
+	public List<LiteflowResponse> executeRouteChainWithRid(Object param, String requestId, Class<?>... contextBeanClazzArray) {
+		return this.executeWithRoute(null, param, requestId, contextBeanClazzArray, null);
+	}
+
+	public List<LiteflowResponse> executeRouteChainWithRid(String namespace, Object param, String requestId, Class<?>... contextBeanClazzArray) {
+		return this.executeWithRoute(namespace, param, requestId, contextBeanClazzArray, null);
 	}
 
 	public LiteflowResponse execute2RespWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
 		return this.execute2Resp(chainId, param, requestId, null, contextBeanArray);
 	}
 
-	public List<LiteflowResponse> executeRouteChainWithRid(String chainId, Object param, String requestId, Object... contextBeanArray) {
-		return this.executeWithRoute(param, requestId, null, contextBeanArray);
+	public List<LiteflowResponse> executeRouteChainWithRid(Object param, String requestId, Object... contextBeanArray) {
+		return this.executeWithRoute(null, param, requestId, null, contextBeanArray);
+	}
+
+	public List<LiteflowResponse> executeRouteChainWithRid(String namespace, Object param, String requestId, Object... contextBeanArray) {
+		return this.executeWithRoute(namespace, param, requestId, null, contextBeanArray);
 	}
 
 	// 调用一个流程并返回Future<LiteflowResponse>，允许多上下文的传入
@@ -353,8 +370,8 @@ public class FlowExecutor {
 		return LiteflowResponse.newMainResponse(slot);
 	}
 
-	private List<LiteflowResponse> executeWithRoute(Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
-		List<Slot> slotList = doExecuteWithRoute(param, requestId, contextBeanClazzArray, contextBeanArray);
+	private List<LiteflowResponse> executeWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
+		List<Slot> slotList = doExecuteWithRoute(namespace, param, requestId, contextBeanClazzArray, contextBeanArray);
 		return slotList.stream().map(LiteflowResponse::newMainResponse).collect(Collectors.toList());
 	}
 
@@ -522,15 +539,23 @@ public class FlowExecutor {
 		MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
 	}
 
-	private List<Slot> doExecuteWithRoute(Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
+	private List<Slot> doExecuteWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
 		if (FlowBus.needInit()) {
 			init(true);
 		}
 
-		List<Chain> routeChainList = FlowBus.getChainMap().values().stream().filter(chain -> chain.getRouteItem() != null).collect(Collectors.toList());
+		if (StrUtil.isBlank(namespace)){
+			namespace = ChainConstant.DEFAULT_NAMESPACE;
+		}
+
+		String finalNamespace = namespace;
+		List<Chain> routeChainList = FlowBus.getChainMap().values().stream()
+				.filter(chain -> chain.getNamespace().equals(finalNamespace))
+				.filter(chain -> chain.getRouteItem() != null).collect(Collectors.toList());
 
 		if (CollUtil.isEmpty(routeChainList)){
-			throw new RouteChainNotFoundException("cannot find any route chain");
+			String errorMsg = StrUtil.format("no route found for namespace[{}]", finalNamespace);
+			throw new RouteChainNotFoundException(errorMsg);
 		}
 
 		String finalRequestId;
@@ -601,7 +626,7 @@ public class FlowExecutor {
 			}
 		}).filter(Objects::nonNull).collect(Collectors.toList());
 
-		LOG.info("There are {} chains that matched the route.", resultSlotList.size());
+		LOG.info("chain namespace:[{}], total size:[{}], matched size:[{}]", namespace, routeChainList.size(), resultSlotList.size());
 
 		return resultSlotList;
 	}

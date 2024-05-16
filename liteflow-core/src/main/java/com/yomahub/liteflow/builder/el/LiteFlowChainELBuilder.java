@@ -233,6 +233,11 @@ public class LiteFlowChainELBuilder {
 		}
 	}
 
+	public LiteFlowChainELBuilder setNamespace(String nameSpace){
+		this.chain.setNamespace(nameSpace);
+		return this;
+	}
+
 	/**
 	 * EL表达式校验
 	 * @param elStr EL表达式

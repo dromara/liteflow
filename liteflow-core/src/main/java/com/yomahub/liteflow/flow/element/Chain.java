@@ -40,6 +40,8 @@ public class Chain implements Executable{
 
 	private boolean isCompiled = true;
 
+	private String namespace;
+
 	public Chain(String chainName) {
 		this.chainId = chainName;
 	}
@@ -194,5 +196,13 @@ public class Chain implements Executable{
 
 	public void setCompiled(boolean compiled) {
 		isCompiled = compiled;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 }
