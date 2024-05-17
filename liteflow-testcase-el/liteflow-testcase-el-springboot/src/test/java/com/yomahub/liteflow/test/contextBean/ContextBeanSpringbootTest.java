@@ -35,4 +35,13 @@ public class ContextBeanSpringbootTest extends BaseTest {
 		TestContext context = response.getContextBean("skuContext");
 		Assertions.assertEquals("J001", context.getSkuCode());
 	}
+
+	// new一个上下文的情况
+	@Test
+	public void testContextBean2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg", new TestContext("J001", "test"));
+		Assertions.assertTrue(response.isSuccess());
+		TestContext context = response.getContextBean("skuContext");
+		Assertions.assertEquals("J001", context.getSkuCode());
+	}
 }
