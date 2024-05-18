@@ -15,7 +15,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public class AbsoluteConfigPathELDeclSpringbootTest extends BaseTest {
 	}
 
 	@Test
-	@DisabledIf("isWindows")
+	@EnabledIf("isWindows")
 	public void testAbsPath() throws Exception{
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
@@ -82,7 +82,7 @@ public class AbsoluteConfigPathELDeclSpringbootTest extends BaseTest {
 			String osName = System.getProperty("os.name");
 			if (osName.isEmpty()) return false;
 			else {
-				return osName.contains("windows");
+				return osName.contains("Windows");
 			}
 		} catch (Exception e) {
 			return false;
