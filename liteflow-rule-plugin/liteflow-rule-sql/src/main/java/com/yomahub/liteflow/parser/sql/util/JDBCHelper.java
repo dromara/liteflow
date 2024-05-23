@@ -11,9 +11,12 @@ import com.yomahub.liteflow.parser.constant.ReadType;
 
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
+import com.yomahub.liteflow.parser.sql.polling.SqlReadPollTask;
 import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
+import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
+import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import org.apache.commons.lang.StringUtils;
 
@@ -87,30 +90,30 @@ public class JDBCHelper {
      * @return 数据内容
      */
     public String getContent() {
-        SqlRead chainRead = SqlReadFactory.getSqlRead(ReadType.CHAIN);
-        SqlRead scriptRead = SqlReadFactory.getSqlRead(ReadType.SCRIPT);
+        SqlRead<ChainVO> chainRead = SqlReadFactory.getSqlRead(ReadType.CHAIN);
+        SqlRead<ScriptVO> scriptRead = SqlReadFactory.getSqlRead(ReadType.SCRIPT);
 
         // 获取 chain 数据
-        Map<String, String> chainMap = chainRead.read();
+        List<ChainVO> chainVOList = chainRead.read();
         List<String> chainList = new ArrayList<>();
 
-        chainMap.entrySet().stream()
-                .filter(entry -> StrUtil.isNotBlank(entry.getValue()))
-                .forEach(
-                    entry -> chainList.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(entry.getKey()), entry.getValue()))
-                );
+        chainVOList.forEach(
+                chainVO -> chainList.add(StrUtil.format(CHAIN_XML_PATTERN, XmlUtil.escape(chainVO.getChainId()), StrUtil.emptyIfNull(chainVO.getNamespace()), StrUtil.emptyIfNull(chainVO.getRoute()), chainVO.getBody()))
+        );
+
 
         String chainsContent = CollUtil.join(chainList, StrUtil.EMPTY);
 
         // 获取脚本数据
-        Map<String, String> scriptMap = scriptRead.read();
+        List<ScriptVO> scriptVOList = scriptRead.read();
         List<String> scriptList = new ArrayList<>();
-        scriptMap.forEach((scriptKey, elData) -> {
-            NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
+
+        scriptVOList.forEach(scriptVO -> {
             String id = scriptVO.getNodeId();
             String name = scriptVO.getName();
             String type = scriptVO.getType();
             String language = scriptVO.getLanguage();
+            String elData = scriptVO.getScript();
 
             if (StringUtils.isNotBlank(scriptVO.getLanguage())) {
                 scriptList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, language, elData));
@@ -118,11 +121,14 @@ public class JDBCHelper {
                 scriptList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, elData));
             }
         });
+
         String nodesContent = StrUtil.format(NODE_XML_PATTERN, CollUtil.join(scriptList, StrUtil.EMPTY));
 
         // 初始化轮询任务
-        SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).initData(chainMap);
-        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).initData(scriptMap);
+        SqlReadPollTask<ChainVO> sqlReadPollTask4Chain = SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN);
+        sqlReadPollTask4Chain.initData(chainVOList);
+        SqlReadPollTask<ScriptVO> sqlReadPollTask4Script = SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT);
+        sqlReadPollTask4Script.initData(scriptVOList);
         return StrUtil.format(XML_PATTERN, nodesContent, chainsContent);
     }
 

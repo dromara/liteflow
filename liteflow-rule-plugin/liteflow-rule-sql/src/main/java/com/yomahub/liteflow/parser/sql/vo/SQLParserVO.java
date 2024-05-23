@@ -57,6 +57,16 @@ public class SQLParserVO {
     private String elDataField = "el_data";
 
     /**
+     * 决策路由字段
+     */
+    private String routeField;
+
+    /**
+     * 命名空间字段
+     */
+    private String namespaceField;
+
+    /**
      * 是否启动某一条chain
      */
     private String chainEnableField;
@@ -309,5 +319,21 @@ public class SQLParserVO {
      */
     public boolean hasEnableField() {
         return StrUtil.isNotBlank(chainEnableField) || StrUtil.isNotBlank(scriptEnableField);
+    }
+
+    public String getRouteField() {
+        return routeField;
+    }
+
+    public void setRouteField(String routeField) {
+        this.routeField = routeField;
+    }
+
+    public String getNamespaceField() {
+        return namespaceField;
+    }
+
+    public void setNamespaceField(String namespaceField) {
+        this.namespaceField = namespaceField;
     }
 }

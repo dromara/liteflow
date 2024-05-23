@@ -136,8 +136,7 @@ public class LiteFlowChainELBuilder {
 
 	public LiteFlowChainELBuilder setRoute(String routeEl){
 		if (StrUtil.isBlank(routeEl)) {
-			String errMsg = StrUtil.format("You have defined the label <route> but there is no el in the chain route[{}].", chain.getChainId());
-			throw new FlowSystemException(errMsg);
+			return this;
 		}
 		List<String> errorList = new ArrayList<>();
 		try {

@@ -15,29 +15,6 @@ import java.util.List;
  */
 public class NodeConvertHelper {
 
-    /*script节点的修改/添加*/
-    public static void changeScriptNode(NodeSimpleVO nodeSimpleVO, String newValue) {
-        // 有语言类型
-        if (StrUtil.isNotBlank(nodeSimpleVO.getLanguage())) {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .setLanguage(nodeSimpleVO.getLanguage())
-                    .build();
-        }
-        // 没有语言类型
-        else {
-            LiteFlowNodeBuilder.createScriptNode()
-                    .setId(nodeSimpleVO.getNodeId())
-                    .setType(NodeTypeEnum.getEnumByCode(nodeSimpleVO.getType()))
-                    .setName(nodeSimpleVO.getName())
-                    .setScript(newValue)
-                    .build();
-        }
-    }
-
     public static NodeSimpleVO convert(String scriptKey){
         // 不需要去理解这串正则，就是一个匹配冒号的
         // 一定得是a:b，或是a:b:c...这种完整类型的字符串的

@@ -9,7 +9,9 @@ import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +22,7 @@ import java.util.Map;
  * @author Bryan.Zhang
  * @since 2.11.1
  */
-public abstract class AbstractSqlRead implements SqlRead {
+public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     public final SQLParserVO config;
     private static LFLog LOG = LFLoggerManager.getLogger(AbstractSqlRead.class);
 
@@ -29,10 +31,10 @@ public abstract class AbstractSqlRead implements SqlRead {
     }
 
     @Override
-    public Map<String/*规则唯一键*/, String/*规则内容*/> read() {
+    public List<T> read() {
         // 如果不需要读取直接返回
         if (!needRead()) {
-            return new HashMap<>();
+            return new ArrayList<>();
         }
 
         checkConfig();
@@ -40,7 +42,7 @@ public abstract class AbstractSqlRead implements SqlRead {
         // 如果允许，就打印 sql 语句
         logSqlIfEnable(sqlCmd);
 
-        Map<String/*规则唯一键*/, String/*规则*/> result = new HashMap<>();
+        List<T> result = new ArrayList<>();
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -54,9 +56,6 @@ public abstract class AbstractSqlRead implements SqlRead {
             rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String xml = buildXmlElement(rs);
-                String uniqueKey = buildXmlElementUniqueKey(rs);
-
                 if (hasEnableFiled()){
                     boolean enable = getEnableFiledValue(rs);
                     // 如果停用，直接跳过
@@ -64,7 +63,7 @@ public abstract class AbstractSqlRead implements SqlRead {
                         continue;
                     }
                 }
-                result.put(uniqueKey, xml);
+                result.add(parse(rs));
             }
         } catch (Exception e) {
             throw new ELSQLException(e.getMessage());
@@ -75,6 +74,8 @@ public abstract class AbstractSqlRead implements SqlRead {
 
         return result;
     }
+
+    protected abstract T parse(ResultSet rs) throws SQLException;
 
     /**
      * 是否包含启停字段
@@ -87,10 +88,6 @@ public abstract class AbstractSqlRead implements SqlRead {
     public abstract boolean getEnableFiledValue(ResultSet rs) throws SQLException;
 
     public abstract String buildQuerySql();
-
-    public abstract String buildXmlElement(ResultSet rs) throws SQLException;
-
-    public abstract String buildXmlElementUniqueKey(ResultSet rs) throws SQLException;
 
     public abstract void checkConfig();
 

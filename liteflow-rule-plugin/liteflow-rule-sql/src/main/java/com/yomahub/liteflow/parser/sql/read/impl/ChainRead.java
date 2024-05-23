@@ -5,6 +5,7 @@ import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
+import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
 import java.sql.ResultSet;
@@ -17,10 +18,24 @@ import java.sql.SQLException;
  * @author houxinyu
  * @since 2.11.1
  */
-public class ChainRead extends AbstractSqlRead {
+public class ChainRead extends AbstractSqlRead<ChainVO> {
 
     public ChainRead(SQLParserVO config) {
         super(config);
+    }
+
+    @Override
+    protected ChainVO parse(ResultSet rs) throws SQLException {
+        ChainVO chainVO = new ChainVO();
+        chainVO.setChainId(getStringFromRsWithCheck(rs, super.config.getChainNameField()));
+        chainVO.setBody(getStringFromRsWithCheck(rs, super.config.getElDataField()));
+        if (StrUtil.isNotBlank(super.config.getNamespaceField())){
+            chainVO.setNamespace(getStringFromRs(rs, super.config.getNamespaceField()));
+        }
+        if (StrUtil.isNotBlank(super.config.getRouteField())){
+            chainVO.setRoute(getStringFromRs(rs, super.config.getRouteField()));
+        }
+        return chainVO;
     }
 
     @Override
@@ -68,20 +83,6 @@ public class ChainRead extends AbstractSqlRead {
         if (StrUtil.isBlank(applicationName)){
             throw new ELSQLException("You did not define the applicationName property");
         }
-    }
-
-    @Override
-    public String buildXmlElement(ResultSet rs) throws SQLException {
-        String elDataField = super.config.getElDataField();
-
-        return getStringFromRs(rs, elDataField);
-    }
-
-    @Override
-    public String buildXmlElementUniqueKey(ResultSet rs) throws SQLException {
-        String chainNameField = super.config.getChainNameField();
-
-        return getStringFromRsWithCheck(rs, chainNameField);
     }
 
     @Override
