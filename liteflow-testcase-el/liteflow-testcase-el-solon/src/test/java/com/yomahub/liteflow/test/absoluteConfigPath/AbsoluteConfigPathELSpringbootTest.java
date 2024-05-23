@@ -13,7 +13,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonJUnit5Extension;
@@ -58,7 +58,7 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 	}
 
 	@Test
-	@DisabledIf("isWindows")
+	@EnabledIf("isWindows")
 	public void testAbsTest() throws Exception {
 		Assertions.assertTrue(() -> {
 			LiteflowConfig config = LiteflowConfigGetter.get();
@@ -73,7 +73,7 @@ public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 			String osName = System.getProperty("os.name");
 			if (osName.isEmpty()) return false;
 			else {
-				return osName.contains("windows");
+				return osName.contains("Windows");
 			}
 		} catch (Exception e) {
 			return false;
