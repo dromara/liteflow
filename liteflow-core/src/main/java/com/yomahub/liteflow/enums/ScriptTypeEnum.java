@@ -2,6 +2,7 @@ package com.yomahub.liteflow.enums;
 
 public enum ScriptTypeEnum {
 
+	CUSTOM("custom", "custom"),
 	GROOVY("groovy", "groovy"),
 	QLEXPRESS("qlexpress", "qlexpress"),
 	JS("javascript", "js"),
