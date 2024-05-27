@@ -233,6 +233,9 @@ public class LiteFlowChainELBuilder {
 	}
 
 	public LiteFlowChainELBuilder setNamespace(String nameSpace){
+		if (StrUtil.isBlank(nameSpace)) {
+			nameSpace = ChainConstant.DEFAULT_NAMESPACE;
+		}
 		this.chain.setNamespace(nameSpace);
 		return this;
 	}
