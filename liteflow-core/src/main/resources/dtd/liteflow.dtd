@@ -13,7 +13,7 @@
         type (script|boolean_script|switch_script|for_script) #IMPLIED
         class CDATA #IMPLIED
         file CDATA #IMPLIED
-        language (qlexpress|groovy|js|python|lua|aviator|java) #IMPLIED
+        language (qlexpress|groovy|js|python|lua|aviator|java|kotlin) #IMPLIED
         enable (true|false) #IMPLIED
         >
 <!ATTLIST chain
