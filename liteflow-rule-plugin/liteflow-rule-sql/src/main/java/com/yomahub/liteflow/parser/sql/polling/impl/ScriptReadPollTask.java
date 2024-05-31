@@ -1,13 +1,18 @@
 package com.yomahub.liteflow.parser.sql.polling.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.sql.polling.AbstractSqlReadPollTask;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
+import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 脚本轮询任务
@@ -16,30 +21,43 @@ import java.util.Map;
  * @author houxinyu
  * @since 2.11.1
  */
-public class ScriptReadPollTask extends AbstractSqlReadPollTask {
-    public ScriptReadPollTask(SqlRead read) {
+public class ScriptReadPollTask extends AbstractSqlReadPollTask<ScriptVO> {
+    public ScriptReadPollTask(SqlRead<ScriptVO> read) {
         super(read);
     }
 
     @Override
-    public void doSave(Map<String, String> saveElementMap) {
-        for (Map.Entry<String, String> entry : saveElementMap.entrySet()) {
-            String scriptKey = entry.getKey();
-            String newData = entry.getValue();
-
-            NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(scriptKey);
-            NodeConvertHelper.changeScriptNode(scriptVO, newData);
-        }
+    public void doSave(List<ScriptVO> saveElementList) {
+        saveElementList.forEach(scriptVO -> LiteFlowNodeBuilder.createScriptNode()
+                .setId(scriptVO.getNodeId())
+                .setType(NodeTypeEnum.getEnumByCode(scriptVO.getType()))
+                .setName(scriptVO.getName())
+                .setScript(scriptVO.getScript())
+                .setLanguage(scriptVO.getLanguage())
+                .build());
     }
 
     @Override
     public void doDelete(List<String> deleteElementId) {
         for (String id : deleteElementId) {
-            NodeConvertHelper.NodeSimpleVO scriptVO = NodeConvertHelper.convert(id);
-
             //  删除script
-            FlowBus.unloadScriptNode(scriptVO.getNodeId());
+            FlowBus.unloadScriptNode(id);
         }
+    }
+
+    @Override
+    protected String getKey(ScriptVO scriptVO) {
+        return scriptVO.getNodeId();
+    }
+
+    @Override
+    protected String getValue(ScriptVO scriptVO) {
+        return scriptVO.getScript();
+    }
+
+    @Override
+    protected String getExtValue(ScriptVO scriptVO) {
+        return StrUtil.EMPTY;
     }
 
     @Override

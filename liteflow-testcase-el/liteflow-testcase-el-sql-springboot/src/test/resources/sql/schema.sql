@@ -4,6 +4,8 @@ create table IF NOT EXISTS `EL_TABLE`
     `application_name` varchar(32) NOT NULL,
     `chain_name` varchar(32)   NOT NULL,
     `el_data`    varchar(1024) NOT NULL,
+    `route`     varchar(1024),
+    `namespace` varchar(32),
     PRIMARY KEY (`id`)
 );
 

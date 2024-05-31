@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.sql.read;
 
 import com.yomahub.liteflow.parser.constant.ReadType;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,14 +12,14 @@ import java.util.Map;
  * @author houxinyu
  * @since 2.11.1
  */
-public interface SqlRead {
+public interface SqlRead<T> {
 
     /**
      * 读取
      *
      * @return 返回读取到的数据
      */
-    Map<String/*规则唯一键*/, String/*规则内容*/> read();
+    List<T> read();
 
     /**
      * 类型

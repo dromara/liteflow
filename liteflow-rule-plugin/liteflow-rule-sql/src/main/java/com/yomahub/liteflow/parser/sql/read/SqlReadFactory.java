@@ -19,8 +19,8 @@ import java.util.Map;
  * @since 2.11.1
  */
 public class SqlReadFactory {
-    private static final Map<ReadType, SqlRead> READ_MAP = new HashMap<>();
-    private static final Map<ReadType, SqlReadPollTask> POLL_TASK_MAP = new HashMap<>();
+    private static final Map<ReadType, SqlRead<?>> READ_MAP = new HashMap<>();
+    private static final Map<ReadType, SqlReadPollTask<?>> POLL_TASK_MAP = new HashMap<>();
 
     public static void registerRead(SQLParserVO config) {
         READ_MAP.put(ReadType.CHAIN, new ChainRead(config));
@@ -28,19 +28,21 @@ public class SqlReadFactory {
     }
 
     public static void registerSqlReadPollTask(ReadType readType) {
-        SqlRead sqlRead = getSqlRead(readType);
+        SqlRead<?> sqlRead = getSqlRead(readType);
         if (ReadType.CHAIN.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.CHAIN, new ChainReadPollTask(sqlRead));
+            POLL_TASK_MAP.put(ReadType.CHAIN, new ChainReadPollTask((ChainRead)sqlRead));
         } else if (ReadType.SCRIPT.equals(readType)) {
-            POLL_TASK_MAP.put(ReadType.SCRIPT, new ScriptReadPollTask(sqlRead));
+            POLL_TASK_MAP.put(ReadType.SCRIPT, new ScriptReadPollTask((ScriptRead)sqlRead));
         }
     }
 
-    public static SqlRead getSqlRead(ReadType readType) {
-        return READ_MAP.get(readType);
+    @SuppressWarnings("unchecked")
+    public static <T> SqlRead<T> getSqlRead(ReadType readType) {
+        return (SqlRead<T>)READ_MAP.get(readType);
     }
 
-    public static SqlReadPollTask getSqlReadPollTask(ReadType readType) {
-        return POLL_TASK_MAP.get(readType);
+    @SuppressWarnings("unchecked")
+    public static <T> SqlReadPollTask<T> getSqlReadPollTask(ReadType readType) {
+        return (SqlReadPollTask<T>)POLL_TASK_MAP.get(readType);
     }
 }

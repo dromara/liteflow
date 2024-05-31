@@ -32,6 +32,10 @@ public interface ChainConstant {
 
 	String LANGUAGE = "language";
 
+	String NAMESPACE = "namespace";
+
+	String DEFAULT_NAMESPACE = "default";
+
 	String VALUE = "value";
 
 	String ANY = "any";

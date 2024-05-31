@@ -4,6 +4,7 @@ import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.annotation.LiteflowRetry;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * LiteflowMethod的包装类
@@ -18,10 +19,13 @@ public class MethodWrapBean {
 
     private LiteflowRetry liteflowRetry;
 
-    public MethodWrapBean(Method method, LiteflowMethod liteflowMethod, LiteflowRetry liteflowRetry) {
+    private List<ParameterWrapBean> parameterWrapBeanList;
+
+    public MethodWrapBean(Method method, LiteflowMethod liteflowMethod, LiteflowRetry liteflowRetry, List<ParameterWrapBean> parameterWrapBeanList) {
         this.method = method;
         this.liteflowMethod = liteflowMethod;
         this.liteflowRetry = liteflowRetry;
+        this.parameterWrapBeanList = parameterWrapBeanList;
     }
 
     public Method getMethod() {
@@ -46,5 +50,13 @@ public class MethodWrapBean {
 
     public void setLiteflowRetry(LiteflowRetry liteflowRetry) {
         this.liteflowRetry = liteflowRetry;
+    }
+
+    public List<ParameterWrapBean> getParameterWrapBeanList() {
+        return parameterWrapBeanList;
+    }
+
+    public void setParameterWrapBeanList(List<ParameterWrapBean> parameterWrapBeanList) {
+        this.parameterWrapBeanList = parameterWrapBeanList;
     }
 }

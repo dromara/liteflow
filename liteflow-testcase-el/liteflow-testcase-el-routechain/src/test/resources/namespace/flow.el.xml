@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="r_chain1" namespace="n1">
+        <route>
+            r1
+        </route>
+        <body>
+            THEN(b,a);
+        </body>
+    </chain>
+
+    <chain name="r_chain2" namespace="n1">
+        <route>
+            OR(r1,r2)
+        </route>
+        <body>
+            THEN(a,b);
+        </body>
+    </chain>
+
+    <chain name="r_chain3" namespace="n2">
+        <route>
+            r2
+        </route>
+        <body>
+            THEN(b,b);
+        </body>
+    </chain>
+</flow>

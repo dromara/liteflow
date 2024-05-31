@@ -136,8 +136,7 @@ public class LiteFlowChainELBuilder {
 
 	public LiteFlowChainELBuilder setRoute(String routeEl){
 		if (StrUtil.isBlank(routeEl)) {
-			String errMsg = StrUtil.format("You have defined the label <route> but there is no el in the chain route[{}].", chain.getChainId());
-			throw new FlowSystemException(errMsg);
+			return this;
 		}
 		List<String> errorList = new ArrayList<>();
 		try {
@@ -231,6 +230,14 @@ public class LiteFlowChainELBuilder {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
 		}
+	}
+
+	public LiteFlowChainELBuilder setNamespace(String nameSpace){
+		if (StrUtil.isBlank(nameSpace)) {
+			nameSpace = ChainConstant.DEFAULT_NAMESPACE;
+		}
+		this.chain.setNamespace(nameSpace);
+		return this;
 	}
 
 	/**

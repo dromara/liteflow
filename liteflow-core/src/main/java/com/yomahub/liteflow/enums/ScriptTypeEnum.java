@@ -2,13 +2,15 @@ package com.yomahub.liteflow.enums;
 
 public enum ScriptTypeEnum {
 
+	CUSTOM("custom", "custom"),
 	GROOVY("groovy", "groovy"),
 	QLEXPRESS("qlexpress", "qlexpress"),
 	JS("javascript", "js"),
 	PYTHON("python", "python"),
 	LUA("luaj", "lua"),
 	AVIATOR("AviatorScript", "aviator"),
-	JAVA("java", "java");
+	JAVA("java", "java"),
+	KOTLIN("kotlin", "kotlin");
 
 	private String engineName;
 

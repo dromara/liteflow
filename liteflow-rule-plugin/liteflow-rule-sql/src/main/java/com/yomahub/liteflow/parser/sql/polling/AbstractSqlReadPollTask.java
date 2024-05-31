@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * sql 轮询任务抽象类，维护公共方法
@@ -19,11 +21,11 @@ import java.util.Set;
  * @author houxinyu
  * @since 2.11.1
  */
-public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
+public abstract class AbstractSqlReadPollTask<T> implements SqlReadPollTask<T> {
     private final Map<String/*唯一键*/, String/*data-xml的sha1值*/> DATA_SHA_MAP = new HashMap<>();
-    private final SqlRead read;
+    private final SqlRead<T> read;
 
-    public AbstractSqlReadPollTask(SqlRead read) {
+    public AbstractSqlReadPollTask(SqlRead<T> read) {
         this.read = read;
 
         if (!read.type().equals(type())) {
@@ -33,35 +35,34 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
 
     @Override
     public void execute() {
-        Map<String/*唯一键*/, String/*data-xml*/> newData = read.read();
+        List<T> dataList = read.read();
         // 新增或者更新的元素
-        Map<String, String> saveElementMap = new HashMap<>();
+        List<T> saveElementList = new ArrayList<>();
         // 删除的元素
-        List<String> deleteElementIds = new ArrayList<>();
+        List<String> deleteElementIds;
 
-        for (Map.Entry<String, String> entry : newData.entrySet()) {
-            String id = entry.getKey();
-            String element = entry.getValue();
-            String newSHA = DigestUtil.sha1Hex(element);
+        for (T data : dataList) {
+            String id = getKey(data);
+            String newSHA = getNeedSha1Value(data);
 
             // 新增
             // 如果封装的SHAMap中不存在该chain, 表示该元素为新增
             if (!DATA_SHA_MAP.containsKey(id)) {
-                saveElementMap.put(id, element);
+                saveElementList.add(data);
 
                 DATA_SHA_MAP.put(id, newSHA);
             }
             // 修改
             // SHA值发生变化,表示该元素的值已被修改,重新拉取变化的chain
             else if (!StrUtil.equals(newSHA, DATA_SHA_MAP.get(id))) {
-                saveElementMap.put(id, element);
+                saveElementList.add(data);
 
                 DATA_SHA_MAP.put(id, newSHA);
             }
         }
 
         Set<String> oldIdList = DATA_SHA_MAP.keySet();  // 旧的 id 列表
-        Set<String> newIdList = newData.keySet();       // 新的 id 列表
+        Set<String> newIdList = dataList.stream().map(this::getKey).collect(Collectors.toSet());       // 新的 id 列表
         // 计算单差集
         // 计算集合的单差集，即只返回【oldIdList】中有，但是【newIdList】中没有的元素，例如：
         //  subtractToList([1,2,3,4],[2,3,4,5]) -》 [1]
@@ -71,8 +72,8 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
             DATA_SHA_MAP.remove(id);
         }
 
-        if (CollUtil.isNotEmpty(saveElementMap)) {
-            doSave(saveElementMap);
+        if (CollUtil.isNotEmpty(saveElementList)) {
+            doSave(saveElementList);
         }
 
         if (CollUtil.isNotEmpty(deleteElementIds)) {
@@ -81,20 +82,34 @@ public abstract class AbstractSqlReadPollTask implements SqlReadPollTask {
     }
 
     @Override
-    public void initData(Map<String/*唯一键*/, String/*data-xml的数据*/> dataMap) {
-        DATA_SHA_MAP.putAll(shaMapValue(dataMap));
+    public void initData(List<T> dataList) {
+        DATA_SHA_MAP.putAll(shaValue(dataList));
     }
 
-    public abstract void doSave(Map<String, String> saveElementMap);
+    public abstract void doSave(List<T> saveElementList);
 
     public abstract void doDelete(List<String> deleteElementId);
 
-    private Map<String/*唯一键*/, String/*data-xml的sha1值*/> shaMapValue(Map<String, String> dataMap) {
+    private Map<String/*唯一键*/, String/*data-xml的sha1值*/> shaValue(List<T> dataList) {
         Map<String, String> result = new HashMap<>();
-        dataMap.forEach((k, v) -> {
-            result.put(k, DigestUtil.sha1Hex(v));
-        });
-
+        dataList.forEach(t -> result.put(getKey(t), DigestUtil.sha1Hex(getNeedSha1Value(t))));
         return result;
     }
+
+    private String getNeedSha1Value(T data) {
+        if (StrUtil.isBlank(getExtValue(data))) {
+            return DigestUtil.sha1Hex(getValue(data));
+        }else{
+            return DigestUtil.sha1Hex(getValue(data) + "|||" + getExtValue(data));
+        }
+    }
+
+    // 如果是chain，那就是返回chain的id，如果是script，那就返回script的id
+    protected abstract String getKey(T t);
+
+    // 如果是chain，那就返回EL，如果是script，那就返回脚本数据
+    protected abstract String getValue(T t);
+
+    // 如果是chain，那就返回route el，如果是script，这个不返回，因为script没有扩展value
+    protected abstract String getExtValue(T t);
 }

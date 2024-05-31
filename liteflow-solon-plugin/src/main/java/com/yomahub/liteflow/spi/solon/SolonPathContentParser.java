@@ -8,6 +8,7 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
+import com.yomahub.liteflow.util.PathMatchUtil;
 import org.noear.solon.Utils;
 
 import java.io.File;
@@ -47,9 +48,10 @@ public class SolonPathContentParser implements PathContentParser {
 		if (CollectionUtil.isEmpty(pathList)) {
 			throw new ConfigErrorException("rule source must not be null");
 		}
-
+		List<String> absolutePathList = PathMatchUtil.searchAbsolutePath(pathList);
 		List<URL> allResource = new ArrayList<>();
-		for (String path : pathList) {
+
+		for (String path : absolutePathList) {
 			// 如果 path 是绝对路径且这个文件存在时，我们认为这是一个本地文件路径，而并非classpath路径
 			if (FileUtil.isAbsolutePath(path) && FileUtil.isFile(path)) {
 				allResource.add(new File(path).toURI().toURL());

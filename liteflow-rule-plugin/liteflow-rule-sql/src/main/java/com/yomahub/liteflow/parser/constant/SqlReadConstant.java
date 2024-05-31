@@ -16,7 +16,7 @@ public class SqlReadConstant {
 
     public static final String SCRIPT_SQL_PATTERN = "SELECT * FROM {} WHERE {}=?";
 
-    public static final String CHAIN_XML_PATTERN = "<chain name=\"{}\"><![CDATA[{}]]></chain>";
+    public static final String CHAIN_XML_PATTERN = "<chain id=\"{}\" namespace=\"{}\"><route><![CDATA[{}]]></route><body><![CDATA[{}]]></body></chain>";
 
     public static final String NODE_XML_PATTERN = "<nodes>{}</nodes>";
 

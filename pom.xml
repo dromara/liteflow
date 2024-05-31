@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.12.0</revision>
+		<revision>2.12.1</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -76,6 +76,7 @@
 		<jakarta.version>1.3.5</jakarta.version>
 		<redisson.version>3.21.0</redisson.version>
 		<janino.version>3.1.11</janino.version>
+		<kotlin.version>1.9.23</kotlin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -314,6 +315,11 @@
 				<artifactId>redisson</artifactId>
 				<version>${redisson.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-scripting-jsr223</artifactId>
+				<version>${kotlin.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -388,6 +394,10 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<!-- 默认不使用 gpg ，如果需要使用请在打包命令中增加 -Dgpg.skip=false -->
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 			<!-- version number -->
 			<plugin>

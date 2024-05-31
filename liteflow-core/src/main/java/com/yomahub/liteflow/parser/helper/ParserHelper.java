@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.parser.helper;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
 
@@ -205,7 +207,7 @@ public class ParserHelper {
             // 当存在<nodes>节点定义时，解析node节点
             if (flowJsonNode.get(FLOW).has(NODES)) {
                 Iterator<JsonNode> nodeIterator = flowJsonNode.get(FLOW).get(NODES).get(NODE).elements();
-                String id, name, clazz, script, type, file;
+                String id, name, clazz, script, type, file, language;
                 while ((nodeIterator.hasNext())) {
                     JsonNode nodeObject = nodeIterator.next();
                     id = nodeObject.get(ID).textValue();
@@ -214,6 +216,7 @@ public class ParserHelper {
                     type = nodeObject.hasNonNull(TYPE) ? nodeObject.get(TYPE).textValue() : null;
                     script = nodeObject.hasNonNull(VALUE) ? nodeObject.get(VALUE).textValue() : "";
                     file = nodeObject.hasNonNull(FILE) ? nodeObject.get(FILE).textValue() : "";
+                    language = nodeObject.hasNonNull(LANGUAGE) ? nodeObject.get(LANGUAGE).textValue() : "";
 
                     // 如果是禁用的，就不编译了
                     if (!getEnableByJsonNode(nodeObject)) {
@@ -226,7 +229,8 @@ public class ParserHelper {
                             .setClazz(clazz)
                             .setScript(script)
                             .setType(type)
-                            .setFile(file);
+                            .setFile(file)
+                            .setLanguage(language);
 
                     ParserHelper.buildNode(nodePropBean);
                 }
@@ -308,9 +312,11 @@ public class ParserHelper {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 
+        String namespace = chainNode.get(NAMESPACE) == null? DEFAULT_NAMESPACE : chainNode.get(NAMESPACE).textValue();
+
         JsonNode routeJsonNode = chainNode.get(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -337,9 +343,11 @@ public class ParserHelper {
         // 构建chainBuilder
         String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 
+        String namespace = StrUtil.blankToDefault(e.attributeValue(NAMESPACE), DEFAULT_NAMESPACE);
+
         Element routeElement = e.element(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId);
+        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -361,6 +369,7 @@ public class ParserHelper {
                 builder.setEL(ElRegexUtil.removeComments(e.getText()));
             }
         }
+
 
         builder.build();
     }

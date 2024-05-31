@@ -8,6 +8,7 @@ import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
+import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
@@ -24,10 +25,21 @@ import java.util.Objects;
  * @author houxinyu
  * @since 2.11.1
  */
-public class ScriptRead extends AbstractSqlRead {
+public class ScriptRead extends AbstractSqlRead<ScriptVO> {
 
     public ScriptRead(SQLParserVO config) {
         super(config);
+    }
+
+    @Override
+    protected ScriptVO parse(ResultSet rs) throws SQLException {
+        ScriptVO scriptVO = new ScriptVO();
+        scriptVO.setNodeId(getStringFromRsWithCheck(rs, super.config.getScriptIdField()));
+        scriptVO.setName(getStringFromRs(rs, super.config.getScriptNameField()));
+        scriptVO.setType(getStringFromRsWithCheck(rs, super.config.getScriptTypeField()));
+        scriptVO.setLanguage(getStringFromRs(rs, super.config.getScriptLanguageField()));
+        scriptVO.setScript(getStringFromRsWithCheck(rs, super.config.getScriptDataField()));
+        return scriptVO;
     }
 
     @Override
@@ -78,46 +90,6 @@ public class ScriptRead extends AbstractSqlRead {
         if(StrUtil.isBlank(scriptApplicationNameField)){
             throw new ELSQLException("You did not define the scriptApplicationNameField property");
         }
-    }
-
-    @Override
-    public String buildXmlElement(ResultSet rs) throws SQLException {
-        String scriptDataField = super.config.getScriptDataField();
-
-        return getStringFromRs(rs, scriptDataField);
-
-    }
-
-    @Override
-    public String buildXmlElementUniqueKey(ResultSet rs) throws SQLException {
-        String scriptIdField = super.config.getScriptIdField();
-        String scriptNameField = super.config.getScriptNameField();
-        String scriptTypeField = super.config.getScriptTypeField();
-        String scriptLanguageField = super.config.getScriptLanguageField();
-
-        String id = getStringFromRsWithCheck(rs, scriptIdField);
-        String name = getStringFromRsWithCheck(rs, scriptNameField);
-        String type = getStringFromRsWithCheck(rs, scriptTypeField);
-        String language = withLanguage() ? getStringFromRs(rs, scriptLanguageField) : null;
-
-        NodeTypeEnum nodeTypeEnum = NodeTypeEnum.getEnumByCode(type);
-        if (Objects.isNull(nodeTypeEnum)) {
-            throw new ELSQLException(StrUtil.format("Invalid type value[{}]", type));
-        }
-
-        if (!nodeTypeEnum.isScript()) {
-            throw new ELSQLException(StrUtil.format("The type value[{}] is not a script type", type));
-        }
-
-        if (withLanguage() && !ScriptTypeEnum.checkScriptType(language)) {
-            throw new ELSQLException(StrUtil.format("The language value[{}] is invalid", language));
-        }
-        List<String> keys = CollUtil.newArrayList(id, type, name);
-        if (StrUtil.isNotBlank(language)) {
-            keys.add(language);
-        }
-
-        return StrUtil.join(StrUtil.COLON, keys);
     }
 
     @Override
