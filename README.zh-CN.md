@@ -29,7 +29,7 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 * **支持广泛：** 不管你的项目是不是基于Springboot，Spring还是任何其他java框架构建，LiteFlow都能游刃有余。
 * **JDK支持：** 从JDK8到JDK17，全部支持。无需担心JDK版本。
 * **Springboot支持全面：** 支持Springboot 2.X到最新的Springboot 3.X。
-* **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，Javascript，QLExpress，Python，Lua，Aviator，Java。未来还会支持更多的脚本语言。
+* **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，Javascript，QLExpress，Python，Lua，Aviator，Java，Kotlin。未来还会支持更多的脚本语言。
 * **脚本和Java全打通：** 所有脚本语言均可调用Java方法，甚至于可以引用任意的实例，在脚本中调用RPC也是支持的。
 * **规则嵌套支持：** 只要你想的出，你可以利用简单的表达式完成多重嵌套的复杂逻辑编排。
 * **组件重试支持：** 组件可以支持重试，每个组件均可自定义重试配置和指定异常。
