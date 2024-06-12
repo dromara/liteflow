@@ -7,8 +7,4 @@
     <chain name="chain2">
         THEN(a, b, c, WHEN(d, e));
     </chain>
-
-    <chain name="chain3">
-        THEN(a, b, c, f);
-    </chain>
 </flow>
