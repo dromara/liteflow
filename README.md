@@ -11,7 +11,7 @@
 ## Overview
 LiteFlow is a lightweight and powerful rules engine framework, which can be used in the field of complex componenzed business orchestration. DSL rules drive the whole complex business, and can achieve smooth refresh hot deployment, supporting the embedding of multiple scripting language rules. Help the system become more silky and flexible.
 
-LiteFlow was officially open source in 2020 and won the title of "the Most Popular Open Source software" in China in 2021. Gitee-GVP award in 2022. It is an open source project that is growing rapidly.
+LiteFlow was officially open-sourced in 2020 and has since become an indispensable presence in the field of open-source rule engines in China. What's more, the most crucial aspect is that LiteFlow is an open-source project that continues to iterate at a high speed.
 
 LiteFlow is a community-driven project. We take community building very seriously. We have a community of more than 4000 users who can respond to any problems or suggestions they encounter.
 
