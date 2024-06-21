@@ -19,7 +19,6 @@ You can find out how to join the community on the official website!
 
 ## Website url: [Click here to access the official website](https://liteflow.cc)
 ## Documents url: [Click here to enter the documentation to learn](https://liteflow.cc/pages/5816c5/)
-## Demo projects: [DEMO1](https://github.com/bryan31/message-demo) | [DEMO2](https://gitee.com/bryan31/liteflow-example)
 
 ## Feature
 * **Component definition unified:** All logic is a component, for all logic to provide a unified component implementation, small size, large energy.
