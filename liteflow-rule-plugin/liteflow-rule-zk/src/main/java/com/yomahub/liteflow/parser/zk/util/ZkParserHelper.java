@@ -48,7 +48,7 @@ public class ZkParserHelper {
 
             this.client = client;
         } catch (Exception e) {
-            throw new ZkException(e.getMessage());
+            throw new ZkException(e);
         }
     }
 
@@ -98,7 +98,7 @@ public class ZkParserHelper {
 
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
         } catch (Exception e) {
-            throw new ZkException(e.getMessage());
+            throw new ZkException(e);
         }
     }
 

@@ -44,7 +44,7 @@ public class NacosParserHelper {
 			}
 		}
 		catch (Exception e) {
-			throw new NacosException(e.getMessage());
+			throw new NacosException(e);
 		}
 	}
 
@@ -76,7 +76,7 @@ public class NacosParserHelper {
 			return configService.getConfig(nacosParserVO.getDataId(), nacosParserVO.getGroup(), 3000L);
 		}
 		catch (Exception e) {
-			throw new NacosException(e.getMessage());
+			throw new NacosException(e);
 		}
 	}
 
@@ -109,7 +109,7 @@ public class NacosParserHelper {
 			});
 		}
 		catch (Exception ex) {
-			throw new NacosException(ex.getMessage());
+			throw new NacosException(ex);
 		}
 	}
 

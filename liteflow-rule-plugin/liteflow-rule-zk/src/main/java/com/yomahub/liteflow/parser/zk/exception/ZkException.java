@@ -12,6 +12,11 @@ public class ZkException extends RuntimeException {
 		this.message = message;
 	}
 
+	public ZkException(Throwable cause) {
+		super(cause);
+		this.message = cause.getMessage();
+	}
+
 	@Override
 	public String getMessage() {
 		return message;

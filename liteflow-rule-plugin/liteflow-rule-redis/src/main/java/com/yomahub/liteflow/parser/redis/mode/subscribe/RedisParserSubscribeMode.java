@@ -2,12 +2,8 @@ package com.yomahub.liteflow.parser.redis.mode.subscribe;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Pair;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
@@ -78,7 +74,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
                 }
             }
         } catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
 
     }
@@ -126,7 +122,7 @@ public class RedisParserSubscribeMode implements RedisParserHelper {
 
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
         } catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
     }
 

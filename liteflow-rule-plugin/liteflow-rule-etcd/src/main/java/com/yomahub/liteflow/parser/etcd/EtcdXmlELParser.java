@@ -14,7 +14,6 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 
 /**
  * Etcd解析器实现，只支持EL形式的XML，不支持其他的形式
@@ -53,7 +52,7 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 			etcdParserHelper = new EtcdParserHelper(etcdParserVO);
 		}
 		catch (Exception e) {
-			throw new EtcdException(e.getMessage());
+			throw new EtcdException(e);
 		}
 	}
 
@@ -71,7 +70,7 @@ public class EtcdXmlELParser extends ClassXmlFlowELParser {
 			return content;
 		}
 		catch (Exception e) {
-			throw new EtcdException(e.getMessage());
+			throw new EtcdException(e);
 		}
 	}
 

@@ -52,7 +52,7 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
 			zkParserHelper = new ZkParserHelper(zkParserVO);
 		}
 		catch (Exception e) {
-			throw new ZkException(e.getMessage());
+			throw new ZkException(e);
 		}
 	}
 
@@ -69,7 +69,7 @@ public class ZkXmlELParser extends ClassXmlFlowELParser {
 			return content;
 		}
 		catch (Exception e) {
-			throw new ZkException(e.getMessage());
+			throw new ZkException(e);
 		}
 	}
 

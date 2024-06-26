@@ -114,7 +114,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
             }
         }
         catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
     }
 
@@ -175,7 +175,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
         }
         catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
     }
 

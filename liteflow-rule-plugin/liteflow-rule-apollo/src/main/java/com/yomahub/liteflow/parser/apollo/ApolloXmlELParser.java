@@ -48,7 +48,7 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 			apolloParseHelper = new ApolloParseHelper(apolloParserConfigVO);
 		}
 		catch (Exception e) {
-			throw new ApolloException(e.getMessage());
+			throw new ApolloException(e);
 		}
 	}
 
@@ -65,7 +65,7 @@ public class ApolloXmlELParser extends ClassXmlFlowELParser {
 
 		}
 		catch (Exception e) {
-			throw new ApolloException(e.getMessage());
+			throw new ApolloException(e);
 		}
 	}
 

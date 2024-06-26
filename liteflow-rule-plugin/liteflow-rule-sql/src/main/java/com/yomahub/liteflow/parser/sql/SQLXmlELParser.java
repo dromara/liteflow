@@ -64,7 +64,7 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
         } catch (ELSQLException elsqlException) {
             throw elsqlException;
         } catch (Exception ex) {
-            throw new ELSQLException(ex.getMessage());
+            throw new ELSQLException(ex);
         }
 
     }
@@ -82,7 +82,7 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             }
             return content;
         } catch (Exception ex) {
-            throw new ELSQLException(ex.getMessage());
+            throw new ELSQLException(ex);
         }
     }
 
