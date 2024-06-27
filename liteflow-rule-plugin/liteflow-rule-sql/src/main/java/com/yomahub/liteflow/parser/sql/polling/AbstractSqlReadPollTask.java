@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author tangkc
  * @author houxinyu
+ * @author Bryan.Zhang
  * @since 2.11.1
  */
 public abstract class AbstractSqlReadPollTask<T> implements SqlReadPollTask<T> {
