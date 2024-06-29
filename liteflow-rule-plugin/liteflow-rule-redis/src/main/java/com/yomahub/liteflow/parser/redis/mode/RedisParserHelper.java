@@ -15,6 +15,7 @@ import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.util.RuleParsePluginUtil;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
+import org.redisson.config.SingleServerConfig;
 
 /**
  * Redis 解析器通用接口
@@ -56,23 +57,19 @@ public interface RedisParserHelper {
     default Config getSingleRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
         Config config = new Config();
         String redisAddress = StrFormatter.format(SINGLE_REDIS_URL_PATTERN, redisParserVO.getHost(), redisParserVO.getPort());
+
+        SingleServerConfig singleServerConfig = config.useSingleServer().setAddress(redisAddress)
+                .setConnectionPoolSize(redisParserVO.getConnectionPoolSize())
+                .setConnectionMinimumIdleSize(redisParserVO.getConnectionMinimumIdleSize())
+                .setDatabase(dataBase);
+
         //如果配置了用户名和密码
         if (StrUtil.isNotBlank(redisParserVO.getUsername()) && StrUtil.isNotBlank(redisParserVO.getPassword())) {
-            config.useSingleServer().setAddress(redisAddress)
-                    .setUsername(redisParserVO.getUsername())
-                    .setPassword(redisParserVO.getPassword())
-                    .setDatabase(dataBase);
+            singleServerConfig.setUsername(redisParserVO.getUsername()).setPassword(redisParserVO.getPassword());
         }
         //如果配置了密码
         else if (StrUtil.isNotBlank(redisParserVO.getPassword())) {
-            config.useSingleServer().setAddress(redisAddress)
-                    .setPassword(redisParserVO.getPassword())
-                    .setDatabase(dataBase);
-        }
-        //没有配置密码
-        else {
-            config.useSingleServer().setAddress(redisAddress)
-                    .setDatabase(dataBase);
+            singleServerConfig.setPassword(redisParserVO.getPassword());
         }
         return config;
     }
@@ -86,7 +83,11 @@ public interface RedisParserHelper {
     default Config getSentinelRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
         Config config = new Config();
         SentinelServersConfig sentinelConfig = config.useSentinelServers()
-                .setMasterName(redisParserVO.getMasterName());
+                .setMasterName(redisParserVO.getMasterName())
+                .setMasterConnectionPoolSize(redisParserVO.getConnectionPoolSize())
+                .setSlaveConnectionPoolSize(redisParserVO.getConnectionPoolSize())
+                .setMasterConnectionMinimumIdleSize(redisParserVO.getConnectionMinimumIdleSize())
+                .setSlaveConnectionMinimumIdleSize(redisParserVO.getConnectionMinimumIdleSize());
         redisParserVO.getSentinelAddress().forEach(address -> {
             sentinelConfig.addSentinelAddress(StrFormatter.format(SENTINEL_REDIS_URL_PATTERN, address));
         });

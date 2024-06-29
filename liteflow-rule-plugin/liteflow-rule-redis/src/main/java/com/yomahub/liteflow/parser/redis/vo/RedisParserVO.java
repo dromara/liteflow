@@ -35,6 +35,10 @@ public class RedisParserVO {
     /*密码*/
     private String password;
 
+    private int connectionMinimumIdleSize = 2;
+
+    private int connectionPoolSize = 4;
+
     /*监听机制 轮询为poll 订阅为subscribe 默认为poll*/
     private RedisParserMode mode = RedisParserMode.POLL;
 
@@ -180,6 +184,22 @@ public class RedisParserVO {
 
     public void setScriptKey(String scriptKey) {
         this.scriptKey = scriptKey;
+    }
+
+    public int getConnectionPoolSize() {
+        return connectionPoolSize;
+    }
+
+    public void setConnectionPoolSize(int connectionPoolSize) {
+        this.connectionPoolSize = connectionPoolSize;
+    }
+
+    public int getConnectionMinimumIdleSize() {
+        return connectionMinimumIdleSize;
+    }
+
+    public void setConnectionMinimumIdleSize(int connectionMinimumIdleSize) {
+        this.connectionMinimumIdleSize = connectionMinimumIdleSize;
     }
 
     @Override
