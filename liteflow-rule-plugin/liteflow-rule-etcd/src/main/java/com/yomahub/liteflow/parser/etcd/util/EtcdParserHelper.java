@@ -64,7 +64,7 @@ public class EtcdParserHelper {
                 this.client = new EtcdClient(clientBuilder.build());
             }
         } catch (Exception e) {
-            throw new EtcdException(e.getMessage());
+            throw new EtcdException(e);
         }
     }
 
@@ -114,7 +114,7 @@ public class EtcdParserHelper {
 
             return StrUtil.format(XML_PATTERN, scriptAllContent, chainAllContent);
         } catch (Exception e) {
-            throw new EtcdException(e.getMessage());
+            throw new EtcdException(e);
         }
     }
 

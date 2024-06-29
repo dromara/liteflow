@@ -13,6 +13,11 @@ public class ApolloException extends RuntimeException {
 		this.message = message;
 	}
 
+	public ApolloException(Throwable cause) {
+		super(cause);
+		this.message = cause.getMessage();
+	}
+
 	@Override
 	public String getMessage() {
 		return message;

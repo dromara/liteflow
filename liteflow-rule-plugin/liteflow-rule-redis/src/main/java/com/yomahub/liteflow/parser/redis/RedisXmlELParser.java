@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.parser.redis;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.StrFormatter;
@@ -11,10 +9,10 @@ import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.redis.exception.RedisException;
 import com.yomahub.liteflow.parser.redis.mode.RedisMode;
-import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
-import com.yomahub.liteflow.parser.redis.mode.subscribe.RedisParserSubscribeMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserHelper;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
+import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
+import com.yomahub.liteflow.parser.redis.mode.subscribe.RedisParserSubscribeMode;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -78,7 +76,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
             throw redisException;
         }
         catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
     }
 
@@ -94,7 +92,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
 
         }
         catch (Exception e) {
-            throw new RedisException(e.getMessage());
+            throw new RedisException(e);
         }
     }
 

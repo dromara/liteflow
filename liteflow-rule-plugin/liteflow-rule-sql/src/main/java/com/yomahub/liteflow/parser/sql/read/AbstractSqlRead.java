@@ -66,7 +66,7 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
                 result.add(parse(rs));
             }
         } catch (Exception e) {
-            throw new ELSQLException(e.getMessage());
+            throw new ELSQLException(e);
         } finally {
             // 关闭连接
             LiteFlowJdbcUtil.close(conn, stmt, rs);

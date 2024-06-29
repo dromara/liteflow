@@ -12,6 +12,11 @@ public class NacosException extends RuntimeException {
 		this.message = message;
 	}
 
+	public NacosException(Throwable cause) {
+		super(cause);
+		this.message = cause.getMessage();
+	}
+
 	@Override
 	public String getMessage() {
 		return message;

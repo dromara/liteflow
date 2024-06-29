@@ -69,7 +69,7 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
 			helper = new NacosParserHelper(nacosParserVO);
 		}
 		catch (Exception e) {
-			throw new NacosException(e.getMessage());
+			throw new NacosException(e);
 		}
 	}
 
@@ -90,7 +90,7 @@ public class NacosXmlELParser extends ClassXmlFlowELParser {
 			return content;
 		}
 		catch (Exception e) {
-			throw new NacosException(e.getMessage());
+			throw new NacosException(e);
 		}
 	}
 

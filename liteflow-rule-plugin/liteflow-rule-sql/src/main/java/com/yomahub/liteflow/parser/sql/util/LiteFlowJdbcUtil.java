@@ -55,7 +55,7 @@ public class LiteFlowJdbcUtil {
             }
 
         } catch (Exception e) {
-            throw new ELSQLException(e.getMessage());
+            throw new ELSQLException(e);
         }
 
         return connection;
@@ -95,7 +95,7 @@ public class LiteFlowJdbcUtil {
             try {
                 rs.close();
             } catch (SQLException e) {
-                throw new ELSQLException(e.getMessage());
+                throw new ELSQLException(e);
             }
         }
         // 关闭 statement
@@ -103,7 +103,7 @@ public class LiteFlowJdbcUtil {
             try {
                 stmt.close();
             } catch (SQLException e) {
-                throw new ELSQLException(e.getMessage());
+                throw new ELSQLException(e);
             }
         }
         // 关闭连接
@@ -111,7 +111,7 @@ public class LiteFlowJdbcUtil {
             try {
                 conn.close();
             } catch (SQLException e) {
-                throw new ELSQLException(e.getMessage());
+                throw new ELSQLException(e);
             }
         }
     }

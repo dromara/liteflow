@@ -71,7 +71,7 @@ public class JDBCHelper {
                 setPollExecutor(threadPoolExecutor);
             }
         } catch (ClassNotFoundException e) {
-            throw new ELSQLException(e.getMessage());
+            throw new ELSQLException(e);
         }
     }
 
