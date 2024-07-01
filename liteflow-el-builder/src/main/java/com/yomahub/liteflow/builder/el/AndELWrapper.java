@@ -46,8 +46,6 @@ public class AndELWrapper extends ELWrapper {
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
-        checkMaxWaitSeconds();
-
         // 根据depth是否为null，决定输出是否格式化
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();

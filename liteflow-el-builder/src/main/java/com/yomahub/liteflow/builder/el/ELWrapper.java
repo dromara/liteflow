@@ -162,9 +162,7 @@ public abstract class ELWrapper {
      * @return {@link String}
      */
     public String toEL(){
-        StringBuilder paramContext = new StringBuilder();
-        String elContext = toEL(null, paramContext);
-        return paramContext.append(elContext).append(";").toString();
+        return toEL(false);
     }
 
     /**
@@ -232,17 +230,6 @@ public abstract class ELWrapper {
     protected void processWrapperTabs(StringBuilder elContext, Integer depth){
         if(depth != null) {
             elContext.append(StrUtil.repeat(ELBus.TAB, depth));
-        }
-    }
-
-    /**
-     * 检查子表达式是否有最长等待秒数定义
-     */
-    protected void checkMaxWaitSeconds(){
-        for(ELWrapper sonElWrapper : this.getElWrapperList()){
-            if(sonElWrapper != null && sonElWrapper.getMaxWaitSeconds() != null){
-                throw new IllegalArgumentException("maxWaitSeconds必须定义在完整的语义之后！");
-            }
         }
     }
 }
