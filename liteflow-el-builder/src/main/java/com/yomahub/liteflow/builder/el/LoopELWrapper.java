@@ -1,16 +1,19 @@
 package com.yomahub.liteflow.builder.el;
 
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
-
 /**
  * FOR、WHILE、ITERATOR循环表达式的公共抽象父类
  *
  * @author gezuao
+ * @author Bryan.Zhang
  * @since 2.11.1
  */
-public abstract class LoopELWrapper extends ELWrapper {
+public class LoopELWrapper extends ELWrapper {
+
+    public final static String FOR = "FOR";
+
+    public final static String WHILE = "WHILE";
+
+    public final static String ITERATOR = "ITERATOR";
 
     protected Integer loopNumber;
 
@@ -32,9 +35,20 @@ public abstract class LoopELWrapper extends ELWrapper {
         this.addWrapper(elWrapper, 0);
     }
 
+    public LoopELWrapper parallel(boolean parallel){
+        setParallel(parallel);
+        return this;
+    }
+
     public LoopELWrapper doOpt(Object object){
-        ELWrapper elWrapper = ELBus.convertToNonLogicOpt(object);
+        ELWrapper elWrapper = ELBus.convertToNonBooleanOpt(object);
         this.addWrapper(elWrapper, 1);
+        return this;
+    }
+
+    public LoopELWrapper breakOpt(Object object){
+        ELWrapper elWrapper = ELBus.convertToBooleanOpt(object);
+        super.addWrapper(elWrapper, 2);
         return this;
     }
 
@@ -59,6 +73,17 @@ public abstract class LoopELWrapper extends ELWrapper {
         setMaxWaitSeconds(maxWaitSeconds);
         return this;
     }
+
+    public LoopELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public LoopELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
+        return this;
+    }
+
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {

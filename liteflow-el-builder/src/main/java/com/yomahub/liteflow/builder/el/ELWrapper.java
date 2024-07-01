@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.el.vo.RetryELVo;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Map;
  * 定义所有EL表达式的公有变量 tag、id、data、maxWaitSeconds 以及 子表达式列表 ELWrapperList
  *
  * @author gezuao
+ * @author Bryan.Zhang
  * @since 2.11.1
  */
 public abstract class ELWrapper {
@@ -24,6 +26,7 @@ public abstract class ELWrapper {
     private String dataName;
     private String data;
     private Integer maxWaitSeconds;
+    private RetryELVo retry;
 
     protected void addWrapper(ELWrapper wrapper){
         this.elWrapperList.add(wrapper);
@@ -87,6 +90,14 @@ public abstract class ELWrapper {
 
     protected Integer getMaxWaitSeconds(){
         return this.maxWaitSeconds;
+    }
+
+    protected RetryELVo getRetry() {
+        return retry;
+    }
+
+    protected void setRetry(RetryELVo retry) {
+        this.retry = retry;
     }
 
     /**
@@ -156,6 +167,18 @@ public abstract class ELWrapper {
         return this;
     }
 
+    protected ELWrapper retry(int count){
+        RetryELVo item = new RetryELVo(count);
+        setRetry(item);
+        return this;
+    }
+
+    protected ELWrapper retry(int count, String... exceptions){
+        RetryELVo item = new RetryELVo(count, exceptions);
+        setRetry(item);
+        return this;
+    }
+
     /**
      * 非格式化输出EL表达式
      *
@@ -206,6 +229,9 @@ public abstract class ELWrapper {
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));
+        }
+        if (this.getRetry() != null){
+            elContext.append(StrUtil.format(".retry({})", this.getRetry().toString()));
         }
     }
 

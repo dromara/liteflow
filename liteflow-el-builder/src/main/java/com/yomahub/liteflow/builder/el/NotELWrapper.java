@@ -31,12 +31,6 @@ public class NotELWrapper extends ELWrapper {
     }
 
     @Override
-    public NotELWrapper maxWaitSeconds(Integer maxWaitSeconds){
-        setMaxWaitSeconds(maxWaitSeconds);
-        return this;
-    }
-
-    @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();

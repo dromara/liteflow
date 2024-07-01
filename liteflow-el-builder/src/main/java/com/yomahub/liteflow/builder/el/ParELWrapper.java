@@ -32,7 +32,7 @@ public class ParELWrapper extends ELWrapper {
     }
 
     public ParELWrapper par(Object ... objects){
-        ELWrapper[] elWrappers = ELBus.convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = ELBus.convertToNonBooleanOpt(objects);
         // 校验与或非表达式
         this.addWrapper(elWrappers);
         return this;
@@ -73,6 +73,16 @@ public class ParELWrapper extends ELWrapper {
     @Override
     public ParELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public ParELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public ParELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

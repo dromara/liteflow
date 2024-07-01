@@ -1,9 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -115,7 +113,7 @@ public class IfELWrapper extends ELWrapper {
      * @return {@link IfELWrapper}
      */
     public IfELWrapper elseOpt(Object falseObject){
-        ELWrapper falseWrapper = ELBus.convertToNonLogicOpt(falseObject);
+        ELWrapper falseWrapper = ELBus.convertToNonBooleanOpt(falseObject);
         // 找到最深层的if组件
         ELWrapper prev = this;
         ELWrapper succ = this;
@@ -138,8 +136,8 @@ public class IfELWrapper extends ELWrapper {
      */
     public IfELWrapper elIfOpt(Object ifObject, Object trueObject) {
         // 包装判断表达式和true分支组件
-        ELWrapper ifWrapper = ELBus.convertToLogicOpt(ifObject);
-        ELWrapper trueWrapper = ELBus.convertToNonLogicOpt(trueObject);
+        ELWrapper ifWrapper = ELBus.convertToBooleanOpt(ifObject);
+        ELWrapper trueWrapper = ELBus.convertToNonBooleanOpt(trueObject);
         IfELWrapper elIfWrapper;
         if(ifWrapper instanceof NodeELWrapper){
             elIfWrapper = new IfELWrapper((NodeELWrapper) ifWrapper, trueWrapper);
@@ -216,6 +214,16 @@ public class IfELWrapper extends ELWrapper {
     @Override
     public IfELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public IfELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public IfELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

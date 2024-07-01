@@ -1,11 +1,9 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 串行组件
@@ -28,7 +26,7 @@ public class ThenELWrapper extends ELWrapper {
     }
 
     public ThenELWrapper then(Object ... objects){
-        ELWrapper[] elWrappers = ELBus.convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = ELBus.convertToNonBooleanOpt(objects);
         // 校验与或非表达式
         this.addWrapper(elWrappers);
         return this;
@@ -79,6 +77,16 @@ public class ThenELWrapper extends ELWrapper {
     @Override
     public ThenELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public ThenELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public ThenELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

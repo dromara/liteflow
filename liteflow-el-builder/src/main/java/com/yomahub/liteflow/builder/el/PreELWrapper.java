@@ -36,6 +36,16 @@ public class PreELWrapper extends ELWrapper {
         return this;
     }
 
+    public PreELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public PreELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
+        return this;
+    }
+
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
         Integer sonDepth = depth == null ? null : depth + 1;

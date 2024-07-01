@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.builder;
 
 import com.yomahub.liteflow.builder.el.*;
 import com.yomahub.liteflow.test.BaseTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -62,11 +63,16 @@ public class MaxWaitSecondBuilderTest extends BaseTest {
     // 循环层面
     @Test
     public void testMaxWaitSecond6(){
-        ForELWrapper forELWrapper = ELBus.forOpt(3).doOpt("a").maxWaitSeconds(5);
+        LoopELWrapper forELWrapper = ELBus.forOpt(3).doOpt("a").maxWaitSeconds(5);
         Assertions.assertEquals("FOR(3).DO(a).maxWaitSeconds(5);", forELWrapper.toEL());
-        WhileELWrapper whileELWrapper = ELBus.whileOpt("w").doOpt("a").maxWaitSeconds(5);
+        LoopELWrapper whileELWrapper = ELBus.whileOpt("w").doOpt("a").maxWaitSeconds(5);
         Assertions.assertEquals("WHILE(w).DO(a).maxWaitSeconds(5);", whileELWrapper.toEL());
-        IteratorELWrapper iteratorELWrapper = ELBus.iteratorOpt("i").doOpt("a").maxWaitSeconds(5);
+        LoopELWrapper iteratorELWrapper = ELBus.iteratorOpt("i").doOpt("a").maxWaitSeconds(5);
         Assertions.assertEquals("ITERATOR(i).DO(a).maxWaitSeconds(5);", iteratorELWrapper.toEL());
+    }
+
+    @AfterAll
+    public static void after(){
+        ELBus.setNodeWrapper(true);
     }
 }

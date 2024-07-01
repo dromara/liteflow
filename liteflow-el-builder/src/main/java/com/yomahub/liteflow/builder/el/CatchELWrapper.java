@@ -1,9 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
-
 /**
  * 捕获异常表达式
  * Catch(a).do(b)
@@ -22,7 +18,7 @@ public class CatchELWrapper extends ELWrapper {
     }
 
     public CatchELWrapper doOpt(Object object){
-        ELWrapper elWrapper = ELBus.convertToNonLogicOpt(object);
+        ELWrapper elWrapper = ELBus.convertToNonBooleanOpt(object);
         this.addWrapper(elWrapper);
         return this;
     }
@@ -42,6 +38,16 @@ public class CatchELWrapper extends ELWrapper {
     @Override
     public CatchELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public CatchELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public CatchELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

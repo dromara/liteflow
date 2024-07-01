@@ -1,9 +1,6 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
 
 /**
  * 选择组件
@@ -28,13 +25,13 @@ public class SwitchELWrapper extends ELWrapper {
     }
 
     public SwitchELWrapper to(Object... objects){
-        ELWrapper[] elWrappers = ELBus.convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = ELBus.convertToNonBooleanOpt(objects);
         this.addWrapper(elWrappers);
         return this;
     }
 
     public SwitchELWrapper defaultOpt(Object object){
-        defaultElWrapper = ELBus.convertToNonLogicOpt(object);
+        defaultElWrapper = ELBus.convertToNonBooleanOpt(object);
         return this;
     }
 
@@ -53,6 +50,16 @@ public class SwitchELWrapper extends ELWrapper {
     @Override
     public SwitchELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public SwitchELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public SwitchELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

@@ -2,7 +2,6 @@ package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.*;
 
@@ -31,7 +30,7 @@ public class WhenELWrapper extends ELWrapper {
     }
 
     public WhenELWrapper when(Object ... objects){
-        ELWrapper[] elWrappers = ELBus.convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = ELBus.convertToNonBooleanOpt(objects);
         // 校验与或非表达式
         this.addWrapper(elWrappers);
         return this;
@@ -72,6 +71,16 @@ public class WhenELWrapper extends ELWrapper {
     @Override
     public WhenELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public WhenELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public WhenELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

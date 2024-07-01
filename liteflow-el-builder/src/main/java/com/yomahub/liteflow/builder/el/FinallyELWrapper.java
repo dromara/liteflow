@@ -1,9 +1,6 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
 
 /**
  * 后置表达式
@@ -16,7 +13,7 @@ import java.util.Map;
  */
 public class FinallyELWrapper extends ELWrapper {
     public FinallyELWrapper(Object ... objects){
-        super.addWrapper(ELBus.convertToNonLogicOpt(objects));
+        super.addWrapper(ELBus.convertToNonBooleanOpt(objects));
     }
 
     @Override
@@ -40,6 +37,16 @@ public class FinallyELWrapper extends ELWrapper {
     @Override
     protected FinallyELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public FinallyELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public FinallyELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

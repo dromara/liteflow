@@ -1,9 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
-
 /**
  * 与或非表达式中的 或表达式
  * 参数允许任意数量 参数必须返回true或false
@@ -21,7 +17,7 @@ public class OrELWrapper extends ELWrapper {
     }
 
     public OrELWrapper or(Object ... object){
-        ELWrapper[] elWrapper = ELBus.convertToLogicOpt(object);
+        ELWrapper[] elWrapper = ELBus.convertToBooleanOpt(object);
         this.addWrapper(elWrapper);
         return this;
     }
@@ -35,12 +31,6 @@ public class OrELWrapper extends ELWrapper {
     @Override
     public OrELWrapper id(String id) {
         this.setId(id);
-        return this;
-    }
-
-    @Override
-    public OrELWrapper maxWaitSeconds(Integer maxWaitSeconds){
-        setMaxWaitSeconds(maxWaitSeconds);
         return this;
     }
 

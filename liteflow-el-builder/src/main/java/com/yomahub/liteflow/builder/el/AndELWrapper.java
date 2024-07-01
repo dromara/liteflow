@@ -1,9 +1,5 @@
 package com.yomahub.liteflow.builder.el;
 
-import com.yomahub.liteflow.util.JsonUtil;
-
-import java.util.Map;
-
 /**
  * 与或非表达式中的 与表达式
  * 参数允许任意数量 参数必须返回true或false
@@ -21,7 +17,7 @@ public class AndELWrapper extends ELWrapper {
     }
 
     public AndELWrapper and(Object ... object){
-        ELWrapper[] wrapper = ELBus.convertToLogicOpt(object);
+        ELWrapper[] wrapper = ELBus.convertToBooleanOpt(object);
         this.addWrapper(wrapper);
         return this;
     }
@@ -35,12 +31,6 @@ public class AndELWrapper extends ELWrapper {
     @Override
     public AndELWrapper id(String id) {
         this.setId(id);
-        return this;
-    }
-
-    @Override
-    public AndELWrapper maxWaitSeconds(Integer maxWaitSeconds){
-        setMaxWaitSeconds(maxWaitSeconds);
         return this;
     }
 

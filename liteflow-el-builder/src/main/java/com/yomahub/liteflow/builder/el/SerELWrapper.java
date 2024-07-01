@@ -26,7 +26,7 @@ public class SerELWrapper extends ELWrapper {
     }
 
     public SerELWrapper ser(Object ... objects){
-        ELWrapper[] elWrappers = ELBus.convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = ELBus.convertToNonBooleanOpt(objects);
         // 校验与或非表达式
         this.addWrapper(elWrappers);
         return this;
@@ -77,6 +77,16 @@ public class SerELWrapper extends ELWrapper {
     @Override
     public SerELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
+        return this;
+    }
+
+    public SerELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public SerELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
         return this;
     }
 

@@ -57,19 +57,19 @@ public class LogicELBuilderTest extends BaseTest {
     // 属性设置
     @Test
     public void testlogic5(){
-        String expectedStr = "AND(node(\"a\"),OR(node(\"b\"),node(\"c\")).id(\"this is a id\"),NOT(node(\"d\")).tag(\"this is a tag\")).maxWaitSeconds(4);";
+        String expectedStr = "AND(node(\"a\"),OR(node(\"b\"),node(\"c\")).id(\"this is a id\"),NOT(node(\"d\")).tag(\"this is a tag\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).maxWaitSeconds(4).toEL());
+                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).maxWaitSeconds(4).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL()));
     }
     @Test
     public void testlogic6(){
-        String expectedStr = "AND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tNOT(\n\t\tnode(\"d\")\n\t).tag(\"this is a tag\")\n).maxWaitSeconds(4);";
+        String expectedStr = "AND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tNOT(\n\t\tnode(\"d\")\n\t).tag(\"this is a tag\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).maxWaitSeconds(4).toEL(true));
+                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).maxWaitSeconds(4).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL(true)));
     }
     @Test
     public void testlogic7(){
@@ -191,16 +191,11 @@ public class LogicELBuilderTest extends BaseTest {
 
     @Test
     public void testLogic(){
-        AndELWrapper andEl = ELBus.and("a", "b").id("this is a id").tag("this is a tag").maxWaitSeconds(5);
+        AndELWrapper andEl = ELBus.and("a", "b").id("this is a id").tag("this is a tag");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(andEl.toEL()));
-        OrELWrapper orEl = ELBus.or("a", "b").maxWaitSeconds(3);
+        OrELWrapper orEl = ELBus.or("a", "b");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(orEl.toEL()));
-        NotELWrapper notEl = ELBus.not("a").maxWaitSeconds(2);
+        NotELWrapper notEl = ELBus.not("a");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(notEl.toEL()));
-
-//        Assertions.assertTrue(LiteFlowChainELBuilder.validate("AND(node(\"a\"),OR(node(\"b\"),node(\"c\")).id(\"this is a id\"),NOT(node(\"d\")).tag(\"this is a tag\").maxWaitSeconds(3))"));
-
-//        ThenELWrapper thenELWrapper = ELBus.then(ELBus.when("a", "b", ELBus.when("c", "d").maxWaitSeconds(3)));
-//        Assertions.assertTrue(LiteFlowChainELBuilder.validate(thenELWrapper.toEL()));
     }
 }

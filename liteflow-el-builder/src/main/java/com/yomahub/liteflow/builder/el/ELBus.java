@@ -27,7 +27,7 @@ public class ELBus {
     }
 
     public static ThenELWrapper then(Object ... objects){
-        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToNonBooleanOpt(objects);
         return new ThenELWrapper(elWrappers);
     }
 
@@ -43,7 +43,7 @@ public class ELBus {
     }
 
     public static WhenELWrapper when(Object ... objects){
-        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToNonBooleanOpt(objects);
         return new WhenELWrapper(elWrappers);
     }
 
@@ -53,7 +53,7 @@ public class ELBus {
     }
 
     public static SerELWrapper ser(Object ... objects){
-        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToNonBooleanOpt(objects);
         return new SerELWrapper(elWrappers);
     }
 
@@ -69,7 +69,7 @@ public class ELBus {
     }
 
     public static ParELWrapper par(Object ... objects){
-        ELWrapper[] elWrappers = convertToNonLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToNonBooleanOpt(objects);
         return new ParELWrapper(elWrappers);
     }
 
@@ -83,43 +83,43 @@ public class ELBus {
      * @return {@link IfELWrapper}
      */
     public static IfELWrapper ifOpt(NodeELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper), convertToNonLogicOpt(falseElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(String ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper((NodeELWrapper) convertToLogicOpt(ifElWrapper), convertToNonLogicOpt(trueElWrapper), convertToNonLogicOpt(falseElWrapper));
+        return new IfELWrapper((NodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(AndELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper), convertToNonLogicOpt(falseElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(OrELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper), convertToNonLogicOpt(falseElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(NotELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper), convertToNonLogicOpt(falseElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(NodeELWrapper ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(String ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper((NodeELWrapper) convertToLogicOpt(ifElWrapper), convertToNonLogicOpt(trueElWrapper));
+        return new IfELWrapper((NodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(AndELWrapper ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(OrELWrapper ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(NotELWrapper ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper(ifElWrapper, convertToNonLogicOpt(trueElWrapper));
+        return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper));
     }
 
     /**
@@ -150,70 +150,70 @@ public class ELBus {
      * 创建 for 次数循环表达式
      *
      * @param loopNumber 循环次数
-     * @return {@link ForELWrapper}
+     * @return {@link LoopELWrapper}
      */
-    public static ForELWrapper forOpt(Integer loopNumber){
-        return new ForELWrapper(loopNumber, "FOR");
+    public static LoopELWrapper forOpt(Integer loopNumber){
+        return new LoopELWrapper(loopNumber, LoopELWrapper.FOR);
     }
 
     /**
      * 创建 for 次数循环表达式
      *
      * @param nodeElWrapper 返回循环次数的节点
-     * @return {@link ForELWrapper}
+     * @return {@link LoopELWrapper}
      */
-    public static ForELWrapper forOpt(NodeELWrapper nodeElWrapper){
-        return new ForELWrapper(nodeElWrapper, "FOR");
+    public static LoopELWrapper forOpt(NodeELWrapper nodeElWrapper){
+        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.FOR);
     }
 
     /**
      * 创建 for 次数循环表达式
      *
      * @param nodeElWrapper 返回循环次数的节点Id
-     * @return {@link ForELWrapper}
+     * @return {@link LoopELWrapper}
      */
-    public static ForELWrapper forOpt(String nodeElWrapper){
-        return new ForELWrapper(convert(nodeElWrapper), "FOR");
+    public static LoopELWrapper forOpt(String nodeElWrapper){
+        return new LoopELWrapper(convert(nodeElWrapper), LoopELWrapper.FOR);
     }
 
     /**
      * 创建 while 条件循环表达式
      *
      * @param nodeElWrapper 返回布尔值的节点
-     * @return {@link WhileELWrapper}
+     * @return {@link LoopELWrapper}
      */
-    public static WhileELWrapper whileOpt(NodeELWrapper nodeElWrapper){
-        return new WhileELWrapper(nodeElWrapper, "WHILE");
+    public static LoopELWrapper whileOpt(NodeELWrapper nodeElWrapper){
+        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.WHILE);
     }
 
-    public static WhileELWrapper whileOpt(String nodeElWrapper){
-        return new WhileELWrapper(convert(nodeElWrapper), "WHILE");
+    public static LoopELWrapper whileOpt(String nodeElWrapper){
+        return new LoopELWrapper(convert(nodeElWrapper), LoopELWrapper.WHILE);
     }
 
-    public static WhileELWrapper whileOpt(AndELWrapper andElWrapper){
-        return new WhileELWrapper(andElWrapper, "WHILE");
+    public static LoopELWrapper whileOpt(AndELWrapper andElWrapper){
+        return new LoopELWrapper(andElWrapper, LoopELWrapper.WHILE);
     }
 
-    public static WhileELWrapper whileOpt(OrELWrapper orElWrapper){
-        return new WhileELWrapper(orElWrapper, "WHILE");
+    public static LoopELWrapper whileOpt(OrELWrapper orElWrapper){
+        return new LoopELWrapper(orElWrapper, LoopELWrapper.WHILE);
     }
 
-    public static WhileELWrapper whileOpt(NotELWrapper notElWrapper){
-        return new WhileELWrapper(notElWrapper, "WHILE");
+    public static LoopELWrapper whileOpt(NotELWrapper notElWrapper){
+        return new LoopELWrapper(notElWrapper, LoopELWrapper.WHILE);
     }
 
     /**
      * 创建迭代循环表达式
      *
      * @param nodeElWrapper 迭代节点
-     * @return {@link IteratorELWrapper}
+     * @return {@link LoopELWrapper}
      */
-    public static IteratorELWrapper iteratorOpt(NodeELWrapper nodeElWrapper){
-        return new IteratorELWrapper(nodeElWrapper, "ITERATOR");
+    public static LoopELWrapper iteratorOpt(NodeELWrapper nodeElWrapper){
+        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.ITERATOR);
     }
 
-    public static IteratorELWrapper iteratorOpt(String nodeElWrapper){
-        return new IteratorELWrapper(convert(nodeElWrapper), "ITERATOR");
+    public static LoopELWrapper iteratorOpt(String nodeElWrapper){
+        return new LoopELWrapper(convert(nodeElWrapper), LoopELWrapper.ITERATOR);
     }
 
     /**
@@ -223,7 +223,7 @@ public class ELBus {
      * @return {@link CatchELWrapper}
      */
     public static CatchELWrapper catchException(Object object){
-        return new CatchELWrapper(convertToNonLogicOpt(object));
+        return new CatchELWrapper(convertToNonBooleanOpt(object));
     }
 
     /**
@@ -233,7 +233,7 @@ public class ELBus {
      * @return {@link AndELWrapper}
      */
     public static AndELWrapper and(Object ... objects){
-        ELWrapper[] elWrappers = convertToLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToBooleanOpt(objects);
         return new AndELWrapper(elWrappers);
     }
 
@@ -244,7 +244,7 @@ public class ELBus {
      * @return {@link OrELWrapper}
      */
     public static OrELWrapper or(Object ... objects){
-        ELWrapper[] elWrappers = convertToLogicOpt(objects);
+        ELWrapper[] elWrappers = convertToBooleanOpt(objects);
         return new OrELWrapper(elWrappers);
     }
 
@@ -309,13 +309,13 @@ public class ELBus {
      * @param objects 表达式或字符串
      * @return {@link ELWrapper[]}
      */
-    public static ELWrapper[] convertToLogicOpt(Object... objects){
+    public static ELWrapper[] convertToBooleanOpt(Object... objects){
         ELWrapper[] elWrappers = convert(objects);
         checkBooleanArgs(elWrappers);
         return elWrappers;
     }
 
-    public static ELWrapper convertToLogicOpt(Object object){
+    public static ELWrapper convertToBooleanOpt(Object object){
         ELWrapper elWrapper = convert(object);
         checkBooleanArgs(elWrapper);
         return elWrapper;
@@ -327,13 +327,13 @@ public class ELBus {
      * @param objects 表达式或字符串
      * @return {@link ELWrapper[]}
      */
-    public static ELWrapper[] convertToNonLogicOpt(Object ... objects){
+    public static ELWrapper[] convertToNonBooleanOpt(Object ... objects){
         ELWrapper[] elWrappers = convert(objects);
         checkNotBooleanArgs(elWrappers);
         return elWrappers;
     }
 
-    public static ELWrapper convertToNonLogicOpt(Object object){
+    public static ELWrapper convertToNonBooleanOpt(Object object){
         ELWrapper elWrapper = convert(object);
         checkNotBooleanArgs(elWrapper);
         return elWrapper;

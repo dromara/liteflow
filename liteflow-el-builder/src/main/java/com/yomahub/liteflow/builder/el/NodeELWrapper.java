@@ -85,6 +85,16 @@ public class NodeELWrapper extends ELWrapper {
         return this;
     }
 
+    public NodeELWrapper retry(Integer count){
+        super.retry(count);
+        return this;
+    }
+
+    public NodeELWrapper retry(Integer count, String... exceptions){
+        super.retry(count, exceptions);
+        return this;
+    }
+
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
         NodeELWrapper nodeElWrapper = this.getNodeWrapper();
@@ -116,6 +126,9 @@ public class NodeELWrapper extends ELWrapper {
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));
+        }
+        if (this.getRetry() != null){
+            elContext.append(StrUtil.format(".retry({})", this.getRetry().toString()));
         }
     }
 }
