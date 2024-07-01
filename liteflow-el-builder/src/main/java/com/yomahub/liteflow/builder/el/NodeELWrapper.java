@@ -90,8 +90,11 @@ public class NodeELWrapper extends ELWrapper {
         NodeELWrapper nodeElWrapper = this.getNodeWrapper();
         StringBuilder sb = new StringBuilder();
         processWrapperTabs(sb, depth);
-        sb.append(StrUtil.format("node(\"{}\")", nodeElWrapper.getNodeId()));
-
+        if (ELBus.isNodeWrapper()){
+            sb.append(StrUtil.format("node(\"{}\")", nodeElWrapper.getNodeId()));
+        }else{
+            sb.append(StrUtil.format("{}", nodeElWrapper.getNodeId()));
+        }
         processWrapperProperty(sb, paramContext);
         return sb.toString();
     }

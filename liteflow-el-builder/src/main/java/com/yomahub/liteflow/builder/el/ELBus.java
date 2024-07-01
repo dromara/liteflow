@@ -13,6 +13,8 @@ public class ELBus {
 
     public static final String TAB = "\t";
 
+    private static boolean nodeWrapper = true;
+
     /**
      * 创建 then 串行组件
      *
@@ -368,5 +370,13 @@ public class ELBus {
                 throw new RuntimeException("param is error");
             }
         }
+    }
+
+    public static boolean isNodeWrapper() {
+        return nodeWrapper;
+    }
+
+    public static void setNodeWrapper(boolean nodeWrapper) {
+        ELBus.nodeWrapper = nodeWrapper;
     }
 }
