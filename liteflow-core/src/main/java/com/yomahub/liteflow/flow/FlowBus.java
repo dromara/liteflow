@@ -62,7 +62,7 @@ public class FlowBus {
 
 	private static final Map<String, Node> fallbackNodeMap;
 
-	private static AtomicBoolean initStat = new AtomicBoolean(false);
+	private static final AtomicBoolean initStat = new AtomicBoolean(false);
 
 	static {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
