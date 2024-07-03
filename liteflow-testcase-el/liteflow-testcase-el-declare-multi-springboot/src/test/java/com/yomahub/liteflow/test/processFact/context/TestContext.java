@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.test.processFact.context;
 
+import com.yomahub.liteflow.context.ContextBean;
+
+@ContextBean("testCxt")
 public class TestContext {
 
     private User user;

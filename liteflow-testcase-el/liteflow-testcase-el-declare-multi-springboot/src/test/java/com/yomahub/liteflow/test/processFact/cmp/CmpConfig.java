@@ -9,6 +9,7 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.processFact.context.Company;
+import com.yomahub.liteflow.test.processFact.context.TestContext;
 import com.yomahub.liteflow.test.processFact.context.User;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeType = NodeTypeEnum.COMMON, nodeId = "a")
     public void processA(NodeComponent bindCmp,
+                        @LiteflowFact("testCxt") TestContext context,
                         @LiteflowFact("user") User user,
                         @LiteflowFact("user.company.address") String address) {
         user.setName("jack");
