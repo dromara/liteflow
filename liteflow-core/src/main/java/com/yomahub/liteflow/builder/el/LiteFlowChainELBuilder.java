@@ -257,6 +257,17 @@ public class LiteFlowChainELBuilder {
 		return Boolean.FALSE;
 	}
 
+    /**
+     * EL表达式校验，此方法校验失败会抛出异常
+     *
+     * @param elStr EL表达式
+     */
+    public static void validateThrowEx(String elStr) {
+        // 移除注释
+        elStr = ElRegexUtil.removeComments(elStr);
+        LiteFlowChainELBuilder.createChain().setEL(elStr);
+    }
+
 	public void build() {
 		this.chain.setRouteItem(this.route);
 		this.chain.setConditionList(this.conditionList);
