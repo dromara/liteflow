@@ -247,9 +247,7 @@ public class LiteFlowChainELBuilder {
 	 */
 	public static boolean validate(String elStr) {
 		try {
-			// 移除注释
-			elStr = ElRegexUtil.removeComments(elStr);
-			LiteFlowChainELBuilder.createChain().setEL(elStr);
+			validateThrowEx(elStr);
 			return Boolean.TRUE;
 		} catch (Exception e) {
 			LOG.error("validate error",e);
