@@ -140,6 +140,7 @@ public class JDBCHelper {
         pollExecutor.scheduleAtFixedRate(
                 () -> {
                     try {
+                        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute();
                         SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute();
                     } catch (Exception ex) {
                         LOG.error("poll chain fail", ex);
@@ -149,21 +150,6 @@ public class JDBCHelper {
                 sqlParserVO.getPollingIntervalSeconds().longValue(),
                 TimeUnit.SECONDS
         );
-
-        // 添加轮询script的定时任务
-        pollExecutor.scheduleAtFixedRate(
-                () -> {
-                    try {
-                        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute();
-                    } catch (Exception ex) {
-                        LOG.error("poll script fail", ex);
-                    }
-                },
-                sqlParserVO.getPollingStartSeconds().longValue(),
-                sqlParserVO.getPollingIntervalSeconds().longValue(),
-                TimeUnit.SECONDS
-        );
-
     }
 
     private void setSqlParserVO(SQLParserVO sqlParserVO) {
