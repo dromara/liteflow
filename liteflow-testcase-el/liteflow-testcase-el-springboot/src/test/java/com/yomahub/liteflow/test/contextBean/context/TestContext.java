@@ -5,9 +5,12 @@ import com.yomahub.liteflow.context.ContextBean;
 @ContextBean("skuContext")
 public class TestContext {
 
-    private String skuCode;
+    protected String skuCode;
 
-    private String skuName;
+    protected String skuName;
+
+    public TestContext() {
+    }
 
     public TestContext(String skuCode, String skuName) {
         this.skuCode = skuCode;

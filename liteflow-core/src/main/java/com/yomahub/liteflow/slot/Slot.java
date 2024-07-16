@@ -458,7 +458,7 @@ public class Slot {
 	}
 
 	public <T> T getContextBean(Class<T> contextBeanClazz) {
-		Tuple contextTuple = contextBeanList.stream().filter(tuple -> tuple.get(1).getClass().getName().equals(contextBeanClazz.getName())).findFirst().orElse(null);
+		Tuple contextTuple = contextBeanList.stream().filter(tuple -> contextBeanClazz.isAssignableFrom(tuple.get(1).getClass())).findFirst().orElse(null);
 		if (contextTuple == null) {
 			contextBeanList.forEach(o -> LOG.info("ChainId[{}], Context class:{},Request class:{}", this.getChainId(), o.getClass().getName(), contextBeanClazz.getName()));
 			throw new NoSuchContextBeanException("this type is not in the context type passed in");
