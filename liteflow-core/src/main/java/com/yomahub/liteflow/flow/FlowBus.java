@@ -357,7 +357,11 @@ public class FlowBus {
 
 	// 重新加载规则
 	public static void reloadChain(String chainId, String elContent) {
-		LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(elContent).build();
+		reloadChain(chainId, elContent, null);
+	}
+
+	public static void reloadChain(String chainId, String elContent, String routeContent) {
+		LiteFlowChainELBuilder.createChain().setChainId(chainId).setEL(elContent).setRoute(routeContent).build();
 	}
 
 	public static void clearStat(){
