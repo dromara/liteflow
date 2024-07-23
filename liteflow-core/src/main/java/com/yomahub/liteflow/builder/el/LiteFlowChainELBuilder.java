@@ -26,8 +26,10 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Chain基于代码形式的组装器 EL表达式规则专属组装器
@@ -371,6 +373,21 @@ public class LiteFlowChainELBuilder {
 
 			// 放入当前主chain的ID
 			context.put(ChainConstant.CURR_CHAIN_ID, chain.getChainId());
+
+
+			// 只有当PARSE_ONE_ON_FIRST_EXEC时才会执行这个方法
+			// 那么会有一种级联的情况：这个EL中含有其他的chain，如果这时候不先解析其他chain，就到导致诸如循环场景无法设置index或者obj的情况
+			// 所以这里要判断表达式里有没有其他的chain，如果有，进行先行解析
+
+			String[] itemArray = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
+			Arrays.stream(itemArray).forEach(item -> {
+                if (FlowBus.containChain(item)){
+					Chain itemChain = FlowBus.getChain(item);
+					if (!itemChain.isCompiled()){
+						buildUnCompileChain(FlowBus.getChain(item));
+					}
+                }
+            });
 
 			// 解析el成为一个Condition
 			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
