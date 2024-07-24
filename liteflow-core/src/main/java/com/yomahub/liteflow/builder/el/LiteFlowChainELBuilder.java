@@ -10,6 +10,7 @@ import com.ql.util.express.InstructionSet;
 import com.ql.util.express.exception.QLException;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
+import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -242,22 +243,37 @@ public class LiteFlowChainELBuilder {
 		return this;
 	}
 
-	/**
-	 * EL表达式校验
-	 * @param elStr EL表达式
-	 * @return true 校验成功 false 校验失败
-	 */
-	public static boolean validate(String elStr) {
-		try {
-			// 移除注释
-			elStr = ElRegexUtil.removeComments(elStr);
-			LiteFlowChainELBuilder.createChain().setEL(elStr);
-			return Boolean.TRUE;
-		} catch (Exception e) {
-			LOG.error("validate error",e);
-		}
-		return Boolean.FALSE;
-	}
+    /**
+     * EL表达式校验，此方法已经过时，请使用 {@link LiteFlowChainELBuilder#validateWithEx(String)}
+     *
+     * @param elStr EL表达式
+     * @return true 校验成功 false 校验失败
+     */
+    @Deprecated
+    public static boolean validate(String elStr) {
+        return validateWithEx(elStr).isSuccess();
+    }
+
+    /**
+     * 校验
+     *
+     * @param elStr
+     * @return
+     */
+    public static ValidationResp validateWithEx(String elStr) {
+        ValidationResp resp = new ValidationResp();
+        try {
+            // 移除注释
+            elStr = ElRegexUtil.removeComments(elStr);
+            LiteFlowChainELBuilder.createChain().setEL(elStr);
+            resp.setSuccess(true);
+        } catch (Exception e) {
+            LOG.error("validate error", e);
+            resp.setSuccess(false);
+            resp.setCause(e);
+        }
+        return resp;
+    }
 
 	public void build() {
 		this.chain.setRouteItem(this.route);
