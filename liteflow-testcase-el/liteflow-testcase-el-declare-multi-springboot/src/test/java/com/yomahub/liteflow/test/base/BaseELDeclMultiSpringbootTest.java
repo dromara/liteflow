@@ -32,9 +32,15 @@ public class BaseELDeclMultiSpringbootTest extends BaseTest {
 	private FlowExecutor flowExecutor;
 
 	@Test
-	public void testBase() throws Exception {
+	public void testBase1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertTrue(response.isSuccess());
+	}
+
+	@Test
+	public void testBase2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assertions.assertFalse(response.isSuccess());
 	}
 
 }
