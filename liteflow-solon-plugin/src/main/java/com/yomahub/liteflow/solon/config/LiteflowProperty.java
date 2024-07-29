@@ -4,6 +4,8 @@ import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
 
+import java.util.Map;
+
 /**
  * 执行流程主要的参数类
  *
@@ -23,6 +25,8 @@ public class LiteflowProperty {
 
 	// 流程资源扩展数据
 	private String ruleSourceExtData;
+
+	private Map<String, String> ruleSourceExtDataMap;
 
 	// slot的数量
 	private int slotSize;
@@ -250,5 +254,17 @@ public class LiteflowProperty {
 
 	public void setParseMode(ParseModeEnum parseMode) {
 		this.parseMode = parseMode;
+	}
+
+	public Map<String, String> getRuleSourceExtDataMap() {
+		return ruleSourceExtDataMap;
+	}
+
+	public void setRuleSourceExtDataMap(Map<String, String> ruleSourceExtDataMap) {
+		this.ruleSourceExtDataMap = ruleSourceExtDataMap;
+	}
+
+	public Boolean getFallbackCmpEnable() {
+		return fallbackCmpEnable;
 	}
 }

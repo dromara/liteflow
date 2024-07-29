@@ -18,7 +18,7 @@ import org.noear.solon.core.AppContext;
 @Configuration
 public class LiteflowMainAutoConfiguration {
 
-	@Inject(value = "${liteflow.parseOnStart}", required = false)
+	@Inject(value = "${liteflow.parseOnStart:true}", required = false)
 	boolean parseOnStart;
 
 	@Inject
