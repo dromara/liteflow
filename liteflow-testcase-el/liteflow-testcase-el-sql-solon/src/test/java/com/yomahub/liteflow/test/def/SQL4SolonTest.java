@@ -12,7 +12,7 @@ import org.noear.solon.test.SolonJUnit5Extension;
 
 @ExtendWith(SolonJUnit5Extension.class)
 @Import(profiles = "classpath:/application.properties")
-public class SQLWithXmlELSpringbootTest extends BaseTest {
+public class SQL4SolonTest extends BaseTest {
 
     @Inject
     private FlowExecutor flowExecutor;
