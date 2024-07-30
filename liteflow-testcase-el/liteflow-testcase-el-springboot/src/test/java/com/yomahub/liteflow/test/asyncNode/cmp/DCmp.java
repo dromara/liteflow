@@ -9,7 +9,8 @@ public class DCmp extends NodeComponent {
 
 	@Override
 	public void process() throws Exception {
-		Thread.sleep(1000);
+		System.out.println(Thread.currentThread().getName());
+		Thread.sleep(199000);
 		DefaultContext context = this.getFirstContextBean();
 		synchronized (NodeComponent.class) {
 			if (context.hasData("check")) {
