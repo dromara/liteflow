@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.slot;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
@@ -22,12 +23,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -98,6 +94,8 @@ public class Slot {
 	private static final TransmittableThreadLocal<Deque<Condition>> conditionStack = TransmittableThreadLocal.withInitial(ConcurrentLinkedDeque::new);
 
 	private Boolean routeResult;
+
+	private List<String> timeoutItemList;
 
 	public Slot() {
 	}
@@ -502,5 +500,16 @@ public class Slot {
 
 	public void setRouteResult(Boolean routeResult) {
 		this.routeResult = routeResult;
+	}
+
+	public void addTimeoutItem(String executorItem){
+		if (CollectionUtil.isEmpty(timeoutItemList)){
+			timeoutItemList = new ArrayList<>();
+		}
+		timeoutItemList.add(executorItem);
+	}
+
+	public List<String> getTimeoutItemList(){
+		return timeoutItemList;
 	}
 }

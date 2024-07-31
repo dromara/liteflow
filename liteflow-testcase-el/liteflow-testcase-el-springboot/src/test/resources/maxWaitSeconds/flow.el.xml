@@ -16,7 +16,7 @@
     <!-- 并行编排测试 -->
     <chain name="when1">
         <!-- 超时 -->
-        WHEN(a,c).maxWaitSeconds(3);
+        WHEN(a,c,g).maxWaitSeconds(3);
     </chain>
     <chain name="when2">
         <!-- 不超时 -->

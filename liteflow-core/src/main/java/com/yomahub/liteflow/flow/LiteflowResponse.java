@@ -175,4 +175,8 @@ public class LiteflowResponse {
 	public void setChainId(String chainId) {
 		this.chainId = chainId;
 	}
+
+	public List<String> getTimeoutItems(){
+		return slot.getTimeoutItemList();
+	}
 }

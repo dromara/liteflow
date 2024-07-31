@@ -225,9 +225,11 @@ public abstract class ParallelStrategyExecutor {
                 .filter(WhenFutureObj::isTimeout)
                 .collect(Collectors.toList());
 
-        // 输出超时信息
-        timeOutWhenFutureObjList.forEach(whenFutureObj -> LOG.warn(
-                "executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", whenFutureObj.getExecutorId()));
+        // 输出超时信息并记录
+        timeOutWhenFutureObjList.forEach(whenFutureObj -> {
+            slot.addTimeoutItem(whenFutureObj.getExecutorId());
+            LOG.warn("executing thread has reached max-wait-seconds, thread canceled.Execute-item: [{}]", whenFutureObj.getExecutorId());
+        });
 
         // 当配置了 ignoreError = false，出现 interrupted 或者 !f.get() 的情况，将抛出 WhenExecuteException
         if (!whenCondition.isIgnoreError()) {
