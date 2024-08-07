@@ -41,6 +41,7 @@ public class LiteFlowJdbcUtil {
                     if (checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
                         connection = dataSource.getConnection();
                         LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                        break;
                     } else {
                         LOG.info("check dataSourceName[{}],but not has liteflow config", dataSourceName);
                     }
