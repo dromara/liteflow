@@ -215,7 +215,7 @@ public abstract class ParallelStrategyExecutor {
                 return whenFutureObj;
             } catch (InterruptedException | ExecutionException e) {
                 interrupted[0] = true;
-                return null;
+                return WhenFutureObj.fail("Unknown", e);
             }
         }).collect(Collectors.toList());
 

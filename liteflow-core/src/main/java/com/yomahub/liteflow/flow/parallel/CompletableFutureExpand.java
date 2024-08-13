@@ -17,7 +17,15 @@ public class CompletableFutureExpand {
             return future;
         }
 
-        return future.whenComplete(new Canceller(Delayer.delay(new Timeout<>(future, timeoutDefaultObj), timeout, unit)));
+        return future.whenComplete(
+                new Canceller(
+                        Delayer.delay(
+                                new Timeout<>(future, timeoutDefaultObj),
+                                timeout,
+                                unit
+                        )
+                )
+        );
     }
 
     /**
