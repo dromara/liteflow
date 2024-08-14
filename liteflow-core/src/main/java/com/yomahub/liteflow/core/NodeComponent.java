@@ -68,7 +68,7 @@ public abstract class NodeComponent{
 
 	/** 当前对象为单例，注册进spring上下文，但是node实例不是单例，这里通过对node实例的引用来获得一些链路属性 **/
 
-	private final TransmittableThreadLocal<Stack<Node>> refNodeStackTL = new TransmittableThreadLocal<>();
+	private final ThreadLocal<Stack<Node>> refNodeStackTL = new ThreadLocal<>();
 
 	public NodeComponent() {
 		// 反射判断是否重写了rollback方法
@@ -389,7 +389,8 @@ public abstract class NodeComponent{
 			stack.push(refNode);
 			this.refNodeStackTL.set(stack);
 		}else{
-			if (!this.refNodeStackTL.get().peek().equals(refNode)){
+			Node compareNode = this.refNodeStackTL.get().peek();
+			if (!compareNode.equals(refNode)) {
 				this.refNodeStackTL.get().push(refNode);
 			}
 		}
