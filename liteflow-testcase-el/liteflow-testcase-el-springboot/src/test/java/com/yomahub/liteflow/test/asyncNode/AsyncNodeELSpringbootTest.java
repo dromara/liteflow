@@ -32,7 +32,7 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	/*****
 	 * 标准chain 嵌套选择 嵌套子chain进行执行 验证了when情况下 多个node是并行执行 验证了默认参数情况下 when可以加载执行
 	 **/
-	//@Test
+	@Test
 	public void testAsyncFlow1() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "it's a base request");
 		Assertions.assertTrue(response.isSuccess());
@@ -40,7 +40,7 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	}
 
 	// 这个和test1有点类似，只不过进一步验证了步骤
-	//@Test
+	@Test
 	public void testAsyncFlow2() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "it's a base request");
 		Assertions.assertTrue(
@@ -50,14 +50,14 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 					.contains(response.getExecuteStepStr()));
 	}
 
-	//@Test
+	@Test
 	public void testAsyncFlow3() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "it's a base request");
 		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试errorResume,默认的errorResume为false，这里测试默认的
-	//@Test
+	@Test
 	public void testAsyncFlow3_1() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3-1", "it's a base request");
 		Assertions.assertFalse(response.isSuccess());
@@ -65,14 +65,14 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	}
 
 	// 测试errorResume,默认的errorResume为false，这里设置为true
-	//@Test
+	@Test
 	public void testAsyncFlow3_2() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3-2", "it's a base request");
 		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 相同group的并行组，会合并，并且errorResume根据第一个when来，这里第一个when配置了不抛错
-	//@Test
+	@Test
 	public void testAsyncFlow4() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "it's a base request");
 		// 因为不记录错误，所以最终结果是true
@@ -86,7 +86,7 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	}
 
 	// 相同group的并行组，会合并，并且errorResume根据第一个when来，这里第一个when配置了会抛错
-	//@Test
+	@Test
 	public void testAsyncFlow5() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "it's a base request");
 		// 整个并行组是报错的，所以最终结果是false
@@ -100,7 +100,7 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	}
 
 	// 不同group的并行组，不会合并，第一个when的errorResume是false，会抛错，那第二个when就不会执行
-	//@Test
+	@Test
 	public void testAsyncFlow6() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "it's a base request");
 		// 第一个when会抛错，所以最终结果是false
@@ -114,7 +114,7 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 	}
 
 	// 不同group的并行组，不会合并，第一个when的errorResume是true，不会报错，那第二个when还会继续执行，但是第二个when的errorResume是false，所以第二个when会报错
-	//@Test
+	@Test
 	public void testAsyncFlow7() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain7", "it's a base request");
 		// 第二个when会抛错，所以最终结果是false
