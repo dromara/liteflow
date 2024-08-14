@@ -30,6 +30,7 @@ import com.yomahub.liteflow.util.JsonUtil;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Stack;
 
 /**
  * 普通组件抽象类
@@ -67,13 +68,7 @@ public abstract class NodeComponent{
 
 	/** 当前对象为单例，注册进spring上下文，但是node实例不是单例，这里通过对node实例的引用来获得一些链路属性 **/
 
-	private final TransmittableThreadLocal<Node> refNodeTL = new TransmittableThreadLocal<>();
-
-	/**
-	 ******************* 以下的属性为线程附加属性********************
-	 * 线程属性是指每一个request的值都是不一样的
-	 * 这里NodeComponent是单例，所以要用ThreadLocal来修饰
-	 */
+	private final ThreadLocal<Stack<Node>> refNodeStackTL = new ThreadLocal<>();
 
 	public NodeComponent() {
 		// 反射判断是否重写了rollback方法
@@ -225,7 +220,7 @@ public abstract class NodeComponent{
 
 	// 是否结束整个流程(不往下继续执行)
 	public boolean isEnd() {
-		Boolean isEnd = this.refNodeTL.get().getIsEnd();
+		Boolean isEnd = this.getRefNode().getIsEnd();
 		if (ObjectUtil.isNull(isEnd)) {
 			return false;
 		}else {
@@ -235,15 +230,15 @@ public abstract class NodeComponent{
 
 	// 设置是否结束整个流程
 	public void setIsEnd(boolean isEnd) {
-		this.refNodeTL.get().setIsEnd(isEnd);
+		this.getRefNode().setIsEnd(isEnd);
 	}
 
 	public void setIsContinueOnError(boolean isContinueOnError) {
-		this.refNodeTL.get().setIsContinueOnErrorResult(isContinueOnError);
+		this.getRefNode().setIsContinueOnErrorResult(isContinueOnError);
 	}
 
 	public Integer getSlotIndex() {
-		return this.refNodeTL.get().getSlotIndex();
+		return this.getRefNode().getSlotIndex();
 	}
 
 	public Slot getSlot() {
@@ -327,7 +322,7 @@ public abstract class NodeComponent{
 	}
 
 	public String getTag() {
-		return this.refNodeTL.get().getTag();
+		return this.getRefNode().getTag();
 	}
 
 	public MonitorBus getMonitorBus() {
@@ -385,15 +380,28 @@ public abstract class NodeComponent{
 	}
 
 	public Node getRefNode() {
-		return this.refNodeTL.get();
+		return this.refNodeStackTL.get().peek();
 	}
 
 	public void setRefNode(Node refNode) {
-		this.refNodeTL.set(refNode);
+		if (this.refNodeStackTL.get() == null){
+			Stack<Node> stack = new Stack<>();
+			stack.push(refNode);
+			this.refNodeStackTL.set(stack);
+		}else{
+			Node compareNode = this.refNodeStackTL.get().peek();
+			if (!compareNode.equals(refNode)) {
+				this.refNodeStackTL.get().push(refNode);
+			}
+		}
 	}
 
 	public void removeRefNode() {
-		this.refNodeTL.remove();
+		if (this.refNodeStackTL.get().size() > 1) {
+			this.refNodeStackTL.get().pop();
+		}else{
+			this.refNodeStackTL.remove();
+		}
 	}
 
 	public <T> T getCmpData(Class<T> clazz) {
@@ -408,11 +416,11 @@ public abstract class NodeComponent{
 	}
 
 	public Integer getLoopIndex() {
-		return this.refNodeTL.get().getLoopIndex();
+		return this.getRefNode().getLoopIndex();
 	}
 
 	public <T> T getCurrLoopObj() {
-		return this.refNodeTL.get().getCurrLoopObject();
+		return this.getRefNode().getCurrLoopObject();
 	}
 
 	@Deprecated

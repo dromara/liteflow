@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(v.tag("subChain1"));
+    </chain>
+
+    <chain name="subChain1">
+        THEN(v.tag("subChain2"));
+    </chain>
+
+    <chain name="subChain2">
+        THEN(a, b);
+    </chain>
+</flow>
