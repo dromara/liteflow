@@ -33,7 +33,6 @@ public class LOGOPrinter {
 		str.append("		Version: " + VERSION_NO + "\n");
 		str.append("		Make your code amazing.\n");
 		str.append("		website：https://liteflow.cc\n");
-		str.append("		wechat：bryan_31\n");
 		str.append(
 				"================================================================================================\n");
 		LOG.info(str.toString());
