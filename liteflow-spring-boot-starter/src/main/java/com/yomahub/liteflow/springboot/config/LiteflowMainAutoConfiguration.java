@@ -7,6 +7,7 @@ import com.yomahub.liteflow.spi.spring.SpringAware;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.spring.DeclBeanDefinition;
 import com.yomahub.liteflow.springboot.LiteflowExecutorInit;
+import com.yomahub.liteflow.springboot.LiteflowSpiInit;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -71,5 +72,11 @@ public class LiteflowMainAutoConfiguration {
 	@ConditionalOnProperty(prefix = "liteflow", name = "monitor.enable-log", havingValue = "true")
 	public MonitorBus monitorBus(LiteflowConfig liteflowConfig, SpringAware springAware) {
 		return new MonitorBus(liteflowConfig);
+	}
+
+	// 初始化 SPI ,避免多线程场景下类加载器不同导致的加载不到 SPI 实现类
+	@Bean("liteflowSpiInit")
+	public LiteflowSpiInit liteflowSpiInit() {
+		return new LiteflowSpiInit();
 	}
 }
