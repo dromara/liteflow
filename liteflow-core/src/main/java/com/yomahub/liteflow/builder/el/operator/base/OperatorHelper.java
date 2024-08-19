@@ -40,7 +40,7 @@ public class OperatorHelper {
 	public static void checkObjectSizeGteTwo(Object[] objects) throws QLException {
 		checkObjectSizeGtZero(objects);
 		if (objects.length < 2) {
-			throw new QLException("parameter error");
+			throw new QLException("parameter size error");
 		}
 	}
 
@@ -81,7 +81,7 @@ public class OperatorHelper {
 		checkObjectSizeGtZero(objects);
 
 		if (objects.length != size) {
-			throw new QLException("parameter error");
+			throw new QLException("parameter size error");
 		}
 	}
 
@@ -96,7 +96,7 @@ public class OperatorHelper {
 		checkObjectSizeGtZero(objects);
 
 		if (objects.length != size1 && objects.length != size2) {
-			throw new QLException("parameter error");
+			throw new QLException("parameter size error");
 		}
 	}
 
