@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.spi.holder;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.spi.ContextCmpInit;
 import com.yomahub.liteflow.spi.DeclComponentParser;
 
 import java.util.ArrayList;
@@ -26,5 +25,9 @@ public class DeclComponentParserHolder {
             declComponentParser = list.get(0);
         }
         return declComponentParser;
+    }
+
+    public static void clean(){
+        declComponentParser = null;
     }
 }
