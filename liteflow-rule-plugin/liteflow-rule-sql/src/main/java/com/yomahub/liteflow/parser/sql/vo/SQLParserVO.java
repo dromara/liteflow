@@ -72,6 +72,16 @@ public class SQLParserVO {
     private String chainEnableField;
 
     /**
+     * chain 后缀
+     */
+    private String chainSuffixType;
+
+    /**
+     * chain 后缀字段名
+     */
+    private String chainSuffixTypeField = "chain_suffix_type";
+
+    /**
      * 脚本 node 表名
      */
     private String scriptTableName;
@@ -335,5 +345,21 @@ public class SQLParserVO {
 
     public void setNamespaceField(String namespaceField) {
         this.namespaceField = namespaceField;
+    }
+
+    public String getChainSuffixType() {
+        return chainSuffixType;
+    }
+
+    public void setChainSuffixType(String chainSuffixType) {
+        this.chainSuffixType = chainSuffixType;
+    }
+
+    public String getChainSuffixTypeField() {
+        return chainSuffixTypeField;
+    }
+
+    public void setChainSuffixTypeField(String chainSuffixTypeField) {
+        this.chainSuffixTypeField = chainSuffixTypeField;
     }
 }

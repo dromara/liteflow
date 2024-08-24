@@ -29,10 +29,10 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
         ChainVO chainVO = new ChainVO();
         chainVO.setChainId(getStringFromRsWithCheck(rs, super.config.getChainNameField()));
         chainVO.setBody(getStringFromRsWithCheck(rs, super.config.getElDataField()));
-        if (StrUtil.isNotBlank(super.config.getNamespaceField())){
+        if (StrUtil.isNotBlank(super.config.getNamespaceField())) {
             chainVO.setNamespace(getStringFromRs(rs, super.config.getNamespaceField()));
         }
-        if (StrUtil.isNotBlank(super.config.getRouteField())){
+        if (StrUtil.isNotBlank(super.config.getRouteField())) {
             chainVO.setRoute(getStringFromRs(rs, super.config.getRouteField()));
         }
         return chainVO;
@@ -56,8 +56,14 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
     public String buildQuerySql() {
         String chainTableName = super.config.getChainTableName();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
+        String chainSuffixTypeField = super.config.getChainSuffixTypeField();
 
-        return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
+        if (StrUtil.isNotBlank(chainSuffixTypeField)) {
+            return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_SUFFIX, chainTableName,
+                    chainApplicationNameField, chainSuffixTypeField);
+        } else {
+            return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
+        }
     }
 
     @Override
@@ -68,19 +74,19 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
         String chainApplicationNameField = super.config.getChainApplicationNameField();
         String applicationName = super.config.getApplicationName();
 
-        if (StrUtil.isBlank(chainTableName)){
+        if (StrUtil.isBlank(chainTableName)) {
             throw new ELSQLException("You did not define the chainTableName property");
         }
-        if (StrUtil.isBlank(elDataField)){
+        if (StrUtil.isBlank(elDataField)) {
             throw new ELSQLException("You did not define the elDataField property");
         }
-        if (StrUtil.isBlank(chainNameField)){
+        if (StrUtil.isBlank(chainNameField)) {
             throw new ELSQLException("You did not define the chainNameField property");
         }
-        if (StrUtil.isBlank(chainApplicationNameField)){
+        if (StrUtil.isBlank(chainApplicationNameField)) {
             throw new ELSQLException("You did not define the chainApplicationNameField property");
         }
-        if (StrUtil.isBlank(applicationName)){
+        if (StrUtil.isBlank(applicationName)) {
             throw new ELSQLException("You did not define the applicationName property");
         }
     }

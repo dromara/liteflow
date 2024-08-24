@@ -10,9 +10,7 @@ import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * sql 读取抽象类，维护公共方法
@@ -52,6 +50,10 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
             stmt.setString(1, config.getApplicationName());
+
+            if (sqlCmd.contains(config.getChainSuffixTypeField()) && StrUtil.isNotBlank(config.getChainSuffixType())) {
+                stmt.setString(2, config.getChainSuffixType());
+            }
 
             rs = stmt.executeQuery();
 
