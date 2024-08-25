@@ -52,7 +52,7 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             stmt.setString(1, config.getApplicationName());
 
             if (sqlCmd.contains(config.getChainSuffixTypeField()) && StrUtil.isNotBlank(config.getChainSuffixType())) {
-                stmt.setString(2, config.getChainSuffixType());
+                stmt.setString(2, "%" + config.getChainSuffixType());
             }
 
             rs = stmt.executeQuery();
