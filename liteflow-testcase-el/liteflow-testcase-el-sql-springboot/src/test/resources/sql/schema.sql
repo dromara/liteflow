@@ -6,7 +6,7 @@ create table IF NOT EXISTS `EL_TABLE`
     `el_data`    varchar(1024) NOT NULL,
     `route`     varchar(1024),
     `namespace` varchar(32),
-    `chain_suffix_type` varchar(32),
+    `CUSTOM_FILTER_TYPE` varchar(32),
     PRIMARY KEY (`id`)
 );
 

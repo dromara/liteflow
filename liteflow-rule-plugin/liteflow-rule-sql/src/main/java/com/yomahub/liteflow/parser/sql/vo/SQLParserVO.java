@@ -72,14 +72,19 @@ public class SQLParserVO {
     private String chainEnableField;
 
     /**
-     * chain 后缀
+     * 自定义过滤值
      */
-    private String chainSuffixType;
+    private String customFilterType;
 
     /**
-     * chain 后缀字段名
+     * 自定义过滤操作符
      */
-    private String chainSuffixTypeField = "chain_suffix_type";
+    private String customFilterOperator;
+
+    /**
+     * 自定义过滤字段名
+     */
+    private String customFilterTypeField = "custom_filter_type";
 
     /**
      * 脚本 node 表名
@@ -347,19 +352,27 @@ public class SQLParserVO {
         this.namespaceField = namespaceField;
     }
 
-    public String getChainSuffixType() {
-        return chainSuffixType;
+    public String getCustomFilterType() {
+        return customFilterType;
     }
 
-    public void setChainSuffixType(String chainSuffixType) {
-        this.chainSuffixType = chainSuffixType;
+    public void setCustomFilterType(String customFilterType) {
+        this.customFilterType = customFilterType;
     }
 
-    public String getChainSuffixTypeField() {
-        return chainSuffixTypeField;
+    public String getCustomFilterTypeField() {
+        return customFilterTypeField;
     }
 
-    public void setChainSuffixTypeField(String chainSuffixTypeField) {
-        this.chainSuffixTypeField = chainSuffixTypeField;
+    public void setCustomFilterTypeField(String customFilterTypeField) {
+        this.customFilterTypeField = customFilterTypeField;
+    }
+
+    public String getCustomFilterOperator() {
+        return customFilterOperator;
+    }
+
+    public void setCustomFilterOperator(String customFilterOperator) {
+        this.customFilterOperator = customFilterOperator;
     }
 }

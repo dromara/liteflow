@@ -51,8 +51,8 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
             stmt.setString(1, config.getApplicationName());
 
-            if (sqlCmd.contains(config.getChainSuffixTypeField()) && StrUtil.isNotBlank(config.getChainSuffixType())) {
-                stmt.setString(2, "%" + config.getChainSuffixType());
+            if (sqlCmd.contains(config.getCustomFilterTypeField()) && StrUtil.isNotBlank(config.getCustomFilterType())) {
+                stmt.setString(2, config.getCustomFilterType());
             }
 
             rs = stmt.executeQuery();
