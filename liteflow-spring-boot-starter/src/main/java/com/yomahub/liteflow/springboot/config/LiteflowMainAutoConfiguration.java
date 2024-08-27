@@ -7,7 +7,7 @@ import com.yomahub.liteflow.spi.spring.SpringAware;
 import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.spring.DeclBeanDefinition;
 import com.yomahub.liteflow.springboot.LiteflowExecutorInit;
-import com.yomahub.liteflow.springboot.LiteflowSpiInit;
+import com.yomahub.liteflow.spring.LiteflowSpiInit;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

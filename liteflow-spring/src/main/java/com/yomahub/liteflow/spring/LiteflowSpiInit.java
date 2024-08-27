@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.springboot;
+package com.yomahub.liteflow.spring;
 
 import com.yomahub.liteflow.spi.holder.*;
 import org.springframework.beans.factory.SmartInitializingSingleton;
