@@ -75,7 +75,7 @@ public class LiteflowMainAutoConfiguration {
 	}
 
 	// 初始化 SPI ,避免多线程场景下类加载器不同导致的加载不到 SPI 实现类
-	@Bean("liteflowSpiInit")
+	@Bean
 	public LiteflowSpiInit liteflowSpiInit() {
 		return new LiteflowSpiInit();
 	}
