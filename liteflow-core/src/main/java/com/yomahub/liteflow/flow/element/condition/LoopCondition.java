@@ -43,7 +43,7 @@ public abstract class LoopCondition extends Condition {
             ((Condition) executableItem).getExecutableGroup()
                     .forEach((key, value) -> value.forEach(executable -> setLoopIndex(executable, index)));
         } else if (executableItem instanceof Node) {
-            ((Node) executableItem).setLoopIndex(index);
+            ((Node) executableItem).setLoopIndex(this, index);
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class LoopCondition extends Condition {
             ((Condition) executableItem).getExecutableGroup()
                     .forEach((key, value) -> value.forEach(executable -> setCurrLoopObject(executable, obj)));
         } else if (executableItem instanceof Node) {
-            ((Node) executableItem).setCurrLoopObject(obj);
+            ((Node) executableItem).setCurrLoopObject(this, obj);
         }
     }
 

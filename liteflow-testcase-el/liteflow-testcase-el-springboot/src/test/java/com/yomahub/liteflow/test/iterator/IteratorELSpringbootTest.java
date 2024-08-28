@@ -56,4 +56,16 @@ public class IteratorELSpringbootTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain3");
 		Assertions.assertTrue(response.isSuccess());
 	}
+
+	//多层迭代循环，取各层obj
+	@Test
+	public void testIt4() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain4");
+		DefaultContext context = response.getFirstContextBean();
+		String indexStr = context.getData("index_str");
+		String objStr = context.getData("obj_str");
+		System.out.println(indexStr);
+		System.out.println(objStr);
+		Assertions.assertTrue(response.isSuccess());
+	}
 }

@@ -17,12 +17,16 @@ import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.TupleOf2;
+
+import java.util.Stack;
 
 /**
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
@@ -60,10 +64,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
 	// 循环下标
-	private TransmittableThreadLocal<Integer> loopIndexTL = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Stack<TupleOf2<Integer, Integer>>> loopIndexTL = new TransmittableThreadLocal<>();
 
 	// 迭代对象
-	private TransmittableThreadLocal<Object> currLoopObject = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Stack<TupleOf2<Integer, Object>>> loopObjectTL = new TransmittableThreadLocal<>();
 
 	// 当前slot的index
 	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
@@ -290,28 +294,106 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		this.isContinueOnErrorResult.remove();
 	}
 
-	public void setLoopIndex(int index) {
-		this.loopIndexTL.set(index);
+	public void setLoopIndex(LoopCondition condition, int index) {
+		if (this.loopIndexTL.get() == null){
+			Stack<TupleOf2<Integer, Integer>> stack = new Stack<>();
+			TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
+			stack.push(tuple);
+			this.loopIndexTL.set(stack);
+		}else{
+			Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+			TupleOf2<Integer, Integer> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
+			if (thisConditionTuple != null){
+				thisConditionTuple.setB(index);
+			}else{
+				TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
+				stack.push(tuple);
+			}
+		}
 	}
 
 	public Integer getLoopIndex() {
-		return this.loopIndexTL.get();
+		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+		if (stack != null){
+			return stack.peek().getB();
+		}else{
+			return null;
+		}
+	}
+
+	public Integer getPreLoopIndex(){
+		return getPreNLoopIndex(1);
+	}
+
+	public Integer getPreNLoopIndex(int n){
+		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+		if (stack != null && stack.size() > n){
+			return stack.elementAt(stack.size() - (n + 1)).getB();
+		}else{
+			return null;
+		}
 	}
 
 	public void removeLoopIndex() {
-		this.loopIndexTL.remove();
+		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+		if (stack != null){
+			if (stack.size() > 1){
+				stack.pop();
+			}else{
+				this.loopIndexTL.remove();
+			}
+		}
 	}
 
-	public void setCurrLoopObject(Object obj) {
-		this.currLoopObject.set(obj);
+	public void setCurrLoopObject(LoopCondition condition, Object obj) {
+		if (this.loopObjectTL.get() == null){
+			Stack<TupleOf2<Integer, Object>> stack = new Stack<>();
+			TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
+			stack.push(tuple);
+			this.loopObjectTL.set(stack);
+		}else{
+			Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+			TupleOf2<Integer, Object> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
+			if (thisConditionTuple != null){
+				thisConditionTuple.setB(obj);
+			}else{
+				TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
+				stack.push(tuple);
+			}
+		}
 	}
 
 	public <T> T getCurrLoopObject() {
-		return (T) this.currLoopObject.get();
+		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+		if (stack != null){
+			return (T) stack.peek().getB();
+		}else{
+			return null;
+		}
+	}
+
+	public <T> T getPreLoopObject(){
+		return getPreNLoopObject(1);
+	}
+
+	public <T> T getPreNLoopObject(int n){
+		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+		if (stack != null && stack.size() > n){
+			return (T) stack.elementAt(stack.size() - (n + 1)).getB();
+		}else{
+			return null;
+		}
 	}
 
 	public void removeCurrLoopObject() {
-		this.currLoopObject.remove();
+		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+		if (stack != null){
+			if (stack.size() > 1){
+				stack.pop();
+			}else{
+				this.loopObjectTL.remove();
+			}
+		}
 	}
 
 	public Integer getSlotIndex(){
@@ -355,7 +437,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	public Node clone() throws CloneNotSupportedException {
 		Node node = (Node)super.clone();
 		node.loopIndexTL = new TransmittableThreadLocal<>();
-		node.currLoopObject = new TransmittableThreadLocal<>();
+		node.loopObjectTL = new TransmittableThreadLocal<>();
 		node.accessResult = new TransmittableThreadLocal<>();
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();

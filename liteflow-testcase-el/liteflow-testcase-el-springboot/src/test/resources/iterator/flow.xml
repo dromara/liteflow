@@ -18,4 +18,10 @@
 
         );
     </chain>
+
+    <chain name="chain4">
+        ITERATOR(x1).DO(
+            ITERATOR(x2).DO(e)
+        );
+    </chain>
 </flow>

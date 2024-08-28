@@ -108,4 +108,14 @@ public class LoopELSpringbootTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain9", "arg");
 		Assertions.assertTrue(response.isSuccess());
 	}
+
+	//FOR循环多层嵌套获取下标
+	@Test
+	public void testLoop10() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain10", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		String assertStr = context.getData("index_str").toString();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("[000][001][010][011][020][021][100][101][110][111][120][121][200][201][210][211][220][221][300][301][310][311][320][321]", assertStr);
+	}
 }

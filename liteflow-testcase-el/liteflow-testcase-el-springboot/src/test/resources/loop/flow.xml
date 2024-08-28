@@ -52,4 +52,8 @@
     <chain name="chain9">
         FOR(2).DO(THEN(c, c, c));
     </chain>
+
+    <chain name="chain10">
+        FOR(4).DO(FOR(3).DO(FOR(2).DO(c)));
+    </chain>
 </flow>

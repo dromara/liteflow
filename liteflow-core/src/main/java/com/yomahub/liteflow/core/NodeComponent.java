@@ -10,7 +10,6 @@ package com.yomahub.liteflow.core;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -419,8 +418,24 @@ public abstract class NodeComponent{
 		return this.getRefNode().getLoopIndex();
 	}
 
+	public Integer getPreLoopIndex() {
+		return this.getRefNode().getPreLoopIndex();
+	}
+
+	public Integer getPreNLoopIndex(int n) {
+		return this.getRefNode().getPreNLoopIndex(n);
+	}
+
 	public <T> T getCurrLoopObj() {
 		return this.getRefNode().getCurrLoopObject();
+	}
+
+	public <T> T getPreLoopObj() {
+		return this.getRefNode().getPreLoopObject();
+	}
+
+	public <T> T getPreNLoopObj(int n) {
+		return this.getRefNode().getPreNLoopObject(n);
 	}
 
 	@Deprecated
