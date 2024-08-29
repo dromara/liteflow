@@ -77,16 +77,6 @@ public class SQLParserVO {
     private String customFilterType;
 
     /**
-     * 自定义过滤操作符
-     */
-    private String customFilterOperator;
-
-    /**
-     * 自定义过滤字段名
-     */
-    private String customFilterTypeField = "custom_filter_type";
-
-    /**
      * 脚本 node 表名
      */
     private String scriptTableName;
@@ -358,21 +348,5 @@ public class SQLParserVO {
 
     public void setCustomFilterType(String customFilterType) {
         this.customFilterType = customFilterType;
-    }
-
-    public String getCustomFilterTypeField() {
-        return customFilterTypeField;
-    }
-
-    public void setCustomFilterTypeField(String customFilterTypeField) {
-        this.customFilterTypeField = customFilterTypeField;
-    }
-
-    public String getCustomFilterOperator() {
-        return customFilterOperator;
-    }
-
-    public void setCustomFilterOperator(String customFilterOperator) {
-        this.customFilterOperator = customFilterOperator;
     }
 }

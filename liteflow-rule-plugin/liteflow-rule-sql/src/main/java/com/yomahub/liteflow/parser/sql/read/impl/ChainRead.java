@@ -56,11 +56,11 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
     public String buildQuerySql() {
         String chainTableName = super.config.getChainTableName();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
-        String chainSuffixTypeField = super.config.getCustomFilterTypeField();
-        String chainSuffixOperator = super.config.getCustomFilterOperator();
-        if (StrUtil.isNotBlank(chainSuffixTypeField) && StrUtil.isNotBlank(chainSuffixOperator)) {
+        String customFilterType = super.config.getCustomFilterType();
+
+        if (StrUtil.isNotBlank(customFilterType)) {
             return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_SUFFIX, chainTableName,
-                    chainApplicationNameField, chainSuffixTypeField, chainSuffixOperator);
+                    chainApplicationNameField, customFilterType);
         } else {
             return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
         }
