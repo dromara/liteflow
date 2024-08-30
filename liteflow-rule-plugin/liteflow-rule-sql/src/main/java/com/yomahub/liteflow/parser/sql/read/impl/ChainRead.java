@@ -59,8 +59,15 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
         String customFilterType = super.config.getCustomFilterType();
 
         if (StrUtil.isNotBlank(customFilterType)) {
+            String replace = customFilterType.replace("where", "").replace("WHERE", "");
+            String trim = replace.trim();
+
+            if (trim.startsWith("AND") || trim.startsWith("and")) {
+                trim = trim.substring(3);
+            }
+
             return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_SUFFIX, chainTableName,
-                    chainApplicationNameField, customFilterType);
+                    chainApplicationNameField, trim);
         } else {
             return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
         }
