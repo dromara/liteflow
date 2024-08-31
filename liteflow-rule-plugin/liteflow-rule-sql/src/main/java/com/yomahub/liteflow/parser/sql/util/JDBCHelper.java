@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.sql.util;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -9,15 +10,15 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.constant.ReadType;
 
-import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.polling.SqlReadPollTask;
-import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
+import com.yomahub.liteflow.parser.sql.read.CustomSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -25,8 +26,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static com.yomahub.liteflow.parser.constant.SqlReadConstant.*;
 
@@ -41,6 +40,8 @@ public class JDBCHelper {
     private SQLParserVO sqlParserVO;
 
     private static JDBCHelper INSTANCE;
+
+    private CustomSqlRead customSqlRead;
 
     /**
      * 定时任务线程池核心线程数
@@ -95,6 +96,13 @@ public class JDBCHelper {
 
         // 获取 chain 数据
         List<ChainVO> chainVOList = chainRead.read();
+        if (ContextAwareHolder.loadContextAware().hasBean("CustomSqlRead")) {
+            this.customSqlRead = ContextAwareHolder.loadContextAware().getBean("CustomSqlRead");
+            List customChain = customSqlRead.getCustomChain();
+            if (CollectionUtil.isNotEmpty(customChain)) {
+                chainVOList = customChain;
+            }
+        }
         List<String> chainList = new ArrayList<>();
 
         chainVOList.forEach(
