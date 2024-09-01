@@ -72,9 +72,14 @@ public class SQLParserVO {
     private String chainEnableField;
 
     /**
-     * 自定义过滤值
+     * 后缀 自定义过滤 sql
      */
-    private String customFilterType;
+    private String customFilterSql;
+
+    /**
+     * 自定义 sql
+     */
+    private String customSql;
 
     /**
      * 脚本 node 表名
@@ -342,11 +347,19 @@ public class SQLParserVO {
         this.namespaceField = namespaceField;
     }
 
-    public String getCustomFilterType() {
-        return customFilterType;
+    public String getCustomFilterSql() {
+        return customFilterSql;
     }
 
-    public void setCustomFilterType(String customFilterType) {
-        this.customFilterType = customFilterType;
+    public void setCustomFilterSql(String customFilterSql) {
+        this.customFilterSql = customFilterSql;
+    }
+
+    public String getCustomSql() {
+        return customSql;
+    }
+
+    public void setCustomSql(String customSql) {
+        this.customSql = customSql;
     }
 }

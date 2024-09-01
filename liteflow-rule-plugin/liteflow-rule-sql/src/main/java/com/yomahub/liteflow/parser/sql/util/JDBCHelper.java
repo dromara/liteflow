@@ -41,8 +41,6 @@ public class JDBCHelper {
 
     private static JDBCHelper INSTANCE;
 
-    private CustomSqlRead customSqlRead;
-
     /**
      * 定时任务线程池核心线程数
      */
@@ -96,13 +94,6 @@ public class JDBCHelper {
 
         // 获取 chain 数据
         List<ChainVO> chainVOList = chainRead.read();
-        if (ContextAwareHolder.loadContextAware().hasBean("CustomSqlRead")) {
-            this.customSqlRead = ContextAwareHolder.loadContextAware().getBean("CustomSqlRead");
-            List customChain = customSqlRead.getCustomChain();
-            if (CollectionUtil.isNotEmpty(customChain)) {
-                chainVOList = customChain;
-            }
-        }
         List<String> chainList = new ArrayList<>();
 
         chainVOList.forEach(

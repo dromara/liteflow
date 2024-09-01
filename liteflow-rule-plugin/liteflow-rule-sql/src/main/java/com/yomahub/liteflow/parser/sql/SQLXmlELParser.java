@@ -9,11 +9,13 @@ import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
+import com.yomahub.liteflow.parser.sql.read.CustomSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Objects;
@@ -32,6 +34,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
 
     private static final String ERROR_COMMON_MSG = "rule-source-ext-data is empty";
 
+    // 返回用户接口自定义sql
+    private CustomSqlRead customSqlRead;
+
     /**
      * 构造函数
      */
@@ -47,6 +52,15 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             }
             if (Objects.isNull(sqlParserVO)) {
                 throw new ELSQLException(ERROR_COMMON_MSG);
+            }
+
+            // 自定义sql
+            if (ContextAwareHolder.loadContextAware().hasBean("CustomSqlRead")) {
+                this.customSqlRead = ContextAwareHolder.loadContextAware().getBean("CustomSqlRead");
+                String customChainSql = customSqlRead.getCustomChainSql();
+                if (StrUtil.isNotBlank(customChainSql)) {
+                    sqlParserVO.setCustomSql(customChainSql);
+                }
             }
 
             // 检查配置文件

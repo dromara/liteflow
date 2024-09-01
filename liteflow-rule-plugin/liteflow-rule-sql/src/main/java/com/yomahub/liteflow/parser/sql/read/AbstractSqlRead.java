@@ -49,7 +49,10 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
-            stmt.setString(1, config.getApplicationName());
+
+            if (StrUtil.isBlank(config.getCustomSql())) {
+                stmt.setString(1, config.getApplicationName());
+            }
 
             rs = stmt.executeQuery();
 
