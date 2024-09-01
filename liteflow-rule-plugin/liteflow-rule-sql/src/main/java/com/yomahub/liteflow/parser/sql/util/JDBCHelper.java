@@ -93,7 +93,7 @@ public class JDBCHelper {
         SqlRead<ScriptVO> scriptRead = SqlReadFactory.getSqlRead(ReadType.SCRIPT);
 
         // 获取 chain 数据
-        List<ChainVO> chainVOList = chainRead.read();
+        List<ChainVO> chainVOList = chainRead.read(ReadType.CHAIN);
         List<String> chainList = new ArrayList<>();
 
         chainVOList.forEach(
@@ -104,7 +104,7 @@ public class JDBCHelper {
         String chainsContent = CollUtil.join(chainList, StrUtil.EMPTY);
 
         // 获取脚本数据
-        List<ScriptVO> scriptVOList = scriptRead.read();
+        List<ScriptVO> scriptVOList = scriptRead.read(ReadType.SCRIPT);
         List<String> scriptList = new ArrayList<>();
 
         scriptVOList.forEach(scriptVO -> {
@@ -139,8 +139,8 @@ public class JDBCHelper {
         pollExecutor.scheduleAtFixedRate(
                 () -> {
                     try {
-                        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute();
-                        SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute();
+                        SqlReadFactory.getSqlReadPollTask(ReadType.SCRIPT).execute(ReadType.SCRIPT);
+                        SqlReadFactory.getSqlReadPollTask(ReadType.CHAIN).execute(ReadType.CHAIN);
                     } catch (Exception ex) {
                         LOG.error("poll chain fail", ex);
                     }

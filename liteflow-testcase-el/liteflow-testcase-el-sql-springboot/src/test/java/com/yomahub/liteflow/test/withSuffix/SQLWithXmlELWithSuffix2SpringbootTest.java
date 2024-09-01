@@ -37,7 +37,7 @@ public class SQLWithXmlELWithSuffix2SpringbootTest extends BaseTest {
 
 	@Test
 	public void testSQLWithXmlChain1() {
-		LiteflowResponse response = flowExecutor.execute2Resp("r_chain1", "arg");
+		LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
 		Assertions.assertEquals("c==>b==>a", response.getExecuteStepStr());
 	}
 
@@ -45,9 +45,11 @@ public class SQLWithXmlELWithSuffix2SpringbootTest extends BaseTest {
 	@Test
 	public void testSQLWithXmlChain2() {
 		when(customChain.getCustomChainSql())
-				.thenReturn(" SELECT * FROM EL_TABLE WHERE custom_filter_type = 'biz1' ");
+				.thenReturn(" SELECT APPLICATION_NAME,CHAIN_NAME,'THEN(c,b,c);' as EL_DATA,CUSTOM_FILTER_TYPE FROM EL_TABLE WHERE custom_filter_type = 'biz2' ");
 
-		LiteflowResponse response = flowExecutor.execute2Resp("r_chain1", "arg");
-		Assertions.assertEquals("c==>b==>a", response.getExecuteStepStr());
+	    flowExecutor.init(false);
+
+		LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
+		Assertions.assertEquals("c==>b==>c", response.getExecuteStepStr());
 	}
 }

@@ -31,7 +31,7 @@ public class SQLWithXmlELWithSuffixSpringbootTest extends BaseTest {
 
 	@Test
 	public void testSQLWithXmlChain1() {
-		LiteflowResponse response = flowExecutor.execute2Resp("r_chain1", "arg");
+		LiteflowResponse response = flowExecutor.execute2Resp("r_chain3", "arg");
 		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
 	}
 }

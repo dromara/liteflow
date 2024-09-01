@@ -3,6 +3,7 @@ package com.yomahub.liteflow.parser.sql.read;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
@@ -29,7 +30,7 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     }
 
     @Override
-    public List<T> read() {
+    public List<T> read(ReadType readType) {
         // 如果不需要读取直接返回
         if (!needRead()) {
             return new ArrayList<>();
@@ -50,7 +51,7 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
 
-            if (StrUtil.isBlank(config.getCustomSql())) {
+            if (!(readType == ReadType.CHAIN && StrUtil.isNotBlank(config.getCustomSql()))) {
                 stmt.setString(1, config.getApplicationName());
             }
 

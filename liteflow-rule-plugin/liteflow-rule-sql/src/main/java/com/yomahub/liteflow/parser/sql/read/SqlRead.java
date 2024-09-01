@@ -3,7 +3,6 @@ package com.yomahub.liteflow.parser.sql.read;
 import com.yomahub.liteflow.parser.constant.ReadType;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * sql 读取接口
@@ -19,7 +18,7 @@ public interface SqlRead<T> {
      *
      * @return 返回读取到的数据
      */
-    List<T> read();
+    List<T> read(ReadType readType);
 
     /**
      * 类型

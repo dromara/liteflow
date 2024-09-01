@@ -3,6 +3,7 @@ package com.yomahub.liteflow.parser.sql.polling;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
 
@@ -11,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -35,8 +35,8 @@ public abstract class AbstractSqlReadPollTask<T> implements SqlReadPollTask<T> {
     }
 
     @Override
-    public void execute() {
-        List<T> dataList = read.read();
+    public void execute(ReadType readType) {
+        List<T> dataList = read.read(readType);
         // 新增或者更新的元素
         List<T> saveElementList = new ArrayList<>();
         // 删除的元素
