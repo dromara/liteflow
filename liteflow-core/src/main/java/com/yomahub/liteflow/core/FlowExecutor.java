@@ -57,7 +57,7 @@ public class FlowExecutor {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
 
-	private static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
+	private static final String PREFIX_FORMAT_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
 
 	private LiteflowConfig liteflowConfig;
 
