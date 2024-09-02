@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/comments/application.properties")
 public class LiteflowNodeELSpringbootTest extends BaseTest {
 

@@ -9,17 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * springboot环境下异步线程超时日志打印测试
+ * solon环境下异步线程超时日志打印测试
  *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles ="classpath:/whenTimeOut/application1.properties")
 public class WhenTimeOutELSpringbootTest1 extends BaseTest {
 

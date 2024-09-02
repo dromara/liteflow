@@ -7,12 +7,13 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 import org.noear.solon.test.annotation.TestPropertySource;
 
-@ExtendWith(SolonJUnit5Extension.class)
-@TestPropertySource("classpath:/retry/application.properties")
+@SolonTest
+@Import(profiles="classpath:/retry/application.properties")
 public class RetrySpringbootTest extends BaseTest {
 
 	@Inject

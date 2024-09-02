@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
  * spring环境的json parser单元测试
@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonJUnit5Extension;
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/parser/application-json.properties")
 public class JsonParserELSpringbootTest extends BaseTest {
 

@@ -11,18 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * springboot环境EL异步循环测试
+ * solon环境EL异步循环测试
  *
  * @author zhhhhy
  * @since 2.11.0
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/parallelLoop/application.properties")
 public class ParallelLoopELSpringbootTest extends BaseTest {
 

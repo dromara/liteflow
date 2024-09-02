@@ -5,12 +5,11 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/abstractChain/application-json.properties")
 public class AbstractChainJsonELSpringBootTest extends BaseTest {
 

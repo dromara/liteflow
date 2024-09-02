@@ -5,17 +5,16 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
  * 测试显示调用子流程(yml) 单元测试
  *
  * @author justin.xu
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/abstractChain/application-yml.properties")
 public class AbstractChainYmlELSpringBootTest extends BaseTest {
 

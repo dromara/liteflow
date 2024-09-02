@@ -9,17 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 import java.util.concurrent.Future;
 
 /**
- * springboot环境执行返回future的例子
+ * solon环境执行返回future的例子
  *
  * @author Bryan.Zhang
  * @since 2.6.13
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/execute2Future/application.properties")
 public class Executor2FutureELSpringbootTest extends BaseTest {
 

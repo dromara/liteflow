@@ -64,7 +64,7 @@
 		<bytebuddy.version>1.14.10</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
-		<solon.version>2.6.5</solon.version>
+		<solon.version>2.9.2</solon.version>
 		<netty.version>4.1.84.Final</netty.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -323,6 +323,8 @@
 		</dependencies>
 	</dependencyManagement>
 
+
+
 	<build>
 		<plugins>
 			<plugin>
@@ -365,61 +367,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.7.1</version>
-			</plugin>
-			<!-- Javadoc -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Gpg Signature -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.6</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- version number -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.2.7</version>
-				<configuration>
-					<updatePomFile>true</updatePomFile>
-					<flattenMode>resolveCiFriendliesOnly</flattenMode>
-				</configuration>
-				<executions>
-					<execution>
-						<id>flatten</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>flatten</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>flatten.clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 
 			<!-- 代码格式化 -->

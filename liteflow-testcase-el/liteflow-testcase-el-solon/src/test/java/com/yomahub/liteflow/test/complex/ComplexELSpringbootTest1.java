@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境EL复杂例子测试1
+ * solon环境EL复杂例子测试1
  *
  * @author Bryan.Zhang
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/complex/application1.properties")
 public class ComplexELSpringbootTest1 extends BaseTest {
 

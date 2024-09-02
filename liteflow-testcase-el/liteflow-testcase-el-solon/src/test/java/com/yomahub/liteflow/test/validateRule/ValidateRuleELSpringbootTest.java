@@ -10,9 +10,9 @@ import com.yomahub.liteflow.test.validateRule.cmp.CCmp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 public class ValidateRuleELSpringbootTest extends BaseTest {
 
 	@Test

@@ -11,15 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境最普通的例子测试
+ * solon环境最普通的例子测试
  *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/multiContext/application.properties")
 public class MultiContextELSpringbootTest extends BaseTest {
 

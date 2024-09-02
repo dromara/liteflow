@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 //基于builder模式的单元测试
-//这里只是最基本的builder模式的测试，只是为了验证在springboot模式下的正常性
+//这里只是最基本的builder模式的测试，只是为了验证在solon模式下的正常性
 //更详细的builder模式测试用例会单独拉testcase去做
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 public class BuilderELSpringbootTest1 extends BaseTest {
 
 	@Inject

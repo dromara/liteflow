@@ -8,17 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * springboot环境下自定义声明节点的测试 不通过spring扫描的方式，通过在配置文件里定义nodes的方式
+ * solon环境下自定义声明节点的测试 不通过spring扫描的方式，通过在配置文件里定义nodes的方式
  *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/customNodes/application.properties")
 public class CustomNodesELSpringbootTest extends BaseTest {
 
