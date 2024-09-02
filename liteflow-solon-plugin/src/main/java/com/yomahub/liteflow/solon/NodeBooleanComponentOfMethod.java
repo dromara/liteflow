@@ -13,11 +13,11 @@ import java.lang.reflect.Method;
  */
 public class NodeBooleanComponentOfMethod extends NodeBooleanComponent {
 
-	final BeanWrap beanWrap;
+	private final BeanWrap beanWrap;
 
-	final Method method;
+	private final Method method;
 
-	final LiteFlowMethodEnum methodEnum;
+	private final LiteFlowMethodEnum methodEnum;
 
 	public NodeBooleanComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
 		this.beanWrap = beanWrap;

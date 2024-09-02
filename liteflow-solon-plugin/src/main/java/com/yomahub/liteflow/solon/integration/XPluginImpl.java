@@ -64,6 +64,9 @@ public class XPluginImpl implements Plugin {
 				case PROCESS_FOR:
 					node1 = new NodeForComponentOfMethod(bw, method, anno.value());
 					break;
+				case PROCESS_ITERATOR:
+					node1 = new NodeIteratorComponentOfMethod(bw, method, anno.value());
+					break;
 				default:
 					node1 = new NodeComponentOfMethod(bw, method, anno.value());
 			}

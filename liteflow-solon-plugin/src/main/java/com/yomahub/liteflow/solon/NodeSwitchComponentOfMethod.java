@@ -13,11 +13,11 @@ import java.lang.reflect.Method;
  */
 public class NodeSwitchComponentOfMethod extends NodeSwitchComponent {
 
-	final BeanWrap beanWrap;
+	private final BeanWrap beanWrap;
 
-	final Method method;
+	private final Method method;
 
-	final LiteFlowMethodEnum methodEnum;
+	private final LiteFlowMethodEnum methodEnum;
 
 	public NodeSwitchComponentOfMethod(BeanWrap beanWrap, Method method, LiteFlowMethodEnum methodEnum) {
 		this.beanWrap = beanWrap;
