@@ -22,6 +22,17 @@ import java.util.Map;
 @EnableAutoConfiguration
 public class ThenELBuilderTest extends BaseTest {
 
+    @Test
+    public void testThen0(){
+        Map<String, Object> name2Value = new HashMap<String, Object>();
+        name2Value.put("name", "zhangsan");
+        name2Value.put("age", 18);
+        System.out.println(ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true));
+        String expected = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\ta.tag(\"tagA\").data(nodeData).maxWaitSeconds(10).retry(2),\n\tnode(\"b\")\n);";
+        Assertions.assertEquals(expected,
+                ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true));
+    }
+
     // then组件测试
     @Test
     public void testThen1(){
