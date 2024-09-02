@@ -3,7 +3,7 @@ package com.yomahub.liteflow.spi.solon;
 import com.yomahub.liteflow.spi.ContextCmpInit;
 
 /**
- * Solon 环境容器上下文组件初始化实现
+ * Solon 环境容器上下文组件初始化实现（在 solon 里没有用上；机制不同）
  *
  * @author Bryan.Zhang
  * @since 2.6.11

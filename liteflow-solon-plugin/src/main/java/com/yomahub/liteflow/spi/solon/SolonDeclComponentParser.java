@@ -6,6 +6,11 @@ import com.yomahub.liteflow.spi.DeclComponentParser;
 
 import java.util.List;
 
+/**
+ * Solon 环境声明式组件解析器实现（在 solon 里没有用上；机制不同）
+ *
+ * @author noear
+ * */
 public class SolonDeclComponentParser implements DeclComponentParser {
     @Override
     public List<DeclWarpBean> parseDeclBean(Class<?> clazz) {
