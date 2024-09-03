@@ -133,6 +133,16 @@ public class ELBus {
     }
 
     /**
+     * 创建普通 node 单节点表达式
+     *
+     * @param nodeId 节点 id
+     * @return {@link CommonNodeELWrapper}
+     */
+    public static CommonNodeELWrapper commonNode(String nodeId){
+        return new CommonNodeELWrapper(nodeId);
+    }
+
+    /**
      * 创建 switch 选择表达式
      *
      * @param nodeElWrapper 选择节点
@@ -364,9 +374,9 @@ public class ELBus {
     public static void checkBooleanArgs(ELWrapper... elWrappers) {
         for(ELWrapper elWrapper : elWrappers){
             if(!(elWrapper instanceof AndELWrapper)
-            && !(elWrapper instanceof OrELWrapper)
-            && !(elWrapper instanceof NotELWrapper)
-            && !(elWrapper instanceof NodeELWrapper)){
+                    && !(elWrapper instanceof OrELWrapper)
+                    && !(elWrapper instanceof NotELWrapper)
+                    && !(elWrapper instanceof NodeELWrapper)){
                 throw new RuntimeException("param is error");
             }
         }
