@@ -101,6 +101,7 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 		String wrapScript = StrUtil.format("function process(){{}} process();", script);
 		Context context = Context.newBuilder().allowAllAccess(true).engine(engine).build();
 		context.parse(Source.create("js", wrapScript));
+		context.close();
 		return wrapScript;
 	}
 
