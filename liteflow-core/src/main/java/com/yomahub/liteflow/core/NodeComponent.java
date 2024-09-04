@@ -29,6 +29,7 @@ import com.yomahub.liteflow.util.JsonUtil;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -412,6 +413,14 @@ public abstract class NodeComponent{
 			return (T) cmpData;
 		}
 		return JsonUtil.parseObject(cmpData, clazz);
+	}
+
+	public <T> List<T> getCmpList(Class<T> clazz) {
+		String cmpData = getRefNode().getCmpData();
+		if (StrUtil.isBlank(cmpData)) {
+			return null;
+		}
+		return JsonUtil.parseList(cmpData, clazz);
 	}
 
 	public Integer getLoopIndex() {

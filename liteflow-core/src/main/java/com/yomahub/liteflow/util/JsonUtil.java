@@ -3,13 +3,17 @@ package com.yomahub.liteflow.util;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.yomahub.liteflow.exception.JsonProcessException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -68,6 +72,20 @@ public class JsonUtil {
 			return objectMapper.readValue(json, clazz);
 		}
 		catch (IOException e) {
+			String errMsg = StrUtil.format("Error while parsing text [{}],reason: {}", json, e.getMessage());
+			LOG.error(e.getMessage(), e);
+			throw new JsonProcessException(errMsg);
+		}
+	}
+
+	public static <T> List<T> parseList(String json, Class<T> clazz) {
+		if (StrUtil.isEmpty(json)) {
+			return null;
+		}
+		try {
+			CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, clazz);
+			return objectMapper.readValue(json, listType);
+		} catch (IOException e) {
 			String errMsg = StrUtil.format("Error while parsing text [{}],reason: {}", json, e.getMessage());
 			LOG.error(e.getMessage(), e);
 			throw new JsonProcessException(errMsg);
