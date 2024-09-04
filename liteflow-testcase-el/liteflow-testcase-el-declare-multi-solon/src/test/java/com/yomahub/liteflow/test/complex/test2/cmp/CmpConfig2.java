@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.complex.cmp1;
+package com.yomahub.liteflow.test.complex.test2.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
@@ -7,16 +7,16 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 
 @LiteflowComponent
-public class CmpConfig1 {
+public class CmpConfig2 {
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "A")
 	public void processA(NodeComponent bindCmp) {
 
 	}
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "B")
-	public void processB(NodeComponent bindCmp) {
-
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH, nodeId = "B")
+	public String processSwitchB(NodeComponent bindCmp) {
+		return "t3";
 	}
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "C")
@@ -39,9 +39,9 @@ public class CmpConfig1 {
 
 	}
 
-	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeId = "G", nodeType = NodeTypeEnum.SWITCH)
+	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS_SWITCH, nodeType = NodeTypeEnum.SWITCH, nodeId = "G")
 	public String processSwitchG(NodeComponent bindCmp) throws Exception {
-		return "t1";
+		return "t2";
 	}
 
 	@LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "H")

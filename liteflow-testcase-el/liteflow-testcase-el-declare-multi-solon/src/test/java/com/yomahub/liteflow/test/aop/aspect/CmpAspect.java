@@ -5,7 +5,9 @@ import com.yomahub.liteflow.aop.ICmpAroundAspect;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.slot.Slot;
+import org.noear.solon.annotation.Component;
 
+@Component
 public class CmpAspect implements ICmpAroundAspect {
 
 	@Override

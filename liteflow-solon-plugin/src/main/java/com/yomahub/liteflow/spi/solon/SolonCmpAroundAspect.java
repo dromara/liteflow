@@ -15,9 +15,9 @@ import org.noear.solon.Solon;
  */
 public class SolonCmpAroundAspect implements CmpAroundAspect {
 
-	public static ICmpAroundAspect cmpAroundAspect;
+	public ICmpAroundAspect cmpAroundAspect;
 
-	static {
+	public SolonCmpAroundAspect(){
 		Solon.context().getBeanAsync(ICmpAroundAspect.class, bean -> {
 			cmpAroundAspect = bean;
 		});

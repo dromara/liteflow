@@ -5,7 +5,7 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.test.complex.cmp2;
+package com.yomahub.liteflow.test.complex.test2.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
 import org.noear.solon.annotation.Component;

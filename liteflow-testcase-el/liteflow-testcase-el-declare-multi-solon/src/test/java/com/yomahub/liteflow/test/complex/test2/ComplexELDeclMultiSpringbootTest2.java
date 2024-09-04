@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.complex;
+package com.yomahub.liteflow.test.complex.test2;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -14,28 +14,28 @@ import org.noear.solon.test.SolonTest;
  *
  * @author Bryan.Zhang
  */
-@Import(profiles ="classpath:/complex/application1.properties")
-@SolonTest(classes = ComplexELDeclMultiSpringbootTest1.class)
-public class ComplexELDeclMultiSpringbootTest1 extends BaseTest {
+@Import(profiles ="classpath:/complex/application2.properties")
+@SolonTest(classes = ComplexELDeclMultiSpringbootTest2.class)
+public class ComplexELDeclMultiSpringbootTest2 extends BaseTest {
 
 	@Inject
 	private FlowExecutor flowExecutor;
 
 	// 测试复杂例子，优化前
-	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
+	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子二
 	// 因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
 	@Test
-	public void testComplex1_1() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1_1", "arg");
+	public void testComplex2_1() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2_1", "arg");
 		Assertions.assertTrue(response.isSuccess());
 	}
 
 	// 测试复杂例子，优化后
-	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子一
+	// 案例来自于文档中 EL规则写法/复杂编排例子/复杂例子二
 	// 因为所有的组件都是空执行，你可以在组件里加上Thread.sleep来模拟业务耗时，再来看这个打出结果
 	@Test
-	public void testComplex1_2() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1_2", "arg");
+	public void testComplex2_2() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2_2", "arg");
 		Assertions.assertTrue(response.isSuccess());
 	}
 
