@@ -1,0 +1,4 @@
+flow:
+  chain:
+    - name: chain3
+      value: "THEN(a, b, c);"

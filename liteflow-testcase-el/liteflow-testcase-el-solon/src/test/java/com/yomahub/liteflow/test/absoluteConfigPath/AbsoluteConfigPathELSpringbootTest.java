@@ -5,7 +5,6 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
@@ -14,22 +13,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
-import org.noear.solon.test.annotation.TestPropertySource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境下异步线程超时日志打印测试
+ * solon环境下异步线程超时日志打印测试
  *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 public class AbsoluteConfigPathELSpringbootTest extends BaseTest {
 
 	private static String rootDir;

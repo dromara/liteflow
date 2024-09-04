@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
  * 测试显示调用子流程(xml) 单元测试
  *
  * @author justin.xu
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles ="classpath:/subflow/application-xml.properties")
 public class SubflowXMLELSpringBootTest extends BaseTest {
 

@@ -9,17 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 import java.util.*;
 
 /**
- * springboot环境step的测试例子
+ * solon环境step的测试例子
  *
  * @author Bryan.Zhang
  * @since 2.7.0
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/cmpStep/application.properties")
 public class CmpStepELSpringbootTest extends BaseTest {
 

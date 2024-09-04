@@ -11,14 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.core.AppContext;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
  * 测试主流程与子流程在不同的配置文件的场景
  *
  * @author Bryan.Zhang
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles = "classpath:/subflow/application-subInDifferentConfig1.properties")
 public class SubflowInDifferentConfigELSpringbootTest extends BaseTest {
 

@@ -5,7 +5,7 @@ import com.yomahub.liteflow.test.parsecustom.bean.TestBean;
 import org.noear.solon.annotation.Inject;
 
 /**
- * springboot环境的自定义xml parser单元测试 主要测试自定义配置源类是否能引入springboot中的其他依赖
+ * solon环境的自定义xml parser单元测试 主要测试自定义配置源类是否能引入solon中的其他依赖
  *
  * @author bryan.zhang
  * @since 2.5.7

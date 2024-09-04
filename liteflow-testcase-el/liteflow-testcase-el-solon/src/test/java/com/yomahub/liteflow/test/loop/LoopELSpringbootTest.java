@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境EL循环的例子测试
+ * solon环境EL循环的例子测试
  *
  * @author Bryan.Zhang
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/loop/application.properties")
 public class LoopELSpringbootTest extends BaseTest {
 

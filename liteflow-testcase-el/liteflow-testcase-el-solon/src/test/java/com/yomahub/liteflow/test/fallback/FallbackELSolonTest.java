@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
  * @author DaleLee
  * @since 2.11.1
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/fallback/application.properties")
 public class FallbackELSolonTest extends BaseTest {
 

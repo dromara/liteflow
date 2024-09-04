@@ -9,15 +9,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境事件回调测试
+ * solon环境事件回调测试
  *
  * @author Bryan.Zhang
  * @since 2.7.1
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/event/application.properties")
 public class EventELSpringbootTest extends BaseTest {
 

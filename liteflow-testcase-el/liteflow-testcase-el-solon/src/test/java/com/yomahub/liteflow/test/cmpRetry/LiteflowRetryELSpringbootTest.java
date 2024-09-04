@@ -8,15 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * 测试springboot下的节点执行器
+ * 测试solon下的节点执行器
  *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/cmpRetry/application.properties")
 public class LiteflowRetryELSpringbootTest extends BaseTest {
 

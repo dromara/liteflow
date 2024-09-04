@@ -11,15 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot环境下重新加载规则测试
+ * solon环境下重新加载规则测试
  *
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/refreshRule/application.properties")
 public class RefreshRuleELSpringbootTest extends BaseTest {
 

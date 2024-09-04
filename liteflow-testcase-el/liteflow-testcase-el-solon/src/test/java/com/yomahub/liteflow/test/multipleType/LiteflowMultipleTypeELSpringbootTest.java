@@ -8,15 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * 测试springboot下混合格式规则的场景
+ * 测试solon下混合格式规则的场景
  *
  * @author Bryan.Zhang
  * @since 2.5.10
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/multipleType/application.properties")
 public class LiteflowMultipleTypeELSpringbootTest extends BaseTest {
 

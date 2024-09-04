@@ -3,17 +3,19 @@ package com.yomahub.liteflow.solon.integration;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.solon.*;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
 import com.yomahub.liteflow.solon.config.LiteflowProperty;
+import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import org.noear.solon.Utils;
 import org.noear.solon.core.AppContext;
 import org.noear.solon.core.Plugin;
 
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author noear
@@ -52,27 +54,23 @@ public class XPluginImpl implements Plugin {
 			FlowBus.addManagedNode(bw.name(), bw.raw());
 		});
 
+		Set<Class<?>> liteflowMethodClassSet = new HashSet<>();
+
 		context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
-			NodeComponent node1 = null;
-			switch (anno.value()) {
-				case PROCESS_SWITCH:
-					node1 = new NodeSwitchComponentOfMethod(bw, method, anno.value());
-					break;
-				case PROCESS_BOOLEAN:
-					node1 = new NodeBooleanComponentOfMethod(bw, method, anno.value());
-					break;
-				case PROCESS_FOR:
-					node1 = new NodeForComponentOfMethod(bw, method, anno.value());
-					break;
-				default:
-					node1 = new NodeComponentOfMethod(bw, method, anno.value());
+			if (liteflowMethodClassSet.contains(bw.clz())) {
+				return;
+			} else {
+				liteflowMethodClassSet.add(bw.clz());
 			}
 
-			String nodeId = Utils.annoAlias(anno.nodeId(), bw.name());
-			node1.setNodeId(nodeId);
-			node1.setType(anno.nodeType());
+			List<DeclWarpBean> declWarpBeanList = DeclComponentParserHolder
+					.loadDeclComponentParser()
+					.parseDeclBean(bw.clz());
 
-			FlowBus.addManagedNode(nodeId, node1);
+			for (DeclWarpBean declWarpBean : declWarpBeanList) {
+				NodeComponent node1 = LiteFlowProxyUtil.proxy2NodeComponent(declWarpBean);
+				FlowBus.addManagedNode(node1.getNodeId(), node1);
+			}
 		});
 
 		context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
@@ -84,11 +82,9 @@ public class XPluginImpl implements Plugin {
 				node1.setName(anno.name());
 
 				FlowBus.addManagedNode(nodeId, node1);
-			}
-			else {
+			} else {
 				context.beanExtractOrProxy(bw); // 尝试提取 LiteflowMethod 函数，并支持自动代理
 			}
 		});
 	}
-
 }

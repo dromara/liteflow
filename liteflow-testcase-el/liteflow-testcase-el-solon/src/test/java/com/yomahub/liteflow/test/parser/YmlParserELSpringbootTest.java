@@ -8,22 +8,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit5Extension;
+import org.noear.solon.test.SolonTest;
 
 /**
- * springboot下的yml parser测试用例
+ * solon下的yml parser测试用例
  *
  * @author Bryan.Zhang
  * @since 2.5.0
  */
-@ExtendWith(SolonJUnit5Extension.class)
+@SolonTest
 @Import(profiles="classpath:/parser/application-yml.properties")
 public class YmlParserELSpringbootTest extends BaseTest {
 
 	@Inject
 	private FlowExecutor flowExecutor;
 
-	// 测试无springboot场景的yml parser
+	// 测试无solon场景的yml parser
 	@Test
 	public void testYmlParser() {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
