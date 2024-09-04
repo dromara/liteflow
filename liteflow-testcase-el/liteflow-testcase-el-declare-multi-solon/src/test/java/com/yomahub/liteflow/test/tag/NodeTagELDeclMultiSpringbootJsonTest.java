@@ -18,7 +18,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.5.0
  */
 @Import(profiles ="classpath:/tag/application-json.properties")
-@SolonTest(classes = NodeTagELDeclMultiSpringbootJsonTest.class)
+@SolonTest
 public class NodeTagELDeclMultiSpringbootJsonTest extends BaseTest {
 
 	@Inject

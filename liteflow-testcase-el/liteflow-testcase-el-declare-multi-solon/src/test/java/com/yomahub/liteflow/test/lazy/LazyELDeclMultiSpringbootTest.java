@@ -5,7 +5,7 @@ import com.yomahub.liteflow.test.BaseTest;
 //spring的延迟加载在el表达形式模式下不起作用
 /*
 @Import(profiles ="classpath:/lazy/application.properties")
-@SolonTest(classes = LazyELDeclSpringbootTest.class)
+@SolonTest
 */
 public class LazyELDeclMultiSpringbootTest extends BaseTest {
 

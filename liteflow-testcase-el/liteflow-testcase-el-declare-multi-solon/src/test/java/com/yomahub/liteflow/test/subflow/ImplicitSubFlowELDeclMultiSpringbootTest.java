@@ -18,7 +18,7 @@ import java.util.Set;
  * @author justin.xu
  */
 @Import(profiles ="classpath:/subflow/application-implicit.properties")
-@SolonTest(classes = ImplicitSubFlowELDeclMultiSpringbootTest.class)
+@SolonTest
 public class ImplicitSubFlowELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

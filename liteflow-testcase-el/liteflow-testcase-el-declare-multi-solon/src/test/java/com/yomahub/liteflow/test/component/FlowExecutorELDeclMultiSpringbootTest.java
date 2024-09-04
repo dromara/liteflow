@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * @author donguo.tao
  */
 @Import(profiles ="classpath:/component/application.properties")
-@SolonTest(classes = FlowExecutorELDeclMultiSpringbootTest.class)
+@SolonTest
 public class FlowExecutorELDeclMultiSpringbootTest extends BaseTest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlowExecutorELDeclMultiSpringbootTest.class);

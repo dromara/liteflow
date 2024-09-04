@@ -19,7 +19,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/multiContext/application.properties")
-@SolonTest(classes = MultiContextELDeclMultiSpringbootTest.class)
+@SolonTest
 public class MultiContextELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

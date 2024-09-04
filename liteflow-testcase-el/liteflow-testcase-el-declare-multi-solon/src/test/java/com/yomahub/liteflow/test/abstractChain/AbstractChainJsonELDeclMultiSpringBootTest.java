@@ -15,7 +15,7 @@ import org.noear.solon.test.SolonTest;
  * @author justin.xu
  */
 @Import(profiles = "classpath:/abstractChain/application-json.properties")
-@SolonTest(classes = AbstractChainJsonELDeclMultiSpringBootTest.class)
+@SolonTest
 public class AbstractChainJsonELDeclMultiSpringBootTest extends BaseTest {
 
 	@Inject

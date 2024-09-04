@@ -10,7 +10,7 @@ import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
 
 @Import(profiles ="classpath:/parser/application-springEL.properties")
-@SolonTest(classes = SpringELSupportELDeclMultiSpringbootTest.class)
+@SolonTest
 public class SpringELSupportELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

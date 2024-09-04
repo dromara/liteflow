@@ -22,7 +22,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  * @since 2.6.4
  */
-@SolonTest(classes = AbsoluteConfigPathELDeclMultiSpringbootTest.class)
+@SolonTest
 public class AbsoluteConfigPathELDeclMultiSpringbootTest extends BaseTest {
 
 	private static String rootDir;

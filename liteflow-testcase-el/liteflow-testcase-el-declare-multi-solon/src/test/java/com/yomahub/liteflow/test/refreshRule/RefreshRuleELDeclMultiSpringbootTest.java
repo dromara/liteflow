@@ -19,7 +19,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/refreshRule/application.properties")
-@SolonTest(classes = RefreshRuleELDeclMultiSpringbootTest.class)
+@SolonTest
 public class RefreshRuleELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

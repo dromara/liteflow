@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.5.0
  */
 @Import(profiles ="classpath:/parser/application-yml.properties")
-@SolonTest(classes = YmlParserELDeclMultiSpringbootTest.class)
+@SolonTest
 public class YmlParserELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

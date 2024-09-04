@@ -11,7 +11,7 @@ import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
 
 @Import(profiles ="classpath:/rollback/application.properties")
-@SolonTest(classes = RollbackELDeclMultiSpringbootTest.class)
+@SolonTest
 public class RollbackELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

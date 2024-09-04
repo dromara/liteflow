@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/switchcase/application.properties")
-@SolonTest(classes = SwitchELDeclMultiSpringbootTest.class)
+@SolonTest
 public class SwitchELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

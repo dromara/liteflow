@@ -17,7 +17,7 @@ import org.noear.solon.test.SolonTest;
  *
  * @author zendwang
  */
-@SolonTest(classes = Exception1ELDeclMultiSpringBootTest.class)
+@SolonTest
 public class Exception1ELDeclMultiSpringBootTest extends BaseTest {
 
 	@Inject

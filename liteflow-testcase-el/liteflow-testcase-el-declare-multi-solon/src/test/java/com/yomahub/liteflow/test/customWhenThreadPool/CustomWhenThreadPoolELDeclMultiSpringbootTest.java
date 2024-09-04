@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/customWhenThreadPool/application.properties")
-@SolonTest(classes = CustomWhenThreadPoolELDeclMultiSpringbootTest.class)
+@SolonTest
 public class CustomWhenThreadPoolELDeclMultiSpringbootTest extends BaseTest {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());

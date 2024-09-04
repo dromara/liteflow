@@ -11,7 +11,7 @@ import org.noear.solon.test.SolonTest;
 
 
 @Import(profiles ="classpath:/retry/application.properties")
-@SolonTest(classes = RetryELDeclMultiSpringbootTest.class)
+@SolonTest
 public class RetryELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/customNodes/application.properties")
-@SolonTest(classes = CustomNodesELDeclMultiSpringbootTest.class)
+@SolonTest
 public class CustomNodesELDeclMultiSpringbootTest extends BaseTest {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());

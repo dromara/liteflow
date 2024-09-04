@@ -18,7 +18,7 @@ import org.noear.solon.test.SolonTest;
  * @author ssss
  */
 @Import(profiles =  "classpath:/asyncNode/application.properties")
-@SolonTest(classes = AsyncNodeELDeclMultiSpringbootTest.class)
+@SolonTest
 public class AsyncNodeELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

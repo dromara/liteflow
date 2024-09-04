@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @since 2.11.0
  */
 @Import(profiles ="classpath:/parallelLoop/application.properties")
-@SolonTest(classes = ParallelLoopELDeclMultiSpringbootTest.class)
+@SolonTest
 public class ParallelLoopELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject
