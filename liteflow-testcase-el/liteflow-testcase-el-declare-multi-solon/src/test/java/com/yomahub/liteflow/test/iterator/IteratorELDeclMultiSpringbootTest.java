@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/iterator/application.properties")
-@SolonTest(classes = IteratorELDeclMultiSpringbootTest.class)
+@SolonTest
 public class IteratorELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

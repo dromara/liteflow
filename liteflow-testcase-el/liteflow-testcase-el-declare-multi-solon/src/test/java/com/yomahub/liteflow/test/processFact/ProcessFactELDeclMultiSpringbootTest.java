@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  */
 @Import(profiles ="classpath:/processFact/application.properties")
-@SolonTest(classes = ProcessFactELDeclMultiSpringbootTest.class)
+@SolonTest
 public class ProcessFactELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

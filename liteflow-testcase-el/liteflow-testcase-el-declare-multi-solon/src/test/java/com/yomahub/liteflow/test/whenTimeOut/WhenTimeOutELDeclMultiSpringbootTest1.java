@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/whenTimeOut/application1.properties")
-@SolonTest(classes = WhenTimeOutELDeclMultiSpringbootTest1.class)
+@SolonTest
 public class WhenTimeOutELDeclMultiSpringbootTest1 extends BaseTest {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());

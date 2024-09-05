@@ -18,7 +18,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  */
 @Import(profiles ="classpath:/subflow/application-subInDifferentConfig1.properties")
-@SolonTest(classes = SubflowInDifferentConfigELDeclMultiSpringbootTest.class)
+@SolonTest
 public class SubflowInDifferentConfigELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

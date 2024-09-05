@@ -15,7 +15,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  */
 @Import(profiles ="classpath:/complex/application1.properties")
-@SolonTest(classes = ComplexELDeclMultiSpringbootTest1.class)
+@SolonTest
 public class ComplexELDeclMultiSpringbootTest1 extends BaseTest {
 
 	@Inject

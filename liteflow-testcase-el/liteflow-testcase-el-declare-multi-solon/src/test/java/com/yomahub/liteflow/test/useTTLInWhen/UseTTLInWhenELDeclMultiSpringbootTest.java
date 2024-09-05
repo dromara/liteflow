@@ -17,7 +17,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.6.3
  */
 @Import(profiles ="classpath:/useTTLInWhen/application.properties")
-@SolonTest(classes = UseTTLInWhenELDeclMultiSpringbootTest.class)
+@SolonTest
 public class UseTTLInWhenELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

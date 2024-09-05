@@ -11,7 +11,7 @@ import org.noear.solon.test.SolonTest;
 
 //基于builder模式的单元测试
 //这里测试的是通过spring去扫描，但是通过代码去构建chain的用例
-@SolonTest(classes = BuilderELDeclMultiSpringbootTest2.class)
+@SolonTest
 public class BuilderELDeclMultiSpringbootTest2 extends BaseTest {
 
 	@Inject

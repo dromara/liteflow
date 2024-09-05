@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
  * @since 2.6.13
  */
 @Import(profiles ="classpath:/execute2Future/application.properties")
-@SolonTest(classes = Executor2FutureELDeclMultiSpringbootTest.class)
+@SolonTest
 public class Executor2FutureELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

@@ -2,10 +2,14 @@ package com.yomahub.liteflow.spi.solon;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.spi.ContextAware;
 import org.noear.solon.Solon;
 import org.noear.solon.core.BeanWrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +21,7 @@ import java.util.Map;
  * @author Bryan.Zhang
  */
 public class SolonContextAware implements ContextAware {
+    private static final Logger LOG = LoggerFactory.getLogger(SolonContextAware.class);
 
     @Override
     public <T> T getBean(String name) {
@@ -46,8 +51,12 @@ public class SolonContextAware implements ContextAware {
 
     @Override
     public <T> T registerBean(String beanName, Class<T> c) {
-        BeanWrap beanWrap = new BeanWrap(Solon.context(), c, null, beanName);
-        Solon.context().putWrap(beanName, beanWrap);
+        BeanWrap beanWrap = Solon.context().getWrap(beanName);
+        if (beanWrap == null) {
+            beanWrap = new BeanWrap(Solon.context(), c, null, beanName);
+            Solon.context().putWrap(beanName, beanWrap);
+            Solon.context().putWrap(c, beanWrap);
+        }
 
         return beanWrap.get();
     }
@@ -59,16 +68,25 @@ public class SolonContextAware implements ContextAware {
 
     @Override
     public <T> T registerBean(String beanName, Object bean) {
-        BeanWrap beanWrap = new BeanWrap(Solon.context(), bean.getClass(), bean, beanName);
-        Solon.context().putWrap(beanName, beanWrap);
+        BeanWrap beanWrap = Solon.context().getWrap(beanName);
+        if (beanWrap == null) {
+            beanWrap = Solon.context().wrap(beanName, bean);
+            Solon.context().putWrap(beanName, beanWrap);
+        }
 
         return beanWrap.get();
     }
 
     @Override
     public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean) {
-        BeanWrap beanWrap = new BeanWrap(Solon.context(), declWarpBean.getClass(), declWarpBean, beanName);
-        Solon.context().putWrap(beanName, beanWrap);
+        BeanWrap beanWrap = Solon.context().getWrap(beanName);
+        if (beanWrap == null) {
+            NodeComponent nodeComponent = LiteFlowProxyUtil.proxy2NodeComponent(declWarpBean);
+            beanWrap = Solon.context().wrap(beanName, nodeComponent);
+            Solon.context().putWrap(beanName, beanWrap);
+        }
+
+        LOG.info("proxy component[{}] has been found", beanName);
         return beanWrap.get();
     }
 
@@ -96,5 +114,4 @@ public class SolonContextAware implements ContextAware {
     public int priority() {
         return 1;
     }
-
 }

@@ -15,7 +15,7 @@ import org.noear.solon.test.SolonTest;
  * @author justin.xu
  */
 @Import(profiles ="classpath:/subflow/application-json.properties")
-@SolonTest(classes = SubflowJsonELDeclMultiSpringBootTest.class)
+@SolonTest
 public class SubflowJsonELDeclMultiSpringBootTest extends BaseTest {
 
 	@Inject

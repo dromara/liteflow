@@ -15,7 +15,7 @@ import org.noear.solon.test.SolonTest;
  * @author justin.xu
  */
 @Import(profiles ="classpath:/subflow/application-yml.properties")
-@SolonTest(classes = SubflowYmlELDeclMultiSpringBootTest.class)
+@SolonTest
 public class SubflowYmlELDeclMultiSpringBootTest extends BaseTest {
 
 	@Inject

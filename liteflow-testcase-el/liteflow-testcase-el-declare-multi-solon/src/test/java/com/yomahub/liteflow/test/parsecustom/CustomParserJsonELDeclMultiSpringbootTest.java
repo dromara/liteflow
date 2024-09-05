@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.5.0
  */
 @Import(profiles ="classpath:/parsecustom/application-custom-json.properties")
-@SolonTest(classes = CustomParserJsonELDeclMultiSpringbootTest.class)
+@SolonTest
 public class CustomParserJsonELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

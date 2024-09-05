@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.5.10
  */
 @Import(profiles ="classpath:/multipleType/application.properties")
-@SolonTest(classes = LiteflowMultipleTypeELDeclMultiSpringbootTest.class)
+@SolonTest
 public class LiteflowMultipleTypeELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

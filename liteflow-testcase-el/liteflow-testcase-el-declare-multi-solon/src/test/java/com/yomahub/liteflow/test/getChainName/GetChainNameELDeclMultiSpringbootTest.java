@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  */
 @Import(profiles ="classpath:/getChainName/application.properties")
-@SolonTest(classes = GetChainNameELDeclMultiSpringbootTest.class)
+@SolonTest
 public class GetChainNameELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

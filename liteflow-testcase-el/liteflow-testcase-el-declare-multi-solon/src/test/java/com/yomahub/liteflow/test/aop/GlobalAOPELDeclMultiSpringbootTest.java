@@ -18,7 +18,7 @@ import org.noear.solon.test.SolonTest;
  * @author Bryan.Zhang
  */
 @Import(profiles =  "classpath:/aop/application.properties", classes = CmpAspect.class)
-@SolonTest(classes = GlobalAOPELDeclMultiSpringbootTest.class)
+@SolonTest
 public class GlobalAOPELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

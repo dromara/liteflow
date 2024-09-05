@@ -16,7 +16,7 @@ import org.noear.solon.test.SolonTest;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/ifelse/application.properties")
-@SolonTest(classes = IfElseELDeclMultiSpringbootTest.class)
+@SolonTest
 public class IfElseELDeclMultiSpringbootTest extends BaseTest {
 
 	@Inject

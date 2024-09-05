@@ -22,7 +22,7 @@ import static com.yomahub.liteflow.test.maxWaitSeconds.cmp.CmpConfig.CONTENT_KEY
  * @since 2.11.1
  */
 @Import(profiles ="classpath:/maxWaitMilliseconds/application.properties")
-@SolonTest(classes = MaxWaitMillisecondsELDeclMultiSpringbootTest.class)
+@SolonTest
 public class MaxWaitMillisecondsELDeclMultiSpringbootTest extends BaseTest {
     @Inject
     private FlowExecutor flowExecutor;

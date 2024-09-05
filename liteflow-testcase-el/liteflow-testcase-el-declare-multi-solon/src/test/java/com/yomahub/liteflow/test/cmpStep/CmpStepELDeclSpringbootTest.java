@@ -18,7 +18,7 @@ import java.util.*;
  * @since 2.6.4
  */
 @Import(profiles ="classpath:/cmpStep/application.properties")
-@SolonTest(classes = CmpStepELDeclSpringbootTest.class)
+@SolonTest
 public class CmpStepELDeclSpringbootTest extends BaseTest {
 
 	@Inject

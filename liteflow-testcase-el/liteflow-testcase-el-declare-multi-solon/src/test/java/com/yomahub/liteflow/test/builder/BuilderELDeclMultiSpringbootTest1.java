@@ -15,7 +15,7 @@ import org.noear.solon.test.SolonTest;
 //基于builder模式的单元测试
 //这里只是最基本的builder模式的测试，只是为了验证在springboot模式下的正常性
 //更详细的builder模式测试用例会单独拉testcase去做
-@SolonTest(classes = BuilderELDeclMultiSpringbootTest1.class)
+@SolonTest
 public class BuilderELDeclMultiSpringbootTest1 extends BaseTest {
 
 	@Inject
