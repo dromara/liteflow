@@ -1,3 +1,10 @@
+/*
+ * <p>Title: liteflow</p>
+ * <p>Description: 轻量级的组件式流程框架</p>
+ * @author Xu Qiaolun
+ * @email jamesxql@gmail.com
+ * @Date 2024/9/5
+ */
 package com.yomahub.liteflow.test.cmpData.cmp;
 
 import com.yomahub.liteflow.core.NodeComponent;
