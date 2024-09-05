@@ -415,7 +415,7 @@ public abstract class NodeComponent{
 		return JsonUtil.parseObject(cmpData, clazz);
 	}
 
-	public <T> List<T> getCmpList(Class<T> clazz) {
+	public <T> List<T> getCmpDataList(Class<T> clazz) {
 		String cmpData = getRefNode().getCmpData();
 		if (StrUtil.isBlank(cmpData)) {
 			return null;
