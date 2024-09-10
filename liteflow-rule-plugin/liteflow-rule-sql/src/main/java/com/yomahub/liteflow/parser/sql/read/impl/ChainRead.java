@@ -61,6 +61,7 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
         String chainTableName = super.config.getChainTableName();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
         String customFilterSql = super.config.getCustomFilterSql();
+        String applicationName = super.config.getApplicationName();
 
         if (StrUtil.isNotBlank(customFilterSql)) {
             String customFilterSqlTrim = customFilterSql.trim();
@@ -73,9 +74,9 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
             }
 
             return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_SUFFIX, chainTableName,
-                    chainApplicationNameField, customFilterSqlTrim);
+                    chainApplicationNameField, applicationName, customFilterSqlTrim);
         } else {
-            return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField);
+            return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField, applicationName);
         }
     }
 

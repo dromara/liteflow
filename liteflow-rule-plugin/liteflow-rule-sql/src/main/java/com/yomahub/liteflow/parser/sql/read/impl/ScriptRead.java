@@ -60,11 +60,12 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
     public String buildQuerySql() {
         String scriptTableName = super.config.getScriptTableName();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
-
+        String applicationName = super.config.getApplicationName();
         return StrUtil.format(
                 SqlReadConstant.SCRIPT_SQL_PATTERN,
                 scriptTableName,
-                scriptApplicationNameField);
+                scriptApplicationNameField,
+                applicationName);
     }
 
     @Override

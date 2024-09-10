@@ -17,7 +17,7 @@ public interface SqlReadPollTask<T> {
     /**
      * 执行
      */
-    void execute(ReadType readType);
+    void execute();
 
     /**
      * 初始化数据

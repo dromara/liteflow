@@ -30,7 +30,7 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     }
 
     @Override
-    public List<T> read(ReadType readType) {
+    public List<T> read() {
         // 如果不需要读取直接返回
         if (!needRead()) {
             return new ArrayList<>();
@@ -50,10 +50,6 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
-
-            if (!(readType == ReadType.CHAIN && StrUtil.isNotBlank(config.getCustomSql()))) {
-                stmt.setString(1, config.getApplicationName());
-            }
 
             rs = stmt.executeQuery();
 

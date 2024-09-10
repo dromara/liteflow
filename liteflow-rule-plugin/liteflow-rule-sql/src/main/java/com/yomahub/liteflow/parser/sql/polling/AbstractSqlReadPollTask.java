@@ -35,8 +35,8 @@ public abstract class AbstractSqlReadPollTask<T> implements SqlReadPollTask<T> {
     }
 
     @Override
-    public void execute(ReadType readType) {
-        List<T> dataList = read.read(readType);
+    public void execute() {
+        List<T> dataList = read.read();
         // 新增或者更新的元素
         List<T> saveElementList = new ArrayList<>();
         // 删除的元素
