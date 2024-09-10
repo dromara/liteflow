@@ -18,6 +18,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.util.JsonUtil;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,9 +34,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
     private static final String ERROR_MSG_PATTERN = "rule-source-ext-data {} is blank";
 
     private static final String ERROR_COMMON_MSG = "rule-source-ext-data is empty";
-
-    // 返回用户接口自定义sql
-    private CustomSqlRead customSqlRead;
 
     /**
      * 构造函数
@@ -55,9 +53,11 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             }
 
             // 自定义sql
-            if (ContextAwareHolder.loadContextAware().hasBean("CustomSqlRead")) {
-                this.customSqlRead = ContextAwareHolder.loadContextAware().getBean("CustomSqlRead");
+            Map<String, CustomSqlRead> beansOfType = ContextAwareHolder.loadContextAware().getBeansOfType(CustomSqlRead.class);
+            for (Map.Entry<String,CustomSqlRead> entry : beansOfType.entrySet()) {
+                CustomSqlRead customSqlRead = entry.getValue();
                 String customChainSql = customSqlRead.getCustomChainSql();
+
                 if (StrUtil.isNotBlank(customChainSql)) {
                     sqlParserVO.setCustomSql(customChainSql);
                 }
