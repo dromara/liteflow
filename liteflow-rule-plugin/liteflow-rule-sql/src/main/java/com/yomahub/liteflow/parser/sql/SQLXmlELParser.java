@@ -9,16 +9,13 @@ import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
-import com.yomahub.liteflow.parser.sql.read.CustomSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -50,17 +47,6 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             }
             if (Objects.isNull(sqlParserVO)) {
                 throw new ELSQLException(ERROR_COMMON_MSG);
-            }
-
-            // 自定义sql
-            Map<String, CustomSqlRead> beansOfType = ContextAwareHolder.loadContextAware().getBeansOfType(CustomSqlRead.class);
-            for (Map.Entry<String,CustomSqlRead> entry : beansOfType.entrySet()) {
-                CustomSqlRead customSqlRead = entry.getValue();
-                String customChainSql = customSqlRead.getCustomChainSql();
-
-                if (StrUtil.isNotBlank(customChainSql)) {
-                    sqlParserVO.setCustomSql(customChainSql);
-                }
             }
 
             // 检查配置文件

@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
  *
  * @author tangkc
  * @author Bryan.Zhang
+ * @author jay li
  * @since 2.9.0
  */
 public class SQLParserVO {
@@ -72,14 +73,14 @@ public class SQLParserVO {
     private String chainEnableField;
 
     /**
-     * 后缀 自定义过滤 sql
+     * chain 自定义 sql
      */
-    private String customFilterSql;
+    private String chainCustomSql;
 
     /**
-     * 自定义 sql
+     * 脚本 自定义 sql
      */
-    private String customSql;
+    private String scriptCustomSql;
 
     /**
      * 脚本 node 表名
@@ -347,19 +348,19 @@ public class SQLParserVO {
         this.namespaceField = namespaceField;
     }
 
-    public String getCustomFilterSql() {
-        return customFilterSql;
+    public String getChainCustomSql() {
+        return chainCustomSql;
     }
 
-    public void setCustomFilterSql(String customFilterSql) {
-        this.customFilterSql = customFilterSql;
+    public void setChainCustomSql(String chainCustomSql) {
+        this.chainCustomSql = chainCustomSql;
     }
 
-    public String getCustomSql() {
-        return customSql;
+    public String getScriptCustomSql() {
+        return scriptCustomSql;
     }
 
-    public void setCustomSql(String customSql) {
-        this.customSql = customSql;
+    public void setScriptCustomSql(String scriptCustomSql) {
+        this.scriptCustomSql = scriptCustomSql;
     }
 }

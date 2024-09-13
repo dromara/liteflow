@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.parser.sql.util;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -12,13 +11,11 @@ import com.yomahub.liteflow.parser.constant.ReadType;
 
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.polling.SqlReadPollTask;
-import com.yomahub.liteflow.parser.sql.read.CustomSqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;

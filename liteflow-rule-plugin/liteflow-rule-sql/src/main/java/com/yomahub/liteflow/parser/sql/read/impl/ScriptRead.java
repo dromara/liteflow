@@ -1,9 +1,6 @@
 package com.yomahub.liteflow.parser.sql.read.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -11,18 +8,19 @@ import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
+
 
 /**
  * 脚本读取
  *
  * @author tangkc
  * @author houxinyu
+ * @author jay li
  * @since 2.11.1
  */
 public class ScriptRead extends AbstractSqlRead<ScriptVO> {
@@ -58,6 +56,10 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
 
     @Override
     public String buildQuerySql() {
+        if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
+            return super.config.getScriptCustomSql();
+        }
+
         String scriptTableName = super.config.getScriptTableName();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
         String applicationName = super.config.getApplicationName();

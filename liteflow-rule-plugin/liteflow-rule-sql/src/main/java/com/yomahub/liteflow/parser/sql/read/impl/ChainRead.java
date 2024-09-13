@@ -16,6 +16,7 @@ import java.sql.SQLException;
  *
  * @author tangkc
  * @author houxinyu
+ * @author jay li
  * @since 2.11.1
  */
 public class ChainRead extends AbstractSqlRead<ChainVO> {
@@ -54,30 +55,15 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
 
     @Override
     public String buildQuerySql() {
-        if (StrUtil.isNotBlank(super.config.getCustomSql())) {
-            return super.config.getCustomSql();
+        if (StrUtil.isNotBlank(super.config.getChainCustomSql())) {
+            return super.config.getChainCustomSql();
         }
 
         String chainTableName = super.config.getChainTableName();
         String chainApplicationNameField = super.config.getChainApplicationNameField();
-        String customFilterSql = super.config.getCustomFilterSql();
         String applicationName = super.config.getApplicationName();
 
-        if (StrUtil.isNotBlank(customFilterSql)) {
-            String customFilterSqlTrim = customFilterSql.trim();
-            if (customFilterSqlTrim.startsWith("where ") || customFilterSqlTrim.startsWith("WHERE ")) {
-                customFilterSqlTrim = customFilterSqlTrim.substring(5).trim();
-            }
-
-            if (customFilterSqlTrim.startsWith("AND ") || customFilterSqlTrim.startsWith("and ")) {
-                customFilterSqlTrim = customFilterSqlTrim.substring(3);
-            }
-
-            return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_SUFFIX, chainTableName,
-                    chainApplicationNameField, applicationName, customFilterSqlTrim);
-        } else {
-            return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField, applicationName);
-        }
+        return StrUtil.format(SqlReadConstant.SQL_PATTERN, chainTableName, chainApplicationNameField, applicationName);
     }
 
     @Override
