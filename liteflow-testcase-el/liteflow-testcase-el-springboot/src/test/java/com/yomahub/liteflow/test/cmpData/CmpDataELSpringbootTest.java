@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +50,32 @@ public class CmpDataELSpringbootTest extends BaseTest {
 		Assertions.assertEquals(8, context.getSet().size());
 		String result = context.getSet().stream().sorted().collect(Collectors.joining());
 		Assertions.assertEquals("12345678", result);
+	}
+
+	@Test
+	public void testCmpDataList() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		DefaultContext context = response.getFirstContextBean();
+		List<User> users = context.getData("users");
+		Assertions.assertEquals(3, users.size());
+        Assertions.assertNotNull(users.get(0));
+		Assertions.assertEquals("jack", users.get(0).getName());
+		Assertions.assertEquals(27, users.get(0).getAge());
+		Assertions.assertEquals(0, users.get(0).getBirth().compareTo(DateUtil.parseDate("1995-10-01").toJdkDate()));
+
+		Assertions.assertNotNull(users.get(1));
+		Assertions.assertEquals("mike", users.get(1).getName());
+		Assertions.assertEquals(32, users.get(1).getAge());
+		Assertions.assertEquals(0, users.get(1).getBirth().compareTo(DateUtil.parseDate("1992-08-16").toJdkDate()));
+
+		Assertions.assertNotNull(users.get(2));
+		Assertions.assertEquals("david", users.get(2).getName());
+		Assertions.assertEquals(11, users.get(2).getAge());
+		Assertions.assertEquals(0, users.get(2).getBirth().compareTo(DateUtil.parseDate("2013-09-27").toJdkDate()));
+
+		List<User> empty = context.getData("empty");
+        Assertions.assertEquals(0, empty.size());
 	}
 
 }

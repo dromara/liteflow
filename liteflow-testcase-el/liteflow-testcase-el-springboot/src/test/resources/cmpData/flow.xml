@@ -23,4 +23,11 @@
             c.data("8")
         );
     </chain>
+
+    <chain name="chain3">
+        cmpDataList = '[{"name":"jack","age":27,"birth":"1995-10-01"}, {"name":"mike","age":32,"birth":"1992-08-16"}, {"name":"david","age":11,"birth":"2013-09-27"}]';
+        cmpDataEmptyList = '[]';
+
+        THEN(d.data(cmpDataList), e.data(cmpDataEmptyList));
+    </chain>
 </flow>
