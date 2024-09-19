@@ -3,6 +3,7 @@ package com.yomahub.liteflow.parser.sql.read;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
@@ -10,9 +11,7 @@ import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * sql 读取抽象类，维护公共方法
@@ -51,7 +50,6 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
             stmt = conn.prepareStatement(sqlCmd, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             // 设置游标拉取数量
             stmt.setFetchSize(SqlReadConstant.FETCH_SIZE_MAX);
-            stmt.setString(1, config.getApplicationName());
 
             rs = stmt.executeQuery();
 

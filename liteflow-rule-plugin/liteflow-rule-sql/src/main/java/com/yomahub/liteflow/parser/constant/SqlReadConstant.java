@@ -6,15 +6,16 @@ package com.yomahub.liteflow.parser.constant;
  * @author tangkc
  * @author houxinyu
  * @author Bryan.Zhang
+ * @author jay li
  * @since 2.11.1
  */
 public class SqlReadConstant {
 
-    public static final String SQL_PATTERN = "SELECT * FROM {} WHERE {}=?";
+    public static final String SQL_PATTERN = "SELECT * FROM {} WHERE {}='{}'";
 
     public static final String SCRIPT_SQL_CHECK_PATTERN = "SELECT 1 FROM {} ";
 
-    public static final String SCRIPT_SQL_PATTERN = "SELECT * FROM {} WHERE {}=?";
+    public static final String SCRIPT_SQL_PATTERN = "SELECT * FROM {} WHERE {}='{}'";
 
     public static final String CHAIN_XML_PATTERN = "<chain id=\"{}\" namespace=\"{}\"><route><![CDATA[{}]]></route><body><![CDATA[{}]]></body></chain>";
 

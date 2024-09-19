@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
  *
  * @author tangkc
  * @author Bryan.Zhang
+ * @author jay li
  * @since 2.9.0
  */
 public class SQLParserVO {
@@ -70,6 +71,16 @@ public class SQLParserVO {
      * 是否启动某一条chain
      */
     private String chainEnableField;
+
+    /**
+     * chain 自定义 sql
+     */
+    private String chainCustomSql;
+
+    /**
+     * 脚本 自定义 sql
+     */
+    private String scriptCustomSql;
 
     /**
      * 脚本 node 表名
@@ -335,5 +346,21 @@ public class SQLParserVO {
 
     public void setNamespaceField(String namespaceField) {
         this.namespaceField = namespaceField;
+    }
+
+    public String getChainCustomSql() {
+        return chainCustomSql;
+    }
+
+    public void setChainCustomSql(String chainCustomSql) {
+        this.chainCustomSql = chainCustomSql;
+    }
+
+    public String getScriptCustomSql() {
+        return scriptCustomSql;
+    }
+
+    public void setScriptCustomSql(String scriptCustomSql) {
+        this.scriptCustomSql = scriptCustomSql;
     }
 }

@@ -3,7 +3,6 @@ package com.yomahub.liteflow.parser.sql.read;
 import com.yomahub.liteflow.parser.constant.ReadType;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * sql 读取接口
