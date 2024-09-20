@@ -49,7 +49,7 @@ public class BoundedPriorityBlockingQueue<E> extends PriorityBlockingQueue<E> {
 		if (size() >= capacity) {
 			E head = peek();
 			if (this.comparator().compare(e, head) <= 0) {
-				return true;
+				return false;
 			}
 			// 当队列满时，就要淘汰顶端队列
 			poll();
