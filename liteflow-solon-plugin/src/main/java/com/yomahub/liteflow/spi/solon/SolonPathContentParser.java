@@ -9,7 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ConfigErrorException;
 import com.yomahub.liteflow.spi.PathContentParser;
 import com.yomahub.liteflow.util.PathMatchUtil;
-import org.noear.solon.Utils;
+import org.noear.solon.core.util.ResourceUtil;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -61,8 +61,8 @@ public class SolonPathContentParser implements PathContentParser {
 					path = path.substring(ResourceUtils.CLASSPATH_URL_PREFIX.length());
 				}
 
-				if (Utils.getResource(path) != null) {
-					allResource.add(Utils.getResource(path));
+				if (ResourceUtil.getResource(path) != null) {
+					allResource.add(ResourceUtil.getResource(path));
 				}
 			}
 		}
