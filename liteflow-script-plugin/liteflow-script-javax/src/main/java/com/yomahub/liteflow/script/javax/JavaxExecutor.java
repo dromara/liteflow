@@ -8,7 +8,8 @@ import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.noear.liquor.eval.CodeSpec;
-import org.noear.liquor.eval.ScriptEvaluator;
+import org.noear.liquor.eval.ParamSpec;
+import org.noear.liquor.eval.Scripts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +18,8 @@ import java.util.Map;
 public class JavaxExecutor extends ScriptExecutor {
     private final Map<String, CodeSpec> compiledScriptMap = new CopyOnWriteHashMap<>();
 
-    private ScriptEvaluator scriptEvaluator;
-
     @Override
     public ScriptExecutor init() {
-        scriptEvaluator = new ScriptEvaluator();
-        scriptEvaluator.setPrintable(true);
         return this;
     }
 
@@ -54,7 +51,7 @@ public class JavaxExecutor extends ScriptExecutor {
             throw new ScriptLoadException(errorMsg);
         }
         CodeSpec codeSpec = compiledScriptMap.get(wrap.getNodeId());
-        return scriptEvaluator.eval(codeSpec, wrap);
+        return Scripts.eval(codeSpec, wrap);
     }
 
     @Override
@@ -71,8 +68,8 @@ public class JavaxExecutor extends ScriptExecutor {
     public Object compile(String script) throws Exception {
         CodeSpec codeSpec = new CodeSpec(convertScript(script))
                 .returnType(Object.class)
-                .parameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
-        scriptEvaluator.compile(codeSpec);
+                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class));
+        Scripts.compile(codeSpec);
         return codeSpec;
     }
 
