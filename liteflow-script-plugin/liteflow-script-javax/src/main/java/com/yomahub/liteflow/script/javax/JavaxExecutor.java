@@ -72,7 +72,7 @@ public class JavaxExecutor extends ScriptExecutor {
         CodeSpec codeSpec = new CodeSpec(convertScript(script))
                 .returnType(Object.class)
                 .parameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
-        scriptEvaluator.getClazz(codeSpec);
+        scriptEvaluator.compile(codeSpec);
         return codeSpec;
     }
 
