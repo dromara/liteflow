@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.script.java;
+package com.yomahub.liteflow.script.javax;
 
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,21 +7,29 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import org.codehaus.commons.compiler.CompilerFactoryFactory;
-import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.noear.liquor.eval.CodeSpec;
+import org.noear.liquor.eval.ScriptEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class JavaExecutor extends ScriptExecutor {
+public class JavaxExecutor extends ScriptExecutor {
+    private final Map<String, CodeSpec> compiledScriptMap = new CopyOnWriteHashMap<>();
 
-    private final Map<String, IScriptEvaluator> compiledScriptMap = new CopyOnWriteHashMap<>();
+    private ScriptEvaluator scriptEvaluator;
+
+    @Override
+    public ScriptExecutor init() {
+        scriptEvaluator = new ScriptEvaluator();
+        scriptEvaluator.setPrintable(true);
+        return this;
+    }
 
     @Override
     public void load(String nodeId, String script) {
         try{
-            compiledScriptMap.put(nodeId, (IScriptEvaluator) compile(script));
+            compiledScriptMap.put(nodeId, (CodeSpec) compile(script));
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -45,8 +53,8 @@ public class JavaExecutor extends ScriptExecutor {
             String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
             throw new ScriptLoadException(errorMsg);
         }
-        IScriptEvaluator se = compiledScriptMap.get(wrap.getNodeId());
-        return se.evaluate(new Object[]{wrap});
+        CodeSpec codeSpec = compiledScriptMap.get(wrap.getNodeId());
+        return scriptEvaluator.eval(codeSpec, wrap);
     }
 
     @Override
@@ -61,12 +69,11 @@ public class JavaExecutor extends ScriptExecutor {
 
     @Override
     public Object compile(String script) throws Exception {
-        IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory(this.getClass().getClassLoader()).newScriptEvaluator();
-        se.setTargetVersion(8);
-        se.setReturnType(Object.class);
-        se.setParameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
-        se.cook(convertScript(script));
-        return se;
+        CodeSpec codeSpec = new CodeSpec(convertScript(script))
+                .returnType(Object.class)
+                .parameters(new String[] {"_meta"}, new Class[] {ScriptExecuteWrap.class});
+        scriptEvaluator.getClazz(codeSpec);
+        return codeSpec;
     }
 
     private String convertScript(String script){
@@ -82,9 +89,9 @@ public class JavaExecutor extends ScriptExecutor {
             throw new RuntimeException("cannot find class defined");
         }
 
-        return "import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;\n" +
+        return "import com.yomahub.liteflow.script.body.CommonScriptBody;\n" +
                 script1 + "\n" +
                 StrUtil.format("{} item = new {}();\n", className, className) +
-                "if (JaninoCommonScriptBody.class.isInstance(item)){item.body(_meta);return null;}else{return item.body(_meta);}";
+                "if (CommonScriptBody.class.isInstance(item)){item.body(_meta);return null;}else{return item.body(_meta);}";
     }
 }

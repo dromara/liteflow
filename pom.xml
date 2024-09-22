@@ -77,6 +77,7 @@
 		<redisson.version>3.21.0</redisson.version>
 		<janino.version>3.1.12</janino.version>
 		<kotlin.version>1.9.23</kotlin.version>
+		<liquor.version>1.2.7-SNAPSHOT</liquor.version>
 	</properties>
 
 	<dependencyManagement>
@@ -320,6 +321,11 @@
 				<artifactId>kotlin-scripting-jsr223</artifactId>
 				<version>${kotlin.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.noear</groupId>
+				<artifactId>liquor-eval</artifactId>
+				<version>${liquor.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -442,6 +448,7 @@
 		<module>liteflow-solon-plugin</module>
 		<module>liteflow-testcase-el</module>
         <module>liteflow-el-builder</module>
+		<module>liteflow-script-plugin/liteflow-script-javax</module>
 	</modules>
 
 	<distributionManagement>
