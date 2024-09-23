@@ -7,26 +7,25 @@ import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import org.noear.liquor.eval.CodeSpec;
-import org.noear.liquor.eval.ParamSpec;
-import org.noear.liquor.eval.Scripts;
+import org.noear.liquor.eval.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class JavaxExecutor extends ScriptExecutor {
-    private final Map<String, CodeSpec> compiledScriptMap = new CopyOnWriteHashMap<>();
+    private final Map<String, Execable> compiledScriptMap = new CopyOnWriteHashMap<>();
 
     @Override
     public ScriptExecutor init() {
+        //LiquorEvaluator.getInstance().printable(true);
         return this;
     }
 
     @Override
     public void load(String nodeId, String script) {
         try{
-            compiledScriptMap.put(nodeId, (CodeSpec) compile(script));
+            compiledScriptMap.put(nodeId, (Execable) compile(script));
         }catch (Exception e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -50,8 +49,8 @@ public class JavaxExecutor extends ScriptExecutor {
             String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
             throw new ScriptLoadException(errorMsg);
         }
-        CodeSpec codeSpec = compiledScriptMap.get(wrap.getNodeId());
-        return Scripts.eval(codeSpec, wrap);
+        Execable execable = compiledScriptMap.get(wrap.getNodeId());
+        return execable.exec(wrap);
     }
 
     @Override
@@ -69,8 +68,7 @@ public class JavaxExecutor extends ScriptExecutor {
         CodeSpec codeSpec = new CodeSpec(convertScript(script))
                 .returnType(Object.class)
                 .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class));
-        Scripts.compile(codeSpec);
-        return codeSpec;
+        return Scripts.compile(codeSpec);
     }
 
     private String convertScript(String script){
