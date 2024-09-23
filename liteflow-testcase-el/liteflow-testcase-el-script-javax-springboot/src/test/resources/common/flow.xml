@@ -23,7 +23,7 @@
                     ctx.setData("s1", v1 * v2);
 
                     TestDomain domain = ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
-                    System.out.println(JSON.toJSONString(domain));
+                    System.out.println(domain);
                     String str = domain.sayHello("jack");
                     ctx.setData("hi", str);
 

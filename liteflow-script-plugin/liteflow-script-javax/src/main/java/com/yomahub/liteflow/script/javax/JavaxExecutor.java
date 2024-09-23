@@ -67,7 +67,8 @@ public class JavaxExecutor extends ScriptExecutor {
     public Object compile(String script) throws Exception {
         CodeSpec codeSpec = new CodeSpec(convertScript(script))
                 .returnType(Object.class)
-                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class));
+                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class))
+                .cached(false);
         return Scripts.compile(codeSpec);
     }
 
