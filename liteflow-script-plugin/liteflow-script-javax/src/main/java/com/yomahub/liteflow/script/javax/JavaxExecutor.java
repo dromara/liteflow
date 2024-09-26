@@ -1,11 +1,15 @@
 package com.yomahub.liteflow.script.javax;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
+import com.yomahub.liteflow.script.javax.vo.JavaxSettingMapKey;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.noear.liquor.eval.*;
 
@@ -14,11 +18,16 @@ import java.util.List;
 import java.util.Map;
 
 public class JavaxExecutor extends ScriptExecutor {
+
     private final Map<String, Execable> compiledScriptMap = new CopyOnWriteHashMap<>();
+
+    private boolean isCache;
 
     @Override
     public ScriptExecutor init() {
-        //LiquorEvaluator.getInstance().printable(true);
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        String isCacheValue = liteflowConfig.getScriptSetting().get(JavaxSettingMapKey.IS_CACHE);
+        isCache = Boolean.parseBoolean(isCacheValue);
         return this;
     }
 
@@ -67,8 +76,7 @@ public class JavaxExecutor extends ScriptExecutor {
     public Object compile(String script) throws Exception {
         CodeSpec codeSpec = new CodeSpec(convertScript(script))
                 .returnType(Object.class)
-                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class))
-                .cached(false);
+                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class)).cached(isCache);
         return Scripts.compile(codeSpec);
     }
 

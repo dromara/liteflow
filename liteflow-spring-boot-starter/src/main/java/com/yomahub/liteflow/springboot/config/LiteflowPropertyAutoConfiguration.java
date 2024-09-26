@@ -53,6 +53,7 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
+		liteflowConfig.setScriptSetting(property.getScriptSetting());
 		return liteflowConfig;
 	}
 

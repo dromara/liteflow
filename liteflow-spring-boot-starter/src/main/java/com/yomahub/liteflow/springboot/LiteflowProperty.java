@@ -98,6 +98,9 @@ public class LiteflowProperty {
 	//是否检查节点存在
 	private boolean checkNodeExists;
 
+	//脚本特殊设置选项
+	private Map<String, String> scriptSetting;
+
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -324,5 +327,13 @@ public class LiteflowProperty {
 
 	public void setCheckNodeExists(boolean checkNodeExists) {
 		this.checkNodeExists = checkNodeExists;
+	}
+
+	public Map<String, String> getScriptSetting() {
+		return scriptSetting;
+	}
+
+	public void setScriptSetting(Map<String, String> scriptSetting) {
+		this.scriptSetting = scriptSetting;
 	}
 }

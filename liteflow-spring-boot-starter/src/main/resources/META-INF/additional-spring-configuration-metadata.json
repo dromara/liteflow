@@ -214,6 +214,12 @@
       "description": "Custom thread pool implement for parallel-loop executor.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder"
+    },
+    {
+      "name": "liteflow.scriptSetting",
+      "type": "java.util.Map",
+      "description": "script special settings.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     }
   ]
 }

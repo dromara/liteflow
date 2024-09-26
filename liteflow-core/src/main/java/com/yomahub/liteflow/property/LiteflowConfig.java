@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +36,7 @@ public class LiteflowConfig {
 	// 流程资源扩展数据
 	private String ruleSourceExtData;
 
-	private Map<String, String> ruleSourceExtDataMap;
+	private Map<String, String> ruleSourceExtDataMap = new HashMap<>();
 
 	// slot的数量
 	private Integer slotSize;
@@ -118,6 +119,9 @@ public class LiteflowConfig {
 
 	//是否快速加载规则，如果快速加载规则意味着不用copyOnWrite机制了
 	private Boolean fastLoad;
+
+	//脚本特殊设置选项
+	private Map<String, String> scriptSetting = new HashMap<>();
 
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
@@ -491,5 +495,13 @@ public class LiteflowConfig {
 
 	public void setParseMode(ParseModeEnum parseMode) {
 		this.parseMode = parseMode;
+	}
+
+	public Map<String, String> getScriptSetting() {
+		return scriptSetting;
+	}
+
+	public void setScriptSetting(Map<String, String> scriptSetting) {
+		this.scriptSetting = scriptSetting;
 	}
 }
