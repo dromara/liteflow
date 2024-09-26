@@ -216,7 +216,7 @@
       "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder"
     },
     {
-      "name": "liteflow.scriptSetting",
+      "name": "liteflow.script-setting",
       "type": "java.util.Map",
       "description": "script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"

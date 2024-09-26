@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.property;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
@@ -36,7 +37,7 @@ public class LiteflowConfig {
 	// 流程资源扩展数据
 	private String ruleSourceExtData;
 
-	private Map<String, String> ruleSourceExtDataMap = new HashMap<>();
+	private Map<String, String> ruleSourceExtDataMap;
 
 	// slot的数量
 	private Integer slotSize;
@@ -121,7 +122,7 @@ public class LiteflowConfig {
 	private Boolean fastLoad;
 
 	//脚本特殊设置选项
-	private Map<String, String> scriptSetting = new HashMap<>();
+	private Map<String, String> scriptSetting;
 
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
@@ -498,7 +499,11 @@ public class LiteflowConfig {
 	}
 
 	public Map<String, String> getScriptSetting() {
-		return scriptSetting;
+		if (ObjectUtil.isNull(scriptSetting)) {
+			return MapUtil.empty();
+		}else{
+			return scriptSetting;
+		}
 	}
 
 	public void setScriptSetting(Map<String, String> scriptSetting) {

@@ -17,6 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Javax语言执行器，基于liquor
+ * @author Bryan.Zhang
+ * @since 2.12.4
+ */
 public class JavaxExecutor extends ScriptExecutor {
 
     private final Map<String, Execable> compiledScriptMap = new CopyOnWriteHashMap<>();
@@ -74,10 +79,14 @@ public class JavaxExecutor extends ScriptExecutor {
 
     @Override
     public Object compile(String script) throws Exception {
-        CodeSpec codeSpec = new CodeSpec(convertScript(script))
-                .returnType(Object.class)
-                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class)).cached(isCache);
-        return Scripts.compile(codeSpec);
+        try{
+            CodeSpec codeSpec = new CodeSpec(convertScript(script))
+                    .returnType(Object.class)
+                    .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class)).cached(isCache);
+            return Scripts.compile(codeSpec);
+        }catch (Exception e){
+            return e;
+        }
     }
 
     private String convertScript(String script){
