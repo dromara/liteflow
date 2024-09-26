@@ -42,12 +42,13 @@ public class ScriptJavaxBenchmark {
         applicationContext.close();
     }
 
-    /*@Benchmark
+    //普通执行
+    @Benchmark
     public  void test1(){
         flowExecutor.execute2Resp("chain1");
-    }*/
+    }
 
-    //每次编译一样的的script性能
+    //LF动态创建组件和规则，并执行
     @Benchmark
     public  void test2(){
         String scriptContent = ResourceUtil.readUtf8Str("classpath:javaxScript.java");
@@ -66,7 +67,7 @@ public class ScriptJavaxBenchmark {
                 .mode(Mode.Throughput)
                 .warmupIterations(1)//预热次数
                 .measurementIterations(3)//执行次数
-                .measurementTime(new TimeValue(30, TimeUnit.SECONDS))//每次执行多少时间
+                .measurementTime(new TimeValue(10, TimeUnit.SECONDS))//每次执行多少时间
                 .threads(300)//多少个线程
                 .forks(1)//多少个进程
                 .timeUnit(TimeUnit.SECONDS)
