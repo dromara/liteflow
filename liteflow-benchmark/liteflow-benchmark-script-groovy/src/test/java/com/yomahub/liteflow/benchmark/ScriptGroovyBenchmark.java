@@ -6,8 +6,6 @@ import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -26,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:application.properties")
 @ComponentScan("com.yomahub.liteflow.benchmark.cmp")
-public class ScriptJavaxBenchmark {
+public class ScriptGroovyBenchmark {
 
     private ConfigurableApplicationContext applicationContext;
 
@@ -34,7 +32,7 @@ public class ScriptJavaxBenchmark {
 
     @Setup
     public void setup() {
-        applicationContext = SpringApplication.run(ScriptJavaxBenchmark.class);
+        applicationContext = SpringApplication.run(ScriptGroovyBenchmark.class);
         flowExecutor = applicationContext.getBean(FlowExecutor.class);
     }
 
@@ -52,7 +50,7 @@ public class ScriptJavaxBenchmark {
     //LF动态创建组件和规则，并执行
     @Benchmark
     public  void test2(){
-        String scriptContent = ResourceUtil.readUtf8Str("classpath:javaxScript.java");
+        String scriptContent = ResourceUtil.readUtf8Str("classpath:script.groovy");
         LiteFlowNodeBuilder.createScriptNode().setId("ds").setScript(scriptContent).build();
 
         if(!FlowBus.containChain("chain2")){
@@ -64,7 +62,7 @@ public class ScriptJavaxBenchmark {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(ScriptJavaxBenchmark.class.getSimpleName())
+                .include(ScriptGroovyBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
                 .warmupIterations(1)//预热次数
                 .measurementIterations(3)//执行次数

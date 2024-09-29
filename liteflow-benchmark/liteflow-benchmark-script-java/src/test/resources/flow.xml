@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.benchmark.cmp.TestDomain;
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+            import com.yomahub.liteflow.script.body.JaninoCommonScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements JaninoCommonScriptBody {
+                public Void body(ScriptExecuteWrap wrap) {
+                    int v1 = 2;
+                    int v2 = 3;
+                    DefaultContext ctx = (DefaultContext) wrap.getCmp().getFirstContextBean();
+                    ctx.setData("s1", v1 * v2);
+
+                    TestDomain domain = (TestDomain) ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
+                    String str = domain.sayHello("jack");
+                    ctx.setData("hi", str);
+
+                    return null;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s2" name="循环脚本1" type="for_script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.script.body.JaninoForScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements JaninoForScriptBody{
+                public Integer body(ScriptExecuteWrap wrap){
+                    return 2;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s3" name="选择脚本" type="switch_script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+            import com.yomahub.liteflow.script.body.JaninoSwitchScriptBody;
+
+            public class Demo implements JaninoSwitchScriptBody {
+                public String body(ScriptExecuteWrap wrap) {
+                    return "b";
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(FOR(s2).DO(THEN(a, b, c, s1)), SWITCH(s3).TO(a,b));
+    </chain>
+</flow>
