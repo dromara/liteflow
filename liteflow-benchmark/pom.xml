@@ -46,7 +46,7 @@
         <module>liteflow-benchmark-script-javax</module>
         <module>liteflow-benchmark-script-java</module>
         <module>liteflow-benchmark-script-groovy</module>
-        <module>liteflow-benchmark-script-kotlin</module>
+        <module>liteflow-benchmark-common</module>
     </modules>
 
     <build>
