@@ -2,54 +2,32 @@
 <!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
 <flow>
     <nodes>
-        <node id="s1" name="普通脚本1" type="script" language="groovy">
+        <node id="s1" name="普通脚本1" type="script" language="java">
             <![CDATA[
-            import cn.hutool.core.collection.ListUtil
-            import cn.hutool.core.date.DateUtil
+            import cn.hutool.core.collection.ListUtil;
+            import com.yomahub.liteflow.benchmark.cmp.Person;
+            import com.yomahub.liteflow.script.body.CommonScriptBody;
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
 
-            import java.util.function.Consumer
-            import java.util.function.Function
-            import java.util.stream.Collectors
+            import java.util.List;
+            import java.util.function.ToIntFunction;
 
-            def date = DateUtil.parse("2022-10-17 13:31:43")
-            defaultContext.setData("demoDate", date)
-
-            List<String> list = ListUtil.toList("a", "b", "c")
-
-            List<String> resultList = list.stream().map(s -> "hello," + s).collect(Collectors.toList())
-
-            defaultContext.setData("resultList", resultList)
-
-            class Student {
-                int studentID
-                String studentName
+            public class Demo implements CommonScriptBody {
+                public Void body(ScriptExecuteWrap wrap) {
+                    return null;
+                }
             }
-
-            Student student = new Student()
-            student.studentID = 100301
-            student.studentName = "张三"
-                    defaultContext.setData("student", student)
-
-            def a = 3
-            def b = 2
-            defaultContext.setData("s1", a * b)
-            ]]>
-        </node>
-
-        <node id="s2" name="循环脚本1" type="for_script" language="groovy">
-            <![CDATA[
-            return 2
-            ]]>
-        </node>
-
-        <node id="s3" name="选择脚本" type="switch_script" language="groovy">
-            <![CDATA[
-            return "b"
             ]]>
         </node>
     </nodes>
 
     <chain name="chain1">
-        THEN(FOR(s2).DO(THEN(a, b, c, s1)), SWITCH(s3).TO(a,b));
+        THEN(a,b,c);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,s1);
     </chain>
 </flow>

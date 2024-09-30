@@ -79,14 +79,10 @@ public class JavaxExecutor extends ScriptExecutor {
 
     @Override
     public Object compile(String script) throws Exception {
-        try{
-            CodeSpec codeSpec = new CodeSpec(convertScript(script))
-                    .returnType(Object.class)
-                    .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class)).cached(isCache);
-            return Scripts.compile(codeSpec);
-        }catch (Exception e){
-            return e;
-        }
+        CodeSpec codeSpec = new CodeSpec(convertScript(script))
+                .returnType(Object.class)
+                .parameters(new ParamSpec("_meta", ScriptExecuteWrap.class)).cached(isCache);
+        return Scripts.compile(codeSpec);
     }
 
     private String convertScript(String script){

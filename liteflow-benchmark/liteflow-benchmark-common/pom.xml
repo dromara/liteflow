@@ -12,4 +12,13 @@
 
     <artifactId>liteflow-benchmark-common</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-javax</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>
