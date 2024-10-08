@@ -5,12 +5,10 @@ import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.spi.ContextAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -72,7 +70,7 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
     }
 
     @Override
-    public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean){
+    public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean) {
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext
                 .getAutowireCapableBeanFactory();
         beanFactory.setAllowBeanDefinitionOverriding(true);
