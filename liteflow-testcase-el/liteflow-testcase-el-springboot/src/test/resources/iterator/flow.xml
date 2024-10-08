@@ -24,4 +24,10 @@
             ITERATOR(x2).DO(e)
         );
     </chain>
+
+    <chain name="chain5">
+        ITERATOR(x1).parallel(true).DO(
+            ITERATOR(x2).parallel(true).DO(f)
+        );
+    </chain>
 </flow>
