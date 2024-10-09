@@ -15,7 +15,7 @@ public class ValidateJavaxScriptComponentTest {
         String correctScript = "import com.alibaba.fastjson2.JSON;\n" +
                 "            import com.yomahub.liteflow.slot.DefaultContext;\n" +
                 "            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;\n" +
-                "            import com.yomahub.liteflow.test.script.java.common.cmp.TestDomain;\n" +
+                "            import com.yomahub.liteflow.test.script.javax.common.cmp.TestDomain;\n" +
                 "            import com.yomahub.liteflow.script.body.CommonScriptBody;\n" +
                 "            import com.yomahub.liteflow.script.ScriptExecuteWrap;\n" +
                 "\n" +

@@ -69,7 +69,6 @@ public class GlobalAOPELSpringTest extends BaseTest {
 	@AfterAll
 	public static void cleanScanCache() {
 		BaseTest.cleanScanCache();
-		ComponentScanner.cmpAroundAspect = null;
 	}
 
 }
