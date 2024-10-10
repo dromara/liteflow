@@ -113,7 +113,7 @@ public abstract class Condition implements Executable{
 
 		List<Node> resultList = new ArrayList<>();
 
-		executableList.stream().forEach(executable -> {
+		executableList.forEach(executable -> {
             if (executable instanceof Condition){
                 resultList.addAll(((Condition)executable).getAllNodeInCondition());
             }else if(executable instanceof Node){
