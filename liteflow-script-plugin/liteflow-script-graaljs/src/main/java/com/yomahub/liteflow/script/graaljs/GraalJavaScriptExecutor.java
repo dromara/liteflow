@@ -2,6 +2,7 @@ package com.yomahub.liteflow.script.graaljs;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
@@ -30,6 +31,8 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 	@Override
 	public ScriptExecutor init() {
 		engine = Engine.create();
+		//如果有生命周期则执行相应生命周期实现
+		super.lifeCycle(engine);
 		return this;
 	}
 

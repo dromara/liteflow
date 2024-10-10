@@ -30,18 +30,14 @@ import java.util.Optional;
 public class ComponentScanner implements BeanPostProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ComponentScanner.class);
 
-    private LiteflowConfig liteflowConfig;
 
-    private final LiteflowScannerProcessStepFactory liteflowScannerProcessStepFactory;
+    private final LiteflowScannerProcessStepFactory liteflowScannerProcessStepFactory = new LiteflowScannerProcessStepFactory();
 
     public ComponentScanner() {
-        this.liteflowScannerProcessStepFactory = new LiteflowScannerProcessStepFactory();
         LOGOPrinter.print();
     }
 
     public ComponentScanner(LiteflowConfig liteflowConfig) {
-        this.liteflowConfig = liteflowConfig;
-        this.liteflowScannerProcessStepFactory = new LiteflowScannerProcessStepFactory();
         if (liteflowConfig.getPrintBanner()) {
             // 打印liteflow的LOGO
             LOGOPrinter.print();

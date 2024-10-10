@@ -33,7 +33,7 @@ import static com.yomahub.liteflow.parser.factory.FlowParserProvider.ConfigRegex
  */
 public class FlowParserProvider {
 
-	private static final LFLog LOG = LFLoggerManager.getLogger(FlowExecutor.class);
+	private static final LFLog LOG = LFLoggerManager.getLogger(FlowParserProvider.class);
 
 	private static final FlowParserFactory LOCAL_PARSER_FACTORY = new LocalParserFactory();
 

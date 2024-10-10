@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 
@@ -20,7 +21,14 @@ import java.util.function.BiConsumer;
 public abstract class ScriptExecutor {
 
 	public ScriptExecutor init(){
+		lifeCycle(null);
 		return this;
+	}
+
+	public void lifeCycle(Object engine){
+		LifeCycleHolder.getPostProcessAfterScriptEngineInitLifeCycleList().forEach(
+				postProcessAfterScriptEngineInitLifeCycle -> postProcessAfterScriptEngineInitLifeCycle.postProcessAfterScriptEngineInit(engine)
+		);
 	}
 
 	public abstract void load(String nodeId, String script);

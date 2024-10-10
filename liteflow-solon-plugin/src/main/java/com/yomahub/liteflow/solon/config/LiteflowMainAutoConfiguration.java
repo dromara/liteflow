@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.solon.config;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Init;
@@ -37,6 +38,7 @@ public class LiteflowMainAutoConfiguration {
 
 		if (parseOnStart) {
 			flowExecutor.init(true);
+			FlowBus.needInit();
 		}
 
 		appContext.wrapAndPut(FlowExecutor.class, flowExecutor);

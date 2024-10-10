@@ -33,6 +33,8 @@ public class JavaxExecutor extends ScriptExecutor {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         String isCacheValue = liteflowConfig.getScriptSetting().get(JavaxSettingMapKey.IS_CACHE);
         isCache = Boolean.parseBoolean(isCacheValue);
+        //如果有生命周期则执行相应生命周期实现
+        super.lifeCycle(null);
         return this;
     }
 

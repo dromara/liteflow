@@ -24,6 +24,7 @@ import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
@@ -91,6 +92,10 @@ public class FlowBus {
 	// 这个方法主要用于第二阶段的替换chain
 	public static void addChain(Chain chain) {
 		chainMap.put(chain.getChainId(), chain);
+		//如果有生命周期则执行相应生命周期实现
+		LifeCycleHolder.getPostProcessAfterChainBuildLifeCycleList().forEach(
+				postProcessAfterChainBuildLifeCycle -> postProcessAfterChainBuildLifeCycle.postProcessAfterChainBuild(chain)
+		);
 	}
 
 	public static boolean containChain(String chainId) {
@@ -125,7 +130,7 @@ public class FlowBus {
 
 		Node node = new Node(ComponentInitializer.loadInstance()
 				.initComponent(nodeComponent, type, nodeComponent.getName(), nodeId));
-		nodeMap.put(nodeId, node);
+		put2NodeMap(nodeId, node);
 		addFallbackNode(node);
 	}
 
@@ -229,7 +234,7 @@ public class FlowBus {
 				}
 
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-				nodeMap.put(activeNodeId, node);
+				put2NodeMap(activeNodeId, node);
 				addFallbackNode(node);
 			}
 		}
@@ -366,6 +371,14 @@ public class FlowBus {
 
 	public static void clearStat(){
 		initStat.set(false);
+	}
+
+	private static void put2NodeMap(String nodeId, Node node){
+		nodeMap.put(nodeId, node);
+		// 如果有生命周期则执行相应生命周期实现
+		LifeCycleHolder.getPostProcessAfterNodeBuildLifeCycleList().forEach(
+				postProcessAfterNodeBuildLifeCycle -> postProcessAfterNodeBuildLifeCycle.postProcessAfterNodeBuild(node)
+		);
 	}
 
 }

@@ -33,6 +33,8 @@ public class PythonScriptExecutor extends ScriptExecutor {
         PySystemState systemState = new PySystemState();
         systemState.setdefaultencoding("UTF-8");
         this.pythonInterpreter = new PythonInterpreter(null, systemState);
+        //如果有生命周期则执行相应生命周期实现
+        super.lifeCycle(pythonInterpreter);
         return this;
     }
 

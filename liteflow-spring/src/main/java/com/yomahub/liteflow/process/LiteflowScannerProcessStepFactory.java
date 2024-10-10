@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2.12.4
  */
 public class LiteflowScannerProcessStepFactory {
-    private static final List<LiteflowScannerProcessStep> SPRING_BEAN_FINDER = new ArrayList<>();
+    private static final List<LiteflowScannerProcessStep> SCANNER_PROCESS_STEP_LIST = new ArrayList<>();
 
     public LiteflowScannerProcessStepFactory() {
         // 初始化
@@ -27,14 +27,15 @@ public class LiteflowScannerProcessStepFactory {
      * 该方法用于向Spring Bean查找器集合中添加各种不同类型的Bean查找器，并按照它们的优先级进行排序
      */
     private void register() {
-        SPRING_BEAN_FINDER.add(new CmpAroundAspectBeanProcess());
-        SPRING_BEAN_FINDER.add(new DeclWarpBeanProcess());
-        SPRING_BEAN_FINDER.add(new NodeCmpBeanProcess());
-        SPRING_BEAN_FINDER.add(new ScriptBeanProcess());
-        SPRING_BEAN_FINDER.add(new ScriptMethodBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new CmpAroundAspectBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new DeclWarpBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new NodeCmpBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new ScriptBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new ScriptMethodBeanProcess());
+        SCANNER_PROCESS_STEP_LIST.add(new LifeCycleBeanProcess());
 
         // 按优先级排序
-        CollUtil.sort(SPRING_BEAN_FINDER, Comparator.comparing(o -> o.type().getPriority()));
+        CollUtil.sort(SCANNER_PROCESS_STEP_LIST, Comparator.comparing(o -> o.type().getPriority()));
     }
 
     /**
@@ -44,6 +45,6 @@ public class LiteflowScannerProcessStepFactory {
      * 用于查找和实例化Spring Beans
      */
     public Collection<LiteflowScannerProcessStep> getSteps() {
-        return CollUtil.unmodifiable(SPRING_BEAN_FINDER);
+        return CollUtil.unmodifiable(SCANNER_PROCESS_STEP_LIST);
     }
 }

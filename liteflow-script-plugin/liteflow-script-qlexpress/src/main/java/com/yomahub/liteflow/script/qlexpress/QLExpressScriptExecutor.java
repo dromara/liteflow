@@ -37,6 +37,8 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public ScriptExecutor init() {
 		expressRunner = new ExpressRunner(true, false);
+		//如果有生命周期则执行相应生命周期实现
+		super.lifeCycle(expressRunner);
 		return this;
 	}
 

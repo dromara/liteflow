@@ -6,6 +6,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.lifecycle.LifeCycle;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
@@ -46,11 +48,16 @@ public class XPluginImpl implements Plugin {
 		context.beanMake(LiteflowAutoConfiguration.class);
 		context.beanMake(LiteflowMainAutoConfiguration.class);
 
+		// 订阅生命周期实现类
+		context.subWrapsOfType(LifeCycle.class, bw -> {
+			LifeCycle lifeCycle = bw.raw();
+			LifeCycleHolder.addLifeCycle(lifeCycle);
+		});
+
 		// 订阅 NodeComponent 组件
 		context.subWrapsOfType(NodeComponent.class, bw -> {
 			NodeComponent node1 = bw.raw();
 			node1.setNodeId(bw.name());
-
 			FlowBus.addManagedNode(bw.name(), bw.raw());
 		});
 
