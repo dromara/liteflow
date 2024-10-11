@@ -49,16 +49,16 @@ public class XPluginImpl implements Plugin {
 		context.beanMake(LiteflowMainAutoConfiguration.class);
 
 		// 订阅生命周期实现类
-		context.subWrapsOfType(LifeCycle.class, bw -> {
-			LifeCycle lifeCycle = bw.raw();
-			LifeCycleHolder.addLifeCycle(lifeCycle);
-		});
+		context.subBeansOfType(LifeCycle.class, LifeCycleHolder::addLifeCycle);
 
 		// 订阅 NodeComponent 组件
-		context.subWrapsOfType(NodeComponent.class, bw -> {
-			NodeComponent node1 = bw.raw();
-			node1.setNodeId(bw.name());
-			FlowBus.addManagedNode(bw.name(), bw.raw());
+		context.lifecycle(()-> {
+			//扫描完成后，收集组件
+			context.beanForeach(bw -> {
+				if (bw.raw() instanceof NodeComponent) {
+					FlowBus.addManagedNode(bw.name(), bw.raw());
+				}
+			});
 		});
 
 		Set<Class<?>> liteflowMethodClassSet = new HashSet<>();
