@@ -8,7 +8,12 @@ import org.noear.solon.annotation.Component;
 @Component
 public class TestNodeLifeCycle implements PostProcessNodeBuildLifeCycle {
     @Override
+    public void postProcessBeforeNodeBuild(Node node) {
+        System.out.println(StrUtil.format("Node生命周期(前)——[{}]已被加载",node.getId()));
+    }
+
+    @Override
     public void postProcessAfterNodeBuild(Node node) {
-        System.out.println(StrUtil.format("Node生命周期——[{}]已被加载",node.getId()));
+        System.out.println(StrUtil.format("Node生命周期(后)——[{}]已被加载",node.getId()));
     }
 }
