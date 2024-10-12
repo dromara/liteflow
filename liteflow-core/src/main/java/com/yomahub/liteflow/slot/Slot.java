@@ -357,6 +357,22 @@ public class Slot {
 		return this.executeStepsStr;
 	}
 
+
+	public String getExecuteStepStrWithInstanceId() {
+		StringBuilder str = new StringBuilder();
+		CmpStep cmpStep;
+		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
+			cmpStep = it.next();
+			str.append(cmpStep.buildStringWithInstanceId());
+
+			if (it.hasNext()) {
+				str.append("==>");
+			}
+		}
+		this.executeStepsStr = str.toString();
+		return this.executeStepsStr;
+	}
+
 	public String getExecuteStepStr() {
 		return getExecuteStepStr(false);
 	}

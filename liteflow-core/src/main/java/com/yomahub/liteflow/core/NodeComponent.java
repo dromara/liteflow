@@ -26,6 +26,8 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import com.yomahub.liteflow.util.JsonUtil;
+import cn.hutool.crypto.*;
+import cn.hutool.crypto.digest.*;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -47,6 +49,8 @@ public abstract class NodeComponent{
 	private String nodeId;
 
 	private String name;
+
+	private String instanceId;
 
 	private NodeTypeEnum type;
 
@@ -85,7 +89,7 @@ public abstract class NodeComponent{
 		Slot slot = this.getSlot();
 
 		// 在元数据里加入step信息
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, generateInstanceId());
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -153,7 +157,7 @@ public abstract class NodeComponent{
 			return;
 		}
 
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, generateInstanceId());
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -235,6 +239,21 @@ public abstract class NodeComponent{
 
 	public void setIsContinueOnError(boolean isContinueOnError) {
 		this.getRefNode().setIsContinueOnErrorResult(isContinueOnError);
+	}
+
+	public String generateInstanceId() {
+		Digester sha256 = SecureUtil.sha256();
+		byte[] hashBytes = sha256.digest(this.getNodeId() + System.nanoTime());
+
+		StringBuilder sb = new StringBuilder();
+		for (byte b : hashBytes) {
+			if (sb.length() >= 6) {
+				break;
+			}
+			sb.append(String.format("%02x", b));
+		}
+
+		return sb.toString();
 	}
 
 	public Integer getSlotIndex() {
@@ -320,7 +339,13 @@ public abstract class NodeComponent{
 	public void setNodeExecutorClass(Class<? extends NodeExecutor> nodeExecutorClass) {
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
+	public String getInstanceId() {
+		return instanceId;
+	}
 
+	public void setInstanceId(String instanceId) {
+		this.instanceId = instanceId;
+	}
 	public String getTag() {
 		return this.getRefNode().getTag();
 	}
