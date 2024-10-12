@@ -4,12 +4,14 @@ import com.yomahub.liteflow.flow.element.Chain;
 
 /**
  * 生命周期接口
- * 在Chain构造后执行，如果有实现的话
+ * 在Chain构造时期，如果有实现的话
  *
  * @author Bryan.Zhang
  * @since 2.12.4
  */
-public interface PostProcessAfterChainBuildLifeCycle extends LifeCycle {
+public interface PostProcessChainBuildLifeCycle extends LifeCycle {
+
+    void postProcessBeforeChainBuild(Chain chain);
 
     void postProcessAfterChainBuild(Chain chain);
 }

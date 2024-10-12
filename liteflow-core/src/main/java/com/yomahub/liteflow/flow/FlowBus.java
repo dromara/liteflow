@@ -8,6 +8,7 @@
  */
 package com.yomahub.liteflow.flow;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
@@ -91,11 +92,21 @@ public class FlowBus {
 
 	// 这个方法主要用于第二阶段的替换chain
 	public static void addChain(Chain chain) {
-		chainMap.put(chain.getChainId(), chain);
 		//如果有生命周期则执行相应生命周期实现
-		LifeCycleHolder.getPostProcessAfterChainBuildLifeCycleList().forEach(
-				postProcessAfterChainBuildLifeCycle -> postProcessAfterChainBuildLifeCycle.postProcessAfterChainBuild(chain)
-		);
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainBuildLifeCycleList())){
+			LifeCycleHolder.getPostProcessChainBuildLifeCycleList().forEach(
+					postProcessAfterChainBuildLifeCycle -> postProcessAfterChainBuildLifeCycle.postProcessBeforeChainBuild(chain)
+			);
+		}
+
+		chainMap.put(chain.getChainId(), chain);
+
+		//如果有生命周期则执行相应生命周期实现
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainBuildLifeCycleList())){
+			LifeCycleHolder.getPostProcessChainBuildLifeCycleList().forEach(
+					postProcessAfterChainBuildLifeCycle -> postProcessAfterChainBuildLifeCycle.postProcessAfterChainBuild(chain)
+			);
+		}
 	}
 
 	public static boolean containChain(String chainId) {
@@ -374,11 +385,21 @@ public class FlowBus {
 	}
 
 	private static void put2NodeMap(String nodeId, Node node){
-		nodeMap.put(nodeId, node);
 		// 如果有生命周期则执行相应生命周期实现
-		LifeCycleHolder.getPostProcessAfterNodeBuildLifeCycleList().forEach(
-				postProcessAfterNodeBuildLifeCycle -> postProcessAfterNodeBuildLifeCycle.postProcessAfterNodeBuild(node)
-		);
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessNodeBuildLifeCycleList())){
+			LifeCycleHolder.getPostProcessNodeBuildLifeCycleList().forEach(
+					postProcessAfterNodeBuildLifeCycle -> postProcessAfterNodeBuildLifeCycle.postProcessBeforeNodeBuild(node)
+			);
+		}
+
+		nodeMap.put(nodeId, node);
+
+		// 如果有生命周期则执行相应生命周期实现
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessNodeBuildLifeCycleList())){
+			LifeCycleHolder.getPostProcessNodeBuildLifeCycleList().forEach(
+					postProcessAfterNodeBuildLifeCycle -> postProcessAfterNodeBuildLifeCycle.postProcessAfterNodeBuild(node)
+			);
+		}
 	}
 
 }
