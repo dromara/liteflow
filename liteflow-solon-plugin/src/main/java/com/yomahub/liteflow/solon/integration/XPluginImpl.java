@@ -52,9 +52,7 @@ public class XPluginImpl implements Plugin {
 		context.beanMake(LiteflowMainAutoConfiguration.class);
 
 		// 订阅生命周期实现类
-		context.subBeansOfType(LifeCycle.class, bean -> {
-			LifeCycleHolder.addLifeCycle(bean);
-		});
+		context.subBeansOfType(LifeCycle.class, LifeCycleHolder::addLifeCycle);
 
 		// 订阅 @Component 或别的方式产生的 NodeComponent
 		context.subWrapsOfType(NodeComponent.class, bw->{
