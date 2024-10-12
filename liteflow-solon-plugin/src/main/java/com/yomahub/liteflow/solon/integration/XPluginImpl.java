@@ -5,9 +5,9 @@ import com.yomahub.liteflow.annotation.LiteflowMethod;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.lifecycle.LifeCycle;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
+import com.yomahub.liteflow.process.holder.SolonNodeHolder;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
@@ -42,6 +42,8 @@ public class XPluginImpl implements Plugin {
 			return;
 		}
 
+		SolonNodeHolder solonNodeHolder = SolonNodeHolder.of(context);
+
 		// 放到前面
 		context.beanMake(LiteflowProperty.class);
 		context.beanMake(LiteflowMonitorProperty.class);
@@ -49,22 +51,26 @@ public class XPluginImpl implements Plugin {
 		context.beanMake(LiteflowMainAutoConfiguration.class);
 
 		// 订阅生命周期实现类
-		context.subWrapsOfType(LifeCycle.class, bw -> {
-			LifeCycle lifeCycle = bw.raw();
-			LifeCycleHolder.addLifeCycle(lifeCycle);
+		context.subBeansOfType(LifeCycle.class, bean -> {
+			LifeCycleHolder.addLifeCycle(bean);
 		});
 
-		// 订阅 NodeComponent 组件
-		context.subWrapsOfType(NodeComponent.class, bw -> {
-			NodeComponent node1 = bw.raw();
-			node1.setNodeId(bw.name());
-			FlowBus.addManagedNode(bw.name(), bw.raw());
+		// 订阅 @Component 或别的方式产生的 NodeComponent
+		context.subWrapsOfType(NodeComponent.class, bw->{
+			if (Utils.isNotEmpty(bw.name())) {
+				NodeComponent node1 = bw.raw();
+				node1.setNodeId(bw.name());
+
+				solonNodeHolder.put(node1.getNodeId(), node1);
+			}
 		});
 
 		Set<Class<?>> liteflowMethodClassSet = new HashSet<>();
 
+		//添加 @LiteflowMethod 注解处理
 		context.beanExtractorAdd(LiteflowMethod.class, (bw, method, anno) -> {
 			if (liteflowMethodClassSet.contains(bw.clz())) {
+				//避免重复处理类
 				return;
 			} else {
 				liteflowMethodClassSet.add(bw.clz());
@@ -76,22 +82,26 @@ public class XPluginImpl implements Plugin {
 
 			for (DeclWarpBean declWarpBean : declWarpBeanList) {
 				NodeComponent node1 = LiteFlowProxyUtil.proxy2NodeComponent(declWarpBean);
-				FlowBus.addManagedNode(node1.getNodeId(), node1);
+
+				solonNodeHolder.put(node1.getNodeId(), node1);
 			}
 		});
 
+		//添加 @LiteflowComponent 注解处理
 		context.beanBuilderAdd(LiteflowComponent.class, (clz, bw, anno) -> {
-			if (NodeComponent.class.isAssignableFrom(clz)) {
-				NodeComponent node1 = bw.raw();
+			if(NodeComponent.class.isAssignableFrom(clz)) {
 				String nodeId = Utils.annoAlias(anno.id(), anno.value());
+				if (Utils.isNotEmpty(nodeId)) {
+					NodeComponent node1 = bw.raw();
+					node1.setNodeId(nodeId);
+					node1.setName(anno.name());
 
-				node1.setNodeId(nodeId);
-				node1.setName(anno.name());
-
-				FlowBus.addManagedNode(nodeId, node1);
-			} else {
-				context.beanExtractOrProxy(bw); // 尝试提取 LiteflowMethod 函数，并支持自动代理
+					solonNodeHolder.put(nodeId, node1);
+				}
 			}
+
+			// 支持动态代理与函数提取
+			context.beanExtractOrProxy(bw);
 		});
 	}
 }
