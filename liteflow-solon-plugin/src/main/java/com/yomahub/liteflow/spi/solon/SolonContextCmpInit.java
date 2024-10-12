@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.spi.solon;
 
 import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.process.holder.SolonNodeHolder;
+import com.yomahub.liteflow.process.holder.SolonNodeIdHolder;
 import com.yomahub.liteflow.spi.ContextCmpInit;
 import org.noear.solon.Solon;
 
@@ -15,9 +15,7 @@ public class SolonContextCmpInit implements ContextCmpInit {
 
 	@Override
 	public void initCmp() {
-		SolonNodeHolder solonNodeHolder = SolonNodeHolder.of(Solon.context());
-
-		solonNodeHolder.getNodeMap().forEach(FlowBus::addManagedNode);
+		SolonNodeIdHolder.of(Solon.context()).getNodeIdSet().forEach(FlowBus::addManagedNode);
 	}
 
 	@Override

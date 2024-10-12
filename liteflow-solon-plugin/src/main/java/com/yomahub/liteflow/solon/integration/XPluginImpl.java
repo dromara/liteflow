@@ -7,7 +7,7 @@ import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.lifecycle.LifeCycle;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
-import com.yomahub.liteflow.process.holder.SolonNodeHolder;
+import com.yomahub.liteflow.process.holder.SolonNodeIdHolder;
 import com.yomahub.liteflow.solon.config.LiteflowAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMainAutoConfiguration;
 import com.yomahub.liteflow.solon.config.LiteflowMonitorProperty;
@@ -15,6 +15,7 @@ import com.yomahub.liteflow.solon.config.LiteflowProperty;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import org.noear.solon.Utils;
 import org.noear.solon.core.AppContext;
+import org.noear.solon.core.BeanWrap;
 import org.noear.solon.core.Plugin;
 
 import java.util.*;
@@ -42,7 +43,7 @@ public class XPluginImpl implements Plugin {
 			return;
 		}
 
-		SolonNodeHolder solonNodeHolder = SolonNodeHolder.of(context);
+		SolonNodeIdHolder nodeIdHolder = SolonNodeIdHolder.of(context);
 
 		// 放到前面
 		context.beanMake(LiteflowProperty.class);
@@ -61,7 +62,7 @@ public class XPluginImpl implements Plugin {
 				NodeComponent node1 = bw.raw();
 				node1.setNodeId(bw.name());
 
-				solonNodeHolder.put(node1.getNodeId(), node1);
+				nodeIdHolder.add(node1.getNodeId());
 			}
 		});
 
@@ -83,7 +84,10 @@ public class XPluginImpl implements Plugin {
 			for (DeclWarpBean declWarpBean : declWarpBeanList) {
 				NodeComponent node1 = LiteFlowProxyUtil.proxy2NodeComponent(declWarpBean);
 
-				solonNodeHolder.put(node1.getNodeId(), node1);
+				BeanWrap node1Bw = context.wrap(node1.getNodeId(), node1);
+				context.putWrap(node1.getNodeId(), node1Bw);
+
+				nodeIdHolder.add(node1.getNodeId());
 			}
 		});
 
@@ -96,7 +100,9 @@ public class XPluginImpl implements Plugin {
 					node1.setNodeId(nodeId);
 					node1.setName(anno.name());
 
-					solonNodeHolder.put(nodeId, node1);
+					context.putWrap(node1.getNodeId(), bw);
+
+					nodeIdHolder.add(node1.getNodeId());
 				}
 			}
 
