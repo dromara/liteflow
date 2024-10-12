@@ -56,4 +56,12 @@ public class LifeCycleHolder {
     public static List<PostProcessChainExecuteLifeCycle> getPostProcessChainExecuteLifeCycleList() {
         return POST_PROCESS_CHAIN_EXECUTE_LIFE_CYCLE_LIST;
     }
+
+    public static void clean(){
+        POST_PROCESS_SCRIPT_ENGINE_INIT_LIFE_CYCLE_LIST.clear();
+        POST_PROCESS_CHAIN_BUILD_LIFE_CYCLE_LIST.clear();
+        POST_PROCESS_NODE_BUILD_LIFE_CYCLE_LIST.clear();
+        POST_PROCESS_FLOW_EXECUTE_LIFE_CYCLE_LIST.clear();
+        POST_PROCESS_CHAIN_EXECUTE_LIFE_CYCLE_LIST.clear();
+    }
 }
