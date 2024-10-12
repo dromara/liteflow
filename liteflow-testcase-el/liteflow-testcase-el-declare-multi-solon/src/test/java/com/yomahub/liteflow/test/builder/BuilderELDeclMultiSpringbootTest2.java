@@ -6,12 +6,14 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
 
 //基于builder模式的单元测试
 //这里测试的是通过spring去扫描，但是通过代码去构建chain的用例
-@SolonTest
+@SolonTest(scanning = false)
+@Import(scanPackages = { "com.yomahub.liteflow.test.builder.cmp2" })
 public class BuilderELDeclMultiSpringbootTest2 extends BaseTest {
 
 	@Inject
