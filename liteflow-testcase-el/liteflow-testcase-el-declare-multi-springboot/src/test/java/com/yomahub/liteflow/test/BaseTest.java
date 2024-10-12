@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test;
 
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.process.holder.SpringCmpAroundAspectHolder;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.spi.holder.SpiFactoryInitializing;
@@ -20,6 +21,7 @@ public class BaseTest {
 		LiteflowConfigGetter.clean();
 		FlowInitHook.cleanHook();
 		SpringCmpAroundAspectHolder.clean();
+		LifeCycleHolder.clean();
 	}
 
 }
