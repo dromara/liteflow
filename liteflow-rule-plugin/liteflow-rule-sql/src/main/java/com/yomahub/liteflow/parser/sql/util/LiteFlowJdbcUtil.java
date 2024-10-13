@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.parser.sql.util;
 
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.parser.sql.datasource.LiteFlowDataSourceConnect;
+import com.yomahub.liteflow.parser.sql.datasource.LiteflowDataSourceConnectFactory;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Map;
+import java.util.Optional;
 
 public class LiteFlowJdbcUtil {
     private static final Logger LOG = LoggerFactory.getLogger(LiteFlowJdbcUtil.class);
@@ -17,7 +20,10 @@ public class LiteFlowJdbcUtil {
 
     /**
      * 获取链接
-     * 此方法会根据配置，判读使用指定数据源，还是IOC容器中已有的数据源
+     * 此方法会从多个角度查找数据源，优先级从上到下
+     * 1. 自定义连接器获取，实现了 DataBaseConnect 接口
+     * 2. 没有配置数据源连接配置，判断标准参考 SqlParserVO#isDefaultDataSource()，自动寻找IOC容器中已有的数据源
+     * 3. 使用数据源配置，使用 jdbc 创建连接
      *
      * @param sqlParserVO sql解析器参数
      * @return 返回数据库连接
@@ -29,26 +35,14 @@ public class LiteFlowJdbcUtil {
         String password = sqlParserVO.getPassword();
 
         try {
+            // 如果指定连接查找器，就使用连接查找器获取连接
+            Optional<LiteFlowDataSourceConnect> connectOpt = LiteflowDataSourceConnectFactory.getConnect(sqlParserVO);
+            if (connectOpt.isPresent()) {
+                connection = connectOpt.get().getConn(sqlParserVO);
+            }
             // 如果不配置 jdbc 连接相关配置，代表使用项目数据源
-            if (sqlParserVO.isDefaultDataSource()) {
-                String executeSql = buildCheckSql(sqlParserVO);
-                Map<String, DataSource> dataSourceMap = ContextAwareHolder.loadContextAware().getBeansOfType(DataSource.class);
-                // 遍历数据源，多数据源场景下，判断哪个数据源有 liteflow 配置
-                for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
-                    String dataSourceName = entry.getKey();
-                    DataSource dataSource = entry.getValue();
-
-                    if (checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
-                        connection = dataSource.getConnection();
-                        LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
-                        break;
-                    } else {
-                        LOG.info("check dataSourceName[{}],but not has liteflow config", dataSourceName);
-                    }
-                }
-                if (connection == null) {
-                    throw new ELSQLException("can not found liteflow config in dataSourceName " + dataSourceMap.keySet());
-                }
+            else if (sqlParserVO.isAutoFoundDataSource()) {
+                connection = DataSourceBeanNameHolder.autoLookUpConn(sqlParserVO);
             }
             // 如果配置 jdbc 连接相关配置,代表使用指定链接信息
             else {
@@ -61,6 +55,7 @@ public class LiteFlowJdbcUtil {
 
         return connection;
     }
+
 
     /**
      * 判断连接是否可以执行指定 sql
@@ -128,5 +123,64 @@ public class LiteFlowJdbcUtil {
         String elDataField = sqlParserVO.getElDataField();
         String chainNameField = sqlParserVO.getChainNameField();
         return StrUtil.format(CHECK_SQL_PATTERN, chainNameField, elDataField, chainTableName);
+    }
+
+    public static class DataSourceBeanNameHolder {
+        private static String DATA_SOURCE_NAME = null;
+
+        public static synchronized void init(String dataSourceName) {
+            if (DATA_SOURCE_NAME == null) {
+                DATA_SOURCE_NAME = dataSourceName;
+            }
+        }
+
+        public static String getDataSourceName() {
+            return DATA_SOURCE_NAME;
+        }
+
+        public static boolean isNotInit() {
+            return DATA_SOURCE_NAME == null;
+        }
+
+        /**
+         * 自动查找可用数据源
+         */
+        public static Connection autoLookUpConn(SQLParserVO sqlParserVO) throws SQLException {
+            Connection connection;
+            Map<String, DataSource> dataSourceMap = ContextAwareHolder.loadContextAware().getBeansOfType(DataSource.class);
+            if (DataSourceBeanNameHolder.isNotInit()) {
+                synchronized (DataSourceBeanNameHolder.class) {
+                    if (DataSourceBeanNameHolder.isNotInit()) {
+                        String executeSql = buildCheckSql(sqlParserVO);
+                        // 遍历数据源，多数据源场景下，判断哪个数据源有 liteflow 配置
+                        for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
+                            String dataSourceName = entry.getKey();
+                            DataSource dataSource = entry.getValue();
+
+                            if (checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
+                                // 找到数据源名称后，将其缓存起来，下次使用就不再寻找
+                                DataSourceBeanNameHolder.init(dataSourceName);
+
+                                LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                                break;
+                            } else {
+                                LOG.info("check dataSourceName[{}],but not has liteflow config", dataSourceName);
+                            }
+                        }
+                    }
+                }
+            }
+            DataSource dataSource = Optional.ofNullable(DataSourceBeanNameHolder.getDataSourceName())
+                    .map(dataSourceMap::get)
+                    .orElse(null);
+            if (dataSource == null) {
+                throw new ELSQLException("can not found liteflow config in dataSourceName " + dataSourceMap.keySet());
+            }
+            connection = dataSource.getConnection();
+            if (connection == null) {
+                throw new ELSQLException("can not found liteflow config in dataSourceName " + dataSourceMap.keySet());
+            }
+            return connection;
+        }
     }
 }

@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.el.ClassXmlFlowELParser;
+import com.yomahub.liteflow.parser.sql.datasource.LiteflowDataSourceConnectFactory;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
@@ -58,6 +59,9 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             // 初始化 SqlReadFactory
             SqlReadFactory.registerRead(sqlParserVO);
 
+            // 初始化连接器
+            LiteflowDataSourceConnectFactory.register();
+
             // 注册轮询任务
             SqlReadFactory.registerSqlReadPollTask(ReadType.CHAIN);
             SqlReadFactory.registerSqlReadPollTask(ReadType.SCRIPT);
@@ -92,7 +96,7 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
      * @param sqlParserVO sqlParserVO
      */
     private void checkParserVO(SQLParserVO sqlParserVO) {
-        if (sqlParserVO.isDefaultDataSource()) {
+        if (sqlParserVO.isAutoFoundDataSource()) {
             return;
         }
         if (StrUtil.isEmpty(sqlParserVO.getUrl())) {

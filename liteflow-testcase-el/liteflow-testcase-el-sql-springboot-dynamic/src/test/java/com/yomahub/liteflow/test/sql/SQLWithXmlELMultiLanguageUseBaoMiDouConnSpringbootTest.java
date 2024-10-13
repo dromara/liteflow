@@ -14,30 +14,21 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
-/**
- * @author tangkc
- * @since 2.9.0
- */
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/application-dynamic-data-source-xml.properties")
-@SpringBootTest(classes = SQLWithXmlELSpringbootTest.class)
+@TestPropertySource(value = "classpath:/application-baomidou-data-source-xml.properties")
+@SpringBootTest(classes = SQLWithXmlELMultiLanguageUseBaoMiDouConnSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.sql.cmp"})
-public class SQLWithXmlELSpringbootTest extends BaseTest {
+public class SQLWithXmlELMultiLanguageUseBaoMiDouConnSpringbootTest extends BaseTest {
 
-	@Resource
-	private FlowExecutor flowExecutor;
+    @Resource
+    private FlowExecutor flowExecutor;
 
-	@Test
-	public void testSQLWithXml() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
-	}
+    @Test
+    public void testMultiLanguage1() {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("x2[python脚本]==>x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
+    }
 
-	@Test
-	public void testSQLWithScriptXml() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
-		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStrWithoutTime());
-	}
 }

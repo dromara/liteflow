@@ -43,6 +43,7 @@
         <module>liteflow-testcase-el-script-kotlin-springboot</module>
         <module>liteflow-testcase-el-sql-solon</module>
         <module>liteflow-testcase-el-script-javax-springboot</module>
+        <module>liteflow-testcase-el-sql-springboot-sharding-jdbc</module>
     </modules>
 
     <build>

@@ -78,6 +78,9 @@
 		<janino.version>3.1.12</janino.version>
 		<kotlin.version>1.9.23</kotlin.version>
 		<liquor.version>1.3.6</liquor.version>
+		<!--sql plugin-->
+		<dynamic-datasource.version>4.3.1</dynamic-datasource.version>
+		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 	</properties>
 
 	<dependencyManagement>
