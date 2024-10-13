@@ -11,6 +11,7 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
@@ -43,7 +44,7 @@ public class Chain implements Executable{
 
 	private boolean isCompiled = true;
 
-	private String namespace;
+	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
