@@ -31,7 +31,7 @@ public class ShardingJdbcDsConn implements LiteFlowDataSourceConnect {
         }
         boolean classLoadFlag = ClassLoaderUtil.isPresent(Constant.LOAD_CLASS_NAME);
         if (!classLoadFlag) {
-            throw new MissMavenDependencyException(Constant.MAVEN_GROUP_ID, BaoMiDouDynamicDsConn.Constant.MAVEN_ARTIFACT_ID);
+            throw new MissMavenDependencyException(Constant.MAVEN_GROUP_ID, Constant.MAVEN_ARTIFACT_ID);
         }
         return true;
     }

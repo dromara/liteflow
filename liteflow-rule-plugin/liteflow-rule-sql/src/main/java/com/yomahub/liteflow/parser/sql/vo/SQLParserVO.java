@@ -290,6 +290,16 @@ public class SQLParserVO {
                 StrUtil.isBlank(driverClassName);
     }
 
+    /**
+     * 判断是否使用jdbc连接
+     */
+    public boolean isUseJdbcConn(){
+        return StrUtil.isNotBlank(url) &&
+                StrUtil.isNotBlank(username) &&
+                StrUtil.isNotBlank(password) &&
+                StrUtil.isNotBlank(driverClassName);
+    }
+
     public Boolean getPollingEnabled() {
         return pollingEnabled;
     }

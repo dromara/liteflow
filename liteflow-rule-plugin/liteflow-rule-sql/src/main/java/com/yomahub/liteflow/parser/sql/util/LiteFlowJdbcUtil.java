@@ -30,25 +30,17 @@ public class LiteFlowJdbcUtil {
      */
     public static Connection getConn(SQLParserVO sqlParserVO) {
         Connection connection = null;
-        String url = sqlParserVO.getUrl();
-        String username = sqlParserVO.getUsername();
-        String password = sqlParserVO.getPassword();
 
         try {
             // 如果指定连接查找器，就使用连接查找器获取连接
             Optional<LiteFlowDataSourceConnect> connectOpt = LiteflowDataSourceConnectFactory.getConnect(sqlParserVO);
             if (connectOpt.isPresent()) {
                 connection = connectOpt.get().getConn(sqlParserVO);
+            } else {
+                // 理论上这里不会走，因为最后一个连接查找器 LiteFlowAutoLookUpJdbcConn 没找到会抛出异常的
+                // 这里是一个兜底，理论上不会走
+                throw new ELSQLException("can not found connect by liteflow config");
             }
-            // 如果不配置 jdbc 连接相关配置，代表使用项目数据源
-            else if (sqlParserVO.isAutoFoundDataSource()) {
-                connection = DataSourceBeanNameHolder.autoLookUpConn(sqlParserVO);
-            }
-            // 如果配置 jdbc 连接相关配置,代表使用指定链接信息
-            else {
-                connection = DriverManager.getConnection(url, username, password);
-            }
-
         } catch (Exception e) {
             throw new ELSQLException(e);
         }
@@ -118,7 +110,7 @@ public class LiteFlowJdbcUtil {
      * @param sqlParserVO sql解析器参数
      * @return 返回组合完成的检查sql
      */
-    private static String buildCheckSql(SQLParserVO sqlParserVO) {
+    public static String buildCheckSql(SQLParserVO sqlParserVO) {
         String chainTableName = sqlParserVO.getChainTableName();
         String elDataField = sqlParserVO.getElDataField();
         String chainNameField = sqlParserVO.getChainNameField();
