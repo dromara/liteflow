@@ -2,6 +2,8 @@ package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.*;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.digest.Digester;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
@@ -214,6 +216,12 @@ public class LiteFlowChainELBuilder {
 			if (Objects.isNull(condition)){
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
 			}
+
+			condition.getExecutableGroup().forEach((s, executables) -> executables.forEach(executable -> {
+				if (executable instanceof Node) {
+					((Node) executable).setInstanceId(generateInstanceId(executable.getId()));
+				}
+			}));
 
 			// 把主要的condition加入
 			this.conditionList.add(condition);
@@ -436,6 +444,21 @@ public class LiteFlowChainELBuilder {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
 		}
+	}
+
+	private String generateInstanceId(String nodeId) {
+		Digester sha256 = SecureUtil.sha256();
+		byte[] hashBytes = sha256.digest(nodeId + System.nanoTime());
+
+		StringBuilder sb = new StringBuilder();
+		for (byte b : hashBytes) {
+			if (sb.length() >= 8) {
+				break;
+			}
+			sb.append(String.format("%02x", b));
+		}
+
+		return sb.toString();
 	}
 
 }

@@ -89,7 +89,7 @@ public abstract class NodeComponent{
 		Slot slot = this.getSlot();
 
 		// 在元数据里加入step信息
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, generateInstanceId());
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -157,7 +157,7 @@ public abstract class NodeComponent{
 			return;
 		}
 
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, generateInstanceId());
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -239,21 +239,6 @@ public abstract class NodeComponent{
 
 	public void setIsContinueOnError(boolean isContinueOnError) {
 		this.getRefNode().setIsContinueOnErrorResult(isContinueOnError);
-	}
-
-	public String generateInstanceId() {
-		Digester sha256 = SecureUtil.sha256();
-		byte[] hashBytes = sha256.digest(this.getNodeId() + System.nanoTime());
-
-		StringBuilder sb = new StringBuilder();
-		for (byte b : hashBytes) {
-			if (sb.length() >= 6) {
-				break;
-			}
-			sb.append(String.format("%02x", b));
-		}
-
-		return sb.toString();
 	}
 
 	public Integer getSlotIndex() {
