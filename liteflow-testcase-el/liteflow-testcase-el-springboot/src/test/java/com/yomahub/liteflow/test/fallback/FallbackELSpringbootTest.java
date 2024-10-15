@@ -193,7 +193,7 @@ public class FallbackELSpringbootTest extends BaseTest {
 
     @Test
     public void testWithElBuild(){
-        ELWrapper el = ELBus.then("a", "b", "az");
+        ELWrapper el = ELBus.then("a", "b", ELBus.fallbackNode("az"));
         LiteFlowChainELBuilder.createChain().setChainId("elBuilder").setEL(el.toEL()).build();
         LiteflowResponse response = flowExecutor.execute2Resp("elBuilder");
         Assertions.assertTrue(response.isSuccess());

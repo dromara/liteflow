@@ -2,9 +2,9 @@ package com.yomahub.liteflow.test.builder;
 
 import cn.hutool.core.date.DateUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
+import com.yomahub.liteflow.builder.el.CommonNodeELWrapper;
 import com.yomahub.liteflow.builder.el.ELBus;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
-import com.yomahub.liteflow.builder.el.NodeELWrapper;
 import com.yomahub.liteflow.builder.el.ThenELWrapper;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
@@ -14,7 +14,6 @@ import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp.ACmp;
 import com.yomahub.liteflow.test.builder.cmp.BCmp;
 import com.yomahub.liteflow.test.builder.vo.User;
-import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -41,7 +40,7 @@ public class NodeELBuilderTest extends BaseTest {
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -52,7 +51,7 @@ public class NodeELBuilderTest extends BaseTest {
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -65,7 +64,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -78,7 +77,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -101,7 +100,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -114,7 +113,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        NodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -145,8 +144,8 @@ public class NodeELBuilderTest extends BaseTest {
         String param1 = "select * from member t\n" +
                 "            where t.id=10001";
         String param2 = "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}";
-        ThenELWrapper el = ELBus.then(ELBus.node("a").data("sql", param1),
-                ELBus.node("b").data("jsonstr", param2));
+        ThenELWrapper el = ELBus.then(ELBus.fallbackNode("a").data("sql", param1),
+                ELBus.fallbackNode("b").data("jsonstr", param2));
         Assertions.assertEquals(expectedStr,
                 el.toEL(true));
 

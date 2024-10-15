@@ -24,68 +24,68 @@ public class LogicELBuilderTest extends BaseTest {
     public void testlogic1(){
         String expectedStr = "AND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\")));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not("d")).toEL());
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not("d")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d"))).toEL()));
     }
     @Test
     public void testlogic2(){
         String expectedStr = "AND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\")\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not("d")).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not("d")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d"))).toEL(true)));
     }
 
     @Test
     public void testlogic3(){
         String expectedStr = "AND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\")));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a").and(ELBus.or("b").or("c")).and(ELBus.not("d")).toEL());
+                ELBus.and(ELBus.fallbackNode("a")).and(ELBus.or(ELBus.fallbackNode("b")).or(ELBus.fallbackNode("c"))).and(ELBus.not(ELBus.fallbackNode("d"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a").and(ELBus.or("b").or("c")).and(ELBus.not("d")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a")).and(ELBus.or(ELBus.fallbackNode("b")).or(ELBus.fallbackNode("c"))).and(ELBus.not(ELBus.fallbackNode("d"))).toEL()));
     }
 
     @Test
     public void testlogic4(){
         String expectedStr = "AND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\")\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a").and(ELBus.or("b").or("c")).and(ELBus.not("d")).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a")).and(ELBus.or(ELBus.fallbackNode("b")).or(ELBus.fallbackNode("c"))).and(ELBus.not(ELBus.fallbackNode("d"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a").and(ELBus.or("b").or("c")).and(ELBus.not("d")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a")).and(ELBus.or(ELBus.fallbackNode("b")).or(ELBus.fallbackNode("c"))).and(ELBus.not(ELBus.fallbackNode("d"))).toEL(true)));
     }
     // 属性设置
     @Test
     public void testlogic5(){
         String expectedStr = "AND(node(\"a\"),OR(node(\"b\"),node(\"c\")).id(\"this is a id\"),NOT(node(\"d\")).tag(\"this is a tag\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL());
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")).id("this is a id"), ELBus.not(ELBus.fallbackNode("d")).tag("this is a tag")).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")).id("this is a id"), ELBus.not(ELBus.fallbackNode("d")).tag("this is a tag")).toEL()));
     }
     @Test
     public void testlogic6(){
         String expectedStr = "AND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tNOT(\n\t\tnode(\"d\")\n\t).tag(\"this is a tag\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")).id("this is a id"), ELBus.not(ELBus.fallbackNode("d")).tag("this is a tag")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c").id("this is a id"), ELBus.not("d").tag("this is a tag")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")).id("this is a id"), ELBus.not(ELBus.fallbackNode("d")).tag("this is a tag")).toEL(true)));
     }
     @Test
     public void testlogic7(){
         String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(andData)));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL());
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL()));
     }
     @Test
     public void testlogic8(){
         String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(andData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true)));
     }
     @Test
     public void testlogic9(){
@@ -94,9 +94,9 @@ public class LogicELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "orData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(orData)));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL());
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("orData", name2Value))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("orData", name2Value))).toEL()));
     }
     @Test
     public void testlogic10(){
@@ -105,9 +105,9 @@ public class LogicELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "orData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(orData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("orData", name2Value))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("orData", name2Value))).toEL(true)));
     }
     private static class ParamClass{
         private String name;
@@ -126,9 +126,9 @@ public class LogicELBuilderTest extends BaseTest {
         name2Value.age = 18;
         String expectedStr = "notData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(notData)));";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL());
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("notData", name2Value))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("notData", name2Value))).toEL()));
     }
     @Test
     public void testlogic12(){
@@ -137,65 +137,65 @@ public class LogicELBuilderTest extends BaseTest {
         name2Value.age = 18;
         String expectedStr = "notData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(notData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL(true));
+                ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("notData", name2Value))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and("a", ELBus.or("b", "c"), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.and(ELBus.fallbackNode("a"), ELBus.or(ELBus.fallbackNode("b"), ELBus.fallbackNode("c")), ELBus.not(ELBus.fallbackNode("d").data("notData", name2Value))).toEL(true)));
     }
     // NOT调用方法补充测试
     @Test
     public void testLogic13(){
         String expectedStr = "NOT(node(\"a\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.node("a")).toEL());
+                ELBus.not(ELBus.fallbackNode("a")).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.node("a")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.fallbackNode("a")).toEL()));
         expectedStr = "NOT(AND(node(\"a\"),node(\"b\"),node(\"c\")));";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.and("a", "b", "c")).toEL());
+                ELBus.not(ELBus.and(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.and("a", "b", "c")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.and(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL()));
         expectedStr = "NOT(OR(node(\"a\"),node(\"b\"),node(\"c\")));";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.or("a", "b", "c")).toEL());
+                ELBus.not(ELBus.or(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.or("a", "b", "c")).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.or(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL()));
         expectedStr = "NOT(NOT(node(\"a\")));";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.not(ELBus.node("a"))).toEL());
+                ELBus.not(ELBus.not(ELBus.fallbackNode("a"))).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.not(ELBus.node("a"))).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.not(ELBus.fallbackNode("a"))).toEL()));
     }
     @Test
     public void testLogic14(){
         String expectedStr = "NOT(\n\tnode(\"a\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.node("a")).toEL(true));
+                ELBus.not(ELBus.fallbackNode("a")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.node("a")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.fallbackNode("a")).toEL(true)));
         expectedStr = "NOT(\n\tAND(\n\t\tnode(\"a\"),\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.and("a", "b", "c")).toEL(true));
+                ELBus.not(ELBus.and(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.and("a", "b", "c")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.and(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL(true)));
         expectedStr = "NOT(\n\tOR(\n\t\tnode(\"a\"),\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.or("a", "b", "c")).toEL(true));
+                ELBus.not(ELBus.or(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.or("a", "b", "c")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.or(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c"))).toEL(true)));
         expectedStr = "NOT(\n\tNOT(\n\t\tnode(\"a\")\n\t)\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.not(ELBus.not(ELBus.node("a"))).toEL(true));
+                ELBus.not(ELBus.not(ELBus.fallbackNode("a"))).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.not(ELBus.node("a"))).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.not(ELBus.not(ELBus.fallbackNode("a"))).toEL(true)));
     }
 
     @Test
     public void testLogic(){
-        AndELWrapper andEl = ELBus.and("a", "b").id("this is a id").tag("this is a tag");
+        AndELWrapper andEl = ELBus.and(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).id("this is a id").tag("this is a tag");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(andEl.toEL()));
-        OrELWrapper orEl = ELBus.or("a", "b");
+        OrELWrapper orEl = ELBus.or(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"));
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(orEl.toEL()));
-        NotELWrapper notEl = ELBus.not("a");
+        NotELWrapper notEl = ELBus.not(ELBus.fallbackNode("a"));
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(notEl.toEL()));
     }
 }
