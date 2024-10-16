@@ -37,9 +37,30 @@ public class BaseCommonELSpringTest extends BaseTest {
 
 		String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
 		Set<String> strings = extractValues(executeStepStrWithInstanceId);
-		System.out.println(executeStepStrWithInstanceId);
 
 		Assertions.assertEquals(strings.size(), 4);
+	}
+
+	@Test
+	public void testBaseCommonInstanceId() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>a==>a==>a", response.getExecuteStepStr());
+
+		String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+		Set<String> set1 = extractValues(executeStepStrWithInstanceId);
+
+		Assertions.assertEquals(set1.size(), 4);
+
+		response = flowExecutor.execute2Resp("chain2", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>a==>a==>a", response.getExecuteStepStr());
+
+		executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+		Set<String> set2 = extractValues(executeStepStrWithInstanceId);
+
+		Assertions.assertEquals(set2.size(), 4);
+		Assertions.assertEquals(set1, set2);
 	}
 
 	public static Set<String> extractValues(String input) {

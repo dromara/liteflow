@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.Digester;
@@ -28,11 +29,10 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ElRegexUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Chain基于代码形式的组装器 EL表达式规则专属组装器
@@ -217,11 +217,7 @@ public class LiteFlowChainELBuilder {
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
 			}
 
-			condition.getExecutableGroup().forEach((s, executables) -> executables.forEach(executable -> {
-				if (executable instanceof Node) {
-					((Node) executable).setInstanceId(generateInstanceId(executable.getId()));
-				}
-			}));
+            setNodesInstanceId(condition, liteflowConfig);
 
 			// 把主要的condition加入
 			this.conditionList.add(condition);
@@ -242,6 +238,55 @@ public class LiteFlowChainELBuilder {
 			throw new ELParseException(errMsg + e.getMessage());
 		}
 	}
+
+    private void setNodesInstanceId(Condition condition, LiteflowConfig liteflowConfig) {
+        File nodeDir = new File(System.getProperty("user.dir") + "/." + liteflowConfig.getRuleSource() + "/" + this.chain.getChainId());
+        String elTrim = chain.getEl().trim();
+
+        // 如果文件不存在，或者文件内容不是当前el，则写入
+        if (FileUtil.isEmpty(nodeDir) || !FileUtil.readLines(nodeDir.getPath(), CharsetUtil.UTF_8).get(0).equals(elTrim)) {
+            writeNodeInstanceId(nodeDir, condition);
+        } else {
+            // 文件存在，则直接读取
+            List<String> nodeList = FileUtil.readLines(nodeDir.getPath(), CharsetUtil.UTF_8);
+
+            Map<String, String[]> executableMap = new HashMap<>();
+            for (int i = 1; i < nodeList.size(); i++) {
+                String info = nodeList.get(i);
+                int index = info.indexOf(",");
+                executableMap.put(info.substring(0, index), info.substring(index + 1).split(","));
+            }
+
+            condition.getExecutableGroup().forEach((key, executables) -> {
+                AtomicInteger index = new AtomicInteger(0);
+                executables.forEach(executable -> {
+                    if (executableMap.containsKey(key)) {
+                        if (executable instanceof Node) {
+                            ((Node) executable).setInstanceId((executableMap.get(key)[index.getAndIncrement()]));
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    private void writeNodeInstanceId(File nodeDir, Condition condition) {
+        ArrayList<String> writeList = new ArrayList<>();
+        writeList.add(chain.getEl().trim());
+
+        condition.getExecutableGroup().forEach((key, executables) -> {
+            StringBuilder instanceIds = new StringBuilder();
+            executables.forEach(executable -> {
+                if (executable instanceof Node) {
+                    ((Node) executable).setInstanceId(generateInstanceId(executable.getId()));
+                    instanceIds.append(",").append(((Node) executable).getInstanceId());
+                }
+            });
+            writeList.add(key + instanceIds);
+        });
+
+        FileUtil.writeLines(writeList, nodeDir.getPath(), CharsetUtil.UTF_8);
+    }
 
 	public LiteFlowChainELBuilder setNamespace(String nameSpace){
 		if (StrUtil.isBlank(nameSpace)) {
