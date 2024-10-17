@@ -241,7 +241,7 @@ public class LiteFlowChainELBuilder {
 
     private void setNodesInstanceId(Condition condition, LiteflowConfig liteflowConfig) {
         File nodeDir = new File(System.getProperty("user.dir") + "/." + liteflowConfig.getRuleSource() + "/" + this.chain.getChainId());
-        String elTrim = chain.getEl().trim();
+        String elTrim = chain.getEl().replaceAll("\n", "").trim();
 
         // 如果文件不存在，或者文件内容不是当前el，则写入
         if (FileUtil.isEmpty(nodeDir) || !FileUtil.readLines(nodeDir.getPath(), CharsetUtil.UTF_8).get(0).equals(elTrim)) {
@@ -272,7 +272,7 @@ public class LiteFlowChainELBuilder {
 
     private void writeNodeInstanceId(File nodeDir, Condition condition) {
         ArrayList<String> writeList = new ArrayList<>();
-        writeList.add(chain.getEl().trim());
+        writeList.add(chain.getEl().replaceAll("\n", "").trim());
 
         condition.getExecutableGroup().forEach((key, executables) -> {
             StringBuilder instanceIds = new StringBuilder();
