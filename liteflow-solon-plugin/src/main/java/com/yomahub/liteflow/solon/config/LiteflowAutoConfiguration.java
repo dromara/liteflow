@@ -30,6 +30,7 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setRuleSourceExtDataMap(property.getRuleSourceExtDataMap());
 		liteflowConfig.setSlotSize(property.getSlotSize());
 		liteflowConfig.setThreadExecutorClass(property.getThreadExecutorClass());
+		liteflowConfig.setChainThreadExecutorClass(property.getChainThreadExecutorClass());
 		liteflowConfig.setWhenMaxWaitSeconds(property.getWhenMaxWaitSeconds());
 		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
 		liteflowConfig.setQueueLimit(liteflowMonitorProperty.getQueueLimit());

@@ -54,6 +54,7 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setScriptSetting(property.getScriptSetting());
+		liteflowConfig.setChainThreadPoolIsolate(property.isChainThreadPoolIsolate());
 		return liteflowConfig;
 	}
 

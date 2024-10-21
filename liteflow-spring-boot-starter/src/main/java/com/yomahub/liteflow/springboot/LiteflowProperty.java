@@ -101,6 +101,10 @@ public class LiteflowProperty {
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
 
+	// chain线程池是否隔离
+	// 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
+	private Boolean chainThreadPoolIsolate;
+
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -335,5 +339,13 @@ public class LiteflowProperty {
 
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
+	}
+
+	public void setChainThreadPoolIsolate(boolean chainThreadPoolIsolate) {
+		this.chainThreadPoolIsolate = chainThreadPoolIsolate;
+	}
+
+	public boolean isChainThreadPoolIsolate() {
+		return chainThreadPoolIsolate;
 	}
 }

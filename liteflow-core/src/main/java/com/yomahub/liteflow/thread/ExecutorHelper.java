@@ -9,19 +9,22 @@
 package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 线程池工具类
@@ -128,8 +131,15 @@ public class ExecutorHelper {
 	}
 
 	//构造并行循环的线程池
-	public ExecutorService buildLoopParallelExecutor(){
+	public ExecutorService buildLoopParallelExecutor(Integer slotIndex) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		//chain线程池
+		if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
+			//获取chain的hash
+			String chainId = DataBus.getSlot(slotIndex).getChainId();
+			Chain chain = FlowBus.getChain(chainId);
+			return getExecutorService(liteflowConfig.getThreadExecutorClass(), String.valueOf(chain.hashCode()));
+		}
 		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
 	}
 
@@ -171,6 +181,28 @@ public class ExecutorHelper {
 		if (MapUtil.isNotEmpty(executorServiceMap)) {
 			executorServiceMap.clear();
 		}
+	}
+
+	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	public ExecutorService buildChainExecutorWithHash(String conditionHash) {
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		return buildChainExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+	}
+
+	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	public ExecutorService buildChainExecutorWithHash(String clazz, String conditionHash) {
+		if (StrUtil.isBlank(clazz)) {
+			return buildWhenExecutorWithHash(conditionHash);
+		}
+		return getExecutorService(clazz, conditionHash);
+	}
+
+	// 构建when线程池 - 支持多个when公用一个线程池
+	public ExecutorService buildChainExecutor(String clazz) {
+		if (StrUtil.isBlank(clazz)) {
+			return buildWhenExecutor();
+		}
+		return getExecutorService(clazz);
 	}
 
 }

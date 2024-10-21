@@ -5,6 +5,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
@@ -122,7 +124,7 @@ public abstract class ParallelStrategyExecutor {
      * @param whenCondition
      * @return
      */
-    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition) {
+    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition, Integer slotIndex) {
 
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
@@ -133,6 +135,13 @@ public abstract class ParallelStrategyExecutor {
 
         if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
             parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
+        } else if (BooleanUtil.isTrue(liteflowConfig.getChainThreadPoolIsolate())) {
+            //chain 线程池隔离
+            String chainId = DataBus.getSlot(slotIndex).getChainId();
+            Chain chain = FlowBus.getChain(chainId);
+            parallelExecutor =
+                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(),
+                                                                            String.valueOf(chain.hashCode()));
         } else {
             parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
         }
@@ -155,7 +164,7 @@ public abstract class ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
+        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition, slotIndex);
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>
