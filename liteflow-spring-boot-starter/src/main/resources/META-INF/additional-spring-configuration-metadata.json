@@ -62,13 +62,6 @@
       "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultMainExecutorBuilder"
     },
     {
-      "name": "liteflow.thread-executor-class",
-      "type": "java.lang.String",
-      "description": "Custom thread pool implement for when executor.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultWhenExecutorBuilder"
-    },
-    {
       "name": "liteflow.when-max-wait-seconds",
       "type": "java.lang.Integer",
       "description": "Set the async thread max wait seconds on \" when \" mode.",
@@ -88,20 +81,6 @@
       "description": "Set the async thread max wait time unit on \" when \" mode.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": "MILLISECONDS"
-    },
-    {
-      "name": "liteflow.when-max-workers",
-      "type": "java.lang.Integer",
-      "description": "Set the async thread pool worker max-size on \" when \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 16
-    },
-    {
-      "name": "liteflow.when-queue-limit",
-      "type": "java.lang.Integer",
-      "description": "Set the async thread pool queue max-size on \" when \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 512
     },
     {
       "name": "liteflow.when-thread-pool-isolate",
@@ -195,31 +174,31 @@
       "defaultValue": false
     },
     {
-      "name": "liteflow.parallel-max-workers",
-      "type": "java.lang.Integer",
-      "description": "Set the async thread pool worker max-size on \" parallel-loop \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 16
-    },
-    {
-      "name": "liteflow.parallel-queue-limit",
-      "type": "java.lang.Integer",
-      "description": "Set the async thread pool queue max-size on \" parallel-loop \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 512
-    },
-    {
-      "name": "liteflow.parallel-loop-executor-class",
-      "type": "java.lang.String",
-      "description": "Custom thread pool implement for parallel-loop executor.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder"
-    },
-    {
       "name": "liteflow.script-setting",
       "type": "java.util.Map",
       "description": "script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.global-thread-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Set the global chain thread pool worker max-size.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 16
+    },
+    {
+      "name": "liteflow.global-thread-pool-queue-size",
+      "type": "java.lang.Integer",
+      "description": "Set the global chain thread pool queue max-size ",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": 512
+    },
+    {
+      "name": "liteflow.global-thread-pool-executor-class",
+      "type": "java.lang.String",
+      "description": "Custom the global chain thread pool implement for global chain executor.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder"
     }
   ]
 }

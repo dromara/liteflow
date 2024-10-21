@@ -6,7 +6,6 @@ import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
@@ -36,7 +35,7 @@ public class CustomWhenThreadPoolELSpringbootTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("when-thread-1"));
+        Assertions.assertTrue(context.getData("threadName").toString().startsWith("global-thread-1"));
 	}
 
 	/**

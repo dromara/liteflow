@@ -5,6 +5,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
@@ -122,18 +124,31 @@ public abstract class ParallelStrategyExecutor {
      * @param whenCondition
      * @return
      */
-    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition) {
+    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition, Integer slotIndex) {
 
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-
-        // 如果设置了线程池隔离，则每个 when 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
-        // 如果 when 没有超多层的嵌套，还是用默认的比较好。
-        // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在 when 的情况下，全局一个线程池。
+        //线程池的优先级 condition层级>chain层级>全局体系
+        // 1、如果设置了线程池隔离，则每个 when 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
+        // 2、如果在chain上自定义线程池，同一个chain下的when+异步线程池共享一个线程池
+        // 3、默认全局一个线程池，所有的when+异步共享一个线程池
         ExecutorService parallelExecutor;
 
+        String chainId = DataBus.getSlot(slotIndex).getChainId();
+
+        Chain chain = FlowBus.getChain(chainId);
+
         if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
+            //condition层级线程池
+            parallelExecutor =
+                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(),
+                                                                            String.valueOf(whenCondition.hashCode()));
+        } else if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
+            //chain层级线程池
+            parallelExecutor =
+                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(chain.getThreadPoolExecutorClass(),
+                                                                            String.valueOf(chain.hashCode()));
         } else {
+            //全局线程池
             parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
         }
 
@@ -155,7 +170,7 @@ public abstract class ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
+        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition, slotIndex);
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>

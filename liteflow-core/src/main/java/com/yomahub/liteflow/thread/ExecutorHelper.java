@@ -12,16 +12,19 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 线程池工具类
@@ -89,7 +92,7 @@ public class ExecutorHelper {
 	// 构建默认when线程池
 	public ExecutorService buildWhenExecutor() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutor(liteflowConfig.getThreadExecutorClass());
+		return buildWhenExecutor(liteflowConfig.getGlobalThreadPoolExecutorClass());
 	}
 
 	// 构建when线程池 - 支持多个when公用一个线程池
@@ -103,7 +106,7 @@ public class ExecutorHelper {
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
 	public ExecutorService buildWhenExecutorWithHash(String conditionHash) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+		return buildWhenExecutorWithHash(liteflowConfig.getGlobalThreadPoolExecutorClass(), conditionHash);
 	}
 
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
@@ -128,9 +131,34 @@ public class ExecutorHelper {
 	}
 
 	//构造并行循环的线程池
-	public ExecutorService buildLoopParallelExecutor(){
+	public ExecutorService buildLoopParallelExecutor(LoopCondition loopCondition, Integer slotIndex) {
+		ExecutorService parallelExecutor;
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
+		String chainId = DataBus.getSlot(slotIndex).getChainId();
+		Chain chain = FlowBus.getChain(chainId);
+
+		//线程池的优先级 condition层级>chain层级>全局体系
+		// 1、如果设置了线程池隔离，则每个 异步 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
+		// 2、如果在chain上自定义线程池，同一个chain下的when+异步线程池共享一个线程池
+		// 3、默认全局一个线程池，所有的when+异步共享一个线程池
+
+		if (ObjectUtil.isNotEmpty(loopCondition.getThreadPoolExecutorClass())) {
+			//condition层级线程池
+			parallelExecutor = getExecutorService(loopCondition.getThreadPoolExecutorClass(),
+												  String.valueOf(loopCondition.hashCode()));
+
+		} else if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
+			//chain层级线程池
+			parallelExecutor = getExecutorService(chain.getThreadPoolExecutorClass(),
+												  String.valueOf(chain.hashCode()));
+
+		} else {
+			//全局线程池
+			parallelExecutor = getExecutorService(liteflowConfig.getGlobalThreadPoolExecutorClass());
+
+		}
+
+		return parallelExecutor;
 	}
 
 	private ExecutorService getExecutorService(String clazz){

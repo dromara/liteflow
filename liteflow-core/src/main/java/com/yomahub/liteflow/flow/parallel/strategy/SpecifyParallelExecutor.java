@@ -26,7 +26,7 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
+        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition, slotIndex);
 
         // 指定完成的任务
         CompletableFuture<?> specifyTask;

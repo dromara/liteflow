@@ -13,7 +13,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -42,9 +41,6 @@ public class LiteflowConfig {
 	// slot的数量
 	private Integer slotSize;
 
-	// 并行线程执行器class路径
-	private String threadExecutorClass;
-
 	// 异步线程最大等待秒数
 	@Deprecated
 	private Integer whenMaxWaitSeconds;
@@ -68,10 +64,8 @@ public class LiteflowConfig {
 	// 每隔多少秒打印
 	private Long period;
 
-	// 异步线程池最大线程数
-	private Integer whenMaxWorkers;
-
 	// 异步线程池最大队列数量
+	@Deprecated
 	private Integer whenQueueLimit;
 
 	// 解析模式，一共有三种，具体看其定义
@@ -105,15 +99,6 @@ public class LiteflowConfig {
 
 	// 规则文件/脚本文件变更监听
 	private Boolean enableMonitorFile = Boolean.FALSE;
-
-	//并行循环线程池所用class路径
-	private String parallelLoopExecutorClass;
-
-	//使用默认并行循环线程池时，最大线程数
-	private Integer parallelMaxWorkers;
-
-	//使用默认并行循环线程池时，最大队列数
-	private Integer parallelQueueLimit;
 	
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
@@ -131,6 +116,15 @@ public class LiteflowConfig {
 	public void setEnableMonitorFile(Boolean enableMonitorFile) {
 		this.enableMonitorFile = enableMonitorFile;
 	}
+
+	//全局线程池所用class路径(when+异步循环)
+	private String globalThreadPoolExecutorClass;
+
+	//全局线程池最大线程数(when+异步循环)
+	private Integer globalThreadPoolSize;
+
+	//全局线程池最大队列数(when+异步循环)
+	private Integer globalThreadPoolQueueSize;
 
 	public Boolean getEnable() {
 		if (ObjectUtil.isNull(enable)) {
@@ -231,32 +225,6 @@ public class LiteflowConfig {
 		this.enableLog = enableLog;
 	}
 
-	public Integer getWhenMaxWorkers() {
-		if (ObjectUtil.isNull(whenMaxWorkers)) {
-			return 16;
-		}
-		else {
-			return whenMaxWorkers;
-		}
-	}
-
-	public void setWhenMaxWorkers(Integer whenMaxWorkers) {
-		this.whenMaxWorkers = whenMaxWorkers;
-	}
-
-	public Integer getWhenQueueLimit() {
-		if (ObjectUtil.isNull(whenQueueLimit)) {
-			return 512;
-		}
-		else {
-			return whenQueueLimit;
-		}
-	}
-
-	public void setWhenQueueLimit(Integer whenQueueLimit) {
-		this.whenQueueLimit = whenQueueLimit;
-	}
-
 	public Boolean isSupportMultipleType() {
 		if (ObjectUtil.isNull(supportMultipleType)) {
 			return Boolean.FALSE;
@@ -298,18 +266,6 @@ public class LiteflowConfig {
 		this.printBanner = printBanner;
 	}
 
-	public String getThreadExecutorClass() {
-		if (StrUtil.isBlank(threadExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultWhenExecutorBuilder";
-		}
-		else {
-			return threadExecutorClass;
-		}
-	}
-
-	public void setThreadExecutorClass(String threadExecutorClass) {
-		this.threadExecutorClass = threadExecutorClass;
-	}
 
 	public String getNodeExecutorClass() {
 		if (StrUtil.isBlank(nodeExecutorClass)) {
@@ -411,42 +367,6 @@ public class LiteflowConfig {
 	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
 	}
-
-	public Integer getParallelMaxWorkers() {
-		if(ObjectUtil.isNull(parallelMaxWorkers)){
-			return 16;
-		}else{
-			return parallelMaxWorkers;
-		}
-	}
-
-	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
-		this.parallelMaxWorkers = parallelMaxWorkers;
-	}
-
-	public Integer getParallelQueueLimit() {
-		if(ObjectUtil.isNull(parallelQueueLimit)){
-			return 512;
-		}else{
-			return parallelQueueLimit;
-		}
-	}
-
-	public void setParallelQueueLimit(Integer parallelQueueLimit) {
-		this.parallelQueueLimit = parallelQueueLimit;
-	}
-
-	public String getParallelLoopExecutorClass() {
-		if (StrUtil.isBlank(parallelLoopExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder";
-		}
-		else {
-			return parallelLoopExecutorClass;
-		}
-	}
-	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
-		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
-	}
 	
 	public Boolean getFallbackCmpEnable() {
 		if (ObjectUtil.isNull(this.fallbackCmpEnable)) {
@@ -508,5 +428,41 @@ public class LiteflowConfig {
 
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
+	}
+
+	public Integer getGlobalThreadPoolSize() {
+		if (ObjectUtil.isNull(globalThreadPoolSize)) {
+			return 16;
+		} else {
+			return globalThreadPoolSize;
+		}
+	}
+
+	public void setGlobalThreadPoolSize(Integer globalThreadPoolSize) {
+		this.globalThreadPoolSize = globalThreadPoolSize;
+	}
+
+	public Integer getGlobalThreadPoolQueueSize() {
+		if (ObjectUtil.isNull(globalThreadPoolQueueSize)) {
+			return 512;
+		} else {
+			return globalThreadPoolQueueSize;
+		}
+	}
+
+	public void setGlobalThreadPoolQueueSize(Integer globalThreadPoolQueueSize) {
+		this.globalThreadPoolQueueSize = globalThreadPoolQueueSize;
+	}
+
+	public String getGlobalThreadPoolExecutorClass() {
+		if (StrUtil.isBlank(globalThreadPoolExecutorClass)) {
+			return "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder";
+		} else {
+			return globalThreadPoolExecutorClass;
+		}
+	}
+
+	public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
+		this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
 	}
 }
