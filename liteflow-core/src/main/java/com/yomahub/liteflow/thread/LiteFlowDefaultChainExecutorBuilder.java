@@ -7,10 +7,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import java.util.concurrent.ExecutorService;
 
 /**
- * LiteFlow默认的并行多线程执行器实现
- *
- * @author Bryan.Zhang
- * @since 2.6.6
+ * LiteFlow默认的chain多线程执行器实现
  */
 public class LiteFlowDefaultChainExecutorBuilder implements ExecutorBuilder {
 
@@ -21,8 +18,8 @@ public class LiteFlowDefaultChainExecutorBuilder implements ExecutorBuilder {
         if (ObjectUtil.isNull(liteflowConfig)) {
             liteflowConfig = new LiteflowConfig();
         }
-        return buildDefaultExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenMaxWorkers(),
-                                    liteflowConfig.getWhenQueueLimit(), "chain-thread-");
+        return buildDefaultExecutor(liteflowConfig.getChainMaxWorkers(), liteflowConfig.getChainMaxWorkers(),
+                                    liteflowConfig.getChainQueueLimit(), "chain-thread-");
     }
 
 }

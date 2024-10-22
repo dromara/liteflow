@@ -76,6 +76,12 @@ public class LiteflowConfig {
 	// 异步线程池最大队列数量
 	private Integer whenQueueLimit;
 
+	// chain线程池最大线程数
+	private Integer chainMaxWorkers;
+
+	// chain线程池最大队列数量
+	private Integer chainQueueLimit;
+
 	// 解析模式，一共有三种，具体看其定义
 	private ParseModeEnum parseMode;
 
@@ -250,7 +256,6 @@ public class LiteflowConfig {
 	public void setWhenMaxWorkers(Integer whenMaxWorkers) {
 		this.whenMaxWorkers = whenMaxWorkers;
 	}
-
 	public Integer getWhenQueueLimit() {
 		if (ObjectUtil.isNull(whenQueueLimit)) {
 			return 512;
@@ -326,8 +331,8 @@ public class LiteflowConfig {
 		}
 	}
 
-	public void setChainThreadExecutorClass(String threadExecutorClass) {
-		this.threadExecutorClass = threadExecutorClass;
+	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
+		this.chainThreadExecutorClass = chainThreadExecutorClass;
 	}
 
 	public String getNodeExecutorClass() {
@@ -540,4 +545,29 @@ public class LiteflowConfig {
 	public void setChainThreadPoolIsolate(Boolean chainThreadPoolIsolate) {
 		this.chainThreadPoolIsolate = chainThreadPoolIsolate;
 	}
+
+	public Integer getChainMaxWorkers() {
+		if (ObjectUtil.isNull(chainMaxWorkers)) {
+			return 16;
+		} else {
+			return chainMaxWorkers;
+		}
+	}
+
+	public void setChainMaxWorkers(Integer chainMaxWorkers) {
+		this.chainMaxWorkers = chainMaxWorkers;
+	}
+
+	public Integer getChainQueueLimit() {
+		if (ObjectUtil.isNull(chainMaxWorkers)) {
+			return 512;
+		} else {
+			return chainQueueLimit;
+		}
+	}
+
+	public void setChainQueueLimit(Integer chainQueueLimit) {
+		this.chainQueueLimit = chainQueueLimit;
+	}
+
 }

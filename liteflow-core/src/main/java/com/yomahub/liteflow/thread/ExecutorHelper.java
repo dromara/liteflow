@@ -134,11 +134,11 @@ public class ExecutorHelper {
 	public ExecutorService buildLoopParallelExecutor(Integer slotIndex) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		//chain线程池
-		if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
+		if (BooleanUtil.isTrue(liteflowConfig.getChainThreadPoolIsolate())) {
 			//获取chain的hash
 			String chainId = DataBus.getSlot(slotIndex).getChainId();
 			Chain chain = FlowBus.getChain(chainId);
-			return getExecutorService(liteflowConfig.getThreadExecutorClass(), String.valueOf(chain.hashCode()));
+			return getExecutorService(liteflowConfig.getChainThreadExecutorClass(), String.valueOf(chain.hashCode()));
 		}
 		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
 	}
@@ -183,26 +183,19 @@ public class ExecutorHelper {
 		}
 	}
 
-	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	// 构建chain线程池 - clazz和condition的hash值共同作为缓存key
 	public ExecutorService buildChainExecutorWithHash(String conditionHash) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildChainExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+		return buildChainExecutorWithHash(liteflowConfig.getChainThreadExecutorClass(), conditionHash);
 	}
 
-	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
+	// 构建chain线程池 - clazz和condition的hash值共同作为缓存key
 	public ExecutorService buildChainExecutorWithHash(String clazz, String conditionHash) {
 		if (StrUtil.isBlank(clazz)) {
-			return buildWhenExecutorWithHash(conditionHash);
+			return buildChainExecutorWithHash(conditionHash);
 		}
 		return getExecutorService(clazz, conditionHash);
 	}
 
-	// 构建when线程池 - 支持多个when公用一个线程池
-	public ExecutorService buildChainExecutor(String clazz) {
-		if (StrUtil.isBlank(clazz)) {
-			return buildWhenExecutor();
-		}
-		return getExecutorService(clazz);
-	}
 
 }

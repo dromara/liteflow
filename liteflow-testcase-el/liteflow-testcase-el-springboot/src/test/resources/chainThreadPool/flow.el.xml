@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain">
+        FOR(5).parallel(true).DO(THEN(f,WHEN(
+        THEN(a,b)
+        ))
+        );
+    </chain>
+</flow>

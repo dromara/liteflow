@@ -140,7 +140,7 @@ public abstract class ParallelStrategyExecutor {
             String chainId = DataBus.getSlot(slotIndex).getChainId();
             Chain chain = FlowBus.getChain(chainId);
             parallelExecutor =
-                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(),
+                    ExecutorHelper.loadInstance().buildChainExecutorWithHash(whenCondition.getThreadExecutorClass(),
                                                                             String.valueOf(chain.hashCode()));
         } else {
             parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
