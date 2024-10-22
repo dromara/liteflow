@@ -33,6 +33,7 @@ import java.util.Stack;
  *
  * @author Bryan.Zhang
  * @author luo yi
+ * @author Jay li
  */
 public class Node implements Executable, Cloneable, Rollbackable{
 
