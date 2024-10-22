@@ -40,9 +40,6 @@ public class LiteflowProperty {
 	// 并行线程执行器class路径
 	private String threadExecutorClass;
 
-    // chain线程执行器class路径
-    private String chainThreadExecutorClass;
-
 	// 异步线程最大等待描述
 	private int whenMaxWaitSeconds;
 
@@ -86,9 +83,18 @@ public class LiteflowProperty {
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
 
-    // chain线程池是否隔离
-    // 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
-    private boolean chainThreadPoolIsolate;
+	// chain线程池是否隔离
+	// 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
+	private Boolean chainThreadPoolIsolate;
+
+	// chain线程池最大线程数
+	private int chainMaxWorkers;
+
+	// chain线程池最大队列数量
+	private int chainQueueLimit;
+
+	// chain线程执行器class路径
+	private String chainThreadExecutorClass;
 
 	public boolean isEnable() {
 		return enable;
@@ -174,14 +180,6 @@ public class LiteflowProperty {
 	public void setThreadExecutorClass(String threadExecutorClass) {
 		this.threadExecutorClass = threadExecutorClass;
 	}
-
-    public String getChainThreadExecutorClass() {
-        return chainThreadExecutorClass;
-    }
-
-    public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
-        this.chainThreadExecutorClass = chainThreadExecutorClass;
-    }
 
 	public String getNodeExecutorClass() {
 		return nodeExecutorClass;
@@ -283,11 +281,36 @@ public class LiteflowProperty {
 		return fallbackCmpEnable;
 	}
 
-    public void setChainThreadPoolIsolate(boolean chainThreadPoolIsolate) {
-        this.chainThreadPoolIsolate = chainThreadPoolIsolate;
-    }
+	public void setChainThreadPoolIsolate(boolean chainThreadPoolIsolate) {
+		this.chainThreadPoolIsolate = chainThreadPoolIsolate;
+	}
 
-    public boolean isChainThreadPoolIsolate() {
-        return chainThreadPoolIsolate;
-    }
+	public boolean isChainThreadPoolIsolate() {
+		return chainThreadPoolIsolate;
+	}
+
+	public int getChainMaxWorkers() {
+		return chainMaxWorkers;
+	}
+
+	public void setChainMaxWorkers(int chainMaxWorkers) {
+		this.chainMaxWorkers = chainMaxWorkers;
+	}
+
+	public int getChainQueueLimit() {
+		return chainQueueLimit;
+	}
+
+	public void setChainQueueLimit(int chainQueueLimit) {
+		this.chainQueueLimit = chainQueueLimit;
+	}
+
+	public String getChainThreadExecutorClass() {
+		return chainThreadExecutorClass;
+	}
+
+	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
+		this.chainThreadExecutorClass = chainThreadExecutorClass;
+	}
+
 }

@@ -44,9 +44,6 @@ public class LiteflowConfig {
 	// 并行线程执行器class路径
 	private String threadExecutorClass;
 
-	// chain线程执行器class路径
-	private String chainThreadExecutorClass;
-
 	// 异步线程最大等待秒数
 	@Deprecated
 	private Integer whenMaxWaitSeconds;
@@ -75,12 +72,6 @@ public class LiteflowConfig {
 
 	// 异步线程池最大队列数量
 	private Integer whenQueueLimit;
-
-	// chain线程池最大线程数
-	private Integer chainMaxWorkers;
-
-	// chain线程池最大队列数量
-	private Integer chainQueueLimit;
 
 	// 解析模式，一共有三种，具体看其定义
 	private ParseModeEnum parseMode;
@@ -131,6 +122,15 @@ public class LiteflowConfig {
 
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
+
+	// chain线程池最大线程数
+	private Integer chainMaxWorkers;
+
+	// chain线程池最大队列数量
+	private Integer chainQueueLimit;
+
+	// chain线程执行器class路径
+	private String chainThreadExecutorClass;
 
 	// chain线程池是否隔离
 	// 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
@@ -256,6 +256,7 @@ public class LiteflowConfig {
 	public void setWhenMaxWorkers(Integer whenMaxWorkers) {
 		this.whenMaxWorkers = whenMaxWorkers;
 	}
+
 	public Integer getWhenQueueLimit() {
 		if (ObjectUtil.isNull(whenQueueLimit)) {
 			return 512;
@@ -321,18 +322,6 @@ public class LiteflowConfig {
 
 	public void setThreadExecutorClass(String threadExecutorClass) {
 		this.threadExecutorClass = threadExecutorClass;
-	}
-
-	public String getChainThreadExecutorClass() {
-		if (StrUtil.isBlank(chainThreadExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultChainExecutorBuilder";
-		} else {
-			return chainThreadExecutorClass;
-		}
-	}
-
-	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
-		this.chainThreadExecutorClass = chainThreadExecutorClass;
 	}
 
 	public String getNodeExecutorClass() {
@@ -570,4 +559,15 @@ public class LiteflowConfig {
 		this.chainQueueLimit = chainQueueLimit;
 	}
 
+	public String getChainThreadExecutorClass() {
+		if (StrUtil.isBlank(chainThreadExecutorClass)) {
+			return "com.yomahub.liteflow.thread.LiteFlowDefaultChainExecutorBuilder";
+		} else {
+			return chainThreadExecutorClass;
+		}
+	}
+
+	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
+		this.chainThreadExecutorClass = chainThreadExecutorClass;
+	}
 }
