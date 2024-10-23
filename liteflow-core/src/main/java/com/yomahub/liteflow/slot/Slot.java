@@ -35,6 +35,7 @@ import java.util.function.Predicate;
  * @author Bryan.Zhang
  * @author LeoLee
  * @author DaleLee
+ * @author Jay li
  */
 @SuppressWarnings("unchecked")
 public class Slot {

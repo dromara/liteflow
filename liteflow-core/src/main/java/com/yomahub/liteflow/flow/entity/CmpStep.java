@@ -20,6 +20,7 @@ import java.util.Date;
  * 组件步骤对象
  *
  * @author Bryan.Zhang
+ * @author Jay li
  */
 public class CmpStep {
 
