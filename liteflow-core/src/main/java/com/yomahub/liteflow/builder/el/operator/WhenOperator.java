@@ -7,6 +7,8 @@ import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
+import java.util.Optional;
+
 /**
  * EL规则中的WHEN的操作符
  *
@@ -25,7 +27,8 @@ public class WhenOperator extends BaseOperator<WhenCondition> {
 		for (Object obj : objects) {
 			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
 			whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
-			whenCondition.setThreadExecutorClass(liteflowConfig.getThreadExecutorClass());
+			whenCondition.setThreadExecutorClass(Optional.ofNullable(liteflowConfig.getThreadExecutorClass())
+														 .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()));
 		}
 		return whenCondition;
 	}

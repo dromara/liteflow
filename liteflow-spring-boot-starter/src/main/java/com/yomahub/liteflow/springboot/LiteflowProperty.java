@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.springboot;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -36,6 +38,7 @@ public class LiteflowProperty {
 	private String mainExecutorClass;
 
 	// 并行线程执行器class路径
+    @Deprecated
 	private String threadExecutorClass;
 
 	// 异步线程最大等待描述
@@ -47,9 +50,11 @@ public class LiteflowProperty {
 	private TimeUnit whenMaxWaitTimeUnit;
 
 	// 异步线程池最大线程数
+    @Deprecated
 	private int whenMaxWorkers;
 
 	// 异步线程池最大队列数量
+    @Deprecated
 	private int whenQueueLimit;
 
 	// 异步线程池是否隔离
@@ -80,13 +85,15 @@ public class LiteflowProperty {
 
 	// 规则文件/脚本文件变更监听
 	private boolean enableMonitorFile;
-
+    @Deprecated
 	private String parallelLoopExecutorClass;
 
 	//使用默认并行循环线程池时，最大线程数
+    @Deprecated
 	private int parallelMaxWorkers;
 
 	//使用默认并行循环线程池时，最大队列数
+    @Deprecated
 	private int parallelQueueLimit;
 	
 	// 是否启用组件降级
@@ -100,6 +107,15 @@ public class LiteflowProperty {
 
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
+
+    //全局线程池所用class路径(when+异步循环)
+    private String globalThreadPoolExecutorClass;
+
+    //全局线程池最大线程数(when+异步循环)
+    private Integer globalThreadPoolSize;
+
+    //全局线程池最大队列数(when+异步循环)
+    private Integer globalThreadPoolQueueSize;
 
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
@@ -143,18 +159,22 @@ public class LiteflowProperty {
 		this.whenMaxWaitSeconds = whenMaxWaitSeconds;
 	}
 
+    @Deprecated
 	public int getWhenMaxWorkers() {
 		return whenMaxWorkers;
 	}
 
+    @Deprecated
 	public void setWhenMaxWorkers(int whenMaxWorkers) {
 		this.whenMaxWorkers = whenMaxWorkers;
 	}
 
+    @Deprecated
 	public int getWhenQueueLimit() {
 		return whenQueueLimit;
 	}
 
+    @Deprecated
 	public void setWhenQueueLimit(int whenQueueLimit) {
 		this.whenQueueLimit = whenQueueLimit;
 	}
@@ -193,10 +213,12 @@ public class LiteflowProperty {
 		this.printBanner = printBanner;
 	}
 
+    @Deprecated
 	public String getThreadExecutorClass() {
 		return threadExecutorClass;
 	}
 
+    @Deprecated
 	public void setThreadExecutorClass(String threadExecutorClass) {
 		this.threadExecutorClass = threadExecutorClass;
 	}
@@ -273,26 +295,32 @@ public class LiteflowProperty {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
 	}
 
+    @Deprecated
 	public String getParallelLoopExecutorClass() {
 		return parallelLoopExecutorClass;
 	}
 
+    @Deprecated
 	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
 		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
 	}
 
+    @Deprecated
 	public int getParallelMaxWorkers() {
 		return parallelMaxWorkers;
 	}
 
+    @Deprecated
 	public void setParallelMaxWorkers(int parallelMaxWorkers) {
 		this.parallelMaxWorkers = parallelMaxWorkers;
 	}
 
+    @Deprecated
 	public int getParallelQueueLimit() {
 		return parallelQueueLimit;
 	}
 
+    @Deprecated
 	public void setParallelQueueLimit(int parallelQueueLimit) {
 		this.parallelQueueLimit = parallelQueueLimit;
 	}
@@ -336,4 +364,40 @@ public class LiteflowProperty {
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
 	}
+
+    public Integer getGlobalThreadPoolSize() {
+        if (ObjectUtil.isNull(globalThreadPoolSize)) {
+            return 16;
+        } else {
+            return globalThreadPoolSize;
+        }
+    }
+
+    public void setGlobalThreadPoolSize(Integer globalThreadPoolSize) {
+        this.globalThreadPoolSize = globalThreadPoolSize;
+    }
+
+    public Integer getGlobalThreadPoolQueueSize() {
+        if (ObjectUtil.isNull(globalThreadPoolQueueSize)) {
+            return 512;
+        } else {
+            return globalThreadPoolQueueSize;
+        }
+    }
+
+    public void setGlobalThreadPoolQueueSize(Integer globalThreadPoolQueueSize) {
+        this.globalThreadPoolQueueSize = globalThreadPoolQueueSize;
+    }
+
+    public String getGlobalThreadPoolExecutorClass() {
+        if (StrUtil.isBlank(globalThreadPoolExecutorClass)) {
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder";
+        } else {
+            return globalThreadPoolExecutorClass;
+        }
+    }
+
+    public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
+        this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
+    }
 }

@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.solon.config;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
@@ -82,6 +84,15 @@ public class LiteflowProperty {
 	
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
+
+    //全局线程池所用class路径(when+异步循环)
+    private String globalThreadPoolExecutorClass;
+
+    //全局线程池最大线程数(when+异步循环)
+    private Integer globalThreadPoolSize;
+
+    //全局线程池最大队列数(when+异步循环)
+    private Integer globalThreadPoolQueueSize;
 
 	public boolean isEnable() {
 		return enable;
@@ -267,4 +278,40 @@ public class LiteflowProperty {
 	public Boolean getFallbackCmpEnable() {
 		return fallbackCmpEnable;
 	}
+
+    public Integer getGlobalThreadPoolSize() {
+        if (ObjectUtil.isNull(globalThreadPoolSize)) {
+            return 16;
+        } else {
+            return globalThreadPoolSize;
+        }
+    }
+
+    public void setGlobalThreadPoolSize(Integer globalThreadPoolSize) {
+        this.globalThreadPoolSize = globalThreadPoolSize;
+    }
+
+    public Integer getGlobalThreadPoolQueueSize() {
+        if (ObjectUtil.isNull(globalThreadPoolQueueSize)) {
+            return 512;
+        } else {
+            return globalThreadPoolQueueSize;
+        }
+    }
+
+    public void setGlobalThreadPoolQueueSize(Integer globalThreadPoolQueueSize) {
+        this.globalThreadPoolQueueSize = globalThreadPoolQueueSize;
+    }
+
+    public String getGlobalThreadPoolExecutorClass() {
+        if (StrUtil.isBlank(globalThreadPoolExecutorClass)) {
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder";
+        } else {
+            return globalThreadPoolExecutorClass;
+        }
+    }
+
+    public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
+        this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
+    }
 }

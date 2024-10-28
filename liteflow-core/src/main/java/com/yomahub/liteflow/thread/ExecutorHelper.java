@@ -22,6 +22,7 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +92,8 @@ public class ExecutorHelper {
 	// 构建默认when线程池
 	public ExecutorService buildWhenExecutor() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutor(liteflowConfig.getThreadExecutorClass());
+		return buildWhenExecutor(Optional.ofNullable(liteflowConfig.getGlobalThreadPoolExecutorClass())
+										 .orElse(liteflowConfig.getThreadExecutorClass()));
 	}
 
 	// 构建when线程池 - 支持多个when公用一个线程池
@@ -105,7 +107,9 @@ public class ExecutorHelper {
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
 	public ExecutorService buildWhenExecutorWithHash(String conditionHash) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+		return buildWhenExecutorWithHash(Optional.ofNullable(liteflowConfig.getThreadExecutorClass())
+												 .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()),
+										 conditionHash);
 	}
 
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
@@ -146,7 +150,8 @@ public class ExecutorHelper {
 												  String.valueOf(chain.hashCode()));
 		} else {
 			//全局线程池
-			parallelExecutor = getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
+			parallelExecutor = getExecutorService(Optional.ofNullable(liteflowConfig.getParallelLoopExecutorClass())
+														  .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()));
 		}
 		return parallelExecutor;
 	}

@@ -21,10 +21,10 @@ import java.util.List;
  * springboot环境下chain线程池隔离测试
  */
 @TestPropertySource(value = "classpath:/chainThreadPool/application2.properties")
-@SpringBootTest(classes = CustomThreadPoolELSpringbootTest.class)
+@SpringBootTest(classes = ConditionThreadPoolELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.chainThreadPool.cmp"})
-public class CustomThreadPoolELSpringbootTest extends BaseTest {
+public class ConditionThreadPoolELSpringbootTest extends BaseTest {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -35,7 +35,7 @@ public class CustomThreadPoolELSpringbootTest extends BaseTest {
 	 * 测试WEHN上condition线程池和chain线程池隔离-优先以WHEN上为准
 	 */
 	@Test
-	public void testCustomChainThreadPool() {
+	public void testConditionThreadPool() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
@@ -46,7 +46,7 @@ public class CustomThreadPoolELSpringbootTest extends BaseTest {
 	 * 测试FOR上condition线程池和chain线程池隔离-优先以FOR上为准
 	 */
 	@Test
-	public void testCustomChainThreadPool2() {
+	public void testConditionThreadPool2() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
@@ -57,7 +57,7 @@ public class CustomThreadPoolELSpringbootTest extends BaseTest {
 	 * 测试WHILE上condition线程池和chain线程池隔离-优先以WHILE上为准
 	 */
 	@Test
-	public void testCustomChainThreadPool3() {
+	public void testConditionThreadPool3() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain3", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
@@ -68,7 +68,7 @@ public class CustomThreadPoolELSpringbootTest extends BaseTest {
 	 * 测试ITERATOR上condition线程池和chain线程池隔离-优先以ITERATOR上为准
 	 */
 	@Test
-	public void testCustomChainThreadPool4() {
+	public void testConditionThreadPool4() {
 		List<String> list = ListUtil.toList("1", "2", "3", "4", "5");
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain4", list);
 		DefaultContext context = response1.getFirstContextBean();

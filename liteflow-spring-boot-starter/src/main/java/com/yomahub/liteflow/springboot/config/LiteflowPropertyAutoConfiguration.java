@@ -54,6 +54,9 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setScriptSetting(property.getScriptSetting());
+        liteflowConfig.setGlobalThreadPoolExecutorClass(property.getGlobalThreadPoolExecutorClass());
+        liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
+        liteflowConfig.setGlobalThreadPoolSize(property.getGlobalThreadPoolSize());
 		return liteflowConfig;
 	}
 
