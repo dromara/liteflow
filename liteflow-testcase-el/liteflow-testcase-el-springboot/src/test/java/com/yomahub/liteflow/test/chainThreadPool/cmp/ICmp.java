@@ -18,7 +18,7 @@ public class ICmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("threadNameIterator", Thread.currentThread().getName());
+		context.setData("threadName", Thread.currentThread().getName());
 		System.out.println("ICmp executed!");
 	}
 

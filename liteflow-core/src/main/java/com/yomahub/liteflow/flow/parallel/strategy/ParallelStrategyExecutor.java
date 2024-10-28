@@ -133,16 +133,22 @@ public abstract class ParallelStrategyExecutor {
         // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在 when 的情况下，全局一个线程池。
         ExecutorService parallelExecutor;
 
+        String chainId = DataBus.getSlot(slotIndex).getChainId();
+
+        Chain chain = FlowBus.getChain(chainId);
+
         if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
-        } else if (BooleanUtil.isTrue(liteflowConfig.getChainThreadPoolIsolate())) {
-            //chain 线程池隔离
-            String chainId = DataBus.getSlot(slotIndex).getChainId();
-            Chain chain = FlowBus.getChain(chainId);
+            //condition层级线程池
             parallelExecutor =
-                    ExecutorHelper.loadInstance().buildChainExecutorWithHash(whenCondition.getThreadExecutorClass(),
+                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(),
+                                                                            String.valueOf(whenCondition.hashCode()));
+        } else if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
+            //chain层级线程池
+            parallelExecutor =
+                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(chain.getThreadPoolExecutorClass(),
                                                                             String.valueOf(chain.hashCode()));
         } else {
+            //全局线程池
             parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
         }
 

@@ -51,11 +51,6 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setParallelQueueLimit(property.getParallelQueueLimit());
 		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		liteflowConfig.setFallbackCmpEnable(property.isFallbackCmpEnable());
-		liteflowConfig.setChainThreadExecutorClass(property.getChainThreadExecutorClass());
-		liteflowConfig.setChainQueueLimit(property.getParallelQueueLimit());
-		liteflowConfig.setChainMaxWorkers(property.getParallelMaxWorkers());
-		liteflowConfig.setChainThreadPoolIsolate(property.isChainThreadPoolIsolate());
-
 		return liteflowConfig;
 	}
 

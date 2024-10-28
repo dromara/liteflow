@@ -9,7 +9,6 @@
 package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
@@ -132,15 +131,24 @@ public class ExecutorHelper {
 
 	//构造并行循环的线程池
 	public ExecutorService buildLoopParallelExecutor(Integer slotIndex) {
+		ExecutorService parallelExecutor;
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		//chain线程池
-		if (BooleanUtil.isTrue(liteflowConfig.getChainThreadPoolIsolate())) {
-			//获取chain的hash
-			String chainId = DataBus.getSlot(slotIndex).getChainId();
-			Chain chain = FlowBus.getChain(chainId);
-			return getExecutorService(liteflowConfig.getChainThreadExecutorClass(), String.valueOf(chain.hashCode()));
+		//获取chain的hash
+		String chainId = DataBus.getSlot(slotIndex).getChainId();
+		Chain chain = FlowBus.getChain(chainId);
+
+		//condition层级线程池 TODO
+
+		//chain层级线程池
+		if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
+			//chain层级线程池
+			parallelExecutor = getExecutorService(chain.getThreadPoolExecutorClass(),
+												  String.valueOf(chain.hashCode()));
+		} else {
+			//全局线程池
+			parallelExecutor = getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
 		}
-		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
+		return parallelExecutor;
 	}
 
 	private ExecutorService getExecutorService(String clazz){
@@ -182,20 +190,5 @@ public class ExecutorHelper {
 			executorServiceMap.clear();
 		}
 	}
-
-	// 构建chain线程池 - clazz和condition的hash值共同作为缓存key
-	public ExecutorService buildChainExecutorWithHash(String conditionHash) {
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildChainExecutorWithHash(liteflowConfig.getChainThreadExecutorClass(), conditionHash);
-	}
-
-	// 构建chain线程池 - clazz和condition的hash值共同作为缓存key
-	public ExecutorService buildChainExecutorWithHash(String clazz, String conditionHash) {
-		if (StrUtil.isBlank(clazz)) {
-			return buildChainExecutorWithHash(conditionHash);
-		}
-		return getExecutorService(clazz, conditionHash);
-	}
-
 
 }

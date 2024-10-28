@@ -21,10 +21,10 @@ import java.util.List;
  * springboot环境下chain线程池隔离测试
  */
 @TestPropertySource(value = "classpath:/chainThreadPool/application2.properties")
-@SpringBootTest(classes = CustomChainThreadPoolELSpringbootTest.class)
+@SpringBootTest(classes = CustomThreadPoolELSpringbootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.chainThreadPool.cmp"})
-public class CustomChainThreadPoolELSpringbootTest extends BaseTest {
+public class CustomThreadPoolELSpringbootTest extends BaseTest {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -32,61 +32,48 @@ public class CustomChainThreadPoolELSpringbootTest extends BaseTest {
 	private FlowExecutor flowExecutor;
 
 	/**
-	 * 测试chain自定义线程池隔离
+	 * 测试WEHN上condition线程池和chain线程池隔离-优先以WHEN上为准
 	 */
 	@Test
-	public void testCustomChainThreadPool1() {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
-		DefaultContext context = response.getFirstContextBean();
-		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(context.getData("threadNameFor").toString().startsWith("customer-chain-thead-1"));
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead-1"));
+	public void testCustomChainThreadPool() {
+		LiteflowResponse response1 = flowExecutor.execute2Resp("chain1", "arg");
+		DefaultContext context = response1.getFirstContextBean();
+		Assertions.assertTrue(response1.isSuccess());
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-when-thead"));
 	}
 
 	/**
-	 * 测试when上自定义线程池和chain线程池隔离-优先以when上为准
+	 * 测试FOR上condition线程池和chain线程池隔离-优先以FOR上为准
 	 */
 	@Test
 	public void testCustomChainThreadPool2() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead-2"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
 	}
 
 	/**
-	 * 测试并行FOR循环全局线程池和chain线程池隔离-优先以chain线程池上为准
+	 * 测试WHILE上condition线程池和chain线程池隔离-优先以WHILE上为准
 	 */
 	@Test
 	public void testCustomChainThreadPool3() {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain3", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadNameFor").toString().startsWith("customer-chain-thead-1"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
 	}
 
 	/**
-	 * 测试并行条件循环全局线程池和chain线程池隔离-优先以chain线程池上为准
+	 * 测试ITERATOR上condition线程池和chain线程池隔离-优先以ITERATOR上为准
 	 */
 	@Test
 	public void testCustomChainThreadPool4() {
-		LiteflowResponse response1 = flowExecutor.execute2Resp("chain4", "arg");
-		DefaultContext context = response1.getFirstContextBean();
-		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadNameWhile").toString().startsWith("customer-chain-thead-1"));
-	}
-
-	/**
-	 * 测试并行迭代循环全局线程池和chain线程池隔离-优先以chain线程池上为准
-	 */
-	@Test
-	public void testCustomChainThreadPool5() {
 		List<String> list = ListUtil.toList("1", "2", "3", "4", "5");
-		LiteflowResponse response1 = flowExecutor.execute2Resp("chain5", list);
+		LiteflowResponse response1 = flowExecutor.execute2Resp("chain4", list);
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadNameIterator").toString().startsWith("customer-chain-thead-1"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
 	}
-
 
 }

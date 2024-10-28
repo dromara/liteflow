@@ -101,19 +101,6 @@ public class LiteflowProperty {
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
 
-	// chain线程池是否隔离
-	// 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
-	private Boolean chainThreadPoolIsolate;
-
-	// chain线程池最大线程数
-	private int chainMaxWorkers;
-
-	// chain线程池最大队列数量
-	private int chainQueueLimit;
-
-	// chain线程执行器class路径
-	private String chainThreadExecutorClass;
-
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -349,37 +336,4 @@ public class LiteflowProperty {
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
 	}
-
-	public void setChainThreadPoolIsolate(boolean chainThreadPoolIsolate) {
-		this.chainThreadPoolIsolate = chainThreadPoolIsolate;
-	}
-
-	public boolean isChainThreadPoolIsolate() {
-		return chainThreadPoolIsolate;
-	}
-
-	public int getChainMaxWorkers() {
-		return chainMaxWorkers;
-	}
-
-	public void setChainMaxWorkers(int chainMaxWorkers) {
-		this.chainMaxWorkers = chainMaxWorkers;
-	}
-
-	public int getChainQueueLimit() {
-		return chainQueueLimit;
-	}
-
-	public void setChainQueueLimit(int chainQueueLimit) {
-		this.chainQueueLimit = chainQueueLimit;
-	}
-
-	public String getChainThreadExecutorClass() {
-		return chainThreadExecutorClass;
-	}
-
-	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
-		this.chainThreadExecutorClass = chainThreadExecutorClass;
-	}
-
 }

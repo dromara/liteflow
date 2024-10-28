@@ -18,7 +18,7 @@ public class WCmp extends NodeComponent {
 	@Override
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
-		context.setData("threadNameWhile", Thread.currentThread().getName());
+		context.setData("threadName", Thread.currentThread().getName());
 		System.out.println("WCmp executed!");
 	}
 

@@ -7,7 +7,7 @@ import com.yomahub.liteflow.thread.ExecutorBuilder;
 
 import java.util.concurrent.ExecutorService;
 
-public class CustomThreadExecutor1 implements ExecutorBuilder {
+public class CustomWhenThreadExecutor implements ExecutorBuilder {
 
 	@Override
 	public ExecutorService buildExecutor() {
@@ -16,8 +16,8 @@ public class CustomThreadExecutor1 implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(liteflowConfig.getChainMaxWorkers(), liteflowConfig.getChainMaxWorkers(),
-									liteflowConfig.getChainQueueLimit(), "customer-chain-thead-1");
+		return buildDefaultExecutor(16, 16,
+									512, "customer-when-thead");
 	}
 
 }

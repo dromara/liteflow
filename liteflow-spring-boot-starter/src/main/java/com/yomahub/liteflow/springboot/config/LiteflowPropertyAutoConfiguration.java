@@ -54,10 +54,6 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setDelay(liteflowMonitorProperty.getDelay());
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setScriptSetting(property.getScriptSetting());
-		liteflowConfig.setChainThreadPoolIsolate(property.isChainThreadPoolIsolate());
-		liteflowConfig.setChainThreadExecutorClass(property.getChainThreadExecutorClass());
-		liteflowConfig.setChainMaxWorkers(property.getChainMaxWorkers());
-		liteflowConfig.setChainQueueLimit(property.getChainQueueLimit());
 		return liteflowConfig;
 	}
 

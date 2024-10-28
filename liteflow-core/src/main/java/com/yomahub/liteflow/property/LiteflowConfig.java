@@ -123,20 +123,6 @@ public class LiteflowConfig {
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
 
-	// chain线程池最大线程数
-	private Integer chainMaxWorkers;
-
-	// chain线程池最大队列数量
-	private Integer chainQueueLimit;
-
-	// chain线程执行器class路径
-	private String chainThreadExecutorClass;
-
-	// chain线程池是否隔离
-	// 每一个chain里的when和异步循环合并起来都用单独的线程池。也就是说定义了多少个chain，就有多少个线程池
-	private Boolean chainThreadPoolIsolate;
-
-
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -521,53 +507,5 @@ public class LiteflowConfig {
 
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
-	}
-
-	public Boolean getChainThreadPoolIsolate() {
-		if (ObjectUtil.isNull(chainThreadPoolIsolate)) {
-			return Boolean.FALSE;
-		} else {
-			return chainThreadPoolIsolate;
-		}
-	}
-
-	public void setChainThreadPoolIsolate(Boolean chainThreadPoolIsolate) {
-		this.chainThreadPoolIsolate = chainThreadPoolIsolate;
-	}
-
-	public Integer getChainMaxWorkers() {
-		if (ObjectUtil.isNull(chainMaxWorkers)) {
-			return 16;
-		} else {
-			return chainMaxWorkers;
-		}
-	}
-
-	public void setChainMaxWorkers(Integer chainMaxWorkers) {
-		this.chainMaxWorkers = chainMaxWorkers;
-	}
-
-	public Integer getChainQueueLimit() {
-		if (ObjectUtil.isNull(chainMaxWorkers)) {
-			return 512;
-		} else {
-			return chainQueueLimit;
-		}
-	}
-
-	public void setChainQueueLimit(Integer chainQueueLimit) {
-		this.chainQueueLimit = chainQueueLimit;
-	}
-
-	public String getChainThreadExecutorClass() {
-		if (StrUtil.isBlank(chainThreadExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultChainExecutorBuilder";
-		} else {
-			return chainThreadExecutorClass;
-		}
-	}
-
-	public void setChainThreadExecutorClass(String chainThreadExecutorClass) {
-		this.chainThreadExecutorClass = chainThreadExecutorClass;
 	}
 }

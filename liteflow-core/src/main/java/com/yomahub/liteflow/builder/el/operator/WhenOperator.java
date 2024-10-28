@@ -26,9 +26,6 @@ public class WhenOperator extends BaseOperator<WhenCondition> {
 			OperatorHelper.checkObjMustBeCommonTypeItem(obj);
 			whenCondition.addExecutable(OperatorHelper.convert(obj, Executable.class));
 			whenCondition.setThreadExecutorClass(liteflowConfig.getThreadExecutorClass());
-			if (liteflowConfig.getChainThreadPoolIsolate()) {
-				whenCondition.setThreadExecutorClass(liteflowConfig.getChainThreadExecutorClass());
-			}
 		}
 		return whenCondition;
 	}

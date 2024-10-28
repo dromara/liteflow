@@ -220,34 +220,6 @@
       "type": "java.util.Map",
       "description": "script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
-    },
-    {
-      "name": "liteflow.chain-thread-pool-isolate",
-      "type": "java.lang.Boolean",
-      "description": "set whether the chain thread pool is isolated.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": false
-    },
-    {
-      "name": "liteflow.chain-max-workers",
-      "type": "java.lang.Integer",
-      "description": "Set the chain thread pool worker max-size on \" when \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 16
-    },
-    {
-      "name": "liteflow.chain-queue-limit",
-      "type": "java.lang.Integer",
-      "description": "Set the chain thread pool queue max-size on \" when \" mode.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": 512
-    },
-    {
-      "name": "liteflow.chain-thread-executor-class",
-      "type": "java.lang.String",
-      "description": "Custom chain thread pool implement for when executor.",
-      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultChainExecutorBuilder"
     }
   ]
 }

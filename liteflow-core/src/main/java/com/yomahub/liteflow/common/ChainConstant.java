@@ -34,6 +34,8 @@ public interface ChainConstant {
 
 	String NAMESPACE = "namespace";
 
+    String THREAD_POOL_EXECUTOR_CLASS = "thread-pool-executor-class";
+
 	String DEFAULT_NAMESPACE = "default";
 
 	String VALUE = "value";
