@@ -50,7 +50,7 @@ public class ConditionThreadPoolELSpringbootTest extends BaseTest {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain2", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-loop-thead"));
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class ConditionThreadPoolELSpringbootTest extends BaseTest {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain3", "arg");
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-loop-thead"));
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class ConditionThreadPoolELSpringbootTest extends BaseTest {
 		LiteflowResponse response1 = flowExecutor.execute2Resp("chain4", list);
 		DefaultContext context = response1.getFirstContextBean();
 		Assertions.assertTrue(response1.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-chain-thead"));
+		Assertions.assertTrue(context.getData("threadName").toString().startsWith("customer-loop-thead"));
 	}
 
 }

@@ -77,7 +77,8 @@ public class ForCondition extends LoopCondition {
                 //存储所有的并行执行子项的CompletableFuture
                 List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
                 //获取并行循环的线程池
-                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor(slotIndex);
+                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor(this,
+                                                                                                           slotIndex);
                 for (int i = 0; i < forCount; i++){
                     //提交异步任务
                     CompletableFuture<LoopFutureObj> future =

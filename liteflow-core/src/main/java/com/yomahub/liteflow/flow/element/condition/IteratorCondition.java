@@ -80,7 +80,8 @@ public class IteratorCondition extends LoopCondition {
                 //存储所有的并行执行子项的CompletableFuture
                 List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
                 //获取并行循环的线程池
-                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor(slotIndex);
+                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor(this,
+                                                                                                           slotIndex);
                 while (it.hasNext()) {
                     Object itObj = it.next();
                     //提交异步任务

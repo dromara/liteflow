@@ -14,6 +14,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -134,25 +135,30 @@ public class ExecutorHelper {
 	}
 
 	//构造并行循环的线程池
-	public ExecutorService buildLoopParallelExecutor(Integer slotIndex) {
+	public ExecutorService buildLoopParallelExecutor(LoopCondition loopCondition, Integer slotIndex) {
 		ExecutorService parallelExecutor;
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		//获取chain的hash
 		String chainId = DataBus.getSlot(slotIndex).getChainId();
 		Chain chain = FlowBus.getChain(chainId);
 
-		//condition层级线程池 TODO
+		//condition层级线程池
+		if (ObjectUtil.isNotEmpty(loopCondition.getThreadPoolExecutorClass())) {
+			parallelExecutor = getExecutorService(loopCondition.getThreadPoolExecutorClass(),
+												  String.valueOf(loopCondition.hashCode()));
 
-		//chain层级线程池
-		if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
+		} else if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
 			//chain层级线程池
 			parallelExecutor = getExecutorService(chain.getThreadPoolExecutorClass(),
 												  String.valueOf(chain.hashCode()));
+
 		} else {
 			//全局线程池
 			parallelExecutor = getExecutorService(Optional.ofNullable(liteflowConfig.getParallelLoopExecutorClass())
 														  .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()));
+
 		}
+
 		return parallelExecutor;
 	}
 
