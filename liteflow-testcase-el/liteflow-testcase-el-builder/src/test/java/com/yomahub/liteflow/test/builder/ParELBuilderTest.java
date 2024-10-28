@@ -27,105 +27,105 @@ public class ParELBuilderTest extends BaseTest {
     public void testPar1(){
         String expectedStr = "PAR(node(\"a\"),node(\"b\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).toEL()));
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar2(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tnode(\"b\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).toEL(true)));
     }
     // then组件then方法调用测试
     @Test
     public void testPar3(){
         String expectedStr = "PAR(node(\"a\"),node(\"b\"),node(\"c\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).toEL()));
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).par(ELBus.node("c")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).par(ELBus.node("c")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar4(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).par(ELBus.node("c")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).par(ELBus.node("c")).toEL(true)));
     }
     // then组件嵌套调用测试
     @Test
     public void testPar5(){
         String expectedStr = "PAR(node(\"a\"),PAR(node(\"b\"),node(\"c\")),node(\"d\"));";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c"))).par(ELBus.fallbackNode("d")).toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c"))).par(ELBus.fallbackNode("d")).toEL()));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c"))).par(ELBus.node("d")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c"))).par(ELBus.node("d")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar6(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\")\n);";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c"))).par(ELBus.fallbackNode("d")).toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c"))).par(ELBus.node("d")).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c"))).par(ELBus.fallbackNode("d")).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c"))).par(ELBus.node("d")).toEL(true)));
     }
     // PAR特有属性测试 any ignoreError customThreadExecutor must
     @Test
     public void testPar7(){
         String expectedStr = "PAR(node(\"a\"),node(\"b\"),PAR(node(\"c\"),node(\"d\")).any(true).threadPool(\"com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1\").id(\"node1\")).ignoreError(true).must(\"a\", \"task1\", \"node1\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.par(ELBus.fallbackNode("c")).par(ELBus.fallbackNode("d")).id("node1").customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").any(true)).ignoreError(true).must("a","task1","node1").toEL());
+                ELBus.par(ELBus.node("a"), ELBus.node("b"), ELBus.par(ELBus.node("c")).par(ELBus.node("d")).id("node1").customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").any(true)).ignoreError(true).must("a","task1","node1").toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.par(ELBus.fallbackNode("c")).par(ELBus.fallbackNode("d")).id("node1").customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").any(true)).ignoreError(true).must("a","task1","node1").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b"), ELBus.par(ELBus.node("c")).par(ELBus.node("d")).id("node1").customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").any(true)).ignoreError(true).must("a","task1","node1").toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar8(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tPAR(\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t).any(true).threadPool(\"com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1\").id(\"node1\")\n).ignoreError(true).must(\"a\", \"task1\", \"node1\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.par(ELBus.fallbackNode("c")).par(ELBus.fallbackNode("d")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").id("node1").any(true)).ignoreError(true).must("a","task1","node1").toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.node("b"), ELBus.par(ELBus.node("c")).par(ELBus.node("d")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").id("node1").any(true)).ignoreError(true).must("a","task1","node1").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.par(ELBus.fallbackNode("c")).par(ELBus.fallbackNode("d")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").id("node1").any(true)).ignoreError(true).must("a","task1","node1").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b"), ELBus.par(ELBus.node("c")).par(ELBus.node("d")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1").id("node1").any(true)).ignoreError(true).must("a","task1","node1").toEL(true)));
     }
     // maxWaitSeconds 属性测试
     @Test
     public void testPar9(){
         String expectedStr = "PAR(node(\"a\"),node(\"b\")).maxWaitSeconds(5);";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).maxWaitSeconds(5).toEL());
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).maxWaitSeconds(5).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).maxWaitSeconds(5).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).maxWaitSeconds(5).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar10(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tnode(\"b\")\n).maxWaitSeconds(5);";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).maxWaitSeconds(5).toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.node("b")).maxWaitSeconds(5).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b")).maxWaitSeconds(5).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.node("b")).maxWaitSeconds(5).toEL(true)));
     }
     // 属性设置测试
     @Test
     public void testPar11(){
         String expectedStr = "PAR(node(\"a\"),PAR(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL());
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL()));
     }
     // 格式化输出测试
     @Test
     public void testPar12(){
         String expectedStr = "PAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true)));
     }
     // data属性测试
     @Test
@@ -136,9 +136,9 @@ public class ParELBuilderTest extends BaseTest {
         System.out.println(JsonUtil.toJsonString(name2Value));
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(false));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(false));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(false)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(false)));
     }
     // 格式化输出测试
     @Test
@@ -148,27 +148,27 @@ public class ParELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true)));
     }
     // data属性测试 Json字符串赋值data
     @Test
     public void testPar15(){
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL());
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL()));
     }
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testPar16(){
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true)));
     }
     private static class ParamClass{
         private String name;
@@ -188,9 +188,9 @@ public class ParELBuilderTest extends BaseTest {
         name2Value.age = 18;
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL());
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL()));
     }
     // 格式化输出测试
     @Test
@@ -200,14 +200,14 @@ public class ParELBuilderTest extends BaseTest {
         name2Value.age = 18;
         String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
-                ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true));
+                ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.fallbackNode("a"), ELBus.par(ELBus.fallbackNode("b")).par(ELBus.fallbackNode("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.fallbackNode("d")).tag("this is a tag").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true)));
     }
 
     @Test
     public void testPAR(){
-        ParELWrapper el = ELBus.par(ELBus.fallbackNode("a"), ELBus.fallbackNode("b"), ELBus.fallbackNode("c")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1");
+        ParELWrapper el = ELBus.par(ELBus.node("a"), ELBus.node("b"), ELBus.node("c")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(el.toEL()));
     }
 }

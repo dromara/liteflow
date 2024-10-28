@@ -6,13 +6,11 @@ import com.yomahub.liteflow.util.JsonUtil;
 import java.util.Map;
 
 /**
- * 单节点表达式
- * 单节点也应以为一种表达式
- * 支持设置 tag data maxWaitSeconds 属性
+ * 普通节点表示
  *
  * @author gezuao
  * @author luo yi
- * @since 2.11.1
+ * @since 2.12.3
  */
 public class CommonNodeELWrapper extends ELWrapper {
 

@@ -40,7 +40,7 @@ public class NodeELBuilderTest extends BaseTest {
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -51,7 +51,7 @@ public class NodeELBuilderTest extends BaseTest {
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -64,7 +64,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -77,7 +77,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -100,7 +100,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL());
         System.out.println(expectedStr);
@@ -113,7 +113,7 @@ public class NodeELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
-        CommonNodeELWrapper node = ELBus.fallbackNode("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
+        CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
                 node.toEL(true));
         System.out.println(expectedStr);
@@ -144,8 +144,8 @@ public class NodeELBuilderTest extends BaseTest {
         String param1 = "select * from member t\n" +
                 "            where t.id=10001";
         String param2 = "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}";
-        ThenELWrapper el = ELBus.then(ELBus.fallbackNode("a").data("sql", param1),
-                ELBus.fallbackNode("b").data("jsonstr", param2));
+        ThenELWrapper el = ELBus.then(ELBus.node("a").data("sql", param1),
+                ELBus.node("b").data("jsonstr", param2));
         Assertions.assertEquals(expectedStr,
                 el.toEL(true));
 

@@ -3,23 +3,26 @@ package com.yomahub.liteflow.builder.el;
 import cn.hutool.core.util.StrUtil;
 
 /**
- * 降级节点表示
+ * 单节点表达式
+ * 单节点也应以为一种表达式
+ * 支持设置 tag data maxWaitSeconds 属性
  *
+ * @author gezuao
  * @author luo yi
- * @since 2.12.3
+ * @since 2.11.1
  */
-public class FallbackNodeELWrapper extends CommonNodeELWrapper {
+public class NodeELWrapper extends CommonNodeELWrapper {
 
-    public FallbackNodeELWrapper(String nodeId) {
+    public NodeELWrapper(String nodeId) {
         super(nodeId);
     }
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
-        FallbackNodeELWrapper fallbackNodeElWrapper = (FallbackNodeELWrapper) this.getFirstWrapper();
+        NodeELWrapper nodeElWrapper = (NodeELWrapper) this.getFirstWrapper();
         StringBuilder sb = new StringBuilder();
         processWrapperTabs(sb, depth);
-        sb.append(StrUtil.format("node(\"{}\")", fallbackNodeElWrapper.getNodeId()));
+        sb.append(StrUtil.format("node(\"{}\")", nodeElWrapper.getNodeId()));
         processWrapperProperty(sb, paramContext);
         return sb.toString();
     }

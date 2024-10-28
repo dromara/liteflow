@@ -134,10 +134,10 @@ public class ELBus {
      * 创建降级 commonNode 单节点表达式
      *
      * @param nodeId 节点 id
-     * @return {@link FallbackNodeELWrapper}
+     * @return {@link NodeELWrapper}
      */
-    public static FallbackNodeELWrapper fallbackNode(String nodeId){
-        return new FallbackNodeELWrapper(nodeId);
+    public static NodeELWrapper node(String nodeId){
+        return new NodeELWrapper(nodeId);
     }
 
     /**

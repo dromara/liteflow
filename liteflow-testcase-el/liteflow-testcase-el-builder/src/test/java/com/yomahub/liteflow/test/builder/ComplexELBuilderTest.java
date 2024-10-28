@@ -57,19 +57,19 @@ public class ComplexELBuilderTest extends BaseTest {
     @Test
     public void testComplexEL1() {
         ThenELWrapper complexEl1 = ELBus.then(
-                ELBus.fallbackNode("A"),
+                ELBus.node("A"),
                 ELBus.when(
-                        ELBus.then(ELBus.fallbackNode("B"), ELBus.fallbackNode("C")),
-                        ELBus.then(ELBus.fallbackNode("D")).then(ELBus.fallbackNode("E")).then(ELBus.fallbackNode("F")),
+                        ELBus.then(ELBus.node("B"), ELBus.node("C")),
+                        ELBus.then(ELBus.node("D")).then(ELBus.node("E")).then(ELBus.node("F")),
                         ELBus.then(
-                                ELBus.switchOpt(ELBus.fallbackNode("G")).to(
-                                        ELBus.then(ELBus.fallbackNode("H"), ELBus.fallbackNode("I"), ELBus.when(ELBus.fallbackNode("J")).when(ELBus.fallbackNode("K"))).id("t1"),
-                                        ELBus.then(ELBus.fallbackNode("L"), ELBus.fallbackNode("M")).id("t2")
+                                ELBus.switchOpt(ELBus.node("G")).to(
+                                        ELBus.then(ELBus.node("H"), ELBus.node("I"), ELBus.when(ELBus.node("J")).when(ELBus.node("K"))).id("t1"),
+                                        ELBus.then(ELBus.node("L"), ELBus.node("M")).id("t2")
                                 ),
-                                ELBus.fallbackNode("N")
+                                ELBus.node("N")
                         )
                 ),
-                ELBus.fallbackNode("Z")
+                ELBus.node("Z")
         );
         String expectedStr = "THEN(node(\"A\"),WHEN(THEN(node(\"B\"),node(\"C\")),THEN(node(\"D\"),node(\"E\"),node(\"F\")),THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\"),WHEN(node(\"J\"),node(\"K\"))).id(\"t1\"),THEN(node(\"L\"),node(\"M\")).id(\"t2\")),node(\"N\"))),node(\"Z\"));";
         Assertions.assertEquals(expectedStr,
@@ -106,24 +106,24 @@ public class ComplexELBuilderTest extends BaseTest {
     @Test
     public void testComplexEl2(){
         ThenELWrapper complexEl2 = ELBus.then(
-                ELBus.fallbackNode("A"),
-                ELBus.switchOpt(ELBus.fallbackNode("B")).to(
-                        ELBus.then(ELBus.fallbackNode("D"),ELBus.fallbackNode("E")).then(ELBus.fallbackNode("F")).id("t1"),
+                ELBus.node("A"),
+                ELBus.switchOpt(ELBus.node("B")).to(
+                        ELBus.then(ELBus.node("D"),ELBus.node("E")).then(ELBus.node("F")).id("t1"),
                         ELBus.then(
-                                ELBus.fallbackNode("C"),
+                                ELBus.node("C"),
                                 ELBus.when(
                                         ELBus.then(
-                                                ELBus.switchOpt(ELBus.fallbackNode("G")).to(
-                                                        ELBus.then(ELBus.fallbackNode("H"), ELBus.fallbackNode("I")).id("t2"),
-                                                        ELBus.fallbackNode("J")
+                                                ELBus.switchOpt(ELBus.node("G")).to(
+                                                        ELBus.then(ELBus.node("H"), ELBus.node("I")).id("t2"),
+                                                        ELBus.node("J")
                                                 ),
-                                                ELBus.fallbackNode("K")
+                                                ELBus.node("K")
                                         ),
-                                        ELBus.then(ELBus.fallbackNode("L"), ELBus.fallbackNode("M"))
+                                        ELBus.then(ELBus.node("L"), ELBus.node("M"))
                                 )
                         ).id("t3")
                 ),
-                ELBus.fallbackNode("Z")
+                ELBus.node("Z")
         );
         String expectedStr = "THEN(node(\"A\"),SWITCH(node(\"B\")).TO(THEN(node(\"D\"),node(\"E\"),node(\"F\")).id(\"t1\"),THEN(node(\"C\"),WHEN(THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\")).id(\"t2\"),node(\"J\")),node(\"K\")),THEN(node(\"L\"),node(\"M\")))).id(\"t3\")),node(\"Z\"));";
         Assertions.assertEquals(expectedStr,
@@ -155,8 +155,8 @@ public class ComplexELBuilderTest extends BaseTest {
                 .setClazz(BCmp.class)
                 .build();
 
-        ELWrapper el = ELBus.then(ELBus.fallbackNode("a").data("sql", "select * from member t where t.id=10001"),
-                ELBus.fallbackNode("b").data("cmpData", "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}"));
+        ELWrapper el = ELBus.then(ELBus.node("a").data("sql", "select * from member t where t.id=10001"),
+                ELBus.node("b").data("cmpData", "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}"));
 
         String expectStr = "sql = 'select * from member t\n" +
                 "                where t.id=10001';\n" +
