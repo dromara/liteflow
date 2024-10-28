@@ -8,7 +8,6 @@ import java.util.Map;
 /**
  * 普通节点表示
  *
- * @author gezuao
  * @author luo yi
  * @since 2.12.3
  */
