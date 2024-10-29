@@ -21,6 +21,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -82,7 +83,7 @@ public class DataBus {
 	}
 
 	public static int offerSlotByBean(List<Object> contextList) {
-		List<Tuple> contextBeanList = contextList.stream().map(object -> {
+		List<Tuple> contextBeanList = contextList.stream().filter(Objects::nonNull).map(object -> {
             ContextBean contextBean = AnnoUtil.getAnnotation(object.getClass(), ContextBean.class);
             String contextKey;
             if (contextBean != null && StrUtil.isNotBlank(contextBean.value())){
