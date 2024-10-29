@@ -64,7 +64,7 @@
 		<bytebuddy.version>1.14.10</bytebuddy.version>
 		<aspectjweaver.version>1.8.13</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
-		<solon.version>2.9.2</solon.version>
+		<solon.version>3.0.1</solon.version>
 		<netty.version>4.1.84.Final</netty.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -329,8 +329,6 @@
 		</dependencies>
 	</dependencyManagement>
 
-
-
 	<build>
 		<plugins>
 			<plugin>
@@ -403,6 +401,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<!-- version number -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>

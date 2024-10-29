@@ -25,6 +25,8 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Rollbackable;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
+import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.monitor.MonitorFile;
@@ -43,6 +45,7 @@ import com.yomahub.liteflow.thread.ExecutorHelper;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -407,6 +410,13 @@ public class FlowExecutor {
 			throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
 		}
 
+		// 如果有FlowExecute生命周期实现，则执行
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
+			LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList().forEach(
+					postProcessFlowExecuteLifeCycle -> postProcessFlowExecuteLifeCycle.postProcessBeforeFlowExecute(chainId, slot)
+			);
+		}
+
 		//如果传入了用户的RequestId，则用这个请求Id，如果没传入，则进行生成
 		if (StrUtil.isNotBlank(requestId)){
 			slot.putRequestId(requestId);
@@ -514,6 +524,13 @@ public class FlowExecutor {
 				slot.printStep();
 				DataBus.releaseSlot(slotIndex);
 				LFLoggerManager.removeRequestId();
+			}
+
+			// 如果有FlowExecute生命周期实现，则执行
+			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
+				LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList().forEach(
+						postProcessFlowExecuteLifeCycle -> postProcessFlowExecuteLifeCycle.postProcessAfterFlowExecute(chainId, slot)
+				);
 			}
 		}
 		return slot;

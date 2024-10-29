@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.script.jsr223;
 
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
-import com.yomahub.liteflow.lifecycle.PostProcessAfterScriptEngineInitLifeCycle;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
@@ -20,7 +18,6 @@ import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * JSR223 script engine的统一实现抽象类

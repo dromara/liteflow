@@ -11,7 +11,10 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.exception.ChainEndException;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
+import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
@@ -20,6 +23,7 @@ import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.FlowSystemException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * chain对象，实现可执行器
@@ -40,7 +44,7 @@ public class Chain implements Executable{
 
 	private boolean isCompiled = true;
 
-	private String namespace;
+	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
@@ -98,12 +102,26 @@ public class Chain implements Executable{
 		}
 		Slot slot = DataBus.getSlot(slotIndex);
 		try {
+			//如果有生命周期则执行相应生命周期实现
+			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainExecuteLifeCycleList())){
+				LifeCycleHolder.getPostProcessChainExecuteLifeCycleList().forEach(
+						postProcessChainExecuteLifeCycle -> postProcessChainExecuteLifeCycle.postProcessBeforeChainExecute(chainId, slot)
+				);
+			}
+
 			// 设置主ChainName
 			slot.setChainId(chainId);
 			// 执行主体Condition
 			for (Condition condition : conditionList) {
 				condition.setCurrChainId(chainId);
 				condition.execute(slotIndex);
+			}
+
+			//如果有生命周期则执行相应生命周期实现
+			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainExecuteLifeCycleList())){
+				LifeCycleHolder.getPostProcessChainExecuteLifeCycleList().forEach(
+						postProcessChainExecuteLifeCycle -> postProcessChainExecuteLifeCycle.postProcessAfterChainExecute(chainId, slot)
+				);
 			}
 		}
 		catch (ChainEndException e) {

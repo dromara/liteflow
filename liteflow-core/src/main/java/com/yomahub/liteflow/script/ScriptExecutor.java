@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.script;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
@@ -26,9 +27,11 @@ public abstract class ScriptExecutor {
 	}
 
 	public void lifeCycle(Object engine){
-		LifeCycleHolder.getPostProcessAfterScriptEngineInitLifeCycleList().forEach(
-				postProcessAfterScriptEngineInitLifeCycle -> postProcessAfterScriptEngineInitLifeCycle.postProcessAfterScriptEngineInit(engine)
-		);
+		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessScriptEngineInitLifeCycleList())){
+			LifeCycleHolder.getPostProcessScriptEngineInitLifeCycleList().forEach(
+					postProcessAfterScriptEngineInitLifeCycle -> postProcessAfterScriptEngineInitLifeCycle.postProcessAfterScriptEngineInit(engine)
+			);
+		}
 	}
 
 	public abstract void load(String nodeId, String script);
