@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.yomahub.liteflow.common.ChainConstant.NODE_INSTANCE_PATH;
+import static com.yomahub.liteflow.common.ChainConstant.USER_DIR;
 import static com.yomahub.liteflow.util.JsonUtil.*;
 import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
 
@@ -244,7 +246,7 @@ public class LiteFlowChainELBuilder {
 	}
 
     private void setNodesInstanceId(Condition condition) {
-        File nodeDir = new File(System.getProperty("user.dir")+  File.separator + ".node_instance_id" + File.separator + this.chain.getChainId());
+        File nodeDir = new File(System.getProperty(USER_DIR)+  File.separator + NODE_INSTANCE_PATH + File.separator + this.chain.getChainId());
         String elMd5 = MD5.create().digestHex(chain.getEl());
 
         // 如果文件不存在，或者文件内容不是当前el，则写入

@@ -106,4 +106,7 @@ public interface ChainConstant {
 
 	String RETRY = "retry";
 
+	String NODE_INSTANCE_PATH = ".node_instance_id";
+
+	String USER_DIR = "user.dir";
 }
