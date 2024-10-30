@@ -102,11 +102,6 @@ public abstract class LoopCondition extends Condition {
         }
     }
 
-    // 这个锁用于异步循环场景
-    // 当异步循环时，其实等同于所有的循环的子项在一个线程池内进行提交。
-    // 这时候如果不加锁的话，在Node对象中的迭代TL对象以及循环下标TL对象，由于要进行stream的循环，但是原stack对象会被其他线程修改掉，从而报错
-    private final ReentrantLock lock = new ReentrantLock();
-
     // 循环并行执行的Supplier封装
     public class LoopParallelSupplier implements Supplier<LoopFutureObj> {
         private final Executable executableItem;
@@ -134,7 +129,6 @@ public abstract class LoopCondition extends Condition {
 
         @Override
         public LoopFutureObj get() {
-            lock.lock();
             try {
                 executableItem.setCurrChainId(this.currChainId);
                 // 设置循环index
@@ -147,8 +141,6 @@ public abstract class LoopCondition extends Condition {
                 return LoopFutureObj.success(executableItem.getId());
             } catch (Exception e) {
                 return LoopFutureObj.fail(executableItem.getId(), e);
-            }finally {
-                lock.unlock();
             }
         }
     }
