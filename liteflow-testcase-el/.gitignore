@@ -81,3 +81,5 @@ atlassian-ide-plugin.xml
 */logs
 
 .flattened-pom.xml
+
+.node_instance_id
