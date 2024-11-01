@@ -7,7 +7,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import java.util.concurrent.ExecutorService;
 
 /**
- * LiteFlow默认的when线程池+异步多线程执行器实现
+ * LiteFlow默认全局线程池执行器实现
  *
  * @author jason
  */

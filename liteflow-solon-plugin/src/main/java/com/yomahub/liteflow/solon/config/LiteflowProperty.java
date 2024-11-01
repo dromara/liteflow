@@ -85,13 +85,13 @@ public class LiteflowProperty {
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
 
-    //全局线程池所用class路径(when+异步循环)
+    //全局线程池所用class路径
     private String globalThreadPoolExecutorClass;
 
-    //全局线程池最大线程数(when+异步循环)
+    //全局线程池最大线程数
     private Integer globalThreadPoolSize;
 
-    //全局线程池最大队列数(when+异步循环)
+    //全局线程池最大队列数
     private Integer globalThreadPoolQueueSize;
 
 	public boolean isEnable() {

@@ -35,7 +35,7 @@ public class ThreadPoolOperator extends BaseOperator<Condition> {
 			condition.setThreadPoolExecutorClass(OperatorHelper.convert(objects[1], String.class));
 			return condition;
 		} else {
-			String errorMsg = "The caller must be LoopCondition or WhenCondition item";
+            String errorMsg = "The caller must be WhenCondition or LoopCondition item";
 			throw new QLException(errorMsg);
 		}
 	}

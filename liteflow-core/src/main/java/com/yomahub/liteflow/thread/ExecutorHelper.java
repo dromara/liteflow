@@ -23,7 +23,6 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -93,8 +92,7 @@ public class ExecutorHelper {
 	// 构建默认when线程池
 	public ExecutorService buildWhenExecutor() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutor(Optional.ofNullable(liteflowConfig.getGlobalThreadPoolExecutorClass())
-										 .orElse(liteflowConfig.getThreadExecutorClass()));
+		return buildWhenExecutor(liteflowConfig.getGlobalThreadPoolExecutorClass());
 	}
 
 	// 构建when线程池 - 支持多个when公用一个线程池
@@ -108,9 +106,7 @@ public class ExecutorHelper {
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
 	public ExecutorService buildWhenExecutorWithHash(String conditionHash) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutorWithHash(Optional.ofNullable(liteflowConfig.getThreadExecutorClass())
-												 .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()),
-										 conditionHash);
+		return buildWhenExecutorWithHash(liteflowConfig.getGlobalThreadPoolExecutorClass(), conditionHash);
 	}
 
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
@@ -138,12 +134,11 @@ public class ExecutorHelper {
 	public ExecutorService buildLoopParallelExecutor(LoopCondition loopCondition, Integer slotIndex) {
 		ExecutorService parallelExecutor;
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		//获取chain的hash
 		String chainId = DataBus.getSlot(slotIndex).getChainId();
 		Chain chain = FlowBus.getChain(chainId);
 
-		//condition层级线程池
 		if (ObjectUtil.isNotEmpty(loopCondition.getThreadPoolExecutorClass())) {
+			//condition层级线程池
 			parallelExecutor = getExecutorService(loopCondition.getThreadPoolExecutorClass(),
 												  String.valueOf(loopCondition.hashCode()));
 
@@ -154,8 +149,7 @@ public class ExecutorHelper {
 
 		} else {
 			//全局线程池
-			parallelExecutor = getExecutorService(Optional.ofNullable(liteflowConfig.getParallelLoopExecutorClass())
-														  .orElse(liteflowConfig.getGlobalThreadPoolExecutorClass()));
+			parallelExecutor = getExecutorService(liteflowConfig.getGlobalThreadPoolExecutorClass());
 
 		}
 

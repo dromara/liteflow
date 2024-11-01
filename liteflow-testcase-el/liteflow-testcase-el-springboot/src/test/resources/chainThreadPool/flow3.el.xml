@@ -5,8 +5,7 @@
     </chain>
 
     <chain name="chain2">
-        FOR(5).parallel(true).DO(THEN(a,f
-        )
+        FOR(5).parallel(true).DO(THEN(a,f)
         );
     </chain>
 

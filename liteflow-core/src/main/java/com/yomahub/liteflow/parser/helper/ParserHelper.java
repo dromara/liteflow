@@ -304,8 +304,8 @@ public class ParserHelper {
 
         JsonNode routeJsonNode = chainNode.get(ROUTE);
 
-        String threadPoolExecutorClass = chainNode.get(THREAD_POOL_EXECUTOR_CLASS) == null ?
-                null : chainNode.get(THREAD_POOL_EXECUTOR_CLASS).textValue();
+        String threadPoolExecutorClass = chainNode.get(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
+                chainNode.get(THREAD_POOL_EXECUTOR_CLASS).textValue();
 
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
@@ -340,12 +340,11 @@ public class ParserHelper {
 
         Element routeElement = e.element(ROUTE);
 
-        String threadPoolExecutorClass = e.attributeValue(THREAD_POOL_EXECUTOR_CLASS) == null ?
-                null : e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
+        String threadPoolExecutorClass = e.attributeValue(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
+                e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
 
         LiteFlowChainELBuilder builder =
-                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
-                .setThreadPoolExecutorClass(threadPoolExecutorClass);
+                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace).setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签

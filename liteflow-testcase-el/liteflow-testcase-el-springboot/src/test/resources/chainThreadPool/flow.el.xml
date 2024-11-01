@@ -7,9 +7,7 @@
 
     <chain name="chain2"
            thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
-        FOR(5).parallel(true).DO(THEN(a,f
-        )
-        );
+        FOR(5).parallel(true).DO(THEN(a,f));
     </chain>
 
     <chain name="chain3"

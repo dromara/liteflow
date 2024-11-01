@@ -37,10 +37,6 @@ public class LiteflowProperty {
 	// FlowExecutor的execute2Future的自定义线程池
 	private String mainExecutorClass;
 
-	// 并行线程执行器class路径
-    @Deprecated
-	private String threadExecutorClass;
-
 	// 异步线程最大等待描述
 	@Deprecated
 	private int whenMaxWaitSeconds;
@@ -48,14 +44,6 @@ public class LiteflowProperty {
 	private int whenMaxWaitTime;
 
 	private TimeUnit whenMaxWaitTimeUnit;
-
-	// 异步线程池最大线程数
-    @Deprecated
-	private int whenMaxWorkers;
-
-	// 异步线程池最大队列数量
-    @Deprecated
-	private int whenQueueLimit;
 
 	// 异步线程池是否隔离
 	private boolean whenThreadPoolIsolate;
@@ -85,16 +73,6 @@ public class LiteflowProperty {
 
 	// 规则文件/脚本文件变更监听
 	private boolean enableMonitorFile;
-    @Deprecated
-	private String parallelLoopExecutorClass;
-
-	//使用默认并行循环线程池时，最大线程数
-    @Deprecated
-	private int parallelMaxWorkers;
-
-	//使用默认并行循环线程池时，最大队列数
-    @Deprecated
-	private int parallelQueueLimit;
 	
 	// 是否启用组件降级
 	private boolean fallbackCmpEnable;
@@ -159,26 +137,6 @@ public class LiteflowProperty {
 		this.whenMaxWaitSeconds = whenMaxWaitSeconds;
 	}
 
-    @Deprecated
-	public int getWhenMaxWorkers() {
-		return whenMaxWorkers;
-	}
-
-    @Deprecated
-	public void setWhenMaxWorkers(int whenMaxWorkers) {
-		this.whenMaxWorkers = whenMaxWorkers;
-	}
-
-    @Deprecated
-	public int getWhenQueueLimit() {
-		return whenQueueLimit;
-	}
-
-    @Deprecated
-	public void setWhenQueueLimit(int whenQueueLimit) {
-		this.whenQueueLimit = whenQueueLimit;
-	}
-
 	public ParseModeEnum getParseMode() {
 		return parseMode;
 	}
@@ -211,16 +169,6 @@ public class LiteflowProperty {
 
 	public void setPrintBanner(boolean printBanner) {
 		this.printBanner = printBanner;
-	}
-
-    @Deprecated
-	public String getThreadExecutorClass() {
-		return threadExecutorClass;
-	}
-
-    @Deprecated
-	public void setThreadExecutorClass(String threadExecutorClass) {
-		this.threadExecutorClass = threadExecutorClass;
 	}
 
 	public String getNodeExecutorClass() {
@@ -293,36 +241,6 @@ public class LiteflowProperty {
 
 	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
-	}
-
-    @Deprecated
-	public String getParallelLoopExecutorClass() {
-		return parallelLoopExecutorClass;
-	}
-
-    @Deprecated
-	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
-		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
-	}
-
-    @Deprecated
-	public int getParallelMaxWorkers() {
-		return parallelMaxWorkers;
-	}
-
-    @Deprecated
-	public void setParallelMaxWorkers(int parallelMaxWorkers) {
-		this.parallelMaxWorkers = parallelMaxWorkers;
-	}
-
-    @Deprecated
-	public int getParallelQueueLimit() {
-		return parallelQueueLimit;
-	}
-
-    @Deprecated
-	public void setParallelQueueLimit(int parallelQueueLimit) {
-		this.parallelQueueLimit = parallelQueueLimit;
 	}
 
 	public boolean isFallbackCmpEnable() {

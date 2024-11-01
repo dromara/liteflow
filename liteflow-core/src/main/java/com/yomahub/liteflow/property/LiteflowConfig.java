@@ -41,10 +41,6 @@ public class LiteflowConfig {
 	// slot的数量
 	private Integer slotSize;
 
-	// 并行线程执行器class路径
-	@Deprecated
-	private String threadExecutorClass;
-
 	// 异步线程最大等待秒数
 	@Deprecated
 	private Integer whenMaxWaitSeconds;
@@ -67,10 +63,6 @@ public class LiteflowConfig {
 
 	// 每隔多少秒打印
 	private Long period;
-
-	// 异步线程池最大线程数
-	@Deprecated
-	private Integer whenMaxWorkers;
 
 	// 异步线程池最大队列数量
 	@Deprecated
@@ -107,18 +99,6 @@ public class LiteflowConfig {
 
 	// 规则文件/脚本文件变更监听
 	private Boolean enableMonitorFile = Boolean.FALSE;
-
-	//并行循环线程池所用class路径
-	@Deprecated
-	private String parallelLoopExecutorClass;
-
-	//使用默认并行循环线程池时，最大线程数
-	@Deprecated
-	private Integer parallelMaxWorkers;
-
-	//使用默认并行循环线程池时，最大队列数
-	@Deprecated
-	private Integer parallelQueueLimit;
 	
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
@@ -245,37 +225,6 @@ public class LiteflowConfig {
 		this.enableLog = enableLog;
 	}
 
-	@Deprecated
-	public Integer getWhenMaxWorkers() {
-		if (ObjectUtil.isNull(whenMaxWorkers)) {
-			return 16;
-		}
-		else {
-			return whenMaxWorkers;
-		}
-	}
-
-	@Deprecated
-
-	public void setWhenMaxWorkers(Integer whenMaxWorkers) {
-		this.whenMaxWorkers = whenMaxWorkers;
-	}
-
-	@Deprecated
-	public Integer getWhenQueueLimit() {
-		if (ObjectUtil.isNull(whenQueueLimit)) {
-			return 512;
-		}
-		else {
-			return whenQueueLimit;
-		}
-	}
-
-	@Deprecated
-	public void setWhenQueueLimit(Integer whenQueueLimit) {
-		this.whenQueueLimit = whenQueueLimit;
-	}
-
 	public Boolean isSupportMultipleType() {
 		if (ObjectUtil.isNull(supportMultipleType)) {
 			return Boolean.FALSE;
@@ -317,20 +266,6 @@ public class LiteflowConfig {
 		this.printBanner = printBanner;
 	}
 
-	@Deprecated
-	public String getThreadExecutorClass() {
-		if (StrUtil.isBlank(threadExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultWhenExecutorBuilder";
-		}
-		else {
-			return threadExecutorClass;
-		}
-	}
-
-	@Deprecated
-	public void setThreadExecutorClass(String threadExecutorClass) {
-		this.threadExecutorClass = threadExecutorClass;
-	}
 
 	public String getNodeExecutorClass() {
 		if (StrUtil.isBlank(nodeExecutorClass)) {
@@ -431,47 +366,6 @@ public class LiteflowConfig {
 
 	public void setWhenMaxWaitTimeUnit(TimeUnit whenMaxWaitTimeUnit) {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
-	}
-
-	public Integer getParallelMaxWorkers() {
-		if(ObjectUtil.isNull(parallelMaxWorkers)){
-			return 16;
-		}else{
-			return parallelMaxWorkers;
-		}
-	}
-
-	public void setParallelMaxWorkers(Integer parallelMaxWorkers) {
-		this.parallelMaxWorkers = parallelMaxWorkers;
-	}
-
-	@Deprecated
-	public Integer getParallelQueueLimit() {
-		if(ObjectUtil.isNull(parallelQueueLimit)){
-			return 512;
-		}else{
-			return parallelQueueLimit;
-		}
-	}
-
-	@Deprecated
-	public void setParallelQueueLimit(Integer parallelQueueLimit) {
-		this.parallelQueueLimit = parallelQueueLimit;
-	}
-
-	@Deprecated
-	public String getParallelLoopExecutorClass() {
-		if (StrUtil.isBlank(parallelLoopExecutorClass)) {
-			return "com.yomahub.liteflow.thread.LiteFlowDefaultParallelLoopExecutorBuilder";
-		}
-		else {
-			return parallelLoopExecutorClass;
-		}
-	}
-
-	@Deprecated
-	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
-		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
 	}
 	
 	public Boolean getFallbackCmpEnable() {

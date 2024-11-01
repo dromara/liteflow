@@ -26,12 +26,9 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setRuleSourceExtData(property.getRuleSourceExtData());
 		liteflowConfig.setRuleSourceExtDataMap(property.getRuleSourceExtDataMap());
 		liteflowConfig.setSlotSize(property.getSlotSize());
-		liteflowConfig.setThreadExecutorClass(property.getThreadExecutorClass());
 		liteflowConfig.setWhenMaxWaitSeconds(property.getWhenMaxWaitSeconds());
 		liteflowConfig.setWhenMaxWaitTime(property.getWhenMaxWaitTime());
 		liteflowConfig.setWhenMaxWaitTimeUnit(property.getWhenMaxWaitTimeUnit());
-		liteflowConfig.setWhenMaxWorkers(property.getWhenMaxWorkers());
-		liteflowConfig.setWhenQueueLimit(property.getWhenQueueLimit());
 		liteflowConfig.setWhenThreadPoolIsolate(property.isWhenThreadPoolIsolate());
 		liteflowConfig.setParseMode(property.getParseMode());
 		liteflowConfig.setEnable(property.isEnable());
@@ -44,9 +41,6 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setMainExecutorClass(property.getMainExecutorClass());
 		liteflowConfig.setPrintExecutionLog(property.isPrintExecutionLog());
 		liteflowConfig.setEnableMonitorFile(property.isEnableMonitorFile());
-		liteflowConfig.setParallelMaxWorkers(property.getParallelMaxWorkers());
-		liteflowConfig.setParallelQueueLimit(property.getParallelQueueLimit());
-		liteflowConfig.setParallelLoopExecutorClass(property.getParallelLoopExecutorClass());
 		liteflowConfig.setFallbackCmpEnable(property.isFallbackCmpEnable());
 		liteflowConfig.setFastLoad(property.isFastLoad());
 		liteflowConfig.setEnableLog(liteflowMonitorProperty.isEnableLog());
