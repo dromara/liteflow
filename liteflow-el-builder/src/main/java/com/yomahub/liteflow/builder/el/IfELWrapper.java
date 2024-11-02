@@ -32,14 +32,14 @@ public class IfELWrapper extends ELWrapper {
      * @param trueWrapper  判断节点返回true时执行的表达式
      * @param falseWrapper 判断节点返回false时执行的表达式
      */
-    public IfELWrapper(NodeELWrapper ifWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
+    public IfELWrapper(CommonNodeELWrapper ifWrapper, ELWrapper trueWrapper, ELWrapper falseWrapper) {
         this.setIfWrapper(ifWrapper);
         this.setTrueWrapper(trueWrapper);
         this.setFalseWrapper(falseWrapper);
         this.format = IF_FORMAT;
     }
 
-    public IfELWrapper(NodeELWrapper ifWrapper, ELWrapper trueWrapper) {
+    public IfELWrapper(CommonNodeELWrapper ifWrapper, ELWrapper trueWrapper) {
         this.setIfWrapper(ifWrapper);
         this.setTrueWrapper(trueWrapper);
         this.format = IF_ELSE_FORMAT;
@@ -139,8 +139,8 @@ public class IfELWrapper extends ELWrapper {
         ELWrapper ifWrapper = ELBus.convertToBooleanOpt(ifObject);
         ELWrapper trueWrapper = ELBus.convertToNonBooleanOpt(trueObject);
         IfELWrapper elIfWrapper;
-        if(ifWrapper instanceof NodeELWrapper){
-            elIfWrapper = new IfELWrapper((NodeELWrapper) ifWrapper, trueWrapper);
+        if(ifWrapper instanceof CommonNodeELWrapper){
+            elIfWrapper = new IfELWrapper((CommonNodeELWrapper) ifWrapper, trueWrapper);
         } else if (ifWrapper instanceof AndELWrapper){
             elIfWrapper = new IfELWrapper((AndELWrapper) ifWrapper, trueWrapper);
         } else if (ifWrapper instanceof OrELWrapper){

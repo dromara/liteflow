@@ -13,8 +13,6 @@ public class ELBus {
 
     public static final String TAB = "\t";
 
-    private static boolean nodeWrapper = true;
-
     /**
      * 创建 then 串行组件
      *
@@ -82,12 +80,12 @@ public class ELBus {
      * @param falseElWrapper 判断节点返回false时执行的组件
      * @return {@link IfELWrapper}
      */
-    public static IfELWrapper ifOpt(NodeELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
+    public static IfELWrapper ifOpt(CommonNodeELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
         return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(String ifElWrapper, Object trueElWrapper, Object falseElWrapper){
-        return new IfELWrapper((NodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
+        return new IfELWrapper((CommonNodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
     public static IfELWrapper ifOpt(AndELWrapper ifElWrapper, Object trueElWrapper, Object falseElWrapper){
@@ -102,12 +100,12 @@ public class ELBus {
         return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper), convertToNonBooleanOpt(falseElWrapper));
     }
 
-    public static IfELWrapper ifOpt(NodeELWrapper ifElWrapper, Object trueElWrapper){
+    public static IfELWrapper ifOpt(CommonNodeELWrapper ifElWrapper, Object trueElWrapper){
         return new IfELWrapper(ifElWrapper, convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(String ifElWrapper, Object trueElWrapper){
-        return new IfELWrapper((NodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper));
+        return new IfELWrapper((CommonNodeELWrapper) convertToBooleanOpt(ifElWrapper), convertToNonBooleanOpt(trueElWrapper));
     }
 
     public static IfELWrapper ifOpt(AndELWrapper ifElWrapper, Object trueElWrapper){
@@ -123,19 +121,9 @@ public class ELBus {
     }
 
     /**
-     * 创建 node 单节点表达式
+     * 创建 commonNode 单节点表达式
      *
      * @param nodeId 节点id
-     * @return {@link NodeELWrapper}
-     */
-    public static NodeELWrapper node(String nodeId){
-        return new NodeELWrapper(nodeId);
-    }
-
-    /**
-     * 创建普通 node 单节点表达式
-     *
-     * @param nodeId 节点 id
      * @return {@link CommonNodeELWrapper}
      */
     public static CommonNodeELWrapper commonNode(String nodeId){
@@ -143,13 +131,23 @@ public class ELBus {
     }
 
     /**
+     * 创建降级 commonNode 单节点表达式
+     *
+     * @param nodeId 节点 id
+     * @return {@link NodeELWrapper}
+     */
+    public static NodeELWrapper node(String nodeId){
+        return new NodeELWrapper(nodeId);
+    }
+
+    /**
      * 创建 switch 选择表达式
      *
-     * @param nodeElWrapper 选择节点
+     * @param commonNodeElWrapper 选择节点
      * @return {@link SwitchELWrapper}
      */
-    public static SwitchELWrapper switchOpt(NodeELWrapper nodeElWrapper){
-        return new SwitchELWrapper(nodeElWrapper);
+    public static SwitchELWrapper switchOpt(CommonNodeELWrapper commonNodeElWrapper){
+        return new SwitchELWrapper(commonNodeElWrapper);
     }
 
     public static SwitchELWrapper switchOpt(String nodeElWrapper){
@@ -169,11 +167,11 @@ public class ELBus {
     /**
      * 创建 for 次数循环表达式
      *
-     * @param nodeElWrapper 返回循环次数的节点
+     * @param commonNodeElWrapper 返回循环次数的节点
      * @return {@link LoopELWrapper}
      */
-    public static LoopELWrapper forOpt(NodeELWrapper nodeElWrapper){
-        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.FOR);
+    public static LoopELWrapper forOpt(CommonNodeELWrapper commonNodeElWrapper){
+        return new LoopELWrapper(commonNodeElWrapper, LoopELWrapper.FOR);
     }
 
     /**
@@ -189,11 +187,11 @@ public class ELBus {
     /**
      * 创建 while 条件循环表达式
      *
-     * @param nodeElWrapper 返回布尔值的节点
+     * @param commonNodeElWrapper 返回布尔值的节点
      * @return {@link LoopELWrapper}
      */
-    public static LoopELWrapper whileOpt(NodeELWrapper nodeElWrapper){
-        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.WHILE);
+    public static LoopELWrapper whileOpt(CommonNodeELWrapper commonNodeElWrapper){
+        return new LoopELWrapper(commonNodeElWrapper, LoopELWrapper.WHILE);
     }
 
     public static LoopELWrapper whileOpt(String nodeElWrapper){
@@ -215,11 +213,11 @@ public class ELBus {
     /**
      * 创建迭代循环表达式
      *
-     * @param nodeElWrapper 迭代节点
+     * @param commonNodeElWrapper 迭代节点
      * @return {@link LoopELWrapper}
      */
-    public static LoopELWrapper iteratorOpt(NodeELWrapper nodeElWrapper){
-        return new LoopELWrapper(nodeElWrapper, LoopELWrapper.ITERATOR);
+    public static LoopELWrapper iteratorOpt(CommonNodeELWrapper commonNodeElWrapper){
+        return new LoopELWrapper(commonNodeElWrapper, LoopELWrapper.ITERATOR);
     }
 
     public static LoopELWrapper iteratorOpt(String nodeElWrapper){
@@ -264,7 +262,7 @@ public class ELBus {
      * @param notElWrapper 返回布尔值的表达式
      * @return {@link NotELWrapper}
      */
-    public static NotELWrapper not(NodeELWrapper notElWrapper){
+    public static NotELWrapper not(CommonNodeELWrapper notElWrapper){
         return new NotELWrapper(notElWrapper);
     }
 
@@ -294,7 +292,7 @@ public class ELBus {
     public static ELWrapper[] convert(Object... objects){
         return Arrays.stream(objects).map(o -> {
             if (o instanceof String) {
-                return new NodeELWrapper(o.toString());
+                return new CommonNodeELWrapper(o.toString());
             } else if (o instanceof ELWrapper) {
                 return (ELWrapper) o;
             } else {
@@ -305,7 +303,7 @@ public class ELBus {
 
     public static ELWrapper convert(Object object){
         if (object instanceof String) {
-            return new NodeELWrapper(object.toString());
+            return new CommonNodeELWrapper(object.toString());
         } else if (object instanceof ELWrapper) {
             return (ELWrapper) object;
         } else {
@@ -376,17 +374,10 @@ public class ELBus {
             if(!(elWrapper instanceof AndELWrapper)
                     && !(elWrapper instanceof OrELWrapper)
                     && !(elWrapper instanceof NotELWrapper)
-                    && !(elWrapper instanceof NodeELWrapper)){
+                    && !(elWrapper instanceof CommonNodeELWrapper)){
                 throw new RuntimeException("param is error");
             }
         }
     }
 
-    public static boolean isNodeWrapper() {
-        return nodeWrapper;
-    }
-
-    public static void setNodeWrapper(boolean nodeWrapper) {
-        ELBus.nodeWrapper = nodeWrapper;
-    }
 }
