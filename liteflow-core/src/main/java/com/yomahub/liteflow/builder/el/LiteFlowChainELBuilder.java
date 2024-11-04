@@ -263,8 +263,6 @@ public class LiteFlowChainELBuilder {
     public static ValidationResp validateWithEx(String elStr) {
         ValidationResp resp = new ValidationResp();
         try {
-            // 移除注释
-            elStr = ElRegexUtil.removeComments(elStr);
             LiteFlowChainELBuilder.createChain().setEL(elStr);
             resp.setSuccess(true);
         } catch (Exception e) {
