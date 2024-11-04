@@ -83,6 +83,9 @@ public class LiteflowProperty {
 	// 是否启用组件降级
 	private Boolean fallbackCmpEnable;
 
+	//是否启用节点实例ID
+	private boolean enableNodeInstanceId;
+
 	public boolean isEnable() {
 		return enable;
 	}
@@ -266,5 +269,13 @@ public class LiteflowProperty {
 
 	public Boolean getFallbackCmpEnable() {
 		return fallbackCmpEnable;
+	}
+
+	public boolean isEnableNodeInstanceId() {
+		return enableNodeInstanceId;
+	}
+
+	public void setEnableNodeInstanceId(boolean enableNodeInstanceId) {
+		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 }

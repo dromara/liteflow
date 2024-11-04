@@ -124,6 +124,9 @@ public class LiteflowConfig {
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
 
+	//是否启用节点实例ID
+	private Boolean enableNodeInstanceId;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -508,5 +511,17 @@ public class LiteflowConfig {
 
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
+	}
+
+	public Boolean getEnableNodeInstanceId() {
+        if (ObjectUtil.isNull(enableNodeInstanceId)) {
+            return Boolean.FALSE;
+        } else {
+            return enableNodeInstanceId;
+        }
+    }
+
+	public void setEnableNodeInstanceId(Boolean enableNodeInstanceId) {
+		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 }

@@ -223,7 +223,9 @@ public class LiteFlowChainELBuilder {
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
 			}
 
-            setNodesInstanceId(condition);
+			if (liteflowConfig.getEnableNodeInstanceId()) {
+				setNodesInstanceId(condition);
+			}
 
 			// 把主要的condition加入
 			this.conditionList.add(condition);
