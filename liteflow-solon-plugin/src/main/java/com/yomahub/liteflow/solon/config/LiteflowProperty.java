@@ -94,6 +94,9 @@ public class LiteflowProperty {
     //全局线程池最大队列数
     private Integer globalThreadPoolQueueSize;
 
+    // 异步线程池是否隔离
+    private Boolean whenThreadPoolIsolate;
+
 	public boolean isEnable() {
 		return enable;
 	}
@@ -313,5 +316,17 @@ public class LiteflowProperty {
 
     public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
         this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
+    }
+
+    public Boolean getWhenThreadPoolIsolate() {
+        if (ObjectUtil.isNull(whenThreadPoolIsolate)) {
+            return Boolean.FALSE;
+        } else {
+            return whenThreadPoolIsolate;
+        }
+    }
+
+    public void setWhenThreadPoolIsolate(Boolean whenThreadPoolIsolate) {
+        this.whenThreadPoolIsolate = whenThreadPoolIsolate;
     }
 }

@@ -16,8 +16,8 @@ public class CustomThreadExecutor implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(liteflowConfig.getParallelMaxWorkers(), liteflowConfig.getParallelMaxWorkers(),
-				liteflowConfig.getParallelQueueLimit(), "customer-loop-thead-");
+		return buildDefaultExecutor(liteflowConfig.getGlobalThreadPoolSize(), liteflowConfig.getGlobalThreadPoolSize(),
+									liteflowConfig.getGlobalThreadPoolQueueSize(), "customer-loop-thead-");
 	}
 
 }
