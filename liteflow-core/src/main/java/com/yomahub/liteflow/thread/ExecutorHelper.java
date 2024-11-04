@@ -137,6 +137,11 @@ public class ExecutorHelper {
 		String chainId = DataBus.getSlot(slotIndex).getChainId();
 		Chain chain = FlowBus.getChain(chainId);
 
+		//线程池的优先级 condition层级>chain层级>全局体系
+		// 1、如果设置了线程池隔离，则每个 异步 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
+		// 2、如果在chain上自定义线程池，同一个chain下的when+异步线程池共享一个线程池
+		// 3、默认全局一个线程池，所有的when+异步共享一个线程池
+
 		if (ObjectUtil.isNotEmpty(loopCondition.getThreadPoolExecutorClass())) {
 			//condition层级线程池
 			parallelExecutor = getExecutorService(loopCondition.getThreadPoolExecutorClass(),

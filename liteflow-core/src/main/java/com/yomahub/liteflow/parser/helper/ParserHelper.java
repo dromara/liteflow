@@ -344,7 +344,8 @@ public class ParserHelper {
                 e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
 
         LiteFlowChainELBuilder builder =
-                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace).setThreadPoolExecutorClass(threadPoolExecutorClass);
+                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
+                .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
