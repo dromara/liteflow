@@ -35,6 +35,7 @@ import java.util.function.Predicate;
  * @author Bryan.Zhang
  * @author LeoLee
  * @author DaleLee
+ * @author Jay li
  */
 @SuppressWarnings("unchecked")
 public class Slot {
@@ -349,6 +350,22 @@ public class Slot {
 			else {
 				str.append(cmpStep.buildString());
 			}
+			if (it.hasNext()) {
+				str.append("==>");
+			}
+		}
+		this.executeStepsStr = str.toString();
+		return this.executeStepsStr;
+	}
+
+
+	public String getExecuteStepStrWithInstanceId() {
+		StringBuilder str = new StringBuilder();
+		CmpStep cmpStep;
+		for (Iterator<CmpStep> it = executeSteps.iterator(); it.hasNext();) {
+			cmpStep = it.next();
+			str.append(cmpStep.buildStringWithInstanceId());
+
 			if (it.hasNext()) {
 				str.append("==>");
 			}

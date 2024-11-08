@@ -37,6 +37,7 @@ import java.util.Stack;
  *
  * @author Bryan.Zhang
  * @author luo yi
+ * @author Jay li
  */
 public abstract class NodeComponent{
 
@@ -47,6 +48,8 @@ public abstract class NodeComponent{
 	private String nodeId;
 
 	private String name;
+
+	private String instanceId;
 
 	private NodeTypeEnum type;
 
@@ -85,7 +88,7 @@ public abstract class NodeComponent{
 		Slot slot = this.getSlot();
 
 		// 在元数据里加入step信息
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -153,7 +156,7 @@ public abstract class NodeComponent{
 			return;
 		}
 
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -320,7 +323,13 @@ public abstract class NodeComponent{
 	public void setNodeExecutorClass(Class<? extends NodeExecutor> nodeExecutorClass) {
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
+	public String getInstanceId() {
+		return instanceId;
+	}
 
+	public void setInstanceId(String instanceId) {
+		this.instanceId = instanceId;
+	}
 	public String getTag() {
 		return this.getRefNode().getTag();
 	}
