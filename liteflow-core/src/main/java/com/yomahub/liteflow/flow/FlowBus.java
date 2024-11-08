@@ -20,6 +20,7 @@ import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
@@ -53,6 +54,7 @@ import java.util.stream.Stream;
  *
  * @author Bryan.Zhang
  * @author DaleLee
+ * @author Jay li
  */
 public class FlowBus {
 
@@ -183,8 +185,16 @@ public class FlowBus {
 	 */
 	public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script,
 			String language) {
-		addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
-	}
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+
+		// 如果是PARSE_ONE_ON_FIRST_EXEC模式，则不进行脚本加载，而是直接把脚本内容放到node中
+        if (liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC)) {
+			Node node = new Node(nodeId, name, nodeType, script, language);
+			nodeMap.put(nodeId, node);
+		} else {
+            addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
+        }
+    }
 
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script,
 			String language) {
@@ -245,6 +255,7 @@ public class FlowBus {
 				}
 
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+                node.setCompiled(true);
 				put2NodeMap(activeNodeId, node);
 				addFallbackNode(node);
 			}
@@ -258,7 +269,16 @@ public class FlowBus {
 	}
 
 	public static Node getNode(String nodeId) {
-		return nodeMap.get(nodeId);
+        Node node = nodeMap.get(nodeId);
+
+		if (!Objects.isNull(node) && !node.isCompiled()) {
+            addNode(nodeId, node.getName(), node.getType(), ScriptComponent.ScriptComponentClassMap.get(node.getType()),
+                    node.getScript(), node.getLanguage());
+			// 编译完脚本节点需重新获取
+			return nodeMap.get(nodeId);
+		} else {
+			return node;
+		}
 	}
 
     // 获取某一个 chainId 下的所有 nodeId

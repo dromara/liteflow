@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Bryan.Zhang
  * @author luo yi
+ * @author Jay li
  */
 public class Node implements Executable, Cloneable, Rollbackable{
 
@@ -60,6 +61,8 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String cmpData;
 
 	private String currChainId;
+
+	private boolean isCompiled = true;
 
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
@@ -90,6 +93,17 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		this.type = instance.getType();
 		this.clazz = instance.getClass().getName();
 	}
+
+
+	public Node(String nodeId, String name, NodeTypeEnum nodeType, String script, String language) {
+		this.id = nodeId;
+		this.name = name;
+		this.type = nodeType;
+		this.script = script;
+		this.language = language;
+		this.isCompiled = false;
+	}
+
 
 	@Override
 	public String getId() {
@@ -455,6 +469,14 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+
+	public boolean isCompiled() {
+		return isCompiled;
+	}
+
+	public void setCompiled(boolean compiled) {
+		isCompiled = compiled;
 	}
 
 	@Override
