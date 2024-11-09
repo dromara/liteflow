@@ -55,6 +55,7 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setPeriod(liteflowMonitorProperty.getPeriod());
 		liteflowConfig.setScriptSetting(property.getScriptSetting());
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
+		liteflowConfig.setRuleCacheCapacity(property.getRuleCacheCapacity());
 		return liteflowConfig;
 	}
 

@@ -127,6 +127,9 @@ public class LiteflowConfig {
 	//是否启用节点实例ID
 	private Boolean enableNodeInstanceId;
 
+	// 规则缓存容量
+	private Integer ruleCacheCapacity;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -523,5 +526,18 @@ public class LiteflowConfig {
 
 	public void setEnableNodeInstanceId(Boolean enableNodeInstanceId) {
 		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
+
+
+	public Integer getRuleCacheCapacity() {
+		return ruleCacheCapacity;
+	}
+
+	public void setRuleCacheCapacity(Integer ruleCacheCapacity) {
+		this.ruleCacheCapacity = ruleCacheCapacity;
+	}
+
+	public boolean isRuleCacheEnabled() {
+		return ObjectUtil.isNotNull(ruleCacheCapacity) && ruleCacheCapacity > 0;
 	}
 }

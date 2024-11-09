@@ -227,6 +227,12 @@
       "description": "enable node instance id",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": false
+    },
+    {
+      "name": "liteflow.liteflow.rule-cache-capacity",
+      "type": "java.lang.Integer",
+      "description": "Set the rules cache capacity.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     }
   ]
 }
