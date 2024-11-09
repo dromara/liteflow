@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.flow.cache;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -8,26 +7,23 @@ import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.slot.Slot;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.List;
 
 /**
  * Chain执行前的缓存处理
  * @author DaleLee
  * @since
  */
-public class RuleCachePostProcessFlowExecuteLifeCycle implements PostProcessFlowExecuteLifeCycle {
-    /**
-     * 缓存
-     */
-    private final Cache<String, Chain> cache;
+public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
+    // 缓存
+    private final Cache<String, Object> cache;
+    // 在缓存中与key关联的虚拟值
+    private static final Object PRESENT = new Object();
 
-    public RuleCachePostProcessFlowExecuteLifeCycle(int capacity) {
+    public RuleCacheLifeCycle(int capacity) {
         this.cache = Caffeine.newBuilder()
                 .maximumSize(capacity)
                 .evictionListener(new ChainRemovalListener())
@@ -36,12 +32,13 @@ public class RuleCachePostProcessFlowExecuteLifeCycle implements PostProcessFlow
 
     @Override
     public void postProcessBeforeFlowExecute(String chainId, Slot slot) {
-        Chain chain = FlowBus.getChain(chainId);
-        if (ObjectUtil.isNull(chain)) {
+        if (!FlowBus.containChain(chainId)) {
             return;
         }
-        // 记录在缓存中
-        cache.put(chainId, chain);
+        // 记录chainId在缓存中
+        // 这里不记录实际的chain是因为chain之后有可能在FlowBus中被移除
+        // 以FlowBus中实际存在的chain为准
+        cache.put(chainId, PRESENT);
     }
 
     @Override
@@ -52,15 +49,17 @@ public class RuleCachePostProcessFlowExecuteLifeCycle implements PostProcessFlow
     /**
      * 监听在缓存中被移除的chain
      */
-    private static class ChainRemovalListener implements RemovalListener<String, Chain> {
+    private static class ChainRemovalListener implements RemovalListener<String, Object> {
 
         @Override
-        public void onRemoval(@Nullable String chanId, @Nullable Chain chain, @NonNull RemovalCause removalCause) {
-            List<Condition> conditionList = chain.getConditionList();
-            // 清空condition 并将chain设置为未编译
-            if (CollUtil.isNotEmpty(conditionList)) {
-                conditionList.clear();
+        public void onRemoval(@Nullable String chanId, @Nullable Object object, @NonNull RemovalCause removalCause) {
+            Chain chain = FlowBus.getChain(chanId);
+            // chain可能已经在FlowBus中被移除了
+            if (ObjectUtil.isNull(chain)) {
+                return;
             }
+            // 清空condition并将chain设置为未编译
+            chain.setConditionList(null);
             chain.setCompiled(false);
         }
     }

@@ -20,13 +20,13 @@ import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.cache.RuleCacheLifeCycle;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Rollbackable;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
-import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.monitor.MonitorFile;
@@ -45,10 +45,7 @@ import com.yomahub.liteflow.thread.ExecutorHelper;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -101,6 +98,15 @@ public class FlowExecutor {
 		if (isStart){
 			// 进行id生成器的初始化
 			IdGeneratorHolder.init();
+		}
+
+		// 规则缓存
+		if (isStart && liteflowConfig.isRuleCacheEnabled()) {
+			Integer capacity = liteflowConfig.getRuleCacheCapacity();
+			RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
+			LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
+			// 执行时才解析chain
+			liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
 		}
 
 		String ruleSource = liteflowConfig.getRuleSource();
