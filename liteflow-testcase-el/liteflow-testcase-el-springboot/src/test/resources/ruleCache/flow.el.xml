@@ -9,7 +9,7 @@
     </chain>
 
     <chain name="chain3">
-        THEN(c, b);
+        THEN(b, c);
     </chain>
 
     <chain name="chain4">
