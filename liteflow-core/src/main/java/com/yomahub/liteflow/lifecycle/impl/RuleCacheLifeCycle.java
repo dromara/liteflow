@@ -45,6 +45,10 @@ public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
 
     }
 
+    public Cache<String, Object> getCache() {
+        return cache;
+    }
+
     /**
      * 监听在缓存中被移除的chain
      */
