@@ -15,6 +15,7 @@
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="instanceIds/flow.el.xml"/>
+        <property name="enableNodeInstanceId" value="true"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
