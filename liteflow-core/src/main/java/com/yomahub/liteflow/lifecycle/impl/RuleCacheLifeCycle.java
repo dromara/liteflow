@@ -32,13 +32,12 @@ public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
 
     @Override
     public void postProcessBeforeFlowExecute(String chainId, Slot slot) {
-        if (!FlowBus.containChain(chainId)) {
-            return;
+        if (FlowBus.containChain(chainId)) {
+            // 记录chainId在缓存中
+            // 这里不记录实际的chain是因为chain之后有可能在FlowBus中被移除
+            // 或被更新，以FlowBus中实际存在的chain为准
+            cache.put(chainId, PRESENT);
         }
-        // 记录chainId在缓存中
-        // 这里不记录实际的chain是因为chain之后有可能在FlowBus中被移除
-        // 以FlowBus中实际存在的chain为准
-        cache.put(chainId, PRESENT);
     }
 
     @Override

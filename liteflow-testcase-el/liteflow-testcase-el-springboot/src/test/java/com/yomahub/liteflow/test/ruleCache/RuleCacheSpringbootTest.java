@@ -1,13 +1,14 @@
 package com.yomahub.liteflow.test.ruleCache;
 
 import cn.hutool.core.collection.CollUtil;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.test.BaseTest;
-import com.yomahub.liteflow.test.rollback.RollbackSpringbootTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,6 +20,10 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Springboot环境下规则缓存测试
+ * @author DaleLee
+ */
 @TestPropertySource(value = "classpath:/ruleCache/application.properties")
 @SpringBootTest(classes = RuleCacheSpringbootTest.class)
 @EnableAutoConfiguration
@@ -30,6 +35,7 @@ public class RuleCacheSpringbootTest extends BaseTest {
     // 测试chain被淘汰
     @Test
     public void testRuleCache1() throws InterruptedException {
+        flowExecutor.reloadRule();
         // 加满缓存
         loadCache();
         LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
@@ -39,12 +45,16 @@ public class RuleCacheSpringbootTest extends BaseTest {
         testEvicted("chain1");
     }
 
-    // 测试chain被手动移除
+    // 测试缓存数量
     @Test
     public void testRuleCache2() throws InterruptedException {
+        flowExecutor.reloadRule();
+        // 确保至少执行过3个不同的chain
+        loadCache();
         // 随机执行chain
         loadCache(100);
-        Thread.sleep(100);
+        // 等待缓存淘汰
+        Thread.sleep(200);
         // 测试只有3个chain被编译
         int count = 0;
         for (Chain chain : FlowBus.getChainMap().values()) {
@@ -57,8 +67,45 @@ public class RuleCacheSpringbootTest extends BaseTest {
             }
         }
         Assertions.assertEquals(3, count);
-
     }
+
+    // 测试chain被更新
+    @Test
+    public void testRuleCache3() throws InterruptedException {
+        flowExecutor.reloadRule();
+        loadCache();
+        flowExecutor.execute2Resp("chain5", "arg");
+        // chain1 被淘汰
+        testEvicted("chain1");
+        // 更新chain1
+        LiteFlowChainELBuilder
+                .createChain()
+                .setChainId("chain1")
+                .setEL("THEN(a, b, c)")
+                .build();
+        // 重新执行chain1
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
+    }
+
+    // 测试chain被移除
+    @Test
+    public void testRuleCache4() throws InterruptedException {
+        flowExecutor.reloadRule();
+        loadCache();
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("x==>a==>c", response.getExecuteStepStr());
+        // chain1被淘汰
+        testEvicted("chain1");
+        // 手动移除chain5
+        FlowBus.removeChain("chain5");
+        response = flowExecutor.execute2Resp("chain5", "arg");
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(ChainNotFoundException.class, response.getCause().getClass());
+    }
+
 
     //  加载缓存
     private void loadCache() {
