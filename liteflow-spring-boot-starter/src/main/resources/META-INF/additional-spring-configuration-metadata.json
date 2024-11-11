@@ -220,6 +220,13 @@
       "type": "java.util.Map",
       "description": "script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.enable-node-instance-id",
+      "type": "java.lang.Boolean",
+      "description": "enable node instance id",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": false
     }
   ]
 }
