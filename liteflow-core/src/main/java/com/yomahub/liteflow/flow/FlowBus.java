@@ -192,9 +192,26 @@ public class FlowBus {
 			Node node = new Node(nodeId, name, nodeType, script, language);
 			nodeMap.put(nodeId, node);
 		} else {
-            addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
+			addScriptNodeAndCompile(nodeId, name, nodeType, script, language);
         }
     }
+
+
+	/**
+	 * 添加脚本 node，并且编译脚本
+	 * @param nodeId
+	 * @param name
+	 * @param type
+	 * @param script
+	 * @param language
+	 * @return NodeComponent instance
+	 */
+	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script,
+		String language) {
+		addNode(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type), script, language);
+		return nodeMap.get(nodeId).getInstance();
+	}
+
 
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script,
 			String language) {
@@ -269,16 +286,7 @@ public class FlowBus {
 	}
 
 	public static Node getNode(String nodeId) {
-        Node node = nodeMap.get(nodeId);
-
-		if (!Objects.isNull(node) && !node.isCompiled()) {
-            addNode(nodeId, node.getName(), node.getType(), ScriptComponent.ScriptComponentClassMap.get(node.getType()),
-                    node.getScript(), node.getLanguage());
-			// 编译完脚本节点需重新获取
-			return nodeMap.get(nodeId);
-		} else {
-			return node;
-		}
+		return nodeMap.get(nodeId);
 	}
 
     // 获取某一个 chainId 下的所有 nodeId

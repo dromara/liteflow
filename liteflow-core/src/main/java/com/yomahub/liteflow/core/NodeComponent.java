@@ -406,6 +406,9 @@ public abstract class NodeComponent{
 	}
 
 	public void removeRefNode() {
+		if (this.refNodeStackTL.get() == null){
+			return;
+		}
 		if (this.refNodeStackTL.get().size() > 1) {
 			this.refNodeStackTL.get().pop();
 		}else{

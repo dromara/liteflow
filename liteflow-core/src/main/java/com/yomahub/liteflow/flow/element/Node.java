@@ -22,12 +22,13 @@ import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.slot.DataBus;
-import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.TupleOf2;
 
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.yomahub.liteflow.flow.FlowBus.*;
+
 
 /**
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
@@ -152,6 +153,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public NodeComponent getInstance() {
+		// 没有编译的情况，需重新编译
+		if (!this.isCompiled()) {
+			this.instance = addScriptNodeAndCompile(id, name, type, script, language);
+		}
 		return instance;
 	}
 
@@ -163,7 +168,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// 所有的可执行节点，其实最终都会落到node上来，因为chain中包含的也是node
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
-		if (ObjectUtil.isNull(instance)) {
+		if (ObjectUtil.isNull(getInstance())) {
 			throw new FlowSystemException("there is no instance for node id " + id);
 		}
 
@@ -225,12 +230,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// 回滚的主要逻辑
 	@Override
 	public void rollback(Integer slotIndex) throws Exception {
-
-		Slot slot = DataBus.getSlot(slotIndex);
 		try {
 			// 把线程属性赋值给组件对象
 			this.setSlotIndex(slotIndex);
-			instance.setRefNode(this);
+			getInstance().setRefNode(this);
 			instance.doRollback();
 		}
 		catch (Exception e) {
@@ -252,7 +255,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	public boolean isAccess(Integer slotIndex) throws Exception {
 		// 把线程属性赋值给组件对象
 		this.setSlotIndex(slotIndex);
-		instance.setRefNode(this);
+		getInstance().setRefNode(this);
 		return instance.isAccess();
 	}
 
@@ -492,7 +495,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	@Override
 	public <T> T getItemResultMetaValue(Integer slotIndex) {
-		return instance.getItemResultMetaValue(slotIndex);
+		return getInstance().getItemResultMetaValue(slotIndex);
 	}
 
 	@Override
