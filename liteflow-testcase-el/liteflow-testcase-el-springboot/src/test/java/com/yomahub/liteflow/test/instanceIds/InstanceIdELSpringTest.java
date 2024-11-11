@@ -2,6 +2,8 @@ package com.yomahub.liteflow.test.instanceIds;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorHolder;
+import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,6 +71,25 @@ public class InstanceIdELSpringTest extends BaseTest {
 		Assertions.assertEquals(set1, set2);
 	}
 
+
+	@Test
+	public void testInstanceIds3() {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>a==>a==>a", response.getExecuteStepStr());
+
+		String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+		List<String> strings = extractValuesList(executeStepStrWithInstanceId);
+		InstanceIdGeneratorSpi instanceIdGenerator = InstanceIdGeneratorHolder.getInstance().getInstanceIdGenerator();
+
+		for (int i = 0; i < strings.size(); i++) {
+			Assertions.assertEquals(instanceIdGenerator.getNodeInstanceId("chain2", strings.get(i)), "a(" + i + ")");
+		}
+
+		System.out.println(executeStepStrWithInstanceId);
+		Assertions.assertEquals(strings.size(), 4);
+	}
+
 	public static Set<String> extractValues(String input) {
 		Set<String> values = new HashSet<>();
 		Pattern pattern = Pattern.compile("\\[(.*?)]");
@@ -77,4 +100,13 @@ public class InstanceIdELSpringTest extends BaseTest {
 		return values;
 	}
 
+	public static List<String> extractValuesList(String input) {
+		List<String> values = new ArrayList<>();
+		Pattern pattern = Pattern.compile("\\[(.*?)]");
+		Matcher matcher = pattern.matcher(input);
+		while (matcher.find()) {
+			values.add(matcher.group(1));
+		}
+		return values;
+	}
 }
