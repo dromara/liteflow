@@ -97,6 +97,9 @@ public class LiteflowProperty {
     // 异步线程池是否隔离
     private Boolean whenThreadPoolIsolate;
 
+	//是否启用节点实例ID
+	private boolean enableNodeInstanceId;
+
 	public boolean isEnable() {
 		return enable;
 	}
@@ -329,4 +332,12 @@ public class LiteflowProperty {
     public void setWhenThreadPoolIsolate(Boolean whenThreadPoolIsolate) {
         this.whenThreadPoolIsolate = whenThreadPoolIsolate;
     }
+
+	public boolean isEnableNodeInstanceId() {
+		return enableNodeInstanceId;
+	}
+
+	public void setEnableNodeInstanceId(boolean enableNodeInstanceId) {
+		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
 }

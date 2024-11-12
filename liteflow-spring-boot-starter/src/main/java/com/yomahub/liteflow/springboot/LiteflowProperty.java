@@ -95,6 +95,9 @@ public class LiteflowProperty {
     //全局线程池最大队列数(when+异步循环)
     private Integer globalThreadPoolQueueSize;
 
+	//是否启用节点实例ID
+	private boolean enableNodeInstanceId;
+
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -318,4 +321,12 @@ public class LiteflowProperty {
     public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
         this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
     }
+
+	public boolean isEnableNodeInstanceId() {
+		return enableNodeInstanceId;
+	}
+
+	public void setEnableNodeInstanceId(boolean enableNodeInstanceId) {
+		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
 }

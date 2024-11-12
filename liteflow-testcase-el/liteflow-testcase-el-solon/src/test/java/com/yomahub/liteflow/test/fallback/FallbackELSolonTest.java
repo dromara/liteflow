@@ -190,7 +190,7 @@ public class FallbackELSolonTest extends BaseTest {
 
     @Test
     public void testWithElBuild(){
-        ELWrapper el = ELBus.then("a", "b", "az");
+        ELWrapper el = ELBus.then("a", "b", ELBus.node("az"));
         LiteFlowChainELBuilder.createChain().setChainId("elBuilder").setEL(el.toEL()).build();
         LiteflowResponse response = flowExecutor.execute2Resp("elBuilder");
         Assertions.assertTrue(response.isSuccess());

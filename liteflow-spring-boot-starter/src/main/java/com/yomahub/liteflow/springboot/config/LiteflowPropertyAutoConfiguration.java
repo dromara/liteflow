@@ -51,6 +51,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setGlobalThreadPoolExecutorClass(property.getGlobalThreadPoolExecutorClass());
         liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
         liteflowConfig.setGlobalThreadPoolSize(property.getGlobalThreadPoolSize());
+		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
 		return liteflowConfig;
 	}
 

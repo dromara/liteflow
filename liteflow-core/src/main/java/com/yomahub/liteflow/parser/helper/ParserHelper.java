@@ -350,21 +350,21 @@ public class ParserHelper {
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
         if (routeElement != null){
-            builder.setRoute(ElRegexUtil.removeComments(routeElement.getText()));
+            builder.setRoute(routeElement.getText());
 
             Element bodyElement = e.element(BODY);
             if (bodyElement == null){
                 String errMsg = StrUtil.format("If you have defined the tag <route>, then you must define the tag <body> in chain[{}]", chainId);
                 throw new FlowSystemException(errMsg);
             }
-            builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
+            builder.setEL(bodyElement.getText());
         }else{
             // 即使没有route这个标签，body标签单独写也是被允许的
             Element bodyElement = e.element(BODY);
             if (bodyElement != null){
-                builder.setEL(ElRegexUtil.removeComments(bodyElement.getText()));
+                builder.setEL(bodyElement.getText());
             }else{
-                builder.setEL(ElRegexUtil.removeComments(e.getText()));
+                builder.setEL(e.getText());
             }
         }
 

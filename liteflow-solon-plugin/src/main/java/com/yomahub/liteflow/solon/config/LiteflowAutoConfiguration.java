@@ -49,6 +49,7 @@ public class LiteflowAutoConfiguration {
         liteflowConfig.setGlobalThreadPoolSize(property.getGlobalThreadPoolSize());
         liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
         liteflowConfig.setWhenThreadPoolIsolate(property.getWhenThreadPoolIsolate());
+		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
 		return liteflowConfig;
 	}
 

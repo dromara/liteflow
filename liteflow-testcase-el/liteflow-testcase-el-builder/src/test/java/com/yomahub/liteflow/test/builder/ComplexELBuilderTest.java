@@ -8,7 +8,6 @@ import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.builder.el.ThenELWrapper;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
-import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
@@ -22,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 /**
  * 复杂编排例子测试
@@ -61,17 +59,17 @@ public class ComplexELBuilderTest extends BaseTest {
         ThenELWrapper complexEl1 = ELBus.then(
                 ELBus.node("A"),
                 ELBus.when(
-                        ELBus.then("B", "C"),
-                        ELBus.then(ELBus.node("D")).then("E").then("F"),
+                        ELBus.then(ELBus.node("B"), ELBus.node("C")),
+                        ELBus.then(ELBus.node("D")).then(ELBus.node("E")).then(ELBus.node("F")),
                         ELBus.then(
-                                ELBus.switchOpt("G").to(
-                                        ELBus.then("H", ELBus.node("I"), ELBus.when("J").when("K")).id("t1"),
-                                        ELBus.then("L", "M").id("t2")
+                                ELBus.switchOpt(ELBus.node("G")).to(
+                                        ELBus.then(ELBus.node("H"), ELBus.node("I"), ELBus.when(ELBus.node("J")).when(ELBus.node("K"))).id("t1"),
+                                        ELBus.then(ELBus.node("L"), ELBus.node("M")).id("t2")
                                 ),
-                                "N"
+                                ELBus.node("N")
                         )
                 ),
-                "Z"
+                ELBus.node("Z")
         );
         String expectedStr = "THEN(node(\"A\"),WHEN(THEN(node(\"B\"),node(\"C\")),THEN(node(\"D\"),node(\"E\"),node(\"F\")),THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\"),WHEN(node(\"J\"),node(\"K\"))).id(\"t1\"),THEN(node(\"L\"),node(\"M\")).id(\"t2\")),node(\"N\"))),node(\"Z\"));";
         Assertions.assertEquals(expectedStr,
@@ -110,18 +108,18 @@ public class ComplexELBuilderTest extends BaseTest {
         ThenELWrapper complexEl2 = ELBus.then(
                 ELBus.node("A"),
                 ELBus.switchOpt(ELBus.node("B")).to(
-                        ELBus.then("D","E").then(ELBus.node("F")).id("t1"),
+                        ELBus.then(ELBus.node("D"),ELBus.node("E")).then(ELBus.node("F")).id("t1"),
                         ELBus.then(
                                 ELBus.node("C"),
                                 ELBus.when(
                                         ELBus.then(
-                                                ELBus.switchOpt("G").to(
-                                                        ELBus.then("H", "I").id("t2"),
-                                                        "J"
+                                                ELBus.switchOpt(ELBus.node("G")).to(
+                                                        ELBus.then(ELBus.node("H"), ELBus.node("I")).id("t2"),
+                                                        ELBus.node("J")
                                                 ),
-                                                "K"
+                                                ELBus.node("K")
                                         ),
-                                        ELBus.then("L", "M")
+                                        ELBus.then(ELBus.node("L"), ELBus.node("M"))
                                 )
                         ).id("t3")
                 ),
