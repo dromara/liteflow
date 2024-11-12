@@ -2,7 +2,11 @@ package com.yomahub.liteflow.thread.ExecutorCondition;
 
 
 /**
- * 执行器条件对象
+ * <p>Title: ExecutorCondition</p>
+ * <p>Description: 执行器条件对象</p>
+ *
+ * @author jason
+ * @Date 2024/11/12
  */
 public class ExecutorCondition {
     private final boolean conditionLevel;

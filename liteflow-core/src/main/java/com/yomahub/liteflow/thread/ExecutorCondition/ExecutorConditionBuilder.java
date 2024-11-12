@@ -10,6 +10,14 @@ import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.property.LiteflowConfig;
 
+/**
+ * <p>Title: ExecutorConditionBuilder</p>
+ * <p>Description: 执行器构建对象</p>
+ *
+ * @author jason
+ * @Date 2024/11/12
+ */
+
 public class ExecutorConditionBuilder {
 
     /**
@@ -22,6 +30,7 @@ public class ExecutorConditionBuilder {
             ConditionTypeEnum type) {
 
         boolean conditionLevel;
+        boolean chainLevel;
         String conditionExecutorClass;
 
         switch (type) {
@@ -31,11 +40,16 @@ public class ExecutorConditionBuilder {
                 LoopCondition loopCondition = (LoopCondition) condition;
                 conditionLevel = ObjectUtil.isNotEmpty(loopCondition.getThreadPoolExecutorClass());
                 conditionExecutorClass = loopCondition.getThreadPoolExecutorClass();
+                chainLevel = ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass());
                 break;
             case TYPE_WHEN:
                 WhenCondition whenCondition = (WhenCondition) condition;
-                conditionLevel = BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate());
-                conditionExecutorClass = whenCondition.getThreadExecutorClass();
+                conditionLevel =
+                        (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) || (ObjectUtil.isNotEmpty(whenCondition.getThreadExecutorClass()));
+                //当whenThreadPoolIsolate为true，需要有默认值
+                conditionExecutorClass = whenCondition.getThreadExecutorClass() == null ?
+                        liteflowConfig.getGlobalThreadPoolExecutorClass() : whenCondition.getThreadExecutorClass();
+                chainLevel = ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass());
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported condition type: " + type);
@@ -43,7 +57,7 @@ public class ExecutorConditionBuilder {
 
         return ExecutorCondition.create(
                 conditionLevel,
-                ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass()),
+                chainLevel,
                 conditionExecutorClass
         );
     }

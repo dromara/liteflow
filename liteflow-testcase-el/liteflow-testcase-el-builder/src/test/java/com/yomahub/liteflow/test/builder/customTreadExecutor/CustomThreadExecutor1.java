@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
  * EL表达式装配并执行测试
  *
  * @author gezuao
+ * @author jason
  * @since 2.11.1
  */
 public class CustomThreadExecutor1 implements ExecutorBuilder {

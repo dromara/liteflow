@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * 执行流程主要的参数类
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 @ConfigurationProperties(prefix = "liteflow", ignoreUnknownFields = true)
 public class LiteflowProperty {

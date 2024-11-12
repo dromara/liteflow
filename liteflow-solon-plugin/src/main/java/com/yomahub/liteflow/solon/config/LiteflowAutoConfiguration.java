@@ -14,6 +14,7 @@ import org.noear.solon.annotation.Inject;
  *
  * @author Bryan.Zhang
  * @author noear
+ * @author jason
  * @since 2.9
  */
 @Configuration

@@ -4,6 +4,7 @@ package com.yomahub.liteflow.common;
  * Chain 常量
  *
  * @author tangkc
+ * @author jason
  */
 public interface ChainConstant {
 	String PARALLEL = "parallel";

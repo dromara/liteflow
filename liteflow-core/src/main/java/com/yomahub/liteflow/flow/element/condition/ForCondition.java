@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
  * 循环次数Condition
  *
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.9.0
  */
 public class ForCondition extends LoopCondition {
@@ -77,9 +78,8 @@ public class ForCondition extends LoopCondition {
                 //存储所有的并行执行子项的CompletableFuture
                 List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
                 //获取并行循环的线程池
-                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(this,
-                                                                                                      slotIndex,
-                                                                                                      this.getConditionType());
+                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(this, slotIndex
+                        , this.getConditionType());
                 for (int i = 0; i < forCount; i++){
                     //提交异步任务
                     CompletableFuture<LoopFutureObj> future =

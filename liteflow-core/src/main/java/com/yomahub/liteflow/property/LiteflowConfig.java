@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * 所以为了要有null值出现，这里采用包装类型
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 public class LiteflowConfig {
 

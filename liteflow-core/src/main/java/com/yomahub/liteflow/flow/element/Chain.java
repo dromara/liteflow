@@ -28,6 +28,7 @@ import java.util.List;
  * chain对象，实现可执行器
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 public class Chain implements Executable{
 

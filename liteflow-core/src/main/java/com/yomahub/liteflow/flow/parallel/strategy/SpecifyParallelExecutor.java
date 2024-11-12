@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author luo yi
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.11.0
  */
 public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
@@ -30,7 +31,6 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(whenCondition,
                                                                                               slotIndex,
                                                                                               whenCondition.getConditionType());
-        ;
 
         // 指定完成的任务
         CompletableFuture<?> specifyTask;

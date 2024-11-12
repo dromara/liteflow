@@ -1,12 +1,9 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
 import com.yomahub.liteflow.exception.WhenExecuteException;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.FinallyCondition;
@@ -36,6 +33,7 @@ import java.util.stream.Stream;
  *
  * @author luo yi
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.11.0
  */
 public abstract class ParallelStrategyExecutor {
@@ -119,42 +117,6 @@ public abstract class ParallelStrategyExecutor {
         });
     }
 
-    /**
-     * 获取 WHEN 所需线程池
-     * @param whenCondition
-     * @return
-     */
-    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition, Integer slotIndex) {
-
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-        //线程池的优先级 condition层级>chain层级>全局体系
-        // 1、如果设置了线程池隔离，则每个 when 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
-        // 2、如果在chain上自定义线程池，同一个chain下的when+异步线程池共享一个线程池
-        // 3、默认全局一个线程池，所有的when+异步共享一个线程池
-        ExecutorService parallelExecutor;
-
-        String chainId = DataBus.getSlot(slotIndex).getChainId();
-
-        Chain chain = FlowBus.getChain(chainId);
-
-        if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
-            //condition层级线程池
-            parallelExecutor =
-                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(),
-                                                                            String.valueOf(whenCondition.hashCode()));
-        } else if (ObjectUtil.isNotEmpty(chain.getThreadPoolExecutorClass())) {
-            //chain层级线程池
-            parallelExecutor =
-                    ExecutorHelper.loadInstance().buildWhenExecutorWithHash(chain.getThreadPoolExecutorClass(),
-                                                                            String.valueOf(chain.hashCode()));
-        } else {
-            //全局线程池
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
-        }
-
-        return parallelExecutor;
-
-    }
 
     /**
      * 获取所有任务 CompletableFuture 集合

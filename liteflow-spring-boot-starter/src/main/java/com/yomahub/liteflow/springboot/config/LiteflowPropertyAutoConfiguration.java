@@ -13,6 +13,7 @@ import org.springframework.context.annotation.PropertySource;
  * 同时这里设置了默认的参数路径，如果在springboot的application.properties/yml里没取到的话，就取默认值
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 @Configuration
 @EnableConfigurationProperties({ LiteflowProperty.class, LiteflowMonitorProperty.class })

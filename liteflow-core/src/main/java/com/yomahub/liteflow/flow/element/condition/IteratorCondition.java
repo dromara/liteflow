@@ -17,6 +17,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 迭代次数Condition
+ *
+ * @author jason
+ * @since 2.9.0
+ */
+
 public class IteratorCondition extends LoopCondition {
 
     @Override
@@ -80,8 +87,8 @@ public class IteratorCondition extends LoopCondition {
                 //存储所有的并行执行子项的CompletableFuture
                 List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
                 //获取并行循环的线程池
-                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor(this,
-                                                                                                           slotIndex);
+                ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(this, slotIndex
+                        , this.getConditionType());
                 while (it.hasNext()) {
                     Object itObj = it.next();
                     //提交异步任务
