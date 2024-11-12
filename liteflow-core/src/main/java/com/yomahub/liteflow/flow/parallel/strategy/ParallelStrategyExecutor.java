@@ -170,7 +170,10 @@ public abstract class ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition, slotIndex);
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(whenCondition,
+                                                                                              slotIndex,
+                                                                                              whenCondition.getConditionType());
+
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>

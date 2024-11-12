@@ -3,6 +3,7 @@ package com.yomahub.liteflow.flow.parallel.strategy;
 import cn.hutool.core.collection.CollUtil;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
+import com.yomahub.liteflow.thread.ExecutorHelper;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +27,10 @@ public class SpecifyParallelExecutor extends ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition, slotIndex);
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(whenCondition,
+                                                                                              slotIndex,
+                                                                                              whenCondition.getConditionType());
+        ;
 
         // 指定完成的任务
         CompletableFuture<?> specifyTask;
