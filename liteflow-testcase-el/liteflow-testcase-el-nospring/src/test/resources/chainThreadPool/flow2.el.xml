@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.chainThreadPool.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.chainThreadPool.cmp.BCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.chainThreadPool.cmp.DCmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.chainThreadPool.cmp.FCmp"/>
+        <node id="i" class="com.yomahub.liteflow.test.chainThreadPool.cmp.ICmp"/>
+        <node id="it" class="com.yomahub.liteflow.test.chainThreadPool.cmp.ITCmp"/>
+        <node id="w" class="com.yomahub.liteflow.test.chainThreadPool.cmp.WCmp"/>
+        <node id="z" class="com.yomahub.liteflow.test.chainThreadPool.cmp.ZCmp"/>
+    </nodes>
+    <chain name="chain1"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        WHEN(a,b).threadPool("com.yomahub.liteflow.test.chainThreadPool.CustomWhenThreadExecutor");
+    </chain>
+
+    <chain name="chain2"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        FOR(5).parallel(true).DO(THEN(a,f)).threadPool("com.yomahub.liteflow.test.chainThreadPool.CustomLoopThreadExecutor");
+    </chain>
+
+    <chain name="chain3"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        WHILE(z).parallel(true).DO(THEN(w,d)).threadPool("com.yomahub.liteflow.test.chainThreadPool.CustomLoopThreadExecutor");
+    </chain>
+
+    <chain name="chain4"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        ITERATOR(it).parallel(true).DO(THEN(a,i)).threadPool("com.yomahub.liteflow.test.chainThreadPool.CustomLoopThreadExecutor");
+    </chain>
+</flow>

@@ -12,23 +12,23 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
+import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
+import com.yomahub.liteflow.exception.FlowSystemException;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
-import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
-import com.yomahub.liteflow.exception.FlowSystemException;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * chain对象，实现可执行器
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 public class Chain implements Executable{
 
@@ -45,6 +45,8 @@ public class Chain implements Executable{
 	private boolean isCompiled = true;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
+
+    private String threadPoolExecutorClass;
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
@@ -223,4 +225,12 @@ public class Chain implements Executable{
 	public void setNamespace(String namespace) {
 		this.namespace = namespace;
 	}
+
+    public String getThreadPoolExecutorClass() {
+        return threadPoolExecutorClass;
+    }
+
+    public void setThreadPoolExecutorClass(String threadPoolExecutorClass) {
+        this.threadPoolExecutorClass = threadPoolExecutorClass;
+    }
 }

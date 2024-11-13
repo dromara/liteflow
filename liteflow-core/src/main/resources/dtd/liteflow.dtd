@@ -22,4 +22,5 @@
         extends CDATA #IMPLIED
         enable (true|false) #IMPLIED
         namespace CDATA #IMPLIED
+        thread-pool-executor-class CDATA #IMPLIED
         >

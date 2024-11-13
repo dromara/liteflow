@@ -8,18 +8,20 @@ import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
  * 循环Condition的抽象类 主要继承对象有ForCondition和WhileCondition
  *
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.9.0
  */
 public abstract class LoopCondition extends Condition {
     //判断循环是否并行执行，默认为false
     private boolean parallel = false;
+    //loop condition层级的线程池
+    private String threadPoolExecutorClass;
 
     protected Executable getBreakItem() {
         return this.getExecutableOne(ConditionKey.BREAK_KEY);
@@ -35,6 +37,14 @@ public abstract class LoopCondition extends Condition {
 
     public void setDoExecutor(Executable executable) {
         this.addExecutable(ConditionKey.DO_KEY, executable);
+    }
+
+    public String getThreadPoolExecutorClass() {
+        return threadPoolExecutorClass;
+    }
+
+    public void setThreadPoolExecutorClass(String threadPoolExecutorClass) {
+        this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
 
     protected void setLoopIndex(Executable executableItem, int index) {

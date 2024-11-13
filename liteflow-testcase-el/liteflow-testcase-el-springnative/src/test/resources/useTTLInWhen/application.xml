@@ -15,7 +15,7 @@
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="useTTLInWhen/flow.el.xml"/>
-        <property name="whenMaxWorkers" value="2"/>
+        <property name="globalThreadPoolSize" value="2"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

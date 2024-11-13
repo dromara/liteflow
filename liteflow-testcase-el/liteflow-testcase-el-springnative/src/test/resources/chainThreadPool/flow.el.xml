@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        WHEN(a,b);
+    </chain>
+
+    <chain name="chain2"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        FOR(5).parallel(true).DO(THEN(a,f));
+    </chain>
+
+    <chain name="chain3"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        WHILE(z).parallel(true).DO(THEN(w,d));
+    </chain>
+
+    <chain name="chain4"
+           thread-pool-executor-class="com.yomahub.liteflow.test.chainThreadPool.CustomChainThreadExecutor">
+        ITERATOR(it).parallel(true).DO(THEN(a,i));
+    </chain>
+</flow>

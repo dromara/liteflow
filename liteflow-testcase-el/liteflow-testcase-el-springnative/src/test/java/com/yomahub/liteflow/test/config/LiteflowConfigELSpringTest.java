@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +45,7 @@ public class LiteflowConfigELSpringTest extends BaseTest {
 		Assertions.assertFalse(config.getEnableLog());
 		// Assertions.assertEquals(Runtime.getRuntime().availableProcessors() * 2,
 		// config.getWhenMaxWorkers().longValue());
-		Assertions.assertEquals(512, config.getWhenQueueLimit().longValue());
+        Assertions.assertEquals(512, config.getGlobalThreadPoolQueueSize().longValue());
 	}
 
 }

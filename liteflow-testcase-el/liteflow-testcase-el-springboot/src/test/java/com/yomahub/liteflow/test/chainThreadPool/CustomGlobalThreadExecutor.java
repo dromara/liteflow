@@ -1,18 +1,13 @@
-package com.yomahub.liteflow.thread;
+package com.yomahub.liteflow.test.chainThreadPool;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.thread.ExecutorBuilder;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
-/**
- * LiteFlow默认的并行多线程执行器实现
- *
- * @author Bryan.Zhang
- * @since 2.6.6
- */
-public class LiteFlowDefaultWhenExecutorBuilder implements ExecutorBuilder {
+public class CustomGlobalThreadExecutor implements ExecutorBuilder {
 
 	@Override
 	public ExecutorService buildExecutor() {
@@ -21,8 +16,8 @@ public class LiteFlowDefaultWhenExecutorBuilder implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenMaxWorkers(),
-				liteflowConfig.getWhenQueueLimit(), "when-thread-");
+		return buildDefaultExecutor(16, 16,
+									512, "customer-global-thead");
 	}
 
 }

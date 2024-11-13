@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -31,9 +30,9 @@ public class ParallelLoopTest extends BaseTest {
 	public static void init() {
 		LiteflowConfig config = new LiteflowConfig();
 		config.setRuleSource("parallelLoop/flow.xml");
-		config.setParallelMaxWorkers(10);
-		config.setParallelQueueLimit(1024);
-		config.setParallelLoopExecutorClass("com.yomahub.liteflow.test.parallelLoop.CustomThreadExecutor");
+        config.setGlobalThreadPoolSize(10);
+        config.setGlobalThreadPoolQueueSize(1024);
+        config.setGlobalThreadPoolExecutorClass("com.yomahub.liteflow.test.parallelLoop.CustomThreadExecutor");
 		flowExecutor = FlowExecutorHolder.loadInstance(config);
 	}
 

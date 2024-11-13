@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
  * EL表达式装配并执行测试
  *
  * @author gezuao
+ * @author jason
  * @since 2.11.1
  */
 public class CustomThreadExecutor1 implements ExecutorBuilder {
@@ -22,8 +23,8 @@ public class CustomThreadExecutor1 implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(liteflowConfig.getWhenMaxWorkers(), liteflowConfig.getWhenMaxWorkers(),
-				liteflowConfig.getWhenQueueLimit(), "customer-when-1-thead-");
+		return buildDefaultExecutor(liteflowConfig.getGlobalThreadPoolSize(), liteflowConfig.getGlobalThreadPoolSize(),
+									liteflowConfig.getGlobalThreadPoolQueueSize(), "customer-when-1-thead-");
 	}
 
 }

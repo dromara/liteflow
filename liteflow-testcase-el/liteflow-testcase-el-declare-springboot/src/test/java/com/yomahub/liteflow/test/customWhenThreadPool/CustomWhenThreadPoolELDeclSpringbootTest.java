@@ -7,14 +7,13 @@ import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 
@@ -44,7 +43,7 @@ public class CustomWhenThreadPoolELDeclSpringbootTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("when-thread-1"));
+        Assertions.assertTrue(context.getData("threadName").toString().startsWith("global-thread-1"));
 	}
 
 	/**
