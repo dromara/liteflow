@@ -55,7 +55,7 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
     }
 
     @Override
-    public String buildQuerySql() {
+    public String buildQuerySql(String... exceptions) {
         if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
             return super.config.getScriptCustomSql();
         }

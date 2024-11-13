@@ -10,6 +10,11 @@ package com.yomahub.liteflow.parser.constant;
  * @since 2.11.1
  */
 public class SqlReadConstant {
+    public static final String INSTANT_SELECT_SQL = "SELECT count(*) FROM {} where {} = '{}' and {} = '{}' ";
+
+    public static final String INSTANT_UPDATE_SQL = "UPDATE {} SET {} = '{}',{} = '{}' WHERE {} = '{}' and {} = '{}'";
+
+    public static final String INSTANT_INSERT_SQL = "INSERT INTO {} ({},{},{},{}) VALUES ('{}','{}','{}','{}')";
 
     public static final String SQL_PATTERN = "SELECT * FROM {} WHERE {}='{}'";
 

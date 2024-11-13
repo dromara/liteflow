@@ -58,6 +58,30 @@ public class SQLParserVO {
     private String elDataField = "el_data";
 
     /**
+     * instanceId 表名
+     */
+    private String instanceIdTableName;
+
+    /**
+     * instanceId 里的应用名字段
+     */
+    private String instanceIdApplicationNameField = "application_name";
+    /**
+     * instanceId 里的 chainName 字段
+     */
+    private String instanceChainNameField = "chain_name";
+
+    /**
+     * el md5
+     */
+    private String elDataMd5Field = "el_data_md5";
+
+   /**
+    * group_key_instance_id
+    */
+    private String groupKeyInstanceIdField = "group_key_instance_id";
+
+    /**
      * 决策路由字段
      */
     private String routeField;
@@ -362,5 +386,45 @@ public class SQLParserVO {
 
     public void setScriptCustomSql(String scriptCustomSql) {
         this.scriptCustomSql = scriptCustomSql;
+    }
+
+    public String getInstanceIdApplicationNameField() {
+        return instanceIdApplicationNameField;
+    }
+
+    public void setInstanceIdApplicationNameField(String instanceIdApplicationNameField) {
+        this.instanceIdApplicationNameField = instanceIdApplicationNameField;
+    }
+
+    public String getInstanceIdTableName() {
+        return instanceIdTableName;
+    }
+
+    public String getInstanceChainNameField() {
+        return instanceChainNameField;
+    }
+
+    public void setInstanceChainNameField(String instanceChainNameField) {
+        this.instanceChainNameField = instanceChainNameField;
+    }
+
+    public void setInstanceIdTableName(String instanceIdTableName) {
+        this.instanceIdTableName = instanceIdTableName;
+    }
+
+    public String getElDataMd5Field() {
+        return elDataMd5Field;
+    }
+
+    public void setElDataMd5Field(String elDataMd5Field) {
+        this.elDataMd5Field = elDataMd5Field;
+    }
+
+    public String getGroupKeyInstanceIdField() {
+        return groupKeyInstanceIdField;
+    }
+
+    public void setGroupKeyInstanceIdField(String groupKeyInstanceIdField) {
+        this.groupKeyInstanceIdField = groupKeyInstanceIdField;
     }
 }

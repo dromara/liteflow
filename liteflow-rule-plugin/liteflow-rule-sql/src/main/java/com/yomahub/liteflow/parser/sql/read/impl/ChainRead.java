@@ -54,7 +54,7 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
     }
 
     @Override
-    public String buildQuerySql() {
+    public String buildQuerySql(String... exceptions) {
         if (StrUtil.isNotBlank(super.config.getChainCustomSql())) {
             return super.config.getChainCustomSql();
         }

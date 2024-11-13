@@ -3,7 +3,6 @@ package com.yomahub.liteflow.flow.instanceId;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.CharsetUtil;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -11,10 +10,10 @@ import java.util.*;
 
 import static com.yomahub.liteflow.common.ChainConstant.NODE_INSTANCE_PATH;
 import static com.yomahub.liteflow.common.ChainConstant.USER_DIR;
-import static com.yomahub.liteflow.util.JsonUtil.parseObject;
 
 /**
  * @author Jay li
+ * @since 2.12.4
  */
 public class DefaultInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
 
@@ -43,38 +42,4 @@ public class DefaultInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
         FileUtil.writeLines(instanceIdList, nodeDir.getPath(), CharsetUtil.UTF_8);
     }
 
-    @Override
-    public String getNodeInstanceId(String chainId, String instanceId) {
-        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
-            return "";
-        }
-
-        List<String> instanceIdFile = readInstanceIdFile(chainId);
-
-        for (int i = 1; i < instanceIdFile.size(); i++) {
-            JsonNode groupKeyAndInstanceIds = parseObject(instanceIdFile.get(i));
-
-            if (groupKeyAndInstanceIds == null) {
-                continue;
-            }
-
-            Iterator<String> fieldNames = groupKeyAndInstanceIds.fieldNames();
-            while (fieldNames.hasNext()) {
-                String key = fieldNames.next();
-                JsonNode valueNode = groupKeyAndInstanceIds.get(key);
-                if (valueNode.isArray()) {
-                    Map<String, Integer> map = new HashMap<>();
-                    for (int j = 1; j < valueNode.size(); j+=2) {
-                        String nodeId = valueNode.get(j - 1).asText();
-                        map.put(nodeId, map.getOrDefault(nodeId, -1)+1);
-                        if (instanceId.equals(valueNode.get(j).asText())) {
-                            return nodeId + "(" + (map.get(nodeId)) + ")";
-                        }
-                    }
-                }
-            }
-        }
-
-        return "";
-    }
 }

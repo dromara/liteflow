@@ -1,1 +1,1 @@
-com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi
+com.yomahub.liteflow.parser.spi.instanceId.SqlInstanceIdGeneratorSpi

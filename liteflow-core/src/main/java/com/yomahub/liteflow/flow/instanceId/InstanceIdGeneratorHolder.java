@@ -7,6 +7,7 @@ import java.util.ServiceLoader;
 
 /**
  * @author Jay li
+ * @since 2.12.4
  */
 public class InstanceIdGeneratorHolder {
     private InstanceIdGeneratorSpi instanceIdGenerator;
@@ -18,14 +19,12 @@ public class InstanceIdGeneratorHolder {
         Iterator<InstanceIdGeneratorSpi> iterator = loader.iterator();
         if (iterator.hasNext()) {
             INSTANCE.setInstanceIdGenerator(iterator.next());
-
         } else {
             INSTANCE.setInstanceIdGenerator(new DefaultInstanceIdGeneratorSpi());
         }
     }
 
     public static InstanceIdGeneratorHolder getInstance() {
-
         return INSTANCE;
     }
 

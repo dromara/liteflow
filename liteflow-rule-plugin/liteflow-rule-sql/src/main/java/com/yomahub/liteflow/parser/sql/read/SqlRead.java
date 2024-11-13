@@ -18,7 +18,7 @@ public interface SqlRead<T> {
      *
      * @return 返回读取到的数据
      */
-    List<T> read();
+    List<T> read(String... exceptions);
 
     /**
      * 类型

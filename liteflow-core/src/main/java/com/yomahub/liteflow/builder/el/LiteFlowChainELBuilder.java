@@ -294,11 +294,10 @@ public class LiteFlowChainELBuilder {
     private List<String> writeNodeInstanceId(Condition condition, String elMd5) {
         ArrayList<String> writeList = new ArrayList<>();
         writeList.add(elMd5);
+		Map<String, List<String>> groupKeyAndInstanceIds = new HashMap<>();
 
-        condition.getExecutableGroup().forEach((key, executables) -> {
-            Map<String, List<String>> groupKeyAndInstanceIds = new HashMap<>();
+		condition.getExecutableGroup().forEach((key, executables) -> {
             List<String> instanceIds = new ArrayList<>();
-
             executables.forEach(executable -> {
                 if (executable instanceof Node) {
                     ((Node) executable).setInstanceId(generateShortUUID());
@@ -306,10 +305,9 @@ public class LiteFlowChainELBuilder {
                     instanceIds.add(((Node) executable).getInstanceId());
                 }
             });
-
 			groupKeyAndInstanceIds.put(key, instanceIds);
-			writeList.add(toJsonString(groupKeyAndInstanceIds));
 		});
+		writeList.add(toJsonString(groupKeyAndInstanceIds));
 
 		return writeList;
     }
