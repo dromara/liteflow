@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.parser.helper;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,15 +16,8 @@ import com.yomahub.liteflow.util.ElRegexUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
 
@@ -33,6 +25,7 @@ import static com.yomahub.liteflow.common.ChainConstant.*;
  * Parser 通用 Helper
  *
  * @author tangkc
+ * @author jason
  * @author zy
  */
 public class ParserHelper {
@@ -96,10 +89,6 @@ public class ParserHelper {
                 .build();
     }
 
-    /**
-     * xml 形式的主要解析过程
-     * @param documentList documentList
-     */
     /**
      * xml 形式的主要解析过程
      * @param documentList documentList
@@ -316,7 +305,12 @@ public class ParserHelper {
 
         JsonNode routeJsonNode = chainNode.get(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
+        String threadPoolExecutorClass = chainNode.get(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
+                chainNode.get(THREAD_POOL_EXECUTOR_CLASS).textValue();
+
+        LiteFlowChainELBuilder builder =
+                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
+                .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -347,7 +341,12 @@ public class ParserHelper {
 
         Element routeElement = e.element(ROUTE);
 
-        LiteFlowChainELBuilder builder = LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace);
+        String threadPoolExecutorClass = e.attributeValue(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
+                e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
+
+        LiteFlowChainELBuilder builder =
+                LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
+                .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签

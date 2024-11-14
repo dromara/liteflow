@@ -4,6 +4,7 @@ package com.yomahub.liteflow.common;
  * Chain 常量
  *
  * @author tangkc
+ * @author jason
  */
 public interface ChainConstant {
 	String PARALLEL = "parallel";
@@ -33,6 +34,8 @@ public interface ChainConstant {
 	String LANGUAGE = "language";
 
 	String NAMESPACE = "namespace";
+
+    String THREAD_POOL_EXECUTOR_CLASS = "thread-pool-executor-class";
 
 	String DEFAULT_NAMESPACE = "default";
 

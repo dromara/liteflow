@@ -33,6 +33,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.yomahub.liteflow.util.JsonUtil.*;
+import static com.yomahub.liteflow.common.ChainConstant.NODE_INSTANCE_PATH;
+import static com.yomahub.liteflow.common.ChainConstant.USER_DIR;
+import static com.yomahub.liteflow.util.JsonUtil.parseObject;
+import static com.yomahub.liteflow.util.JsonUtil.toJsonString;
 import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
 
 
@@ -41,6 +45,7 @@ import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
  *
  * @author Bryan.Zhang
  * @author Jay li
+ * @author jason
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
@@ -317,6 +322,11 @@ public class LiteFlowChainELBuilder {
 			nameSpace = ChainConstant.DEFAULT_NAMESPACE;
 		}
 		this.chain.setNamespace(nameSpace);
+		return this;
+	}
+
+	public LiteFlowChainELBuilder setThreadPoolExecutorClass(String threadPoolExecutorClass) {
+		this.chain.setThreadPoolExecutorClass(threadPoolExecutorClass);
 		return this;
 	}
 
