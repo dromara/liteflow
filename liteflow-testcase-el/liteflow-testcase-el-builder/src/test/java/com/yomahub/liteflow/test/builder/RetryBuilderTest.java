@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.test.builder;
 
-import com.yomahub.liteflow.builder.el.*;
+import com.yomahub.liteflow.builder.el.CommonNodeELWrapper;
+import com.yomahub.liteflow.builder.el.ELBus;
+import com.yomahub.liteflow.builder.el.WhenELWrapper;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,16 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 @EnableAutoConfiguration
 public class RetryBuilderTest extends BaseTest {
 
-    @BeforeAll
-    public static void init(){
-        ELBus.setNodeWrapper(false);
-    }
-
     // node上进行retry
     @Test
     public void testRetry1(){
-        NodeELWrapper nodeA = ELBus.node("a").retry(2);
-        NodeELWrapper nodeB = ELBus.node("b").retry(3);
+        CommonNodeELWrapper nodeA = ELBus.commonNode("a").retry(2);
+        CommonNodeELWrapper nodeB = ELBus.commonNode("b").retry(3);
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.retry(2),b.retry(3));", whenELWrapper.toEL());
     }
@@ -30,8 +25,8 @@ public class RetryBuilderTest extends BaseTest {
     // node上进行retry，带exception
     @Test
     public void testRetry2(){
-        NodeELWrapper nodeA = ELBus.node("a").retry(2, "java.lang.NullPointerException");
-        NodeELWrapper nodeB = ELBus.node("b").retry(3, "java.lang.NullPointerException", "java.lang.ArrayIndexOutOfBoundsException");
+        CommonNodeELWrapper nodeA = ELBus.commonNode("a").retry(2, "java.lang.NullPointerException");
+        CommonNodeELWrapper nodeB = ELBus.commonNode("b").retry(3, "java.lang.NullPointerException", "java.lang.ArrayIndexOutOfBoundsException");
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.retry(2,\"java.lang.NullPointerException\"),b.retry(3,\"java.lang.NullPointerException\",\"java.lang.ArrayIndexOutOfBoundsException\"));",
                 whenELWrapper.toEL());
@@ -52,8 +47,4 @@ public class RetryBuilderTest extends BaseTest {
                 whenELWrapper.toEL());
     }
 
-    @AfterAll
-    public static void after(){
-        ELBus.setNodeWrapper(true);
-    }
 }

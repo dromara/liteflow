@@ -26,7 +26,7 @@ public class LocalContextAware implements ContextAware {
 
     @Override
     public <T> T registerBean(String beanName, Class<T> clazz) {
-        return ReflectUtil.newInstance(clazz);
+        return ReflectUtil.newInstanceIfPossible(clazz);
     }
 
     @Override

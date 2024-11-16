@@ -2,9 +2,7 @@ package com.yomahub.liteflow.test.builder;
 
 import com.yomahub.liteflow.builder.el.*;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,17 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 @EnableAutoConfiguration
 public class MaxWaitSecondBuilderTest extends BaseTest {
 
-    @BeforeAll
-    public static void init(){
-        ELBus.setNodeWrapper(false);
-    }
-
-
     // node层面
     @Test
     public void testMaxWaitSecond1(){
-        NodeELWrapper nodeA = ELBus.node("a").maxWaitSeconds(4);
-        NodeELWrapper nodeB = ELBus.node("b").maxWaitSeconds(4);
+        CommonNodeELWrapper nodeA = ELBus.commonNode("a").maxWaitSeconds(4);
+        CommonNodeELWrapper nodeB = ELBus.commonNode("b").maxWaitSeconds(4);
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.maxWaitSeconds(4),b.maxWaitSeconds(4));", whenELWrapper.toEL());
     }
@@ -71,8 +63,4 @@ public class MaxWaitSecondBuilderTest extends BaseTest {
         Assertions.assertEquals("ITERATOR(i).DO(a).maxWaitSeconds(5);", iteratorELWrapper.toEL());
     }
 
-    @AfterAll
-    public static void after(){
-        ELBus.setNodeWrapper(true);
-    }
 }

@@ -156,6 +156,10 @@ public class LiteflowResponse {
 		return getExecuteStepStrWithoutTime();
 	}
 
+	public String getExecuteStepStrWithInstanceId() {
+		return this.getSlot().getExecuteStepStrWithInstanceId();
+	}
+
 	public String getExecuteStepStrWithTime() {
 		return this.getSlot().getExecuteStepStr(true);
 	}

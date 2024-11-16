@@ -27,18 +27,22 @@ import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.TupleOf2;
 
 import java.util.Stack;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Node节点，实现可执行器 Node节点并不是单例的，每构建一次都会copy出一个新的实例
  *
  * @author Bryan.Zhang
  * @author luo yi
+ * @author Jay li
  */
 public class Node implements Executable, Cloneable, Rollbackable{
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(Node.class);
 
 	private String id;
+
+	private String instanceId;
 
 	private String name;
 
@@ -95,6 +99,14 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return id;
 	}
 
+	public String getInstanceId() {
+		return instanceId;
+	}
+
+	public void setInstanceId(String instanceId) {
+		this.instanceId = instanceId;
+	}
+
 	@Override
 	public void setId(String id) {
 		this.id = id;
@@ -146,6 +158,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			// 把线程属性赋值给组件对象
 			this.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
+			instance.setInstanceId(this.instanceId);
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (getAccessResult() || instance.isAccess()) {
@@ -294,22 +307,31 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		this.isContinueOnErrorResult.remove();
 	}
 
+	// 这个锁用于异步循环场景
+	private ReentrantLock lock4LoopIndex = new ReentrantLock();
+
 	public void setLoopIndex(LoopCondition condition, int index) {
-		if (this.loopIndexTL.get() == null){
-			Stack<TupleOf2<Integer, Integer>> stack = new Stack<>();
-			TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
-			stack.push(tuple);
-			this.loopIndexTL.set(stack);
-		}else{
-			Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
-			TupleOf2<Integer, Integer> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
-			if (thisConditionTuple != null){
-				thisConditionTuple.setB(index);
-			}else{
+		try{
+			lock4LoopIndex.lock();
+			if (this.loopIndexTL.get() == null){
+				Stack<TupleOf2<Integer, Integer>> stack = new Stack<>();
 				TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
 				stack.push(tuple);
+				this.loopIndexTL.set(stack);
+			}else{
+				Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+				TupleOf2<Integer, Integer> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
+				if (thisConditionTuple != null){
+					thisConditionTuple.setB(index);
+				}else{
+					TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
+					stack.push(tuple);
+				}
 			}
+		}finally {
+			lock4LoopIndex.unlock();
 		}
+
 	}
 
 	public Integer getLoopIndex() {
@@ -335,31 +357,44 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public void removeLoopIndex() {
-		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
-		if (stack != null){
-			if (stack.size() > 1){
-				stack.pop();
-			}else{
-				this.loopIndexTL.remove();
+		try{
+			lock4LoopIndex.lock();
+			Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+			if (stack != null){
+				if (stack.size() > 1){
+					stack.pop();
+				}else{
+					this.loopIndexTL.remove();
+				}
 			}
+		}finally {
+			lock4LoopIndex.unlock();
 		}
 	}
 
+	// 这个锁用于异步循环场景
+	private ReentrantLock lock4LoopObj = new ReentrantLock();
+
 	public void setCurrLoopObject(LoopCondition condition, Object obj) {
-		if (this.loopObjectTL.get() == null){
-			Stack<TupleOf2<Integer, Object>> stack = new Stack<>();
-			TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
-			stack.push(tuple);
-			this.loopObjectTL.set(stack);
-		}else{
-			Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
-			TupleOf2<Integer, Object> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
-			if (thisConditionTuple != null){
-				thisConditionTuple.setB(obj);
-			}else{
+		try{
+			lock4LoopObj.lock();
+			if (this.loopObjectTL.get() == null){
+				Stack<TupleOf2<Integer, Object>> stack = new Stack<>();
 				TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
 				stack.push(tuple);
+				this.loopObjectTL.set(stack);
+			}else{
+				Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+				TupleOf2<Integer, Object> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
+				if (thisConditionTuple != null){
+					thisConditionTuple.setB(obj);
+				}else{
+					TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
+					stack.push(tuple);
+				}
 			}
+		}finally {
+			lock4LoopObj.unlock();
 		}
 	}
 
@@ -386,14 +421,20 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public void removeCurrLoopObject() {
-		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
-		if (stack != null){
-			if (stack.size() > 1){
-				stack.pop();
-			}else{
-				this.loopObjectTL.remove();
+		try{
+			lock4LoopObj.lock();
+			Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+			if (stack != null){
+				if (stack.size() > 1){
+					stack.pop();
+				}else{
+					this.loopObjectTL.remove();
+				}
 			}
+		}finally {
+			lock4LoopObj.unlock();
 		}
+
 	}
 
 	public Integer getSlotIndex(){
@@ -442,6 +483,8 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
 		node.isContinueOnErrorResult = new TransmittableThreadLocal<>();
+		node.lock4LoopIndex = new ReentrantLock();
+		node.lock4LoopObj = new ReentrantLock();
 		return node;
 	}
 }

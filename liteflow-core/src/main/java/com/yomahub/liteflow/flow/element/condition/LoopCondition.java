@@ -8,18 +8,20 @@ import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
  * 循环Condition的抽象类 主要继承对象有ForCondition和WhileCondition
  *
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.9.0
  */
 public abstract class LoopCondition extends Condition {
     //判断循环是否并行执行，默认为false
     private boolean parallel = false;
+    //loop condition层级的线程池
+    private String threadPoolExecutorClass;
 
     protected Executable getBreakItem() {
         return this.getExecutableOne(ConditionKey.BREAK_KEY);
@@ -35,6 +37,14 @@ public abstract class LoopCondition extends Condition {
 
     public void setDoExecutor(Executable executable) {
         this.addExecutable(ConditionKey.DO_KEY, executable);
+    }
+
+    public String getThreadPoolExecutorClass() {
+        return threadPoolExecutorClass;
+    }
+
+    public void setThreadPoolExecutorClass(String threadPoolExecutorClass) {
+        this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
 
     protected void setLoopIndex(Executable executableItem, int index) {
@@ -102,11 +112,6 @@ public abstract class LoopCondition extends Condition {
         }
     }
 
-    // 这个锁用于异步循环场景
-    // 当异步循环时，其实等同于所有的循环的子项在一个线程池内进行提交。
-    // 这时候如果不加锁的话，在Node对象中的迭代TL对象以及循环下标TL对象，由于要进行stream的循环，但是原stack对象会被其他线程修改掉，从而报错
-    private final ReentrantLock lock = new ReentrantLock();
-
     // 循环并行执行的Supplier封装
     public class LoopParallelSupplier implements Supplier<LoopFutureObj> {
         private final Executable executableItem;
@@ -134,7 +139,6 @@ public abstract class LoopCondition extends Condition {
 
         @Override
         public LoopFutureObj get() {
-            lock.lock();
             try {
                 executableItem.setCurrChainId(this.currChainId);
                 // 设置循环index
@@ -147,8 +151,6 @@ public abstract class LoopCondition extends Condition {
                 return LoopFutureObj.success(executableItem.getId());
             } catch (Exception e) {
                 return LoopFutureObj.fail(executableItem.getId(), e);
-            }finally {
-                lock.unlock();
             }
         }
     }

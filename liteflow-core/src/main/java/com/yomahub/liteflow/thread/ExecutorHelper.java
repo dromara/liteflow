@@ -11,22 +11,29 @@ package com.yomahub.liteflow.thread;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.ThreadExecutorServiceCreateException;
+import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yomahub.liteflow.thread.ExecutorCondition.ExecutorCondition;
+import com.yomahub.liteflow.thread.ExecutorCondition.ExecutorConditionBuilder;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 线程池工具类
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 public class ExecutorHelper {
 
@@ -89,7 +96,7 @@ public class ExecutorHelper {
 	// 构建默认when线程池
 	public ExecutorService buildWhenExecutor() {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutor(liteflowConfig.getThreadExecutorClass());
+		return buildWhenExecutor(liteflowConfig.getGlobalThreadPoolExecutorClass());
 	}
 
 	// 构建when线程池 - 支持多个when公用一个线程池
@@ -101,17 +108,17 @@ public class ExecutorHelper {
 	}
 
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
-	public ExecutorService buildWhenExecutorWithHash(String conditionHash) {
+	public ExecutorService buildWhenExecutorWithHash(String hash) {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return buildWhenExecutorWithHash(liteflowConfig.getThreadExecutorClass(), conditionHash);
+		return buildWhenExecutorWithHash(liteflowConfig.getGlobalThreadPoolExecutorClass(), hash);
 	}
 
 	// 构建when线程池 - clazz和condition的hash值共同作为缓存key
-	public ExecutorService buildWhenExecutorWithHash(String clazz, String conditionHash) {
+	public ExecutorService buildWhenExecutorWithHash(String clazz, String hash) {
 		if (StrUtil.isBlank(clazz)) {
-			return buildWhenExecutorWithHash(conditionHash);
+			return buildWhenExecutorWithHash(hash);
 		}
-		return getExecutorService(clazz, conditionHash);
+		return getExecutorService(clazz, hash);
 	}
 
 	// 构建默认的FlowExecutor线程池，用于execute2Future方法
@@ -127,12 +134,6 @@ public class ExecutorHelper {
 		return getExecutorService(clazz);
 	}
 
-	//构造并行循环的线程池
-	public ExecutorService buildLoopParallelExecutor(){
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		return getExecutorService(liteflowConfig.getParallelLoopExecutorClass());
-	}
-
 	private ExecutorService getExecutorService(String clazz){
 		return getExecutorService(clazz, null);
 	}
@@ -140,13 +141,13 @@ public class ExecutorHelper {
 	/**
 	 * 根据线程执行构建者Class类名获取ExecutorService实例
 	 */
-	private ExecutorService getExecutorService(String clazz, String conditionHash) {
+	private ExecutorService getExecutorService(String clazz, String hash) {
 		try {
 			String key;
-			if (StrUtil.isBlank(conditionHash)){
+			if (StrUtil.isBlank(hash)) {
 				key = clazz;
 			}else{
-				key = StrUtil.format("{}_{}", clazz, conditionHash);
+				key = StrUtil.format("{}_{}", clazz, hash);
 			}
 
 			ExecutorService executorServiceFromCache = executorServiceMap.get(key);
@@ -172,5 +173,46 @@ public class ExecutorHelper {
 			executorServiceMap.clear();
 		}
 	}
+
+	/**
+	 * 构建执行器服务
+	 *
+	 * @param condition 条件对象（Loop或When条件）
+	 * @param slotIndex 槽索引
+	 * @param type      condition类型
+	 * @return ExecutorService
+	 */
+	public ExecutorService buildExecutorService(Condition condition, Integer slotIndex, ConditionTypeEnum type) {
+		ExecutorService executor;
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+		String chainId = DataBus.getSlot(slotIndex).getChainId();
+		Chain chain = FlowBus.getChain(chainId);
+
+		// 构建条件判断对象
+		ExecutorCondition execCondition = ExecutorConditionBuilder.buildExecutorCondition(
+				condition,
+				chain,
+				liteflowConfig,
+				type
+		);
+
+		// 根据条件选择执行器
+		if (execCondition.isConditionLevel()) {
+			// condition层级线程池
+			executor = getExecutorService(execCondition.getConditionExecutorClass(),
+										  String.valueOf(condition.hashCode()));
+
+		} else if (execCondition.isChainLevel()) {
+			// chain层级线程池
+			executor = getExecutorService(chain.getThreadPoolExecutorClass(),
+										  String.valueOf(chain.hashCode()));
+		} else {
+			// 全局线程池
+			executor = getExecutorService(liteflowConfig.getGlobalThreadPoolExecutorClass());
+		}
+
+		return executor;
+	}
+
 
 }

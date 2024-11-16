@@ -15,9 +15,10 @@
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="parallelLoop/flow.xml"/>
-        <property name="parallelMaxWorkers" value="10"/>
-        <property name="parallelQueueLimit" value="1024"/>
-        <property name="parallelLoopExecutorClass" value="com.yomahub.liteflow.test.parallelLoop.CustomThreadExecutor"/>
+        <property name="globalThreadPoolSize" value="10"/>
+        <property name="globalThreadPoolQueueSize" value="1024"/>
+        <property name="globalThreadPoolExecutorClass"
+                  value="com.yomahub.liteflow.test.parallelLoop.CustomThreadExecutor"/>
     </bean>
 
     <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">

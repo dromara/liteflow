@@ -27,108 +27,108 @@ public class ThenELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        System.out.println(ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true));
         String expected = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\ta.tag(\"tagA\").data(nodeData).maxWaitSeconds(10).retry(2),\n\tnode(\"b\")\n);";
-        Assertions.assertEquals(expected,
-                ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true));
+        String actualEl = ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true);
+        System.out.println(actualEl);
+        Assertions.assertEquals(expected, actualEl);
     }
 
     // then组件测试
     @Test
     public void testThen1(){
         Assertions.assertEquals("THEN(node(\"a\"),node(\"b\"));",
-                ELBus.then("a", "b").toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", "b").toEL()));
+                ELBus.then(ELBus.node("a"), ELBus.node("b")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.node("b")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen2(){
         Assertions.assertEquals("THEN(\n\tnode(\"a\")," +
                         "\n\tnode(\"b\")\n);",
-                ELBus.then("a", "b").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.node("b")).toEL(true));
         System.out.println("THEN(\n\tnode(\"a\")," +
                 "\n\tnode(\"b\")\n);");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", "b").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.node("b")).toEL(true)));
     }
     // then组件then方法调用测试
     @Test
     public void testThen3(){
         Assertions.assertEquals("THEN(node(\"a\"),node(\"b\"),node(\"c\"));",
-                ELBus.then("a", "b").then("c").toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", "b").then("c").toEL()));
+                ELBus.then(ELBus.node("a"), ELBus.node("b")).then(ELBus.node("c")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.node("b")).then(ELBus.node("c")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen4(){
         Assertions.assertEquals("THEN(\n\tnode(\"a\"),\n\tnode(\"b\")," +
                         "\n\tnode(\"c\")\n);",
-                ELBus.then("a", "b").then("c").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.node("b")).then(ELBus.node("c")).toEL(true));
         System.out.println("THEN(\n\tnode(\"a\"),\n\tnode(\"b\")," +
                 "\n\tnode(\"c\")\n);");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", "b").then("c").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.node("b")).then(ELBus.node("c")).toEL(true)));
     }
     // then组件嵌套调用测试
     @Test
     public void testThen5(){
         Assertions.assertEquals("THEN(node(\"a\"),THEN(node(\"b\"),node(\"c\")),node(\"d\"));",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").toEL());
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").toEL()));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).toEL());
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen6(){
         Assertions.assertEquals("THEN(\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\")\n);",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).toEL(true));
         System.out.println("THEN(\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\")\n);");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).toEL(true)));
     }
     // pre组件测试
     @Test
     public void testThen7(){
         Assertions.assertEquals("THEN(PRE(node(\"p\")),PRE(node(\"pp\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")),node(\"d\"));",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").pre("pp").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).pre(ELBus.node("pp")).toEL());
         System.out.println("THEN(PRE(node(\"p\")),PRE(node(\"pp\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")),node(\"d\"));");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").pre("pp").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).pre(ELBus.node("pp")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen8(){
         Assertions.assertEquals("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tPRE(\n\t\tnode(\"pp\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\")\n);",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").pre("pp").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).pre(ELBus.node("pp")).toEL(true));
         System.out.println("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tPRE(\n\t\tnode(\"pp\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\")\n);");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").pre("pp").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).pre(ELBus.node("pp")).toEL(true)));
     }
     // pre finally 格式测试
     @Test
     public void testThen9(){
         Assertions.assertEquals("THEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")),node(\"d\"),FINALLY(node(\"f\")));",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").finallyOpt("f").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL());
         System.out.println("THEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")),node(\"d\"),FINALLY(node(\"f\")));");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").finallyOpt("f").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen10(){
         Assertions.assertEquals("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\"),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n);",
-                ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").finallyOpt("f").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true));
         System.out.println("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tnode(\"d\"),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n);");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c")).then("d").pre("p").finallyOpt("f").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c"))).then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true)));
     }
     // 属性设置测试
     @Test
     public void testThen11(){
         Assertions.assertEquals("THEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\"),FINALLY(node(\"f\"))).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then("d").pre("p").finallyOpt("f").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL());
         System.out.println("THEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\"),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then("d").pre("p").finallyOpt("f").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen12(){
         Assertions.assertEquals("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\"),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then("d").pre("p").finallyOpt("f").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true));
         System.out.println("THEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\"),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then("d").pre("p").finallyOpt("f").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true)));
     }
     // data属性测试
     @Test
@@ -138,9 +138,9 @@ public class ThenELBuilderTest extends BaseTest {
         name2Value.put("age", 18);
         System.out.println(JsonUtil.toJsonString(name2Value));
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL());
         System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL()));
     }
     // 格式化输出测试
     @Test
@@ -149,25 +149,25 @@ public class ThenELBuilderTest extends BaseTest {
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true));
         System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true)));
     }
     // data属性测试 Json字符串赋值data
     @Test
     public void testThen15(){
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL());
 //        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL()));
     }
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testThen16(){
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true));
 //        System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre("p").finallyOpt("f").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", "{\"name\":\"zhangsan\",\"age\":18}")).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true)));
     }
     private static class ParamClass{
         private String name;
@@ -186,9 +186,9 @@ public class ThenELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         name2Value.age = 18;
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL());
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL());
         System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(PRE(node(\"p\")),node(\"a\"),THEN(node(\"b\"),node(\"c\")).id(\"this is a id\"),node(\"d\").data(thenData),FINALLY(node(\"f\"))).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL()));
     }
     // 格式化输出测试
     @Test
@@ -197,26 +197,26 @@ public class ThenELBuilderTest extends BaseTest {
         name2Value.name = "zhangsan";
         name2Value.age = 18;
         Assertions.assertEquals("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");",
-                ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL(true));
+                ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true));
         System.out.println("thenData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\tPRE(\n\t\tnode(\"p\")\n\t),\n\tnode(\"a\"),\n\tTHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t).id(\"this is a id\"),\n\tnode(\"d\").data(thenData),\n\tFINALLY(\n\t\tnode(\"f\")\n\t)\n).tag(\"this is a tag\");");
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a", ELBus.then("b").then("c").id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre("p").finallyOpt("f").toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a"), ELBus.then(ELBus.node("b")).then(ELBus.node("c")).id("this is a id")).tag("this is a tag").then(ELBus.node("d").data("thenData", name2Value)).pre(ELBus.node("p")).finallyOpt(ELBus.node("f")).toEL(true)));
     }
     // maxWaitSecond测试
     @Test
     public void testThen19(){
         String expectedStr = "THEN(node(\"a\"),node(\"b\")).maxWaitSeconds(5);";
         Assertions.assertEquals(expectedStr,
-                ELBus.then("a").then("b").maxWaitSeconds(5).toEL());
+                ELBus.then(ELBus.node("a")).then(ELBus.node("b")).maxWaitSeconds(5).toEL());
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a").then("b").maxWaitSeconds(5).toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a")).then(ELBus.node("b")).maxWaitSeconds(5).toEL()));
     }
     // 格式化输出测试
     @Test
     public void testThen20(){
         String expectedStr = "THEN(\n\tnode(\"a\"),\n\tnode(\"b\")\n).maxWaitSeconds(5);";
         Assertions.assertEquals(expectedStr,
-                ELBus.then("a").then("b").maxWaitSeconds(5).toEL(true));
+                ELBus.then(ELBus.node("a")).then(ELBus.node("b")).maxWaitSeconds(5).toEL(true));
         System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then("a").then("b").maxWaitSeconds(5).toEL(true)));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.then(ELBus.node("a")).then(ELBus.node("b")).maxWaitSeconds(5).toEL(true)));
     }
 }

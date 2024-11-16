@@ -1,19 +1,14 @@
-package com.yomahub.liteflow.thread;
+package com.yomahub.liteflow.test.chainThreadPool;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.thread.ExecutorBuilder;
 
 import java.util.concurrent.ExecutorService;
 
-/**
- * LiteFlow默认的并行循环执行器实现
- *
- * @author zhhhhy
- * @since 2.11.0
- */
+public class CustomGlobalThreadExecutor implements ExecutorBuilder {
 
-public class LiteFlowDefaultParallelLoopExecutorBuilder implements ExecutorBuilder {
     @Override
     public ExecutorService buildExecutor() {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
@@ -21,7 +16,8 @@ public class LiteFlowDefaultParallelLoopExecutorBuilder implements ExecutorBuild
         if (ObjectUtil.isNull(liteflowConfig)) {
             liteflowConfig = new LiteflowConfig();
         }
-        return buildDefaultExecutor(liteflowConfig.getParallelMaxWorkers(), liteflowConfig.getParallelMaxWorkers(),
-                liteflowConfig.getParallelQueueLimit(), "loop-thread-");
+        return buildDefaultExecutor(16, 16,
+                                    512, "customer-global-thead");
     }
+
 }

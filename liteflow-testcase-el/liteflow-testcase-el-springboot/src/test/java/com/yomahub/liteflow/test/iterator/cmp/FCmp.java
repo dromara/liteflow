@@ -13,6 +13,9 @@ public class FCmp extends NodeComponent {
 	public void process() throws Exception {
 		Object obj1 = this.getPreLoopObj();
 		Object obj2 = this.getCurrLoopObj();
+		if (obj1 == null || obj2 == null) {
+			throw new RuntimeException("");
+		}
 		System.out.println(StrUtil.format("{}{}", obj1, obj2));
 	}
 }

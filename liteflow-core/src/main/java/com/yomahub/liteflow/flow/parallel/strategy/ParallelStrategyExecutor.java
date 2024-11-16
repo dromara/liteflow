@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.flow.parallel.strategy;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
@@ -34,6 +33,7 @@ import java.util.stream.Stream;
  *
  * @author luo yi
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.11.0
  */
 public abstract class ParallelStrategyExecutor {
@@ -117,29 +117,6 @@ public abstract class ParallelStrategyExecutor {
         });
     }
 
-    /**
-     * 获取 WHEN 所需线程池
-     * @param whenCondition
-     * @return
-     */
-    protected ExecutorService getWhenExecutorService(WhenCondition whenCondition) {
-
-        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-
-        // 如果设置了线程池隔离，则每个 when 都会有对应的线程池，这是为了避免多层嵌套时如果线程池数量不够时出现单个线程池死锁。用线程池隔离的方式会更加好
-        // 如果 when 没有超多层的嵌套，还是用默认的比较好。
-        // 默认设置不隔离。也就是说，默认情况是一个线程池类一个实例，如果什么都不配置，那也就是在 when 的情况下，全局一个线程池。
-        ExecutorService parallelExecutor;
-
-        if (BooleanUtil.isTrue(liteflowConfig.getWhenThreadPoolIsolate())) {
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutorWithHash(whenCondition.getThreadExecutorClass(), String.valueOf(whenCondition.hashCode()));
-        } else {
-            parallelExecutor = ExecutorHelper.loadInstance().buildWhenExecutor(whenCondition.getThreadExecutorClass());
-        }
-
-        return parallelExecutor;
-
-    }
 
     /**
      * 获取所有任务 CompletableFuture 集合
@@ -155,7 +132,10 @@ public abstract class ParallelStrategyExecutor {
         this.setWhenConditionParams(whenCondition);
 
         // 获取 WHEN 所需线程池
-        ExecutorService parallelExecutor = getWhenExecutorService(whenCondition);
+        ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(whenCondition,
+                                                                                              slotIndex,
+                                                                                              whenCondition.getConditionType());
+
 
         // 这里主要是做了封装 CompletableFuture 对象，用 lambda 表达式做了很多事情，这句代码要仔细理清
         // 根据 condition.getNodeList() 的集合进行流处理，用 map 进行把 executable 对象转换成 List<CompletableFuture<WhenFutureObj>>

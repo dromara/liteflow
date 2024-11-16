@@ -1,8 +1,11 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.*;
+import cn.hutool.crypto.digest.MD5;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
 import com.ql.util.express.ExpressRunner;
@@ -24,18 +27,24 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.util.ElRegexUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.yomahub.liteflow.common.ChainConstant.NODE_INSTANCE_PATH;
+import static com.yomahub.liteflow.common.ChainConstant.USER_DIR;
+import static com.yomahub.liteflow.util.JsonUtil.parseObject;
+import static com.yomahub.liteflow.util.JsonUtil.toJsonString;
+import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
+
 
 /**
  * Chain基于代码形式的组装器 EL表达式规则专属组装器
  *
  * @author Bryan.Zhang
+ * @author Jay li
+ * @author jason
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
@@ -215,6 +224,10 @@ public class LiteFlowChainELBuilder {
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
 			}
 
+			if (liteflowConfig.getEnableNodeInstanceId()) {
+				setNodesInstanceId(condition);
+			}
+
 			// 把主要的condition加入
 			this.conditionList.add(condition);
 			return this;
@@ -235,11 +248,81 @@ public class LiteFlowChainELBuilder {
 		}
 	}
 
+    private void setNodesInstanceId(Condition condition) {
+        File nodeDir = new File(System.getProperty(USER_DIR)+  File.separator + NODE_INSTANCE_PATH + File.separator + this.chain.getChainId());
+        String elMd5 = MD5.create().digestHex(chain.getEl());
+
+        // 如果文件不存在，或者文件内容不是当前el，则写入
+        if (FileUtil.isEmpty(nodeDir) || !FileUtil.readLines(nodeDir.getPath(), CharsetUtil.UTF_8).get(0).equals(elMd5)) {
+            writeNodeInstanceId(nodeDir, condition, elMd5);
+        } else {
+            // 文件存在，则直接读取
+            List<String> nodeList = FileUtil.readLines(nodeDir.getPath(), CharsetUtil.UTF_8);
+
+            Map<String, List<String>> executableMap = new HashMap<>();
+            for (int i = 1; i < nodeList.size(); i++) {
+                JsonNode groupKeyAndInstanceIds = parseObject(nodeList.get(i));
+
+				Iterator<String> fieldNames = groupKeyAndInstanceIds.fieldNames();
+				while (fieldNames.hasNext()) {
+					String key = fieldNames.next();
+					JsonNode valueNode = groupKeyAndInstanceIds.get(key);
+					if (valueNode.isArray()) {
+						List<String> valueList = new ArrayList<>();
+						for (JsonNode item : valueNode) {
+							valueList.add(item.asText());
+						}
+						executableMap.put(key, valueList);
+					}
+	            }
+			}
+
+            condition.getExecutableGroup().forEach((key, executables) -> {
+                AtomicInteger index = new AtomicInteger(0);
+                executables.forEach(executable -> {
+                    if (executableMap.containsKey(key)) {
+                        if (executable instanceof Node) {
+                            ((Node) executable).setInstanceId((executableMap.get(key).get(index.getAndIncrement())));
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    // 写入时第一行为el的md5，第二行为json格式的groupKey和对应的实例id
+    private void writeNodeInstanceId(File nodeDir, Condition condition, String elMd5) {
+        ArrayList<String> writeList = new ArrayList<>();
+        writeList.add(elMd5);
+
+        condition.getExecutableGroup().forEach((key, executables) -> {
+            Map<String, List<String>> groupKeyAndInstanceIds = new HashMap<>();
+            List<String> instanceIds = new ArrayList<>();
+
+            executables.forEach(executable -> {
+                if (executable instanceof Node) {
+                    ((Node) executable).setInstanceId(generateShortUUID());
+                    instanceIds.add(((Node) executable).getInstanceId());
+                }
+            });
+
+			groupKeyAndInstanceIds.put(key, instanceIds);
+			writeList.add(toJsonString(groupKeyAndInstanceIds));
+		});
+
+        FileUtil.writeLines(writeList, nodeDir.getPath(), CharsetUtil.UTF_8);
+    }
+
 	public LiteFlowChainELBuilder setNamespace(String nameSpace){
 		if (StrUtil.isBlank(nameSpace)) {
 			nameSpace = ChainConstant.DEFAULT_NAMESPACE;
 		}
 		this.chain.setNamespace(nameSpace);
+		return this;
+	}
+
+	public LiteFlowChainELBuilder setThreadPoolExecutorClass(String threadPoolExecutorClass) {
+		this.chain.setThreadPoolExecutorClass(threadPoolExecutorClass);
 		return this;
 	}
 
@@ -263,8 +346,6 @@ public class LiteFlowChainELBuilder {
     public static ValidationResp validateWithEx(String elStr) {
         ValidationResp resp = new ValidationResp();
         try {
-            // 移除注释
-            elStr = ElRegexUtil.removeComments(elStr);
             LiteFlowChainELBuilder.createChain().setEL(elStr);
             resp.setSuccess(true);
         } catch (Exception e) {
