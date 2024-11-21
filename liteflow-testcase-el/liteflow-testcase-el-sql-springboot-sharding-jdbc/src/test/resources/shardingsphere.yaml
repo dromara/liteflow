@@ -1,0 +1,29 @@
+rules:
+  - !SINGLE
+    tables:
+      - "*.*" # Load all single tables
+  - !READWRITE_SPLITTING
+    dataSources:
+      readwrite_ds:
+        writeDataSourceName: ds_2
+        readDataSourceNames:
+          - ds_1
+        transactionalReadQueryStrategy: PRIMARY
+        loadBalancerName: random
+    loadBalancers:
+      random:
+        type: RANDOM
+
+dataSources:
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: org.h2.Driver
+    jdbcUrl: jdbc:h2:mem:test_db1;INIT=RUNSCRIPT FROM 'classpath:sql/schema.sql'\;RUNSCRIPT FROM 'classpath:sql/data.sql'
+    username: root1
+    password: 123456
+  ds_2:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: org.h2.Driver
+    jdbcUrl: jdbc:h2:mem:test_db2;INIT=RUNSCRIPT FROM 'classpath:sql/second/schema.sql'\;RUNSCRIPT FROM 'classpath:sql/second/data.sql'
+    username: root2
+    password: 123456

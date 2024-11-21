@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.springboot;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * 执行流程主要的参数类
  *
  * @author Bryan.Zhang
+ * @author jason
  */
 @ConfigurationProperties(prefix = "liteflow", ignoreUnknownFields = true)
 public class LiteflowProperty {
@@ -35,9 +38,6 @@ public class LiteflowProperty {
 	// FlowExecutor的execute2Future的自定义线程池
 	private String mainExecutorClass;
 
-	// 并行线程执行器class路径
-	private String threadExecutorClass;
-
 	// 异步线程最大等待描述
 	@Deprecated
 	private int whenMaxWaitSeconds;
@@ -45,12 +45,6 @@ public class LiteflowProperty {
 	private int whenMaxWaitTime;
 
 	private TimeUnit whenMaxWaitTimeUnit;
-
-	// 异步线程池最大线程数
-	private int whenMaxWorkers;
-
-	// 异步线程池最大队列数量
-	private int whenQueueLimit;
 
 	// 异步线程池是否隔离
 	private boolean whenThreadPoolIsolate;
@@ -80,14 +74,6 @@ public class LiteflowProperty {
 
 	// 规则文件/脚本文件变更监听
 	private boolean enableMonitorFile;
-
-	private String parallelLoopExecutorClass;
-
-	//使用默认并行循环线程池时，最大线程数
-	private int parallelMaxWorkers;
-
-	//使用默认并行循环线程池时，最大队列数
-	private int parallelQueueLimit;
 	
 	// 是否启用组件降级
 	private boolean fallbackCmpEnable;
@@ -100,6 +86,15 @@ public class LiteflowProperty {
 
 	//脚本特殊设置选项
 	private Map<String, String> scriptSetting;
+
+    //全局线程池所用class路径(when+异步循环)
+    private String globalThreadPoolExecutorClass;
+
+    //全局线程池最大线程数(when+异步循环)
+    private Integer globalThreadPoolSize;
+
+    //全局线程池最大队列数(when+异步循环)
+    private Integer globalThreadPoolQueueSize;
 
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
@@ -149,22 +144,6 @@ public class LiteflowProperty {
 		this.whenMaxWaitSeconds = whenMaxWaitSeconds;
 	}
 
-	public int getWhenMaxWorkers() {
-		return whenMaxWorkers;
-	}
-
-	public void setWhenMaxWorkers(int whenMaxWorkers) {
-		this.whenMaxWorkers = whenMaxWorkers;
-	}
-
-	public int getWhenQueueLimit() {
-		return whenQueueLimit;
-	}
-
-	public void setWhenQueueLimit(int whenQueueLimit) {
-		this.whenQueueLimit = whenQueueLimit;
-	}
-
 	public ParseModeEnum getParseMode() {
 		return parseMode;
 	}
@@ -197,14 +176,6 @@ public class LiteflowProperty {
 
 	public void setPrintBanner(boolean printBanner) {
 		this.printBanner = printBanner;
-	}
-
-	public String getThreadExecutorClass() {
-		return threadExecutorClass;
-	}
-
-	public void setThreadExecutorClass(String threadExecutorClass) {
-		this.threadExecutorClass = threadExecutorClass;
 	}
 
 	public String getNodeExecutorClass() {
@@ -279,30 +250,6 @@ public class LiteflowProperty {
 		this.whenMaxWaitTimeUnit = whenMaxWaitTimeUnit;
 	}
 
-	public String getParallelLoopExecutorClass() {
-		return parallelLoopExecutorClass;
-	}
-
-	public void setParallelLoopExecutorClass(String parallelLoopExecutorClass) {
-		this.parallelLoopExecutorClass = parallelLoopExecutorClass;
-	}
-
-	public int getParallelMaxWorkers() {
-		return parallelMaxWorkers;
-	}
-
-	public void setParallelMaxWorkers(int parallelMaxWorkers) {
-		this.parallelMaxWorkers = parallelMaxWorkers;
-	}
-
-	public int getParallelQueueLimit() {
-		return parallelQueueLimit;
-	}
-
-	public void setParallelQueueLimit(int parallelQueueLimit) {
-		this.parallelQueueLimit = parallelQueueLimit;
-	}
-
 	public boolean isFallbackCmpEnable() {
 		return fallbackCmpEnable;
 	}
@@ -342,6 +289,42 @@ public class LiteflowProperty {
 	public void setScriptSetting(Map<String, String> scriptSetting) {
 		this.scriptSetting = scriptSetting;
 	}
+
+    public Integer getGlobalThreadPoolSize() {
+        if (ObjectUtil.isNull(globalThreadPoolSize)) {
+            return 16;
+        } else {
+            return globalThreadPoolSize;
+        }
+    }
+
+    public void setGlobalThreadPoolSize(Integer globalThreadPoolSize) {
+        this.globalThreadPoolSize = globalThreadPoolSize;
+    }
+
+    public Integer getGlobalThreadPoolQueueSize() {
+        if (ObjectUtil.isNull(globalThreadPoolQueueSize)) {
+            return 512;
+        } else {
+            return globalThreadPoolQueueSize;
+        }
+    }
+
+    public void setGlobalThreadPoolQueueSize(Integer globalThreadPoolQueueSize) {
+        this.globalThreadPoolQueueSize = globalThreadPoolQueueSize;
+    }
+
+    public String getGlobalThreadPoolExecutorClass() {
+        if (StrUtil.isBlank(globalThreadPoolExecutorClass)) {
+            return "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder";
+        } else {
+            return globalThreadPoolExecutorClass;
+        }
+    }
+
+    public void setGlobalThreadPoolExecutorClass(String globalThreadPoolExecutorClass) {
+        this.globalThreadPoolExecutorClass = globalThreadPoolExecutorClass;
+    }
 
 	public boolean isEnableNodeInstanceId() {
 		return enableNodeInstanceId;

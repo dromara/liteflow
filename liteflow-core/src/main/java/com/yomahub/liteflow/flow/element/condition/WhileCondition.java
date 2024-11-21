@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
  * 循环条件Condition
  *
  * @author Bryan.Zhang
+ * @author jason
  * @since 2.9.0
  */
 public class WhileCondition extends LoopCondition {
@@ -61,7 +62,8 @@ public class WhileCondition extends LoopCondition {
 			//并行循环逻辑
 			List<CompletableFuture<LoopFutureObj>> futureList = new ArrayList<>();
 			//获取并行循环的线程池
-			ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildLoopParallelExecutor();
+			ExecutorService parallelExecutor = ExecutorHelper.loadInstance().buildExecutorService(this, slotIndex,
+																								  this.getConditionType());
 			while (getWhileResult(slotIndex, index)){
 				CompletableFuture<LoopFutureObj> future =
 						CompletableFuture.supplyAsync(new LoopParallelSupplier(executableItem, this.getCurrChainId(), slotIndex, index), parallelExecutor);

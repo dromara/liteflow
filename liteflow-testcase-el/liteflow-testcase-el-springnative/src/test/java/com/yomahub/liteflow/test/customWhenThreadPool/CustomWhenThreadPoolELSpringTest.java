@@ -37,7 +37,7 @@ public class CustomWhenThreadPoolELSpringTest extends BaseTest {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain", "arg");
 		DefaultContext context = response.getFirstContextBean();
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(context.getData("threadName").toString().startsWith("when-thread-1"));
+        Assertions.assertTrue(context.getData("threadName").toString().startsWith("global-thread-1"));
 	}
 
 	/**
