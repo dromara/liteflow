@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.spi.spring;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.spi.ContextAware;
@@ -120,6 +121,11 @@ public class SpringAware implements ApplicationContextAware, ContextAware {
     @Override
     public boolean hasBean(String beanName) {
         return applicationContext.containsBean(beanName);
+    }
+
+    @Override
+    public boolean hasBean(Class<?> clazz) {
+        return CollUtil.size(getBeansOfType(clazz)) > 0;
     }
 
     @Override
