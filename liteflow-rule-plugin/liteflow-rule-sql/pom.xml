@@ -25,5 +25,23 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-crypto</artifactId>
         </dependency>
+
+        <!-- 苞米豆动态数据源 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring</artifactId>
+            <version>${dynamic-datasource.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--Sharding JDBC -->
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-core</artifactId>
+            <version>${sharding-jdbc.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

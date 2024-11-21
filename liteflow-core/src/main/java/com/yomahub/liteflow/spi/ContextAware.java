@@ -33,7 +33,19 @@ public interface ContextAware extends SpiPriority {
      */
     <T> Map<String, T> getBeansOfType(Class<T> type);
 
+    /**
+     * 判断是否存在指定名称的bean
+     *
+     * @param beanName bean 名称
+     */
     boolean hasBean(String beanName);
+
+    /**
+     * 判断是否存在指定类型的bean
+     *
+     * @param clazz 类型
+     */
+    boolean hasBean(Class<?> clazz);
 
     Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean);
 

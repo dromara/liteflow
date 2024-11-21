@@ -55,6 +55,11 @@ public class LocalContextAware implements ContextAware {
     }
 
     @Override
+    public boolean hasBean(Class<?> clazz) {
+        return false;
+    }
+
+    @Override
     public Object registerDeclWrapBean(String beanName, DeclWarpBean declWarpBean) {
         return null;
     }

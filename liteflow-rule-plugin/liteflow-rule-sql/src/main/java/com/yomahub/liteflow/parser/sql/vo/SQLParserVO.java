@@ -142,6 +142,16 @@ public class SQLParserVO {
      */
     private Boolean sqlLogEnabled = true;
 
+    /**
+     * 苞米豆动态数据源配置
+     */
+    private DataSourceConfig baomidou;
+
+    /**
+     * sharding jdbc 动态数据源配置
+     */
+    private DataSourceConfig shardingjdbc;
+
     public String getUrl() {
         return url;
     }
@@ -271,10 +281,23 @@ public class SQLParserVO {
     }
 
     /**
-     * 判断配资是否使用 IOC 已有数据源
+     * 判断是否自动查找数据源
      */
-    public boolean isDefaultDataSource() {
-        return StrUtil.isBlank(url) && StrUtil.isBlank(username) && StrUtil.isBlank(password) && StrUtil.isBlank(driverClassName);
+    public boolean isAutoFoundDataSource() {
+        return StrUtil.isBlank(url) &&
+                StrUtil.isBlank(username) &&
+                StrUtil.isBlank(password) &&
+                StrUtil.isBlank(driverClassName);
+    }
+
+    /**
+     * 判断是否使用jdbc连接
+     */
+    public boolean isUseJdbcConn(){
+        return StrUtil.isNotBlank(url) &&
+                StrUtil.isNotBlank(username) &&
+                StrUtil.isNotBlank(password) &&
+                StrUtil.isNotBlank(driverClassName);
     }
 
     public Boolean getPollingEnabled() {
@@ -362,5 +385,33 @@ public class SQLParserVO {
 
     public void setScriptCustomSql(String scriptCustomSql) {
         this.scriptCustomSql = scriptCustomSql;
+    }
+
+    public DataSourceConfig getBaomidou() {
+        return baomidou;
+    }
+
+    public void setBaomidou(DataSourceConfig baomidou) {
+        this.baomidou = baomidou;
+    }
+
+    public DataSourceConfig getShardingjdbc() {
+        return shardingjdbc;
+    }
+
+    public void setShardingjdbc(DataSourceConfig shardingjdbc) {
+        this.shardingjdbc = shardingjdbc;
+    }
+
+    public static class DataSourceConfig {
+        private String dataSourceName;
+
+        public String getDataSourceName() {
+            return dataSourceName;
+        }
+
+        public void setDataSourceName(String dataSourceName) {
+            this.dataSourceName = dataSourceName;
+        }
     }
 }
