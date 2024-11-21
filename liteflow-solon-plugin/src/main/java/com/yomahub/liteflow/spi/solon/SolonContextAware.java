@@ -111,6 +111,11 @@ public class SolonContextAware implements ContextAware {
     }
 
     @Override
+    public boolean hasBean(Class<?> clazz) {
+        return CollUtil.size(getBeansOfType(clazz)) > 0;
+    }
+
+    @Override
     public int priority() {
         return 1;
     }
