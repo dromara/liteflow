@@ -20,6 +20,7 @@ import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
@@ -53,6 +54,7 @@ import java.util.stream.Stream;
  *
  * @author Bryan.Zhang
  * @author DaleLee
+ * @author Jay li
  */
 public class FlowBus {
 
@@ -183,8 +185,33 @@ public class FlowBus {
 	 */
 	public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script,
 			String language) {
-		addNode(nodeId, name, nodeType, ScriptComponent.ScriptComponentClassMap.get(nodeType), script, language);
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+
+		// 如果是PARSE_ONE_ON_FIRST_EXEC模式，则不进行脚本加载，而是直接把脚本内容放到node中
+        if (liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC)) {
+			Node node = new Node(nodeId, name, nodeType, script, language);
+			nodeMap.put(nodeId, node);
+		} else {
+			addScriptNodeAndCompile(nodeId, name, nodeType, script, language);
+        }
+    }
+
+
+	/**
+	 * 添加脚本 node，并且编译脚本
+	 * @param nodeId
+	 * @param name
+	 * @param type
+	 * @param script
+	 * @param language
+	 * @return NodeComponent instance
+	 */
+	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script,
+		String language) {
+		addNode(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type), script, language);
+		return nodeMap.get(nodeId).getInstance();
 	}
+
 
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script,
 			String language) {
@@ -245,6 +272,7 @@ public class FlowBus {
 				}
 
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+                node.setCompiled(true);
 				put2NodeMap(activeNodeId, node);
 				addFallbackNode(node);
 			}
