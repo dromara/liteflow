@@ -2,7 +2,7 @@ package com.yomahub.liteflow.parser.spi.instanceId;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
+import com.yomahub.liteflow.flow.instanceId.BaseInstanceIdGeneratorSpi;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
@@ -22,7 +22,8 @@ import java.util.List;
  * @since 2.12.4
  */
 
-public class SqlInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
+public class SqlInstanceIdGeneratorSpi extends BaseInstanceIdGeneratorSpi {
+
     @Override
     public List<String> readInstanceIdFile(String chainId) {
         SqlRead<InstanceIdVO> insIdRead = SqlReadFactory.getSqlRead(ReadType.INSTANCE_ID);
@@ -41,11 +42,11 @@ public class SqlInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
         SQLParserVO conf = jdbcHelper.getSqlParserVO();
 
         String insertSql = StrUtil.format(SqlReadConstant.INSTANT_INSERT_SQL, conf.getInstanceIdTableName(), conf.getInstanceIdApplicationNameField(),
-                conf.getGroupKeyInstanceIdField(), conf.getElDataMd5Field(), conf.getInstanceChainNameField(), conf.getApplicationName(), instanceIdList.get(1),
+                conf.getGroupKeyInstanceIdField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), instanceIdList.get(1),
                 instanceIdList.get(0), chainId);
         String updateSql = StrUtil.format(SqlReadConstant.INSTANT_UPDATE_SQL, conf.getInstanceIdTableName(), conf.getElDataMd5Field(), instanceIdList.get(0),
                 conf.getGroupKeyInstanceIdField(), instanceIdList.get(1), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
-        String selectSql = StrUtil.format(SqlReadConstant.INSTANT_SELECT_SQL, conf.getInstanceIdTableName(), conf.getInstanceChainNameField(), chainId,
+        String selectSql = StrUtil.format(SqlReadConstant.INSTANT_SELECT_SQL, conf.getInstanceIdTableName(), conf.getInstanceChainIdField(), chainId,
                 conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
 
         jdbcHelper.executeUpsert(selectSql, insertSql, updateSql);

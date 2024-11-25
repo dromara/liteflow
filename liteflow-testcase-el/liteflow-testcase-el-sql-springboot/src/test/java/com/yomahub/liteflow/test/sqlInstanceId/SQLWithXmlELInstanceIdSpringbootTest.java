@@ -2,8 +2,8 @@ package com.yomahub.liteflow.test.sqlInstanceId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorHolder;
 import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
+import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -28,7 +28,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,7 +82,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
 
         String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
         List<String> strings = extractValuesList(executeStepStrWithInstanceId);
-        InstanceIdGeneratorSpi instanceIdGenerator = InstanceIdGeneratorHolder.getInstance().getInstanceIdGenerator();
+        InstanceIdGeneratorSpi instanceIdGenerator = NodeInstanceIdManageSpi.getInstance().getInstanceIdGenerator();
 
         String[] nodes = new String[]{"c", "b", "a"};
         for (int i = 0; i < strings.size(); i++) {
@@ -114,7 +113,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
                     sqlParserVO.getPassword());
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery("select * from NODE_INSTANCE_ID_TABLE where APPLICATION_NAME = 'demo' " +
-                    "and CHAIN_NAME = '" + chainId + "' ");
+                    "and chain_id = '" + chainId + "' ");
 
             String res = "";
             while (rs.next()) {

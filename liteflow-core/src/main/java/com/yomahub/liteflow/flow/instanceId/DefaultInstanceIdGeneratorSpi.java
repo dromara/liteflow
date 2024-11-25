@@ -13,9 +13,9 @@ import static com.yomahub.liteflow.common.ChainConstant.USER_DIR;
 
 /**
  * @author Jay li
- * @since 2.12.4
+ * @since 2.13.0
  */
-public class DefaultInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
+public class DefaultInstanceIdGeneratorSpi extends BaseInstanceIdGeneratorSpi {
 
     private final String basePath = System.getProperty(USER_DIR) + File.separator + NODE_INSTANCE_PATH + File.separator;
 

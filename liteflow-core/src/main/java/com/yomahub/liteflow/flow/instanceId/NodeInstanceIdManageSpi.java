@@ -7,12 +7,12 @@ import java.util.ServiceLoader;
 
 /**
  * @author Jay li
- * @since 2.12.4
+ * @since 2.13.0
  */
-public class InstanceIdGeneratorHolder {
+public class NodeInstanceIdManageSpi {
     private InstanceIdGeneratorSpi instanceIdGenerator;
 
-    private static final InstanceIdGeneratorHolder INSTANCE = new InstanceIdGeneratorHolder();
+    private static final NodeInstanceIdManageSpi INSTANCE = new NodeInstanceIdManageSpi();
 
     public static void init() {
         ServiceLoader<InstanceIdGeneratorSpi> loader = ServiceLoader.load(InstanceIdGeneratorSpi.class);
@@ -24,7 +24,7 @@ public class InstanceIdGeneratorHolder {
         }
     }
 
-    public static InstanceIdGeneratorHolder getInstance() {
+    public static NodeInstanceIdManageSpi getInstance() {
         return INSTANCE;
     }
 

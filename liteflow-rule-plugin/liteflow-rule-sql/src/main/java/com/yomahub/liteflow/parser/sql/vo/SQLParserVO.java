@@ -67,9 +67,9 @@ public class SQLParserVO {
      */
     private String instanceIdApplicationNameField = "application_name";
     /**
-     * instanceId 里的 chainName 字段
+     * instanceId 里的 chainId 字段
      */
-    private String instanceChainNameField = "chain_name";
+    private String instanceChainIdField = "chain_id";
 
     /**
      * el md5
@@ -423,12 +423,12 @@ public class SQLParserVO {
         return instanceIdTableName;
     }
 
-    public String getInstanceChainNameField() {
-        return instanceChainNameField;
+    public String getInstanceChainIdField() {
+        return instanceChainIdField;
     }
 
-    public void setInstanceChainNameField(String instanceChainNameField) {
-        this.instanceChainNameField = instanceChainNameField;
+    public void setInstanceChainIdField(String instanceChainIdField) {
+        this.instanceChainIdField = instanceChainIdField;
     }
 
     public void setInstanceIdTableName(String instanceIdTableName) {

@@ -26,7 +26,7 @@ public class InstanceIdRead extends AbstractSqlRead<InstanceIdVO> {
     @Override
     protected InstanceIdVO parse(ResultSet rs) throws SQLException {
         InstanceIdVO idVO = new InstanceIdVO();
-        idVO.setChainName(getStringFromRsWithCheck(rs, super.config.getInstanceChainNameField()));
+        idVO.setChainId(getStringFromRsWithCheck(rs, super.config.getInstanceChainIdField()));
         idVO.setElDataMd5(getStringFromRsWithCheck(rs, super.config.getElDataMd5Field()));
         idVO.setGroupKeyInstanceId(getStringFromRsWithCheck(rs, super.config.getGroupKeyInstanceIdField()));
         return idVO;
@@ -45,7 +45,7 @@ public class InstanceIdRead extends AbstractSqlRead<InstanceIdVO> {
     @Override
     public String buildQuerySql(String... exceptions) {
         String tableName = super.config.getInstanceIdTableName();
-        String chainNameField = super.config.getInstanceChainNameField();
+        String chainNameField = super.config.getInstanceChainIdField();
 
         if (ArrayUtil.isEmpty(exceptions)) {
             throw new IllegalArgumentException("You did not define the chainName");
@@ -56,7 +56,7 @@ public class InstanceIdRead extends AbstractSqlRead<InstanceIdVO> {
     @Override
     public void checkConfig() {
         String tableName = super.config.getInstanceIdTableName();
-        String chainNameField = super.config.getInstanceChainNameField();
+        String chainNameField = super.config.getInstanceChainIdField();
         if (StrUtil.isBlank(tableName)) {
             throw new ELSQLException("You did not define the tableName property");
         }

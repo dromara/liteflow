@@ -7,18 +7,18 @@ package com.yomahub.liteflow.parser.sql.read.vo;
 
 public class InstanceIdVO {
 
-    private String chainName;
+    private String chainId;
 
     private String elDataMd5;
 
     private String groupKeyInstanceId;
 
-    public String getChainName() {
-        return chainName;
+    public String getChainId() {
+        return chainId;
     }
 
-    public void setChainName(String chainName) {
-        this.chainName = chainName;
+    public void setChainId(String chainId) {
+        this.chainId = chainId;
     }
 
     public String getElDataMd5() {
