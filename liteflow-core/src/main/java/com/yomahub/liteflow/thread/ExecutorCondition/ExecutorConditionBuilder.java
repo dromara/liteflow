@@ -15,13 +15,18 @@ import com.yomahub.liteflow.property.LiteflowConfig;
  * <p>Description: 执行器构建对象</p>
  *
  * @author jason
- * @Date 2024/11/12
+ * @since 2.13.0
  */
 
 public class ExecutorConditionBuilder {
 
     /**
      * 构建执行器条件
+     * @param condition condition
+     * @param chain chain
+     * @param liteflowConfig liteflowConfig
+     * @param type type
+     * @return ExecutorCondition
      */
     public static ExecutorCondition buildExecutorCondition(
             Condition condition,

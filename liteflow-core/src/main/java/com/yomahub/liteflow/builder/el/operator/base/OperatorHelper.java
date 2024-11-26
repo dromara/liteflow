@@ -159,6 +159,8 @@ public class OperatorHelper {
 	/**
 	 * 所谓Boolean item，指的是那些最终的结果值为布尔类型的Item
 	 * 布尔类型的items有，if，while，break类型的Node，以及AndOrCondition以及NotCondition
+	 * @param object 检查的对象
+	 * @throws Exception 检查过程中抛的错
 	 */
 	public static void checkObjMustBeBooleanTypeItem(Object object) throws Exception{
 		if (!(object instanceof Executable)){

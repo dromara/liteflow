@@ -42,12 +42,12 @@ public abstract class ParallelStrategyExecutor {
 
     /**
      * 封装 CompletableFuture 对象
-     * @param executable
-     * @param parallelExecutor
-     * @param whenCondition
-     * @param currChainId
-     * @param slotIndex
-     * @return
+     * @param executable executable
+     * @param parallelExecutor parallelExecutor
+     * @param whenCondition whenCondition
+     * @param currChainId currChainId
+     * @param slotIndex slotIndex
+     * @return CompletableFuture
      */
     protected CompletableFuture<WhenFutureObj> wrappedFutureObj(Executable executable, ExecutorService parallelExecutor,
                                                                 WhenCondition whenCondition, String currChainId, Integer slotIndex) {
@@ -62,7 +62,7 @@ public abstract class ParallelStrategyExecutor {
 
     /**
      * 设置 WhenCondition 参数
-     * @param whenCondition
+     * @param whenCondition whenCondition
      */
     protected void setWhenConditionParams(WhenCondition whenCondition) {
         // 获得 liteflow 的参数
@@ -87,9 +87,9 @@ public abstract class ParallelStrategyExecutor {
     /**
      * 过滤 WHEN 待执行任务
      * @param executableList 所有任务列表
-     * @param slotIndex
+     * @param slotIndex slotIndex
      * @param currentChainId 当前执行的 chainId
-     * @return
+     * @return Executable的Stream对象
      */
     protected Stream<Executable> filterWhenTaskList(List<Executable> executableList, Integer slotIndex, String currentChainId) {
         // 1.先进行过滤，前置和后置组件过滤掉，因为在 EL Chain 处理的时候已经提出来了
@@ -120,9 +120,9 @@ public abstract class ParallelStrategyExecutor {
 
     /**
      * 获取所有任务 CompletableFuture 集合
-     * @param whenCondition
-     * @param slotIndex
-     * @return
+     * @param whenCondition whenCondition
+     * @param slotIndex slotIndex
+     * @return List
      */
     protected List<CompletableFuture<WhenFutureObj>> getWhenAllTaskList(WhenCondition whenCondition, Integer slotIndex) {
 
@@ -152,7 +152,7 @@ public abstract class ParallelStrategyExecutor {
      * @param slotIndex 当前 slot 的 index
      * @param whenAllFutureList 并行组件中所有任务列表
      * @param specifyTask 指定预先完成的任务，详见 {@link ParallelStrategyEnum}
-     * @throws Exception
+     * @throws Exception 处理过程中抛的异常
      */
     protected void handleTaskResult(WhenCondition whenCondition, Integer slotIndex, List<CompletableFuture<WhenFutureObj>> whenAllFutureList,
                                     CompletableFuture<?> specifyTask) throws Exception {

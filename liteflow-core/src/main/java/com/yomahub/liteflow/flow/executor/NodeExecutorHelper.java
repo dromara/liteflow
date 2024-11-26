@@ -34,7 +34,7 @@ public class NodeExecutorHelper {
 
 	/**
 	 * 获取帮助者的实例
-	 * @return
+	 * @return NodeExecutorHelper
 	 */
 	public static NodeExecutorHelper loadInstance() {
 		// 外围类能直接访问内部类（不管是否是静态的）的私有变量
