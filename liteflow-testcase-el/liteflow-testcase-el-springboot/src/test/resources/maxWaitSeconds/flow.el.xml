@@ -62,6 +62,11 @@
         SWITCH(s).TO(a, b).maxWaitSeconds(3);
     </chain>
 
+    <chain name="switch3">
+        <!-- 不超时 -->
+        SWITCH(s).TO(a.maxWaitSeconds(3), b.maxWaitSeconds(2));
+    </chain>
+
     <!-- 条件编排测试 -->
     <!-- f 返回 true -->
     <chain name="if1">

@@ -111,6 +111,11 @@ public class MaxWaitSecondsELSpringbootTest extends BaseTest {
         assertNotTimeout("switch2");
     }
 
+    @Test
+    public void testSwitch3() {
+        assertNotTimeout("switch3");
+    }
+
     // 测试 IF 的超时情况
     @Test
     public void testIf1() {
