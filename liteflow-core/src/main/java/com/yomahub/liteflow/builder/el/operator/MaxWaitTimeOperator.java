@@ -65,6 +65,8 @@ public abstract class MaxWaitTimeOperator extends BaseOperator<Condition> {
         timeoutCondition.addExecutable(executable);
         timeoutCondition.setMaxWaitTime(maxWaitTime);
         timeoutCondition.setMaxWaitTimeUnit(getMaxWaitTimeUnit());
+        timeoutCondition.setId(executable.getId());
+        timeoutCondition.setTag(executable.getTag());
         return timeoutCondition;
     }
 
