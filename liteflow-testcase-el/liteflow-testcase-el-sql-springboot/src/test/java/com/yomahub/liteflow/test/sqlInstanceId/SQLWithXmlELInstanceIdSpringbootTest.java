@@ -2,8 +2,8 @@ package com.yomahub.liteflow.test.sqlInstanceId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
+import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -82,11 +82,11 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
 
         String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
         List<String> strings = extractValuesList(executeStepStrWithInstanceId);
-        InstanceIdGeneratorSpi instanceIdGenerator = NodeInstanceIdManageSpi.getInstance().getInstanceIdGenerator();
+        NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
         String[] nodes = new String[]{"c", "b", "a"};
         for (int i = 0; i < strings.size(); i++) {
-            Assertions.assertEquals(instanceIdGenerator.getNodeInstanceId("r_chain4", strings.get(i)), nodes[i] + "(0)");
+            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeInstanceLocationById("r_chain4", strings.get(i)), nodes[i] + "(0)");
         }
         System.out.println(strings);
         HashSet<String> hashSet = Sets.newHashSet(strings);

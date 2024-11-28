@@ -117,6 +117,30 @@ public class LiteFlowJdbcUtil {
         return StrUtil.format(CHECK_SQL_PATTERN, chainNameField, elDataField, chainTableName);
     }
 
+    /**
+     * 关闭
+     * @param conn
+     * @param stmt
+     */
+    public static void close(Connection conn, Statement stmt) {
+        // 关闭 statement
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                throw new ELSQLException(e);
+            }
+        }
+        // 关闭连接
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                throw new ELSQLException(e);
+            }
+        }
+    }
+
     public static class DataSourceBeanNameHolder {
         private static String DATA_SOURCE_NAME = null;
 

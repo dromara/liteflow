@@ -2,7 +2,7 @@ package com.yomahub.liteflow.parser.spi.instanceId;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.flow.instanceId.BaseInstanceIdGeneratorSpi;
+import com.yomahub.liteflow.flow.instanceId.BaseNodeInstanceIdManageSpi;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.read.SqlRead;
@@ -22,7 +22,7 @@ import java.util.List;
  * @since 2.12.4
  */
 
-public class SqlInstanceIdGeneratorSpi extends BaseInstanceIdGeneratorSpi {
+public class SqlNodeInstanceIdManageSpiImpl extends BaseNodeInstanceIdManageSpi {
 
     @Override
     public List<String> readInstanceIdFile(String chainId) {

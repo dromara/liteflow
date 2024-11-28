@@ -20,8 +20,8 @@ import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.condition.AndOrCondition;
 import com.yomahub.liteflow.flow.element.condition.NotCondition;
-import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
+import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -241,9 +241,9 @@ public class LiteFlowChainELBuilder {
 
 	// 往condition里设置instanceId
     private void setNodesInstanceId(Condition condition) {
-		InstanceIdGeneratorSpi instanceIdGenerator = NodeInstanceIdManageSpi.getInstance().getInstanceIdGenerator();
+		NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
-		instanceIdGenerator.setNodesInstanceId(condition, chain);
+		nodeInstanceIdManageSpi.setNodesInstanceId(condition, chain);
     }
 
 

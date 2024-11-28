@@ -1,42 +1,28 @@
 package com.yomahub.liteflow.flow.instanceId;
 
-import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.flow.element.Chain;
+import com.yomahub.liteflow.flow.element.Condition;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.List;
+
 
 /**
  * @author Jay li
  * @since 2.13.0
  */
-public class NodeInstanceIdManageSpi {
-    private InstanceIdGeneratorSpi instanceIdGenerator;
+public interface NodeInstanceIdManageSpi {
 
-    private static final NodeInstanceIdManageSpi INSTANCE = new NodeInstanceIdManageSpi();
+    // 拿文件保存路径， 不同插件不同实现
+    // 读取文件内容 核对数据
+    List<String> readInstanceIdFile(String chainId);
 
-    public static void init() {
-        ServiceLoader<InstanceIdGeneratorSpi> loader = ServiceLoader.load(InstanceIdGeneratorSpi.class);
-        Iterator<InstanceIdGeneratorSpi> iterator = loader.iterator();
-        if (iterator.hasNext()) {
-            INSTANCE.setInstanceIdGenerator(iterator.next());
-        } else {
-            INSTANCE.setInstanceIdGenerator(new DefaultInstanceIdGeneratorSpi());
-        }
-    }
+    // 写入文件保存
+    void writeInstanceIdFile(List<String> instanceIdList, String chainId);
 
-    public static NodeInstanceIdManageSpi getInstance() {
-        return INSTANCE;
-    }
+    // 根据实例id获取 节点实例定位
+    String getNodeInstanceLocationById(String chainId, String instanceId);
 
-    public InstanceIdGeneratorSpi getInstanceIdGenerator() {
-        if (ObjectUtil.isNull(instanceIdGenerator)) {
-            init();
-        }
-        return instanceIdGenerator;
-    }
-
-    public void setInstanceIdGenerator(InstanceIdGeneratorSpi instanceIdGenerator) {
-        this.instanceIdGenerator = instanceIdGenerator;
-    }
+    // 设置node节点的实例id
+    void setNodesInstanceId(Condition condition, Chain chain);
 
 }

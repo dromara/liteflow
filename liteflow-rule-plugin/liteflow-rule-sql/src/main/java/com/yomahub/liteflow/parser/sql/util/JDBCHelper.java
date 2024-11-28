@@ -207,4 +207,24 @@ public class JDBCHelper {
             LiteFlowJdbcUtil.close(conn, stmt, resultSet);
         }
     }
+
+    /**
+     * 创建node_instance_id表，如果不存在
+     */
+    public void createNodeInstanceIdTable()  {
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
+
+            stmt = conn.createStatement();
+            stmt.executeUpdate(INSTANT_CREATE_TABLE_SQL);
+        } catch (SQLException e) {
+            throw new ELSQLException(e);
+        } finally {
+            LiteFlowJdbcUtil.close(conn, stmt);
+        }
+    }
+
 }

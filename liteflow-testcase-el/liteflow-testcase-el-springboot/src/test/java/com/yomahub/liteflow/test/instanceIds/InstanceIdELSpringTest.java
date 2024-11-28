@@ -2,8 +2,8 @@ package com.yomahub.liteflow.test.instanceIds;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.instanceId.InstanceIdGeneratorSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
+import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -80,10 +80,10 @@ public class InstanceIdELSpringTest extends BaseTest {
 
 		String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
 		List<String> strings = extractValuesList(executeStepStrWithInstanceId);
-		InstanceIdGeneratorSpi instanceIdGenerator = NodeInstanceIdManageSpi.getInstance().getInstanceIdGenerator();
+		NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
 		for (int i = 0; i < strings.size(); i++) {
-			Assertions.assertEquals(instanceIdGenerator.getNodeInstanceId("chain2", strings.get(i)), "a(" + i + ")");
+			Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeInstanceLocationById("chain2", strings.get(i)), "a(" + i + ")");
 		}
 
 		System.out.println(executeStepStrWithInstanceId);

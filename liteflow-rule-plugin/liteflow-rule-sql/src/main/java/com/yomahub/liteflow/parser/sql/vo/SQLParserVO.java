@@ -60,7 +60,7 @@ public class SQLParserVO {
     /**
      * instanceId 表名
      */
-    private String instanceIdTableName;
+    private String instanceIdTableName = "node_instance_id_table";
 
     /**
      * instanceId 里的应用名字段

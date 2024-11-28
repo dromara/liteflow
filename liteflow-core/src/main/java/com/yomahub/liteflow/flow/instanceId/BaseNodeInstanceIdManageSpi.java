@@ -19,11 +19,11 @@ import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
  * @author lhh
  * @since 2.13.0
  */
-public abstract class BaseInstanceIdGeneratorSpi implements InstanceIdGeneratorSpi {
+public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManageSpi {
 
     // 根据实例id获取 节点实例定位
     @Override
-    public String getNodeInstanceId(String chainId, String instanceId) {
+    public String getNodeInstanceLocationById(String chainId, String instanceId) {
         if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
             return "";
         }
@@ -60,14 +60,14 @@ public abstract class BaseInstanceIdGeneratorSpi implements InstanceIdGeneratorS
     // 往condition里设置instanceId
     @Override
     public void setNodesInstanceId(Condition condition, Chain chain) {
-        InstanceIdGeneratorSpi instanceIdGenerator = NodeInstanceIdManageSpi.getInstance().getInstanceIdGenerator();
+        NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
         String elMd5 = MD5.create().digestHex(chain.getEl());
-        List<String> instanceIdFile = instanceIdGenerator.readInstanceIdFile(chain.getChainId());
+        List<String> instanceIdFile = nodeInstanceIdManageSpi.readInstanceIdFile(chain.getChainId());
 
         // 如果文件不存在，或者文件内容不是当前el，则写入
         if (CollUtil.isEmpty(instanceIdFile) || !instanceIdFile.get(0).equals(elMd5)) {
-            instanceIdGenerator.writeInstanceIdFile(writeNodeInstanceId(condition, elMd5), chain.getChainId());
+            nodeInstanceIdManageSpi.writeInstanceIdFile(writeNodeInstanceId(condition, elMd5), chain.getChainId());
         } else {
             // 文件存在，则直接读取
             Map<String, List<String>> executableMap = new HashMap<>();
