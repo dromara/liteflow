@@ -28,7 +28,7 @@ public class InstanceIdRead extends AbstractSqlRead<InstanceIdVO> {
         InstanceIdVO idVO = new InstanceIdVO();
         idVO.setChainId(getStringFromRsWithCheck(rs, super.config.getInstanceChainIdField()));
         idVO.setElDataMd5(getStringFromRsWithCheck(rs, super.config.getElDataMd5Field()));
-        idVO.setGroupKeyInstanceId(getStringFromRsWithCheck(rs, super.config.getGroupKeyInstanceIdField()));
+        idVO.setNodeInstanceIdMapJson(getStringFromRsWithCheck(rs, super.config.getNodeInstanceIdMapJsondField()));
         return idVO;
     }
 

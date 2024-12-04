@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.sqlInstanceId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.entity.InstanceIdDto;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -51,18 +52,17 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         // 查询数据库实例id
         String instanceId = queryInstanceId("r_chain4");
         // 解析 JSON
-        JSONObject jsonObject = new JSONObject(instanceId);
-        JSONArray jsonArray = jsonObject.getJSONArray("DEFAULT_KEY");
-
+        List<InstanceIdDto> instanceIdDtos = JsonUtil.parseList(instanceId, InstanceIdDto.class);
         // 构造实例id字符串
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < jsonArray.length(); i += 2) {
-            String key = jsonArray.getString(i);
-            String value = jsonArray.getString(i + 1);
-            result.append(key).append("[").append(value).append("]");
-            if (i + 2 < jsonArray.length()) {
+        int i = 0;
+
+        for (InstanceIdDto dto : instanceIdDtos) {
+            result.append(dto.getNodeId()).append("[").append(dto.getInstanceId()).append("]");
+            if (i + 1 < instanceIdDtos.size()) {
                 result.append("==>");
             }
+            i++;
         }
 
         LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
@@ -117,7 +117,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
 
             String res = "";
             while (rs.next()) {
-                res = rs.getString("GROUP_KEY_INSTANCE_ID");
+                res = rs.getString("node_instance_id_map_json");
             }
             return res;
         } catch (SQLException e) {

@@ -2,17 +2,15 @@ package com.yomahub.liteflow.flow.instanceId;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.crypto.digest.MD5;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.flow.entity.InstanceIdDto;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.yomahub.liteflow.util.JsonUtil.parseObject;
-import static com.yomahub.liteflow.util.JsonUtil.toJsonString;
+import static com.yomahub.liteflow.util.JsonUtil.*;
 import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
 
 /**
@@ -31,25 +29,14 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
         List<String> instanceIdFile = readInstanceIdFile(chainId);
 
         for (int i = 1; i < instanceIdFile.size(); i++) {
-            JsonNode groupKeyAndInstanceIds = parseObject(instanceIdFile.get(i));
-
-            if (groupKeyAndInstanceIds == null) {
+            List<InstanceIdDto> instanceIdDtos = parseList(instanceIdFile.get(i), InstanceIdDto.class);
+            if (instanceIdDtos == null) {
                 continue;
             }
 
-            Iterator<String> fieldNames = groupKeyAndInstanceIds.fieldNames();
-            while (fieldNames.hasNext()) {
-                String key = fieldNames.next();
-                JsonNode valueNode = groupKeyAndInstanceIds.get(key);
-                if (valueNode.isArray()) {
-                    Map<String, Integer> map = new HashMap<>();
-                    for (int j = 1; j < valueNode.size(); j+=2) {
-                        String nodeId = valueNode.get(j - 1).asText();
-                        map.put(nodeId, map.getOrDefault(nodeId, -1)+1);
-                        if (instanceId.equals(valueNode.get(j).asText())) {
-                            return nodeId + "(" + (map.get(nodeId)) + ")";
-                        }
-                    }
+            for (InstanceIdDto dto : instanceIdDtos) {
+                if (Objects.equals(dto.getInstanceId(), instanceId)) {
+                    return dto.getNodeId() + "(" + dto.getIndex() + ")";
                 }
             }
         }
@@ -67,37 +54,33 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
 
         // 如果文件不存在，或者文件内容不是当前el，则写入
         if (CollUtil.isEmpty(instanceIdFile) || !instanceIdFile.get(0).equals(elMd5)) {
-            nodeInstanceIdManageSpi.writeInstanceIdFile(writeNodeInstanceId(condition, elMd5), chain.getChainId());
+            nodeInstanceIdManageSpi.writeInstanceIdFile(writeNodeInstanceId(condition), elMd5, chain.getChainId());
         } else {
             // 文件存在，则直接读取
-            Map<String, List<String>> executableMap = new HashMap<>();
+            List<InstanceIdDto> instanceIdDtos = new ArrayList<>();
             for (int i = 1; i < instanceIdFile.size(); i++) {
-                JsonNode groupKeyAndInstanceIds = parseObject(instanceIdFile.get(i));
-                if (groupKeyAndInstanceIds == null) {
-                    continue;
-                }
-
-                Iterator<String> fieldNames = groupKeyAndInstanceIds.fieldNames();
-                while (fieldNames.hasNext()) {
-                    String key = fieldNames.next();
-                    JsonNode valueNode = groupKeyAndInstanceIds.get(key);
-                    if (valueNode.isArray()) {
-                        List<String> valueList = new ArrayList<>();
-                        for (int j = 1; j < valueNode.size(); j+=2) {
-                            valueList.add(valueNode.get(j).asText());
-                        }
-                        executableMap.put(key, valueList);
-                    }
+                List<InstanceIdDto> instanceIdDtos1 = parseList(instanceIdFile.get(i), InstanceIdDto.class);
+                if (instanceIdDtos1 != null) {
+                    instanceIdDtos.addAll(instanceIdDtos1);
                 }
             }
 
             condition.getExecutableGroup().forEach((key, executables) -> {
-                AtomicInteger index = new AtomicInteger(0);
+                Map<String, Integer> idCntMap = new HashMap<>();
                 executables.forEach(executable -> {
-                    if (executableMap.containsKey(key)) {
-                        if (executable instanceof Node) {
-                            ((Node) executable).setInstanceId((executableMap.get(key).get(index.getAndIncrement())));
+                    if (executable instanceof Node) {
+                        Node node = (Node) executable;
+                        idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+
+                        for (InstanceIdDto dto : instanceIdDtos) {
+                            if (Objects.equals(dto.getNodeId(), node.getId())
+                                    && Objects.equals(dto.getChainId(), node.getCurrChainId())
+                                    && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
+                                node.setInstanceId(dto.getInstanceId());
+                                break;
+                            }
                         }
+
                     }
                 });
             });
@@ -105,25 +88,37 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
     }
 
     // 写入时第一行为el的md5，第二行为json格式的groupKey和对应的nodeId 和实例id
-    private List<String> writeNodeInstanceId(Condition condition, String elMd5) {
-        ArrayList<String> writeList = new ArrayList<>();
-        writeList.add(elMd5);
-        Map<String, List<String>> groupKeyAndInstanceIds = new HashMap<>();
+    //          instanceId  a_XXX_0
+    //         {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0},
+    private List<InstanceIdDto> writeNodeInstanceId(Condition condition) {
+        ArrayList<InstanceIdDto> instanceIdDtos = new ArrayList<>();
 
         condition.getExecutableGroup().forEach((key, executables) -> {
-            List<String> instanceIds = new ArrayList<>();
+            Map<String, Integer> idCntMap = new HashMap<>();
             executables.forEach(executable -> {
                 if (executable instanceof Node) {
-                    ((Node) executable).setInstanceId(generateShortUUID());
-                    instanceIds.add(executable.getId());
-                    instanceIds.add(((Node) executable).getInstanceId());
+                    Node node = (Node) executable;
+                    InstanceIdDto instanceIdDto = new InstanceIdDto();
+
+                    instanceIdDto.setChainId(node.getCurrChainId());
+                    instanceIdDto.setNodeId(node.getId());
+
+                    String shortUUID = generateShortUUID();
+
+                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+
+                    String instanceId = node.getId() + "_" + shortUUID + "_" + idCntMap.get(node.getId());
+
+                    node.setInstanceId(instanceId);
+                    instanceIdDto.setInstanceId(instanceId);
+                    instanceIdDto.setIndex(idCntMap.get(node.getId()));
+
+                    instanceIdDtos.add(instanceIdDto);
                 }
             });
-            groupKeyAndInstanceIds.put(key, instanceIds);
         });
-        writeList.add(toJsonString(groupKeyAndInstanceIds));
 
-        return writeList;
+        return instanceIdDtos;
     }
 
 }

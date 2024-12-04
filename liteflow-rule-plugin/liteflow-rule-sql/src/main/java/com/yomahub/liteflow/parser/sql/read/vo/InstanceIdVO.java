@@ -11,7 +11,7 @@ public class InstanceIdVO {
 
     private String elDataMd5;
 
-    private String groupKeyInstanceId;
+    private String nodeInstanceIdMapJson;
 
     public String getChainId() {
         return chainId;
@@ -29,11 +29,11 @@ public class InstanceIdVO {
         this.elDataMd5 = elDataMd5;
     }
 
-    public String getGroupKeyInstanceId() {
-        return groupKeyInstanceId;
+    public String getNodeInstanceIdMapJson() {
+        return nodeInstanceIdMapJson;
     }
 
-    public void setGroupKeyInstanceId(String groupKeyInstanceId) {
-        this.groupKeyInstanceId = groupKeyInstanceId;
+    public void setNodeInstanceIdMapJson(String nodeInstanceIdMapJson) {
+        this.nodeInstanceIdMapJson = nodeInstanceIdMapJson;
     }
 }

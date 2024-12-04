@@ -79,7 +79,7 @@ public class SQLParserVO {
    /**
     * group_key_instance_id
     */
-    private String groupKeyInstanceIdField = "group_key_instance_id";
+    private String nodeInstanceIdMapJsondField = "node_instance_id_map_json";
 
     /**
      * 决策路由字段
@@ -443,12 +443,12 @@ public class SQLParserVO {
         this.elDataMd5Field = elDataMd5Field;
     }
 
-    public String getGroupKeyInstanceIdField() {
-        return groupKeyInstanceIdField;
+    public String getNodeInstanceIdMapJsondField() {
+        return nodeInstanceIdMapJsondField;
     }
 
-    public void setGroupKeyInstanceIdField(String groupKeyInstanceIdField) {
-        this.groupKeyInstanceIdField = groupKeyInstanceIdField;
+    public void setNodeInstanceIdMapJsondField(String nodeInstanceIdMapJsondField) {
+        this.nodeInstanceIdMapJsondField = nodeInstanceIdMapJsondField;
     }
 
     public DataSourceConfig getBaomidou() {

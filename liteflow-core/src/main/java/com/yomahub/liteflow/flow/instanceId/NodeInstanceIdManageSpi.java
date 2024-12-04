@@ -2,6 +2,7 @@ package com.yomahub.liteflow.flow.instanceId;
 
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.entity.InstanceIdDto;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface NodeInstanceIdManageSpi {
     List<String> readInstanceIdFile(String chainId);
 
     // 写入文件保存
-    void writeInstanceIdFile(List<String> instanceIdList, String chainId);
+    void writeInstanceIdFile(List<InstanceIdDto> instanceIdList, String elMd5, String chainId);
 
     // 根据实例id获取 节点实例定位
     String getNodeInstanceLocationById(String chainId, String instanceId);

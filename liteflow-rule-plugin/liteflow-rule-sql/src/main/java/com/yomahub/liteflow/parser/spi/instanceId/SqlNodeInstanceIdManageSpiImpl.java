@@ -2,6 +2,7 @@ package com.yomahub.liteflow.parser.spi.instanceId;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.flow.entity.InstanceIdDto;
 import com.yomahub.liteflow.flow.instanceId.BaseNodeInstanceIdManageSpi;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
@@ -10,6 +11,7 @@ import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.read.vo.InstanceIdVO;
 import com.yomahub.liteflow.parser.sql.util.JDBCHelper;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
+import com.yomahub.liteflow.util.JsonUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,22 +32,22 @@ public class SqlNodeInstanceIdManageSpiImpl extends BaseNodeInstanceIdManageSpi 
         List<InstanceIdVO> readResult = insIdRead.read(chainId);
 
         if (CollectionUtil.isNotEmpty(readResult)) {
-            return Arrays.asList(readResult.get(0).getElDataMd5(), readResult.get(0).getGroupKeyInstanceId());
+            return Arrays.asList(readResult.get(0).getElDataMd5(), readResult.get(0).getNodeInstanceIdMapJson());
         }
 
         return Collections.emptyList();
     }
 
     @Override
-    public void writeInstanceIdFile(List<String> instanceIdList, String chainId) {
+    public void writeInstanceIdFile(List<InstanceIdDto> instanceIdList, String elMd5, String chainId) {
         JDBCHelper jdbcHelper = JDBCHelper.getInstance();
         SQLParserVO conf = jdbcHelper.getSqlParserVO();
 
         String insertSql = StrUtil.format(SqlReadConstant.INSTANT_INSERT_SQL, conf.getInstanceIdTableName(), conf.getInstanceIdApplicationNameField(),
-                conf.getGroupKeyInstanceIdField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), instanceIdList.get(1),
-                instanceIdList.get(0), chainId);
-        String updateSql = StrUtil.format(SqlReadConstant.INSTANT_UPDATE_SQL, conf.getInstanceIdTableName(), conf.getElDataMd5Field(), instanceIdList.get(0),
-                conf.getGroupKeyInstanceIdField(), instanceIdList.get(1), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
+                conf.getNodeInstanceIdMapJsondField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), JsonUtil.toJsonString(instanceIdList),
+                elMd5, chainId);
+        String updateSql = StrUtil.format(SqlReadConstant.INSTANT_UPDATE_SQL, conf.getInstanceIdTableName(), conf.getElDataMd5Field(), elMd5,
+                conf.getNodeInstanceIdMapJsondField(), JsonUtil.toJsonString(instanceIdList), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
         String selectSql = StrUtil.format(SqlReadConstant.INSTANT_SELECT_SQL, conf.getInstanceIdTableName(), conf.getInstanceChainIdField(), chainId,
                 conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
 
