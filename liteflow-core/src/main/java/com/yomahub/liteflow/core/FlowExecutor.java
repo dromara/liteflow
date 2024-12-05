@@ -100,15 +100,6 @@ public class FlowExecutor {
 			IdGeneratorHolder.init();
 		}
 
-		// 规则缓存
-		if (isStart && liteflowConfig.getEnableRuleCache()) {
-			Integer capacity = liteflowConfig.getRuleCacheCapacity();
-			RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
-			LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
-			// 执行时才解析chain
-			liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
-		}
-
 		String ruleSource = liteflowConfig.getRuleSource();
 		if (StrUtil.isBlank(ruleSource)) {
 			// 查看有没有Parser的SPI实现
@@ -234,6 +225,11 @@ public class FlowExecutor {
 				throw new MonitorFileInitErrorException(errMsg);
 			}
 
+		}
+
+		// 规则缓存
+		if (isStart && liteflowConfig.getEnableRuleCache()) {
+			initRuleCache();
 		}
 	}
 
@@ -642,5 +638,25 @@ public class FlowExecutor {
 		LOG.info("chain namespace:[{}], total size:[{}], matched size:[{}]", namespace, routeChainList.size(), resultSlotList.size());
 
 		return resultSlotList;
+	}
+
+	private void initRuleCache() {
+		// 容量不能小于等于0
+		Integer capacity = liteflowConfig.getRuleCacheCapacity();
+		if (ObjectUtil.isNull(capacity) || capacity <= 0) {
+			throw new ConfigErrorException("The rule cache capacity must be greater than 0");
+		}
+
+		// 容量不足chain总数的30%给予警告
+		int chainNum = FlowBus.getChainMap().size();
+		double threshold = chainNum * 0.3;
+		if (capacity < threshold) {
+			LOG.warn("The rule cache capacity is too small, it is recommended to be greater than 30% of the number of chains");
+		}
+
+		RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
+		LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
+		// 执行时才解析chain
+		liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
 	}
 }
