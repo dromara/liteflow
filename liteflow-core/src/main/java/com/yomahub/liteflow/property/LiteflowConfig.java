@@ -113,6 +113,9 @@ public class LiteflowConfig {
 	//是否启用节点实例ID
 	private Boolean enableNodeInstanceId;
 
+	// 是否启用规则缓存
+	private Boolean enableRuleCache;
+
 	// 规则缓存容量
 	private Integer ruleCacheCapacity;
 
@@ -485,6 +488,16 @@ public class LiteflowConfig {
 		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 
+	public Boolean getEnableRuleCache() {
+		if (ObjectUtil.isNull(enableRuleCache)) {
+			return Boolean.FALSE;
+		}
+		return enableRuleCache;
+	}
+
+	public void setEnableRuleCache(Boolean enableRuleCache) {
+		this.enableRuleCache = enableRuleCache;
+	}
 
 	public Integer getRuleCacheCapacity() {
 		return ruleCacheCapacity;
@@ -492,9 +505,5 @@ public class LiteflowConfig {
 
 	public void setRuleCacheCapacity(Integer ruleCacheCapacity) {
 		this.ruleCacheCapacity = ruleCacheCapacity;
-	}
-
-	public boolean isRuleCacheEnabled() {
-		return ObjectUtil.isNotNull(ruleCacheCapacity) && ruleCacheCapacity > 0;
 	}
 }

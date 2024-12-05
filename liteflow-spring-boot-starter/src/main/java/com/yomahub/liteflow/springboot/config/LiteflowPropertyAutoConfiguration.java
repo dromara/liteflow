@@ -53,6 +53,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
         liteflowConfig.setGlobalThreadPoolSize(property.getGlobalThreadPoolSize());
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
+		liteflowConfig.setEnableRuleCache(property.isEnableRuleCache());
 		liteflowConfig.setRuleCacheCapacity(property.getRuleCacheCapacity());
 		return liteflowConfig;
 	}

@@ -99,6 +99,9 @@ public class LiteflowProperty {
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
 
+	// 是否启用规则缓存
+	private Boolean enableRuleCache;
+
 	// 规则缓存容量
 	private Integer ruleCacheCapacity;
 
@@ -340,5 +343,13 @@ public class LiteflowProperty {
 
 	public void setRuleCacheCapacity(Integer ruleCacheCapacity) {
 		this.ruleCacheCapacity = ruleCacheCapacity;
+	}
+
+	public Boolean isEnableRuleCache() {
+		return enableRuleCache;
+	}
+
+	public void setEnableRuleCache(Boolean enableRuleCache) {
+		this.enableRuleCache = enableRuleCache;
 	}
 }

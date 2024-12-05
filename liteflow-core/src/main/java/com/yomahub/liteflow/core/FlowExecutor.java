@@ -101,7 +101,7 @@ public class FlowExecutor {
 		}
 
 		// 规则缓存
-		if (isStart && liteflowConfig.isRuleCacheEnabled()) {
+		if (isStart && liteflowConfig.getEnableRuleCache()) {
 			Integer capacity = liteflowConfig.getRuleCacheCapacity();
 			RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
 			LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
