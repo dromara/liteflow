@@ -64,7 +64,7 @@ public class ParallelStrategyHelper {
 
     /**
      * 默认需完成所有任务
-     * @return
+     * @return ParallelStrategyExecutor
      */
     public ParallelStrategyExecutor buildParallelExecutor() {
         return buildParallelExecutor(ParallelStrategyEnum.ALL);

@@ -10,6 +10,7 @@ public class CompletableFutureExpand {
      *
      * @param timeout 在出现 TimeoutException 异常完成之前等待多长时间，以 {@code unit} 为单位
      * @param unit    一个 {@link TimeUnit}，结合 {@code timeout} 参数，表示给定粒度单位的持续时间
+     * @param timeoutDefaultObj timeoutDefaultObj
      * @return 入参的 CompletableFuture
      */
     public static <T> CompletableFuture<T> completeOnTimeout(CompletableFuture<T> future, long timeout, TimeUnit unit, T timeoutDefaultObj) {

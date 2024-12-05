@@ -382,9 +382,7 @@ public class Slot {
 		if (ObjectUtil.isNull(this.executeStepsStr)) {
 			this.executeStepsStr = getExecuteStepStr(true);
 		}
-		if (LiteflowConfigGetter.get().getPrintExecutionLog()) {
-			LOG.info("CHAIN_NAME[{}]\n{}", this.getChainName(), this.executeStepsStr);
-		}
+		LOG.info("CHAIN_NAME[{}]\n{}", this.getChainName(), this.executeStepsStr);
 	}
 
 	public void addRollbackStep(CmpStep step) {
@@ -418,9 +416,7 @@ public class Slot {
 		if (ObjectUtil.isNull(this.rollbackStepsStr)) {
 			this.rollbackStepsStr = getRollbackStepStr(true);
 		}
-		if (LiteflowConfigGetter.get().getPrintExecutionLog()) {
-			LOG.info("ROLLBACK_CHAIN_NAME[{}]\n{}", this.getChainName(), this.rollbackStepsStr);
-		}
+		LOG.info("ROLLBACK_CHAIN_NAME[{}]\n{}", this.getChainName(), this.rollbackStepsStr);
 	}
 
 

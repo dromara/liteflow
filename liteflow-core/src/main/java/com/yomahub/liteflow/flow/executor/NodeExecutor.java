@@ -21,6 +21,8 @@ public abstract class NodeExecutor {
 
 	/**
 	 * 执行器执行入口-若需要更大维度的执行方式可以重写该方法
+	 * @param instance instance
+	 * @throws Exception 执行过程中抛的错
 	 */
 	public void execute(NodeComponent instance) throws Exception {
 		int retryCount = instance.getRetryCount();
@@ -54,6 +56,9 @@ public abstract class NodeExecutor {
 
 	/**
 	 * 执行重试逻辑 - 子类通过实现该方法进行重试逻辑的控制
+	 * @param instance instance
+	 * @param currentRetryCount currentRetryCount
+	 * @throws Exception 抛出重试执行过程中的错
 	 */
 	protected void retry(NodeComponent instance, int currentRetryCount) throws Exception {
 		Slot slot = DataBus.getSlot(instance.getSlotIndex());
