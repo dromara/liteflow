@@ -10,11 +10,13 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.IdUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -29,6 +31,7 @@ import java.util.List;
  *
  * @author Bryan.Zhang
  * @author jason
+ * @author DaleLee
  */
 public class Chain implements Executable{
 
@@ -100,8 +103,15 @@ public class Chain implements Executable{
 			LiteFlowChainELBuilder.buildUnCompileChain(this);
 		}
 
-		if (CollUtil.isEmpty(conditionList)) {
-			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
+		// 这里先拿到this.conditionList的引用
+		// 因为在正式执行condition之前，this.conditionList有可能被其他线程置空
+		// 比如，该chain在规则缓存中被淘汰
+		List<Condition> conditionListRef = this.conditionList;
+		// 但在编译后到拿到引用之前，this.conditionList也有可能被置空
+		if (CollUtil.isEmpty(conditionListRef)) {
+			// 如果conditionListRef为空，
+			// 构建临时conditionList确保本次一定可以执行
+			conditionListRef = buildTemporaryConditionList();
 		}
 		Slot slot = DataBus.getSlot(slotIndex);
 		try {
@@ -115,7 +125,7 @@ public class Chain implements Executable{
 			// 设置主ChainName
 			slot.setChainId(chainId);
 			// 执行主体Condition
-			for (Condition condition : conditionList) {
+			for (Condition condition : conditionListRef) {
 				condition.setCurrChainId(chainId);
 				condition.execute(slotIndex);
 			}
@@ -234,4 +244,22 @@ public class Chain implements Executable{
     public void setThreadPoolExecutorClass(String threadPoolExecutorClass) {
         this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
+
+	// 构建临时的ConditionList
+	private List<Condition> buildTemporaryConditionList() {
+		String tempChainId = chainId +  "_temp_" + IdUtil.simpleUUID();
+		Chain tempChain = new Chain(tempChainId);
+		tempChain.setEl(this.el);
+		tempChain.setCompiled(false);
+		LiteFlowChainELBuilder.buildUnCompileChain(tempChain);
+		FlowBus.removeChain(tempChainId);
+
+		List<Condition> tempConditionList = tempChain.getConditionList();
+		if (CollUtil.isEmpty(tempConditionList)) {
+			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
+		}
+		// 打印警告，用于排查临时chain与已有chain重名（几乎不可能）而将已有chain覆盖的情况
+		LOG.warn("The conditionList of chain[{}] is empty, temporarily using chain[{}] (now removed) to build it.", chainId, tempChainId);
+		return tempConditionList;
+	}
 }

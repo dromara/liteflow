@@ -27,10 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Springboot环境下规则缓存测试
  * @author DaleLee
+ * @since 2.13.0
  */
 @TestPropertySource(value = "classpath:/ruleCache/application.properties")
 @SpringBootTest(classes = RuleCacheSpringbootTest.class)
@@ -127,6 +130,18 @@ public class RuleCacheSpringbootTest extends BaseTest {
         response = flowExecutor.execute2Resp("chain5", "arg");
         Assertions.assertFalse(response.isSuccess());
         Assertions.assertEquals(ChainNotFoundException.class, response.getCause().getClass());
+    }
+
+    @Test
+    public void testRuleCache5() throws InterruptedException, ExecutionException {
+        Future<LiteflowResponse> liteflowResponseFuture = flowExecutor.execute2Future("chain1", "arg");
+        new Thread(() -> {
+            flowExecutor.execute2Resp("chain2");
+            flowExecutor.execute2Resp("chain3");
+            flowExecutor.execute2Resp("chain4");
+        }).start();
+
+        LiteflowResponse liteflowResponse = liteflowResponseFuture.get();
     }
 
 

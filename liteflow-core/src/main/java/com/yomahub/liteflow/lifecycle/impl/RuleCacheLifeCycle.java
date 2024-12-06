@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Chain执行前的缓存处理
  * @author DaleLee
- * @since
+ * @since 2.13.0
  */
 public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
     // 缓存
@@ -61,9 +61,9 @@ public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
             if (ObjectUtil.isNull(chain)) {
                 return;
             }
-            // 清空condition并将chain设置为未编译
-            chain.setConditionList(null);
+            // 将chain设置为未编译并清空condition
             chain.setCompiled(false);
+            chain.setConditionList(null);
         }
     }
 }
