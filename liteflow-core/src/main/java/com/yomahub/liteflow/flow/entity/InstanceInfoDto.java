@@ -1,14 +1,13 @@
 package com.yomahub.liteflow.flow.entity;
 
 /**
- * sInstanceId
- *
+ * InstanceInfo Dto
+ * {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0}
  * @author jay li
  * @since 2.13.0
  */
-public class InstanceIdDto {
-    // a_XXX_0
-    // {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0},
+public class InstanceInfoDto {
+
     private String chainId;
 
     private String nodeId;

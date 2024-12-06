@@ -3,7 +3,7 @@ package com.yomahub.liteflow.flow.instanceId;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.CharsetUtil;
-import com.yomahub.liteflow.flow.entity.InstanceIdDto;
+import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -35,7 +35,7 @@ public class DefaultNodeInstanceIdManageSpiImpl extends BaseNodeInstanceIdManage
     }
 
     @Override
-    public void writeInstanceIdFile(List<InstanceIdDto> instanceIdList, String elMd5, String chainId) {
+    public void writeInstanceIdFile(List<InstanceInfoDto> instanceIdList, String elMd5, String chainId) {
         if (StringUtils.isBlank(chainId) || CollUtil.isEmpty(instanceIdList)) {
             return;
         }

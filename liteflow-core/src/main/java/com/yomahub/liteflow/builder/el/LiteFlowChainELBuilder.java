@@ -385,6 +385,7 @@ public class LiteFlowChainELBuilder {
 		if (StrUtil.isBlank(chain.getEl())){
 			throw new FlowSystemException(StrUtil.format("no el content in this unCompile chain[{}]", chain.getChainId()));
 		}
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 
 		// 如果chain已经有Condition了，那说明已经解析过了，这里只对未解析的chain进行解析
 		if (CollUtil.isNotEmpty(chain.getConditionList())){
@@ -427,6 +428,12 @@ public class LiteFlowChainELBuilder {
 
 			if (Objects.isNull(condition)){
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", chain.getEl()));
+			}
+
+			// 设置实例id
+			if (liteflowConfig.getEnableNodeInstanceId()) {
+				NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
+				nodeInstanceIdManageSpi.setNodesInstanceId(condition, chain);
 			}
 
 			// 把主要的condition加入

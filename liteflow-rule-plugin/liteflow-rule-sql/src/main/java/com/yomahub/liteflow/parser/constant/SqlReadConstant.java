@@ -23,8 +23,6 @@ public class SqlReadConstant {
             "    `el_data_md5`          varchar(128)   NOT NULL,\n" +
             "    `node_instance_id_map_json`     varchar(1024)   NOT NULL\n" +
             ");";
-    // a_XXX_0
-    //         {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0},
 
     public static final String SQL_PATTERN = "SELECT * FROM {} WHERE {}='{}'";
 

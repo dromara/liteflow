@@ -2,7 +2,7 @@ package com.yomahub.liteflow.test.sqlInstanceId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.flow.entity.InstanceIdDto;
+import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
@@ -12,9 +12,7 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.assertj.core.util.Sets;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,14 +50,14 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         // 查询数据库实例id
         String instanceId = queryInstanceId("r_chain4");
         // 解析 JSON
-        List<InstanceIdDto> instanceIdDtos = JsonUtil.parseList(instanceId, InstanceIdDto.class);
+        List<InstanceInfoDto> instanceInfoDtos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
         // 构造实例id字符串
         StringBuilder result = new StringBuilder();
         int i = 0;
 
-        for (InstanceIdDto dto : instanceIdDtos) {
+        for (InstanceInfoDto dto : instanceInfoDtos) {
             result.append(dto.getNodeId()).append("[").append(dto.getInstanceId()).append("]");
-            if (i + 1 < instanceIdDtos.size()) {
+            if (i + 1 < instanceInfoDtos.size()) {
                 result.append("==>");
             }
             i++;

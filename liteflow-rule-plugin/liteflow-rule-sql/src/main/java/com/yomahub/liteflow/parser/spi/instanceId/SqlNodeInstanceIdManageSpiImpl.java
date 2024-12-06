@@ -2,7 +2,7 @@ package com.yomahub.liteflow.parser.spi.instanceId;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.flow.entity.InstanceIdDto;
+import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.flow.instanceId.BaseNodeInstanceIdManageSpi;
 import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
@@ -39,15 +39,15 @@ public class SqlNodeInstanceIdManageSpiImpl extends BaseNodeInstanceIdManageSpi 
     }
 
     @Override
-    public void writeInstanceIdFile(List<InstanceIdDto> instanceIdList, String elMd5, String chainId) {
+    public void writeInstanceIdFile(List<InstanceInfoDto> instanceIdList, String elMd5, String chainId) {
         JDBCHelper jdbcHelper = JDBCHelper.getInstance();
         SQLParserVO conf = jdbcHelper.getSqlParserVO();
 
         String insertSql = StrUtil.format(SqlReadConstant.INSTANT_INSERT_SQL, conf.getInstanceIdTableName(), conf.getInstanceIdApplicationNameField(),
-                conf.getNodeInstanceIdMapJsondField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), JsonUtil.toJsonString(instanceIdList),
+                conf.getNodeInstanceIdMapJsonField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), JsonUtil.toJsonString(instanceIdList),
                 elMd5, chainId);
         String updateSql = StrUtil.format(SqlReadConstant.INSTANT_UPDATE_SQL, conf.getInstanceIdTableName(), conf.getElDataMd5Field(), elMd5,
-                conf.getNodeInstanceIdMapJsondField(), JsonUtil.toJsonString(instanceIdList), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
+                conf.getNodeInstanceIdMapJsonField(), JsonUtil.toJsonString(instanceIdList), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
         String selectSql = StrUtil.format(SqlReadConstant.INSTANT_SELECT_SQL, conf.getInstanceIdTableName(), conf.getInstanceChainIdField(), chainId,
                 conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
 
