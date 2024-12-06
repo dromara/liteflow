@@ -128,6 +128,7 @@ public class LiteFlowChainELBuilder {
 	 * @return LiteFlowChainELBuilder
 	 * @deprecated 请使用 {@link #setChainId(String)}
 	 */
+	@Deprecated
 	public LiteFlowChainELBuilder setChainName(String chainName) {
 		if (FlowBus.containChain(chainName)) {
 			this.chain = FlowBus.getChain(chainName);
