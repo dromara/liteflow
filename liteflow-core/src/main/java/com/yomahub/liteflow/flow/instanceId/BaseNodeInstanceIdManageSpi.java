@@ -55,14 +55,11 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
             nodeInstanceIdManageSpi.writeInstanceIdFile(writeNodeInstanceId(condition, chainId), elMd5, chainId);
         } else {
             // 文件存在，则直接读取
-            List<InstanceInfoDto> instanceInfoDtos = new ArrayList<>();
+            List<InstanceInfoDto> instanceInfos = new ArrayList<>();
             for (int i = 1; i < instanceIdFile.size(); i++) {
-                List<InstanceInfoDto> instanceInfoDtos1 = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
-                if (instanceInfoDtos1 != null) {
-                    instanceInfoDtos.addAll(instanceInfoDtos1);
-                }
+                instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
             }
-
+            List<InstanceInfoDto> finalInstanceInfos = instanceInfos;
             condition.getExecutableGroup().forEach((key, executables) -> {
                 Map<String, Integer> idCntMap = new HashMap<>();
                 executables.forEach(executable -> {
@@ -70,9 +67,9 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                         Node node = (Node) executable;
                         idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
 
-                        for (InstanceInfoDto dto : instanceInfoDtos) {
+                        for (InstanceInfoDto dto : finalInstanceInfos) {
                             if (Objects.equals(dto.getNodeId(), node.getId())
-                                    && Objects.equals(dto.getChainId(), node.getCurrChainId())
+                                    && Objects.equals(dto.getChainId(), chainId)
                                     && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
                                 node.setInstanceId(dto.getInstanceId());
                                 break;
