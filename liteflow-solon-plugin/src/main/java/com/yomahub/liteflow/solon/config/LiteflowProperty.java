@@ -101,6 +101,33 @@ public class LiteflowProperty {
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
 
+	// 规则缓存配置
+	private RuleCache ruleCache;
+
+	public static class RuleCache {
+		// 是否启用规则缓存
+		private Boolean enabled;
+
+		// 规则缓存容量
+		private Integer capacity;
+
+		public Boolean getEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public Integer getCapacity() {
+			return capacity;
+		}
+
+		public void setCapacity(Integer capacity) {
+			this.capacity = capacity;
+		}
+	}
+
 	public boolean isEnable() {
 		return enable;
 	}
@@ -340,5 +367,13 @@ public class LiteflowProperty {
 
 	public void setEnableNodeInstanceId(boolean enableNodeInstanceId) {
 		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
+
+	public RuleCache getRuleCache() {
+		return ruleCache;
+	}
+
+	public void setRuleCache(RuleCache ruleCache) {
+		this.ruleCache = ruleCache;
 	}
 }
