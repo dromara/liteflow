@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.noear.solon.annotation.Import;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashSet;
 import java.util.List;
@@ -151,7 +150,6 @@ public class RuleCacheSolonTest extends BaseTest {
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("a==>b", response.getExecuteStepStr());
     }
-
 
     // 加载缓存, chain1~chain5
     private void loadCache() {

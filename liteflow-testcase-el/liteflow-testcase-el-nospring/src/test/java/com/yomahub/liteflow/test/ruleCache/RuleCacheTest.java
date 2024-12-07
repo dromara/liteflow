@@ -157,7 +157,6 @@ public class RuleCacheTest extends BaseTest {
         Assertions.assertEquals("a==>b", response.getExecuteStepStr());
     }
 
-
     // 加载缓存, chain1~chain5
     private void loadCache() {
         // 容量上限为5
