@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.exception.ChainNotFoundException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -12,34 +13,36 @@ import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
+import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.TestPropertySource;
 
-import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 /**
- * Springboot环境下规则缓存测试
+ * 非Spring环境下的规则缓存测试
  * @author DaleLee
  * @since 2.13.0
  */
-@TestPropertySource(value = "classpath:/ruleCache/application.properties")
-@SpringBootTest(classes = RuleCacheSpringbootTest.class)
-@EnableAutoConfiguration
-@ComponentScan({ "com.yomahub.liteflow.test.ruleCache.cmp" })
-public class RuleCacheSpringbootTest extends BaseTest {
-    @Resource
-    private FlowExecutor flowExecutor;
+public class RuleCacheTest extends BaseTest {
+
+    private static FlowExecutor flowExecutor;
+
+    @BeforeAll
+    public static void init() {
+        LiteflowConfig config = new LiteflowConfig();
+        config.setRuleSource("ruleCache/flow.el.xml");
+        config.setEnableRuleCache(true);
+        config.setRuleCacheCapacity(5);
+        flowExecutor = FlowExecutorHolder.loadInstance(config);
+    }
 
     @BeforeEach
     public void reload() {
@@ -205,4 +208,5 @@ public class RuleCacheSpringbootTest extends BaseTest {
         Assertions.assertEquals(1, set.size());
         return set.iterator().next();
     }
+
 }

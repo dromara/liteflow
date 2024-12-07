@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.ruleCache.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.ruleCache.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.ruleCache.cmp.CCmp"/>
+        <node id="x" class="com.yomahub.liteflow.test.ruleCache.cmp.XCmp"/>
+    </nodes>
+
     <chain name="chain1">
         THEN(a, b);
     </chain>
@@ -8,7 +15,7 @@
         THEN(a, c);
     </chain>
 
-    <chain name="chain3">
+    <chain id="chain3">
         THEN(b, a);
     </chain>
 
