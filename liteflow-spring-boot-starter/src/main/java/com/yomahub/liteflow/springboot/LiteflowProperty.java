@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -99,11 +100,33 @@ public class LiteflowProperty {
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
 
-	// 是否启用规则缓存
-	private Boolean enableRuleCache;
+	// 规则缓存配置
+	@NestedConfigurationProperty
+	private RuleCache ruleCache;
 
-	// 规则缓存容量
-	private Integer ruleCacheCapacity;
+	public static class RuleCache {
+		// 是否启用规则缓存
+		private Boolean enabled;
+
+		// 规则缓存容量
+		private Integer capacity;
+
+		public Boolean getEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public Integer getCapacity() {
+			return capacity;
+		}
+
+		public void setCapacity(Integer capacity) {
+			this.capacity = capacity;
+		}
+	}
 
 	public boolean isEnableMonitorFile() {
 		return enableMonitorFile;
@@ -337,19 +360,11 @@ public class LiteflowProperty {
 		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 
-	public Integer getRuleCacheCapacity() {
-		return ruleCacheCapacity;
+	public RuleCache getRuleCache() {
+		return ruleCache;
 	}
 
-	public void setRuleCacheCapacity(Integer ruleCacheCapacity) {
-		this.ruleCacheCapacity = ruleCacheCapacity;
-	}
-
-	public Boolean isEnableRuleCache() {
-		return enableRuleCache;
-	}
-
-	public void setEnableRuleCache(Boolean enableRuleCache) {
-		this.enableRuleCache = enableRuleCache;
+	public void setRuleCache(RuleCache ruleCache) {
+		this.ruleCache = ruleCache;
 	}
 }

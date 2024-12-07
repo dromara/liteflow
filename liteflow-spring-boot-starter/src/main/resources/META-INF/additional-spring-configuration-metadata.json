@@ -208,14 +208,14 @@
       "defaultValue": false
     },
     {
-      "name": "liteflow.enable-rule-cache",
+      "name": "liteflow.rule-cache.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable rule cache.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": false
     },
     {
-      "name": "liteflow.rule-cache-capacity",
+      "name": "liteflow.rule-cache.capacity",
       "type": "java.lang.Integer",
       "description": "Set rule cache capacity.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
