@@ -651,7 +651,7 @@ public class FlowExecutor {
 		int chainNum = FlowBus.getChainMap().size();
 		double threshold = chainNum * 0.3;
 		if (capacity < threshold) {
-			LOG.warn("The rule cache capacity is too small, it is recommended to be greater than 30% of the number of chains");
+			LOG.warn("The rule cache capacity {} is too small, it is recommended to be greater than 30% of the number of chains", capacity);
 		}
 
 		RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);

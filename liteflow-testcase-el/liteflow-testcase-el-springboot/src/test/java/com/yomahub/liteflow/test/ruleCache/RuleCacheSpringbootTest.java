@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Springboot环境下规则缓存测试
@@ -54,18 +52,20 @@ public class RuleCacheSpringbootTest extends BaseTest {
 
     // 测试chain被淘汰
     @Test
-    public void testRuleCache1() throws InterruptedException {
+    public void testRuleCache1() {
         // 加满缓存
         loadCache();
         // 缓存快照
         HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
         LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
-        // chain1 被淘汰
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("x==>a==>b", response.getExecuteStepStr());
         // 获得被淘汰chain
         String chainId = getEvictedChain(strings);
         testEvicted(chainId);
+        // 测试被淘汰的chain仍可正常执行
+        response = flowExecutor.execute2Resp(chainId, "arg");
+        Assertions.assertTrue(response.isSuccess());
     }
 
     // 测试缓存数量
@@ -91,37 +91,43 @@ public class RuleCacheSpringbootTest extends BaseTest {
         Assertions.assertEquals(3, count);
     }
 
-    // 测试chain被更新
+    // 测试开启规则缓存后，进入缓存的chain可以正常被更新
     @Test
-    public void testRuleCache3() throws InterruptedException {
-        loadCache();
-        // 缓存快照
-        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
-        flowExecutor.execute2Resp("chain5", "arg");
-        // 获得被淘汰chain
-        String chainId = getEvictedChain(strings);
-        testEvicted(chainId);
-        // 更新chain1
-        LiteFlowChainELBuilder
-                .createChain()
-                .setChainId("chain1")
-                .setEL("THEN(a, b, c)")
-                .build();
-        // 重新执行chain1
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assertions.assertTrue(response.isSuccess());
-        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
-    }
-
-    // 测试chain被移除
-    @Test
-    public void testRuleCache4() throws InterruptedException {
+    public void testRuleCache3() {
         loadCache();
         // 缓存快照
         HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("x==>a==>c", response.getExecuteStepStr());
+        // chain5进入缓存
+        Assertions.assertTrue(getCache().asMap().containsKey("chain5"));
+        // 获得被淘汰chain
+        String chainId = getEvictedChain(strings);
+        testEvicted(chainId);
+        // 更新chain5
+        LiteFlowChainELBuilder
+                .createChain()
+                .setChainId("chain5")
+                .setEL("THEN(a, b, c)")
+                .build();
+        // 重新执行chain5
+        response = flowExecutor.execute2Resp("chain5", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
+    }
+
+    // 测试开启规则缓存后，进入缓存的chain被移除后无法执行
+    @Test
+    public void testRuleCache4() {
+        loadCache();
+        // 缓存快照
+        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
+        LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("x==>a==>c", response.getExecuteStepStr());
+        // chain5进入缓存
+        Assertions.assertTrue(getCache().asMap().containsKey("chain5"));
         // 获得被淘汰chain
         String chainId = getEvictedChain(strings);
         testEvicted(chainId);
@@ -132,16 +138,20 @@ public class RuleCacheSpringbootTest extends BaseTest {
         Assertions.assertEquals(ChainNotFoundException.class, response.getCause().getClass());
     }
 
+    // 测试并发下，正在执行的chain被淘汰仍能执行
     @Test
-    public void testRuleCache5() throws InterruptedException, ExecutionException {
-        Future<LiteflowResponse> liteflowResponseFuture = flowExecutor.execute2Future("chain1", "arg");
-        new Thread(() -> {
-            flowExecutor.execute2Resp("chain2");
-            flowExecutor.execute2Resp("chain3");
-            flowExecutor.execute2Resp("chain4");
-        }).start();
-
-        LiteflowResponse liteflowResponse = liteflowResponseFuture.get();
+    public void testRuleCache5() throws InterruptedException {
+        // 模拟清空编译好的chain
+        Thread thread = new Thread(()-> {
+            Chain chain1 = FlowBus.getChain("chain1");
+            chain1.setCompiled(true);
+            chain1.setConditionList(null);
+        });
+        thread.start();
+        thread.join();
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b", response.getExecuteStepStr());
     }
 
 
@@ -169,9 +179,12 @@ public class RuleCacheSpringbootTest extends BaseTest {
     }
 
     // 测试 chain 被淘汰
-    private void testEvicted(String chanId) throws InterruptedException {
+    private void testEvicted(String chanId) {
         Chain chain = FlowBus.getChain(chanId);
         getCache().cleanUp();
+        // 测试缓存中不存在
+        Assertions.assertFalse(getCache().asMap().containsKey(chanId));
+        // 测试chain被设置为未编译
         Assertions.assertFalse(chain.isCompiled());
         Assertions.assertNull(chain.getConditionList());
     }
