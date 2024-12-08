@@ -15,7 +15,7 @@
 
     <bean id="liteflowConfig" class="com.yomahub.liteflow.property.LiteflowConfig">
         <property name="ruleSource" value="ruleCache/flow.el.xml"/>
-        <property name="enableRuleCache" value="true"/>
+        <property name="ruleCacheEnabled" value="true"/>
         <property name="ruleCacheCapacity" value="5"/>
     </bean>
 

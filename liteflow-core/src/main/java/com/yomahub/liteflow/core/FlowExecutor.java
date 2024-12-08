@@ -228,7 +228,7 @@ public class FlowExecutor {
 		}
 
 		// 规则缓存
-		if (isStart && liteflowConfig.getEnableRuleCache()) {
+		if (isStart && liteflowConfig.getRuleCacheEnabled()) {
 			initRuleCache();
 		}
 	}

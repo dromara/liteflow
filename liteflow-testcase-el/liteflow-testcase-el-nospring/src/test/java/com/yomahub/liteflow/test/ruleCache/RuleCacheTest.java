@@ -39,7 +39,7 @@ public class RuleCacheTest extends BaseTest {
     public static void init() {
         LiteflowConfig config = new LiteflowConfig();
         config.setRuleSource("ruleCache/flow.el.xml");
-        config.setEnableRuleCache(true);
+        config.setRuleCacheEnabled(true);
         config.setRuleCacheCapacity(5);
         flowExecutor = FlowExecutorHolder.loadInstance(config);
     }
