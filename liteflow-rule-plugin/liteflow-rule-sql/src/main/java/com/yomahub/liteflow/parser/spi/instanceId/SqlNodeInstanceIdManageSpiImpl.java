@@ -47,7 +47,7 @@ public class SqlNodeInstanceIdManageSpiImpl extends BaseNodeInstanceIdManageSpi 
                 conf.getNodeInstanceIdMapJsonField(), conf.getElDataMd5Field(), conf.getInstanceChainIdField(), conf.getApplicationName(), JsonUtil.toJsonString(instanceIdList),
                 elMd5, chainId);
         String updateSql = StrUtil.format(SqlReadConstant.INSTANT_UPDATE_SQL, conf.getInstanceIdTableName(), conf.getElDataMd5Field(), elMd5,
-                conf.getNodeInstanceIdMapJsonField(), JsonUtil.toJsonString(instanceIdList), conf.getChainNameField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
+                conf.getNodeInstanceIdMapJsonField(), JsonUtil.toJsonString(instanceIdList), conf.getInstanceChainIdField(), chainId, conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
         String selectSql = StrUtil.format(SqlReadConstant.INSTANT_SELECT_SQL, conf.getInstanceIdTableName(), conf.getInstanceChainIdField(), chainId,
                 conf.getInstanceIdApplicationNameField(), conf.getApplicationName());
 

@@ -48,16 +48,16 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
     @Test
     public void testSQLWithXmlChain() throws SQLException, JSONException {
         // 查询数据库实例id
-        String instanceId = queryInstanceId("r_chain4");
+        String instanceId = queryInstanceIdInfo("r_chain4");
         // 解析 JSON
-        List<InstanceInfoDto> instanceInfoDtos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
+        List<InstanceInfoDto> instanceInfos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
         // 构造实例id字符串
         StringBuilder result = new StringBuilder();
         int i = 0;
 
-        for (InstanceInfoDto dto : instanceInfoDtos) {
+        for (InstanceInfoDto dto : instanceInfos) {
             result.append(dto.getNodeId()).append("[").append(dto.getInstanceId()).append("]");
-            if (i + 1 < instanceInfoDtos.size()) {
+            if (i + 1 < instanceInfos.size()) {
                 result.append("==>");
             }
             i++;
@@ -70,6 +70,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         response = flowExecutor.execute2Resp("r_chain4", "arg");
         Assertions.assertEquals(result.toString(), response.getExecuteStepStrWithInstanceId());
     }
+
 
     // 测试sql实例id 构建 坐标返回
     @Test
@@ -86,11 +87,67 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         for (int i = 0; i < strings.size(); i++) {
             Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeInstanceLocationById("r_chain4", strings.get(i)), nodes[i] + "(0)");
         }
-        System.out.println(strings);
+
         HashSet<String> hashSet = Sets.newHashSet(strings);
         Assertions.assertEquals(hashSet.size(), 3);
     }
 
+    // 测试chain 表达式更改后，实例id是否变化
+    @Test
+    public void testSQLWithXmlChain3() throws SQLException, JSONException {
+        String chain4InstanceStr = querySqlInstanceId("r_chain4");
+        LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
+        Assertions.assertEquals("c==>b==>a", response.getExecuteStepStr());
+        Assertions.assertEquals(chain4InstanceStr, response.getExecuteStepStrWithInstanceId());
+
+        // 更该数据 查实例id是否变化
+        changeData();
+        flowExecutor.reloadRule();
+
+        // 重复查询
+        response = flowExecutor.execute2Resp("r_chain4", "arg");
+        String chain4InstanceStr2 = querySqlInstanceId("r_chain4");
+        Assertions.assertNotEquals(chain4InstanceStr2, chain4InstanceStr);
+        Assertions.assertEquals("a==>c==>b", flowExecutor.execute2Resp("r_chain4", "arg").getExecuteStepStr());
+        Assertions.assertEquals(chain4InstanceStr2, response.getExecuteStepStrWithInstanceId());
+    }
+
+    // 修改数据库数据
+    private void changeData() {
+        LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
+        Connection connection;
+        try {
+            connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
+                    sqlParserVO.getPassword());
+            Statement statement = connection.createStatement();
+            statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='r_chain4'");
+        }
+        catch (SQLException e) {
+            throw new ELSQLException(e.getMessage());
+        }
+    }
+
+    private String querySqlInstanceId(String chainId) throws SQLException {
+        // 查询数据库实例id
+        String instanceId = queryInstanceIdInfo(chainId);
+        // 解析 JSON
+        List<InstanceInfoDto> instanceInfoDtos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
+        // 构造实例id字符串
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+
+        for (InstanceInfoDto dto : instanceInfoDtos) {
+            result.append(dto.getNodeId()).append("[").append(dto.getInstanceId()).append("]");
+            if (i + 1 < instanceInfoDtos.size()) {
+                result.append("==>");
+            }
+            i++;
+        }
+
+        return result.toString();
+
+    }
 
     public static List<String> extractValuesList(String input) {
         List<String> values = new ArrayList<>();
@@ -102,7 +159,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         return values;
     }
 
-    public String queryInstanceId(String chainId) throws SQLException {
+    public String queryInstanceIdInfo(String chainId) throws SQLException {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
         Connection connection;
