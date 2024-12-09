@@ -373,6 +373,8 @@ public class LFLog implements Logger{
     public void error(String s, Throwable throwable) {
         if (isPrint()) {
             this.log.error(getRId() + s, throwable);
+        }else{
+            this.log.error(getRId() + s);
         }
     }
 

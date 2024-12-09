@@ -80,6 +80,12 @@
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>shardingsphere-jdbc</artifactId>
             <version>${shardingsphere.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shardingsphere</groupId>
+                    <artifactId>shardingsphere-test-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

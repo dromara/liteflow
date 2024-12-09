@@ -173,6 +173,7 @@ public abstract class Condition implements Executable{
 
 	/**
 	 * 请使用 {@link #setCurrChainId(String)}
+	 * @return currChainId
 	 */
 	@Deprecated
 	public String getCurrChainName() {

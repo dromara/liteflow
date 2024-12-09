@@ -478,20 +478,10 @@ public class FlowExecutor {
 		catch (Exception e) {
 			if (ObjectUtil.isNotNull(chain)) {
 				String errMsg = StrUtil.format("chain[{}] execute error on slot[{}]", chain.getChainId(), slotIndex);
-				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.error(errMsg, e);
-				}
-				else {
-					LOG.error(errMsg);
-				}
+				LOG.error(errMsg, e);
 			}
 			else {
-				if (BooleanUtil.isTrue(liteflowConfig.getPrintExecutionLog())) {
-					LOG.error(e.getMessage(), e);
-				}
-				else {
-					LOG.error(e.getMessage());
-				}
+				LOG.error(e.getMessage(), e);
 			}
 
 			// 如果是正常流程需要把异常设置到slot的exception属性里

@@ -70,6 +70,7 @@ public class Chain implements Executable{
 
 	/**
 	 * @deprecated 请使用{@link #getChainId()}
+	 * @return chainId
 	 */
 	@Deprecated
 	public String getChainName() {
@@ -77,9 +78,10 @@ public class Chain implements Executable{
 	}
 
 	/**
-	 * @param chainName
+	 * @param chainName chainId
 	 * @deprecated 请使用 {@link #setChainId(String)}
 	 */
+	@Deprecated
 	public void setChainName(String chainName) {
 		this.chainId = chainName;
 	}

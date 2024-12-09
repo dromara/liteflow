@@ -132,7 +132,9 @@ public class FlowBus {
 
 	/**
 	 * 添加已托管的节点（如：Spring、Solon 管理的节点）
-	 * */
+	 * @param nodeId nodeId
+	 * @param nodeComponent nodeComponent
+	 */
 	public static void addManagedNode(String nodeId, NodeComponent nodeComponent) {
 		// 根据class来猜测类型
 		NodeTypeEnum type = NodeTypeEnum.guessType(nodeComponent.getClass());
@@ -182,6 +184,7 @@ public class FlowBus {
 	 * @param name 节点名称
 	 * @param nodeType 节点类型
 	 * @param script 脚本
+	 * @param language 语言
 	 */
 	public static void addScriptNode(String nodeId, String name, NodeTypeEnum nodeType, String script,
 			String language) {
@@ -199,11 +202,11 @@ public class FlowBus {
 
 	/**
 	 * 添加脚本 node，并且编译脚本
-	 * @param nodeId
-	 * @param name
-	 * @param type
-	 * @param script
-	 * @param language
+	 * @param nodeId nodeId
+	 * @param name name
+	 * @param type type
+	 * @param script script content
+	 * @param language language
 	 * @return NodeComponent instance
 	 */
 	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script,
