@@ -12,6 +12,8 @@ import com.yomahub.liteflow.slot.Slot;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Chain执行前的缓存处理
  * @author DaleLee
@@ -40,6 +42,15 @@ public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
 
     @Override
     public void postProcessAfterFlowExecute(String chainId, Slot slot) {
+        // chain执行时，有可能在未编译前就被淘汰
+        // 结果使被淘汰的chain仍持有condition（淘汰后就立刻编译）
+        // 这里做兜底操作，执行完后再次判断其是否在缓存中
+        // 若不在则清空chain的condition
+        ConcurrentMap<@NonNull String, @NonNull Object> concurrentMap = cache.asMap();
+        concurrentMap.computeIfAbsent(chainId, key -> {
+            cleanChain(chainId);
+            return null;
+        });
 
     }
 
@@ -53,15 +64,19 @@ public class RuleCacheLifeCycle implements PostProcessFlowExecuteLifeCycle {
     private static class ChainRemovalListener implements RemovalListener<String, Object> {
 
         @Override
-        public void onRemoval(@Nullable String chanId, @Nullable Object object, @NonNull RemovalCause removalCause) {
-            Chain chain = FlowBus.getChain(chanId);
-            // chain可能已经在FlowBus中被移除了
-            if (ObjectUtil.isNull(chain)) {
-                return;
-            }
-            // 清空condition并将chain设置为未编译
-            chain.setConditionList(null);
-            chain.setCompiled(false);
+        public void onRemoval(@Nullable String chainId, @Nullable Object object, @NonNull RemovalCause removalCause) {
+            cleanChain(chainId);
         }
+    }
+
+    private static void cleanChain(String chainId) {
+        Chain chain = FlowBus.getChain(chainId);
+        // chain可能已经在FlowBus中被移除了
+        if (ObjectUtil.isNull(chain)) {
+            return;
+        }
+        // 清空condition并将chain设置为未编译
+        chain.setConditionList(null);
+        chain.setCompiled(false);
     }
 }

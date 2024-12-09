@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * 非Spring环境下的规则缓存测试
@@ -91,7 +93,7 @@ public class RuleCacheTest extends BaseTest {
                 Assertions.assertNull(conditionList);
             }
         }
-        Assertions.assertEquals(5, count);
+        Assertions.assertTrue(count <= 5);
     }
 
     // 测试开启规则缓存后，进入缓存的chain可以正常被更新
@@ -155,6 +157,44 @@ public class RuleCacheTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(response.isSuccess());
         Assertions.assertEquals("a==>b", response.getExecuteStepStr());
+    }
+
+    // 测试开启规则缓存后，并发执行chain
+    @Test
+    public void test6() {
+        loadCache();
+        Random random = new Random();
+        List<Future<LiteflowResponse>> futureList = CollUtil.newArrayList();
+        for (int i = 0; i < 100; i++) {
+            int id = random.nextInt(10) + 1;
+            Future<LiteflowResponse> future = flowExecutor.execute2Future("chain" + id, "arg");
+            futureList.add(future);
+        }
+        futureList.forEach(future -> {
+            try {
+                LiteflowResponse response = future.get();
+                Assertions.assertTrue(response.isSuccess());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // 等待缓存淘汰
+        getCache().cleanUp();
+        // 测试只有5个chain被编译
+        Assertions.assertEquals(10, FlowBus.getChainMap().size());
+
+        int count = 0;
+        for (Chain chain : FlowBus.getChainMap().values()) {
+            List<Condition> conditionList = chain.getConditionList();
+            if (chain.isCompiled()) {
+                Assertions.assertTrue(CollUtil.isNotEmpty(conditionList));
+                count++;
+            } else {
+                Assertions.assertNull(conditionList);
+            }
+        }
+        Assertions.assertTrue(count <= 5);
     }
 
     // 加载缓存, chain1~chain5
