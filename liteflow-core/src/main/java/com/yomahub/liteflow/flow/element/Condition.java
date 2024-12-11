@@ -14,6 +14,7 @@ import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.condition.ConditionKey;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
@@ -116,6 +117,8 @@ public abstract class Condition implements Executable{
 		executableList.forEach(executable -> {
             if (executable instanceof Condition){
                 resultList.addAll(((Condition)executable).getAllNodeInCondition());
+			}else if(executable instanceof Chain){
+				resultList.addAll(FlowBus.getNodesByChainId(executable.getId()));
             }else if(executable instanceof Node){
                 resultList.add((Node)executable);
             }
