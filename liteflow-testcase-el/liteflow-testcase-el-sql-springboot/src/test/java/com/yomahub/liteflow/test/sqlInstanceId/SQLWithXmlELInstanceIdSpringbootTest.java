@@ -24,9 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,25 +93,103 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
     // 测试chain 表达式更改后，实例id是否变化
     @Test
     public void testSQLWithXmlChain3() throws SQLException, JSONException {
-        String chain4InstanceStr = querySqlInstanceId("r_chain4");
+        String chain4InstanceStr = queryInstanceStrByChainId("r_chain4");
         LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
         Assertions.assertEquals("c==>b==>a", response.getExecuteStepStr());
         Assertions.assertEquals(chain4InstanceStr, response.getExecuteStepStrWithInstanceId());
 
         // 更该数据 查实例id是否变化
-        changeData();
+        changeData("THEN(a, c, b);", "r_chain4");
         flowExecutor.reloadRule();
 
         // 重复查询
         response = flowExecutor.execute2Resp("r_chain4", "arg");
-        String chain4InstanceStr2 = querySqlInstanceId("r_chain4");
+        String chain4InstanceStr2 = queryInstanceStrByChainId("r_chain4");
         Assertions.assertNotEquals(chain4InstanceStr2, chain4InstanceStr);
         Assertions.assertEquals("a==>c==>b", flowExecutor.execute2Resp("r_chain4", "arg").getExecuteStepStr());
         Assertions.assertEquals(chain4InstanceStr2, response.getExecuteStepStrWithInstanceId());
     }
 
+    // chain3 if 脚本 切换 if表达试
+    @Test
+    public void testSQLWithXmlChain4() throws SQLException {
+
+        String chain4InstanceStr = queryInstanceStrByChainId("chain3");
+        LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
+
+        Assertions.assertEquals("x0[if 脚本]==>a==>b", response.getExecuteStepStr());
+        System.out.println(chain4InstanceStr);
+        Assertions.assertEquals(chain4InstanceStr, response.getExecuteStepStrWithInstanceId());
+        List<String> extractStrings = extractValuesList(chain4InstanceStr);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 3);
+
+        // 更该数据 查实例id是否变化
+        changeData("IF(x2, IF(x0, THEN(a, b)));", "chain3");
+        flowExecutor.reloadRule();
+
+        // 重复查询
+        response = flowExecutor.execute2Resp("chain3", "arg");
+        String chain4InstanceStr2 = queryInstanceStrByChainId("chain3");
+
+        Assertions.assertNotEquals(chain4InstanceStr2, chain4InstanceStr);
+        Assertions.assertEquals("x2[python脚本]==>x0[if 脚本]==>a==>b", response.getExecuteStepStr());
+        Assertions.assertEquals(chain4InstanceStr2, response.getExecuteStepStrWithInstanceId());
+
+        extractStrings = extractValuesList(chain4InstanceStr2);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 4);
+    }
+
+
+    // chain5 switch 切换 for 表达式
+    @Test
+    public void testSQLWithXmlChain5() throws SQLException {
+        String chainId = "chain5";
+
+        LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+        String executeStepStr = response.getExecuteStepStr();
+        Assertions.assertEquals("e==>c", response.getExecuteStepStr());
+
+        String instancePath = constructInstancePath(executeStepStr, chainId);
+        Assertions.assertEquals(instancePath, response.getExecuteStepStrWithInstanceId());
+        List<String> extractStrings = extractValuesList(instancePath);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 2);
+
+        // 更该数据 查实例id是否变化
+        changeData("FOR(x).DO(CATCH(THEN(a,b,a)))", chainId);
+        flowExecutor.reloadRule();
+
+        // 重复查询
+        response = flowExecutor.execute2Resp(chainId, "arg");
+        String chain4InstanceStr2 = queryInstanceStrByChainId(chainId);
+        executeStepStr = response.getExecuteStepStr();
+        Assertions.assertEquals("x==>a==>b==>a", executeStepStr);
+
+        instancePath = constructInstancePath(executeStepStr, chainId);
+        Assertions.assertEquals(instancePath, response.getExecuteStepStrWithInstanceId());
+
+        extractStrings = extractValuesList(chain4InstanceStr2);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 4);
+    }
+
+    private String constructInstancePath(String executeStepStr, String chainId) throws SQLException {
+        Map<String, InstanceInfoDto> instanceMap = queryInstanceMapByChainId(chainId);
+        String[] nodes = executeStepStr.split("==>");
+
+        StringBuilder nodePathStr = new StringBuilder();
+        Map<String, Integer> tmpMap = new HashMap<>();
+        for (String node : nodes) {
+            tmpMap.put(node, tmpMap.getOrDefault(node, -1) + 1);
+            nodePathStr.append("==>").append(node).append("[")
+                    .append(instanceMap.get(node + "_" + tmpMap.get(node)).getInstanceId())
+                    .append("]");
+        }
+
+        return nodePathStr.toString().replaceFirst("==>", "");
+
+    }
+
     // 修改数据库数据
-    private void changeData() {
+    private void changeData(String chainElData, String chainId) {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
         SQLParserVO sqlParserVO = JsonUtil.parseObject(liteflowConfig.getRuleSourceExtData(), SQLParserVO.class);
         Connection connection;
@@ -121,14 +197,13 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
             connection = DriverManager.getConnection(sqlParserVO.getUrl(), sqlParserVO.getUsername(),
                     sqlParserVO.getPassword());
             Statement statement = connection.createStatement();
-            statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='THEN(a, c, b);' WHERE chain_name='r_chain4'");
-        }
-        catch (SQLException e) {
+            statement.executeUpdate("UPDATE EL_TABLE SET EL_DATA='" + chainElData + "' WHERE chain_name='" + chainId + "'");
+        } catch (SQLException e) {
             throw new ELSQLException(e.getMessage());
         }
     }
 
-    private String querySqlInstanceId(String chainId) throws SQLException {
+    private String queryInstanceStrByChainId(String chainId) throws SQLException {
         // 查询数据库实例id
         String instanceId = queryInstanceIdInfo(chainId);
         // 解析 JSON
@@ -146,6 +221,19 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         }
 
         return result.toString();
+    }
+
+    // key 为 nodeId_index
+    private Map<String, InstanceInfoDto> queryInstanceMapByChainId(String chainId) throws SQLException {
+        // 查询数据库实例id
+        String instanceId = queryInstanceIdInfo(chainId);
+        // 解析 JSON
+        List<InstanceInfoDto> instanceInfos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
+        // 构造实例id字符串
+        Map<String, InstanceInfoDto> result = new HashMap<>();
+        instanceInfos.forEach(instanceInfo -> result.put(instanceInfo.getNodeId() + "_" + instanceInfo.getIndex(), instanceInfo));
+
+        return result;
 
     }
 

@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import org.apache.commons.lang.StringUtils;
@@ -60,37 +61,66 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                 instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
             }
             List<InstanceInfoDto> finalInstanceInfos = instanceInfos;
-            condition.getExecutableGroup().forEach((key, executables) -> {
-                Map<String, Integer> idCntMap = new HashMap<>();
-                executables.forEach(executable -> {
-                    if (executable instanceof Node) {
-                        Node node = (Node) executable;
-                        idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+            Map<String, Integer> idCntMap = new HashMap<>();
 
-                        for (InstanceInfoDto dto : finalInstanceInfos) {
-                            if (Objects.equals(dto.getNodeId(), node.getId())
-                                    && Objects.equals(dto.getChainId(), chainId)
-                                    && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
-                                node.setInstanceId(dto.getInstanceId());
-                                break;
-                            }
-                        }
-
-                    }
-                });
-            });
+            setInstanceIdFromFile(finalInstanceInfos, chainId, condition.getExecutableGroup(), idCntMap);
         }
     }
 
-    // 写入时第一行为el的md5，第二行为json格式的groupKey和对应的nodeId 和实例id
-    //          instanceId  a_XXX_0
-    //         {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0},
+    // 从instanceIdFile里设置instanceId
+    private void setInstanceIdFromFile(List<InstanceInfoDto> finalInstanceInfos, String chainId,
+                                       Map<String, List<Executable>> executableGroup, Map<String, Integer> idCntMap) {
+        if (CollUtil.isEmpty(executableGroup)) {
+            return;
+        }
+
+        executableGroup.forEach((key, executables) -> {
+            executables.forEach(executable -> {
+                if (executable instanceof Node) {
+                    Node node = (Node) executable;
+                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+
+                    for (InstanceInfoDto dto : finalInstanceInfos) {
+                        if (Objects.equals(dto.getNodeId(), node.getId())
+                                && Objects.equals(dto.getChainId(), chainId)
+                                && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
+                            node.setInstanceId(dto.getInstanceId());
+                            break;
+                        }
+                    }
+                } else if (executable instanceof Condition) {
+                    Condition conditionTmp = (Condition) executable;
+                    setInstanceIdFromFile(finalInstanceInfos, chainId, conditionTmp.getExecutableGroup(), idCntMap);
+                } else if (executable instanceof Chain) {
+                    Chain chainTmp = (Chain) executable;
+                    List<Condition> conditionList = chainTmp.getConditionList();
+                    conditionList.forEach(condition ->
+                            setInstanceIdFromFile(finalInstanceInfos, chainId, condition.getExecutableGroup(), idCntMap));
+                }
+            });
+        });
+    }
+
+    /**
+     * 写入时第一行为el的md5，第二行为json格式的groupKey和对应的nodeId 和实例id
+     * instanceId  a_XXX_0
+     * {"chainId":"chain1","nodeId":"a","instanceId":"XXXX","index":0},
+     */
     private List<InstanceInfoDto> writeNodeInstanceId(Condition condition, String chainId) {
         ArrayList<InstanceInfoDto> instanceInfos = new ArrayList<>();
 
-        condition.getExecutableGroup().forEach((key, executables) -> {
-            // 统计每个nodeId的索引
-            Map<String, Integer> idCntMap = new HashMap<>();
+        addInstanceIdFromExecutableGroup(instanceInfos, condition.getExecutableGroup(), chainId, new HashMap<>());
+
+        return instanceInfos;
+    }
+
+    // 往instanceInfos里添加实例id
+    private void addInstanceIdFromExecutableGroup(List<InstanceInfoDto> instanceInfos, Map<String, List<Executable>> executableGroup,
+                                                  String chainId, Map<String, Integer> idCntMap) {
+        if (CollUtil.isEmpty(executableGroup)) {
+            return;
+        }
+        executableGroup.forEach((key, executables) -> {
             executables.forEach(executable -> {
                 if (executable instanceof Node) {
                     Node node = (Node) executable;
@@ -110,11 +140,16 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                     instanceInfoDto.setIndex(idCntMap.get(node.getId()));
 
                     instanceInfos.add(instanceInfoDto);
+                } else if (executable instanceof Condition) {
+                    Condition conditionTmp = (Condition) executable;
+                    addInstanceIdFromExecutableGroup(instanceInfos, conditionTmp.getExecutableGroup(), chainId, idCntMap);
+                } else if (executable instanceof Chain) {
+                    Chain chainTmp = (Chain) executable;
+                    List<Condition> conditionList = chainTmp.getConditionList();
+                    conditionList.forEach(condition -> addInstanceIdFromExecutableGroup(instanceInfos, condition.getExecutableGroup(), chainId, idCntMap));
                 }
             });
         });
-
-        return instanceInfos;
     }
 
 }
