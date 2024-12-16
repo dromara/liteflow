@@ -30,14 +30,32 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     }
 
     @Override
-    public List<T> read(String... exceptions) {
+    public List<T> read(String chainId) {
+        if (!needRead()) {
+            return new ArrayList<>();
+        }
+
+        checkConfig();
+        String sqlCmd = buildQuerySql(chainId);
+        return readList(sqlCmd);
+    }
+
+
+    @Override
+    public List<T> read() {
         // 如果不需要读取直接返回
         if (!needRead()) {
             return new ArrayList<>();
         }
 
         checkConfig();
-        String sqlCmd = buildQuerySql(exceptions);
+        String sqlCmd = buildQuerySql();
+
+        return readList(sqlCmd);
+    }
+
+
+    private List<T> readList(String sqlCmd) {
         // 如果允许，就打印 sql 语句
         logSqlIfEnable(sqlCmd);
 
@@ -85,7 +103,9 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
      */
     public abstract boolean getEnableFiledValue(ResultSet rs) throws SQLException;
 
-    public abstract String buildQuerySql(String... exceptions);
+    public abstract String buildQuerySql();
+
+    public abstract String buildQuerySql(String chainId);
 
     public abstract void checkConfig();
 

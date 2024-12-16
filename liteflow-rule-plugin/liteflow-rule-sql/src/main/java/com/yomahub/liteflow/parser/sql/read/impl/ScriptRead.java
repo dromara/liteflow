@@ -55,7 +55,7 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
     }
 
     @Override
-    public String buildQuerySql(String... exceptions) {
+    public String buildQuerySql() {
         if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
             return super.config.getScriptCustomSql();
         }
@@ -71,6 +71,21 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
     }
 
     @Override
+    public String buildQuerySql(String scriptNodeId) {
+        if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
+            return super.config.getScriptCustomSql();
+        }
+
+        String scriptTableName = super.config.getScriptTableName();
+        String scriptApplicationNameField = super.config.getScriptApplicationNameField();
+        String applicationName = super.config.getApplicationName();
+        String scriptIdField = super.config.getScriptIdField();
+        return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_CHAIN_ID,
+                scriptTableName, scriptApplicationNameField, applicationName,
+                scriptIdField, scriptNodeId);
+    }
+
+    @Override
     public void checkConfig() {
         String scriptTableName = super.config.getScriptTableName();
         String scriptIdField = super.config.getScriptIdField();
@@ -78,19 +93,19 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
         String scriptTypeField = super.config.getScriptTypeField();
         String scriptApplicationNameField = super.config.getScriptApplicationNameField();
 
-        if(StrUtil.isBlank(scriptTableName)){
+        if (StrUtil.isBlank(scriptTableName)) {
             throw new ELSQLException("You did not define the scriptTableName property");
         }
-        if(StrUtil.isBlank(scriptIdField)){
+        if (StrUtil.isBlank(scriptIdField)) {
             throw new ELSQLException("You did not define the scriptIdField property");
         }
-        if(StrUtil.isBlank(scriptDataField)){
+        if (StrUtil.isBlank(scriptDataField)) {
             throw new ELSQLException("You did not define the scriptDataField property");
         }
-        if(StrUtil.isBlank(scriptTypeField)){
+        if (StrUtil.isBlank(scriptTypeField)) {
             throw new ELSQLException("You did not define the scriptTypeField property");
         }
-        if(StrUtil.isBlank(scriptApplicationNameField)){
+        if (StrUtil.isBlank(scriptApplicationNameField)) {
             throw new ELSQLException("You did not define the scriptApplicationNameField property");
         }
     }
