@@ -2,6 +2,7 @@ package com.yomahub.liteflow.flow.instanceId;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.crypto.digest.MD5;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
@@ -20,9 +21,148 @@ import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
  */
 public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManageSpi {
 
-    // 根据实例id获取 节点实例定位
+
+    /**
+     * 根据chainId instanceId返回Node节点信息
+     */
     @Override
-    public String getNodeInstanceLocationById(String chainId, String instanceId) {
+    public Node getNodeByIdAndInstanceId(String chainId, String instanceId) {
+        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
+            return null;
+        }
+        Chain chain = FlowBus.getChain(chainId);
+        if (chain == null) {
+            return null;
+        }
+
+        List<Condition> conditionList = chain.getConditionList();
+
+        return getNodeFromConditions(conditionList, instanceId);
+    }
+
+
+    /**
+     * 根据nodeId和index返回Node节点信息
+     */
+    @Override
+    public Node getNodeByIdAndIndex(String chainId, String nodeId, Integer index) {
+        if (StringUtils.isBlank(chainId) || index == null) {
+            return null;
+        }
+        Chain chain = FlowBus.getChain(chainId);
+        if (chain == null) {
+            return null;
+        }
+
+        List<Condition> conditionList = chain.getConditionList();
+
+        return getNodeFromConditions(conditionList, nodeId, index, new HashMap<>());
+    }
+
+
+    /**
+     * 根据nodeId返回instanceId list
+     */
+    @Override
+    public List<String> getNodeInstanceIds(String chainId, String nodeId) {
+        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(nodeId)) {
+            return Collections.emptyList();
+        }
+        // 第一行为elMd5 第二行为实例id json格式信息
+        List<String> instanceIdFile = readInstanceIdFile(chainId);
+
+        List<String> instanceIds = new ArrayList<>();
+        for (int i = 1; i < instanceIdFile.size(); i++) {
+            List<InstanceInfoDto> instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
+
+            for (InstanceInfoDto dto : instanceInfos) {
+                if (Objects.equals(dto.getInstanceId(), nodeId)) {
+                    instanceIds.add(dto.getInstanceId());
+                }
+            }
+        }
+
+        return instanceIds;
+    }
+
+
+    /**
+     * 从conditions 根据instanceId获取node节点
+     */
+    private Node getNodeFromConditions(List<Condition> conditionList, String instanceId) {
+        if (CollUtil.isEmpty(conditionList)) {
+            return null;
+        }
+
+        for (Condition condition : conditionList) {
+            List<Executable> executableList = condition.getExecutableList();
+            for (Executable executable : executableList) {
+                if (executable instanceof Node) {
+                    Node node = (Node) executable;
+                    if (Objects.equals(node.getInstanceId(), instanceId)) {
+                        return node;
+                    }
+                } else if (executable instanceof Condition) {
+                    Condition conditionTmp = (Condition) executable;
+                    List<Node> allNodeInCondition = conditionTmp.getAllNodeInCondition();
+
+                    for (Node node : allNodeInCondition) {
+                        if (Objects.equals(node.getInstanceId(), instanceId)) {
+                            return node;
+                        }
+                    }
+                } else if (executable instanceof Chain) {
+                    Chain chainTmp = (Chain) executable;
+                    return getNodeFromConditions(chainTmp.getConditionList(), instanceId);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 根据nodeId和index获取node节点
+     */
+    private Node getNodeFromConditions(List<Condition> conditionList, String nodeId,
+                                       Integer index, HashMap<String, Integer> idCntMap) {
+        if (CollUtil.isEmpty(conditionList)) {
+            return null;
+        }
+
+        for (Condition condition : conditionList) {
+            List<Executable> executableList = condition.getExecutableList();
+            for (Executable executable : executableList) {
+                if (executable instanceof Node) {
+                    Node node = (Node) executable;
+                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+                    if (Objects.equals(node.getId(), nodeId) && Objects.equals(idCntMap.get(node.getId()), index)) {
+                        return node;
+                    }
+                } else if (executable instanceof Condition) {
+                    Condition conditionTmp = (Condition) executable;
+                    List<Node> allNodeInCondition = conditionTmp.getAllNodeInCondition();
+
+                    for (Node node : allNodeInCondition) {
+                        idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+                        if (Objects.equals(node.getId(), nodeId) && Objects.equals(idCntMap.get(node.getId()), index)) {
+                            return node;
+                        }
+                    }
+                } else if (executable instanceof Chain) {
+                    Chain chainTmp = (Chain) executable;
+                    return getNodeFromConditions(chainTmp.getConditionList(), nodeId, index, new HashMap<>());
+                }
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * 根据实例id获取 节点实例定位
+     */
+    @Override
+    public String getNodeLocationById(String chainId, String instanceId) {
         if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
             return "";
         }
@@ -42,7 +182,9 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
         return "";
     }
 
-    // 往condition里设置instanceId
+    /**
+     * 往condition里设置instanceId
+     */
     @Override
     public void setNodesInstanceId(Condition condition, Chain chain) {
         NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
@@ -67,7 +209,9 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
         }
     }
 
-    // 从instanceIdFile里设置instanceId
+    /**
+     * 从instanceIdFile里设置instanceId
+     */
     private void setInstanceIdFromFile(List<InstanceInfoDto> finalInstanceInfos, String chainId,
                                        Map<String, List<Executable>> executableGroup, Map<String, Integer> idCntMap) {
         if (CollUtil.isEmpty(executableGroup)) {

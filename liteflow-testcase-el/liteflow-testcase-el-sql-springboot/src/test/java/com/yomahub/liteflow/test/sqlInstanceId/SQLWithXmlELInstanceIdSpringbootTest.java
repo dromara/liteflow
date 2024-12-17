@@ -83,7 +83,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
 
         String[] nodes = new String[]{"c", "b", "a"};
         for (int i = 0; i < strings.size(); i++) {
-            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeInstanceLocationById("r_chain4", strings.get(i)), nodes[i] + "(0)");
+            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeLocationById("r_chain4", strings.get(i)), nodes[i] + "(0)");
         }
 
         HashSet<String> hashSet = Sets.newHashSet(strings);
@@ -113,7 +113,6 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
     // chain3 if 脚本 切换 if表达试
     @Test
     public void testSQLWithXmlChain4() throws SQLException {
-
         String chain4InstanceStr = queryInstanceStrByChainId("chain3");
         LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 
