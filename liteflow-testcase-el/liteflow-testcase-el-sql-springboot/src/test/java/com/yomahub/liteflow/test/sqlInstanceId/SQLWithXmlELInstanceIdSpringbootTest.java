@@ -2,6 +2,7 @@ package com.yomahub.liteflow.test.sqlInstanceId;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpi;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
@@ -170,6 +171,65 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 4);
     }
 
+
+    @Test
+    public void getNodeByIdAndInstanceIdTest() throws SQLException {
+        String[] chainIds = new String[]{"chain1", "chain2", "chain4","r_chain1","r_chain2","chain5"};
+        for (String chainId : chainIds) {
+            LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+            String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+
+            Map<String, String> instanceMap = extractKeyValuePairs(executeStepStrWithInstanceId);
+
+            NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
+            for (Map.Entry<String, String> entry : instanceMap.entrySet()) {
+                Node node = nodeInstanceIdManageSpi.getNodeByIdAndInstanceId(chainId, entry.getKey());
+                Assertions.assertEquals(node.getId(), entry.getValue());
+            }
+        }
+
+    }
+
+
+    @Test
+    public void getNodeByIdAndIndexTest() throws SQLException {
+        String[] chainIds = new String[]{"chain1", "chain2", "chain4","r_chain1","r_chain2","chain5"};
+        for (String chainId : chainIds) {
+            LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+            String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+
+            Map<String, String> instanceMap = extractKeyValuePairs(executeStepStrWithInstanceId);
+
+            Map<String, Integer> idCntMap = new HashMap<>();
+
+            NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
+            for (Map.Entry<String, String> entry : instanceMap.entrySet()) {
+                idCntMap.put(entry.getValue(), idCntMap.getOrDefault(entry.getValue(), -1) + 1);
+                Node node = nodeInstanceIdManageSpi.getNodeByIdAndIndex(chainId, entry.getValue(), idCntMap.get(entry.getValue()));
+                Assertions.assertEquals(node.getId(), entry.getValue());
+            }
+        }
+    }
+
+    @Test
+    public void getNodeInstanceIdsTest() throws SQLException {
+        String[] chainIds = new String[]{"chain1", "chain2", "chain4","r_chain1","r_chain2","chain5"};
+        for (String chainId : chainIds) {
+            LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+            String executeStepStrWithInstanceId = response.getExecuteStepStrWithInstanceId();
+
+            Map<String, List<String>> instanceMap = extractKeyValues(executeStepStrWithInstanceId);
+
+            NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
+            for (Map.Entry<String, List<String>> entry : instanceMap.entrySet()) {
+                Assertions.assertEquals(entry.getValue(), nodeInstanceIdManageSpi.getNodeInstanceIds(chainId, entry.getKey()));
+            }
+        }
+
+    }
+
+
+
     private String constructInstancePath(String executeStepStr, String chainId) throws SQLException {
         Map<String, InstanceInfoDto> instanceMap = queryInstanceMapByChainId(chainId);
         String[] nodes = executeStepStr.split("==>");
@@ -245,6 +305,60 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         }
         return values;
     }
+
+    /**
+     * key 为 InstanceId  value 为 nodeId
+     */
+    private Map<String, String> extractKeyValuePairs(String input) {
+        String[] parts = input.split("==>");
+
+        // 创建一个 Map 来存储结果
+        Map<String, String> resultMap = new HashMap<>();
+
+        for (String part : parts) {
+            // 去掉前后括号
+            int startIndex = part.indexOf('[');
+            int endIndex = part.lastIndexOf(']');
+
+            if (startIndex != -1 && endIndex != -1) {
+                String value = part.substring(0, startIndex).trim();
+                String key = part.substring(startIndex + 1, endIndex).trim();
+
+                // 将键值对放入 Map
+                resultMap.put(key, value);
+            }
+        }
+        return resultMap;
+    }
+
+
+
+    /**
+     * key 为 nodeId value 为 list InstanceId
+     */
+    private Map<String, List<String>> extractKeyValues(String input) {
+        String[] parts = input.split("==>");
+
+        // 创建一个 Map 来存储结果
+        Map<String, List<String>> resultMap = new HashMap<>();
+
+        for (String part : parts) {
+            // 去掉前后括号
+            int startIndex = part.indexOf('[');
+            int endIndex = part.lastIndexOf(']');
+
+            if (startIndex != -1 && endIndex != -1) {
+                String key = part.substring(0, startIndex).trim();
+                String value = part.substring(startIndex + 1, endIndex).trim();
+
+                List<String> mapOrDefault = resultMap.getOrDefault(key, new ArrayList<>());
+                mapOrDefault.add(value);
+                resultMap.put(key, mapOrDefault);
+            }
+        }
+        return resultMap;
+    }
+
 
     public String queryInstanceIdInfo(String chainId) throws SQLException {
         LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();

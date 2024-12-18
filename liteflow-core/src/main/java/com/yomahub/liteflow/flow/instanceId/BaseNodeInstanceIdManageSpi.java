@@ -56,7 +56,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
 
         List<Condition> conditionList = chain.getConditionList();
 
-        return getNodeFromConditions(conditionList, nodeId, index, new HashMap<>());
+        return getNodeFromConditions(conditionList, nodeId, index);
     }
 
 
@@ -76,7 +76,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
             List<InstanceInfoDto> instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
 
             for (InstanceInfoDto dto : instanceInfos) {
-                if (Objects.equals(dto.getInstanceId(), nodeId)) {
+                if (Objects.equals(dto.getNodeId(), nodeId)) {
                     instanceIds.add(dto.getInstanceId());
                 }
             }
@@ -95,25 +95,11 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
         }
 
         for (Condition condition : conditionList) {
-            List<Executable> executableList = condition.getExecutableList();
-            for (Executable executable : executableList) {
-                if (executable instanceof Node) {
-                    Node node = (Node) executable;
-                    if (Objects.equals(node.getInstanceId(), instanceId)) {
-                        return node;
-                    }
-                } else if (executable instanceof Condition) {
-                    Condition conditionTmp = (Condition) executable;
-                    List<Node> allNodeInCondition = conditionTmp.getAllNodeInCondition();
+            List<Node> allNodeInCondition = condition.getAllNodeInCondition();
 
-                    for (Node node : allNodeInCondition) {
-                        if (Objects.equals(node.getInstanceId(), instanceId)) {
-                            return node;
-                        }
-                    }
-                } else if (executable instanceof Chain) {
-                    Chain chainTmp = (Chain) executable;
-                    return getNodeFromConditions(chainTmp.getConditionList(), instanceId);
+            for (Node node : allNodeInCondition) {
+                if (Objects.equals(node.getInstanceId(), instanceId)) {
+                    return node;
                 }
             }
         }
@@ -123,34 +109,19 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
     /**
      * 根据nodeId和index获取node节点
      */
-    private Node getNodeFromConditions(List<Condition> conditionList, String nodeId,
-                                       Integer index, HashMap<String, Integer> idCntMap) {
+    private Node getNodeFromConditions(List<Condition> conditionList, String nodeId, Integer index) {
         if (CollUtil.isEmpty(conditionList)) {
             return null;
         }
 
+        Map<String, Integer> idCntMap = new HashMap<>();
         for (Condition condition : conditionList) {
-            List<Executable> executableList = condition.getExecutableList();
-            for (Executable executable : executableList) {
-                if (executable instanceof Node) {
-                    Node node = (Node) executable;
-                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
-                    if (Objects.equals(node.getId(), nodeId) && Objects.equals(idCntMap.get(node.getId()), index)) {
-                        return node;
-                    }
-                } else if (executable instanceof Condition) {
-                    Condition conditionTmp = (Condition) executable;
-                    List<Node> allNodeInCondition = conditionTmp.getAllNodeInCondition();
+            List<Node> allNodeInCondition = condition.getAllNodeInCondition();
 
-                    for (Node node : allNodeInCondition) {
-                        idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
-                        if (Objects.equals(node.getId(), nodeId) && Objects.equals(idCntMap.get(node.getId()), index)) {
-                            return node;
-                        }
-                    }
-                } else if (executable instanceof Chain) {
-                    Chain chainTmp = (Chain) executable;
-                    return getNodeFromConditions(chainTmp.getConditionList(), nodeId, index, new HashMap<>());
+            for (Node node : allNodeInCondition) {
+                idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+                if (Objects.equals(node.getId(), nodeId) && Objects.equals(idCntMap.get(node.getId()), index)) {
+                    return node;
                 }
             }
         }
@@ -203,45 +174,31 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                 instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
             }
             List<InstanceInfoDto> finalInstanceInfos = instanceInfos;
-            Map<String, Integer> idCntMap = new HashMap<>();
 
-            setInstanceIdFromFile(finalInstanceInfos, chainId, condition.getExecutableGroup(), idCntMap);
+            setInstanceIdFromFile(finalInstanceInfos, chainId, condition.getAllNodeInCondition());
         }
     }
 
     /**
      * 从instanceIdFile里设置instanceId
      */
-    private void setInstanceIdFromFile(List<InstanceInfoDto> finalInstanceInfos, String chainId,
-                                       Map<String, List<Executable>> executableGroup, Map<String, Integer> idCntMap) {
-        if (CollUtil.isEmpty(executableGroup)) {
+    private void setInstanceIdFromFile(List<InstanceInfoDto> finalInstanceInfos, String chainId, List<Node> nodeList) {
+        if (CollUtil.isEmpty(nodeList)) {
             return;
         }
+        Map<String, Integer> idCntMap = new HashMap<>();
 
-        executableGroup.forEach((key, executables) -> {
-            executables.forEach(executable -> {
-                if (executable instanceof Node) {
-                    Node node = (Node) executable;
-                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+        nodeList.forEach(node -> {
+            idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
 
-                    for (InstanceInfoDto dto : finalInstanceInfos) {
-                        if (Objects.equals(dto.getNodeId(), node.getId())
-                                && Objects.equals(dto.getChainId(), chainId)
-                                && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
-                            node.setInstanceId(dto.getInstanceId());
-                            break;
-                        }
-                    }
-                } else if (executable instanceof Condition) {
-                    Condition conditionTmp = (Condition) executable;
-                    setInstanceIdFromFile(finalInstanceInfos, chainId, conditionTmp.getExecutableGroup(), idCntMap);
-                } else if (executable instanceof Chain) {
-                    Chain chainTmp = (Chain) executable;
-                    List<Condition> conditionList = chainTmp.getConditionList();
-                    conditionList.forEach(condition ->
-                            setInstanceIdFromFile(finalInstanceInfos, chainId, condition.getExecutableGroup(), idCntMap));
+            for (InstanceInfoDto dto : finalInstanceInfos) {
+                if (Objects.equals(dto.getNodeId(), node.getId())
+                        && Objects.equals(dto.getChainId(), chainId)
+                        && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
+                    node.setInstanceId(dto.getInstanceId());
+                    break;
                 }
-            });
+            }
         });
     }
 
@@ -253,47 +210,37 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
     private List<InstanceInfoDto> writeNodeInstanceId(Condition condition, String chainId) {
         ArrayList<InstanceInfoDto> instanceInfos = new ArrayList<>();
 
-        addInstanceIdFromExecutableGroup(instanceInfos, condition.getExecutableGroup(), chainId, new HashMap<>());
+        addInstanceIdFromExecutableGroup(instanceInfos, condition.getAllNodeInCondition(), chainId);
 
         return instanceInfos;
     }
 
     // 往instanceInfos里添加实例id
-    private void addInstanceIdFromExecutableGroup(List<InstanceInfoDto> instanceInfos, Map<String, List<Executable>> executableGroup,
-                                                  String chainId, Map<String, Integer> idCntMap) {
-        if (CollUtil.isEmpty(executableGroup)) {
+    private void addInstanceIdFromExecutableGroup(List<InstanceInfoDto> instanceInfos, List<Node> nodeList,
+                                                  String chainId) {
+        if (CollUtil.isEmpty(nodeList)) {
             return;
         }
-        executableGroup.forEach((key, executables) -> {
-            executables.forEach(executable -> {
-                if (executable instanceof Node) {
-                    Node node = (Node) executable;
-                    InstanceInfoDto instanceInfoDto = new InstanceInfoDto();
 
-                    instanceInfoDto.setChainId(chainId);
-                    instanceInfoDto.setNodeId(node.getId());
+        Map<String, Integer> idCntMap = new HashMap<>();
 
-                    String shortUUID = generateShortUUID();
+        nodeList.forEach(node -> {
+            InstanceInfoDto instanceInfoDto = new InstanceInfoDto();
 
-                    idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
+            instanceInfoDto.setChainId(chainId);
+            instanceInfoDto.setNodeId(node.getId());
 
-                    String instanceId = node.getId() + "_" + shortUUID + "_" + idCntMap.get(node.getId());
+            String shortUUID = generateShortUUID();
 
-                    node.setInstanceId(instanceId);
-                    instanceInfoDto.setInstanceId(instanceId);
-                    instanceInfoDto.setIndex(idCntMap.get(node.getId()));
+            idCntMap.put(node.getId(), idCntMap.getOrDefault(node.getId(), -1) + 1);
 
-                    instanceInfos.add(instanceInfoDto);
-                } else if (executable instanceof Condition) {
-                    Condition conditionTmp = (Condition) executable;
-                    addInstanceIdFromExecutableGroup(instanceInfos, conditionTmp.getExecutableGroup(), chainId, idCntMap);
-                } else if (executable instanceof Chain) {
-                    Chain chainTmp = (Chain) executable;
-                    List<Condition> conditionList = chainTmp.getConditionList();
-                    conditionList.forEach(condition -> addInstanceIdFromExecutableGroup(instanceInfos, condition.getExecutableGroup(), chainId, idCntMap));
-                }
-            });
+            String instanceId = node.getId() + "_" + shortUUID + "_" + idCntMap.get(node.getId());
+
+            node.setInstanceId(instanceId);
+            instanceInfoDto.setInstanceId(instanceId);
+            instanceInfoDto.setIndex(idCntMap.get(node.getId()));
+
+            instanceInfos.add(instanceInfoDto);
         });
     }
-
 }
