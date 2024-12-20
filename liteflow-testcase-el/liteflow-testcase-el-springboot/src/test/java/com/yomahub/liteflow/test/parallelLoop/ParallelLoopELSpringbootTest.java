@@ -38,8 +38,12 @@ public class ParallelLoopELSpringbootTest extends BaseTest {
 	//测试并行FOR循环，循环次数直接在el中定义
 	@Test
 	public void testParallelLoop1() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-		Assertions.assertTrue(response.isSuccess());
+
+		for (int i = 0; i < 10; i++) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+			Assertions.assertTrue(response.isSuccess());
+		}
+
 	}
 
 	//测试并行FOR循环，循环次数由For组件定义
