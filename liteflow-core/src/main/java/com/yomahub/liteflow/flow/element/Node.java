@@ -180,8 +180,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (getAccessResult() || instance.isAccess()) {
-				LOG.info("[O]start component[{}] execution", instance.getDisplayName());
-
 				// 这里开始进行重试的逻辑和主逻辑的运行
 				NodeExecutor nodeExecutor = NodeExecutorHelper.loadInstance()
 					.buildNodeExecutor(instance.getNodeExecutorClass());
