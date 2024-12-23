@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author jay li
- * @since 2.12.0
+ * @since 2.13.0
  */
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(value = "classpath:/application-instanceId-xml.properties")
@@ -47,27 +47,13 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
     @Test
     public void testSQLWithXmlChain() throws SQLException, JSONException {
         // 查询数据库实例id
-        String instanceId = queryInstanceIdInfo("r_chain4");
-        // 解析 JSON
-        List<InstanceInfoDto> instanceInfos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
-        // 构造实例id字符串
-        StringBuilder result = new StringBuilder();
-        int i = 0;
-
-        for (InstanceInfoDto dto : instanceInfos) {
-            result.append(dto.getNodeId()).append("[").append(dto.getInstanceId()).append("]");
-            if (i + 1 < instanceInfos.size()) {
-                result.append("==>");
-            }
-            i++;
-        }
-
+        String result = queryInstanceStrByChainId("r_chain4");
         LiteflowResponse response = flowExecutor.execute2Resp("r_chain4", "arg");
         Assertions.assertEquals("c==>b==>a", response.getExecuteStepStr());
-        Assertions.assertEquals(result.toString(), response.getExecuteStepStrWithInstanceId());
+        Assertions.assertEquals(result, response.getExecuteStepStrWithInstanceId());
         // 重复执行 检查实例id是否变化
         response = flowExecutor.execute2Resp("r_chain4", "arg");
-        Assertions.assertEquals(result.toString(), response.getExecuteStepStrWithInstanceId());
+        Assertions.assertEquals(result, response.getExecuteStepStrWithInstanceId());
     }
 
 
@@ -172,6 +158,37 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
     }
 
 
+    // THEN(a,WHEN(b, c), a)
+    @Test
+    public void testSQLWithXmlChain6() throws SQLException {
+        String chainId = "chain6";
+
+        LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+        String executeStepStr = response.getExecuteStepStr();
+        Assertions.assertEquals("a==>b==>c==>a", response.getExecuteStepStr());
+
+        String instancePath = constructInstancePath(executeStepStr, chainId);
+        Assertions.assertEquals(instancePath, response.getExecuteStepStrWithInstanceId());
+        List<String> extractStrings = extractValuesList(instancePath);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 4);
+    }
+
+
+    // CATCH(THEN(a,b)).DO(c)
+    @Test
+    public void testSQLWithXmlChain7() throws SQLException {
+        String chainId = "chain7";
+
+        LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
+        String executeStepStr = response.getExecuteStepStr();
+        Assertions.assertEquals("a==>b", response.getExecuteStepStr());
+
+        String instancePath = constructInstancePath(executeStepStr, chainId);
+        Assertions.assertEquals(instancePath, response.getExecuteStepStrWithInstanceId());
+        List<String> extractStrings = extractValuesList(instancePath);
+        Assertions.assertEquals(Sets.newHashSet(extractStrings).size(), 2);
+    }
+
     @Test
     public void getNodeByIdAndInstanceIdTest() throws SQLException {
         String[] chainIds = new String[]{"chain1", "chain2", "chain4","r_chain1","r_chain2","chain5"};
@@ -246,6 +263,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
         return nodePathStr.toString().replaceFirst("==>", "");
 
     }
+
 
     // 修改数据库数据
     private void changeData(String chainElData, String chainId) {
