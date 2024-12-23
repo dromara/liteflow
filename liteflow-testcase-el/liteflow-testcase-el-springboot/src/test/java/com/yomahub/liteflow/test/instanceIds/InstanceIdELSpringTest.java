@@ -116,7 +116,7 @@ public class InstanceIdELSpringTest extends BaseTest {
 
     // chain3 if 脚本
     @Test
-    public void testSQLWithXmlChain3() {
+    public void testXmlChain3() {
         String chain4InstanceStr = queryInstanceStrByChainId("chain3");
         LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
 
@@ -130,7 +130,7 @@ public class InstanceIdELSpringTest extends BaseTest {
 
     // chain5 switch 切换 for 表达式
     @Test
-    public void testSQLWithXmlChain5() {
+    public void testXmlChain5() {
         String chainId = "chain5";
 
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
@@ -145,7 +145,7 @@ public class InstanceIdELSpringTest extends BaseTest {
 
     //  FOR(x).DO(CATCH(THEN(a,b,a)));
     @Test
-    public void testSQLWithXmlChain4() {
+    public void testXmlChain4() {
         String chainId = "chain4";
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
         String chain4InstanceStr2 = queryInstanceStrByChainId(chainId);
@@ -162,7 +162,7 @@ public class InstanceIdELSpringTest extends BaseTest {
 
     // THEN(a,WHEN(b, c), a)
     @Test
-    public void testSQLWithXmlChain6() {
+    public void testXmlChain6() {
         String chainId = "chain6";
 
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
@@ -178,7 +178,7 @@ public class InstanceIdELSpringTest extends BaseTest {
 
     // CATCH(THEN(a,b)).DO(c)
     @Test
-    public void testSQLWithXmlChain7() {
+    public void testXmlChain7() {
         String chainId = "chain7";
 
         LiteflowResponse response = flowExecutor.execute2Resp(chainId, "arg");
@@ -267,7 +267,6 @@ public class InstanceIdELSpringTest extends BaseTest {
 
 
     private String queryInstanceStrByChainId(String chainId) {
-        // 查询数据库实例id
         String instanceId = queryInstanceIdInfo(chainId);
         // 解析 JSON
         List<InstanceInfoDto> instanceInfoDtos = JsonUtil.parseList(instanceId, InstanceInfoDto.class);
