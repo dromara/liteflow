@@ -94,7 +94,7 @@ public class JavaxExecutor extends ScriptExecutor {
                 .replaceAll("protected class", "class");
 
         //分析出class的具体名称
-        String className = ReUtil.getGroup1("class\\s+(\\w+)\\s+implements", script1);
+        String className = ReUtil.getGroup1("class\\s+(\\w+)\\s+(implements|extends)", script1);
 
         if (StrUtil.isBlank(className)){
             throw new RuntimeException("cannot find class defined");

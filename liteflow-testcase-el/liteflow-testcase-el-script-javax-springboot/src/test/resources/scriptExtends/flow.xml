@@ -4,18 +4,12 @@
     <nodes>
         <node id="s1" name="普通脚本1" type="script" language="java">
             <![CDATA[
-            import cn.hutool.core.collection.ListUtil;
-            import com.yomahub.liteflow.benchmark.cmp.Person;
             import com.yomahub.liteflow.script.body.CommonScriptBody;
-            import com.yomahub.liteflow.slot.DefaultContext;
-            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
             import com.yomahub.liteflow.script.ScriptExecuteWrap;
-
-            import java.util.List;
-            import java.util.function.ToIntFunction;
 
             public class Demo implements CommonScriptBody {
                 public Void body(ScriptExecuteWrap wrap) {
+                    System.out.println("hello world");
                     return null;
                 }
             }
@@ -24,14 +18,6 @@
     </nodes>
 
     <chain name="chain1">
-        THEN(a,b,c);
-    </chain>
-
-    <chain name="chain2">
-        THEN(a,b,s1);
-    </chain>
-
-    <chain name="chain3">
-        ITERATOR(d).parallel(true).DO(THEN(a,b,c));
+        THEN(s1);
     </chain>
 </flow>
