@@ -58,6 +58,30 @@ public class SQLParserVO {
     private String elDataField = "el_data";
 
     /**
+     * instanceId 表名
+     */
+    private String instanceIdTableName = "node_instance_id_table";
+
+    /**
+     * instanceId 里的应用名字段
+     */
+    private String instanceIdApplicationNameField = "application_name";
+    /**
+     * instanceId 里的 chainId 字段
+     */
+    private String instanceChainIdField = "chain_id";
+
+    /**
+     * el md5
+     */
+    private String elDataMd5Field = "el_data_md5";
+
+   /**
+    * group_key_instance_id
+    */
+    private String nodeInstanceIdMapJsonField = "node_instance_id_map_json";
+
+    /**
      * 决策路由字段
      */
     private String routeField;
@@ -385,6 +409,46 @@ public class SQLParserVO {
 
     public void setScriptCustomSql(String scriptCustomSql) {
         this.scriptCustomSql = scriptCustomSql;
+    }
+
+    public String getInstanceIdApplicationNameField() {
+        return instanceIdApplicationNameField;
+    }
+
+    public void setInstanceIdApplicationNameField(String instanceIdApplicationNameField) {
+        this.instanceIdApplicationNameField = instanceIdApplicationNameField;
+    }
+
+    public String getInstanceIdTableName() {
+        return instanceIdTableName;
+    }
+
+    public String getInstanceChainIdField() {
+        return instanceChainIdField;
+    }
+
+    public void setInstanceChainIdField(String instanceChainIdField) {
+        this.instanceChainIdField = instanceChainIdField;
+    }
+
+    public void setInstanceIdTableName(String instanceIdTableName) {
+        this.instanceIdTableName = instanceIdTableName;
+    }
+
+    public String getElDataMd5Field() {
+        return elDataMd5Field;
+    }
+
+    public void setElDataMd5Field(String elDataMd5Field) {
+        this.elDataMd5Field = elDataMd5Field;
+    }
+
+    public String getNodeInstanceIdMapJsonField() {
+        return nodeInstanceIdMapJsonField;
+    }
+
+    public void setNodeInstanceIdMapJsonField(String nodeInstanceIdMapJsonField) {
+        this.nodeInstanceIdMapJsonField = nodeInstanceIdMapJsonField;
     }
 
     public DataSourceConfig getBaomidou() {

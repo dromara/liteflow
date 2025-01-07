@@ -65,6 +65,12 @@ public class SQLXmlELParser extends ClassXmlFlowELParser {
             // 注册轮询任务
             SqlReadFactory.registerSqlReadPollTask(ReadType.CHAIN);
             SqlReadFactory.registerSqlReadPollTask(ReadType.SCRIPT);
+
+
+            // enable-node-instance-id=true 创建节点实例ID表 如果不存在
+            if (liteflowConfig.getEnableNodeInstanceId()) {
+                JDBCHelper.getInstance().createNodeInstanceIdTable();
+            }
         } catch (ELSQLException elsqlException) {
             throw elsqlException;
         } catch (Exception ex) {

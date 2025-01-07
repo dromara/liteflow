@@ -5,9 +5,11 @@ package com.yomahub.liteflow.parser.constant;
  *
  * @author tangkc
  * @author houxinyu
+ * @author Jay li
  * @since 2.11.1
  */
 public enum ReadType {
     CHAIN,
-    SCRIPT;
+    SCRIPT,
+    INSTANCE_ID;
 }

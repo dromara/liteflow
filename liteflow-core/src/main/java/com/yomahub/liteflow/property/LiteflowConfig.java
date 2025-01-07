@@ -113,6 +113,9 @@ public class LiteflowConfig {
 	//是否启用节点实例ID
 	private Boolean enableNodeInstanceId;
 
+	// instance id 生成器
+	private String instanceIdGeneratorClass;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -480,5 +483,16 @@ public class LiteflowConfig {
 
 	public void setEnableNodeInstanceId(Boolean enableNodeInstanceId) {
 		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
+
+	public String getInstanceIdGeneratorClass() {
+		if (StrUtil.isBlank(this.instanceIdGeneratorClass)) {
+			return "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator";
+		}
+		return instanceIdGeneratorClass;
+	}
+
+	public void setInstanceIdGeneratorClass(String instanceIdGeneratorClass) {
+		this.instanceIdGeneratorClass = instanceIdGeneratorClass;
 	}
 }

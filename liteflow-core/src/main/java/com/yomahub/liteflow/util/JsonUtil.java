@@ -3,7 +3,6 @@ package com.yomahub.liteflow.util;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +12,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -80,7 +80,7 @@ public class JsonUtil {
 
 	public static <T> List<T> parseList(String json, Class<T> clazz) {
 		if (StrUtil.isEmpty(json)) {
-			return null;
+			return Collections.emptyList();
 		}
 		try {
 			CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, clazz);
