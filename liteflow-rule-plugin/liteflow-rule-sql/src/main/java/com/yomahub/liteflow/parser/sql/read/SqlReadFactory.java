@@ -5,6 +5,7 @@ import com.yomahub.liteflow.parser.sql.polling.SqlReadPollTask;
 import com.yomahub.liteflow.parser.sql.polling.impl.ChainReadPollTask;
 import com.yomahub.liteflow.parser.sql.polling.impl.ScriptReadPollTask;
 import com.yomahub.liteflow.parser.sql.read.impl.ChainRead;
+import com.yomahub.liteflow.parser.sql.read.impl.InstanceIdRead;
 import com.yomahub.liteflow.parser.sql.read.impl.ScriptRead;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 
@@ -16,6 +17,7 @@ import java.util.Map;
  *
  * @author tangkc
  * @author houxinyu
+ * @author Jay li
  * @since 2.11.1
  */
 public class SqlReadFactory {
@@ -25,6 +27,7 @@ public class SqlReadFactory {
     public static void registerRead(SQLParserVO config) {
         READ_MAP.put(ReadType.CHAIN, new ChainRead(config));
         READ_MAP.put(ReadType.SCRIPT, new ScriptRead(config));
+        READ_MAP.put(ReadType.INSTANCE_ID, new InstanceIdRead(config));
     }
 
     public static void registerSqlReadPollTask(ReadType readType) {

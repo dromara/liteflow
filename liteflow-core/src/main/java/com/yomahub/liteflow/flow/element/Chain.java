@@ -84,6 +84,7 @@ public class Chain implements Executable{
 	 * @param chainName chainId
 	 * @deprecated 请使用 {@link #setChainId(String)}
 	 */
+	@Deprecated
 	public void setChainName(String chainName) {
 		this.chainId = chainName;
 	}

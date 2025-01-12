@@ -67,6 +67,20 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
     }
 
     @Override
+    public String buildQuerySql(String chainId) {
+        if (StrUtil.isNotBlank(super.config.getChainCustomSql())) {
+            return super.config.getChainCustomSql();
+        }
+
+        String chainTableName = super.config.getChainTableName();
+        String chainApplicationNameField = super.config.getChainApplicationNameField();
+        String applicationName = super.config.getApplicationName();
+
+        return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_CHAIN_ID, chainTableName, chainApplicationNameField, applicationName,
+                super.config.getChainNameField(), chainId);
+    }
+
+    @Override
     public void checkConfig() {
         String chainTableName = super.config.getChainTableName();
         String elDataField = super.config.getElDataField();

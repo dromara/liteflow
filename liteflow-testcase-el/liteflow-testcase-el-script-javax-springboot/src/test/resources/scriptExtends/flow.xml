@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.script.body.CommonScriptBody;
+            import com.yomahub.liteflow.script.ScriptExecuteWrap;
+
+            public class Demo implements CommonScriptBody {
+                public Void body(ScriptExecuteWrap wrap) {
+                    System.out.println("hello world");
+                    return null;
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(s1);
+    </chain>
+</flow>

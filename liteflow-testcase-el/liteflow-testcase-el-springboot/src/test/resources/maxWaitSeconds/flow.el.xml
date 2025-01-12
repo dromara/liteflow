@@ -64,7 +64,7 @@
 
     <chain name="switch3">
         <!-- 不超时 -->
-        SWITCH(s).TO(a.maxWaitSeconds(3), b.maxWaitSeconds(2));
+        SWITCH(s).TO(a.maxWaitSeconds(3), b.maxWaitSeconds(3));
     </chain>
 
     <!-- 条件编排测试 -->

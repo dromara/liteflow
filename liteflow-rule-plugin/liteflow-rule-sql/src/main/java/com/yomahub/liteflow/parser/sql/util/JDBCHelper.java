@@ -17,7 +17,10 @@ import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -30,10 +33,12 @@ import static com.yomahub.liteflow.parser.constant.SqlReadConstant.*;
  * jdbc 工具类
  *
  * @author tangkc
+ * @author Jay li
  * @since 2.9.0
  */
 public class JDBCHelper {
 
+    private static final Logger log = LoggerFactory.getLogger(JDBCHelper.class);
     private SQLParserVO sqlParserVO;
 
     private static JDBCHelper INSTANCE;
@@ -152,6 +157,10 @@ public class JDBCHelper {
         this.sqlParserVO = sqlParserVO;
     }
 
+    public SQLParserVO getSqlParserVO() {
+        return sqlParserVO;
+    }
+
     public static ScheduledThreadPoolExecutor getPollExecutor() {
         return pollExecutor;
     }
@@ -159,4 +168,63 @@ public class JDBCHelper {
     public static void setPollExecutor(ScheduledThreadPoolExecutor pollExecutor) {
         JDBCHelper.pollExecutor = pollExecutor;
     }
+
+    /**
+     * 执行upsert,先查询，判断插入还是修改
+     *
+     * @param selectSql
+     * @param insertSql
+     * @param updateSql
+     * @throws ELSQLException
+     */
+    public void executeUpsert(String selectSql, String insertSql, String updateSql) throws ELSQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet resultSet = null;
+
+        try {
+            conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
+            stmt = conn.prepareStatement(selectSql);
+
+            resultSet = stmt.executeQuery();
+            resultSet.next();
+            String executeSql;
+
+            if (resultSet.getInt(1) > 0) {
+                executeSql = updateSql;
+            } else {
+                executeSql = insertSql;
+            }
+
+            try (PreparedStatement insertStatement = conn.prepareStatement(executeSql)) {
+                insertStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new ELSQLException(e);
+            }
+        } catch (SQLException e) {
+            throw new ELSQLException(e);
+        } finally {
+            LiteFlowJdbcUtil.close(conn, stmt, resultSet);
+        }
+    }
+
+    /**
+     * 创建node_instance_id表，如果不存在
+     */
+    public void createNodeInstanceIdTable()  {
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            conn = LiteFlowJdbcUtil.getConn(sqlParserVO);
+
+            stmt = conn.createStatement();
+            stmt.executeUpdate(INSTANT_CREATE_TABLE_SQL);
+        } catch (SQLException e) {
+            throw new ELSQLException(e);
+        } finally {
+            LiteFlowJdbcUtil.close(conn, stmt);
+        }
+    }
+
 }

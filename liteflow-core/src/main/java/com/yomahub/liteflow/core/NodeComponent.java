@@ -99,6 +99,8 @@ public abstract class NodeComponent{
 		stopWatch.start();
 
 		try {
+			LOG.info("[O]start component[{}] execution", self.getDisplayName());
+
 			// 前置处理
 			self.beforeProcess();
 

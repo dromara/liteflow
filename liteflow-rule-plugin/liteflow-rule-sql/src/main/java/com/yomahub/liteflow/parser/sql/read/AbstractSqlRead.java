@@ -3,7 +3,6 @@ package com.yomahub.liteflow.parser.sql.read;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.parser.constant.ReadType;
 import com.yomahub.liteflow.parser.constant.SqlReadConstant;
 import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
@@ -19,6 +18,7 @@ import java.util.List;
  * @author tangkc
  * @author houxinyu
  * @author Bryan.Zhang
+ * @author Jay li
  * @since 2.11.1
  */
 public abstract class AbstractSqlRead<T> implements SqlRead<T> {
@@ -30,6 +30,18 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     }
 
     @Override
+    public List<T> read(String chainId) {
+        if (!needRead()) {
+            return new ArrayList<>();
+        }
+
+        checkConfig();
+        String sqlCmd = buildQuerySql(chainId);
+        return readList(sqlCmd);
+    }
+
+
+    @Override
     public List<T> read() {
         // 如果不需要读取直接返回
         if (!needRead()) {
@@ -38,6 +50,12 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
 
         checkConfig();
         String sqlCmd = buildQuerySql();
+
+        return readList(sqlCmd);
+    }
+
+
+    private List<T> readList(String sqlCmd) {
         // 如果允许，就打印 sql 语句
         logSqlIfEnable(sqlCmd);
 
@@ -86,6 +104,8 @@ public abstract class AbstractSqlRead<T> implements SqlRead<T> {
     public abstract boolean getEnableFiledValue(ResultSet rs) throws SQLException;
 
     public abstract String buildQuerySql();
+
+    public abstract String buildQuerySql(String chainId);
 
     public abstract void checkConfig();
 

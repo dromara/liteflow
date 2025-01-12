@@ -30,4 +30,8 @@
     <chain name="chain2">
         THEN(a,b,s1);
     </chain>
+
+    <chain name="chain3">
+        ITERATOR(d).parallel(true).DO(THEN(a,b,c));
+    </chain>
 </flow>

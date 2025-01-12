@@ -578,7 +578,8 @@ public class FlowExecutor {
 		List<Tuple> routeTupleList = new ArrayList<>();
 		for (Chain routeChain : routeChainList){
 			CompletableFuture<Slot> f = CompletableFuture.supplyAsync(
-					() -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE)
+                    () -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE),
+					ExecutorHelper.loadInstance().buildWhenExecutor()
 			);
 
 			routeTupleList.add(new Tuple(routeChain, f));
@@ -614,7 +615,8 @@ public class FlowExecutor {
 		List<CompletableFuture<Slot>> executeChainCfList = new ArrayList<>();
 		for (Chain chain : matchedRouteChainList){
 			CompletableFuture<Slot> cf = CompletableFuture.supplyAsync(
-					() -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY)
+					() -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY),
+					ExecutorHelper.loadInstance().buildWhenExecutor()
 			);
 			executeChainCfList.add(cf);
 		}
