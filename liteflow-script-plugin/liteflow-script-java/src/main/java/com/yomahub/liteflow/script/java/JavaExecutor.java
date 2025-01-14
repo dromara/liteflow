@@ -14,6 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 这个插件已经废弃不再更新，推荐使用liteflow-script-javax或者liteflow-script-javax-pro
+ */
+@Deprecated
 public class JavaExecutor extends ScriptExecutor {
 
     private final Map<String, IScriptEvaluator> compiledScriptMap = new CopyOnWriteHashMap<>();
