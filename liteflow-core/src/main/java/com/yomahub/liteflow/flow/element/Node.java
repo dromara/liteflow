@@ -43,7 +43,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String id;
 
-	private String instanceId;
+	private String nodeInstanceId;
 
 	private String name;
 
@@ -113,12 +113,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return id;
 	}
 
-	public String getInstanceId() {
-		return instanceId;
+	public String getNodeInstanceId() {
+		return nodeInstanceId;
 	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
+	public void setNodeInstanceId(String nodeInstanceId) {
+		this.nodeInstanceId = nodeInstanceId;
 	}
 
 	@Override
@@ -176,7 +176,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			// 把线程属性赋值给组件对象
 			this.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
-			instance.setInstanceId(this.instanceId);
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (getAccessResult() || instance.isAccess()) {

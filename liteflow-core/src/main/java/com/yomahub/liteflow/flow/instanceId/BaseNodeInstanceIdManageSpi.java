@@ -5,7 +5,6 @@ import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import org.apache.commons.lang.StringUtils;
@@ -98,7 +97,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
             List<Node> allNodeInCondition = condition.getAllNodeInCondition();
 
             for (Node node : allNodeInCondition) {
-                if (Objects.equals(node.getInstanceId(), instanceId)) {
+                if (Objects.equals(node.getNodeInstanceId(), instanceId)) {
                     return node;
                 }
             }
@@ -195,7 +194,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                 if (Objects.equals(dto.getNodeId(), node.getId())
                         && Objects.equals(dto.getChainId(), chainId)
                         && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
-                    node.setInstanceId(dto.getInstanceId());
+                    node.setNodeInstanceId(dto.getInstanceId());
                     break;
                 }
             }
@@ -236,7 +235,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
 
             String instanceId = node.getId() + "_" + shortUUID + "_" + idCntMap.get(node.getId());
 
-            node.setInstanceId(instanceId);
+            node.setNodeInstanceId(instanceId);
             instanceInfoDto.setInstanceId(instanceId);
             instanceInfoDto.setIndex(idCntMap.get(node.getId()));
 

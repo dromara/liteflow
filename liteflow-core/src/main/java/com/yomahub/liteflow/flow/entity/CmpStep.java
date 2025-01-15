@@ -24,7 +24,7 @@ import java.util.Date;
  */
 public class CmpStep {
 
-	private String instanceId;
+	private String nodeInstanceId;
 
 	private String nodeId;
 
@@ -57,19 +57,18 @@ public class CmpStep {
 	private Node refNode;
 
 
-	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType, String instanceId) {
+	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
 		this.nodeId = nodeId;
 		this.nodeName = nodeName;
 		this.stepType = stepType;
-		this.instanceId = instanceId;
 	}
 
-	public String getInstanceId() {
-		return instanceId;
+	public String getNodeInstanceId() {
+		return nodeInstanceId;
 	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
+	public void setNodeInstanceId(String nodeInstanceId) {
+		this.nodeInstanceId = nodeInstanceId;
 	}
 
 	public String getNodeId() {
@@ -141,6 +140,7 @@ public class CmpStep {
 	}
 
 	public void setRefNode(Node refNode) {
+		this.nodeInstanceId = refNode.getNodeInstanceId();
 		this.refNode = refNode;
 	}
 
@@ -161,7 +161,7 @@ public class CmpStep {
 
 	public String buildStringWithInstanceId() {
 		if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
-			return StrUtil.format("{}[{}]", nodeId, instanceId);
+			return StrUtil.format("{}[{}]", nodeId, nodeInstanceId);
 		}
 		else {
 			// 目前没有其他的类型
