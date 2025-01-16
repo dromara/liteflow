@@ -35,21 +35,9 @@
             defaultContext.setData("s1", a * b)
             ]]>
         </node>
-
-        <node id="s2" name="循环脚本1" type="for_script" language="groovy">
-            <![CDATA[
-            return 2
-            ]]>
-        </node>
-
-        <node id="s3" name="选择脚本" type="switch_script" language="groovy">
-            <![CDATA[
-            return "b"
-            ]]>
-        </node>
     </nodes>
 
     <chain name="chain1">
-        THEN(FOR(s2).DO(THEN(a, b, c, s1)), SWITCH(s3).TO(a,b));
+        THEN(s1);
     </chain>
 </flow>

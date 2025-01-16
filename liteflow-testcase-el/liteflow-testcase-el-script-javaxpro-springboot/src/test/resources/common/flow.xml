@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import cn.hutool.core.collection.ListUtil;
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+            import com.yomahub.liteflow.test.script.javaxpro.common.cmp.Person;
+            import com.yomahub.liteflow.test.script.javaxpro.common.cmp.TestDomain;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    int v1 = 2;
+                    int v2 = 3;
+                    DefaultContext ctx = this.getFirstContextBean();
+                    ctx.setData("s1", v1 * v2);
+
+                    TestDomain domain = ContextAwareHolder.loadContextAware().getBean(TestDomain.class);
+                    System.out.println(domain);
+                    String str = domain.sayHello("jack");
+                    ctx.setData("hi", str);
+
+                    List<Person> personList = ListUtil.toList(
+                            new Person("jack", 15000),
+                            new Person("tom", 13500),
+                            new Person("peter", 18600)
+                    );
+
+                    int totalSalary = personList.stream().mapToInt(Person::getSalary).sum();
+
+                    System.out.println(totalSalary);
+                    ctx.setData("salary", 47100);
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s2" name="循环脚本1" type="for_script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeForComponent;
+
+            public class Demo extends NodeForComponent {
+                @Override
+                public int processFor() throws Exception {
+                    return 2;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s3" name="选择脚本" type="switch_script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeSwitchComponent;
+
+            public class Demo extends NodeSwitchComponent {
+                @Override
+                public String processSwitch() throws Exception {
+                    return "b";
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="t1" name="测试脚本T1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.core.NodeSwitchComponent;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    System.out.println(this.getTag());
+                }
+
+                @Override
+                public void beforeProcess() {
+                    System.out.println("beforeProcess:" + this.getTag());
+                }
+
+                @Override
+                public void onSuccess() throws Exception {
+                    System.out.println("success! oh yeah");
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="t2" name="测试脚本T2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.core.NodeSwitchComponent;
+
+            import java.util.Map;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    Map map = this.getCmpData(Map.class);
+                    System.out.println(map.get("age"));
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(FOR(s2).DO(THEN(a, b, c, s1)), SWITCH(s3).TO(a,b));
+    </chain>
+
+    <chain name="chain2">
+        THEN(t1.tag("1111"), t2.data("{\"name\":\"jack\",\"age\":31}"));
+    </chain>
+</flow>

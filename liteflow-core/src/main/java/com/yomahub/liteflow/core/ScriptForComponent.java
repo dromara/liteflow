@@ -1,6 +1,9 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.log.LFLog;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
+import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 
 import java.util.Map;
@@ -13,17 +16,68 @@ import java.util.Map;
  */
 public class ScriptForComponent extends NodeForComponent implements ScriptComponent {
 
+	private final LFLog LOG = LFLoggerManager.getLogger(this.getClass());
+
+	private ScriptExecutor scriptExecutor;
+
 	@Override
 	public int processFor() throws Exception {
 		ScriptExecuteWrap wrap = this.buildWrap(this);
-		return (int) ScriptExecutorFactory.loadInstance()
-			.getScriptExecutor(this.getRefNode().getLanguage())
-			.execute(wrap);
+		return (int) scriptExecutor.execute(wrap);
 	}
 
 	@Override
 	public void loadScript(String script, String language) {
-		ScriptExecutorFactory.loadInstance().getScriptExecutor(language).load(getNodeId(), script);
+		LOG.info("load script for component[{}]", getDisplayName());
+		scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor(language);
+		scriptExecutor.load(getNodeId(), script);
 	}
 
+	@Override
+	public boolean isAccess() {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		return scriptExecutor.executeIsAccess(wrap);
+	}
+
+	@Override
+	public boolean isContinueOnError() {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		return scriptExecutor.executeIsContinueOnError(wrap);
+	}
+
+	@Override
+	public boolean isEnd() {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		return scriptExecutor.executeIsEnd(wrap);
+	}
+
+	@Override
+	public void beforeProcess() {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		scriptExecutor.executeBeforeProcess(wrap);
+	}
+
+	@Override
+	public void afterProcess() {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		scriptExecutor.executeAfterProcess(wrap);
+	}
+
+	@Override
+	public void onSuccess() throws Exception {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		scriptExecutor.executeOnSuccess(wrap);
+	}
+
+	@Override
+	public void onError(Exception e) throws Exception {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		scriptExecutor.executeOnError(wrap, e);
+	}
+
+	@Override
+	public void rollback() throws Exception {
+		ScriptExecuteWrap wrap = this.buildWrap(this);
+		scriptExecutor.executeRollback(wrap);
+	}
 }

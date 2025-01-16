@@ -451,7 +451,8 @@
         <module>liteflow-el-builder</module>
 		<module>liteflow-script-plugin/liteflow-script-javax</module>
 		<module>liteflow-benchmark</module>
-	</modules>
+        <module>liteflow-benchmark/liteflow-benchmark-script-javax-pro</module>
+    </modules>
 
 	<distributionManagement>
 		<snapshotRepository>

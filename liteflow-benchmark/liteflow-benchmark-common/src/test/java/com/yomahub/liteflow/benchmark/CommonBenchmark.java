@@ -45,17 +45,6 @@ public class CommonBenchmark {
         flowExecutor.execute2Resp("chain1");
     }
 
-    @Benchmark
-    public  void test2(){
-        flowExecutor.execute2Resp("chain2");
-    }
-
-    @Benchmark
-    public  void test3(){
-        flowExecutor.execute2Resp("chain3");
-    }
-
-
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(CommonBenchmark.class.getSimpleName())

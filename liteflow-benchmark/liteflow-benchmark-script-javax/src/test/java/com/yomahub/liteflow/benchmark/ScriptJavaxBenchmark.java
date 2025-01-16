@@ -49,18 +49,6 @@ public class ScriptJavaxBenchmark {
         flowExecutor.execute2Resp("chain1");
     }
 
-    //LF动态创建组件和规则，并执行
-    @Benchmark
-    public  void test2(){
-        String scriptContent = ResourceUtil.readUtf8Str("classpath:javaxScript.java");
-        LiteFlowNodeBuilder.createScriptNode().setId("ds").setScript(scriptContent).build();
-
-        if(!FlowBus.containChain("chain2")){
-            LiteFlowChainELBuilder.createChain().setChainId("chain2").setEL("THEN(ds)").build();
-        }
-        flowExecutor.execute2Resp("chain2");
-    }
-
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
