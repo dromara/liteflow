@@ -8,6 +8,7 @@ import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -99,4 +100,36 @@ public abstract class ScriptExecutor {
 	 * @throws Exception 例外
 	 */
 	public abstract Object compile(String script) throws Exception;
+
+	public boolean executeIsAccess(ScriptExecuteWrap wrap){
+		return true;
+	}
+
+	public boolean executeIsContinueOnError(ScriptExecuteWrap wrap){
+		return false;
+	}
+
+	public boolean executeIsEnd(ScriptExecuteWrap wrap){
+		return false;
+	}
+
+	public void executeBeforeProcess(ScriptExecuteWrap wrap){
+		CmpAroundAspectHolder.loadCmpAroundAspect().beforeProcess(wrap.getCmp());
+	}
+
+	public void executeAfterProcess(ScriptExecuteWrap wrap){
+		CmpAroundAspectHolder.loadCmpAroundAspect().afterProcess(wrap.getCmp());
+	}
+
+	public void executeOnSuccess(ScriptExecuteWrap wrap) throws Exception{
+		CmpAroundAspectHolder.loadCmpAroundAspect().onSuccess(wrap.getCmp());
+	}
+
+	public void executeOnError(ScriptExecuteWrap wrap, Exception e) throws Exception{
+		CmpAroundAspectHolder.loadCmpAroundAspect().onError(wrap.getCmp(), e);
+	}
+
+	public void executeRollback(ScriptExecuteWrap wrap) throws Exception{
+
+	}
 }

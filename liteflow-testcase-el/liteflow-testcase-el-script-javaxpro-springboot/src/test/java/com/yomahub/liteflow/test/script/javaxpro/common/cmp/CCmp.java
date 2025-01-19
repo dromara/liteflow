@@ -5,16 +5,17 @@
  * @email weenyc31@163.com
  * @Date 2020/4/1
  */
-package com.yomahub.liteflow.benchmark.cmp;
+package com.yomahub.liteflow.test.script.javaxpro.common.cmp;
 
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 
-@LiteflowComponent("b")
-public class BCmp extends NodeComponent {
+@LiteflowComponent("c")
+public class CCmp extends NodeComponent {
 
 	@Override
 	public void process() {
+		System.out.println("CCmp executed!");
 	}
 
 }

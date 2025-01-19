@@ -10,6 +10,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!-- This module is deprecated and should not be used. -->
+    <!-- It is replaced by liteflow-script-javax module and not update anymore. -->
     <artifactId>liteflow-script-java</artifactId>
 
     <dependencies>

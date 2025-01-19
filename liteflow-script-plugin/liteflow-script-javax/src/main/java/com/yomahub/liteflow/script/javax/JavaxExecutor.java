@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.script.javax;
 
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;

@@ -58,10 +58,10 @@ public class CompStatistics implements Comparable<CompStatistics> {
 
 	@Override
 	public int compareTo(CompStatistics o) {
-		if (o != null) {
-			return this.recordTime >= o.getRecordTime() ? -1 : 1;
+		if (o == null) {
+			return 1;
 		}
-		return 1;
+		return Long.compare(o.getRecordTime(), this.recordTime);
 	}
 
 }
