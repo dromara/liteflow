@@ -41,35 +41,9 @@
             }
             ]]>
         </node>
-
-        <node id="s2" name="循环脚本1" type="for_script" language="java">
-            <![CDATA[
-            import com.yomahub.liteflow.script.body.ForScriptBody;
-            import com.yomahub.liteflow.script.ScriptExecuteWrap;
-
-            public class Demo implements ForScriptBody {
-                public Integer body(ScriptExecuteWrap wrap) {
-                    return 2;
-                }
-            }
-            ]]>
-        </node>
-
-        <node id="s3" name="选择脚本" type="switch_script" language="java">
-            <![CDATA[
-            import com.yomahub.liteflow.script.ScriptExecuteWrap;
-            import com.yomahub.liteflow.script.body.SwitchScriptBody;
-
-            public class Demo implements SwitchScriptBody {
-                public String body(ScriptExecuteWrap wrap) {
-                    return "b";
-                }
-            }
-            ]]>
-        </node>
     </nodes>
 
     <chain name="chain1">
-        THEN(FOR(s2).DO(THEN(a, b, c, s1)), SWITCH(s3).TO(a,b));
+        THEN(s1);
     </chain>
 </flow>

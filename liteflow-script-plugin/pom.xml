@@ -23,7 +23,9 @@
         <module>liteflow-script-lua</module>
         <module>liteflow-script-aviator</module>
         <module>liteflow-script-java</module>
+        <module>liteflow-script-javax</module>
         <module>liteflow-script-kotlin</module>
+        <module>liteflow-script-javax-pro</module>
     </modules>
 
 </project>

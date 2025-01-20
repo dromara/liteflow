@@ -32,16 +32,16 @@ public interface ScriptComponent {
 	 */
 	void loadScript(String script, String language);
 
-	default ScriptExecuteWrap buildWrap(NodeComponent cmp){
+	default ScriptExecuteWrap buildWrap(NodeComponent thisCmp) {
 		ScriptExecuteWrap wrap = new ScriptExecuteWrap();
-		wrap.setCurrChainId(cmp.getCurrChainId());
-		wrap.setNodeId(cmp.getNodeId());
-		wrap.setSlotIndex(cmp.getSlotIndex());
-		wrap.setTag(cmp.getTag());
-		wrap.setCmpData(cmp.getCmpData(Map.class));
-		wrap.setLoopIndex(cmp.getLoopIndex());
-		wrap.setLoopObject(cmp.getCurrLoopObj());
-		wrap.setCmp(cmp);
+		wrap.setCurrChainId(thisCmp.getCurrChainId());
+		wrap.setNodeId(thisCmp.getNodeId());
+		wrap.setSlotIndex(thisCmp.getSlotIndex());
+		wrap.setTag(thisCmp.getTag());
+		wrap.setLoopIndex(thisCmp.getLoopIndex());
+		wrap.setLoopObject(thisCmp.getCurrLoopObj());
+		wrap.setCmpData(thisCmp.getCmpData(Map.class));
+		wrap.setCmp(thisCmp);
 		return wrap;
 	}
 

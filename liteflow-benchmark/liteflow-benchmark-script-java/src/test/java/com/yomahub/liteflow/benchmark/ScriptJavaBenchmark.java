@@ -48,7 +48,7 @@ public class ScriptJavaBenchmark {
     }
 
     //LF动态创建组件和规则，并执行
-    @Benchmark
+    /*@Benchmark
     public  void test2(){
         String scriptContent = ResourceUtil.readUtf8Str("classpath:javaScript.java");
         LiteFlowNodeBuilder.createScriptNode().setId("ds").setScript(scriptContent).build();
@@ -57,7 +57,7 @@ public class ScriptJavaBenchmark {
             LiteFlowChainELBuilder.createChain().setChainId("chain2").setEL("THEN(ds)").build();
         }
         flowExecutor.execute2Resp("chain2");
-    }
+    }*/
 
 
     public static void main(String[] args) throws RunnerException {
@@ -67,7 +67,7 @@ public class ScriptJavaBenchmark {
                 .warmupIterations(1)//预热次数
                 .measurementIterations(3)//执行次数
                 .measurementTime(new TimeValue(10, TimeUnit.SECONDS))//每次执行多少时间
-                .threads(300)//多少个线程
+                .threads(100)//多少个线程
                 .forks(1)//多少个进程
                 .timeUnit(TimeUnit.SECONDS)
                 .build();
