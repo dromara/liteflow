@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+
+                }
+
+                @Override
+                public boolean isAccess() {
+                    Integer index = this.getRequestData();
+                    return index > 5;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    throw new RuntimeException("test error");
+                }
+
+                @Override
+                public boolean isContinueOnError() {
+                    return true;
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s3" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    this.setIsEnd(true);
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s4" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                }
+
+                @Override
+                public void beforeProcess() {
+                    DefaultContext context = this.getContextBean(DefaultContext.class);
+                    context.setData("before", true);
+                }
+
+                @Override
+                public void afterProcess() {
+                    DefaultContext context = this.getContextBean(DefaultContext.class);
+                    context.setData("after", true);
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s5" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                }
+
+                @Override
+                public void onSuccess() throws Exception {
+                    DefaultContext context = this.getContextBean(DefaultContext.class);
+                    context.setData("successFlag", true);
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s6" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    throw new RuntimeException("test error");
+                }
+
+                @Override
+                public void onError(Exception e) throws Exception {
+                    DefaultContext context = this.getContextBean(DefaultContext.class);
+                    context.setData("errorFlag", true);
+                    context.setData("errorMsg", e.getMessage());
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s7" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+
+                }
+
+                @Override
+                public void rollback() throws Exception {
+                    DefaultContext context = this.getContextBean(DefaultContext.class);
+                    context.setData("rollbackFlag", true);
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <chain id="chain1">
+        THEN(s1, a);
+    </chain>
+
+    <chain id="chain2">
+        THEN(s2, a);
+    </chain>
+
+    <chain id="chain3">
+        THEN(a, s3);
+    </chain>
+
+    <chain id="chain4">
+        THEN(a, s4);
+    </chain>
+
+    <chain id="chain5">
+        THEN(a, s5);
+    </chain>
+
+    <chain id="chain6">
+        THEN(a, s6);
+    </chain>
+
+    <chain id="chain7">
+        THEN(s7, b);
+    </chain>
+</flow>

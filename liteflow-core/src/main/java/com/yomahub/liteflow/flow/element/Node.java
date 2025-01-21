@@ -193,15 +193,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
-		}
-		catch (ChainEndException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
-			if (instance.isEnd()) {
-				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
-				throw new ChainEndException(errorInfo);
+			if (e instanceof ChainEndException) {
+				throw e;
 			}
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			else if (getIsContinueOnErrorResult() || instance.isContinueOnError()) {
