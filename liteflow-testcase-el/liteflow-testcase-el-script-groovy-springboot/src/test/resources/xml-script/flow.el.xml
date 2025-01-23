@@ -5,10 +5,15 @@
             <![CDATA[
             import cn.hutool.core.collection.ListUtil
             import cn.hutool.core.date.DateUtil
-
+            import com.yomahub.liteflow.core.NodeSwitchComponent
+            import org.slf4j.Logger
+            import org.slf4j.LoggerFactory
             import java.util.function.Consumer
             import java.util.function.Function
             import java.util.stream.Collectors
+
+            Logger log = LoggerFactory.getLogger(NodeSwitchComponent.class)
+            log.info("hello")
 
             def date = DateUtil.parse("2022-10-17 13:31:43")
             println(date)
