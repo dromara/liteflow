@@ -273,9 +273,7 @@ public class FlowBus {
 						throw new ScriptLoadException(errorMsg);
 					}
 				}
-
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-                node.setCompiled(true);
 				put2NodeMap(activeNodeId, node);
 				addFallbackNode(node);
 			}

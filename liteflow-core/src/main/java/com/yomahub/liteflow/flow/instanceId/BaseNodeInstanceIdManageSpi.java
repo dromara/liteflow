@@ -5,14 +5,11 @@ import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
-import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.apache.commons.lang.StringUtils;
-
 import java.util.*;
-
-import static com.yomahub.liteflow.util.JsonUtil.*;
 import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
 
 /**
@@ -73,7 +70,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
 
         List<String> instanceIds = new ArrayList<>();
         for (int i = 1; i < instanceIdFile.size(); i++) {
-            List<InstanceInfoDto> instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
+            List<InstanceInfoDto> instanceInfos = JsonUtil.parseList(instanceIdFile.get(i), InstanceInfoDto.class);
 
             for (InstanceInfoDto dto : instanceInfos) {
                 if (Objects.equals(dto.getNodeId(), nodeId)) {
@@ -133,24 +130,23 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
      * 根据实例id获取 节点实例定位
      */
     @Override
-    public String getNodeLocationById(String chainId, String instanceId) {
+    public int getNodeLocationById(String chainId, String instanceId) {
         if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
-            return "";
+            return -1;
         }
         // 第一行为elMd5 第二行为实例id json格式信息
         List<String> instanceIdFile = readInstanceIdFile(chainId);
 
         for (int i = 1; i < instanceIdFile.size(); i++) {
-            List<InstanceInfoDto> instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
+            List<InstanceInfoDto> instanceInfos = JsonUtil.parseList(instanceIdFile.get(i), InstanceInfoDto.class);
 
             for (InstanceInfoDto dto : instanceInfos) {
                 if (Objects.equals(dto.getInstanceId(), instanceId)) {
-                    return dto.getNodeId() + "(" + dto.getIndex() + ")";
+                    return dto.getIndex();
                 }
             }
         }
-
-        return "";
+        return -1;
     }
 
     /**
@@ -171,7 +167,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
             // 文件存在，则直接读取
             List<InstanceInfoDto> instanceInfos = new ArrayList<>();
             for (int i = 1; i < instanceIdFile.size(); i++) {
-                instanceInfos = parseList(instanceIdFile.get(i), InstanceInfoDto.class);
+                instanceInfos = JsonUtil.parseList(instanceIdFile.get(i), InstanceInfoDto.class);
             }
             List<InstanceInfoDto> finalInstanceInfos = instanceInfos;
 

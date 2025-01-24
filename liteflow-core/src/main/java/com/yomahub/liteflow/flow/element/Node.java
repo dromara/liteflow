@@ -185,6 +185,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
+
+				// 如果是脚本节点，并且是后置编译的，那么在成功执行好脚本节点后把编译flag置为true
+				// 这个只能在成功执行好之后设置，如果在编译好之后设置，那么设置的只有FlowBus中的nodeMap中的
+				if (this.type.isScript() && !this.isCompiled){
+					this.setCompiled(true);
+				}
 			} else {
 				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}

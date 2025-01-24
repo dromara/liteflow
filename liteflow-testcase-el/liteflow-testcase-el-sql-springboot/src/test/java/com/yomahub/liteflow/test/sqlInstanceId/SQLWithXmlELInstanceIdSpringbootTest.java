@@ -70,7 +70,7 @@ public class SQLWithXmlELInstanceIdSpringbootTest extends BaseTest {
 
         String[] nodes = new String[]{"c", "b", "a"};
         for (int i = 0; i < strings.size(); i++) {
-            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeLocationById("r_chain4", strings.get(i)), nodes[i] + "(0)");
+            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeLocationById("r_chain4", strings.get(i)), 0);
         }
 
         HashSet<String> hashSet = Sets.newHashSet(strings);
