@@ -8,7 +8,10 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,6 +31,19 @@ public class LiteflowMetaOperator {
      */
     public static Chain getChain(String chainId){
         return FlowBus.getChain(chainId);
+    }
+
+    /**
+     * 找出含有指定nodeId的chain对象
+     * @param nodeId 节点Id
+     * @return Chain对象列表
+     */
+    public static List<Chain> getChainsContainsNodeId(String nodeId){
+        return FlowBus.getChainMap().values().stream().filter(
+            chain -> getNodes(chain.getChainId()).stream().anyMatch(
+                    node -> node.getId().equals(nodeId)
+            )
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -145,6 +161,19 @@ public class LiteflowMetaOperator {
      */
     public static List<String> getNodeInstanceIds(String chainId, String nodeId){
         return NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi().getNodeInstanceIds(chainId, nodeId);
+    }
+
+    /**
+     * 通过nodeId找到在所有Chain中存在的Node对象列表
+     * @param nodeId Node实例id
+     * @return Node对象列表
+     */
+    public static List<Node> getNodesInAllChain(String nodeId){
+        return FlowBus.getChainMap().values().stream().flatMap(
+            (Function<Chain, Stream<Node>>) chain -> Objects.requireNonNull(getNodes(chain.getChainId(), nodeId)).stream().filter(
+                node -> node.getId().equals(nodeId)
+            )
+        ).collect(Collectors.toList());
     }
 
     /**

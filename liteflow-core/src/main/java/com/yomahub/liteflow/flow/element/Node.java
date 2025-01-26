@@ -204,6 +204,13 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			if (e instanceof ChainEndException) {
 				throw e;
 			}
+
+			// 这里再次写一遍的原因是：如果抛错了，还是要看isEnd这个状态，如果为true的话，还是要优先处理ChainEndException
+			if (instance.isEnd()) {
+				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
+				throw new ChainEndException(errorInfo);
+			}
+
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			else if (getIsContinueOnErrorResult() || instance.isContinueOnError()) {
 				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
