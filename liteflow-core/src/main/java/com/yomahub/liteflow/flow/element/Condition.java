@@ -118,7 +118,9 @@ public abstract class Condition implements Executable{
             if (executable instanceof Condition){
                 resultList.addAll(((Condition)executable).getAllNodeInCondition());
 			}else if(executable instanceof Chain){
-				resultList.addAll(FlowBus.getNodesByChainId(executable.getId()));
+				resultList.addAll(((Chain) executable).getConditionList().stream().flatMap(
+						(Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
+				).collect(Collectors.toList()));
             }else if(executable instanceof Node){
                 resultList.add((Node)executable);
             }

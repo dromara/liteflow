@@ -1,9 +1,12 @@
 package com.yomahub.liteflow.meta;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.core.FlowExecutorHolder;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.instanceId.NodeInstanceIdManageSpiHolder;
 
@@ -93,12 +96,37 @@ public class LiteflowMetaOperator {
     //--------------------------------------------Node相关---------------------------------------------
 
     /**
+     * 从任意Executable对象中取到Node列表
+     * @param executable 可执行对象，包括Chain，Condition，Node
+     * @return 节点列表
+     */
+    public static List<Node> getNodes(Executable executable){
+        if (executable instanceof Chain){
+            Chain chain = (Chain) executable;
+            return chain.getConditionList().stream().flatMap(
+                    (Function<Condition, Stream<Node>>) condition -> getNodes(condition).stream()
+            ).collect(Collectors.toList());
+        }else if(executable instanceof Condition){
+            Condition condition = (Condition) executable;
+            return condition.getExecutableGroup().entrySet().stream().flatMap(
+                    (Function<Map.Entry<String, List<Executable>>, Stream<Executable>>) entry -> entry.getValue().stream()
+            ).flatMap(
+                    (Function<Executable, Stream<Node>>) item -> getNodes(item).stream()
+            ).collect(Collectors.toList());
+        }else if(executable instanceof Node){
+            return CollectionUtil.toList((Node) executable);
+        }else{
+            return ListUtil.empty();
+        }
+    }
+
+    /**
      * 通过chainId获得这个chain中所有的Node
      * @param chainId chain的Id
      * @return 指定chain中的所有Node
      */
     public static List<Node> getNodes(String chainId){
-        return FlowBus.getNodesByChainId(chainId);
+        return getNodes(getChain(chainId));
     }
 
     /**
@@ -108,13 +136,7 @@ public class LiteflowMetaOperator {
      * @return Node对象列表，一个节点在Chain里有可能出现多次
      */
     public static List<Node> getNodes(String chainId, String nodeId){
-        Chain chain = getChain(chainId);
-        if (chain == null){
-            return null;
-        }
-        return chain.getConditionList().stream().flatMap(
-                (Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
-        ).filter(
+        return getNodes(chainId).stream().filter(
                 node -> node.getId().equals(nodeId)
         ).collect(Collectors.toList());
     }

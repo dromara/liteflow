@@ -24,6 +24,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.TupleOf2;
 
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -62,6 +63,8 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String tag;
 
 	private String cmpData;
+
+	private Map<String, ?> bindDataMap;
 
 	private String currChainId;
 
@@ -502,6 +505,14 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public <T> T getItemResultMetaValue(Integer slotIndex) {
 		return getInstance().getItemResultMetaValue(slotIndex);
+	}
+
+	public Map<String, ?> getBindDataMap() {
+		return bindDataMap;
+	}
+
+	public void setBindDataMap(Map<String, ?> bindDataMap) {
+		this.bindDataMap = bindDataMap;
 	}
 
 	@Override

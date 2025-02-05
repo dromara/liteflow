@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
+import com.yomahub.liteflow.meta.LiteflowMetaOperator;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ public class LiteFlowScriptGetNodesJsELTest extends BaseTest {
     public void getNodesTest1() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
         Assertions.assertTrue(response.isSuccess());
-        List<Node> nodes = FlowBus.getNodesByChainId("chain1");
+        List<Node> nodes = LiteflowMetaOperator.getNodes("chain1");
         // 判断数量
         Assertions.assertEquals(5, nodes.size());
         // 判断 id
@@ -54,7 +55,7 @@ public class LiteFlowScriptGetNodesJsELTest extends BaseTest {
     public void getNodesTest2() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
         Assertions.assertTrue(response.isSuccess());
-        List<Node> nodes = FlowBus.getNodesByChainId("chain2");
+        List<Node> nodes = LiteflowMetaOperator.getNodes("chain2");
         // 判断总数量
         Assertions.assertEquals(6, nodes.size());
         // 判断 id 与数量
@@ -79,7 +80,7 @@ public class LiteFlowScriptGetNodesJsELTest extends BaseTest {
     public void getNodesTest3() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain3", "arg");
         Assertions.assertTrue(response.isSuccess());
-        List<Node> nodes = FlowBus.getNodesByChainId("chain3");
+        List<Node> nodes = LiteflowMetaOperator.getNodes("chain3");
         // 判断总数量
         Assertions.assertEquals(8, nodes.size());
         // 判断 id 与数量
@@ -100,7 +101,7 @@ public class LiteFlowScriptGetNodesJsELTest extends BaseTest {
     public void getNodesTest4() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
         Assertions.assertTrue(response.isSuccess());
-        List<Node> nodes = FlowBus.getNodesByChainId("chain4");
+        List<Node> nodes = LiteflowMetaOperator.getNodes("chain4");
         // 判断数量
         Assertions.assertEquals(5, nodes.size());
         // 判断 id
@@ -116,7 +117,7 @@ public class LiteFlowScriptGetNodesJsELTest extends BaseTest {
     public void getNodesTest5() {
         LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
         Assertions.assertTrue(response.isSuccess());
-        List<Node> nodes = FlowBus.getNodesByChainId("chain5");
+        List<Node> nodes = LiteflowMetaOperator.getNodes("chain5");
         // 判断数量
         Assertions.assertEquals(3, nodes.size());
         // 判断 id

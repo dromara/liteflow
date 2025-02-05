@@ -292,14 +292,6 @@ public class FlowBus {
 		return nodeMap.get(nodeId);
 	}
 
-    // 获取某一个 chainId 下的所有 nodeId
-    public static List<Node> getNodesByChainId(String chainId) {
-        Chain chain = getChain(chainId);
-		return chain.getConditionList().stream().flatMap(
-				(Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
-		).collect(Collectors.toList());
-    }
-
 	public static Map<String, Node> getNodeMap() {
 		return nodeMap;
 	}
