@@ -10,6 +10,7 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
+import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
 import com.yomahub.liteflow.test.BaseTest;
@@ -185,10 +186,26 @@ public class RuleCacheSpringTest extends BaseTest {
                 Assertions.assertTrue(CollUtil.isNotEmpty(conditionList));
                 count++;
             } else {
-                Assertions.assertNull(conditionList);
+                Assertions.assertTrue(CollUtil.isEmpty(conditionList));
             }
         }
-        Assertions.assertTrue(count <= 5);
+        //Assertions.assertTrue(count <= 5);
+        //System.out.println(getCache().asMap().size());
+        Assertions.assertEquals(5, count);
+    }
+
+    @Test
+    public void test7() {
+        for (int i = 0; i < 1000; i++) {
+            test6();
+        }
+    }
+
+    @Test
+    public void test8() {
+        for (int i = 0; i < 1000; i++) {
+            testRuleCache2();
+        }
     }
 
     // 加载缓存, chain1~chain5
@@ -198,6 +215,7 @@ public class RuleCacheSpringTest extends BaseTest {
             flowExecutor.execute2Resp("chain" + i);
         }
     }
+
 
     private void loadCache(int count) {
         // 随机执行chain
@@ -220,9 +238,9 @@ public class RuleCacheSpringTest extends BaseTest {
     }
 
     public  Cache<String, Object> getCache() {
-        List<PostProcessFlowExecuteLifeCycle> lifeCycleList
-                = LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList();
-        for (PostProcessFlowExecuteLifeCycle lifeCycle : lifeCycleList) {
+        List<PostProcessChainExecuteLifeCycle> lifeCycleList
+                = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
+        for (PostProcessChainExecuteLifeCycle lifeCycle : lifeCycleList) {
             if (lifeCycle.getClass().equals(RuleCacheLifeCycle.class)) {
                 RuleCacheLifeCycle ruleCacheLifeCycle = (RuleCacheLifeCycle) lifeCycle;
                 return ruleCacheLifeCycle.getCache();

@@ -263,7 +263,8 @@ public class Chain implements Executable{
 		}
 
 		// 打印警告，可用于排查临时chain与已有chain重名（几乎不可能发生）而将已有chain覆盖的情况
-		LOG.warn("The conditionList of chain[{}] is empty, temporarily using chain[{}] (now removed) to build it.", chainId, tempChainId);
+		LOG.warn("The conditionList of chain[{}] is empty, " +
+				"temporarily using chain[{}] (now removed) to build it.", chainId, tempChainId);
 		return tempConditionList;
 	}
 }

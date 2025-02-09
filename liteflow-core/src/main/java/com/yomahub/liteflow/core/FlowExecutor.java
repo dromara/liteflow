@@ -20,6 +20,7 @@ import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
@@ -656,8 +657,14 @@ public class FlowExecutor {
 			LOG.warn("The rule cache capacity {} is too small, it is recommended to be greater than 30% of the number of chains", capacity);
 		}
 
-		RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
-		LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
+		// 添加规则缓存生命周期
+		List<PostProcessChainExecuteLifeCycle> lifeCycleList = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
+		boolean exist = lifeCycleList.stream()
+				.anyMatch(lifeCycle -> lifeCycle instanceof RuleCacheLifeCycle);
+		if (!exist) {
+			RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
+			LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
+		}
 		// 执行时才解析chain
 		liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
 	}
