@@ -29,6 +29,7 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.meta.LiteflowMetaOperator;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
@@ -45,6 +46,7 @@ import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -273,9 +275,7 @@ public class FlowBus {
 						throw new ScriptLoadException(errorMsg);
 					}
 				}
-
 				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-                node.setCompiled(true);
 				put2NodeMap(activeNodeId, node);
 				addFallbackNode(node);
 			}
@@ -291,14 +291,6 @@ public class FlowBus {
 	public static Node getNode(String nodeId) {
 		return nodeMap.get(nodeId);
 	}
-
-    // 获取某一个 chainId 下的所有 nodeId
-    public static List<Node> getNodesByChainId(String chainId) {
-        Chain chain = getChain(chainId);
-		return chain.getConditionList().stream().flatMap(
-				(Function<Condition, Stream<Node>>) condition -> condition.getAllNodeInCondition().stream()
-		).collect(Collectors.toList());
-    }
 
 	public static Map<String, Node> getNodeMap() {
 		return nodeMap;
@@ -381,8 +373,12 @@ public class FlowBus {
 		if (node == null || !node.getType().isScript()) {
 			return;
 		}
-        // 更新脚本
+        // 更新元数据模版中的脚本
 		node.setScript(script);
+
+		// 更新Chain中的Node中的脚本
+		LiteflowMetaOperator.getNodesInAllChain(nodeId).forEach(n -> n.setScript(script));
+
 		ScriptExecutorFactory.loadInstance()
 				.getScriptExecutor(node.getLanguage())
 				.load(nodeId, script);

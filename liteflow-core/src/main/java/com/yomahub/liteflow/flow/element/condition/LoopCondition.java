@@ -5,9 +5,11 @@ import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.parallel.LoopFutureObj;
+import com.yomahub.liteflow.meta.LiteflowMetaOperator;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -48,47 +50,21 @@ public abstract class LoopCondition extends Condition {
     }
 
     protected void setLoopIndex(Executable executableItem, int index) {
-        if (executableItem instanceof Chain) {
-            ((Chain) executableItem).getConditionList().forEach(condition -> setLoopIndex(condition, index));
-        } else if (executableItem instanceof Condition) {
-            ((Condition) executableItem).getExecutableGroup()
-                    .forEach((key, value) -> value.forEach(executable -> setLoopIndex(executable, index)));
-        } else if (executableItem instanceof Node) {
-            ((Node) executableItem).setLoopIndex(this, index);
-        }
+        LoopCondition thisCondition = this;
+        LiteflowMetaOperator.getNodes(executableItem).forEach(node -> node.setLoopIndex(thisCondition, index));
     }
 
     protected void setCurrLoopObject(Executable executableItem, Object obj) {
-        if (executableItem instanceof Chain) {
-            ((Chain) executableItem).getConditionList().forEach(condition -> setCurrLoopObject(condition, obj));
-        } else if (executableItem instanceof Condition) {
-            ((Condition) executableItem).getExecutableGroup()
-                    .forEach((key, value) -> value.forEach(executable -> setCurrLoopObject(executable, obj)));
-        } else if (executableItem instanceof Node) {
-            ((Node) executableItem).setCurrLoopObject(this, obj);
-        }
+        LoopCondition thisCondition = this;
+        LiteflowMetaOperator.getNodes(executableItem).forEach(node -> node.setCurrLoopObject(thisCondition, obj));
     }
 
     protected void removeLoopIndex(Executable executableItem) {
-        if (executableItem instanceof Chain) {
-            ((Chain) executableItem).getConditionList().forEach(this::removeLoopIndex);
-        } else if (executableItem instanceof Condition) {
-            ((Condition) executableItem).getExecutableGroup()
-                    .forEach((key, value) -> value.forEach(this::removeLoopIndex));
-        } else if (executableItem instanceof Node) {
-            ((Node) executableItem).removeLoopIndex();
-        }
+        LiteflowMetaOperator.getNodes(executableItem).forEach(Node::removeLoopIndex);
     }
 
     protected void removeCurrLoopObject(Executable executableItem) {
-        if (executableItem instanceof Chain) {
-            ((Chain) executableItem).getConditionList().forEach(this::removeCurrLoopObject);
-        } else if (executableItem instanceof Condition) {
-            ((Condition) executableItem).getExecutableGroup()
-                    .forEach((key, value) -> value.forEach(this::removeCurrLoopObject));
-        } else if (executableItem instanceof Node) {
-            ((Node) executableItem).removeCurrLoopObject();
-        }
+        LiteflowMetaOperator.getNodes(executableItem).forEach(Node::removeCurrLoopObject);
     }
 
     public boolean isParallel() {

@@ -22,7 +22,7 @@ public interface NodeInstanceIdManageSpi {
     void writeInstanceIdFile(List<InstanceInfoDto> instanceIdList, String elMd5, String chainId);
 
     // 根据实例id获取 节点实例定位
-    String getNodeLocationById(String chainId, String instanceId);
+    int getNodeLocationById(String chainId, String instanceId);
 
     // 根据chainId instanceId返回Node节点信息
     Node getNodeByIdAndInstanceId(String chainId, String instanceId);

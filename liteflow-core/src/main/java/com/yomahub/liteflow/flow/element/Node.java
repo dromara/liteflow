@@ -24,6 +24,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.TupleOf2;
 
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -62,6 +63,8 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String tag;
 
 	private String cmpData;
+
+	private Map<String, ?> bindDataMap;
 
 	private String currChainId;
 
@@ -185,6 +188,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
+
+				// 如果是脚本节点，并且是后置编译的，那么在成功执行好脚本节点后把编译flag置为true
+				// 这个只能在成功执行好之后设置，如果在编译好之后设置，那么设置的只有FlowBus中的nodeMap中的
+				if (this.type.isScript() && !this.isCompiled){
+					this.setCompiled(true);
+				}
 			} else {
 				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}
@@ -193,16 +202,18 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
-		}
-		catch (ChainEndException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
+			if (e instanceof ChainEndException) {
+				throw e;
+			}
+
+			// 这里再次写一遍的原因是：如果抛错了，还是要看isEnd这个状态，如果为true的话，还是要优先处理ChainEndException
 			if (instance.isEnd()) {
 				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
+
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			else if (getIsContinueOnErrorResult() || instance.isContinueOnError()) {
 				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
@@ -494,6 +505,14 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public <T> T getItemResultMetaValue(Integer slotIndex) {
 		return getInstance().getItemResultMetaValue(slotIndex);
+	}
+
+	public Map<String, ?> getBindDataMap() {
+		return bindDataMap;
+	}
+
+	public void setBindDataMap(Map<String, ?> bindDataMap) {
+		this.bindDataMap = bindDataMap;
 	}
 
 	@Override
