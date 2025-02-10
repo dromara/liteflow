@@ -112,4 +112,6 @@ public interface ChainConstant {
 	String NODE_INSTANCE_PATH = ".node_instance_id";
 
 	String USER_DIR = "user.dir";
+
+	String BIND = "bind";
 }

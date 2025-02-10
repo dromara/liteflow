@@ -418,6 +418,13 @@ public abstract class NodeComponent{
 		}
 	}
 
+	/**
+	 *
+	 * @param clazz 要转换的class类型
+	 * @return data对象
+	 * @param <T> data的泛型
+	 */
+	@Deprecated
 	public <T> T getCmpData(Class<T> clazz) {
 		String cmpData = getRefNode().getCmpData();
 		if (StrUtil.isBlank(cmpData)) {
@@ -435,6 +442,25 @@ public abstract class NodeComponent{
 			return null;
 		}
 		return JsonUtil.parseList(cmpData, clazz);
+	}
+
+	public <T> T getBindData(String key, Class<T> clazz) {
+		String bindData = getRefNode().getBindData(key);
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+		if (clazz.equals(String.class) || clazz.equals(Object.class)) {
+			return (T) bindData;
+		}
+		return JsonUtil.parseObject(bindData, clazz);
+	}
+
+	public <T> List<T> getBindDataList(Class<T> clazz) {
+		String bindData = getRefNode().getCmpData();
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+		return JsonUtil.parseList(bindData, clazz);
 	}
 
 	public Integer getLoopIndex() {
