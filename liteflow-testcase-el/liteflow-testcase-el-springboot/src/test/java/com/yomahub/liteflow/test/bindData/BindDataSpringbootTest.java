@@ -60,4 +60,15 @@ public class BindDataSpringbootTest extends BaseTest {
 		Assertions.assertEquals("test", context.getData("y"));
 		Assertions.assertTrue(response.isSuccess());
 	}
+
+	// 测试bind关键字,对一个chain进行bind
+	@Test
+	public void testBind4() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain4", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("test2", context.getData("a"));
+		Assertions.assertEquals("test2", context.getData("x"));
+		Assertions.assertEquals("test2", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+	}
 }

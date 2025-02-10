@@ -7,6 +7,7 @@
  */
 package com.yomahub.liteflow.test.bindData.cmp;
 
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,9 @@ public class CCmp extends NodeComponent {
 	public void process() {
 		DefaultContext context = this.getFirstContextBean();
 		String bindValue = this.getBindData("k1", String.class);
-		context.setData(this.getNodeId(), bindValue);
+		if (StrUtil.isNotBlank(bindValue)) {
+			context.setData(this.getNodeId(), bindValue);
+		}
 	}
 
 }
