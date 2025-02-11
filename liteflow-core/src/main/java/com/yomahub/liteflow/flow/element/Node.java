@@ -95,6 +95,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// isContinueOnError 结果
 	private TransmittableThreadLocal<Boolean> isContinueOnErrorResult =  new TransmittableThreadLocal<>();
 
+	// step自定义数据
+	private ThreadLocal<Object> stepDataTL = new ThreadLocal<>();
+
 	public Node() {
 
 	}
@@ -243,6 +246,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			removeLoopIndex();
 			removeAccessResult();
 			removeIsContinueOnErrorResult();
+			removeStepData();
 		}
 	}
 
@@ -539,6 +543,19 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		isCloned = cloned;
 	}
 
+	public Object getStepData(){
+		return this.stepDataTL.get();
+	}
+
+
+	public void setStepData(Object stepData) {
+		this.stepDataTL.set(stepData);
+	}
+
+	public void removeStepData() {
+		this.stepDataTL.remove();
+	}
+
 	@Override
 	public Node clone() throws CloneNotSupportedException {
 		Node node = (Node)super.clone();
@@ -548,6 +565,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
 		node.isContinueOnErrorResult = new TransmittableThreadLocal<>();
+		node.stepDataTL = new ThreadLocal<>();
 		node.lock4LoopIndex = new ReentrantLock();
 		node.lock4LoopObj = new ReentrantLock();
 		node.bindDataMap = new HashMap<>();

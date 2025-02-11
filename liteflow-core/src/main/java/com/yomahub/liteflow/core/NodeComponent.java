@@ -137,6 +137,10 @@ public abstract class NodeComponent{
 			final long timeSpent = stopWatch.getTotalTimeMillis();
 			LOG.info("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
+			// 步骤自定义数据设置
+			cmpStep.setStepData(this.getRefNode().getStepData());
+
+			// 结束时间设置
 			cmpStep.setEndTime(new Date());
 
 			// 往CmpStep中放入时间消耗信息
@@ -485,6 +489,10 @@ public abstract class NodeComponent{
 
 	public <T> T getPreNLoopObj(int n) {
 		return this.getRefNode().getPreNLoopObject(n);
+	}
+
+	public void setStepData(Object stepData) {
+		this.getRefNode().setStepData(stepData);
 	}
 
 	@Deprecated

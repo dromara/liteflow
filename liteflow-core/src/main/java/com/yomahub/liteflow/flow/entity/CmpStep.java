@@ -56,6 +56,9 @@ public class CmpStep {
 	// 当前执行的node
 	private Node refNode;
 
+	// 自定义步骤数据
+	private Object stepData;
+
 
 	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType, String instanceId) {
 		this.nodeId = nodeId;
@@ -261,5 +264,13 @@ public class CmpStep {
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+
+	public Object getStepData() {
+		return stepData;
+	}
+
+	public void setStepData(Object stepData) {
+		this.stepData = stepData;
 	}
 }
