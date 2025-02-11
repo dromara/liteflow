@@ -59,6 +59,9 @@ public class CmpStep {
 	// 自定义步骤数据
 	private Object stepData;
 
+	// 运行线程名称
+	private String threadName;
+
 
 	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
 		this.nodeId = nodeId;
@@ -272,5 +275,13 @@ public class CmpStep {
 
 	public void setStepData(Object stepData) {
 		this.stepData = stepData;
+	}
+
+	public String getThreadName() {
+		return threadName;
+	}
+
+	public void setThreadName(String threadName) {
+		this.threadName = threadName;
 	}
 }
