@@ -49,8 +49,6 @@ public abstract class NodeComponent{
 
 	private String name;
 
-	private String instanceId;
-
 	private NodeTypeEnum type;
 
 	// 这是自己的实例，取代this
@@ -88,7 +86,7 @@ public abstract class NodeComponent{
 		Slot slot = this.getSlot();
 
 		// 在元数据里加入step信息
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -162,7 +160,7 @@ public abstract class NodeComponent{
 			return;
 		}
 
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -329,13 +327,7 @@ public abstract class NodeComponent{
 	public void setNodeExecutorClass(Class<? extends NodeExecutor> nodeExecutorClass) {
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
-	public String getInstanceId() {
-		return instanceId;
-	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
-	}
 	public String getTag() {
 		return this.getRefNode().getTag();
 	}

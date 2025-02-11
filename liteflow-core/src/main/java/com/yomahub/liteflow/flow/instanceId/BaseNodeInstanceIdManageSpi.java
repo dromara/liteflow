@@ -95,7 +95,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
             List<Node> allNodeInCondition = condition.getAllNodeInCondition();
 
             for (Node node : allNodeInCondition) {
-                if (Objects.equals(node.getInstanceId(), instanceId)) {
+                if (Objects.equals(node.getNodeInstanceId(), instanceId)) {
                     return node;
                 }
             }
@@ -191,7 +191,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
                 if (Objects.equals(dto.getNodeId(), node.getId())
                         && Objects.equals(dto.getChainId(), chainId)
                         && Objects.equals(dto.getIndex(), idCntMap.get(node.getId()))) {
-                    node.setInstanceId(dto.getInstanceId());
+                    node.setNodeInstanceId(dto.getInstanceId());
                     break;
                 }
             }
@@ -232,7 +232,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
 
             String instanceId = node.getId() + "_" + shortUUID + "_" + idCntMap.get(node.getId());
 
-            node.setInstanceId(instanceId);
+            node.setNodeInstanceId(instanceId);
             instanceInfoDto.setInstanceId(instanceId);
             instanceInfoDto.setIndex(idCntMap.get(node.getId()));
 
