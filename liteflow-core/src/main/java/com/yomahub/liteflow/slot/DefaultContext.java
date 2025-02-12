@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultContext {
 
-	private final ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<>();
+	public final ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<>();
 
 	private <T> void putDataMap(String key, T t) {
 		if (ObjectUtil.isNull(t)) {
