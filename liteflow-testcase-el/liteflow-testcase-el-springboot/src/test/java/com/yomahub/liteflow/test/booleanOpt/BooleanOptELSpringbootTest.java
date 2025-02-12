@@ -80,5 +80,4 @@ public class BooleanOptELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("x3==>x4==>b", response.getExecuteStepStr());
 	}
-
 }
