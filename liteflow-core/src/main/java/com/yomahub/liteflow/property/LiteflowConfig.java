@@ -439,7 +439,7 @@ public class LiteflowConfig {
 
 	public Integer getGlobalThreadPoolSize() {
 		if (ObjectUtil.isNull(globalThreadPoolSize)) {
-			return 16;
+			return 64;
 		} else {
 			return globalThreadPoolSize;
 		}
