@@ -49,8 +49,6 @@ public abstract class NodeComponent{
 
 	private String name;
 
-	private String instanceId;
-
 	private NodeTypeEnum type;
 
 	// 这是自己的实例，取代this
@@ -88,11 +86,12 @@ public abstract class NodeComponent{
 		Slot slot = this.getSlot();
 
 		// 在元数据里加入step信息
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
 		cmpStep.setStartTime(new Date());
+		cmpStep.setThreadName(Thread.currentThread().getName());
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -137,6 +136,10 @@ public abstract class NodeComponent{
 			final long timeSpent = stopWatch.getTotalTimeMillis();
 			LOG.info("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
+			// 步骤自定义数据设置
+			cmpStep.setStepData(this.getRefNode().getStepData());
+
+			// 结束时间设置
 			cmpStep.setEndTime(new Date());
 
 			// 往CmpStep中放入时间消耗信息
@@ -158,7 +161,7 @@ public abstract class NodeComponent{
 			return;
 		}
 
-		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE, instanceId);
+		CmpStep cmpStep = new CmpStep(nodeId, name, CmpStepTypeEnum.SINGLE);
 		cmpStep.setTag(this.getTag());
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
@@ -325,13 +328,7 @@ public abstract class NodeComponent{
 	public void setNodeExecutorClass(Class<? extends NodeExecutor> nodeExecutorClass) {
 		this.nodeExecutorClass = nodeExecutorClass;
 	}
-	public String getInstanceId() {
-		return instanceId;
-	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
-	}
 	public String getTag() {
 		return this.getRefNode().getTag();
 	}
@@ -418,6 +415,13 @@ public abstract class NodeComponent{
 		}
 	}
 
+	/**
+	 *
+	 * @param clazz 要转换的class类型
+	 * @return data对象
+	 * @param <T> data的泛型
+	 */
+	@Deprecated
 	public <T> T getCmpData(Class<T> clazz) {
 		String cmpData = getRefNode().getCmpData();
 		if (StrUtil.isBlank(cmpData)) {
@@ -435,6 +439,25 @@ public abstract class NodeComponent{
 			return null;
 		}
 		return JsonUtil.parseList(cmpData, clazz);
+	}
+
+	public <T> T getBindData(String key, Class<T> clazz) {
+		String bindData = getRefNode().getBindData(key);
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+		if (clazz.equals(String.class) || clazz.equals(Object.class)) {
+			return (T) bindData;
+		}
+		return JsonUtil.parseObject(bindData, clazz);
+	}
+
+	public <T> List<T> getBindDataList(Class<T> clazz) {
+		String bindData = getRefNode().getCmpData();
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+		return JsonUtil.parseList(bindData, clazz);
 	}
 
 	public Integer getLoopIndex() {
@@ -459,6 +482,10 @@ public abstract class NodeComponent{
 
 	public <T> T getPreNLoopObj(int n) {
 		return this.getRefNode().getPreNLoopObject(n);
+	}
+
+	public void setStepData(Object stepData) {
+		this.getRefNode().setStepData(stepData);
 	}
 
 	@Deprecated

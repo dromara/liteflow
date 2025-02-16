@@ -100,6 +100,8 @@ public class LiteFlowChainELBuilder {
         EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MAX_WAIT_MILLISECONDS, Object.class, new MaxWaitMillisecondsOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.PARALLEL, Object.class, new ParallelOperator());
 		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.RETRY, Object.class, new RetryOperator());
+		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BIND, Object.class, new BindOperator());
+
 	}
 
 	public static LiteFlowChainELBuilder createChain() {

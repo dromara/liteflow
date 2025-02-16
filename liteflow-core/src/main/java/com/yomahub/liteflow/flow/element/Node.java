@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.flow.element;
 
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
@@ -24,6 +25,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.TupleOf2;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
@@ -44,7 +46,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String id;
 
-	private String instanceId;
+	private String nodeInstanceId;
 
 	private String name;
 
@@ -64,11 +66,16 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String cmpData;
 
-	private Map<String, ?> bindDataMap;
+	private Map<String, String> bindDataMap = new HashMap<>();
 
 	private String currChainId;
 
+	// 针对于脚本节点，这个属性代表脚本节点的脚本是否已经编译过
 	private boolean isCompiled = true;
+
+	// 此属性代表在EL构建的时候，node节点是否已经从FLowBus中的nodeMap中clone过了。
+	// 如果已经clone过了，不再Clone
+	private boolean isCloned = false;
 
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
@@ -87,6 +94,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	// isContinueOnError 结果
 	private TransmittableThreadLocal<Boolean> isContinueOnErrorResult =  new TransmittableThreadLocal<>();
+
+	// step自定义数据
+	private ThreadLocal<Object> stepDataTL = new ThreadLocal<>();
 
 	public Node() {
 
@@ -116,12 +126,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return id;
 	}
 
-	public String getInstanceId() {
-		return instanceId;
+	public String getNodeInstanceId() {
+		return nodeInstanceId;
 	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
+	public void setNodeInstanceId(String nodeInstanceId) {
+		this.nodeInstanceId = nodeInstanceId;
 	}
 
 	@Override
@@ -137,6 +147,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
 	}
 
 	public String getName() {
@@ -179,7 +192,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			// 把线程属性赋值给组件对象
 			this.setSlotIndex(slotIndex);
 			instance.setRefNode(this);
-			instance.setInstanceId(this.instanceId);
 
 			// 判断是否可执行，所以isAccess经常作为一个组件进入的实际判断要素，用作检查slot里的参数的完备性
 			if (getAccessResult() || instance.isAccess()) {
@@ -233,6 +245,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			removeLoopIndex();
 			removeAccessResult();
 			removeIsContinueOnErrorResult();
+			removeStepData();
 		}
 	}
 
@@ -295,6 +308,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void setCmpData(String cmpData) {
 		this.cmpData = cmpData;
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
 	}
 
 	@Override
@@ -507,12 +523,36 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return getInstance().getItemResultMetaValue(slotIndex);
 	}
 
-	public Map<String, ?> getBindDataMap() {
-		return bindDataMap;
+	public void putBindData(String key, String value) {
+		this.bindDataMap.put(key, value);
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
 	}
 
-	public void setBindDataMap(Map<String, ?> bindDataMap) {
-		this.bindDataMap = bindDataMap;
+	public String getBindData(String key) {
+		return this.bindDataMap.get(key);
+	}
+
+	public boolean isCloned() {
+		return isCloned;
+	}
+
+	public void setCloned(boolean cloned) {
+		isCloned = cloned;
+	}
+
+	public Object getStepData(){
+		return this.stepDataTL.get();
+	}
+
+
+	public void setStepData(Object stepData) {
+		this.stepDataTL.set(stepData);
+	}
+
+	public void removeStepData() {
+		this.stepDataTL.remove();
 	}
 
 	@Override
@@ -524,8 +564,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
 		node.isContinueOnErrorResult = new TransmittableThreadLocal<>();
+		node.stepDataTL = new ThreadLocal<>();
 		node.lock4LoopIndex = new ReentrantLock();
 		node.lock4LoopObj = new ReentrantLock();
+		node.bindDataMap = new HashMap<>();
 		return node;
 	}
 }

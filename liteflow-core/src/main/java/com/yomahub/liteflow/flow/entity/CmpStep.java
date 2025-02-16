@@ -24,7 +24,7 @@ import java.util.Date;
  */
 public class CmpStep {
 
-	private String instanceId;
+	private String nodeInstanceId;
 
 	private String nodeId;
 
@@ -56,20 +56,25 @@ public class CmpStep {
 	// 当前执行的node
 	private Node refNode;
 
+	// 自定义步骤数据
+	private Object stepData;
 
-	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType, String instanceId) {
+	// 运行线程名称
+	private String threadName;
+
+
+	public CmpStep(String nodeId, String nodeName, CmpStepTypeEnum stepType) {
 		this.nodeId = nodeId;
 		this.nodeName = nodeName;
 		this.stepType = stepType;
-		this.instanceId = instanceId;
 	}
 
-	public String getInstanceId() {
-		return instanceId;
+	public String getNodeInstanceId() {
+		return nodeInstanceId;
 	}
 
-	public void setInstanceId(String instanceId) {
-		this.instanceId = instanceId;
+	public void setNodeInstanceId(String nodeInstanceId) {
+		this.nodeInstanceId = nodeInstanceId;
 	}
 
 	public String getNodeId() {
@@ -141,6 +146,7 @@ public class CmpStep {
 	}
 
 	public void setRefNode(Node refNode) {
+		this.nodeInstanceId = refNode.getNodeInstanceId();
 		this.refNode = refNode;
 	}
 
@@ -161,7 +167,7 @@ public class CmpStep {
 
 	public String buildStringWithInstanceId() {
 		if (stepType.equals(CmpStepTypeEnum.SINGLE)) {
-			return StrUtil.format("{}[{}]", nodeId, instanceId);
+			return StrUtil.format("{}[{}]", nodeId, nodeInstanceId);
 		}
 		else {
 			// 目前没有其他的类型
@@ -261,5 +267,21 @@ public class CmpStep {
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+
+	public Object getStepData() {
+		return stepData;
+	}
+
+	public void setStepData(Object stepData) {
+		this.stepData = stepData;
+	}
+
+	public String getThreadName() {
+		return threadName;
+	}
+
+	public void setThreadName(String threadName) {
+		this.threadName = threadName;
 	}
 }
