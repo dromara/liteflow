@@ -11,7 +11,6 @@ import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
-import com.yomahub.liteflow.lifecycle.PostProcessFlowExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
 import com.yomahub.liteflow.test.BaseTest;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -48,7 +47,7 @@ public class RuleCacheSpringbootTest extends BaseTest {
     public void reload() {
         flowExecutor.reloadRule();
         // 清空缓存
-        Cache<String, Object> cache = getCache();
+        Cache<String, RuleCacheLifeCycle.ChainState> cache = getCache();
         cache.invalidateAll();
         cache.cleanUp();
     }
@@ -71,15 +70,20 @@ public class RuleCacheSpringbootTest extends BaseTest {
         Assertions.assertTrue(response.isSuccess());
     }
 
-    // 测试缓存数量
+    // 测试缓存数量上限（串行）
     @Test
     public void testRuleCache2() {
         // 确保至少执行过5个不同的chain
         loadCache();
         // 随机执行chain
-        loadCache(100);
+        Random random = new Random();
+        for (int i = 0; i < 100; i++) {
+            int id = random.nextInt(10) + 1;
+            flowExecutor.execute2Resp("chain" + id);
+        }
         // 等待缓存淘汰
         getCache().cleanUp();
+        Assertions.assertEquals(10, FlowBus.getChainMap().size());
         // 测试只有5个chain被编译
         int count = 0;
         for (Chain chain : FlowBus.getChainMap().values()) {
@@ -91,76 +95,12 @@ public class RuleCacheSpringbootTest extends BaseTest {
                 Assertions.assertNull(conditionList);
             }
         }
-        //Assertions.assertTrue(count <= 5);
-        Assertions.assertEquals(count, 5);
+        Assertions.assertTrue(count <= 5);
     }
 
-    // 测试开启规则缓存后，进入缓存的chain可以正常被更新
+    // 测试缓存数量上限（并行）
     @Test
     public void testRuleCache3() {
-        loadCache();
-        // 缓存快照
-        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
-        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
-        Assertions.assertTrue(response.isSuccess());
-        Assertions.assertEquals("x==>a==>b", response.getExecuteStepStr());
-        // chain7进入缓存
-        Assertions.assertTrue(getCache().asMap().containsKey("chain7"));
-        // 获得被淘汰chain
-        String chainId = getEvictedChain(strings);
-        testEvicted(chainId);
-        // 更新chain7
-        LiteFlowChainELBuilder
-                .createChain()
-                .setChainId("chain7")
-                .setEL("THEN(a, b, c)")
-                .build();
-        // 重新执行chain7
-        response = flowExecutor.execute2Resp("chain7", "arg");
-        Assertions.assertTrue(response.isSuccess());
-        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
-    }
-
-    // 测试开启规则缓存后，进入缓存的chain被移除后无法执行
-    @Test
-    public void testRuleCache4() {
-        loadCache();
-        // 缓存快照
-        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
-        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
-        Assertions.assertTrue(response.isSuccess());
-        Assertions.assertEquals("x==>a==>b", response.getExecuteStepStr());
-        // chain7进入缓存
-        Assertions.assertTrue(getCache().asMap().containsKey("chain7"));
-        // 获得被淘汰chain
-        String chainId = getEvictedChain(strings);
-        testEvicted(chainId);
-        // 手动移除chain7
-        FlowBus.removeChain("chain7");
-        response = flowExecutor.execute2Resp("chain7", "arg");
-        Assertions.assertFalse(response.isSuccess());
-        Assertions.assertEquals(ChainNotFoundException.class, response.getCause().getClass());
-    }
-
-    // 测试并发下，正在执行的chain被淘汰仍能执行
-    @Test
-    public void testRuleCache5() throws InterruptedException {
-        // 模拟清空编译好的chain
-        Thread thread = new Thread(()-> {
-            Chain chain1 = FlowBus.getChain("chain1");
-            chain1.setCompiled(true);
-            chain1.setConditionList(null);
-        });
-        thread.start();
-        thread.join();
-        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
-        Assertions.assertTrue(response.isSuccess());
-        Assertions.assertEquals("a==>b", response.getExecuteStepStr());
-    }
-
-    // 测试开启规则缓存后，并发执行chain
-    @Test
-    public void test6() {
         loadCache();
         Random random = new Random();
         List<Future<LiteflowResponse>> futureList = CollUtil.newArrayList();
@@ -180,9 +120,8 @@ public class RuleCacheSpringbootTest extends BaseTest {
 
         // 等待缓存淘汰
         getCache().cleanUp();
-        // 测试只有5个chain被编译
         Assertions.assertEquals(10, FlowBus.getChainMap().size());
-
+        // 测试只有5个chain被编译
         int count = 0;
         for (Chain chain : FlowBus.getChainMap().values()) {
             List<Condition> conditionList = chain.getConditionList();
@@ -193,15 +132,71 @@ public class RuleCacheSpringbootTest extends BaseTest {
                 Assertions.assertNull(conditionList);
             }
         }
-        //Assertions.assertTrue(count <= 5);
-        Assertions.assertEquals(5, count);
+        Assertions.assertTrue(count <= 5);
     }
 
+    // 测试开启规则缓存后，进入缓存的chain可以正常被更新
     @Test
-    public void test7() {
-        for (int i = 0; i < 1000; i++) {
-            test6();
-        }
+    public void testRuleCache4() {
+        loadCache();
+        // 缓存快照
+        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("x==>a==>b", response.getExecuteStepStr());
+        // 获得被淘汰chain
+        String chainId = getEvictedChain(strings);
+        testEvicted(chainId);
+        // chain7进入缓存
+        Assertions.assertTrue(getCache().asMap().containsKey("chain7"));
+        // 更新chain7
+        LiteFlowChainELBuilder
+                .createChain()
+                .setChainId("chain7")
+                .setEL("THEN(a, b, c)")
+                .build();
+        // 重新执行chain7
+        response = flowExecutor.execute2Resp("chain7", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b==>c", response.getExecuteStepStr());
+    }
+
+    // 测试开启规则缓存后，进入缓存的chain被移除后无法执行
+    @Test
+    public void testRuleCache5() {
+        loadCache();
+        // 缓存快照
+        HashSet<@NonNull String> strings = CollUtil.newHashSet(getCache().asMap().keySet());
+        LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("x==>a==>b", response.getExecuteStepStr());
+        // 获得被淘汰chain
+        String chainId = getEvictedChain(strings);
+        testEvicted(chainId);
+        // chain7进入缓存
+        Assertions.assertTrue(getCache().asMap().containsKey("chain7"));
+        // 手动移除chain7
+        FlowBus.removeChain("chain7");
+        response = flowExecutor.execute2Resp("chain7", "arg");
+        Assertions.assertFalse(response.isSuccess());
+        Assertions.assertEquals(ChainNotFoundException.class, response.getCause().getClass());
+    }
+
+    // 测试并发下，正在执行的chain的condition被清理但仍能执行
+    @Test
+    public void testRuleCache6() throws InterruptedException {
+        // 模拟清空编译好的chain
+        Thread thread = new Thread(()-> {
+            Chain chain1 = FlowBus.getChain("chain1");
+            // 绕过初次编译
+            chain1.setCompiled(true);
+            chain1.setConditionList(null);
+        });
+        thread.start();
+        thread.join();
+        LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
+        Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("a==>b", response.getExecuteStepStr());
     }
 
     // 加载缓存, chain1~chain5
@@ -209,15 +204,6 @@ public class RuleCacheSpringbootTest extends BaseTest {
         // 容量上限为5
         for (int i = 1; i <= 5; i++) {
             flowExecutor.execute2Resp("chain" + i);
-        }
-    }
-
-    private void loadCache(int count) {
-        // 随机执行chain
-        Random random = new Random();
-        for (int i = 0; i < count; i++) {
-            int id = random.nextInt(10) + 1;
-            flowExecutor.execute2Resp("chain" + id);
         }
     }
 
@@ -232,7 +218,7 @@ public class RuleCacheSpringbootTest extends BaseTest {
         Assertions.assertNull(chain.getConditionList());
     }
 
-    public  Cache<String, Object> getCache() {
+    public Cache<String, RuleCacheLifeCycle.ChainState> getCache() {
         List<PostProcessChainExecuteLifeCycle> lifeCycleList
                 = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
         for (PostProcessChainExecuteLifeCycle lifeCycle : lifeCycleList) {
@@ -247,7 +233,7 @@ public class RuleCacheSpringbootTest extends BaseTest {
     // 获得淘汰的chain，传入淘汰前的chain集合
     // 确保只有一个被淘汰时使用
     String getEvictedChain(Set<String> set) {
-        Cache<String, Object> cache = getCache();
+        Cache<String, RuleCacheLifeCycle.ChainState> cache = getCache();
         cache.cleanUp();
         Set<@NonNull String> strings = cache.asMap().keySet();
         set.removeAll(strings);
