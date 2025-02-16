@@ -85,7 +85,6 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
         }
     }
 
-
     /**
      * 监听在缓存中被移除的 Chain
      */

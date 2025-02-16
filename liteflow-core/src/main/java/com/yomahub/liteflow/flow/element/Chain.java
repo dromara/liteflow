@@ -108,7 +108,7 @@ public class Chain implements Executable{
 		// 因为在正式执行condition之前，this.conditionList有可能被其他线程置空
 		// 比如，该chain在规则缓存中被淘汰
 		List<Condition> conditionListRef = this.conditionList;
-		// 但在编译后到拿到引用之前，this.conditionList也有可能被置空
+		// 但在编译后到拿到引用之前，this.conditionList可能已经被置空了
 		if (CollUtil.isEmpty(conditionListRef)) {
 			// 如果conditionListRef为空，
 			// 构建临时conditionList确保本次一定可以执行
