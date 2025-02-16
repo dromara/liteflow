@@ -154,6 +154,7 @@ public class LiteflowMetaOperator {
 
     /**
      * 通过chainId，nodeId，index去获取具体的Node节点
+     * 只有打开liteflow.enable-node-instance-id=true才会正常调用这个
      * @param chainId chain的Id
      * @param nodeId 节点的Id
      * @param index 节点的序号下标，从0开始
