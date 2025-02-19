@@ -104,7 +104,7 @@ LF CLUB里能解决你在使用LiteFlow框架时碰到的所有问题，并有�
 
 **速众 AI 低代码开发平台**
 
-<a href="https://www.suconnect.com"><img src="static/img/suzhong-banner.png"></a>
+<a href="https://www.suconnect.com"><img src="static/img/suzhong-banner.jpg"></a>
 
 **微信公众号**
 
