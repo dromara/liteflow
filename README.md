@@ -110,7 +110,7 @@ To join the LF CLUB, please scan the QR code below or click on the image to go d
 
 **速众 AI 低代码开发平台**
 
-<a href="https://www.suconnect.com"><img src="static/img/suzhong-banner.jpg"></a>
+<a href="https://www.suconnect.com?hmsr=LiteFlow&hmpl=&hmcu=LiteFlow&hmkw=&hmci="><img src="static/img/suzhong-banner.jpg"></a>
 
 **WECHAT OFFICIAL ACCOUNT**
 
