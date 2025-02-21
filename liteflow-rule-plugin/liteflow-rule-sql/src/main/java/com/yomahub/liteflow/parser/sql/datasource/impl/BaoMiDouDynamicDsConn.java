@@ -24,11 +24,7 @@ import java.util.Optional;
 public class BaoMiDouDynamicDsConn implements LiteFlowDataSourceConnect {
     @Override
     public boolean filter(SQLParserVO config) {
-        // 是否配置苞米豆动态数据源配置
-        boolean configFlag = Optional.ofNullable(config.getBaomidou())
-                .map(SQLParserVO.DataSourceConfig::getDataSourceName)
-                .isPresent();
-        if (!configFlag) {
+        if (StrUtil.isBlank(config.getBaomidouDataSource())) {
             return false;
         }
         boolean classLoadFlag = ClassLoaderUtil.isPresent(Constant.LOAD_CLASS_NAME);
@@ -40,7 +36,7 @@ public class BaoMiDouDynamicDsConn implements LiteFlowDataSourceConnect {
 
     @Override
     public Connection getConn(SQLParserVO config) throws Exception {
-        String dataSourceName = config.getBaomidou().getDataSourceName();
+        String dataSourceName = config.getBaomidouDataSource();
         ContextAware contextAware = ContextAwareHolder.loadContextAware();
         DynamicRoutingDataSource dynamicRoutingDataSource = contextAware.getBean(DynamicRoutingDataSource.class);
         Map<String, DataSource> dataSources = dynamicRoutingDataSource.getDataSources();
