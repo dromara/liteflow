@@ -14,8 +14,8 @@ public class MaxWaitSecondBuilderTest extends BaseTest {
     // node层面
     @Test
     public void testMaxWaitSecond1(){
-        CommonNodeELWrapper nodeA = ELBus.commonNode("a").maxWaitSeconds(4);
-        CommonNodeELWrapper nodeB = ELBus.commonNode("b").maxWaitSeconds(4);
+        CommonNodeELWrapper nodeA = ELBus.element("a").maxWaitSeconds(4);
+        CommonNodeELWrapper nodeB = ELBus.element("b").maxWaitSeconds(4);
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.maxWaitSeconds(4),b.maxWaitSeconds(4));", whenELWrapper.toEL());
     }

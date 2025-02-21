@@ -16,8 +16,8 @@ public class RetryBuilderTest extends BaseTest {
     // node上进行retry
     @Test
     public void testRetry1(){
-        CommonNodeELWrapper nodeA = ELBus.commonNode("a").retry(2);
-        CommonNodeELWrapper nodeB = ELBus.commonNode("b").retry(3);
+        CommonNodeELWrapper nodeA = ELBus.element("a").retry(2);
+        CommonNodeELWrapper nodeB = ELBus.element("b").retry(3);
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.retry(2),b.retry(3));", whenELWrapper.toEL());
     }
@@ -25,8 +25,8 @@ public class RetryBuilderTest extends BaseTest {
     // node上进行retry，带exception
     @Test
     public void testRetry2(){
-        CommonNodeELWrapper nodeA = ELBus.commonNode("a").retry(2, "java.lang.NullPointerException");
-        CommonNodeELWrapper nodeB = ELBus.commonNode("b").retry(3, "java.lang.NullPointerException", "java.lang.ArrayIndexOutOfBoundsException");
+        CommonNodeELWrapper nodeA = ELBus.element("a").retry(2, "java.lang.NullPointerException");
+        CommonNodeELWrapper nodeB = ELBus.element("b").retry(3, "java.lang.NullPointerException", "java.lang.ArrayIndexOutOfBoundsException");
         WhenELWrapper whenELWrapper = ELBus.when(nodeA, nodeB);
         Assertions.assertEquals("WHEN(a.retry(2,\"java.lang.NullPointerException\"),b.retry(3,\"java.lang.NullPointerException\",\"java.lang.ArrayIndexOutOfBoundsException\"));",
                 whenELWrapper.toEL());
