@@ -1,4 +1,4 @@
-package com.yomahub.liteflow.test.bindData.cmp;
+package com.yomahub.liteflow.test.bindData.cmp1;
 
 import com.yomahub.liteflow.core.NodeBooleanComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
