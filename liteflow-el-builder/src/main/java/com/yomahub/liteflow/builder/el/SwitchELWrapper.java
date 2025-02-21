@@ -2,6 +2,8 @@ package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
 
+import java.util.Map;
+
 /**
  * 选择组件
  * SWITCH(a).TO(b,c,d...).default(x)
@@ -44,6 +46,30 @@ public class SwitchELWrapper extends ELWrapper {
     @Override
     public SwitchELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public SwitchELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public SwitchELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public SwitchELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public SwitchELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

@@ -31,6 +31,30 @@ public class PreELWrapper extends ELWrapper {
     }
 
     @Override
+    public PreELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public PreELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public PreELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public PreELWrapper bind(String key, String value) {
+        super.bind(key, value);
+        return this;
+    }
+
+    @Override
     public PreELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
         return this;

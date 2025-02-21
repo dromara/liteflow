@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
+import java.util.Map;
+
 /**
  * FOR、WHILE、ITERATOR循环表达式的公共抽象父类
  *
@@ -65,6 +67,30 @@ public class LoopELWrapper extends ELWrapper {
     @Override
     public LoopELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public LoopELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public LoopELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public LoopELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public LoopELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

@@ -58,22 +58,25 @@ public class CommonNodeELWrapper extends ELWrapper {
 
     @Override
     public CommonNodeELWrapper data(String dataName, Object object) {
-        setData("'" + JsonUtil.toJsonString(object) + "'");
-        setDataName(dataName);
+        super.data(dataName, object);
         return this;
     }
 
     @Override
     public CommonNodeELWrapper data(String dataName, String jsonString) {
-        setData("'" + jsonString + "'");
-        setDataName(dataName);
+        super.data(dataName, jsonString);
         return this;
     }
 
     @Override
     public CommonNodeELWrapper data(String dataName, Map<String, Object> jsonMap) {
-        setData("'" + JsonUtil.toJsonString(jsonMap) + "'");
-        setDataName(dataName);
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public ELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 
@@ -102,28 +105,4 @@ public class CommonNodeELWrapper extends ELWrapper {
         processWrapperProperty(sb, paramContext);
         return sb.toString();
     }
-
-    /**
-     * Node的公共属性不包括id，对父类方法重载。
-     *
-     * @param elContext    EL 上下文
-     * @param paramContext 参数上下文
-     */
-    @Override
-    protected void processWrapperProperty(StringBuilder elContext, StringBuilder paramContext){
-        if(this.getTag() != null){
-            elContext.append(StrUtil.format(".tag(\"{}\")", this.getTag()));
-        }
-        if(this.getData() != null){
-            elContext.append(StrUtil.format(".data({})", this.getDataName()));
-            paramContext.append(StrUtil.format("{} = {}", this.getDataName(), this.getData())).append(";\n");
-        }
-        if(this.getMaxWaitSeconds() != null){
-            elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));
-        }
-        if (this.getRetry() != null){
-            elContext.append(StrUtil.format(".retry({})", this.getRetry().toString()));
-        }
-    }
-
 }
