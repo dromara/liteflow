@@ -157,47 +157,5 @@ public class LiteFlowJdbcUtil {
         public static boolean isNotInit() {
             return DATA_SOURCE_NAME == null;
         }
-
-        /**
-         * 自动查找可用数据源
-         */
-        public static Connection autoLookUpConn(SQLParserVO sqlParserVO) throws SQLException {
-            Connection connection;
-            Map<String, DataSource> dataSourceMap = ContextAwareHolder.loadContextAware().getBeansOfType(DataSource.class);
-            if (DataSourceBeanNameHolder.isNotInit()) {
-                synchronized (DataSourceBeanNameHolder.class) {
-                    if (DataSourceBeanNameHolder.isNotInit()) {
-                        String executeSql = buildCheckSql(sqlParserVO);
-                        // 遍历数据源，多数据源场景下，判断哪个数据源有 liteflow 配置
-                        for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
-                            String dataSourceName = entry.getKey();
-                            DataSource dataSource = entry.getValue();
-
-                            if (checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
-                                // 找到数据源名称后，将其缓存起来，下次使用就不再寻找
-                                DataSourceBeanNameHolder.init(dataSourceName);
-                                if (sqlParserVO.getSqlLogEnabled()) {
-                                    LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
-                                }
-                                break;
-                            } else {
-                                LOG.warn("check dataSourceName[{}],but not has liteflow config", dataSourceName);
-                            }
-                        }
-                    }
-                }
-            }
-            DataSource dataSource = Optional.ofNullable(DataSourceBeanNameHolder.getDataSourceName())
-                    .map(dataSourceMap::get)
-                    .orElse(null);
-            if (dataSource == null) {
-                throw new ELSQLException("can not found liteflow config in dataSourceName " + dataSourceMap.keySet());
-            }
-            connection = dataSource.getConnection();
-            if (connection == null) {
-                throw new ELSQLException("can not found liteflow config in dataSourceName " + dataSourceMap.keySet());
-            }
-            return connection;
-        }
     }
 }
