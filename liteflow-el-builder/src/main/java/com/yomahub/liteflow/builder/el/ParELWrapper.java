@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 并行组件
@@ -67,6 +68,30 @@ public class ParELWrapper extends ELWrapper {
     @Override
     public ParELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public ParELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public ParELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public ParELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public ParELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

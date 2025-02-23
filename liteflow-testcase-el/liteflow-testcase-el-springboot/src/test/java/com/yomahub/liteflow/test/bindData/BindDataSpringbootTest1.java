@@ -18,11 +18,11 @@ import javax.annotation.Resource;
  *
  * @author Bryan.Zhang
  */
-@TestPropertySource(value = "classpath:/bindData/application.properties")
-@SpringBootTest(classes = BindDataSpringbootTest.class)
+@TestPropertySource(value = "classpath:/bindData/application1.properties")
+@SpringBootTest(classes = BindDataSpringbootTest1.class)
 @EnableAutoConfiguration
-@ComponentScan({ "com.yomahub.liteflow.test.bindData.cmp" })
-public class BindDataSpringbootTest extends BaseTest {
+@ComponentScan({ "com.yomahub.liteflow.test.bindData.cmp1" })
+public class BindDataSpringbootTest1 extends BaseTest {
 
 	@Resource
 	private FlowExecutor flowExecutor;

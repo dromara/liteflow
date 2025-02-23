@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 串行组件
@@ -71,6 +72,30 @@ public class SerELWrapper extends ELWrapper {
     @Override
     public SerELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public SerELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public SerELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public SerELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public SerELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

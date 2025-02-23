@@ -1,13 +1,12 @@
 package com.yomahub.liteflow.builder.el;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.vo.RetryELVo;
 import com.yomahub.liteflow.util.JsonUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * ELWrapper是所有组件的抽象父类
@@ -25,6 +24,7 @@ public abstract class ELWrapper {
     private String id;
     private String dataName;
     private String data;
+    private final Map<String, String> bindData = new HashMap<>();
     private Integer maxWaitSeconds;
     private RetryELVo retry;
 
@@ -82,6 +82,18 @@ public abstract class ELWrapper {
 
     protected String getDataName(){
         return this.dataName;
+    }
+
+    protected String getBindData(String key) {
+        return bindData.get(key);
+    }
+
+    protected void putBindData(String key, String value) {
+        this.bindData.put(key, value);
+    }
+
+    protected Map<String, String> getBindData() {
+        return bindData;
     }
 
     protected void setMaxWaitSeconds(Integer maxWaitSeconds){
@@ -161,6 +173,11 @@ public abstract class ELWrapper {
         return this;
     }
 
+    protected ELWrapper bind(String key, String value){
+        putBindData(key, value);
+        return this;
+    }
+
 
     protected ELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
@@ -226,6 +243,13 @@ public abstract class ELWrapper {
         }
         if(this.getTag() != null){
             elContext.append(StrUtil.format(".tag(\"{}\")", this.getTag()));
+        }
+        if(this.getData() != null){
+            elContext.append(StrUtil.format(".data({})", this.getDataName()));
+            paramContext.append(StrUtil.format("{} = {}", this.getDataName(), this.getData())).append(";\n");
+        }
+        if(MapUtil.isNotEmpty(this.getBindData())){
+            this.getBindData().forEach((key, value) -> elContext.append(StrUtil.format(".bind(\"{}\", \"{}\")", key, value)));
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));

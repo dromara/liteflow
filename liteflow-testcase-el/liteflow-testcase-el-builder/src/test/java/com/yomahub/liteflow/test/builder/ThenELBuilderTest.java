@@ -28,7 +28,7 @@ public class ThenELBuilderTest extends BaseTest {
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         String expected = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\nTHEN(\n\ta.tag(\"tagA\").data(nodeData).maxWaitSeconds(10).retry(2),\n\tnode(\"b\")\n);";
-        String actualEl = ELBus.then(ELBus.commonNode("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true);
+        String actualEl = ELBus.then(ELBus.element("a").data("nodeData", name2Value).tag("tagA").maxWaitSeconds(10).retry(2), ELBus.node("b")).toEL(true);
         System.out.println(actualEl);
         Assertions.assertEquals(expected, actualEl);
     }

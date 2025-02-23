@@ -114,4 +114,6 @@ public interface ChainConstant {
 	String USER_DIR = "user.dir";
 
 	String BIND = "bind";
+
+	String CONTEXT_SEARCH_REGEX = "^\\$\\{(.*?)\\}$";
 }

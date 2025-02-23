@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.parser.sql.datasource.impl;
 
 import cn.hutool.core.util.ClassLoaderUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.MissMavenDependencyException;
 import com.yomahub.liteflow.parser.sql.datasource.LiteFlowDataSourceConnect;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
@@ -21,12 +22,7 @@ public class ShardingJdbcDsConn implements LiteFlowDataSourceConnect {
 
     @Override
     public boolean filter(SQLParserVO config) {
-        // 是否配置 sharding jdbc 动态数据源配置
-        boolean configFlag = Optional.ofNullable(config.getShardingjdbc())
-                .map(SQLParserVO.DataSourceConfig::getDataSourceName)
-                .isPresent();
-
-        if (!configFlag) {
+        if (StrUtil.isBlank(config.getShardingJdbcDataSource())) {
             return false;
         }
         boolean classLoadFlag = ClassLoaderUtil.isPresent(Constant.LOAD_CLASS_NAME);

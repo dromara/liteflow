@@ -169,12 +169,12 @@ public class SQLParserVO {
     /**
      * 苞米豆动态数据源配置
      */
-    private DataSourceConfig baomidou;
+    private String baomidouDataSource;
 
     /**
      * sharding jdbc 动态数据源配置
      */
-    private DataSourceConfig shardingjdbc;
+    private String shardingJdbcDataSource;
 
     public String getUrl() {
         return url;
@@ -451,31 +451,19 @@ public class SQLParserVO {
         this.nodeInstanceIdMapJsonField = nodeInstanceIdMapJsonField;
     }
 
-    public DataSourceConfig getBaomidou() {
-        return baomidou;
+    public String getBaomidouDataSource() {
+        return baomidouDataSource;
     }
 
-    public void setBaomidou(DataSourceConfig baomidou) {
-        this.baomidou = baomidou;
+    public void setBaomidouDataSource(String baomidouDataSource) {
+        this.baomidouDataSource = baomidouDataSource;
     }
 
-    public DataSourceConfig getShardingjdbc() {
-        return shardingjdbc;
+    public String getShardingJdbcDataSource() {
+        return shardingJdbcDataSource;
     }
 
-    public void setShardingjdbc(DataSourceConfig shardingjdbc) {
-        this.shardingjdbc = shardingjdbc;
-    }
-
-    public static class DataSourceConfig {
-        private String dataSourceName;
-
-        public String getDataSourceName() {
-            return dataSourceName;
-        }
-
-        public void setDataSourceName(String dataSourceName) {
-            this.dataSourceName = dataSourceName;
-        }
+    public void setShardingJdbcDataSource(String shardingJdbcDataSource) {
+        this.shardingJdbcDataSource = shardingJdbcDataSource;
     }
 }

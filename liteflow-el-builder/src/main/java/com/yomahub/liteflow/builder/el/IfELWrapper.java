@@ -2,6 +2,7 @@ package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.ObjectUtil;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -208,6 +209,30 @@ public class IfELWrapper extends ELWrapper {
     @Override
     public IfELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public IfELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public IfELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public IfELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public IfELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

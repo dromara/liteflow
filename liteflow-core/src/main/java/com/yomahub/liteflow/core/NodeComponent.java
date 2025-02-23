@@ -9,10 +9,13 @@ package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.ObjectConvertException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -26,6 +29,7 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import com.yomahub.liteflow.util.JsonUtil;
+import com.yomahub.liteflow.util.LiteflowContextRegexMatcher;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -446,10 +450,31 @@ public abstract class NodeComponent{
 		if (StrUtil.isBlank(bindData)) {
 			return null;
 		}
-		if (clazz.equals(String.class) || clazz.equals(Object.class)) {
-			return (T) bindData;
+
+		//如果bind的value是一个正则表达式，说明要在上下文中进行搜索
+		if (ReUtil.isMatch(ChainConstant.CONTEXT_SEARCH_REGEX, bindData)) {
+			Object searchResult = LiteflowContextRegexMatcher.searchContext(
+					this.getSlot().getContextBeanList(),
+					ReUtil.getGroup1(ChainConstant.CONTEXT_SEARCH_REGEX, bindData)
+			);
+
+			if (searchResult == null){
+				return null;
+			}
+
+			//搜索到的对象一定要符合给定的clazz
+			if (clazz.isAssignableFrom(searchResult.getClass())) {
+				return (T) searchResult;
+			}else{
+				String errMsg = StrUtil.format("{} cannot convert to {}", searchResult.getClass().getName(), clazz.getName());
+				throw new ObjectConvertException(errMsg);
+			}
+		}else{
+			if (clazz.equals(String.class) || clazz.equals(Object.class)) {
+				return (T) bindData;
+			}
+			return JsonUtil.parseObject(bindData, clazz);
 		}
-		return JsonUtil.parseObject(bindData, clazz);
 	}
 
 	public <T> List<T> getBindDataList(Class<T> clazz) {
@@ -513,5 +538,11 @@ public abstract class NodeComponent{
 	protected String getMetaValueKey(){
 		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
 		return originalClass.getName();
+	}
+
+	public static void main(String[] args) {
+
+		boolean flag = ReUtil.isMatch(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}");
+		System.out.println(ReUtil.getGroup1(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}"));
 	}
 }

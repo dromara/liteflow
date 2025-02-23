@@ -42,7 +42,7 @@ public class LiteflowConfigTest1 extends BaseTest {
 		Assertions.assertEquals(300000L, config.getDelay().longValue());
 		Assertions.assertEquals(300000L, config.getPeriod().longValue());
 		Assertions.assertFalse(config.getEnableLog());
-        Assertions.assertEquals(16, config.getGlobalThreadPoolSize().longValue());
+        Assertions.assertEquals(64, config.getGlobalThreadPoolSize().longValue());
         Assertions.assertEquals(512, config.getGlobalThreadPoolQueueSize().longValue());
 		Assertions.assertEquals(ParseModeEnum.PARSE_ALL_ON_START, config.getParseMode());
 	}

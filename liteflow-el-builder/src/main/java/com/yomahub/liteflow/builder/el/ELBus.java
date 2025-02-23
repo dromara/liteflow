@@ -126,7 +126,7 @@ public class ELBus {
      * @param nodeId 节点id
      * @return {@link CommonNodeELWrapper}
      */
-    public static CommonNodeELWrapper commonNode(String nodeId){
+    public static CommonNodeELWrapper element(String nodeId){
         return new CommonNodeELWrapper(nodeId);
     }
 
