@@ -176,11 +176,12 @@ public class LiteFlowJdbcUtil {
                             if (checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
                                 // 找到数据源名称后，将其缓存起来，下次使用就不再寻找
                                 DataSourceBeanNameHolder.init(dataSourceName);
-
-                                LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                                if (sqlParserVO.getSqlLogEnabled()) {
+                                    LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                                }
                                 break;
                             } else {
-                                LOG.info("check dataSourceName[{}],but not has liteflow config", dataSourceName);
+                                LOG.warn("check dataSourceName[{}],but not has liteflow config", dataSourceName);
                             }
                         }
                     }
