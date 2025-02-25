@@ -32,7 +32,6 @@ import java.util.concurrent.Future;
 /**
  * Spring环境下规则缓存测试
  * @author DaleLee
- * @since 2.13.0
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:/ruleCache/application.xml")

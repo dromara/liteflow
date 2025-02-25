@@ -32,7 +32,6 @@ import java.util.concurrent.Future;
 /**
  * 非Spring环境下的规则缓存测试
  * @author DaleLee
- * @since 2.13.0
  */
 public class RuleCacheTest extends BaseTest {
 

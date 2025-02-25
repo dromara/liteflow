@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 /**
  * Solon环境下规则缓存测试
  * @author DaleLee
- * @since 2.13.0
  */
 @SolonTest
 @Import(profiles="classpath:/ruleCache/application.properties")

@@ -33,7 +33,6 @@ import java.util.concurrent.Future;
 /**
  * Springboot环境下规则缓存测试
  * @author DaleLee
- * @since 2.13.0
  */
 @TestPropertySource(value = "classpath:/ruleCache/application.properties")
 @SpringBootTest(classes = RuleCacheSpringbootTest.class)
