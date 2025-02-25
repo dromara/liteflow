@@ -68,8 +68,9 @@ public class LiteFlowAutoLookUpJdbcConn implements LiteFlowDataSourceConnect {
                             if (LiteFlowJdbcUtil.checkConnectionCanExecuteSql(dataSource.getConnection(), executeSql)) {
                                 // 找到数据源名称后，将其缓存起来，下次使用就不再寻找
                                 LiteFlowJdbcUtil.DataSourceBeanNameHolder.init(dataSourceName);
-
-                                LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                                if (sqlParserVO.getSqlLogEnabled()) {
+                                    LOG.info("use dataSourceName[{}],has found liteflow config", dataSourceName);
+                                }
                                 break;
                             } else {
                                 LOG.info("check dataSourceName[{}],but not has liteflow config", dataSourceName);
