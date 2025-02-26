@@ -27,7 +27,12 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
      */
     private final Cache<String, ChainState> cache;
 
-    public RuleCacheLifeCycle(int capacity) {
+    /**
+     * 实例
+     */
+    private static RuleCacheLifeCycle INSTANCE;
+
+    private RuleCacheLifeCycle(int capacity) {
         this.cache = Caffeine.newBuilder()
                 .maximumSize(capacity)
                 .evictionListener(new ChainRemovalListener())
@@ -145,5 +150,23 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
         // 将chain设置为未编译并清空condition
         chain.setCompiled(false);
         chain.setConditionList(null);
+    }
+
+    /**
+     * 初始化生命周期实例
+     * @param capacity 缓存容量
+     */
+    public synchronized static void initIfAbsent(int capacity) {
+        if (ObjectUtil.isNull(INSTANCE)) {
+            INSTANCE = new RuleCacheLifeCycle(capacity);
+        }
+    }
+
+    /**
+     * 获取生命周期实例
+     * @return lifeCycle
+     */
+    public static RuleCacheLifeCycle getLifeCycle() {
+        return INSTANCE;
     }
 }

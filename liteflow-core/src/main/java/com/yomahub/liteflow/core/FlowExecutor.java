@@ -662,8 +662,8 @@ public class FlowExecutor {
 		boolean exist = lifeCycleList.stream()
 				.anyMatch(lifeCycle -> lifeCycle instanceof RuleCacheLifeCycle);
 		if (!exist) {
-			RuleCacheLifeCycle ruleCacheLifeCycle = new RuleCacheLifeCycle(capacity);
-			LifeCycleHolder.addLifeCycle(ruleCacheLifeCycle);
+			RuleCacheLifeCycle.initIfAbsent(capacity);
+			LifeCycleHolder.addLifeCycle(RuleCacheLifeCycle.getLifeCycle());
 		}
 		// 执行时才解析chain
 		liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);

@@ -215,15 +215,7 @@ public class RuleCacheSpringTest extends BaseTest {
     }
 
     public Cache<String, RuleCacheLifeCycle.ChainState> getCache() {
-        List<PostProcessChainExecuteLifeCycle> lifeCycleList
-                = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
-        for (PostProcessChainExecuteLifeCycle lifeCycle : lifeCycleList) {
-            if (lifeCycle.getClass().equals(RuleCacheLifeCycle.class)) {
-                RuleCacheLifeCycle ruleCacheLifeCycle = (RuleCacheLifeCycle) lifeCycle;
-                return ruleCacheLifeCycle.getCache();
-            }
-        }
-        return null;
+        return RuleCacheLifeCycle.getLifeCycle().getCache();
     }
 
     // 获得淘汰的chain，传入淘汰前的chain集合
