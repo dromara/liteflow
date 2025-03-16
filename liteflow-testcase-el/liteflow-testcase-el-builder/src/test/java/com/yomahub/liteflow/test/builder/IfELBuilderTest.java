@@ -248,7 +248,7 @@ public class IfELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", name2Value)).toEL());
         System.out.println(expectedStr);
@@ -260,7 +260,7 @@ public class IfELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", name2Value)).toEL(true));
         System.out.println(expectedStr);
@@ -269,7 +269,7 @@ public class IfELBuilderTest extends BaseTest {
     // data JsonStr 测试
     @Test
     public void testIf21(){
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL());
         System.out.println(expectedStr);
@@ -278,7 +278,7 @@ public class IfELBuilderTest extends BaseTest {
     // 格式化输出
     @Test
     public void testIf22(){
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", "{\"name\":\"zhangsan\",\"age\":18}")).toEL(true));
         System.out.println(expectedStr);
@@ -300,7 +300,7 @@ public class IfELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(node(\"a\"),node(\"b\"),node(\"c\").data(ifData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", name2Value)).toEL());
         System.out.println(expectedStr);
@@ -312,7 +312,7 @@ public class IfELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "ifData = '{\"name\":\"zhangsan\",\"age\":18}';\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
+        String expectedStr = "ifData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nIF(\n\tnode(\"a\"),\n\tnode(\"b\"),\n\tnode(\"c\").data(ifData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.ifOpt(ELBus.node("a"), ELBus.node("b"), ELBus.node("c").data("ifData", name2Value)).toEL(true));
         System.out.println(expectedStr);

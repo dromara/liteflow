@@ -32,8 +32,8 @@ public class BindELBuilderTest extends BaseTest {
 
     @Test
     public void testBind3(){
-        String actualEl = ELBus.then("a", ELBus.node("b").bind("k1", "v1")).toEL();
-        String expected = "THEN(a,node(\"b\").bind(\"k1\", \"v1\"));";
+        String actualEl = ELBus.then("a", ELBus.element("b").bind("k1", "v1")).toEL();
+        String expected = "THEN(a,b.bind(\"k1\", \"v1\"));";
         System.out.println(actualEl);
         Assertions.assertEquals(expected, actualEl);
     }

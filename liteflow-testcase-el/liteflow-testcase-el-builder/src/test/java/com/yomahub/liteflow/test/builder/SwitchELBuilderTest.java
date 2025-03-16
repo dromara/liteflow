@@ -87,7 +87,7 @@ public class SwitchELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", name2Value)).toEL());
         System.out.println(expectedStr);
@@ -99,7 +99,7 @@ public class SwitchELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", name2Value)).toEL(true));
         System.out.println(expectedStr);
@@ -109,7 +109,7 @@ public class SwitchELBuilderTest extends BaseTest {
     @Test
     public void testSwitch9(){
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", jsonStr)).toEL());
         System.out.println(expectedStr);
@@ -119,7 +119,7 @@ public class SwitchELBuilderTest extends BaseTest {
     @Test
     public void testSwitch10(){
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", jsonStr)).toEL(true));
         System.out.println(expectedStr);
@@ -142,7 +142,7 @@ public class SwitchELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(node(\"b\"),node(\"c\"),node(\"d\").data(switchData));";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", name2Value)).toEL());
         System.out.println(expectedStr);
@@ -154,7 +154,7 @@ public class SwitchELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "switchData = '{\"name\":\"zhangsan\",\"age\":18}';\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
+        String expectedStr = "switchData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nSWITCH(node(\"a\")).TO(\n\tnode(\"b\"),\n\tnode(\"c\"),\n\tnode(\"d\").data(switchData)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.switchOpt(ELBus.node("a")).to(ELBus.node("b"), ELBus.node("c"), ELBus.node("d").data("switchData", name2Value)).toEL(true));
         System.out.println(expectedStr);
