@@ -425,7 +425,6 @@ public abstract class NodeComponent{
 	 * @return data对象
 	 * @param <T> data的泛型
 	 */
-	@Deprecated
 	public <T> T getCmpData(Class<T> clazz) {
 		String cmpData = getRefNode().getCmpData();
 		if (StrUtil.isBlank(cmpData)) {
