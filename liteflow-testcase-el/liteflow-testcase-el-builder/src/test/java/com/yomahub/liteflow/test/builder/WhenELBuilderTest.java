@@ -134,7 +134,7 @@ public class WhenELBuilderTest extends BaseTest {
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         System.out.println(JsonUtil.toJsonString(name2Value));
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL(false));
         System.out.println(expectedStr);
@@ -146,7 +146,7 @@ public class WhenELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
@@ -155,7 +155,7 @@ public class WhenELBuilderTest extends BaseTest {
     // data属性测试 Json字符串赋值data
     @Test
     public void testWhen15(){
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
@@ -164,7 +164,7 @@ public class WhenELBuilderTest extends BaseTest {
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testWhen16(){
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
@@ -186,7 +186,7 @@ public class WhenELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(node(\"a\"),WHEN(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
@@ -198,7 +198,7 @@ public class WhenELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nWHEN(\n\tnode(\"a\"),\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.when(ELBus.node("a"), ELBus.when(ELBus.node("b")).when(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).when(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);

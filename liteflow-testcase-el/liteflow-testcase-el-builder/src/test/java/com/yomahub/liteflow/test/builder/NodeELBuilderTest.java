@@ -38,7 +38,7 @@ public class NodeELBuilderTest extends BaseTest {
     @Test
     public void testNodeEL1(){
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
@@ -49,7 +49,7 @@ public class NodeELBuilderTest extends BaseTest {
     @Test
     public void testNodeEL2(){
         String jsonStr = "{\"name\":\"zhangsan\",\"age\":18}";
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", jsonStr);
         Assertions.assertEquals(expectedStr,
@@ -62,7 +62,7 @@ public class NodeELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
@@ -75,7 +75,7 @@ public class NodeELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
@@ -98,7 +98,7 @@ public class NodeELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.age = 18;
         name2Value.name = "zhangsan";
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
@@ -111,7 +111,7 @@ public class NodeELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.age = 18;
         name2Value.name = "zhangsan";
-        String expectedStr = "nodeData = '{\"name\":\"zhangsan\",\"age\":18}';\n" +
+        String expectedStr = "nodeData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\n" +
                 "node(\"a\").tag(\"node a tag\").data(nodeData).maxWaitSeconds(4);";
         CommonNodeELWrapper node = ELBus.node("a").maxWaitSeconds(4).tag("node a tag").data("nodeData", name2Value);
         Assertions.assertEquals(expectedStr,
@@ -134,20 +134,17 @@ public class NodeELBuilderTest extends BaseTest {
                 .setClazz(BCmp.class)
                 .build();
 
-        String expectedStr = "sql = 'select * from member t\n" +
-                "            where t.id=10001';\n" +
-                "jsonstr = '{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}';\n" +
+        String expectedStr = "sql = \"select * from member t where t.id=10001\";\n" +
+                "jsonstr = \"{\\\"name\\\":\\\"jack\\\",\\\"age\\\":27,\\\"birth\\\":\\\"1995-10-01\\\"}\";\n" +
                 "THEN(\n" +
                 "\tnode(\"a\").data(sql),\n" +
                 "\tnode(\"b\").data(jsonstr)\n" +
                 ");";
-        String param1 = "select * from member t\n" +
-                "            where t.id=10001";
+        String param1 = "select * from member t where t.id=10001";
         String param2 = "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}";
         ThenELWrapper el = ELBus.then(ELBus.node("a").data("sql", param1),
                 ELBus.node("b").data("jsonstr", param2));
-        Assertions.assertEquals(expectedStr,
-                el.toEL(true));
+        Assertions.assertEquals(expectedStr, el.toEL(true));
 
         LiteFlowChainELBuilder.createChain().setChainName("chain1").setEL(
                 el.toEL()

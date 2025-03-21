@@ -9,6 +9,7 @@
 package com.yomahub.liteflow.flow;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
@@ -194,6 +195,14 @@ public class FlowBus {
 
 		// 如果是PARSE_ONE_ON_FIRST_EXEC模式，则不进行脚本加载，而是直接把脚本内容放到node中
         if (liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC)) {
+			List<Node> nodes = LiteflowMetaOperator.getNodesInAllChain(nodeId);
+			if (CollectionUtil.isNotEmpty(nodes)) {
+				nodes.forEach(node -> {
+                    node.setCompiled(false);
+                    node.setScript(script);
+                });
+			}
+
 			Node node = new Node(nodeId, name, nodeType, script, language);
 			nodeMap.put(nodeId, node);
 		} else {

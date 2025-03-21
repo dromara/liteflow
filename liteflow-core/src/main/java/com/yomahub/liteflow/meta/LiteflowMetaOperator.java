@@ -137,7 +137,7 @@ public class LiteflowMetaOperator {
      */
     public static List<Node> getNodes(String chainId, String nodeId){
         return getNodes(chainId).stream().filter(
-                node -> node.getId().equals(nodeId)
+                node -> nodeId.equals(node.getId())
         ).collect(Collectors.toList());
     }
 
