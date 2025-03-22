@@ -260,9 +260,6 @@ public class Chain implements Executable{
 		this.isCompiled = true;
 		// 移除临时chain
 		FlowBus.removeChain(tempChainId);
-//		if (true) {
-//			throw new RuntimeException("test...");
-//		}
 
 		if (CollUtil.isEmpty(tempConditionList)) {
 			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");

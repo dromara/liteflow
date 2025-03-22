@@ -101,6 +101,12 @@ public class FlowExecutor {
 			IdGeneratorHolder.init();
 		}
 
+		// 规则缓存
+		if (isStart && liteflowConfig.getRuleCacheEnabled()) {
+			// 放到解析节点后，是因为要根据节点数量判断缓存大小设置是否合理
+			initRuleCache();
+		}
+
 		String ruleSource = liteflowConfig.getRuleSource();
 		if (StrUtil.isBlank(ruleSource)) {
 			// 查看有没有Parser的SPI实现
@@ -228,9 +234,9 @@ public class FlowExecutor {
 
 		}
 
-		// 规则缓存
-		if (isStart && liteflowConfig.getRuleCacheEnabled()) {
-			initRuleCache();
+		// 初始化或reload时，评估规则缓存容量大小
+		if (liteflowConfig.getRuleCacheEnabled()) {
+			evaluateRuleCacheCapacity();
 		}
 	}
 
@@ -650,13 +656,6 @@ public class FlowExecutor {
 			throw new ConfigErrorException("The rule cache capacity must be greater than 0");
 		}
 
-		// 容量不足chain总数的30%给予警告
-		int chainNum = FlowBus.getChainMap().size();
-		double threshold = chainNum * 0.3;
-		if (capacity < threshold) {
-			LOG.warn("The rule cache capacity {} is too small, it is recommended to be greater than 30% of the number of chains", capacity);
-		}
-
 		// 添加规则缓存生命周期
 		List<PostProcessChainExecuteLifeCycle> lifeCycleList = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
 		boolean exist = lifeCycleList.stream()
@@ -665,7 +664,22 @@ public class FlowExecutor {
 			RuleCacheLifeCycle.initIfAbsent(capacity);
 			LifeCycleHolder.addLifeCycle(RuleCacheLifeCycle.getLifeCycle());
 		}
+
 		// 执行时才解析chain
-		liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
+		if (!ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC.equals(liteflowConfig.getParseMode())) {
+			liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
+			LOG.warn("The rule cache is enabled, so the parse mode is forcibly set to PARSE_ONE_ON_FIRST_EXE.");
+		}
+	}
+
+	// 评估规则缓存容量
+	private void evaluateRuleCacheCapacity() {
+		Integer capacity = liteflowConfig.getRuleCacheCapacity();
+		// 容量不足chain总数的30%给予警告
+		int chainNum = FlowBus.getChainMap().size();
+		double threshold = chainNum * 0.3;
+		if (capacity < threshold) {
+			LOG.warn("The rule cache capacity {} is too small, it is recommended to be greater than 30% of the number of chains", capacity);
+		}
 	}
 }
