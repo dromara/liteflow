@@ -661,7 +661,10 @@ public class FlowExecutor {
 		boolean exist = lifeCycleList.stream()
 				.anyMatch(lifeCycle -> lifeCycle instanceof RuleCacheLifeCycle);
 		if (!exist) {
-			RuleCacheLifeCycle.initIfAbsent(capacity);
+			boolean success = RuleCacheLifeCycle.initIfAbsent(capacity);
+			if (!success) {
+				throw new FlowExecutorNotInitException("Initialization of RuleCacheLifeCycle failed");
+			}
 			LifeCycleHolder.addLifeCycle(RuleCacheLifeCycle.getLifeCycle());
 		}
 
@@ -679,7 +682,8 @@ public class FlowExecutor {
 		int chainNum = FlowBus.getChainMap().size();
 		double threshold = chainNum * 0.3;
 		if (capacity < threshold) {
-			LOG.warn("The rule cache capacity {} is too small, it is recommended to be greater than 30% of the number of chains", capacity);
+			LOG.warn("The rule cache capacity {} is too small, the current total number of chains is {}, "
+					+"it is recommended to be greater than 30% of the number of chains", capacity, chainNum);
 		}
 	}
 }

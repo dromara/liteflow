@@ -48,7 +48,7 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
 
     @Override
     public void postProcessAfterChainExecute(String chainId, Slot slot) {
-        // 不在缓存中、或出于非活跃状态，但未被清理
+        // 检测是否有不在缓存中、或处于非活跃状态而未被清理的 Chain
         if (!isActive(chainId) && !isCleaned(chainId)) {
             cleanChain(chainId);
         }
@@ -155,11 +155,14 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
     /**
      * 初始化生命周期实例
      * @param capacity 缓存容量
+     * @return 成功 true，失败返回 false
      */
-    public synchronized static void initIfAbsent(int capacity) {
+    public synchronized static boolean initIfAbsent(int capacity) {
         if (ObjectUtil.isNull(INSTANCE)) {
             INSTANCE = new RuleCacheLifeCycle(capacity);
+            return true;
         }
+        return false;
     }
 
     /**

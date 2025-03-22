@@ -11,6 +11,7 @@ package com.yomahub.liteflow.flow.element;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
@@ -108,10 +109,10 @@ public class Chain implements Executable{
 		// 因为在正式执行condition之前，this.conditionList有可能被其他线程置空
 		// 比如，该chain在规则缓存中被淘汰
 		List<Condition> conditionListRef = this.conditionList;
-		// 但在编译后到拿到引用之前，this.conditionList可能已经被置空了
+		// 但在编译后到拿到引用之前，this.conditionList还是有可能已经被置空了
 		if (CollUtil.isEmpty(conditionListRef)) {
 			// 如果conditionListRef为空，
-			// 构建临时conditionList确保本次一定可以执行
+			// 尝试构建临时conditionList确保本次一定可以执行
 			conditionListRef = buildTemporaryConditionList();
 		}
 		Slot slot = DataBus.getSlot(slotIndex);
@@ -248,6 +249,10 @@ public class Chain implements Executable{
 
 	// 构建临时的ConditionList
 	private List<Condition> buildTemporaryConditionList() {
+		if (StrUtil.isBlank(el)) {
+			// 无法构建
+			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
+		}
 		// 构建临时chain
 		String tempChainId = chainId +  "_temp_" + IdUtil.simpleUUID();
 		Chain tempChain = new Chain(tempChainId);
@@ -260,10 +265,6 @@ public class Chain implements Executable{
 		this.isCompiled = true;
 		// 移除临时chain
 		FlowBus.removeChain(tempChainId);
-
-		if (CollUtil.isEmpty(tempConditionList)) {
-			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
-		}
 
 		// 打印警告，可用于排查临时chain与已有chain重名（几乎不可能发生）而将已有chain覆盖的情况
 		LOG.warn("The conditionList of chain[{}] is empty, " +
