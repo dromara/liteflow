@@ -20,4 +20,9 @@
     <chain id="chain4">
         THEN(d, sub.bind("k1", "test2"))
     </chain>
+
+    <chain id="chain5">
+        v = "{\"name\":\"jack\", \"age\":19, \"birth1\":\"1990-06-01T12:00:00\", \"birth2\":\"1990-06-01\", \"birth3\":\"1990-06-01T12:00:00\"}";
+        THEN(f.bind("key",v));
+    </chain>
 </flow>
