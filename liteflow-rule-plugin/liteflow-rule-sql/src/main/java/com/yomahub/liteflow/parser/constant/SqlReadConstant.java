@@ -16,12 +16,12 @@ public class SqlReadConstant {
 
     public static final String INSTANT_INSERT_SQL = "INSERT INTO {} ({},{},{},{}) VALUES ('{}','{}','{}','{}')";
 
-    public static final String INSTANT_CREATE_TABLE_SQL = "create table IF NOT EXISTS `node_instance_id_table`\n" +
+    public static final String INSTANT_CREATE_TABLE_SQL = "create table IF NOT EXISTS node_instance_id_table\n" +
             "(\n" +
-            "    `application_name`     varchar(32)   NOT NULL,\n" +
-            "    `chain_id`           varchar(32)   NOT NULL,\n" +
-            "    `el_data_md5`          varchar(128)   NOT NULL,\n" +
-            "    `node_instance_id_map_json`     varchar(1024)   NOT NULL\n" +
+            "    application_name     varchar(32)   NOT NULL,\n" +
+            "    chain_id           varchar(32)   NOT NULL,\n" +
+            "    el_data_md5          varchar(128)   NOT NULL,\n" +
+            "    node_instance_id_map_json     varchar(1024)   NOT NULL\n" +
             ");";
 
     public static final String SQL_PATTERN = "SELECT * FROM {} WHERE {}='{}'";
