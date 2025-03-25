@@ -48,7 +48,7 @@ public class ScriptCommonComponent extends NodeComponent implements ScriptCompon
 	public boolean isEnd() {
 		//因为如果在scriptExecutor去执行cmp的super.isEnd()方法，会引起无限循环导致栈溢出
 		//这里没有更好的办法，只有硬代码判断下了
-		if (!this.getRefNode().getLanguage().equals(ScriptTypeEnum.JAVA.getDisplayName())){
+		if (!ScriptTypeEnum.JAVA.getDisplayName().equals(this.getRefNode().getLanguage())){
 			return super.isEnd();
 		}
 		ScriptExecuteWrap wrap = this.buildWrap(this);
