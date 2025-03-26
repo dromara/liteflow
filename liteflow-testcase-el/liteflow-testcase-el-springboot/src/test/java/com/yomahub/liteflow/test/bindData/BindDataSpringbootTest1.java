@@ -83,4 +83,26 @@ public class BindDataSpringbootTest1 extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 	}
 
+	// 看看能否覆盖绑定
+	@Test
+	public void testBind6() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("test", context.getData("a"));
+		Assertions.assertEquals("test_b", context.getData("b"));
+		Assertions.assertEquals("test", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+	}
+
+	// 强制覆盖
+	@Test
+	public void testBind7() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("test", context.getData("a"));
+		Assertions.assertEquals("test", context.getData("b"));
+		Assertions.assertEquals("test", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+	}
+
 }

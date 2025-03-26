@@ -530,6 +530,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		}
 	}
 
+	public boolean hasBindData(String key){
+		return this.bindDataMap.containsKey(key);
+	}
+
 	public String getBindData(String key) {
 		return this.bindDataMap.get(key);
 	}

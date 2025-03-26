@@ -25,4 +25,12 @@
         v = "{\"name\":\"jack\", \"age\":19, \"birth1\":\"1990-06-01T12:00:00\", \"birth2\":\"1990-06-01\", \"birth3\":\"1990-06-01T12:00:00\"}";
         THEN(f.bind("key",v));
     </chain>
+
+    <chain id="chain6">
+        THEN(a, b.bind("k1", "test_b"), c).bind("k1", "test");
+    </chain>
+
+    <chain id="chain7">
+        THEN(a, b.bind("k1", "test_b"), c).bind("k1", "test", true);
+    </chain>
 </flow>
