@@ -16,6 +16,7 @@ import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ObjectConvertException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -541,6 +542,10 @@ public abstract class NodeComponent{
 
 	public <T> T getItemResultMetaValue(Integer slotIndex){
 		return null;
+	}
+
+	public long getCurrChainRuntimeId(){
+		return FlowBus.getChain(getCurrChainId()).getRuntimeId();
 	}
 
 	protected String getMetaValueKey(){

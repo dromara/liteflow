@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
@@ -47,6 +48,8 @@ public class Chain implements Executable{
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
 
     private String threadPoolExecutorClass;
+
+	private final TransmittableThreadLocal<Long> runtimeIdTL = new TransmittableThreadLocal<>();
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
@@ -97,6 +100,10 @@ public class Chain implements Executable{
 	// 执行chain的主方法
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
+		//生成runtimeId
+		this.runtimeIdTL.set(System.nanoTime());
+
+		//如果EL还未编译，则进行编译
 		if (BooleanUtil.isFalse(isCompiled)) {
 			LiteFlowChainELBuilder.buildUnCompileChain(this);
 		}
@@ -142,6 +149,8 @@ public class Chain implements Executable{
 				slot.setException(e);
 			}
 			throw e;
+		}finally {
+			runtimeIdTL.remove();
 		}
 	}
 
@@ -235,4 +244,8 @@ public class Chain implements Executable{
     public void setThreadPoolExecutorClass(String threadPoolExecutorClass) {
         this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
+
+	public Long getRuntimeId(){
+		return runtimeIdTL.get();
+	}
 }
