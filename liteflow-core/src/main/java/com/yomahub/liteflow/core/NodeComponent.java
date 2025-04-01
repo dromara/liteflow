@@ -16,6 +16,7 @@ import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ObjectConvertException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -476,12 +477,21 @@ public abstract class NodeComponent{
 		}
 	}
 
-	public <T> List<T> getBindDataList(Class<T> clazz) {
-		String bindData = getRefNode().getCmpData();
+	public <T> List<T> getBindDataList(String key, Class<T> clazz) {
+		String bindData = getRefNode().getBindData(key);
 		if (StrUtil.isBlank(bindData)) {
 			return null;
 		}
 		return JsonUtil.parseList(bindData, clazz);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getContextValue(String expression){
+		return (T)LiteflowContextRegexMatcher.searchContext(this.getSlot().getContextBeanList(), expression);
+	}
+
+	public void setContextValue(String methodExpress, Object... values){
+		LiteflowContextRegexMatcher.searchAndSetContext(this.getSlot().getContextBeanList(), methodExpress, values);
 	}
 
 	public Integer getLoopIndex() {
@@ -534,14 +544,13 @@ public abstract class NodeComponent{
 		return null;
 	}
 
+	public long getCurrChainRuntimeId(){
+		return FlowBus.getChain(getCurrChainId()).getRuntimeId();
+	}
+
 	protected String getMetaValueKey(){
 		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
 		return originalClass.getName();
 	}
 
-	public static void main(String[] args) {
-
-		boolean flag = ReUtil.isMatch(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}");
-		System.out.println(ReUtil.getGroup1(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}"));
-	}
 }

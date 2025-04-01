@@ -7,14 +7,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.yomahub.liteflow.exception.JsonProcessException;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * JSON 工具类
@@ -33,6 +31,8 @@ public class JsonUtil {
 	static {
 		objectMapper.setTimeZone(TimeZone.getDefault());
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		JavaTimeModule javaTimeModule = new JavaTimeModule();
+		objectMapper.registerModule(javaTimeModule);
 	}
 
 	public static String toJsonString(Object object) {

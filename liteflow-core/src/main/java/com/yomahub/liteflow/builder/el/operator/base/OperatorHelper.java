@@ -112,6 +112,7 @@ public class OperatorHelper {
 	/**
 	 * 转换 object 为指定的类型,自定义错误信息 如果是Node类型的则进行copy
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T convert(Object object, Class<T> clazz, String errorMsg) throws QLException {
 		try {
 			if (clazz.isAssignableFrom(object.getClass())) {

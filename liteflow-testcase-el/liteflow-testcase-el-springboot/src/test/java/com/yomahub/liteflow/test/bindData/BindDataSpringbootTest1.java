@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.util.JsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
  * springboot环境EL常规的例子测试
@@ -71,4 +73,36 @@ public class BindDataSpringbootTest1 extends BaseTest {
 		Assertions.assertEquals("test2", context.getData("c"));
 		Assertions.assertTrue(response.isSuccess());
 	}
+
+	// 测试bind一个对象，并且对象中的birth类型为LocalDate
+	@Test
+	public void testBind5() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain5", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		System.out.println(JsonUtil.toJsonString(context.getData("f")));
+		Assertions.assertTrue(response.isSuccess());
+	}
+
+	// 看看能否覆盖绑定
+	@Test
+	public void testBind6() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("test", context.getData("a"));
+		Assertions.assertEquals("test_b", context.getData("b"));
+		Assertions.assertEquals("test", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+	}
+
+	// 强制覆盖
+	@Test
+	public void testBind7() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertEquals("test", context.getData("a"));
+		Assertions.assertEquals("test", context.getData("b"));
+		Assertions.assertEquals("test", context.getData("c"));
+		Assertions.assertTrue(response.isSuccess());
+	}
+
 }
