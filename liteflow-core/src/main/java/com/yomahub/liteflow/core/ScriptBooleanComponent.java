@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
@@ -45,6 +46,9 @@ public class ScriptBooleanComponent extends NodeBooleanComponent implements Scri
 
 	@Override
 	public boolean isEnd() {
+		if (!ScriptTypeEnum.JAVA.getDisplayName().equals(this.getRefNode().getLanguage())){
+			return super.isEnd();
+		}
 		ScriptExecuteWrap wrap = this.buildWrap(this);
 		return scriptExecutor.executeIsEnd(wrap);
 	}
