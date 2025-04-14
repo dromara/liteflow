@@ -20,4 +20,8 @@
     <chain name="chain5">
         THEN(a5);
     </chain>
+
+    <chain name="chain6">
+        THEN(a6);
+    </chain>
 </flow>
