@@ -127,13 +127,6 @@ public class Chain implements Executable{
 				condition.setCurrChainId(chainId);
 				condition.execute(slotIndex);
 			}
-
-			//如果有生命周期则执行相应生命周期实现
-			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainExecuteLifeCycleList())){
-				LifeCycleHolder.getPostProcessChainExecuteLifeCycleList().forEach(
-						postProcessChainExecuteLifeCycle -> postProcessChainExecuteLifeCycle.postProcessAfterChainExecute(chainId, slot)
-				);
-			}
 		}
 		catch (ChainEndException e) {
 			// 这里单独catch ChainEndException是因为ChainEndException是用户自己setIsEnd抛出的异常
@@ -150,6 +143,12 @@ public class Chain implements Executable{
 			}
 			throw e;
 		}finally {
+			//如果有生命周期则执行相应生命周期实现
+			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainExecuteLifeCycleList())){
+				LifeCycleHolder.getPostProcessChainExecuteLifeCycleList().forEach(
+						postProcessChainExecuteLifeCycle -> postProcessChainExecuteLifeCycle.postProcessAfterChainExecute(chainId, slot)
+				);
+			}
 			runtimeIdTL.remove();
 		}
 	}
