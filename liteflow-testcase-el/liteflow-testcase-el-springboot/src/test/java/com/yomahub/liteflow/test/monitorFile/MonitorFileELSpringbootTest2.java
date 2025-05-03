@@ -51,12 +51,32 @@ public class MonitorFileELSpringbootTest2 extends BaseTest {
         Assertions.assertEquals("a", liteflowResponse.getExecuteStepStr());
     }
 
+    // 测试新增不符合匹配规则的文件
+    @Test
+    public void testMonitorAddFileNotMatch() throws Exception {
+        // 文件新增前
+        LiteflowResponse liteflowResponse = flowExecutor.execute2Resp("chain_not_match", "arg");
+        Assertions.assertFalse(liteflowResponse.isSuccess());
+        Assertions.assertTrue(liteflowResponse.getCause() instanceof ChainNotFoundException);
+
+        // 文件新增
+        String flowPath = new ClassPathResource("classpath:monitorFile").getAbsolutePath();
+        Path newFilePath = Paths.get(flowPath, "test", "test.flow.el.2.xml");
+        FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<flow><chain id=\"chain_not_match\">THEN(a);</chain></flow>",
+                newFilePath.toFile(), CharsetUtil.CHARSET_UTF_8);
+        Thread.sleep(1000);
+        liteflowResponse = flowExecutor.execute2Resp("chain_not_match", "arg");
+        Assertions.assertFalse(liteflowResponse.isSuccess());
+        Assertions.assertTrue(liteflowResponse.getCause() instanceof ChainNotFoundException);
+    }
+
     @AfterEach
     public void afterEach(){
         // 删除新增文件
         String flowPath = new ClassPathResource("classpath:monitorFile").getAbsolutePath();
-        Path newFilePath = Paths.get(flowPath, "test", "flow.el.2.xml");
-        FileUtil.del(newFilePath.getParent());
+        Path newFilePath = Paths.get(flowPath, "test");
+        FileUtil.del(newFilePath);
     }
 
 }
