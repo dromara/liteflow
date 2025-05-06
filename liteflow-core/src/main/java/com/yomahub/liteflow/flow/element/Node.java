@@ -562,8 +562,36 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public Node clone() throws CloneNotSupportedException {
 		Node node = (Node)super.clone();
-		node.loopIndexTL = new TransmittableThreadLocal<>();
-		node.loopObjectTL = new TransmittableThreadLocal<>();
+		node.loopIndexTL = new TransmittableThreadLocal<Stack<TupleOf2<Integer, Integer>>>() {
+			/**
+			 * 在你提供的这个 TTL 版本中，我们重写 public T copy(T parentValue) 方法
+			 * 来实现 Stack 的克隆，以确保线程隔离。
+			 */
+			@Override
+			@SuppressWarnings("unchecked")
+			public Stack<TupleOf2<Integer, Integer>> copy(Stack<TupleOf2<Integer, Integer>> parentValue) {
+				if (parentValue == null) {
+					return null;
+				}
+				// 克隆 Stack
+				return (Stack<TupleOf2<Integer, Integer>>) parentValue.clone();
+			}
+		};
+		node.loopObjectTL = new TransmittableThreadLocal<Stack<TupleOf2<Integer, Object>>>() {
+			/**
+			 * 在你提供的这个 TTL 版本中，我们重写 public T copy(T parentValue) 方法
+			 * 来实现 Stack 的克隆，以确保线程隔离。
+			 */
+			@Override
+			@SuppressWarnings("unchecked")
+			public Stack<TupleOf2<Integer, Object>> copy(Stack<TupleOf2<Integer, Object>> parentValue) {
+				if (parentValue == null) {
+					return null;
+				}
+				// 克隆 Stack
+				return (Stack<TupleOf2<Integer, Object>>) parentValue.clone();
+			}
+		};
 		node.accessResult = new TransmittableThreadLocal<>();
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
