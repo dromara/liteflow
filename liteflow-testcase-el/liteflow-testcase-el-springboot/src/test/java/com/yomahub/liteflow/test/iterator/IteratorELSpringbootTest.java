@@ -55,15 +55,23 @@ public class IteratorELSpringbootTest extends BaseTest {
 	// 多层迭代
 	@Test
 	public void testIt3() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain3");
+		DefaultContext context = new DefaultContext();
+		context.setData("set", new HashSet<>());
+		context.setData("list1", ListUtil.toList("a", "b", "c"));
+		context.setData("list2", ListUtil.toList("1", "2", "3", "4"));
+		LiteflowResponse response = flowExecutor.execute2Resp("chain3",null, context);
 		Assertions.assertTrue(response.isSuccess());
 	}
 
 	//多层迭代循环，取各层obj
 	@Test
 	public void testIt4() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2Resp("chain4");
-		DefaultContext context = response.getFirstContextBean();
+		DefaultContext context = new DefaultContext();
+		context.setData("set", new HashSet<>());
+		context.setData("list1", ListUtil.toList("a", "b", "c"));
+		context.setData("list2", ListUtil.toList("11", "22"));
+
+		LiteflowResponse response = flowExecutor.execute2Resp("chain4", null, context);
 		String indexStr = context.getData("index_str");
 		String objStr = context.getData("obj_str");
 		Assertions.assertEquals("[00][01][10][11][20][21]", indexStr);
