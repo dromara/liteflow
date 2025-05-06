@@ -81,10 +81,38 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
 	// 循环下标
-	private TransmittableThreadLocal<Stack<TupleOf2<Integer, Integer>>> loopIndexTL = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Stack<Integer>> loopIndexTL = new TransmittableThreadLocal<Stack<Integer>>() {
+		/**
+		 * 在你提供的这个 TTL 版本中，我们重写 public T copy(T parentValue) 方法
+		 * 来实现 Stack 的克隆，以确保线程隔离。
+		 */
+		@Override
+		public Stack<Integer> copy(Stack<Integer> parentValue) {
+			if (parentValue == null) {
+				return null;
+			}
+			// 克隆 Stack
+			return (Stack<Integer>) parentValue.clone();
+		}
+	};
+
+
 
 	// 迭代对象
-	private TransmittableThreadLocal<Stack<TupleOf2<Integer, Object>>> loopObjectTL = new TransmittableThreadLocal<>();
+	private TransmittableThreadLocal<Stack<Object>> loopObjectTL = new TransmittableThreadLocal<Stack<Object>>() {
+		/**
+		 * 在你提供的这个 TTL 版本中，我们重写 public T copy(T parentValue) 方法
+		 * 来实现 Stack 的克隆，以确保线程隔离。
+		 */
+		@Override
+		public Stack<Object> copy(Stack<Object> parentValue) {
+			if (parentValue == null) {
+				return null;
+			}
+			// 克隆 Stack
+			return (Stack<Object>) parentValue.clone();
+		}
+	};
 
 	// 当前slot的index
 	private TransmittableThreadLocal<Integer> slotIndexTL = new TransmittableThreadLocal<>();
@@ -355,19 +383,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		try{
 			lock4LoopIndex.lock();
 			if (this.loopIndexTL.get() == null){
-				Stack<TupleOf2<Integer, Integer>> stack = new Stack<>();
-				TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
-				stack.push(tuple);
+				Stack<Integer> stack = new Stack<>();
+				stack.push(index);
 				this.loopIndexTL.set(stack);
 			}else{
-				Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
-				TupleOf2<Integer, Integer> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
-				if (thisConditionTuple != null){
-					thisConditionTuple.setB(index);
-				}else{
-					TupleOf2<Integer, Integer> tuple = new TupleOf2<>(condition.hashCode(), index);
-					stack.push(tuple);
-				}
+				Stack<Integer> stack = this.loopIndexTL.get();
+				stack.push(index);
 			}
 		}finally {
 			lock4LoopIndex.unlock();
@@ -376,9 +397,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public Integer getLoopIndex() {
-		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+		Stack<Integer> stack = this.loopIndexTL.get();
 		if (stack != null){
-			return stack.peek().getB();
+			return stack.peek();
 		}else{
 			return null;
 		}
@@ -389,9 +410,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public Integer getPreNLoopIndex(int n){
-		Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+		Stack<Integer> stack = this.loopIndexTL.get();
 		if (stack != null && stack.size() > n){
-			return stack.elementAt(stack.size() - (n + 1)).getB();
+			return stack.elementAt(stack.size() - (n + 1));
 		}else{
 			return null;
 		}
@@ -400,7 +421,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	public void removeLoopIndex() {
 		try{
 			lock4LoopIndex.lock();
-			Stack<TupleOf2<Integer, Integer>> stack = this.loopIndexTL.get();
+			Stack<Integer> stack = this.loopIndexTL.get();
 			if (stack != null){
 				if (stack.size() > 1){
 					stack.pop();
@@ -420,19 +441,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		try{
 			lock4LoopObj.lock();
 			if (this.loopObjectTL.get() == null){
-				Stack<TupleOf2<Integer, Object>> stack = new Stack<>();
-				TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
-				stack.push(tuple);
+				Stack<Object> stack = new Stack<>();
+				stack.push(obj);
 				this.loopObjectTL.set(stack);
 			}else{
-				Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
-				TupleOf2<Integer, Object> thisConditionTuple =  stack.stream().filter(tuple -> tuple.getA().equals(condition.hashCode())).findFirst().orElse(null);
-				if (thisConditionTuple != null){
-					thisConditionTuple.setB(obj);
-				}else{
-					TupleOf2<Integer, Object> tuple = new TupleOf2<>(condition.hashCode(), obj);
-					stack.push(tuple);
-				}
+				Stack<Object> stack = this.loopObjectTL.get();
+				stack.push(obj);
 			}
 		}finally {
 			lock4LoopObj.unlock();
@@ -440,9 +454,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public <T> T getCurrLoopObject() {
-		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+		Stack<Object> stack = this.loopObjectTL.get();
 		if (stack != null){
-			return (T) stack.peek().getB();
+			return (T) stack.peek();
 		}else{
 			return null;
 		}
@@ -453,9 +467,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	}
 
 	public <T> T getPreNLoopObject(int n){
-		Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+		Stack<Object> stack = this.loopObjectTL.get();
 		if (stack != null && stack.size() > n){
-			return (T) stack.elementAt(stack.size() - (n + 1)).getB();
+			return (T) stack.elementAt(stack.size() - (n + 1));
 		}else{
 			return null;
 		}
@@ -464,7 +478,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	public void removeCurrLoopObject() {
 		try{
 			lock4LoopObj.lock();
-			Stack<TupleOf2<Integer, Object>> stack = this.loopObjectTL.get();
+			Stack<Object> stack = this.loopObjectTL.get();
 			if (stack != null){
 				if (stack.size() > 1){
 					stack.pop();

@@ -12,7 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * springboot环境EL常规的例子测试
@@ -72,9 +74,13 @@ public class IteratorELSpringbootTest extends BaseTest {
 	//测试多层迭代异步循环的正确性
 	@Test
 	public void testIt5() throws Exception {
-		for (int i = 0; i < 100; i++) {
-			LiteflowResponse response = flowExecutor.execute2Resp("chain5");
-			Assertions.assertTrue(response.isSuccess());
-		}
+		DefaultContext context = new DefaultContext();
+		context.setData("set", new HashSet<>());
+		context.setData("list1", ListUtil.toList("a", "b", "c"));
+		context.setData("list2", ListUtil.toList("1", "2", "3", "4"));
+		LiteflowResponse response = flowExecutor.execute2Resp("chain5",null, context);
+		Assertions.assertTrue(response.isSuccess());
+		Set<String> set = context.getData("set");
+		Assertions.assertEquals(12, set.size());
 	}
 }

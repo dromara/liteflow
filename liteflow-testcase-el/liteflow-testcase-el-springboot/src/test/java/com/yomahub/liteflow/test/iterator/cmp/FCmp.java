@@ -6,6 +6,8 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component("f")
 public class FCmp extends NodeComponent {
 
@@ -16,6 +18,9 @@ public class FCmp extends NodeComponent {
 		if (obj1 == null || obj2 == null) {
 			throw new RuntimeException("");
 		}
-		System.out.println(StrUtil.format("{}{}", obj1, obj2));
+		String str = StrUtil.format("{}{}", obj1, obj2);
+		DefaultContext context = this.getFirstContextBean();
+		Set<String> set = context.getData("set");
+		set.add(str);
 	}
 }

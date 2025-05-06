@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.util;
 
-public class TupleOf2<A, B> {
+public class TupleOf2<A, B> implements Cloneable{
 
     private A a;
 
@@ -25,5 +25,14 @@ public class TupleOf2<A, B> {
 
     public void setB(B b) {
         this.b = b;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public TupleOf2<A, B> clone() throws CloneNotSupportedException {
+        TupleOf2<A, B> newObject = (TupleOf2<A, B>)super.clone();
+        newObject.setA(this.getA());
+        newObject.setB(this.getB());
+        return newObject;
     }
 }
