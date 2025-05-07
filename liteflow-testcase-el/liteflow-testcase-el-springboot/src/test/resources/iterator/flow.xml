@@ -27,7 +27,13 @@
 
     <chain name="chain5">
         ITERATOR(x1).parallel(true).DO(
-            ITERATOR(x2).parallel(true).DO(f)
+            ITERATOR(x2).parallel(true).DO(
+                ITERATOR(x3).parallel(true).DO(
+                    ITERATOR(x4).parallel(true).DO(
+                        ITERATOR(x5).parallel(true).DO(f)
+                    )
+                )
+            )
         );
     </chain>
 </flow>

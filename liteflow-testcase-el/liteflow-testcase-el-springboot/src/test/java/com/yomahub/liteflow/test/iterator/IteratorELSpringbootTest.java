@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.test.iterator;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -83,12 +84,15 @@ public class IteratorELSpringbootTest extends BaseTest {
 	@Test
 	public void testIt5() throws Exception {
 		DefaultContext context = new DefaultContext();
-		context.setData("set", new HashSet<>());
+		context.setData("set", new ConcurrentHashSet<>());
 		context.setData("list1", ListUtil.toList("a", "b", "c", "d", "e", "f"));
-		context.setData("list2", ListUtil.toList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+		context.setData("list2", ListUtil.toList("L2_1", "L2_2", "L2_3"));
+		context.setData("list3", ListUtil.toList("L3_1", "L3_2", "L3_3", "L3_4"));
+		context.setData("list4", ListUtil.toList("L4_1", "L4_2"));
+		context.setData("list5", ListUtil.toList("L5_1", "L5_2", "L5_3"));
 		LiteflowResponse response = flowExecutor.execute2Resp("chain5",null, context);
 		Assertions.assertTrue(response.isSuccess());
 		Set<String> set = context.getData("set");
-		Assertions.assertEquals(54, set.size());
+		Assertions.assertEquals(6*3*4*2*3, set.size());
 	}
 }
