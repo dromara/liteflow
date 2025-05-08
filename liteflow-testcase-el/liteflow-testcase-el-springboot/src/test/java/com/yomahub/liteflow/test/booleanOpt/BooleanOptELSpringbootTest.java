@@ -73,4 +73,11 @@ public class BooleanOptELSpringbootTest extends BaseTest {
 		Assertions.assertEquals("x1==>b", response.getExecuteStepStr());
 	}
 
+	// 有个布尔组件isAccess为false的情况
+	@Test
+	public void testBooleanOpt7() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain7", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("x3==>x4==>b", response.getExecuteStepStr());
+	}
 }

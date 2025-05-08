@@ -69,6 +69,30 @@ public class WhenELWrapper extends ELWrapper {
     }
 
     @Override
+    public WhenELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public WhenELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public WhenELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public WhenELWrapper bind(String key, String value) {
+        super.bind(key, value);
+        return this;
+    }
+
+    @Override
     public WhenELWrapper maxWaitSeconds(Integer maxWaitSeconds){
         setMaxWaitSeconds(maxWaitSeconds);
         return this;

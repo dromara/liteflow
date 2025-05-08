@@ -116,7 +116,7 @@ public class Slot {
 
 	private <T> T getThreadMetaData(String key) {
 		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getName());
-		return (T) metaDataMap.get(threadKey);
+        return (T) metaDataMap.getOrDefault(threadKey, Boolean.FALSE);
 	}
 
 	private <T> void putMetaDataMap(String key, T t) {
@@ -245,7 +245,7 @@ public class Slot {
 		putThreadMetaDataMap(IF_NODE_PREFIX + key, result);
 	}
 
-	public boolean getIfResult(String key) {
+	public Boolean getIfResult(String key) {
 		return getThreadMetaData(IF_NODE_PREFIX + key);
 	}
 
@@ -253,7 +253,7 @@ public class Slot {
 		putThreadMetaDataMap(AND_OR_PREFIX + key, result);
 	}
 
-	public boolean getAndOrResult(String key) {
+	public Boolean getAndOrResult(String key) {
 		return getThreadMetaData(AND_OR_PREFIX + key);
 	}
 
@@ -261,7 +261,7 @@ public class Slot {
 		putThreadMetaDataMap(NOT_PREFIX + key, result);
 	}
 
-	public boolean getNotResult(String key) {
+	public Boolean getNotResult(String key) {
 		return getThreadMetaData(NOT_PREFIX + key);
 	}
 
@@ -269,7 +269,7 @@ public class Slot {
 		putThreadMetaDataMap(FOR_PREFIX + key, forCount);
 	}
 
-	public int getForResult(String key) {
+	public Integer getForResult(String key) {
 		return getThreadMetaData(FOR_PREFIX + key);
 	}
 
@@ -277,7 +277,7 @@ public class Slot {
 		putThreadMetaDataMap(WHILE_PREFIX + key, whileFlag);
 	}
 
-	public boolean getWhileResult(String key) {
+	public Boolean getWhileResult(String key) {
 		return getThreadMetaData(WHILE_PREFIX + key);
 	}
 
@@ -285,7 +285,7 @@ public class Slot {
 		putThreadMetaDataMap(BREAK_PREFIX + key, breakFlag);
 	}
 
-	public boolean getBreakResult(String key) {
+	public Boolean getBreakResult(String key) {
 		return getThreadMetaData(BREAK_PREFIX + key);
 	}
 

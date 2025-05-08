@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain id="chain1">
+        THEN(a1.bind("k1", "${name}"));
+    </chain>
+
+    <chain id="chain2">
+        THEN(a2.bind("k1", "${member.memberCode}"));
+    </chain>
+
+    <chain id="chain3">
+        THEN(a3.bind("k1", "${memberContext.id}"));
+    </chain>
+
+    <chain id="chain4">
+        THEN(a4.bind("k1", "${userCx.info}"));
+    </chain>
+
+    <chain id="chain5">
+        THEN(a5.bind("k1", "${id}"));
+    </chain>
+</flow>

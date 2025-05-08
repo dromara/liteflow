@@ -172,7 +172,7 @@ public class FallbackELSpringbootTest extends BaseTest {
         LiteflowResponse response = flowExecutor.execute2Resp("concurrent2", "arg");
         Assertions.assertTrue(response.isSuccess());
         String stepStr = response.getExecuteStepStrWithoutTime();
-        Assertions.assertTrue("fb_comm_cmp==>fb_bool_cmp".equals(stepStr) || "ifn2==>c".equals(stepStr));
+        Assertions.assertTrue("fb_comm_cmp==>fb_bool_cmp".equals(stepStr) || "fb_bool_cmp==>fb_comm_cmp".equals(stepStr) || "ifn2==>c".equals(stepStr));
     }
 
     @Test

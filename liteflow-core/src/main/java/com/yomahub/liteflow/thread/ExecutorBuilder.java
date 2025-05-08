@@ -29,7 +29,7 @@ public interface ExecutorBuilder {
 						newThread.setDaemon(false);
 						return newThread;
 					}
-				}, new ThreadPoolExecutor.AbortPolicy()));
+				}, new ThreadPoolExecutor.CallerRunsPolicy()));
 	}
 
 }

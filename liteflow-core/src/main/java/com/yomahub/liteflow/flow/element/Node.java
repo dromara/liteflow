@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.flow.element;
 
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
@@ -24,6 +25,8 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.util.TupleOf2;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -63,9 +66,16 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	private String cmpData;
 
+	private Map<String, String> bindDataMap = new HashMap<>();
+
 	private String currChainId;
 
+	// 针对于脚本节点，这个属性代表脚本节点的脚本是否已经编译过
 	private boolean isCompiled = true;
+
+	// 此属性代表在EL构建的时候，node节点是否已经从FLowBus中的nodeMap中clone过了。
+	// 如果已经clone过了，不再Clone
+	private boolean isCloned = false;
 
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
@@ -84,6 +94,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	// isContinueOnError 结果
 	private TransmittableThreadLocal<Boolean> isContinueOnErrorResult =  new TransmittableThreadLocal<>();
+
+	// step自定义数据
+	private ThreadLocal<Object> stepDataTL = new ThreadLocal<>();
 
 	public Node() {
 
@@ -134,6 +147,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
 	}
 
 	public String getName() {
@@ -184,6 +200,12 @@ public class Node implements Executable, Cloneable, Rollbackable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
+
+				// 如果是脚本节点，并且是后置编译的，那么在成功执行好脚本节点后把编译flag置为true
+				// 这个只能在成功执行好之后设置，如果在编译好之后设置，那么设置的只有FlowBus中的nodeMap中的
+				if (this.type.isScript() && !this.isCompiled){
+					this.setCompiled(true);
+				}
 			} else {
 				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}
@@ -192,16 +214,18 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
-		}
-		catch (ChainEndException e) {
-			throw e;
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 			// 如果组件覆盖了isEnd方法，或者在在逻辑中主要调用了setEnd(true)的话，流程就会立马结束
+			if (e instanceof ChainEndException) {
+				throw e;
+			}
+
+			// 这里再次写一遍的原因是：如果抛错了，还是要看isEnd这个状态，如果为true的话，还是要优先处理ChainEndException
 			if (instance.isEnd()) {
 				String errorInfo = StrUtil.format("[{}] lead the chain to end", instance.getDisplayName());
 				throw new ChainEndException(errorInfo);
 			}
+
 			// 如果组件覆盖了isContinueOnError方法，返回为true，那即便出了异常，也会继续流程
 			else if (getIsContinueOnErrorResult() || instance.isContinueOnError()) {
 				String errorMsg = StrUtil.format("component[{}] cause error,but flow is still go on", id);
@@ -221,6 +245,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 			removeLoopIndex();
 			removeAccessResult();
 			removeIsContinueOnErrorResult();
+			removeStepData();
 		}
 	}
 
@@ -283,6 +308,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void setCmpData(String cmpData) {
 		this.cmpData = cmpData;
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
 	}
 
 	@Override
@@ -495,6 +523,38 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return getInstance().getItemResultMetaValue(slotIndex);
 	}
 
+	public void putBindData(String key, String value) {
+		this.bindDataMap.put(key, value);
+		if (BooleanUtil.isFalse(this.isCloned)){
+			this.setCloned(true);
+		}
+	}
+
+	public String getBindData(String key) {
+		return this.bindDataMap.get(key);
+	}
+
+	public boolean isCloned() {
+		return isCloned;
+	}
+
+	public void setCloned(boolean cloned) {
+		isCloned = cloned;
+	}
+
+	public Object getStepData(){
+		return this.stepDataTL.get();
+	}
+
+
+	public void setStepData(Object stepData) {
+		this.stepDataTL.set(stepData);
+	}
+
+	public void removeStepData() {
+		this.stepDataTL.remove();
+	}
+
 	@Override
 	public Node clone() throws CloneNotSupportedException {
 		Node node = (Node)super.clone();
@@ -504,8 +564,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.slotIndexTL = new TransmittableThreadLocal<>();
 		node.isEndTL = new TransmittableThreadLocal<>();
 		node.isContinueOnErrorResult = new TransmittableThreadLocal<>();
+		node.stepDataTL = new ThreadLocal<>();
 		node.lock4LoopIndex = new ReentrantLock();
 		node.lock4LoopObj = new ReentrantLock();
+		node.bindDataMap = new HashMap<>();
 		return node;
 	}
 }

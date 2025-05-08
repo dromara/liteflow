@@ -86,7 +86,7 @@ public class InstanceIdELSpringTest extends BaseTest {
         NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
         for (int i = 0; i < strings.size(); i++) {
-            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeLocationById("chain2", strings.get(i)), "a(" + i + ")");
+            Assertions.assertEquals(nodeInstanceIdManageSpi.getNodeLocationById("chain2", strings.get(i)), i);
         }
 
         System.out.println(executeStepStrWithInstanceId);

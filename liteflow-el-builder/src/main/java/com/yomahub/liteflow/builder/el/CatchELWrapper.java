@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.builder.el;
 
+import java.util.Map;
+
 /**
  * 捕获异常表达式
  * Catch(a).do(b)
@@ -32,6 +34,30 @@ public class CatchELWrapper extends ELWrapper {
     @Override
     public CatchELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public CatchELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public CatchELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public CatchELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public CatchELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

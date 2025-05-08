@@ -20,6 +20,7 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
+import com.yomahub.liteflow.util.LiteflowContextRegexMatcher;
 import com.yomahub.liteflow.util.SerialsUtil;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -157,8 +158,6 @@ public class DeclComponentProxy {
 
     }
 
-    private final ExpressRunner expressRunner = new ExpressRunner();
-
     private Object[] loadMethodParameter(Object proxy, MethodWrapBean methodWrapBean, Object[] args){
         NodeComponent thisNodeComponent = (NodeComponent) proxy;
 
@@ -181,38 +180,9 @@ public class DeclComponentProxy {
                 return null;
             }
 
-            // 把上下文数据转换成map形式的，key为别名，value为上下文
-            Map<String, Object> contextMap = DataBus.getSlot(thisNodeComponent.getSlotIndex()).getContextBeanList().stream().collect(
-                    Collectors.toMap(tuple -> tuple.get(0), tuple -> tuple.get(1))
-            );
-
-            List<String> errorList = new ArrayList<>();
-
-            Object result = null;
-            // 根据表达式去上下文里搜索相匹配的数据
-            for(Map.Entry<String, Object> entry : contextMap.entrySet()){
-                try{
-                    InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(entry.getKey() + "." + parameterWrapBean.getFact().value());
-                    DefaultContext<String, Object> context = new DefaultContext<>();
-                    context.put(entry.getKey(), entry.getValue());
-                    result = expressRunner.execute(instructionSet, context, errorList, false, false);
-                    if (result != null){
-                        break;
-                    }
-                }catch (Exception ignore){}
-            }
-
-            if (result == null){
-                try{
-                    // 如果没有搜到，那么尝试推断表达式是指定的上下文，按照指定上下文的方式去再获取
-                    InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache("contextMap." + parameterWrapBean.getFact().value());
-                    DefaultContext<String, Object> context = new DefaultContext<>();
-                    context.put("contextMap", contextMap);
-                    result = expressRunner.execute(instructionSet, context, errorList, false, false);
-                }catch (Exception ignore){}
-            }
-
-            return result;
+            return LiteflowContextRegexMatcher.searchContext(
+                    DataBus.getSlot(thisNodeComponent.getSlotIndex()).getContextBeanList(),
+                    parameterWrapBean.getFact().value());
         }).toArray();
     }
 }

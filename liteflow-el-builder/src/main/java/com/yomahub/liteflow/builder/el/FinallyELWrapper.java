@@ -2,6 +2,8 @@ package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.util.StrUtil;
 
+import java.util.Map;
+
 /**
  * 后置表达式
  * 只能在THEN组件中调用
@@ -25,6 +27,30 @@ public class FinallyELWrapper extends ELWrapper {
     @Override
     public FinallyELWrapper id(String id) {
         this.setId(id);
+        return this;
+    }
+
+    @Override
+    public FinallyELWrapper data(String dataName, Object object) {
+        super.data(dataName, object);
+        return this;
+    }
+
+    @Override
+    public FinallyELWrapper data(String dataName, String jsonString) {
+        super.data(dataName, jsonString);
+        return this;
+    }
+
+    @Override
+    public FinallyELWrapper data(String dataName, Map<String, Object> jsonMap) {
+        super.data(dataName, jsonMap);
+        return this;
+    }
+
+    @Override
+    public FinallyELWrapper bind(String key, String value) {
+        super.bind(key, value);
         return this;
     }
 

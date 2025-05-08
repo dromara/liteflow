@@ -32,6 +32,7 @@ public class ForOperator extends BaseOperator<ForCondition> {
 		else if (objects[0] instanceof Integer) {
 			Integer forCount = OperatorHelper.convert(objects[0], Integer.class);
 			node = new Node();
+			node.setType(NodeTypeEnum.FOR);
 			NodeForComponent nodeForComponent = new NodeForComponent() {
 				@Override
 				public int processFor() {
@@ -40,6 +41,7 @@ public class ForOperator extends BaseOperator<ForCondition> {
 			};
 			nodeForComponent.setSelf(nodeForComponent);
 			nodeForComponent.setNodeId(StrUtil.format("LOOP_{}", forCount));
+			nodeForComponent.setType(NodeTypeEnum.FOR);
 			node.setInstance(nodeForComponent);
 		}
 		else {

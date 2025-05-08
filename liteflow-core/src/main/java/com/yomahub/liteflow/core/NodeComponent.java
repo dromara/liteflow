@@ -9,10 +9,13 @@ package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.CmpStepTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.exception.ObjectConvertException;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.CmpStep;
@@ -26,6 +29,7 @@ import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.CmpAroundAspectHolder;
 import com.yomahub.liteflow.util.JsonUtil;
+import com.yomahub.liteflow.util.LiteflowContextRegexMatcher;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -91,6 +95,7 @@ public abstract class NodeComponent{
 		cmpStep.setInstance(this);
 		cmpStep.setRefNode(this.getRefNode());
 		cmpStep.setStartTime(new Date());
+		cmpStep.setThreadName(Thread.currentThread().getName());
 		slot.addStep(cmpStep);
 
 		StopWatch stopWatch = new StopWatch();
@@ -135,6 +140,10 @@ public abstract class NodeComponent{
 			final long timeSpent = stopWatch.getTotalTimeMillis();
 			LOG.info("component[{}] finished in {} milliseconds", this.getDisplayName(), timeSpent);
 
+			// 步骤自定义数据设置
+			cmpStep.setStepData(this.getRefNode().getStepData());
+
+			// 结束时间设置
 			cmpStep.setEndTime(new Date());
 
 			// 往CmpStep中放入时间消耗信息
@@ -410,6 +419,13 @@ public abstract class NodeComponent{
 		}
 	}
 
+	/**
+	 *
+	 * @param clazz 要转换的class类型
+	 * @return data对象
+	 * @param <T> data的泛型
+	 */
+	@Deprecated
 	public <T> T getCmpData(Class<T> clazz) {
 		String cmpData = getRefNode().getCmpData();
 		if (StrUtil.isBlank(cmpData)) {
@@ -427,6 +443,46 @@ public abstract class NodeComponent{
 			return null;
 		}
 		return JsonUtil.parseList(cmpData, clazz);
+	}
+
+	public <T> T getBindData(String key, Class<T> clazz) {
+		String bindData = getRefNode().getBindData(key);
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+
+		//如果bind的value是一个正则表达式，说明要在上下文中进行搜索
+		if (ReUtil.isMatch(ChainConstant.CONTEXT_SEARCH_REGEX, bindData)) {
+			Object searchResult = LiteflowContextRegexMatcher.searchContext(
+					this.getSlot().getContextBeanList(),
+					ReUtil.getGroup1(ChainConstant.CONTEXT_SEARCH_REGEX, bindData)
+			);
+
+			if (searchResult == null){
+				return null;
+			}
+
+			//搜索到的对象一定要符合给定的clazz
+			if (clazz.isAssignableFrom(searchResult.getClass())) {
+				return (T) searchResult;
+			}else{
+				String errMsg = StrUtil.format("{} cannot convert to {}", searchResult.getClass().getName(), clazz.getName());
+				throw new ObjectConvertException(errMsg);
+			}
+		}else{
+			if (clazz.equals(String.class) || clazz.equals(Object.class)) {
+				return (T) bindData;
+			}
+			return JsonUtil.parseObject(bindData, clazz);
+		}
+	}
+
+	public <T> List<T> getBindDataList(Class<T> clazz) {
+		String bindData = getRefNode().getCmpData();
+		if (StrUtil.isBlank(bindData)) {
+			return null;
+		}
+		return JsonUtil.parseList(bindData, clazz);
 	}
 
 	public Integer getLoopIndex() {
@@ -451,6 +507,10 @@ public abstract class NodeComponent{
 
 	public <T> T getPreNLoopObj(int n) {
 		return this.getRefNode().getPreNLoopObject(n);
+	}
+
+	public void setStepData(Object stepData) {
+		this.getRefNode().setStepData(stepData);
 	}
 
 	@Deprecated
@@ -478,5 +538,11 @@ public abstract class NodeComponent{
 	protected String getMetaValueKey(){
 		Class<?> originalClass = LiteFlowProxyUtil.getUserClass(this.getClass());
 		return originalClass.getName();
+	}
+
+	public static void main(String[] args) {
+
+		boolean flag = ReUtil.isMatch(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}");
+		System.out.println(ReUtil.getGroup1(ChainConstant.CONTEXT_SEARCH_REGEX, "${user.name}"));
 	}
 }
