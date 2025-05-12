@@ -120,8 +120,9 @@ public class Chain implements Executable{
 				);
 			}
 
-			// 设置主ChainName
+			// 设置主ChainId
 			slot.setChainId(chainId);
+			slot.addChainInstance(this);
 			// 执行主体Condition
 			for (Condition condition : conditionList) {
 				condition.setCurrChainId(chainId);
