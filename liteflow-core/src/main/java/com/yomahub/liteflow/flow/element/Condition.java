@@ -45,7 +45,7 @@ public abstract class Condition implements Executable{
 	private final Map<String, List<Executable>> executableGroup = new HashMap<>();
 
 	/**
-	 * 当前所在的ChainName 如果对于子流程来说，那这个就是子流程所在的Chain
+	 * 当前所在的ChainId 如果对于子流程来说，那这个就是子流程所在的Chain
 	 */
 	private String currChainId;
 

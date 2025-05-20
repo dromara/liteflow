@@ -185,8 +185,8 @@ public class ExecutorHelper {
 	public ExecutorService buildExecutorService(Condition condition, Integer slotIndex, ConditionTypeEnum type) {
 		ExecutorService executor;
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-		String chainId = DataBus.getSlot(slotIndex).getChainId();
-		Chain chain = FlowBus.getChain(chainId);
+		String currChainId = condition.getCurrChainId();
+		Chain chain = DataBus.getSlot(slotIndex).getCurrentChainInstance(currChainId);
 
 		// 构建条件判断对象
 		ExecutorCondition execCondition = ExecutorConditionBuilder.buildExecutorCondition(

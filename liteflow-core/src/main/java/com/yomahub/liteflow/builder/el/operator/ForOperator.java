@@ -43,6 +43,7 @@ public class ForOperator extends BaseOperator<ForCondition> {
 			nodeForComponent.setNodeId(StrUtil.format("LOOP_{}", forCount));
 			nodeForComponent.setType(NodeTypeEnum.FOR);
 			node.setInstance(nodeForComponent);
+			node.setId(nodeForComponent.getNodeId());
 		}
 		else {
 			throw new QLException("The parameter must be Node item");

@@ -4,9 +4,9 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.vo.RetryELVo;
 import com.yomahub.liteflow.util.JsonUtil;
+import com.yomahub.liteflow.util.SelectiveJavaEscaper;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * ELWrapper是所有组件的抽象父类
@@ -142,7 +142,7 @@ public abstract class ELWrapper {
      * @return {@link ELWrapper}
      */
     protected ELWrapper data(String dataName, Object object){
-        setData("'" + JsonUtil.toJsonString(object) + "'");
+        setData(StrUtil.format("\"{}\"", SelectiveJavaEscaper.escape(JsonUtil.toJsonString(object))));
         setDataName(dataName);
         return this;
     }
@@ -155,7 +155,7 @@ public abstract class ELWrapper {
      * @return {@link ELWrapper}
      */
     protected ELWrapper data(String dataName, String jsonString){
-        setData("'" + jsonString + "'");
+        setData(StrUtil.format("\"{}\"",SelectiveJavaEscaper.escape(jsonString)));
         setDataName(dataName);
         return this;
     }
@@ -168,7 +168,7 @@ public abstract class ELWrapper {
      * @return {@link ELWrapper}
      */
     protected ELWrapper data(String dataName, Map<String, Object> jsonMap){
-        setData("'" + JsonUtil.toJsonString(jsonMap) + "'");
+        setData(StrUtil.format("\"{}\"", SelectiveJavaEscaper.escape(JsonUtil.toJsonString(jsonMap))));
         setDataName(dataName);
         return this;
     }
@@ -242,14 +242,14 @@ public abstract class ELWrapper {
             elContext.append(StrUtil.format(".id(\"{}\")", this.getId()));
         }
         if(this.getTag() != null){
-            elContext.append(StrUtil.format(".tag(\"{}\")", this.getTag()));
+            elContext.append(StrUtil.format(".tag(\"{}\")", SelectiveJavaEscaper.escape(this.getTag())));
         }
         if(this.getData() != null){
             elContext.append(StrUtil.format(".data({})", this.getDataName()));
             paramContext.append(StrUtil.format("{} = {}", this.getDataName(), this.getData())).append(";\n");
         }
         if(MapUtil.isNotEmpty(this.getBindData())){
-            this.getBindData().forEach((key, value) -> elContext.append(StrUtil.format(".bind(\"{}\", \"{}\")", key, value)));
+            this.getBindData().forEach((key, value) -> elContext.append(StrUtil.format(".bind(\"{}\", \"{}\")", key, SelectiveJavaEscaper.escape(value))));
         }
         if(this.getMaxWaitSeconds() != null){
             elContext.append(StrUtil.format(".maxWaitSeconds({})", String.valueOf(this.getMaxWaitSeconds())));

@@ -1,8 +1,11 @@
 package com.yomahub.liteflow.parser.redis.vo;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.yomahub.liteflow.parser.redis.mode.RedisMode;
 import com.yomahub.liteflow.parser.redis.mode.RedisParserMode;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -105,6 +108,16 @@ public class RedisParserVO {
 
     public void setSentinelAddress(List<String> sentinelAddress) {
         this.sentinelAddress = sentinelAddress;
+    }
+
+    @JsonSetter("sentinelAddress")
+    public void setSentinelAddressFromString(String addresses) {
+        if (addresses != null && !addresses.trim().isEmpty()) {
+            // 按逗号分割，并去除每个地址前后的空格
+            this.sentinelAddress = Arrays.asList(addresses.split("\\s*,\\s*"));
+        } else {
+            this.sentinelAddress = Collections.emptyList();
+        }
     }
 
     public String getUsername() {

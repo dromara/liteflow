@@ -14,6 +14,7 @@ import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp.ACmp;
 import com.yomahub.liteflow.test.builder.cmp.BCmp;
 import com.yomahub.liteflow.test.builder.vo.User;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -56,31 +57,29 @@ public class ComplexELBuilderTest extends BaseTest {
      */
     @Test
     public void testComplexEL1() {
-        ThenELWrapper complexEl1 = ELBus.then(
-                ELBus.node("A"),
+        ThenELWrapper complexEl = ELBus.then(
+                ELBus.element("A"),
                 ELBus.when(
-                        ELBus.then(ELBus.node("B"), ELBus.node("C")),
-                        ELBus.then(ELBus.node("D")).then(ELBus.node("E")).then(ELBus.node("F")),
+                        ELBus.then(ELBus.element("B"), ELBus.element("C")),
+                        ELBus.then(ELBus.element("D")).then(ELBus.element("E")).then(ELBus.element("F")),
                         ELBus.then(
-                                ELBus.switchOpt(ELBus.node("G")).to(
-                                        ELBus.then(ELBus.node("H"), ELBus.node("I"), ELBus.when(ELBus.node("J")).when(ELBus.node("K"))).id("t1"),
-                                        ELBus.then(ELBus.node("L"), ELBus.node("M")).id("t2")
+                                ELBus.switchOpt(ELBus.element("G")).to(
+                                        ELBus.then(ELBus.element("H"), ELBus.element("I"), ELBus.when(ELBus.element("J")).when(ELBus.element("K"))).id("t1"),
+                                        ELBus.then(ELBus.element("L"), ELBus.element("M")).id("t2")
                                 ),
-                                ELBus.node("N")
+                                ELBus.element("N")
                         )
                 ),
-                ELBus.node("Z")
+                ELBus.element("Z")
         );
-        String expectedStr = "THEN(node(\"A\"),WHEN(THEN(node(\"B\"),node(\"C\")),THEN(node(\"D\"),node(\"E\"),node(\"F\")),THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\"),WHEN(node(\"J\"),node(\"K\"))).id(\"t1\"),THEN(node(\"L\"),node(\"M\")).id(\"t2\")),node(\"N\"))),node(\"Z\"));";
-        Assertions.assertEquals(expectedStr,
-                complexEl1.toEL());
-        System.out.println(expectedStr);
 
-        expectedStr = "THEN(\n\tnode(\"A\"),\n\tWHEN(\n\t\tTHEN(\n\t\t\tnode(\"B\"),\n\t\t\tnode(\"C\")\n\t\t),\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t),\n\t\tTHEN(\n\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\tnode(\"I\"),\n\t\t\t\t\tWHEN(\n\t\t\t\t\t\tnode(\"J\"),\n\t\t\t\t\t\tnode(\"K\")\n\t\t\t\t\t)\n\t\t\t\t).id(\"t1\"),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t).id(\"t2\")\n\t\t\t),\n\t\t\tnode(\"N\")\n\t\t)\n\t),\n\tnode(\"Z\")\n);";
-        Assertions.assertEquals(expectedStr,
-                complexEl1.toEL(true));
-        System.out.println(expectedStr);
+        System.out.println(StringEscapeUtils.escapeJava(complexEl.toEL()));
+        String expect1 = "THEN(A,WHEN(THEN(B,C),THEN(D,E,F),THEN(SWITCH(G).TO(THEN(H,I,WHEN(J,K)).id(\"t1\"),THEN(L,M).id(\"t2\")),N)),Z);";
+        Assertions.assertEquals(expect1, complexEl.toEL());
 
+        System.out.println(StringEscapeUtils.escapeJava(complexEl.toEL(true)));
+        String expect2 = "THEN(\n\tA,\n\tWHEN(\n\t\tTHEN(\n\t\t\tB,\n\t\t\tC\n\t\t),\n\t\tTHEN(\n\t\t\tD,\n\t\t\tE,\n\t\t\tF\n\t\t),\n\t\tTHEN(\n\t\t\tSWITCH(G).TO(\n\t\t\t\tTHEN(\n\t\t\t\t\tH,\n\t\t\t\t\tI,\n\t\t\t\t\tWHEN(\n\t\t\t\t\t\tJ,\n\t\t\t\t\t\tK\n\t\t\t\t\t)\n\t\t\t\t).id(\"t1\"),\n\t\t\t\tTHEN(\n\t\t\t\t\tL,\n\t\t\t\t\tM\n\t\t\t\t).id(\"t2\")\n\t\t\t),\n\t\t\tN\n\t\t)\n\t),\n\tZ\n);";
+        Assertions.assertEquals(expect2, complexEl.toEL(true));
     }
 
     /*
@@ -105,35 +104,34 @@ public class ComplexELBuilderTest extends BaseTest {
      */
     @Test
     public void testComplexEl2(){
-        ThenELWrapper complexEl2 = ELBus.then(
-                ELBus.node("A"),
-                ELBus.switchOpt(ELBus.node("B")).to(
-                        ELBus.then(ELBus.node("D"),ELBus.node("E")).then(ELBus.node("F")).id("t1"),
+        ThenELWrapper complexEl = ELBus.then(
+                ELBus.element("A"),
+                ELBus.switchOpt(ELBus.element("B")).to(
+                        ELBus.then(ELBus.element("D"),ELBus.element("E")).then(ELBus.element("F")).id("t1"),
                         ELBus.then(
-                                ELBus.node("C"),
+                                ELBus.element("C"),
                                 ELBus.when(
                                         ELBus.then(
-                                                ELBus.switchOpt(ELBus.node("G")).to(
-                                                        ELBus.then(ELBus.node("H"), ELBus.node("I")).id("t2"),
-                                                        ELBus.node("J")
+                                                ELBus.switchOpt(ELBus.element("G")).to(
+                                                        ELBus.then(ELBus.element("H"), ELBus.element("I")).id("t2"),
+                                                        ELBus.element("J")
                                                 ),
-                                                ELBus.node("K")
+                                                ELBus.element("K")
                                         ),
-                                        ELBus.then(ELBus.node("L"), ELBus.node("M"))
+                                        ELBus.then(ELBus.element("L"), ELBus.element("M"))
                                 )
                         ).id("t3")
                 ),
-                ELBus.node("Z")
+                ELBus.element("Z")
         );
-        String expectedStr = "THEN(node(\"A\"),SWITCH(node(\"B\")).TO(THEN(node(\"D\"),node(\"E\"),node(\"F\")).id(\"t1\"),THEN(node(\"C\"),WHEN(THEN(SWITCH(node(\"G\")).TO(THEN(node(\"H\"),node(\"I\")).id(\"t2\"),node(\"J\")),node(\"K\")),THEN(node(\"L\"),node(\"M\")))).id(\"t3\")),node(\"Z\"));";
-        Assertions.assertEquals(expectedStr,
-                complexEl2.toEL());
-        System.out.println(expectedStr);
 
-        expectedStr = "THEN(\n\tnode(\"A\"),\n\tSWITCH(node(\"B\")).TO(\n\t\tTHEN(\n\t\t\tnode(\"D\"),\n\t\t\tnode(\"E\"),\n\t\t\tnode(\"F\")\n\t\t).id(\"t1\"),\n\t\tTHEN(\n\t\t\tnode(\"C\"),\n\t\t\tWHEN(\n\t\t\t\tTHEN(\n\t\t\t\t\tSWITCH(node(\"G\")).TO(\n\t\t\t\t\t\tTHEN(\n\t\t\t\t\t\t\tnode(\"H\"),\n\t\t\t\t\t\t\tnode(\"I\")\n\t\t\t\t\t\t).id(\"t2\"),\n\t\t\t\t\t\tnode(\"J\")\n\t\t\t\t\t),\n\t\t\t\t\tnode(\"K\")\n\t\t\t\t),\n\t\t\t\tTHEN(\n\t\t\t\t\tnode(\"L\"),\n\t\t\t\t\tnode(\"M\")\n\t\t\t\t)\n\t\t\t)\n\t\t).id(\"t3\")\n\t),\n\tnode(\"Z\")\n);";
-        Assertions.assertEquals(expectedStr,
-                complexEl2.toEL(true));
-        System.out.println(expectedStr);
+        System.out.println(StringEscapeUtils.escapeJava(complexEl.toEL()));
+        String expect1 = "THEN(A,SWITCH(B).TO(THEN(D,E,F).id(\"t1\"),THEN(C,WHEN(THEN(SWITCH(G).TO(THEN(H,I).id(\"t2\"),J),K),THEN(L,M))).id(\"t3\")),Z);";
+        Assertions.assertEquals(expect1, complexEl.toEL());
+
+        System.out.println(StringEscapeUtils.escapeJava(complexEl.toEL(true)));
+        String expect2 = "THEN(\n\tA,\n\tSWITCH(B).TO(\n\t\tTHEN(\n\t\t\tD,\n\t\t\tE,\n\t\t\tF\n\t\t).id(\"t1\"),\n\t\tTHEN(\n\t\t\tC,\n\t\t\tWHEN(\n\t\t\t\tTHEN(\n\t\t\t\t\tSWITCH(G).TO(\n\t\t\t\t\t\tTHEN(\n\t\t\t\t\t\t\tH,\n\t\t\t\t\t\t\tI\n\t\t\t\t\t\t).id(\"t2\"),\n\t\t\t\t\t\tJ\n\t\t\t\t\t),\n\t\t\t\t\tK\n\t\t\t\t),\n\t\t\t\tTHEN(\n\t\t\t\t\tL,\n\t\t\t\t\tM\n\t\t\t\t)\n\t\t\t)\n\t\t).id(\"t3\")\n\t),\n\tZ\n);";
+        Assertions.assertEquals(expect2, complexEl.toEL(true));
     }
 
     /**
@@ -155,23 +153,25 @@ public class ComplexELBuilderTest extends BaseTest {
                 .setClazz(BCmp.class)
                 .build();
 
-        ELWrapper el = ELBus.then(ELBus.node("a").data("sql", "select * from member t where t.id=10001"),
-                ELBus.node("b").data("cmpData", "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}"));
+        ELWrapper elWrapper = ELBus.then(ELBus.element("a").data("sql", "select * from member t where t.id=10001"),
+                ELBus.element("b").data("cmpData", "{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}"));
 
-        String expectStr = "sql = 'select * from member t\n" +
-                "                where t.id=10001';\n" +
-                "                cmpData = '{\"name\":\"jack\",\"age\":27,\"birth\":\"1995-10-01\"}';\n" +
+        System.out.println(elWrapper.toEL());
+
+        String expectStr = "sql = \"select * from member t where t.id=10001\";\n" +
+                "                cmpData = \"{\\\"name\\\":\\\"jack\\\",\\\"age\\\":27,\\\"birth\\\":\\\"1995-10-01\\\"}\";\n" +
                 "\n" +
                 "        THEN(\n" +
-                "                node(\"a\").data(sql),\n" +
-                "                node(\"b\").data(cmpData)\n" +
+                "                a.data(sql),\n" +
+                "                b.data(cmpData)\n" +
                 "        );";
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(expectStr));
 
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(el.toEL()));
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(el.toEL(true)));
+
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(expectStr));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(elWrapper.toEL()));
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(elWrapper.toEL(true)));
         LiteFlowChainELBuilder.createChain().setChainId("chain1").setEL(
-                el.toEL(true)
+                elWrapper.toEL(true)
         ).build();
 
         LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");

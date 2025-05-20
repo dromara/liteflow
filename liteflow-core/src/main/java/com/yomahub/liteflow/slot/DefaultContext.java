@@ -34,4 +34,7 @@ public class DefaultContext {
 		putDataMap(key, t);
 	}
 
+	public ConcurrentHashMap<String, Object> getDataMap() {
+		return dataMap;
+	}
 }

@@ -134,7 +134,7 @@ public class ParELBuilderTest extends BaseTest {
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
         System.out.println(JsonUtil.toJsonString(name2Value));
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(false));
         System.out.println(expectedStr);
@@ -146,7 +146,7 @@ public class ParELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
@@ -155,7 +155,7 @@ public class ParELBuilderTest extends BaseTest {
     // data属性测试 Json字符串赋值data
     @Test
     public void testPar15(){
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
@@ -164,7 +164,7 @@ public class ParELBuilderTest extends BaseTest {
     // 格式化输出测试 Json字符串赋值data
     @Test
     public void testPar16(){
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);
@@ -186,7 +186,7 @@ public class ParELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(node(\"a\"),PAR(node(\"b\"),node(\"c\").data(whenData)).id(\"this is a id\"),node(\"d\")).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL());
         System.out.println(expectedStr);
@@ -198,7 +198,7 @@ public class ParELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "whenData = '{\"name\":\"zhangsan\",\"age\":18}';\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
+        String expectedStr = "whenData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nPAR(\n\tnode(\"a\"),\n\tPAR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\").data(whenData)\n\t).id(\"this is a id\"),\n\tnode(\"d\")\n).tag(\"this is a tag\");";
         Assertions.assertEquals(expectedStr,
                 ELBus.par(ELBus.node("a"), ELBus.par(ELBus.node("b")).par(ELBus.node("c").data("whenData", name2Value)).id("this is a id")).par(ELBus.node("d")).tag("this is a tag").toEL(true));
         System.out.println(expectedStr);

@@ -73,7 +73,7 @@ public class LogicELBuilderTest extends BaseTest {
     }
     @Test
     public void testlogic7(){
-        String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(andData)));";
+        String expectedStr = "andData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(andData)));";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL());
         System.out.println(expectedStr);
@@ -81,7 +81,7 @@ public class LogicELBuilderTest extends BaseTest {
     }
     @Test
     public void testlogic8(){
-        String expectedStr = "andData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(andData)\n\t)\n);";
+        String expectedStr = "andData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(andData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("andData", "{\"name\":\"zhangsan\",\"age\":18}"))).toEL(true));
         System.out.println(expectedStr);
@@ -92,7 +92,7 @@ public class LogicELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "orData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(orData)));";
+        String expectedStr = "orData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(orData)));";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL());
         System.out.println(expectedStr);
@@ -103,7 +103,7 @@ public class LogicELBuilderTest extends BaseTest {
         Map<String, Object> name2Value = new HashMap<String, Object>();
         name2Value.put("name", "zhangsan");
         name2Value.put("age", 18);
-        String expectedStr = "orData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(orData)\n\t)\n);";
+        String expectedStr = "orData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(orData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("orData", name2Value))).toEL(true));
         System.out.println(expectedStr);
@@ -124,7 +124,7 @@ public class LogicELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "notData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(notData)));";
+        String expectedStr = "notData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(node(\"a\"),OR(node(\"b\"),node(\"c\")),NOT(node(\"d\").data(notData)));";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL());
         System.out.println(expectedStr);
@@ -135,7 +135,7 @@ public class LogicELBuilderTest extends BaseTest {
         ParamClass name2Value = new ParamClass();
         name2Value.name = "zhangsan";
         name2Value.age = 18;
-        String expectedStr = "notData = '{\"name\":\"zhangsan\",\"age\":18}';\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(notData)\n\t)\n);";
+        String expectedStr = "notData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nAND(\n\tnode(\"a\"),\n\tOR(\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t),\n\tNOT(\n\t\tnode(\"d\").data(notData)\n\t)\n);";
         Assertions.assertEquals(expectedStr,
                 ELBus.and(ELBus.node("a"), ELBus.or(ELBus.node("b"), ELBus.node("c")), ELBus.not(ELBus.node("d").data("notData", name2Value))).toEL(true));
         System.out.println(expectedStr);

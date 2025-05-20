@@ -17,7 +17,7 @@
         <property name="ruleSource" value="base/flow.el.xml"/>
     </bean>
 
-    <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor">
+    <bean id="flowExecutor" class="com.yomahub.liteflow.core.FlowExecutor" depends-on="springAware">
         <constructor-arg name="liteflowConfig" ref="liteflowConfig"/>
     </bean>
 </beans>
