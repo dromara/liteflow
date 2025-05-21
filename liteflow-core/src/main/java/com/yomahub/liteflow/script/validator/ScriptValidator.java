@@ -2,6 +2,7 @@ package com.yomahub.liteflow.script.validator;
 
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -37,33 +38,32 @@ public class ScriptValidator {
      * @param scriptType 脚本类型
      * @return boolean
      */
-    private static boolean validateScript(String script, ScriptTypeEnum scriptType){
+    private static ValidationResp validateScript(String script, ScriptTypeEnum scriptType){
         // 未加载任何脚本模块
         if(scriptExecutors.isEmpty()){
-            LOG.error("The loaded script modules not found.");
-            return false;
+            String errorMsg = "The loaded script modules not found.";
+            return ValidationResp.fail(new RuntimeException(errorMsg));
         }
 
         // 指定脚本语言未加载
         if (scriptType != null && !scriptExecutors.containsKey(scriptType)) {
-            LOG.error(StrUtil.format("Specified script language {} was not found.", scriptType));
-            return false;
+            String errorMsg = StrUtil.format("Specified script language {} was not found.", scriptType);
+            return ValidationResp.fail(new RuntimeException(errorMsg));
         }
 
         // 加载多个脚本语言需要指定语言验证
         if (scriptExecutors.size() > 1 && scriptType == null) {
-            LOG.error("The loaded script modules more than 1. Please specify the script language.");
-            return false;
+            String errorMsg = "The loaded script modules more than 1. Please specify the script language.";
+            return ValidationResp.fail(new RuntimeException(errorMsg));
         }
 
         ScriptExecutor scriptExecutor = (scriptType != null) ? scriptExecutors.get(scriptType) : scriptExecutors.values().iterator().next();
         try {
             scriptExecutor.compile(script);
         } catch (Exception e) {
-            LOG.error(StrUtil.format("{} Script component validate failure. ", scriptExecutor.scriptType()) + e.getMessage());
-            return false;
+            return ValidationResp.fail(e);
         }
-        return true;
+        return ValidationResp.success();
     }
 
     /**
@@ -73,6 +73,16 @@ public class ScriptValidator {
      * @return boolean
      */
     public static boolean validate(String script){
+        return validateScript(script, null).isSuccess();
+    }
+
+    /**
+     * 只引入一种脚本语言时，可以不指定语言验证
+     *
+     * @param script 脚本
+     * @return ValidationResp
+     */
+    public static ValidationResp validateWithEx(String script){
         return validateScript(script, null);
     }
 
@@ -84,6 +94,17 @@ public class ScriptValidator {
      * @return boolean
      */
     public static boolean validate(String script, ScriptTypeEnum scriptType){
+        return validateScript(script, scriptType).isSuccess();
+    }
+
+    /**
+     * 指定脚本语言验证
+     *
+     * @param script     脚本
+     * @param scriptType 脚本类型
+     * @return boolean
+     */
+    public static ValidationResp validateWithEx(String script, ScriptTypeEnum scriptType){
         return validateScript(script, scriptType);
     }
 

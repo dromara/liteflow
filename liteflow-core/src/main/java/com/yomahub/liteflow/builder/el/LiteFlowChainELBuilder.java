@@ -281,16 +281,13 @@ public class LiteFlowChainELBuilder {
      * @return
      */
     public static ValidationResp validateWithEx(String elStr) {
-        ValidationResp resp = new ValidationResp();
         try {
             LiteFlowChainELBuilder.createChain().setEL(elStr);
-            resp.setSuccess(true);
+            return ValidationResp.success();
         } catch (Exception e) {
             LOG.error("validate error", e);
-            resp.setSuccess(false);
-            resp.setCause(e);
+            return ValidationResp.fail(e);
         }
-        return resp;
     }
 
 	public void build() {
