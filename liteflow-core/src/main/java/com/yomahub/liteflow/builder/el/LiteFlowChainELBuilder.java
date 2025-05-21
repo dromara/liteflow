@@ -146,13 +146,7 @@ public class LiteFlowChainELBuilder {
 		}
 		List<String> errorList = new ArrayList<>();
 		try {
-			DefaultContext<String, Object> context = new DefaultContext<>();
-
-			// 往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
-			FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
-
-			// 解析route el成为一个executable
-			Executable routeExecutable = (Executable) EXPRESS_RUNNER.execute(routeEl, context, errorList, true, true);
+			Executable routeExecutable = compile(routeEl, errorList, false);
 
 			// 判断routeEL是不是符合规范
 			if (!(routeExecutable instanceof AndOrCondition || routeExecutable instanceof NotCondition || routeExecutable instanceof Node)){
@@ -197,22 +191,7 @@ public class LiteFlowChainELBuilder {
 
 		List<String> errorList = new ArrayList<>();
 		try {
-			DefaultContext<String, Object> context = new DefaultContext<>();
-
-			// 这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
-			// 往上下文里放入所有的chain，是的el表达式可以直接引用到chain
-			FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainId(), chain));
-
-			// 往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
-			FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
-
-			// 放入当前主chain的ID
-			context.put(ChainConstant.CURR_CHAIN_ID, this.chain.getChainId());
-
-			// 解析el成为一个Condition
-			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
-			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-			Condition condition = (Condition) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
+			Condition condition = compile(elStr, errorList, true);
 
 			if (Objects.isNull(condition)){
 				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
@@ -269,7 +248,6 @@ public class LiteFlowChainELBuilder {
      * @param elStr EL表达式
      * @return true 校验成功 false 校验失败
      */
-    @Deprecated
     public static boolean validate(String elStr) {
         return validateWithEx(elStr).isSuccess();
     }
@@ -277,16 +255,16 @@ public class LiteFlowChainELBuilder {
     /**
      * 校验
      *
-     * @param elStr
-     * @return
+	 * @param elStr EL表达式
+     * @return ValidationResp
      */
     public static ValidationResp validateWithEx(String elStr) {
         try {
-            LiteFlowChainELBuilder.createChain().setEL(elStr);
+            LiteFlowChainELBuilder.createChain().compile(elStr, null, true);
             return ValidationResp.success();
         } catch (Exception e) {
-            LOG.error("validate error", e);
-            return ValidationResp.fail(e);
+			String msg = buildDataNotFoundExceptionMsg(elStr);
+            return ValidationResp.fail(new ELParseException(msg));
         }
     }
 
@@ -458,6 +436,31 @@ public class LiteFlowChainELBuilder {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
 			throw new ELParseException(errMsg + e.getMessage());
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends Executable> T compile(String elStr, List<String> errorList, boolean putChain2Context) throws Exception{
+		DefaultContext<String, Object> context = new DefaultContext<>();
+
+		if (putChain2Context){
+			// 这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
+			// 往上下文里放入所有的chain，是的el表达式可以直接引用到chain
+			FlowBus.getChainMap().values().forEach(chain -> context.put(chain.getChainId(), chain));
+		}
+
+		// 往上下文里放入所有的node，使得el表达式可以直接引用到nodeId
+		FlowBus.getNodeMap().keySet().forEach(nodeId -> context.put(nodeId, FlowBus.getNode(nodeId)));
+
+		// 放入当前主chain的ID
+		if (this.chain != null){
+			context.put(ChainConstant.CURR_CHAIN_ID, this.chain.getChainId());
+		}
+
+		// 解析el成为一个Condition
+		// 为什么这里只是一个Condition，而不是一个List<Condition>呢
+		// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
+
+        return (T) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
 	}
 
 }
