@@ -80,8 +80,6 @@ public class Slot {
 
 	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
 
-	private static final String SUB_CHAIN = "_sub_chain";
-
 	private final Deque<CmpStep> executeSteps = new ConcurrentLinkedDeque<>();
 
 	private String executeStepsStr;
@@ -476,14 +474,6 @@ public class Slot {
 		return (Exception) this.metaDataMap.get(SUB_EXCEPTION_PREFIX + chainId);
 	}
 
-	public void setSubException(String chainId, Exception e) {
-		putMetaDataMap(SUB_EXCEPTION_PREFIX + chainId, e);
-	}
-
-	public void removeSubException(String chainId) {
-		metaDataMap.remove(SUB_EXCEPTION_PREFIX + chainId);
-	}
-
 	public List<Tuple> getContextBeanList() {
 		return this.contextBeanList;
 	}
@@ -509,22 +499,6 @@ public class Slot {
 	public <T> T getFirstContextBean() {
 		Class<T> firstContextBeanClazz = (Class<T>) this.getContextBeanList().get(0).get(1).getClass();
 		return this.getContextBean(firstContextBeanClazz);
-	}
-
-	public void addSubChain(String chainId) {
-		Set<String> subChainSet = (Set<String>) metaDataMap.getOrDefault(SUB_CHAIN, new ConcurrentHashSet<>());
-		subChainSet.add(chainId);
-		metaDataMap.putIfAbsent(SUB_CHAIN, subChainSet);
-	}
-
-	public boolean isSubChain(String chainId) {
-		if (metaDataMap.containsKey(SUB_CHAIN)) {
-			Set<String> subChainSet = (Set<String>) metaDataMap.get(SUB_CHAIN);
-			return subChainSet.contains(chainId);
-		}
-		else {
-			return false;
-		}
 	}
 
 	public Boolean getRouteResult() {

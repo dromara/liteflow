@@ -372,7 +372,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		}finally {
 			lock4LoopIndex.unlock();
 		}
-
 	}
 
 	public Integer getLoopIndex() {

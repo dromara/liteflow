@@ -136,12 +136,7 @@ public class Chain implements Executable{
 		}
 		catch (Exception e) {
 			// 这里事先取到exception set到slot里，为了方便finally取到exception
-			if (slot.isSubChain(chainId)) {
-				slot.setSubException(chainId, e);
-			}
-			else {
-				slot.setException(e);
-			}
+			slot.setException(e);
 			throw e;
 		}finally {
 			//如果有生命周期则执行相应生命周期实现
