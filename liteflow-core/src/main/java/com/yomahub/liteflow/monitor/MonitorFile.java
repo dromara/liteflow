@@ -72,7 +72,13 @@ public class MonitorFile {
 					this.reloadRule();
 				}
 
-                private void reloadRule() {
+				@Override
+				public void onFileCreate(File file) {
+					LOG.info("file create,filePath={}", file.getAbsolutePath());
+					this.reloadRule();
+				}
+
+				private void reloadRule() {
                     try {
                         FlowExecutorHolder.loadInstance().reloadRule();
                     } catch (Exception e) {
