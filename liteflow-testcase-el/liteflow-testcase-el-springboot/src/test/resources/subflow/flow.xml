@@ -29,4 +29,22 @@
     <chain name="chain6">
         THEN(a, h.data("inner"));
     </chain>
+
+    <chain name="chain7">
+        THEN(
+            a,
+            WHEN(
+                j.tag("1"),
+                j.tag("2"),
+                j.tag("3"),
+                j.tag("4"),
+                j.tag("5")
+            )
+        );
+    </chain>
+
+    <chain name="chain7_invoke">
+        THEN(k);
+    </chain>
+
 </flow>

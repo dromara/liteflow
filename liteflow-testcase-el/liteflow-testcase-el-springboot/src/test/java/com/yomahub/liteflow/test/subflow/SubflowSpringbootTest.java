@@ -5,6 +5,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.test.subflow.context.TestContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -66,6 +67,16 @@ public class SubflowSpringbootTest extends BaseTest {
 		Map<String, Integer> testMap = context.getData("testMap");
 		Assertions.assertEquals(100, testMap.get("out"));
 		Assertions.assertEquals(100, testMap.get("inner"));
+	}
+
+	@Test
+	public void testSubflow7() throws Exception {
+		for (int i = 0; i < 500; i++) {
+			LiteflowResponse response = flowExecutor.execute2Resp("chain7", null, TestContext.class);
+			Assertions.assertTrue(response.isSuccess());
+			TestContext context = response.getFirstContextBean();
+			Assertions.assertEquals(5, context.getSet().size());
+		}
 	}
 
 }
