@@ -63,14 +63,8 @@ public abstract class Condition implements Executable{
 			throw e;
 		}
 		catch (Exception e) {
-			String chainId = this.getCurrChainId();
 			// 这里事先取到exception set到slot里，为了方便finally取到exception
-			if (slot.isSubChain(chainId)) {
-				slot.setSubException(chainId, e);
-			}
-			else {
-				slot.setException(e);
-			}
+			slot.setException(e);
 			throw e;
 		} finally {
 			// 当前 Condition 出栈

@@ -54,14 +54,8 @@ public class ThenCondition extends Condition {
 			//正常情况下slot不可能为null
 			//当设置了超时后，还在运行的组件就有可能因为主流程已经结束释放slot而导致slot为null
 			if (slot != null){
-				String chainId = this.getCurrChainId();
 				// 这里事先取到exception set到slot里，为了方便finally取到exception
-				if (slot.isSubChain(chainId)) {
-					slot.setSubException(chainId, e);
-				}
-				else {
-					slot.setException(e);
-				}
+				slot.setException(e);
 			}
 			throw e;
 		}
