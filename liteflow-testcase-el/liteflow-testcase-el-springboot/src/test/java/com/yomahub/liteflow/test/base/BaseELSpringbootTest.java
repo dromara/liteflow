@@ -61,4 +61,11 @@ public class BaseELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 	}
 
+	// 入参执行 EL 表达式
+	@Test
+	public void testBase6() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a,b,c)");
+		Assertions.assertTrue(response.isSuccess());
+	}
+
 }
