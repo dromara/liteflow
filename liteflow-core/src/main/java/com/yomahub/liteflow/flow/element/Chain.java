@@ -269,8 +269,6 @@ public class Chain implements Executable{
 		LiteFlowChainELBuilder.buildUnCompileChain(tempChain);
 
 		List<Condition> tempConditionList = tempChain.getConditionList();
-		this.conditionList = tempChain.getConditionList();
-		this.isCompiled = true;
 		// 移除临时chain
 		FlowBus.removeChain(tempChainId);
 

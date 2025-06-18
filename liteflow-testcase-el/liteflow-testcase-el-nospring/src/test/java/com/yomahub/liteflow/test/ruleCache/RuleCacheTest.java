@@ -10,8 +10,6 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
-import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
-import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
 import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.test.BaseTest;
@@ -21,7 +19,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
