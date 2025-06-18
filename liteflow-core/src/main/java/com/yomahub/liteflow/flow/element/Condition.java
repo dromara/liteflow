@@ -45,7 +45,7 @@ public abstract class Condition implements Executable{
 	private final Map<String, List<Executable>> executableGroup = new HashMap<>();
 
 	/**
-	 * 当前所在的ChainName 如果对于子流程来说，那这个就是子流程所在的Chain
+	 * 当前所在的ChainId 如果对于子流程来说，那这个就是子流程所在的Chain
 	 */
 	private String currChainId;
 
@@ -63,14 +63,8 @@ public abstract class Condition implements Executable{
 			throw e;
 		}
 		catch (Exception e) {
-			String chainId = this.getCurrChainId();
 			// 这里事先取到exception set到slot里，为了方便finally取到exception
-			if (slot.isSubChain(chainId)) {
-				slot.setSubException(chainId, e);
-			}
-			else {
-				slot.setException(e);
-			}
+			slot.setException(e);
 			throw e;
 		} finally {
 			// 当前 Condition 出栈

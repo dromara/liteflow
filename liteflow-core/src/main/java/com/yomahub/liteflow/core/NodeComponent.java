@@ -522,24 +522,6 @@ public abstract class NodeComponent{
 		this.getRefNode().setStepData(stepData);
 	}
 
-	@Deprecated
-	public void invoke(String chainId, Object param) throws Exception {
-		FlowExecutorHolder.loadInstance().invoke(chainId, param, this.getSlotIndex());
-	}
-
-	public LiteflowResponse invoke2Resp(String chainId, Object param) {
-		return FlowExecutorHolder.loadInstance().invoke2Resp(chainId, param, this.getSlotIndex());
-	}
-
-	@Deprecated
-	public void invokeInAsync(String chainId, Object param) throws Exception {
-		FlowExecutorHolder.loadInstance().invokeInAsync(chainId, param, this.getSlotIndex());
-	}
-
-	public LiteflowResponse invoke2RespInAsync(String chainId, Object param) {
-		return FlowExecutorHolder.loadInstance().invoke2RespInAsync(chainId, param, this.getSlotIndex());
-	}
-
 	public <T> T getItemResultMetaValue(Integer slotIndex){
 		return null;
 	}

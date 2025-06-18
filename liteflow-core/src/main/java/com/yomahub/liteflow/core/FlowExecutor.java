@@ -15,7 +15,6 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
-import com.yomahub.liteflow.enums.InnerChainTypeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
@@ -248,31 +247,6 @@ public class FlowExecutor {
 		LOG.info("reload rules takes {}ms", System.currentTimeMillis() - start);
 	}
 
-	// 隐式流程的调用方法
-	@Deprecated
-	public void invoke(String chainId, Object param, Integer slotIndex) throws Exception {
-		LiteflowResponse response = this.invoke2Resp(chainId, param, slotIndex, InnerChainTypeEnum.IN_SYNC);
-		if (!response.isSuccess()) {
-			throw response.getCause();
-		}
-	}
-
-	@Deprecated
-	public void invokeInAsync(String chainId, Object param, Integer slotIndex) throws Exception {
-		LiteflowResponse response = this.invoke2Resp(chainId, param, slotIndex, InnerChainTypeEnum.IN_ASYNC);
-		if (!response.isSuccess()) {
-			throw response.getCause();
-		}
-	}
-
-	public LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex) {
-		return this.invoke2Resp(chainId, param, slotIndex, InnerChainTypeEnum.IN_SYNC);
-	}
-
-	public LiteflowResponse invoke2RespInAsync(String chainId, Object param, Integer slotIndex) {
-		return this.invoke2Resp(chainId, param, slotIndex, InnerChainTypeEnum.IN_ASYNC);
-	}
-
 	// 单独调用某一个node
 	@Deprecated
 	public void invoke(String nodeId, Integer slotIndex) throws Exception {
@@ -378,7 +352,7 @@ public class FlowExecutor {
 
 	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray,
 			Object[] contextBeanArray) {
-		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY);
+		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY);
 		return LiteflowResponse.newMainResponse(slot);
 	}
 
@@ -387,31 +361,23 @@ public class FlowExecutor {
 		return slotList.stream().map(LiteflowResponse::newMainResponse).collect(Collectors.toList());
 	}
 
-	private LiteflowResponse invoke2Resp(String chainId, Object param, Integer slotIndex,
-			InnerChainTypeEnum innerChainType) {
-		Slot slot = doExecute(chainId, param, null, null, null, slotIndex, innerChainType, ChainExecuteModeEnum.BODY);
-		return LiteflowResponse.newInnerResponse(chainId, slot);
-	}
-
 	private Slot doExecute(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
-						   Integer slotIndex, InnerChainTypeEnum innerChainType, ChainExecuteModeEnum chainExecuteModeEnum) {
+						   ChainExecuteModeEnum chainExecuteModeEnum) {
 		if (FlowBus.needInit()) {
 			init(true);
 		}
 
-		// 如果不是隐式流程，那么需要分配Slot
-		if (innerChainType.equals(InnerChainTypeEnum.NONE) && ObjectUtil.isNull(slotIndex)) {
-			// 这里可以根据class分配，也可以根据bean去分配
-			if (ArrayUtil.isNotEmpty(contextBeanClazzArray)) {
-				slotIndex = DataBus.offerSlotByClass(ListUtil.toList(contextBeanClazzArray));
-			}
-			else {
-				slotIndex = DataBus.offerSlotByBean(ListUtil.toList(contextBeanArray));
-			}
+		Integer slotIndex;
+		// 这里可以根据class分配，也可以根据bean去分配
+		if (ArrayUtil.isNotEmpty(contextBeanClazzArray)) {
+			slotIndex = DataBus.offerSlotByClass(ListUtil.toList(contextBeanClazzArray));
+		}
+		else {
+			slotIndex = DataBus.offerSlotByBean(ListUtil.toList(contextBeanArray));
+		}
 
-			if (slotIndex == -1) {
-				throw new NoAvailableSlotException("there is no available slot");
-			}
+		if (slotIndex == -1) {
+			throw new NoAvailableSlotException("there is no available slot");
 		}
 
 		Slot slot = DataBus.getSlot(slotIndex);
@@ -436,29 +402,10 @@ public class FlowExecutor {
 			LOG.info("requestId has generated");
 		}
 
-		if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
-			LOG.info("slot[{}] offered", slotIndex);
-		}
-
-		// 如果是隐式流程，事先把subException给置空，然后把隐式流程的chainId放入slot元数据中
-		// 我知道这在多线程调用隐式流程中会有问题。但是考虑到这种场景的不会多，也有其他的转换方式。
-		// 所以暂且这么做，以后再优化
-		if (!innerChainType.equals(InnerChainTypeEnum.NONE)) {
-			slot.removeSubException(chainId);
-			slot.addSubChain(chainId);
-		}
-
+		LOG.info("slot[{}] offered", slotIndex);
 
 		if (ObjectUtil.isNotNull(param)) {
-			if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
-				slot.setRequestData(param);
-			}
-			else if (innerChainType.equals(InnerChainTypeEnum.IN_SYNC)) {
-				slot.setChainReqData(chainId, param);
-			}
-			else if (innerChainType.equals(InnerChainTypeEnum.IN_ASYNC)) {
-				slot.setChainReqData2Queue(chainId, param);
-			}
+			slot.setRequestData(param);
 		}
 
 		Chain chain = null;
@@ -493,14 +440,7 @@ public class FlowExecutor {
 				LOG.error(e.getMessage(), e);
 			}
 
-			// 如果是正常流程需要把异常设置到slot的exception属性里
-			// 如果是隐式流程，则需要设置到隐式流程的exception属性里
-			if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
-				slot.setException(e);
-			}
-			else {
-				slot.setSubException(chainId, e);
-			}
+			slot.setException(e);
 			Deque<CmpStep> executeSteps = slot.getExecuteSteps();
 			try {
 				Iterator<CmpStep> cmpStepIterator = executeSteps.descendingIterator();
@@ -519,11 +459,9 @@ public class FlowExecutor {
 			}
 		}
 		finally {
-			if (innerChainType.equals(InnerChainTypeEnum.NONE)) {
-				slot.printStep();
-				DataBus.releaseSlot(slotIndex);
-				LFLoggerManager.removeRequestId();
-			}
+			slot.printStep();
+			DataBus.releaseSlot(slotIndex);
+			LFLoggerManager.removeRequestId();
 
 			// 如果有FlowExecute生命周期实现，则执行
 			if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
@@ -585,7 +523,7 @@ public class FlowExecutor {
 		List<Tuple> routeTupleList = new ArrayList<>();
 		for (Chain routeChain : routeChainList){
 			CompletableFuture<Slot> f = CompletableFuture.supplyAsync(
-                    () -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.ROUTE),
+                    () -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.ROUTE),
 					ExecutorHelper.loadInstance().buildWhenExecutor()
 			);
 
@@ -622,7 +560,7 @@ public class FlowExecutor {
 		List<CompletableFuture<Slot>> executeChainCfList = new ArrayList<>();
 		for (Chain chain : matchedRouteChainList){
 			CompletableFuture<Slot> cf = CompletableFuture.supplyAsync(
-					() -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, null, InnerChainTypeEnum.NONE, ChainExecuteModeEnum.BODY),
+					() -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY),
 					ExecutorHelper.loadInstance().buildWhenExecutor()
 			);
 			executeChainCfList.add(cf);

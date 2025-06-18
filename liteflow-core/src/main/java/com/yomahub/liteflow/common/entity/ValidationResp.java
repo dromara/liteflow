@@ -18,6 +18,19 @@ public class ValidationResp {
      */
     private Exception cause;
 
+    public ValidationResp(boolean success, Exception cause) {
+        this.success = success;
+        this.cause = cause;
+    }
+
+    public static ValidationResp success(){
+        return new ValidationResp(true, null);
+    }
+
+    public static ValidationResp fail(Exception exception){
+        return new ValidationResp(false, exception);
+    }
+
     public boolean isSuccess() {
         return success;
     }

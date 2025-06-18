@@ -97,4 +97,16 @@ public class SearchContextSpringbootTest extends BaseTest {
 		Assertions.assertEquals("test info", context.getData("test"));
 	}
 
+	// 测试获取DefaultContext
+	@Test
+	public void testSearchContext6() throws Exception {
+		DefaultContext context = new DefaultContext();
+		context.setData("k1", "v1");
+
+		LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg", context);
+		Assertions.assertTrue(response.isSuccess());
+		context = response.getContextBean(DefaultContext.class);
+		Assertions.assertEquals("v1", context.getData("test"));
+	}
+
 }

@@ -16,12 +16,12 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.exception.NoSuchContextBeanException;
 import com.yomahub.liteflow.exception.NullParamException;
+import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.id.IdGeneratorHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +46,9 @@ public class Slot {
 
 	private static final String RESPONSE = "_response";
 
-	private static final String CHAIN_NAME = "_chain_name";
+	private static final String CHAIN_ID = "_chain_id";
+
+	private static final String CHAIN_INSTANCE = "_chain_instance";
 
 	private static final String SWITCH_NODE_PREFIX = "_switch_";
 
@@ -77,8 +79,6 @@ public class Slot {
 	private static final String SUB_EXCEPTION_PREFIX = "_sub_exception_";
 
 	private static final String PRIVATE_DELIVERY_PREFIX = "_private_d_";
-
-	private static final String SUB_CHAIN = "_sub_chain";
 
 	private final Deque<CmpStep> executeSteps = new ConcurrentLinkedDeque<>();
 
@@ -326,13 +326,31 @@ public class Slot {
 	}
 
 	public void setChainId(String chainId) {
-		if (!hasMetaData(CHAIN_NAME)) {
-			this.putMetaDataMap(CHAIN_NAME, chainId);
+		if (!hasMetaData(CHAIN_ID)) {
+			this.putMetaDataMap(CHAIN_ID, chainId);
 		}
 	}
 
 	public String getChainId() {
-		return (String) metaDataMap.get(CHAIN_NAME);
+		return (String) metaDataMap.get(CHAIN_ID);
+	}
+
+	public void addChainInstance(Chain chain){
+		if (!hasMetaData(CHAIN_INSTANCE)) {
+			this.putMetaDataMap(CHAIN_INSTANCE, ListUtil.toList(chain));
+		}else{
+			List<Chain> list = (List<Chain>) metaDataMap.get(CHAIN_INSTANCE);
+			list.add(chain);
+		}
+	}
+
+	public Chain getCurrentChainInstance(String currentChainId){
+		if (hasMetaData(CHAIN_INSTANCE)) {
+			List<Chain> list = (List<Chain>) metaDataMap.get(CHAIN_INSTANCE);
+			return list.stream().filter(chain -> chain.getId().equals(currentChainId)).findFirst().orElse(null);
+		}else{
+			return null;
+		}
 	}
 
 	public void addStep(CmpStep step) {
@@ -456,14 +474,6 @@ public class Slot {
 		return (Exception) this.metaDataMap.get(SUB_EXCEPTION_PREFIX + chainId);
 	}
 
-	public void setSubException(String chainId, Exception e) {
-		putMetaDataMap(SUB_EXCEPTION_PREFIX + chainId, e);
-	}
-
-	public void removeSubException(String chainId) {
-		metaDataMap.remove(SUB_EXCEPTION_PREFIX + chainId);
-	}
-
 	public List<Tuple> getContextBeanList() {
 		return this.contextBeanList;
 	}
@@ -489,22 +499,6 @@ public class Slot {
 	public <T> T getFirstContextBean() {
 		Class<T> firstContextBeanClazz = (Class<T>) this.getContextBeanList().get(0).get(1).getClass();
 		return this.getContextBean(firstContextBeanClazz);
-	}
-
-	public void addSubChain(String chainId) {
-		Set<String> subChainSet = (Set<String>) metaDataMap.getOrDefault(SUB_CHAIN, new ConcurrentHashSet<>());
-		subChainSet.add(chainId);
-		metaDataMap.putIfAbsent(SUB_CHAIN, subChainSet);
-	}
-
-	public boolean isSubChain(String chainId) {
-		if (metaDataMap.containsKey(SUB_CHAIN)) {
-			Set<String> subChainSet = (Set<String>) metaDataMap.get(SUB_CHAIN);
-			return subChainSet.contains(chainId);
-		}
-		else {
-			return false;
-		}
 	}
 
 	public Boolean getRouteResult() {
