@@ -24,6 +24,7 @@ import java.util.Objects;
  * Redis解析器实现，只支持EL形式的XML，不支持其他的形式
  *
  * @author hxinyu
+ * @author jay li
  * @since  2.11.0
  */
 
@@ -109,11 +110,17 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
         if (redisParserVO.getRedisMode().equals(RedisMode.SENTINEL) && CollectionUtil.isEmpty(redisParserVO.getSentinelAddress())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "sentinel address list"));
         }
-        if (ObjectUtil.isNull(redisParserVO.getChainDataBase())) {
+        if (ObjectUtil.isNull(redisParserVO.getChainDataBase()) && !redisParserVO.getRedisMode().equals(RedisMode.CLUSTER)) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "chainDataBase"));
         }
         if (StrUtil.isBlank(redisParserVO.getChainKey())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "chainKey"));
+        }
+        if (redisParserVO.getRedisMode().equals(RedisMode.CLUSTER) && CollectionUtil.isEmpty(redisParserVO.getClusterNodeAddress())) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "cluster address list"));
+        }
+        if (ObjectUtil.isNull(redisParserVO.getScriptKey()) && ObjectUtil.isNull(redisParserVO.getScriptDataBase()) && !redisParserVO.getRedisMode().equals(RedisMode.CLUSTER)) {
+            throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "scriptDataBase"));
         }
     }
 }
