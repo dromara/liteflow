@@ -214,7 +214,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
                 redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
 
         //如果有脚本
-        if (ObjectUtil.isNotNull(scriptClient) && (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase()) || RedisMode.CLUSTER.getMode().equals(redisParserVO.getMode().getMode()))
+        if (ObjectUtil.isNotNull(scriptClient) && (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase()) || RedisMode.CLUSTER.equals(redisParserVO.getRedisMode()))
                 && StrUtil.isNotBlank(redisParserVO.getScriptKey())) {
             //将lua脚本添加到scriptJedis脚本缓存
             String keyLuaOfScript = scriptClient.scriptLoad(luaOfKey);

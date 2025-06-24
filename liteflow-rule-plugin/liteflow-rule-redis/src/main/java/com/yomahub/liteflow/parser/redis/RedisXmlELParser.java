@@ -119,7 +119,7 @@ public class RedisXmlELParser extends ClassXmlFlowELParser {
         if (redisParserVO.getRedisMode().equals(RedisMode.CLUSTER) && CollectionUtil.isEmpty(redisParserVO.getClusterNodeAddress())) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "cluster address list"));
         }
-        if (ObjectUtil.isNull(redisParserVO.getScriptKey()) && ObjectUtil.isNull(redisParserVO.getScriptDataBase()) && !redisParserVO.getRedisMode().equals(RedisMode.CLUSTER)) {
+        if (ObjectUtil.isNotNull(redisParserVO.getScriptKey()) && ObjectUtil.isNull(redisParserVO.getScriptDataBase()) && !redisParserVO.getRedisMode().equals(RedisMode.CLUSTER)) {
             throw new RedisException(StrFormatter.format(ERROR_MSG_PATTERN, "scriptDataBase"));
         }
     }
