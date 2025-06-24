@@ -11,9 +11,7 @@ import com.yomahub.liteflow.parser.redis.mode.RClient;
 import com.yomahub.liteflow.parser.redis.mode.polling.RedisParserPollingMode;
 import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +24,7 @@ import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -71,16 +70,21 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
     static LFLog LOG = LFLoggerManager.getLogger(RedisWithXmlELPollSpringbootTest.class);
 
 
-    @AfterAll
-    public static void after() {
-        //关闭poll模式的轮询线程池
-        try{
+    @AfterEach
+    void afterEach() {
+        try {
             Field pollExecutor = RedisParserPollingMode.class.getDeclaredField("pollExecutor");
             pollExecutor.setAccessible(true);
-            ScheduledThreadPoolExecutor threadPoolExecutor = (ScheduledThreadPoolExecutor) pollExecutor.get(null);
-            threadPoolExecutor.shutdownNow();
+            // 关闭旧线程池
+            ScheduledThreadPoolExecutor oldPool = (ScheduledThreadPoolExecutor) pollExecutor.get(null);
+            if (oldPool != null) {
+                oldPool.shutdownNow();
+            }
+            // 创建新线程池并设置回去
+            ScheduledThreadPoolExecutor newPool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
+            pollExecutor.set(null, newPool);
         } catch (Exception ignored) {
-            LOG.error("[Polling thread pool not closed]", ignored);
+            LOG.error("[Polling thread pool reset failed]", ignored);
         }
     }
 
