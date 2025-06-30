@@ -22,6 +22,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -245,7 +246,11 @@ public class Chain implements Executable {
     }
 
     public String getElMd5() {
-        return elMd5 == null ? MD5.create().digestHex(el) : elMd5;
+        // 若为 null 时，先规范化 EL，再计算 MD5
+        if (elMd5 == null) {
+            elMd5 = MD5.create().digestHex(ElRegexUtil.normalize(el));
+        }
+        return elMd5;
     }
 
     public void setElMd5(String elMd5) {

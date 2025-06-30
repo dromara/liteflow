@@ -89,4 +89,13 @@ public class BaseELSpringbootTest extends BaseTest {
 		Assertions.assertNotEquals(response.getChainId(), response1.getChainId());
 	}
 
+	// 运行文件里同样的 chain
+	@Test
+	public void testBase8() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a,b,SWITCH(e).to(d,f));");
+		Assertions.assertTrue(response.isSuccess());
+		// 应返回 chain2
+		Assertions.assertEquals("chain2", response.getChainId());
+	}
+
 }
