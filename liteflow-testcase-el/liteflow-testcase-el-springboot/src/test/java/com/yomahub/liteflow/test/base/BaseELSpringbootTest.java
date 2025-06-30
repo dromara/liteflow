@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.test.base;
 
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,7 @@ import javax.annotation.Resource;
  * springboot环境EL常规的例子测试
  *
  * @author Bryan.Zhang
+ * @author luo yi
  */
 @TestPropertySource(value = "classpath:/base/application.properties")
 @SpringBootTest(classes = BaseELSpringbootTest.class)
@@ -64,8 +66,27 @@ public class BaseELSpringbootTest extends BaseTest {
 	// 入参执行 EL 表达式
 	@Test
 	public void testBase6() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a,b,c)");
+		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a, b,c);;");
 		Assertions.assertTrue(response.isSuccess());
+
+		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("THEN(\na, \tb,c);");
+		Assertions.assertTrue(response1.isSuccess());
+
+		Assertions.assertEquals(response.getChainId(), response1.getChainId());
+	}
+
+	// 入参执行 EL 表达式，测试移除 chain
+	@Test
+	public void testBase7() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a,b, \nc);;");
+		Assertions.assertTrue(response.isSuccess());
+
+		FlowBus.removeChain(response.getChainId());
+
+		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("THEN(a,b, c);");
+		Assertions.assertTrue(response1.isSuccess());
+
+		Assertions.assertNotEquals(response.getChainId(), response1.getChainId());
 	}
 
 }

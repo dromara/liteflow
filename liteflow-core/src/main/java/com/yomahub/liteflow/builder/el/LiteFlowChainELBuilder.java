@@ -1,7 +1,10 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.CharUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
@@ -27,7 +30,10 @@ import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -36,6 +42,7 @@ import java.util.*;
  * @author Bryan.Zhang
  * @author Jay li
  * @author jason
+ * @author luo yi
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
@@ -267,6 +274,11 @@ public class LiteFlowChainELBuilder {
             return ValidationResp.fail(new ELParseException(msg));
         }
     }
+
+	public LiteFlowChainELBuilder setElMd5(String md5) {
+		this.chain.setElMd5(md5);
+		return this;
+	}
 
 	public void build() {
 		this.chain.setRouteItem(this.route);

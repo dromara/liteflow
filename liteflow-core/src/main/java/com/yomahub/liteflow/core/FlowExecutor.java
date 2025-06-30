@@ -13,8 +13,10 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
+import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
+import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
@@ -40,6 +42,7 @@ import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +54,7 @@ import java.util.stream.Collectors;
  * 流程规则主要执行器类
  *
  * @author Bryan.Zhang
+ * @author luo yi
  */
 public class FlowExecutor {
 
@@ -252,8 +256,9 @@ public class FlowExecutor {
      *
      * @param elStr EL 表达式
      * @return LiteflowResponse
+     * @throws ELParseException
      */
-    public LiteflowResponse execute2RespWithEL(String elStr) {
+    public LiteflowResponse execute2RespWithEL(String elStr) throws Exception {
         return this.execute2RespWithEL(elStr, null, null, DefaultContext.class);
     }
 
@@ -263,8 +268,9 @@ public class FlowExecutor {
      * @param elStr EL 表达式
      * @param param 入参
      * @return LiteflowResponse
+     * @throws ELParseException
      */
-    public LiteflowResponse execute2RespWithEL(String elStr, Object param) {
+    public LiteflowResponse execute2RespWithEL(String elStr, Object param) throws Exception {
         return this.execute2RespWithEL(elStr, param, null, DefaultContext.class);
     }
 
@@ -276,8 +282,9 @@ public class FlowExecutor {
      * @param requestId             请求 ID
      * @param contextBeanClazzArray 上下文 Class
      * @return LiteflowResponse
+     * @throws ELParseException
      */
-    public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>... contextBeanClazzArray) {
+    public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>... contextBeanClazzArray) throws Exception {
         return this.execute2RespWithEL(elStr, param, requestId, contextBeanClazzArray, null);
     }
 
@@ -289,8 +296,9 @@ public class FlowExecutor {
      * @param requestId        请求 ID
      * @param contextBeanArray 上下文对象
      * @return LiteflowResponse
+     * @throws ELParseException
      */
-    public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Object... contextBeanArray) {
+    public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Object... contextBeanArray) throws Exception {
         return this.execute2RespWithEL(elStr, param, requestId, null, contextBeanArray);
     }
 
@@ -303,14 +311,35 @@ public class FlowExecutor {
      * @param contextBeanClazzArray 上下文 Class 数组
      * @param contextBeanArray      上下文对象数组
      * @return LiteflowResponse
+     * @throws ELParseException
      */
-    private LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
-        // 调用表达式构造 chain，并且返回 UUID 作为 chainId
-        String chainId = IdUtil.fastSimpleUUID();
-        LiteFlowChainELBuilder.createChain()
-                .setChainId(chainId)
-                .setEL(elStr)
-                .build();
+    private LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) throws Exception {
+        // 规范化 el 表达式
+        String normalizedEl = ElRegexUtil.normalize(elStr);
+
+        // 校验 EL 是否正常
+        ValidationResp validationResp = LiteFlowChainELBuilder.validateWithEx(normalizedEl);
+
+        if (!validationResp.isSuccess()) {
+            // 实际封装的是 ELParseException 类型
+            throw validationResp.getCause();
+        }
+
+        // 计算 EL MD5 值，并检查对应的 chain 是否已加载到内存中
+        String elMd5 = MD5.create().digestHex(normalizedEl);
+
+        String chainId;
+
+        if (StrUtil.isEmpty(chainId = FlowBus.getChainIdByElMd5(elMd5))) {
+            // 调用表达式构造 chain，并且返回 UUID 作为 chainId
+            chainId = IdUtil.fastSimpleUUID();
+            LiteFlowChainELBuilder.createChain()
+                    .setChainId(chainId)
+                    .setEL(normalizedEl)
+                    .setElMd5(elMd5)
+                    .build();
+        }
+
         return this.execute2Resp(chainId, param, requestId, contextBeanClazzArray, contextBeanArray);
     }
 
