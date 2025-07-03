@@ -18,6 +18,7 @@ import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.yomahub.liteflow.flow.FlowBus.*;
 
 
 /**
@@ -60,7 +60,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	// 增加该注解，避免在使用 Jackson 序列化检测循环引用时出现不必要异常
 	@JsonIgnore
-	private NodeComponent instance;
+	private volatile NodeComponent instance;
 
 	private String tag;
 
@@ -71,7 +71,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	private String currChainId;
 
 	// 针对于脚本节点，这个属性代表脚本节点的脚本是否已经编译过
-	private boolean isCompiled = true;
+	private volatile boolean isCompiled = true;
 
 	// 此属性代表在EL构建的时候，node节点是否已经从FLowBus中的nodeMap中clone过了。
 	// 如果已经clone过了，不再Clone
@@ -171,7 +171,11 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	public NodeComponent getInstance() {
 		// 没有编译的情况，需重新编译
 		if (!this.isCompiled()) {
-			this.instance = addScriptNodeAndCompile(id, name, type, script, language);
+			synchronized (this) {
+				if (!this.isCompiled()) {
+					FlowBus.compileNode(this);
+				}
+			}
 		}
 		return instance;
 	}
@@ -200,12 +204,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 					.buildNodeExecutor(instance.getNodeExecutorClass());
 				// 调用节点执行器进行执行
 				nodeExecutor.execute(instance);
-
-				// 如果是脚本节点，并且是后置编译的，那么在成功执行好脚本节点后把编译flag置为true
-				// 这个只能在成功执行好之后设置，如果在编译好之后设置，那么设置的只有FlowBus中的nodeMap中的
-				if (this.type.isScript() && !this.isCompiled){
-					this.setCompiled(true);
-				}
 			} else {
 				LOG.info("[X]skip component[{}] execution", instance.getDisplayName());
 			}

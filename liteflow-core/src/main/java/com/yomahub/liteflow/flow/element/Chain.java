@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author Bryan.Zhang
  * @author jason
+ * @author luo yi
  */
 public class Chain implements Executable{
 
@@ -39,11 +40,11 @@ public class Chain implements Executable{
 
 	private Executable routeItem;
 
-	private List<Condition> conditionList = new ArrayList<>();
+	private volatile List<Condition> conditionList = new ArrayList<>();
 
 	private String el;
 
-	private boolean isCompiled = true;
+	private volatile boolean isCompiled = true;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
 
@@ -105,7 +106,11 @@ public class Chain implements Executable{
 
 		//如果EL还未编译，则进行编译
 		if (BooleanUtil.isFalse(isCompiled)) {
-			LiteFlowChainELBuilder.buildUnCompileChain(this);
+			synchronized (this) {
+				if (BooleanUtil.isFalse(isCompiled)) {
+					LiteFlowChainELBuilder.buildUnCompileChain(this);
+				}
+			}
 		}
 
 		if (CollUtil.isEmpty(conditionList)) {

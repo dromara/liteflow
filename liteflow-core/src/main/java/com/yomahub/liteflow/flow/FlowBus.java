@@ -19,13 +19,13 @@ import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.core.ScriptComponent;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
+import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
-import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
@@ -43,14 +43,10 @@ import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
-import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 流程元数据类
@@ -58,6 +54,7 @@ import java.util.stream.Stream;
  * @author Bryan.Zhang
  * @author DaleLee
  * @author Jay li
+ * @author luo yi
  */
 public class FlowBus {
 
@@ -220,78 +217,93 @@ public class FlowBus {
 	 * @param language language
 	 * @return NodeComponent instance
 	 */
-	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script,
-		String language) {
+	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script, String language) {
 		addNode(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type), script, language);
 		return nodeMap.get(nodeId).getInstance();
 	}
 
+	private static List<NodeComponent> getNodeComponentList(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz) throws Exception {
+		// 判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
+		// 如果不是声明式的，就用传统的方式进行判断
+		List<NodeComponent> cmpInstanceList = new ArrayList<>();
+		if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)) {
+			// 如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
+			// 由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
+			// 所以spring体系下，无需再对这个bean做二次代理
+			// 非spring体系下，从2.11.4开始不再支持声明式组件
+			List<DeclWarpBean> declWarpBeanList = DeclComponentParserHolder.loadDeclComponentParser().parseDeclBean(cmpClazz, nodeId, name);
 
-	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script,
-			String language) {
+			cmpInstanceList = declWarpBeanList.stream().map(
+					declWarpBean -> (NodeComponent)ContextAwareHolder.loadContextAware().registerDeclWrapBean(nodeId, declWarpBean)
+			).collect(Collectors.toList());
+		} else {
+			// 以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
+			// 这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
+			// 如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
+			if (!type.isScript()) {
+				cmpInstanceList = ListUtil
+						.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
+			}
+			// 如果为空
+			if (cmpInstanceList.isEmpty()) {
+				NodeComponent cmpInstance = (NodeComponent) cmpClazz.newInstance();
+				cmpInstanceList.add(cmpInstance);
+			}
+		}
+		// 进行初始化component
+		cmpInstanceList.forEach(cmpInstance -> ComponentInitializer.loadInstance()
+						.initComponent(cmpInstance, type, name, cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId()));
+
+		return cmpInstanceList;
+	}
+
+	public static void compileNode(Node node) {
+		String nodeId = node.getId(), name = node.getName(), script = node.getScript(), language = node.getLanguage();
+		NodeTypeEnum type = node.getType();
+        try {
+            List<NodeComponent> cmpInstanceList = getNodeComponentList(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type));
+
+			NodeComponent cmpInstance = cmpInstanceList.get(0);
+
+			addCompiledNode2Map(node, nodeId, script, language, type, cmpInstance);
+        } catch (Exception e) {
+			String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
+			LOG.error(e.getMessage());
+			throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
+        }
+    }
+
+	private static void addCompiledNode2Map(Node node, String nodeId, String script, String language, NodeTypeEnum type, NodeComponent cmpInstance) {
+		// 如果是脚本节点，则还要加载script脚本
+		if (type.isScript()) {
+			if (StrUtil.isNotBlank(script)) {
+				node.setScript(script);
+				node.setLanguage(language);
+				((ScriptComponent) cmpInstance).loadScript(script, language);
+				node.setCompiled(true);
+				node.setInstance(cmpInstance);
+			} else {
+				String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
+				throw new ScriptLoadException(errorMsg);
+			}
+		}
+		String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+		put2NodeMap(activeNodeId, node);
+		addFallbackNode(node);
+	}
+
+	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script, String language) {
 		try {
-			// 判断此类是否是声明式的组件，如果是声明式的组件，就用动态代理生成实例
-			// 如果不是声明式的，就用传统的方式进行判断
-			List<NodeComponent> cmpInstanceList = new ArrayList<>();
-			if (LiteFlowProxyUtil.isDeclareCmp(cmpClazz)) {
-				// 如果是spring体系，把原始的类往spring上下文中进行注册，那么会走到ComponentScanner中
-				// 由于ComponentScanner中已经对原始类进行了动态代理，出来的对象已经变成了动态代理类，所以这时候的bean已经是NodeComponent的子类了
-				// 所以spring体系下，无需再对这个bean做二次代理
-				// 非spring体系下，从2.11.4开始不再支持声明式组件
-				List<DeclWarpBean> declWarpBeanList = DeclComponentParserHolder.loadDeclComponentParser().parseDeclBean(cmpClazz, nodeId, name);
-
-				cmpInstanceList = declWarpBeanList.stream().map(
-						declWarpBean -> (NodeComponent)ContextAwareHolder.loadContextAware().registerDeclWrapBean(nodeId, declWarpBean)
-				).collect(Collectors.toList());
-			}
-			else {
-				// 以node方式配置，本质上是为了适配无spring的环境，如果有spring环境，其实不用这么配置
-				// 这里的逻辑是判断是否能从spring上下文中取到，如果没有spring，则就是new instance了
-				// 如果是script类型的节点，因为class只有一个，所以也不能注册进spring上下文，注册的时候需要new Instance
-				if (!type.isScript()) {
-					cmpInstanceList = ListUtil
-							.toList((NodeComponent) ContextAwareHolder.loadContextAware().registerOrGet(nodeId, cmpClazz));
-				}
-				// 如果为空
-				if (cmpInstanceList.isEmpty()) {
-					NodeComponent cmpInstance = (NodeComponent) cmpClazz.newInstance();
-					cmpInstanceList.add(cmpInstance);
-				}
-			}
-			// 进行初始化component
-			cmpInstanceList = cmpInstanceList.stream()
-					.map(cmpInstance -> ComponentInitializer.loadInstance()
-							.initComponent(cmpInstance, type, name,
-									cmpInstance.getNodeId() == null ? nodeId : cmpInstance.getNodeId()))
-					.collect(Collectors.toList());
-
+			List<NodeComponent> cmpInstanceList = getNodeComponentList(nodeId, name, type, cmpClazz);
 
 			// 初始化Node，把component放到Node里去
 			List<Node> nodes = cmpInstanceList.stream().map(Node::new).collect(Collectors.toList());
 
 			for (int i = 0; i < nodes.size(); i++) {
-				Node node = nodes.get(i);
-				NodeComponent cmpInstance = cmpInstanceList.get(i);
-				// 如果是脚本节点，则还要加载script脚本
-				if (type.isScript()) {
-					if (StrUtil.isNotBlank(script)) {
-						node.setScript(script);
-						node.setLanguage(language);
-						((ScriptComponent) cmpInstance).loadScript(script, language);
-					}
-					else {
-						String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
-						throw new ScriptLoadException(errorMsg);
-					}
-				}
-				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-				put2NodeMap(activeNodeId, node);
-				addFallbackNode(node);
+				addCompiledNode2Map(nodes.get(i), nodeId, script, language, type, cmpInstanceList.get(i));
 			}
-		}
-		catch (Exception e) {
-			String error = StrUtil.format("component[{}] register error",
-					StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
+		} catch (Exception e) {
+			String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
 			LOG.error(e.getMessage());
 			throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
 		}
