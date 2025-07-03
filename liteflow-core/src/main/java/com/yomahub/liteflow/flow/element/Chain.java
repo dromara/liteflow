@@ -101,7 +101,6 @@ public class Chain implements Executable{
 		if (BooleanUtil.isFalse(isCompiled)) {
 			synchronized (this) {
 				if (BooleanUtil.isFalse(isCompiled)) {
-					System.out.println("未编译: " + chainId + " thread：" + Thread.currentThread().getName());
 					LiteFlowChainELBuilder.buildUnCompileChain(this);
 				}
 			}

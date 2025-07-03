@@ -18,6 +18,7 @@ import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.condition.LoopCondition;
 import com.yomahub.liteflow.flow.executor.NodeExecutor;
 import com.yomahub.liteflow.flow.executor.NodeExecutorHelper;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.yomahub.liteflow.flow.FlowBus.addScriptNodeAndCompile;
 
 
 /**
@@ -173,8 +173,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		if (!this.isCompiled()) {
 			synchronized (this) {
 				if (!this.isCompiled()) {
-					this.instance = addScriptNodeAndCompile(id, name, type, script, language);
-					this.isCompiled = true;
+					FlowBus.compileNode(this);
 				}
 			}
 		}

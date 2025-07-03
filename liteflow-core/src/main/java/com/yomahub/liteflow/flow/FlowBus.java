@@ -248,6 +248,40 @@ public class FlowBus {
 		return cmpInstanceList;
 	}
 
+	public static void compileNode(Node node) {
+		String nodeId = node.getId(), name = node.getName(), script = node.getScript(), language = node.getLanguage();
+		NodeTypeEnum type = node.getType();
+        try {
+            List<NodeComponent> cmpInstanceList = getNodeComponentList(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type));
+
+			NodeComponent cmpInstance = cmpInstanceList.get(0);
+
+			addCompiledNode2Map(node, nodeId, script, language, type, cmpInstance);
+        } catch (Exception e) {
+			String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
+			LOG.error(e.getMessage());
+			throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
+        }
+    }
+
+	private static void addCompiledNode2Map(Node node, String nodeId, String script, String language, NodeTypeEnum type, NodeComponent cmpInstance) {
+		// 如果是脚本节点，则还要加载script脚本
+		if (type.isScript()) {
+			if (StrUtil.isNotBlank(script)) {
+				node.setScript(script);
+				node.setLanguage(language);
+				((ScriptComponent) cmpInstance).loadScript(script, language);
+				node.setCompiled(true);
+				node.setInstance(cmpInstance);
+			} else {
+				String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
+				throw new ScriptLoadException(errorMsg);
+			}
+		}
+		String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
+		put2NodeMap(activeNodeId, node);
+		addFallbackNode(node);
+	}
 
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script, String language) {
 		try {
@@ -257,26 +291,9 @@ public class FlowBus {
 			List<Node> nodes = cmpInstanceList.stream().map(Node::new).collect(Collectors.toList());
 
 			for (int i = 0; i < nodes.size(); i++) {
-				Node node = nodes.get(i);
-				NodeComponent cmpInstance = cmpInstanceList.get(i);
-				// 如果是脚本节点，则还要加载script脚本
-				if (type.isScript()) {
-					if (StrUtil.isNotBlank(script)) {
-						node.setScript(script);
-						node.setLanguage(language);
-						((ScriptComponent) cmpInstance).loadScript(script, language);
-					}
-					else {
-						String errorMsg = StrUtil.format("script for node[{}] is empty", nodeId);
-						throw new ScriptLoadException(errorMsg);
-					}
-				}
-				String activeNodeId = StrUtil.isEmpty(cmpInstance.getNodeId()) ? nodeId : cmpInstance.getNodeId();
-				put2NodeMap(activeNodeId, node);
-				addFallbackNode(node);
+				addCompiledNode2Map(nodes.get(i), nodeId, script, language, type, cmpInstanceList.get(i));
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
 			LOG.error(e.getMessage());
 			throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
