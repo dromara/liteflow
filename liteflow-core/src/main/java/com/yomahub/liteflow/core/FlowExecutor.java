@@ -98,7 +98,7 @@ public class FlowExecutor {
         // 在非spring体系下是一个空实现，等于不做此步骤
         ContextCmpInitHolder.loadContextCmpInit().initCmp();
 
-        if (isStart) {
+        if (isStart){
             // 进行id生成器的初始化
             IdGeneratorHolder.init();
         }
@@ -113,7 +113,8 @@ public class FlowExecutor {
                 ParserClassNameSpi parserClassNameSpi = it.next();
                 ruleSource = "el_xml:" + parserClassNameSpi.getSpiClassName();
                 liteflowConfig.setRuleSource(ruleSource);
-            } else {
+            }
+            else {
                 // ruleSource为空，而且没有spi形式的扩展，那么说明真的没有ruleSource
                 // 这种情况有可能是基于代码动态构建的
                 return;
@@ -125,7 +126,8 @@ public class FlowExecutor {
         List<String> sourceRulePathList;
         if (ReUtil.contains(PREFIX_FORMAT_CONFIG_REGEX, ruleSource)) {
             sourceRulePathList = ListUtil.toList(ruleSource);
-        } else {
+        }
+        else {
             String afterHandleRuleSource = ruleSource.replace(StrUtil.SPACE, StrUtil.EMPTY);
             sourceRulePathList = ListUtil.toList(afterHandleRuleSource.split(",|;"));
         }
@@ -147,10 +149,12 @@ public class FlowExecutor {
                     // 解析文件
                     parser.parseMain(ListUtil.toList(path));
                 }
-            } catch (CyclicDependencyException e) {
+            }
+            catch (CyclicDependencyException e) {
                 LOG.error(e.getMessage());
                 throw e;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error for path {},reason:{}", path,
                         e.getMessage());
                 LOG.error(e.getMessage(), e);
@@ -172,20 +176,25 @@ public class FlowExecutor {
                 if (parser != null) {
                     // 解析文件
                     parser.parseMain(rulePathList);
-                } else {
+                }
+                else {
                     throw new ConfigErrorException("parse error, please check liteflow config property");
                 }
-            } catch (CyclicDependencyException e) {
+            }
+            catch (CyclicDependencyException e) {
                 LOG.error(e.getMessage(), e);
                 LOG.error(e.getMessage());
                 throw e;
-            } catch (ChainDuplicateException e) {
+            }
+            catch (ChainDuplicateException e) {
                 LOG.error(e.getMessage(), e);
                 throw e;
-            } catch (RouteELInvalidException e) {
+            }
+            catch (RouteELInvalidException e) {
                 LOG.error(e.getMessage(), e);
                 throw e;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 String errorMsg = StrUtil.format("init flow executor cause error for path {},reason: {}", rulePathList,
                         e.getMessage());
                 LOG.error(e.getMessage(), e);
@@ -213,7 +222,8 @@ public class FlowExecutor {
             try {
                 addMonitorFilePaths(rulePathList);
                 MonitorFile.getInstance().create();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 String errMsg = StrUtil.format("file monitor init error for path:{}", rulePathList);
                 throw new MonitorFileInitErrorException(errMsg);
             }
@@ -343,11 +353,11 @@ public class FlowExecutor {
         return this.execute2Resp(chainId, param, requestId, contextBeanClazzArray, contextBeanArray);
     }
 
-    public List<LiteflowResponse> executeRouteChain(Object param, Class<?>... contextBeanClazzArray) {
+    public List<LiteflowResponse> executeRouteChain(Object param, Class<?>... contextBeanClazzArray){
         return this.executeWithRoute(null, param, null, contextBeanClazzArray, null);
     }
 
-    public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Class<?>... contextBeanClazzArray) {
+    public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Class<?>... contextBeanClazzArray){
         return this.executeWithRoute(namespace, param, null, contextBeanClazzArray, null);
     }
 
@@ -355,11 +365,11 @@ public class FlowExecutor {
         return this.execute2Resp(chainId, param, null, null, contextBeanArray);
     }
 
-    public List<LiteflowResponse> executeRouteChain(Object param, Object... contextBeanArray) {
+    public List<LiteflowResponse> executeRouteChain(Object param, Object... contextBeanArray){
         return this.executeWithRoute(null, param, null, null, contextBeanArray);
     }
 
-    public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Object... contextBeanArray) {
+    public List<LiteflowResponse> executeRouteChain(String namespace, Object param, Object... contextBeanArray){
         return this.executeWithRoute(namespace, param, null, null, contextBeanArray);
     }
 
@@ -418,7 +428,8 @@ public class FlowExecutor {
         LiteflowResponse response = this.execute2Resp(chainId, param, DefaultContext.class);
         if (!response.isSuccess()) {
             throw response.getCause();
-        } else {
+        }
+        else {
             return response.getFirstContextBean();
         }
     }
@@ -429,7 +440,7 @@ public class FlowExecutor {
         return LiteflowResponse.newMainResponse(slot);
     }
 
-    private List<LiteflowResponse> executeWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
+    private List<LiteflowResponse> executeWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
         List<Slot> slotList = doExecuteWithRoute(namespace, param, requestId, contextBeanClazzArray, contextBeanArray);
         return slotList.stream().map(LiteflowResponse::newMainResponse).collect(Collectors.toList());
     }
@@ -444,7 +455,8 @@ public class FlowExecutor {
         // 这里可以根据class分配，也可以根据bean去分配
         if (ArrayUtil.isNotEmpty(contextBeanClazzArray)) {
             slotIndex = DataBus.offerSlotByClass(ListUtil.toList(contextBeanClazzArray));
-        } else {
+        }
+        else {
             slotIndex = DataBus.offerSlotByBean(ListUtil.toList(contextBeanArray));
         }
 
@@ -458,17 +470,17 @@ public class FlowExecutor {
         }
 
         // 如果有FlowExecute生命周期实现，则执行
-        if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())) {
+        if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
             LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList().forEach(
                     postProcessFlowExecuteLifeCycle -> postProcessFlowExecuteLifeCycle.postProcessBeforeFlowExecute(chainId, slot)
             );
         }
 
         //如果传入了用户的RequestId，则用这个请求Id，如果没传入，则进行生成
-        if (StrUtil.isNotBlank(requestId)) {
+        if (StrUtil.isNotBlank(requestId)){
             slot.putRequestId(requestId);
             LFLoggerManager.setRequestId(requestId);
-        } else if (StrUtil.isBlank(slot.getRequestId())) {
+        }else if(StrUtil.isBlank(slot.getRequestId())){
             slot.generateRequestId();
             LFLoggerManager.setRequestId(slot.getRequestId());
             LOG.info("requestId has generated");
@@ -489,23 +501,26 @@ public class FlowExecutor {
                 throw new ChainNotFoundException(errorMsg);
             }
             // 根据chain执行模式执行chain
-            if (chainExecuteModeEnum.equals(ChainExecuteModeEnum.BODY)) {
+            if (chainExecuteModeEnum.equals(ChainExecuteModeEnum.BODY)){
                 chain.execute(slotIndex);
-            } else if (chainExecuteModeEnum.equals(ChainExecuteModeEnum.ROUTE)) {
+            }else if(chainExecuteModeEnum.equals(ChainExecuteModeEnum.ROUTE)){
                 chain.executeRoute(slotIndex);
-            } else {
+            }else{
                 throw new LiteFlowException("chain execute mode error");
             }
-        } catch (ChainEndException e) {
+        }
+        catch (ChainEndException e) {
             if (ObjectUtil.isNotNull(chain)) {
                 String warnMsg = StrUtil.format("chain[{}] execute end on slot[{}]", chain.getChainId(), slotIndex);
                 LOG.warn(warnMsg);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             if (ObjectUtil.isNotNull(chain)) {
                 String errMsg = StrUtil.format("chain[{}] execute error on slot[{}]", chain.getChainId(), slotIndex);
                 LOG.error(errMsg, e);
-            } else {
+            }
+            else {
                 LOG.error(e.getMessage(), e);
             }
 
@@ -513,25 +528,27 @@ public class FlowExecutor {
             Deque<CmpStep> executeSteps = slot.getExecuteSteps();
             try {
                 Iterator<CmpStep> cmpStepIterator = executeSteps.descendingIterator();
-                while (cmpStepIterator.hasNext()) {
+                while(cmpStepIterator.hasNext()) {
                     CmpStep cmpStep = cmpStepIterator.next();
-                    if (cmpStep.getInstance().isRollback()) {
+                    if(cmpStep.getInstance().isRollback()) {
                         Rollbackable rollbackItem = cmpStep.getRefNode();
                         rollbackItem.rollback(slotIndex);
                     }
                 }
             } catch (Exception exception) {
                 LOG.error(exception.getMessage());
-            } finally {
+            }
+            finally {
                 slot.printRollbackStep();
             }
-        } finally {
+        }
+        finally {
             slot.printStep();
             DataBus.releaseSlot(slotIndex);
             LFLoggerManager.removeRequestId();
 
             // 如果有FlowExecute生命周期实现，则执行
-            if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())) {
+            if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
                 LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList().forEach(
                         postProcessFlowExecuteLifeCycle -> postProcessFlowExecuteLifeCycle.postProcessAfterFlowExecute(chainId, slot)
                 );
@@ -552,7 +569,6 @@ public class FlowExecutor {
 
     /**
      * 添加监听文件路径
-     *
      * @param pathList 文件路径
      */
     private void addMonitorFilePaths(List<String> pathList) throws Exception {
@@ -561,12 +577,12 @@ public class FlowExecutor {
         MonitorFile.getInstance().addMonitorFilePaths(fileAbsolutePath);
     }
 
-    private List<Slot> doExecuteWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
+    private List<Slot> doExecuteWithRoute(String namespace, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray){
         if (FlowBus.needInit()) {
             init(true);
         }
 
-        if (StrUtil.isBlank(namespace)) {
+        if (StrUtil.isBlank(namespace)){
             namespace = ChainConstant.DEFAULT_NAMESPACE;
         }
 
@@ -575,21 +591,21 @@ public class FlowExecutor {
                 .filter(chain -> chain.getNamespace().equals(finalNamespace))
                 .filter(chain -> chain.getRouteItem() != null).collect(Collectors.toList());
 
-        if (CollUtil.isEmpty(routeChainList)) {
+        if (CollUtil.isEmpty(routeChainList)){
             String errorMsg = StrUtil.format("no route found for namespace[{}]", finalNamespace);
             throw new RouteChainNotFoundException(errorMsg);
         }
 
         String finalRequestId;
-        if (StrUtil.isBlank(requestId)) {
+        if (StrUtil.isBlank(requestId)){
             finalRequestId = IdGeneratorHolder.getInstance().generate();
-        } else {
+        }else{
             finalRequestId = requestId;
         }
 
         // 异步执行route el
         List<Tuple> routeTupleList = new ArrayList<>();
-        for (Chain routeChain : routeChainList) {
+        for (Chain routeChain : routeChainList){
             CompletableFuture<Slot> f = CompletableFuture.supplyAsync(
                     () -> doExecute(routeChain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.ROUTE),
                     ExecutorHelper.loadInstance().buildWhenExecutor()
@@ -600,33 +616,33 @@ public class FlowExecutor {
 
         CompletableFuture<?> resultRouteCf = CompletableFuture.allOf(routeTupleList.stream().map(
                 (Function<Tuple, CompletableFuture<?>>) tuple -> tuple.get(1)
-        ).collect(Collectors.toList()).toArray(new CompletableFuture[]{}));
-        try {
+        ).collect(Collectors.toList()).toArray(new CompletableFuture[] {}));
+        try{
             resultRouteCf.get();
-        } catch (Exception e) {
+        }catch (Exception e){
             throw new LiteFlowException("There is An error occurred while executing the route.", e);
         }
 
         // 把route执行为true都过滤出来
         List<Chain> matchedRouteChainList = routeTupleList.stream().filter(tuple -> {
-            try {
+            try{
                 CompletableFuture<Slot> f = tuple.get(1);
                 Slot slot = f.get();
                 return BooleanUtil.isTrue(slot.getRouteResult());
-            } catch (Exception e) {
+            }catch (Exception e){
                 return false;
             }
         }).map(
                 (Function<Tuple, Chain>) tuple -> tuple.get(0)
         ).collect(Collectors.toList());
 
-        if (CollUtil.isEmpty(matchedRouteChainList)) {
+        if (CollUtil.isEmpty(matchedRouteChainList)){
             throw new NoMatchedRouteChainException("there is no matched route chain");
         }
 
         // 异步分别执行这些chain
         List<CompletableFuture<Slot>> executeChainCfList = new ArrayList<>();
-        for (Chain chain : matchedRouteChainList) {
+        for (Chain chain : matchedRouteChainList){
             CompletableFuture<Slot> cf = CompletableFuture.supplyAsync(
                     () -> doExecute(chain.getChainId(), param, finalRequestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY),
                     ExecutorHelper.loadInstance().buildWhenExecutor()
@@ -634,18 +650,18 @@ public class FlowExecutor {
             executeChainCfList.add(cf);
         }
 
-        CompletableFuture<?> resultChainCf = CompletableFuture.allOf(executeChainCfList.toArray(new CompletableFuture[]{}));
-        try {
+        CompletableFuture<?> resultChainCf = CompletableFuture.allOf(executeChainCfList.toArray(new CompletableFuture[] {}));
+        try{
             resultChainCf.get();
-        } catch (Exception e) {
+        }catch (Exception e){
             throw new LiteFlowException("There is An error occurred while executing the matched chain.", e);
         }
 
 
         List<Slot> resultSlotList = executeChainCfList.stream().map(slotCompletableFuture -> {
-            try {
+            try{
                 return slotCompletableFuture.get();
-            } catch (Exception e) {
+            }catch (Exception e){
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
