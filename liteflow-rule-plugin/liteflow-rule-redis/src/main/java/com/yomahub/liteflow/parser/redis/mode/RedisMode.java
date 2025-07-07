@@ -4,16 +4,19 @@ package com.yomahub.liteflow.parser.redis.mode;
  * 用于定义Redis模式的枚举类
  *
  * single单点模式, sentinel哨兵模式
- * 不支持集群模式配置
+ * cluster 集群模式配置
  *
  * @author hxinyu
+ * @author jay li
  * @since  2.11.0
  */
 public enum RedisMode {
 
     SINGLE("single"),
 
-    SENTINEL("sentinel");
+    SENTINEL("sentinel"),
+
+    CLUSTER("cluster");
 
     private String mode;
 
