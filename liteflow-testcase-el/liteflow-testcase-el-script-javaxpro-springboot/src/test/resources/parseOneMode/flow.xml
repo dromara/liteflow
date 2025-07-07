@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import cn.hutool.core.collection.ListUtil;
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+            import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
+            import com.yomahub.liteflow.test.script.javaxpro.common.cmp.Person;
+            import com.yomahub.liteflow.test.script.javaxpro.common.cmp.TestDomain;
+
+            import java.util.List;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    System.out.println("hello world");
+                }
+            }
+            ]]>
+        </node>
+
+
+    </nodes>
+
+    <chain name="chain1">
+        THEN(s1);
+    </chain>
+
+</flow>
