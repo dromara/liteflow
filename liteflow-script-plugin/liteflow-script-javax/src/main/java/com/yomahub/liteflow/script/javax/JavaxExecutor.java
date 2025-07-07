@@ -10,6 +10,7 @@ import com.yomahub.liteflow.script.ScriptExecutor;
 import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.javax.vo.JavaxSettingMapKey;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
+import org.noear.liquor.Utils;
 import org.noear.liquor.eval.*;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class JavaxExecutor extends ScriptExecutor {
             throw new ScriptLoadException(errorMsg);
         }
         Execable execable = compiledScriptMap.get(wrap.getNodeId());
-        return execable.exec(wrap);
+        return execable.exec(Utils.asMap("_meta", wrap));
     }
 
     @Override
