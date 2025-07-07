@@ -86,9 +86,9 @@ public class FlowBus {
 	}
 
 	// 这一方法主要用于第一阶段chain的预装载
-	public static void addChain(String chainName) {
-		if (!chainMap.containsKey(chainName)) {
-			chainMap.put(chainName, new Chain(chainName));
+	public static void addChain(String chainId) {
+		if (!chainMap.containsKey(chainId)) {
+			chainMap.put(chainId, new Chain(chainId));
 		}
 	}
 
