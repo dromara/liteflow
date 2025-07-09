@@ -45,6 +45,7 @@ import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -81,7 +82,7 @@ public class FlowBus {
 			chainMap = new CopyOnWriteHashMap<>();
 			nodeMap = new CopyOnWriteHashMap<>();
 			fallbackNodeMap = new CopyOnWriteHashMap<>();
-			elMd5Map = new CopyOnWriteHashMap<>();
+			elMd5Map = new ConcurrentHashMap<>();
 		}
 	}
 

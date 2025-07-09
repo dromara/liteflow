@@ -266,9 +266,8 @@ public class FlowExecutor {
 	 *
 	 * @param elStr EL 表达式
 	 * @return LiteflowResponse
-	 * @throws ELParseException
 	 */
-	public LiteflowResponse execute2RespWithEL(String elStr) throws Exception {
+	public LiteflowResponse execute2RespWithEL(String elStr) {
 		return this.execute2RespWithEL(elStr, null, null, DefaultContext.class);
 	}
 
@@ -278,9 +277,8 @@ public class FlowExecutor {
 	 * @param elStr EL 表达式
 	 * @param param 入参
 	 * @return LiteflowResponse
-	 * @throws ELParseException
 	 */
-	public LiteflowResponse execute2RespWithEL(String elStr, Object param) throws Exception {
+	public LiteflowResponse execute2RespWithEL(String elStr, Object param) {
 		return this.execute2RespWithEL(elStr, param, null, DefaultContext.class);
 	}
 
@@ -292,9 +290,8 @@ public class FlowExecutor {
 	 * @param requestId             请求 ID
 	 * @param contextBeanClazzArray 上下文 Class
 	 * @return LiteflowResponse
-	 * @throws ELParseException
 	 */
-	public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>... contextBeanClazzArray) throws Exception {
+	public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>... contextBeanClazzArray) {
 		return this.execute2RespWithEL(elStr, param, requestId, contextBeanClazzArray, null);
 	}
 
@@ -306,9 +303,8 @@ public class FlowExecutor {
 	 * @param requestId        请求 ID
 	 * @param contextBeanArray 上下文对象
 	 * @return LiteflowResponse
-	 * @throws ELParseException
 	 */
-	public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Object... contextBeanArray) throws Exception {
+	public LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Object... contextBeanArray) {
 		return this.execute2RespWithEL(elStr, param, requestId, null, contextBeanArray);
 	}
 
@@ -321,9 +317,8 @@ public class FlowExecutor {
 	 * @param contextBeanClazzArray 上下文 Class 数组
 	 * @param contextBeanArray      上下文对象数组
 	 * @return LiteflowResponse
-	 * @throws ELParseException
 	 */
-	private LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) throws Exception {
+	private LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
 		// 规范化 el 表达式
 		String normalizedEl = ElRegexUtil.normalize(elStr);
 
@@ -332,7 +327,7 @@ public class FlowExecutor {
 
 		if (!validationResp.isSuccess()) {
 			// 实际封装的是 ELParseException 类型
-			throw validationResp.getCause();
+			return LiteflowResponse.newMainResponse(validationResp.getCause());
 		}
 
 		// 计算 EL MD5 值，并检查对应的 chain 是否已加载到内存中
@@ -346,7 +341,6 @@ public class FlowExecutor {
 			LiteFlowChainELBuilder.createChain()
 					.setChainId(chainId)
 					.setEL(normalizedEl)
-					.setElMd5(elMd5)
 					.build();
 		}
 

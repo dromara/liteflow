@@ -275,11 +275,6 @@ public class LiteFlowChainELBuilder {
         }
     }
 
-	public LiteFlowChainELBuilder setElMd5(String md5) {
-		this.chain.setElMd5(md5);
-		return this;
-	}
-
 	public void build() {
 		this.chain.setRouteItem(this.route);
 		this.chain.setConditionList(this.conditionList);
