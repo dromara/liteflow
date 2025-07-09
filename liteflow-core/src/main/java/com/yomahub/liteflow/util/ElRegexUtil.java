@@ -57,12 +57,13 @@ public class ElRegexUtil {
 
     /**
      * 规范化 EL
+     *
      * @param elStr
      * @return String
      */
     public static String normalize(String elStr) {
-        // 替换 EL 中多余空格，并在末尾保留分号
-        return elStr.replaceAll("\\s", "").replaceFirst(";*$", ";");
+        // 剔除 EL 中多余空格，且将单引号变为双引号，并在末尾保留一个分号
+        return elStr.replace("'", "\"").replaceAll("\\s", "").replaceFirst(";*$", ";");
     }
 
 }
