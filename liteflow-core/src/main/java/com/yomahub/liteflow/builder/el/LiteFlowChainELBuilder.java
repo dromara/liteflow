@@ -42,7 +42,6 @@ import java.util.Objects;
  * @author Bryan.Zhang
  * @author Jay li
  * @author jason
- * @author luo yi
  * @since 2.8.0
  */
 public class LiteFlowChainELBuilder {
