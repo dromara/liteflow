@@ -91,9 +91,9 @@ public class FlowBus {
 	}
 
 	// 这一方法主要用于第一阶段chain的预装载
-	public static void addChain(String chainName) {
-		if (!chainMap.containsKey(chainName)) {
-			chainMap.put(chainName, new Chain(chainName));
+	public static void addChain(String chainId) {
+		if (!chainMap.containsKey(chainId)) {
+			chainMap.put(chainId, new Chain(chainId));
 		}
 	}
 
@@ -208,7 +208,7 @@ public class FlowBus {
 			}
 
 			Node node = new Node(nodeId, name, nodeType, script, language);
-			nodeMap.put(nodeId, node);
+			put2NodeMap(nodeId, node);
 		} else {
 			addScriptNodeAndCompile(nodeId, name, nodeType, script, language);
         }
@@ -222,11 +222,9 @@ public class FlowBus {
 	 * @param type type
 	 * @param script script content
 	 * @param language language
-	 * @return NodeComponent instance
 	 */
-	public static NodeComponent addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script, String language) {
+	public static void addScriptNodeAndCompile(String nodeId, String name, NodeTypeEnum type, String script, String language) {
 		addNode(nodeId, name, type, ScriptComponent.ScriptComponentClassMap.get(type), script, language);
-		return nodeMap.get(nodeId).getInstance();
 	}
 
 	private static List<NodeComponent> getNodeComponentList(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz) throws Exception {
@@ -264,7 +262,7 @@ public class FlowBus {
 		return cmpInstanceList;
 	}
 
-	public static void compileNode(Node node) {
+	public static void compileScriptNode(Node node) {
 		String nodeId = node.getId(), name = node.getName(), script = node.getScript(), language = node.getLanguage();
 		NodeTypeEnum type = node.getType();
         try {
@@ -299,8 +297,13 @@ public class FlowBus {
 		addFallbackNode(node);
 	}
 
+	// 如果是spring自动扫描的组件，在addManagedNode方法中就已经完成了组装了
+	// 调用到这里，分两种情况，一是脚本组件，二是通过LiteFlowNodeBuilder代码进行组装的组件
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script, String language) {
 		try {
+			// 获得初始化好的NodeComponent
+			// 按理说一个nodeId对应一个NodeComponent，这里得到的是List<NodeComponent>的原因是，声明式组件有可能会有多个nodeId。
+			// 声明式组件又分类声明和方法声明，如果对于方法声明来说，这里的nodeId其实并不是最终真正的nodeId。
 			List<NodeComponent> cmpInstanceList = getNodeComponentList(nodeId, name, type, cmpClazz);
 
 			// 初始化Node，把component放到Node里去

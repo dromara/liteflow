@@ -173,7 +173,7 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		if (!this.isCompiled()) {
 			synchronized (this) {
 				if (!this.isCompiled()) {
-					FlowBus.compileNode(this);
+					FlowBus.compileScriptNode(this);
 				}
 			}
 		}

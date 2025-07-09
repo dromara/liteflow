@@ -12,6 +12,7 @@ import java.util.List;
  * 用于解析RuleSourceExtData的vo类, 用于Redis模式中
  *
  * @author hxinyu
+ * @author jay li
  * @since  2.11.0
  */
 
@@ -62,6 +63,17 @@ public class RedisParserVO {
 
     /*脚本配置的键名 若没有脚本数据可不配置*/
     private String scriptKey;
+
+    /*集群模式需配置 逗号分隔 集群地址 */
+    private List<String> clusterNodeAddress;
+
+    public List<String> getClusterNodeAddress() {
+        return clusterNodeAddress;
+    }
+
+    public void setClusterNodeAddress(List<String> clusterNodeAddress) {
+        this.clusterNodeAddress = clusterNodeAddress;
+    }
 
     public void setRedisMode(String redisMode) {
         redisMode = redisMode.toUpperCase();
@@ -117,6 +129,16 @@ public class RedisParserVO {
             this.sentinelAddress = Arrays.asList(addresses.split("\\s*,\\s*"));
         } else {
             this.sentinelAddress = Collections.emptyList();
+        }
+    }
+
+    @JsonSetter("clusterAddress")
+    public void setClusterAddressFromString(String addresses) {
+        if (addresses != null && !addresses.trim().isEmpty()) {
+            // 按逗号分割，并去除每个地址前后的空格
+            this.clusterNodeAddress = Arrays.asList(addresses.split("\\s*,\\s*"));
+        } else {
+            this.clusterNodeAddress = Collections.emptyList();
         }
     }
 
@@ -232,6 +254,7 @@ public class RedisParserVO {
                 ", chainKey='" + chainKey + '\'' +
                 ", scriptDataBase=" + scriptDataBase +
                 ", scriptKey='" + scriptKey + '\'' +
+                ", clusterAddress='" + clusterNodeAddress + '\'' +
                 '}';
     }
 }
