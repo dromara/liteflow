@@ -45,6 +45,7 @@ import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,8 @@ public class FlowBus {
 
 	private static final Map<String, Node> fallbackNodeMap;
 
+	private static final Map<String/* elMd5 */, String/* chainId */> elMd5Map;
+
 	private static final AtomicBoolean initStat = new AtomicBoolean(false);
 
 	static {
@@ -74,10 +77,12 @@ public class FlowBus {
 			chainMap = new HashMap<>();
 			nodeMap = new HashMap<>();
 			fallbackNodeMap = new HashMap<>();
-		}else{
+			elMd5Map = new HashMap<>();
+		} else {
 			chainMap = new CopyOnWriteHashMap<>();
 			nodeMap = new CopyOnWriteHashMap<>();
 			fallbackNodeMap = new CopyOnWriteHashMap<>();
+			elMd5Map = new ConcurrentHashMap<>();
 		}
 	}
 
@@ -102,6 +107,8 @@ public class FlowBus {
 		}
 
 		chainMap.put(chain.getChainId(), chain);
+
+		elMd5Map.put(chain.getElMd5(), chain.getChainId());
 
 		//如果有生命周期则执行相应生命周期实现
 		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainBuildLifeCycleList())){
@@ -333,6 +340,7 @@ public class FlowBus {
 		chainMap.clear();
 		nodeMap.clear();
 		fallbackNodeMap.clear();
+		elMd5Map.clear();
 		cleanScriptCache();
 	}
 
@@ -357,9 +365,15 @@ public class FlowBus {
 		}
 	}
 
+	public static String getChainIdByElMd5(String elMd5) {
+		return elMd5Map.get(elMd5);
+	}
+
 	public static boolean removeChain(String chainId) {
 		if (containChain(chainId)) {
-			chainMap.remove(chainId);
+			Chain removedChain = chainMap.remove(chainId);
+			// 移除 elMd5 对应的 chainId
+			elMd5Map.remove(removedChain.getElMd5());
 			return true;
 		}
 		else {

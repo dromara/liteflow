@@ -5,9 +5,10 @@ import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.slot.Slot;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 /**
  * 执行结果封装类
@@ -35,6 +36,12 @@ public class LiteflowResponse {
 		return newResponse(slot, slot.getException());
 	}
 
+	public static LiteflowResponse newMainResponse(Exception exception) {
+		LiteflowResponse response = new LiteflowResponse();
+		response.setExceptionParams(exception);
+		return response;
+	}
+
 	public static LiteflowResponse newInnerResponse(String chainId, Slot slot) {
 		return newResponse(slot, slot.getSubException(chainId));
 	}
@@ -42,18 +49,20 @@ public class LiteflowResponse {
 	private static LiteflowResponse newResponse(Slot slot, Exception e) {
 		LiteflowResponse response = new LiteflowResponse();
 		response.setChainId(slot.getChainId());
-		if (e != null) {
-			response.setSuccess(false);
-			response.setCause(e);
-			response.setMessage(response.getCause().getMessage());
-			response.setCode(response.getCause() instanceof LiteFlowException
-					? ((LiteFlowException) response.getCause()).getCode() : null);
-		}
-		else {
-			response.setSuccess(true);
-		}
+		response.setExceptionParams(e);
 		response.setSlot(slot);
 		return response;
+	}
+
+	private void setExceptionParams(Exception exception) {
+		if (exception != null) {
+			this.setSuccess(false);
+			this.setCause(exception);
+			this.setMessage(exception.getMessage());
+			this.setCode(exception instanceof LiteFlowException ? ((LiteFlowException) exception).getCode() : null);
+		} else {
+			this.setSuccess(true);
+		}
 	}
 
 	public boolean isSuccess() {

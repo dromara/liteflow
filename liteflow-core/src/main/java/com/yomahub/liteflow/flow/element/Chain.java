@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
@@ -21,6 +22,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ import java.util.List;
  * @author jason
  * @author luo yi
  */
-public class Chain implements Executable{
+public class Chain implements Executable {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(Chain.class);
 
@@ -47,6 +49,8 @@ public class Chain implements Executable{
 	private volatile boolean isCompiled = true;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
+
+    private String elMd5;
 
     private String threadPoolExecutorClass;
 
@@ -245,7 +249,19 @@ public class Chain implements Executable{
         this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
 
-	public Long getRuntimeId(){
-		return runtimeIdTL.get();
-	}
+    public Long getRuntimeId() {
+        return runtimeIdTL.get();
+    }
+
+    public String getElMd5() {
+        // 若为 null 时，先规范化 EL，再计算 MD5
+        if (elMd5 == null) {
+            elMd5 = MD5.create().digestHex(ElRegexUtil.normalize(el));
+        }
+        return elMd5;
+    }
+
+    public void setElMd5(String elMd5) {
+        this.elMd5 = elMd5;
+    }
 }
