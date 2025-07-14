@@ -45,6 +45,8 @@ public interface ChainConstant {
 
 	String MUST = "must";
 
+	String PERCENTAGE = "percentage";
+
 	String TYPE = "type";
 
 	String THEN = "THEN";

@@ -51,6 +51,9 @@ public class WhenCondition extends Condition {
 	// 等待时间单位
 	private TimeUnit maxWaitTimeUnit;
 
+	// 并发任务指定阈值，取值 0 - 1
+	private Double percentage;
+
 	@Override
 	public void executeCondition(Integer slotIndex) throws Exception {
 		executeAsyncCondition(slotIndex);
@@ -129,5 +132,13 @@ public class WhenCondition extends Condition {
 
 	public void setMaxWaitTimeUnit(TimeUnit maxWaitTimeUnit) {
 		this.maxWaitTimeUnit = maxWaitTimeUnit;
+	}
+
+	public Double getPercentage() {
+		return percentage;
+	}
+
+	public void setPercentage(Double percentage) {
+		this.percentage = percentage;
 	}
 }

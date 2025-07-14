@@ -17,6 +17,7 @@ import java.util.Objects;
  * Operator 常用工具类
  *
  * @author gaibu
+ * @author luo yi
  * @since 2.8.6
  */
 public class OperatorHelper {
@@ -107,6 +108,18 @@ public class OperatorHelper {
 	public static <T> T convert(Object object, Class<T> clazz) throws QLException {
 		String errorMsg = StrUtil.format("The parameter must be {} item", clazz.getSimpleName());
 		return convert(object, clazz, errorMsg);
+	}
+
+	public static Double convert2Double(Object object) throws QLException {
+		if (object instanceof Number) {
+			// 对 float 特别处理，避免精度问题
+			if (object instanceof Float) {
+				// 使用字符串转换避免 float 精度损失
+				return Double.parseDouble(Float.toString((Float) object));
+			}
+			return ((Number) object).doubleValue();
+		}
+		throw new QLException(StrUtil.format("Unsupported type: {}, it must be numeric type.", object.getClass().getName()));
 	}
 
 	/**

@@ -1,9 +1,6 @@
 package com.yomahub.liteflow.enums;
 
-import com.yomahub.liteflow.flow.parallel.strategy.AllOfParallelExecutor;
-import com.yomahub.liteflow.flow.parallel.strategy.AnyOfParallelExecutor;
-import com.yomahub.liteflow.flow.parallel.strategy.ParallelStrategyExecutor;
-import com.yomahub.liteflow.flow.parallel.strategy.SpecifyParallelExecutor;
+import com.yomahub.liteflow.flow.parallel.strategy.*;
 
 /**
  * 并行策略枚举类
@@ -17,7 +14,10 @@ public enum ParallelStrategyEnum {
 
     ALL("allOf", "完成全部任务", AllOfParallelExecutor.class),
 
-    SPECIFY("must", "完成指定 ID 任务", SpecifyParallelExecutor.class);
+    SPECIFY("must", "完成指定 ID 任务", SpecifyParallelExecutor.class),
+
+    PERCENTAGE("percentageOf", "完整指定阈值任务", PercentageOfParallelExecutor.class);
+
 
     private String strategyType;
 

@@ -184,4 +184,49 @@ public class AsyncNodeELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(context.getData("check").toString().startsWith("akbgc"));
 	}
 
+	// 测试 percentage 关键字，percentage 为 0.6，数量为 3
+	@Test
+	public void testAsyncFlow14() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain14", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+        Assertions.assertEquals("3", context.getData("count").toString());
+	}
+
+	// 测试 percentage 关键字，percentage 为 0，相当于 any
+	@Test
+	public void testAsyncFlow15() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain15", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("1", context.getData("count").toString());
+	}
+
+	// 测试 percentage 关键字，percentage 为 1，相当于 all
+	@Test
+	public void testAsyncFlow16() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain16", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("5", context.getData("count").toString());
+	}
+
+	// 测试 percentage 、ignoreError 关键字
+	@Test
+	public void testAsyncFlow17() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain17", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("2", context.getData("count").toString());
+	}
+
+	// 测试 percentage 、ignoreError 关键字
+	@Test
+	public void testAsyncFlow18() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain18", "it's a base request");
+		DefaultContext context = response.getFirstContextBean();
+		Assertions.assertFalse(response.isSuccess());
+		Assertions.assertEquals("2", context.getData("count").toString());
+	}
+
 }
