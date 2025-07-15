@@ -5,6 +5,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ql.util.express.DefaultContext;
@@ -29,6 +30,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,6 +192,10 @@ public class LiteFlowChainELBuilder {
 		}
 
 		this.chain.setEl(elStr);
+
+		String elMd5 = MD5.create().digestHex(ElRegexUtil.normalize(elStr));
+		this.chain.setElMd5(elMd5);
+
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		// 如果设置了不检查Node是否存在，那么这里是不解析的
 		if (liteflowConfig.getParseMode().equals(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC)){

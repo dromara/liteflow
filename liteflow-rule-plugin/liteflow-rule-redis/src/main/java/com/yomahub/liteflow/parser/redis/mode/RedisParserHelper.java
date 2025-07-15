@@ -3,6 +3,7 @@ package com.yomahub.liteflow.parser.redis.mode;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -13,6 +14,7 @@ import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.parser.helper.NodeConvertHelper;
 import com.yomahub.liteflow.parser.redis.vo.RedisParserVO;
 import com.yomahub.liteflow.util.RuleParsePluginUtil;
+import org.redisson.config.ClusterServersConfig;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
 import org.redisson.config.SingleServerConfig;
@@ -22,6 +24,7 @@ import org.redisson.config.SingleServerConfig;
  *
  * @author hxinyu
  * @author Bryan.Zhang
+ * @author jay li
  * @since 2.11.0
  */
 
@@ -32,6 +35,8 @@ public interface RedisParserHelper {
     String SINGLE_REDIS_URL_PATTERN = "redis://{}:{}";
 
     String SENTINEL_REDIS_URL_PATTERN = "redis://{}";
+
+    String CLUSTER_REDIS_URL_PATTERN = "redis://{}";
 
     String CHAIN_XML_PATTERN = "<chain name=\"{}\">{}</chain>";
 
@@ -55,6 +60,9 @@ public interface RedisParserHelper {
      * @return redisson config
      */
     default Config getSingleRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
+        if (ObjectUtil.isNull(dataBase)) {
+            return null;
+        }
         Config config = new Config();
         String redisAddress = StrFormatter.format(SINGLE_REDIS_URL_PATTERN, redisParserVO.getHost(), redisParserVO.getPort());
 
@@ -81,6 +89,9 @@ public interface RedisParserHelper {
      * @return redisson Config
      */
     default Config getSentinelRedissonConfig(RedisParserVO redisParserVO, Integer dataBase) {
+        if (ObjectUtil.isNull(dataBase)) {
+            return null;
+        }
         Config config = new Config();
         SentinelServersConfig sentinelConfig = config.useSentinelServers()
                 .setMasterName(redisParserVO.getMasterName())
@@ -106,6 +117,35 @@ public interface RedisParserHelper {
         else {
             sentinelConfig.setDatabase(dataBase);
         }
+        return config;
+    }
+
+    /**
+     * 获取Redisson客户端的Config配置通用方法(集群模式)
+     * @param redisParserVO redisParserVO
+     * @return redisson Config
+     */
+    default Config getCluserRedissonConfig(RedisParserVO redisParserVO) {
+        Config config = new Config();
+        ClusterServersConfig clusterConfig = config.useClusterServers()
+                .setMasterConnectionPoolSize(redisParserVO.getConnectionPoolSize())
+                .setSlaveConnectionPoolSize(redisParserVO.getConnectionPoolSize())
+                .setMasterConnectionMinimumIdleSize(redisParserVO.getConnectionMinimumIdleSize())
+                .setSlaveConnectionMinimumIdleSize(redisParserVO.getConnectionMinimumIdleSize());
+
+        redisParserVO.getClusterNodeAddress().forEach(address -> {
+            clusterConfig.addNodeAddress(StrFormatter.format(CLUSTER_REDIS_URL_PATTERN, address));
+        });
+        //如果配置了用户名和密码
+        if(StrUtil.isNotBlank(redisParserVO.getUsername()) && StrUtil.isNotBlank(redisParserVO.getPassword())) {
+            clusterConfig.setUsername(redisParserVO.getUsername())
+                    .setPassword(redisParserVO.getPassword());
+        }
+        //如果配置了密码
+        else if(StrUtil.isNotBlank(redisParserVO.getPassword())) {
+            clusterConfig.setPassword(redisParserVO.getPassword());
+        }
+
         return config;
     }
 

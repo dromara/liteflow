@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.flow.instanceId;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -9,11 +8,14 @@ import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.apache.commons.lang.StringUtils;
+
 import java.util.*;
+
 import static com.yomahub.liteflow.util.SerialsUtil.generateShortUUID;
 
 /**
  * @author lhh
+ * @author luo yi
  * @since 2.13.0
  */
 public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManageSpi {
@@ -156,7 +158,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
     public void setNodesInstanceId(Condition condition, Chain chain) {
         NodeInstanceIdManageSpi nodeInstanceIdManageSpi = NodeInstanceIdManageSpiHolder.getInstance().getNodeInstanceIdManageSpi();
 
-        String elMd5 = MD5.create().digestHex(chain.getEl());
+        String elMd5 = chain.getElMd5();
         String chainId = chain.getChainId();
         List<String> instanceIdFile = nodeInstanceIdManageSpi.readInstanceIdFile(chainId);
 

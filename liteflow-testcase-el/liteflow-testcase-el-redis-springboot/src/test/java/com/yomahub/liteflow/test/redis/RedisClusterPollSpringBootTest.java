@@ -34,17 +34,20 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
- * springboot环境下的redis配置源chain轮询拉取模式功能测试
+ * springboot环境下的redis 集群配置源poll模式功能测试
+ * <p>
+ * 测试用例会在1号database中添加测试数据 chainKey:testChainKey; scriptKey:testScriptKey
+ * 测试完成后清除测试数据
  *
- * @author hxinyu
- * @since 2.11.0
+ * @author jay li
+ * @since 2.13.3
  */
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(value = "classpath:/redis/application-poll-xml.properties")
-@SpringBootTest(classes = RedisWithXmlELPollSpringbootTest.class)
+@TestPropertySource(value = "classpath:/redis/application-poll-cluster-xml.properties")
+@SpringBootTest(classes = RedisClusterPollSpringBootTest.class)
 @EnableAutoConfiguration
 @ComponentScan({"com.yomahub.liteflow.test.redis.cmp"})
-public class RedisWithXmlELPollSpringbootTest extends BaseTest {
+public class RedisClusterPollSpringBootTest extends BaseTest {
 
     @MockBean(name = "chainClient")
     private static RClient chainClient;
@@ -69,8 +72,7 @@ public class RedisWithXmlELPollSpringbootTest extends BaseTest {
             "local sha1 = redis.sha1hex(value);\n" +
             "return sha1;";
 
-    static LFLog LOG = LFLoggerManager.getLogger(RedisWithXmlELPollSpringbootTest.class);
-
+    static LFLog LOG = LFLoggerManager.getLogger(RedisClusterPollSpringBootTest.class);
 
     @AfterEach
     void afterEach() {

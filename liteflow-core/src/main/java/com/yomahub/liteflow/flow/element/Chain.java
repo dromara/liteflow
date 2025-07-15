@@ -32,7 +32,7 @@ import java.util.List;
  * @author jason
  * @author luo yi
  */
-public class Chain implements Executable{
+public class Chain implements Executable {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(Chain.class);
 
@@ -47,6 +47,8 @@ public class Chain implements Executable{
 	private volatile boolean isCompiled = true;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
+
+    private String elMd5;
 
     private String threadPoolExecutorClass;
 
@@ -245,7 +247,15 @@ public class Chain implements Executable{
         this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
 
-	public Long getRuntimeId(){
-		return runtimeIdTL.get();
-	}
+    public Long getRuntimeId() {
+        return runtimeIdTL.get();
+    }
+
+    public String getElMd5() {
+        return elMd5;
+    }
+
+    public void setElMd5(String elMd5) {
+        this.elMd5 = elMd5;
+    }
 }

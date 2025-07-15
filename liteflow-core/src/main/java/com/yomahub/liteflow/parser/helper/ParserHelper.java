@@ -183,8 +183,8 @@ public class ParserHelper {
                 //首先需要对继承自抽象Chain的chain进行字符串替换
                 parseImplChain(abstratChainMap, implChainSet, chain);
                 //如果一个chain不为抽象chain，则进行解析
-                String chainName = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
-                if(!abstratChainMap.containsKey(chainName)){
+                String chainId = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
+                if(!abstratChainMap.containsKey(chainId)){
                     parseOneChainConsumer.accept(chain);
                 }
             }
