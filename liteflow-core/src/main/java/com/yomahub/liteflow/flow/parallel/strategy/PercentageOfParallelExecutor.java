@@ -3,11 +3,10 @@ package com.yomahub.liteflow.flow.parallel.strategy;
 import com.yomahub.liteflow.flow.element.condition.WhenCondition;
 import com.yomahub.liteflow.flow.parallel.WhenFutureObj;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 完成指定阈值任务
@@ -28,22 +27,24 @@ public class PercentageOfParallelExecutor extends ParallelStrategyExecutor {
         // 计算阈值数量（向上取整）
         int thresholdCount = (int) Math.ceil(total * whenCondition.getPercentage());
 
-        // 已完成任务收集器（对 List 加锁保证线程安全）
-        List<CompletableFuture<WhenFutureObj>> completedFutures = Collections.synchronizedList(new ArrayList<>(Math.max(thresholdCount, 1) << 1));
+        // 已完成任务收集器
+        ConcurrentLinkedQueue<CompletableFuture<WhenFutureObj>> completedFutures = new ConcurrentLinkedQueue<>();
 
         // 阈值触发门闩
         CompletableFuture<Void> thresholdFuture = new CompletableFuture<>();
 
         // 原子计数器
-        AtomicInteger completedCount = new AtomicInteger(0);
+        LongAdder completedCount = new LongAdder();
 
         // 为每个任务添加回调
         whenAllTaskList.forEach(future ->
                 future.whenComplete((result, ex) -> {
                     // 安全添加已完成任务
                     completedFutures.add(future);
+                    // 计数 +1
+                    completedCount.increment();
                     // 检查是否达到阈值
-                    if (completedCount.incrementAndGet() >= thresholdCount) {
+                    if (completedCount.intValue() >= thresholdCount) {
                         // 确保只触发一次
                         if (!thresholdFuture.isDone()) {
                             thresholdFuture.complete(null);
