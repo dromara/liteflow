@@ -29,7 +29,7 @@ public class PercentageOfParallelExecutor extends ParallelStrategyExecutor {
         int thresholdCount = (int) Math.ceil(total * whenCondition.getPercentage());
 
         // 已完成任务收集器（对 List 加锁保证线程安全）
-        List<CompletableFuture<WhenFutureObj>> completedFutures = Collections.synchronizedList(new ArrayList<>(thresholdCount));
+        List<CompletableFuture<WhenFutureObj>> completedFutures = Collections.synchronizedList(new ArrayList<>(Math.max(thresholdCount, 1) << 1));
 
         // 阈值触发门闩
         CompletableFuture<Void> thresholdFuture = new CompletableFuture<>();
