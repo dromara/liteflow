@@ -108,7 +108,9 @@ public class FlowBus {
 
 		chainMap.put(chain.getChainId(), chain);
 
-		elMd5Map.put(chain.getElMd5(), chain.getChainId());
+		if (StrUtil.isNotBlank(chain.getEl())){
+			elMd5Map.put(chain.getElMd5(), chain.getChainId());
+		}
 
 		//如果有生命周期则执行相应生命周期实现
 		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessChainBuildLifeCycleList())){

@@ -254,10 +254,6 @@ public class Chain implements Executable {
     }
 
     public String getElMd5() {
-        // 若为 null 时，先规范化 EL，再计算 MD5
-        if (elMd5 == null) {
-            elMd5 = MD5.create().digestHex(ElRegexUtil.normalize(el));
-        }
         return elMd5;
     }
 
