@@ -10,6 +10,7 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -24,6 +25,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ import java.util.List;
  * @author luo yi
  * @author DaleLee
  */
-public class Chain implements Executable{
+public class Chain implements Executable {
 
 	private static final LFLog LOG = LFLoggerManager.getLogger(Chain.class);
 
@@ -51,6 +53,8 @@ public class Chain implements Executable{
 	private volatile boolean isCompiled = true;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
+
+    private String elMd5;
 
     private String threadPoolExecutorClass;
 
@@ -256,9 +260,17 @@ public class Chain implements Executable{
         this.threadPoolExecutorClass = threadPoolExecutorClass;
     }
 
-	public Long getRuntimeId(){
-		return runtimeIdTL.get();
-	}
+    public Long getRuntimeId() {
+        return runtimeIdTL.get();
+    }
+
+    public String getElMd5() {
+        return elMd5;
+    }
+
+    public void setElMd5(String elMd5) {
+        this.elMd5 = elMd5;
+    }
 
 	// 构建临时的ConditionList
 	private List<Condition> buildTemporaryConditionList() {

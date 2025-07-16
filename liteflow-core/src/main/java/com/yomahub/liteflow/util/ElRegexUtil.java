@@ -1,7 +1,5 @@
 package com.yomahub.liteflow.util;
 
-import cn.hutool.core.text.CharSequenceUtil;
-import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.exception.ParseException;
 
 import java.util.regex.Matcher;
@@ -56,4 +54,16 @@ public class ElRegexUtil {
     public static boolean isAbstractChain(String elStr) {
         return Pattern.compile(REGEX_ABSTRACT_HOLDER).matcher(elStr).find();
     }
+
+    /**
+     * 规范化 EL
+     *
+     * @param elStr
+     * @return String
+     */
+    public static String normalize(String elStr) {
+        // 剔除 EL 中多余空格，且将单引号变为双引号，并在末尾保留一个分号
+        return elStr.replace("'", "\"").replaceAll("\\s", "").replaceFirst(";*$", ";");
+    }
+
 }

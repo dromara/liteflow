@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * Redis 轮询机制实现类
  *
  * @author hxinyu
+ * @author jay li
  * @since  2.11.0
  */
 
@@ -81,27 +82,29 @@ public class RedisParserPollingMode implements RedisParserHelper {
             }
             if (ObjectUtil.isNull(chainClient)) {
                 RedisMode redisMode = redisParserVO.getRedisMode();
-                Config config;
-                //Redis单点模式
-                if (redisMode.equals(RedisMode.SINGLE)){
-                    config = getSingleRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
-                    this.chainClient = new RClient(Redisson.create(config));
-                    //如果有脚本数据
-                    if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
-                        config = getSingleRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
-                        this.scriptClient = new RClient(Redisson.create(config));
-                    }
+                Config chinaConfig, scriptConfig;
+
+                switch (redisMode) {
+                    case SINGLE:
+                        chinaConfig = getSingleRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
+                        scriptConfig = getSingleRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
+                        break;
+                    case SENTINEL:
+                        chinaConfig = getSentinelRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
+                        scriptConfig = getSentinelRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
+                        break;
+                    case CLUSTER:
+                        chinaConfig = getCluserRedissonConfig(redisParserVO);
+                        scriptConfig = chinaConfig;
+                        break;
+                    default:
+                        throw new RedisException("RedisMode is not supported");
                 }
 
-                //Redis哨兵模式
-                else if (redisMode.equals(RedisMode.SENTINEL)) {
-                    config = getSentinelRedissonConfig(redisParserVO, redisParserVO.getChainDataBase());
-                    this.chainClient = new RClient(Redisson.create(config));
-                    //如果有脚本数据
-                    if (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())) {
-                        config = getSentinelRedissonConfig(redisParserVO, redisParserVO.getScriptDataBase());
-                        this.scriptClient = new RClient(Redisson.create(config));
-                    }
+                this.chainClient = new RClient(Redisson.create(chinaConfig));
+                //如果有脚本数据
+                if (ObjectUtil.isNotNull(redisParserVO.getScriptKey())) {
+                    this.scriptClient = new RClient(Redisson.create(scriptConfig));
                 }
             }
             //创建定时任务线程池
@@ -211,7 +214,7 @@ public class RedisParserPollingMode implements RedisParserHelper {
                 redisParserVO.getPollingInterval().longValue(), TimeUnit.SECONDS);
 
         //如果有脚本
-        if (ObjectUtil.isNotNull(scriptClient) && ObjectUtil.isNotNull(redisParserVO.getScriptDataBase())
+        if (ObjectUtil.isNotNull(scriptClient) && (ObjectUtil.isNotNull(redisParserVO.getScriptDataBase()) || RedisMode.CLUSTER.equals(redisParserVO.getRedisMode()))
                 && StrUtil.isNotBlank(redisParserVO.getScriptKey())) {
             //将lua脚本添加到scriptJedis脚本缓存
             String keyLuaOfScript = scriptClient.scriptLoad(luaOfKey);
