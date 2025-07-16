@@ -1,9 +1,14 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * 并行组件
@@ -23,6 +28,7 @@ public class WhenELWrapper extends ELWrapper {
     private boolean ignoreError;
     private String customThreadExecutor;
     private final List<String> mustExecuteList;
+    private Double percentage;
 
     public WhenELWrapper(ELWrapper... elWrappers) {
         this.addWrapper(elWrappers);
@@ -38,6 +44,11 @@ public class WhenELWrapper extends ELWrapper {
 
     public WhenELWrapper any(boolean any) {
         this.any = any;
+        return this;
+    }
+
+    public WhenELWrapper percentage(double percentage) {
+        this.percentage = percentage;
         return this;
     }
 
@@ -110,6 +121,18 @@ public class WhenELWrapper extends ELWrapper {
 
     @Override
     protected String toEL(Integer depth, StringBuilder paramContext) {
+
+        // 互斥检查：确保三个属性中最多只有一个被设置
+        long count = Stream.of(
+                this.any ? 1 : 0,
+                CollectionUtil.isNotEmpty(this.mustExecuteList) ? 1 : 0,
+                ObjUtil.isNotNull(this.percentage) ? 1 : 0
+        ).filter(num -> num > 0).count();
+
+        if (count > 1) {
+            throw new IllegalArgumentException("Properties 'any', 'must', and 'percentage' are mutually exclusive. Only one can be set at a time.");
+        }
+
         Integer sonDepth = depth == null ? null : depth + 1;
         StringBuilder sb = new StringBuilder();
 
@@ -139,10 +162,6 @@ public class WhenELWrapper extends ELWrapper {
             sb.append(StrUtil.format(".threadPool(\"{}\")", customThreadExecutor));
         }
         if(CollectionUtil.isNotEmpty(mustExecuteList)){
-            // 校验must 语义与 any语义冲突
-            if (this.any){
-                throw new IllegalArgumentException("'.must()' and '.any()' can use in when component at the same time!");
-            }
             // 处理must子表达式输出
             sb.append(".must(");
             for(int i = 0; i < mustExecuteList.size(); i++){
@@ -152,6 +171,10 @@ public class WhenELWrapper extends ELWrapper {
                 sb.append(StrUtil.format("\"{}\"", mustExecuteList.get(i)));
             }
             sb.append(")");
+        }
+
+        if (ObjUtil.isNotNull(percentage)){
+            sb.append(StrUtil.format(".percentage({})", percentage));
         }
 
         // 处理公共属性输出
