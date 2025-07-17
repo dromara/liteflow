@@ -24,8 +24,8 @@ public class PercentageOfParallelExecutor extends ParallelStrategyExecutor {
 
         int total = whenAllTaskList.size();
 
-        // 计算阈值数量（向上取整）
-        int thresholdCount = (int) Math.ceil(total * whenCondition.getPercentage());
+        // 计算阈值数量（向上取整），为 0 时取 1，表示只等待一个完成，即 any
+        int thresholdCount = Math.max(1, (int) Math.ceil(total * whenCondition.getPercentage()));
 
         // 已完成任务收集器
         ConcurrentLinkedQueue<CompletableFuture<WhenFutureObj>> completedFutures = new ConcurrentLinkedQueue<>();
@@ -39,16 +39,19 @@ public class PercentageOfParallelExecutor extends ParallelStrategyExecutor {
         // 为每个任务添加回调
         whenAllTaskList.forEach(future ->
                 future.whenComplete((result, ex) -> {
-                    // 安全添加已完成任务
-                    completedFutures.add(future);
                     // 计数 +1
                     completedCount.increment();
-                    // 检查是否达到阈值
-                    if (completedCount.intValue() >= thresholdCount) {
-                        // 确保只触发一次
-                        if (!thresholdFuture.isDone()) {
-                            thresholdFuture.complete(null);
-                        }
+
+                    int currentCount = completedCount.intValue();
+
+                    if (currentCount <= thresholdCount) {
+                        // 添加已完成任务
+                        completedFutures.add(future);
+                    }
+
+                    // 达到阈值时触发门闩（确保只触发一次）
+                    if (currentCount >= thresholdCount && !thresholdFuture.isDone()) {
+                        thresholdFuture.complete(null);
                     }
                 })
         );
