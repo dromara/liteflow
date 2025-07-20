@@ -43,7 +43,7 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
     public void postProcessBeforeChainExecute(String chainId, Slot slot) {
         // 记录 chainId 在缓存中
         // 初始状态为 ACTIVE
-        cache.get(chainId, key -> new ChainState(State.ACTIVE));
+        cache.get(chainId, key -> ChainState.newActiveState());
     }
 
     @Override
@@ -55,38 +55,28 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
     }
 
     /**
-     * Chain 状态枚举
-     */
-    public enum State {
-        /**
-         * 活跃状态
-         */
-        ACTIVE,
-        /**
-         * 非活跃状态 (处于淘汰流程中)
-         */
-        INACTIVE
-    }
-
-    /**
      * Chain 在缓存中状态
      */
     public static class ChainState {
         /**
-         * Chain 状态
+         * Chain 活跃状态
          */
-        private State state;
+        private volatile boolean active;
 
-        public ChainState(State state) {
-            this.state = state;
+        public ChainState(boolean active) {
+            this.active = active;
         }
 
-        public State getState() {
-            return state;
+        public boolean isActive() {
+            return active;
         }
 
-        public void setState(State state) {
-            this.state = state;
+        public void setActive(boolean active) {
+            this.active = active;
+        }
+
+        public static ChainState newActiveState() {
+            return new ChainState(true);
         }
     }
 
@@ -98,7 +88,7 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
         @Override
         public void onRemoval(@Nullable String chainId, @Nullable ChainState chainState, @NonNull RemovalCause removalCause) {
             if (ObjectUtil.isNotNull(chainState)) {
-                chainState.setState(State.INACTIVE);
+                chainState.setActive(false);
             }
             cleanChain(chainId);
         }
@@ -134,7 +124,7 @@ public class RuleCacheLifeCycle implements PostProcessChainExecuteLifeCycle {
     private boolean isActive(String chainId) {
         ChainState chainState = cache.getIfPresent(chainId);
         return ObjectUtil.isNotNull(chainState)
-            && State.ACTIVE.equals(chainState.getState());
+            && chainState.isActive();
     }
 
     /**
