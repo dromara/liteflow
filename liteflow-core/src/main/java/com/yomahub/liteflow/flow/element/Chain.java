@@ -10,7 +10,7 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.crypto.digest.MD5;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -23,6 +23,7 @@ import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.meta.LiteflowMetaOperator;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.ElRegexUtil;
@@ -280,14 +281,16 @@ public class Chain implements Executable {
 		}
 		// 构建临时chain
 		String tempChainId = chainId +  "_temp_" + IdUtil.simpleUUID();
-		Chain tempChain = new Chain(tempChainId);
-		tempChain.setEl(el);
-		tempChain.setCompiled(false);
+		// 使用LiteFlowChainELBuilder创建chain，为了设置md5
+		LiteFlowChainELBuilder.createChain()
+						.setChainId(tempChainId)
+						.setEL(el)
+						.build();
+		// 当前模式可能为PARSE_ONE_ON_FIRST_EXEC，所以临时chain可能未编译
+		Chain tempChain = LiteflowMetaOperator.getChain(tempChainId);
 		LiteFlowChainELBuilder.buildUnCompileChain(tempChain);
-
 		// 移除临时chain
-		FlowBus.removeChain(tempChainId);
-
+		LiteflowMetaOperator.removeChain(tempChainId);
 		// 打印警告，可用于排查临时chain与已有chain重名（几乎不可能发生）而将已有chain覆盖的情况
 		LOG.warn("The conditionList of chain[{}] is empty, " +
 				"temporarily using chain[{}] (now removed) to build it.", chainId, tempChainId);
