@@ -23,7 +23,7 @@ import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.lifecycle.PostProcessChainExecuteLifeCycle;
-import com.yomahub.liteflow.lifecycle.impl.RuleCacheLifeCycle;
+import com.yomahub.liteflow.lifecycle.impl.ChainCacheLifeCycle;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.element.Rollbackable;
@@ -106,9 +106,9 @@ public class FlowExecutor {
 		}
 
 		// 规则缓存
-		if (isStart && liteflowConfig.getRuleCacheEnabled()) {
+		if (isStart && liteflowConfig.getChainCacheEnabled()) {
 			// 放到解析节点后，是因为要根据节点数量判断缓存大小设置是否合理
-			initRuleCache();
+			initChainCache();
 		}
 
 		String ruleSource = liteflowConfig.getRuleSource();
@@ -239,8 +239,8 @@ public class FlowExecutor {
 		}
 
 		// 初始化或reload时，评估规则缓存容量大小
-		if (liteflowConfig.getRuleCacheEnabled()) {
-			evaluateRuleCacheCapacity();
+		if (liteflowConfig.getChainCacheEnabled()) {
+			evaluateChainCacheCapacity();
 		}
 	}
 
@@ -678,40 +678,42 @@ public class FlowExecutor {
 		return resultSlotList;
 	}
 
-	private void initRuleCache() {
+	private void initChainCache() {
+		// 启动chain缓存必须使用 PARSE_ONE_ON_FIRST_EXEC 模式
+		if (!ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC.equals(liteflowConfig.getParseMode())) {
+			LOG.warn("The parse mode is not PARSE_ONE_ON_FIRST_EXE, so the chain cache cannot be enabled.");
+			return;
+		}
 		// 容量不能小于等于0
-		Integer capacity = liteflowConfig.getRuleCacheCapacity();
+		Integer capacity = liteflowConfig.getChainCacheCapacity();
 		if (ObjectUtil.isNull(capacity) || capacity <= 0) {
-			throw new ConfigErrorException("The rule cache capacity must be greater than 0");
+			throw new ConfigErrorException("The chain cache capacity must be greater than 0");
 		}
 
 		// 添加规则缓存生命周期
 		List<PostProcessChainExecuteLifeCycle> lifeCycleList = LifeCycleHolder.getPostProcessChainExecuteLifeCycleList();
 		boolean exist = lifeCycleList.stream()
-				.anyMatch(lifeCycle -> lifeCycle instanceof RuleCacheLifeCycle);
+				.anyMatch(lifeCycle -> lifeCycle instanceof ChainCacheLifeCycle);
 		if (!exist) {
-			boolean success = RuleCacheLifeCycle.initIfAbsent(capacity);
+			boolean success = ChainCacheLifeCycle.initIfAbsent(capacity);
 			if (!success) {
-				throw new FlowExecutorNotInitException("Initialization of RuleCacheLifeCycle failed");
+				throw new FlowExecutorNotInitException("Initialization of ChainCacheLifeCycle failed");
 			}
-			LifeCycleHolder.addLifeCycle(RuleCacheLifeCycle.getLifeCycle());
-		}
-
-		// 执行时才解析chain
-		if (!ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC.equals(liteflowConfig.getParseMode())) {
-			liteflowConfig.setParseMode(ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC);
-			LOG.warn("The rule cache is enabled, so the parse mode is forcibly set to PARSE_ONE_ON_FIRST_EXE.");
+			LifeCycleHolder.addLifeCycle(ChainCacheLifeCycle.getLifeCycle());
 		}
 	}
 
 	// 评估规则缓存容量
-	private void evaluateRuleCacheCapacity() {
-		Integer capacity = liteflowConfig.getRuleCacheCapacity();
+	private void evaluateChainCacheCapacity() {
+		if (!ParseModeEnum.PARSE_ONE_ON_FIRST_EXEC.equals(liteflowConfig.getParseMode())) {
+			return;
+		}
+		Integer capacity = liteflowConfig.getChainCacheCapacity();
 		// 容量不足chain总数的30%给予警告
 		int chainNum = FlowBus.getChainMap().size();
 		double threshold = chainNum * 0.3;
 		if (capacity < threshold) {
-			LOG.warn("The rule cache capacity {} is too small, the current total number of chains is {}, "
+			LOG.warn("The chain cache capacity {} is too small, the current total number of chains is {}, "
 					+"it is recommended to be greater than 30% of the number of chains", capacity, chainNum);
 		}
 	}

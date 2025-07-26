@@ -102,9 +102,9 @@ public class LiteflowProperty {
 	private boolean enableNodeInstanceId;
 
 	// 规则缓存配置
-	private RuleCacheProperty ruleCache;
+	private ChainCacheProperty chainCache;
 
-	public static class RuleCacheProperty {
+	public static class ChainCacheProperty {
 		// 是否启用规则缓存
 		private Boolean enabled;
 
@@ -369,11 +369,11 @@ public class LiteflowProperty {
 		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 
-	public RuleCacheProperty getRuleCache() {
-		return ruleCache;
+	public ChainCacheProperty getChainCache() {
+		return chainCache;
 	}
 
-	public void setRuleCache(RuleCacheProperty ruleCache) {
-		this.ruleCache = ruleCache;
+	public void setChainCache(ChainCacheProperty chainCache) {
+		this.chainCache = chainCache;
 	}
 }

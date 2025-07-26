@@ -102,13 +102,13 @@ public class LiteflowProperty {
 
 	// 规则缓存配置
 	@NestedConfigurationProperty
-	private RuleCacheProperty ruleCache;
+	private ChainCacheProperty chainCache;
 
-	public static class RuleCacheProperty {
+	public static class ChainCacheProperty {
 		// 是否启用规则缓存
 		private Boolean enabled;
 
-		// 规则缓存容量
+		// chain缓存容量
 		private Integer capacity;
 
 		public Boolean isEnabled() {
@@ -360,11 +360,11 @@ public class LiteflowProperty {
 		this.enableNodeInstanceId = enableNodeInstanceId;
 	}
 
-	public RuleCacheProperty getRuleCache() {
-		return ruleCache;
+	public ChainCacheProperty getChainCache() {
+		return chainCache;
 	}
 
-	public void setRuleCache(RuleCacheProperty ruleCache) {
-		this.ruleCache = ruleCache;
+	public void setChainCache(ChainCacheProperty chainCache) {
+		this.chainCache = chainCache;
 	}
 }

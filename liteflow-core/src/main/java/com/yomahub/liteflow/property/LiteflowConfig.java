@@ -116,11 +116,11 @@ public class LiteflowConfig {
 	// instance id 生成器
 	private String instanceIdGeneratorClass;
 
-	// 是否启用规则缓存
-	private Boolean ruleCacheEnabled;
+	// 是否启用chain缓存
+	private Boolean chainCacheEnabled;
 
-	// 规则缓存容量
-	private Integer ruleCacheCapacity;
+	// chain缓存容量
+	private Integer chainCacheCapacity;
 
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
@@ -502,22 +502,25 @@ public class LiteflowConfig {
 		this.instanceIdGeneratorClass = instanceIdGeneratorClass;
 	}
 
-	public Boolean getRuleCacheEnabled() {
-		if (ObjectUtil.isNull(ruleCacheEnabled)) {
+	public Boolean getChainCacheEnabled() {
+		if (ObjectUtil.isNull(chainCacheEnabled)) {
 			return Boolean.FALSE;
 		}
-		return ruleCacheEnabled;
+		return chainCacheEnabled;
 	}
 
-	public void setRuleCacheEnabled(Boolean ruleCacheEnabled) {
-		this.ruleCacheEnabled = ruleCacheEnabled;
+	public void setChainCacheEnabled(Boolean chainCacheEnabled) {
+		this.chainCacheEnabled = chainCacheEnabled;
 	}
 
-	public Integer getRuleCacheCapacity() {
-		return ruleCacheCapacity;
+	public Integer getChainCacheCapacity() {
+		if (ObjectUtil.isNull(chainCacheCapacity)) {
+			return 10000;
+		}
+		return chainCacheCapacity;
 	}
 
-	public void setRuleCacheCapacity(Integer ruleCacheCapacity) {
-		this.ruleCacheCapacity = ruleCacheCapacity;
+	public void setChainCacheCapacity(Integer chainCacheCapacity) {
+		this.chainCacheCapacity = chainCacheCapacity;
 	}
 }

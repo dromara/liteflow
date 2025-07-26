@@ -51,8 +51,8 @@ public class LiteflowAutoConfiguration {
         liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
         liteflowConfig.setWhenThreadPoolIsolate(property.getWhenThreadPoolIsolate());
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
-		liteflowConfig.setRuleCacheEnabled(property.getRuleCache().isEnabled());
-		liteflowConfig.setRuleCacheCapacity(property.getRuleCache().getCapacity());
+		liteflowConfig.setChainCacheEnabled(property.getChainCache().isEnabled());
+		liteflowConfig.setChainCacheCapacity(property.getChainCache().getCapacity());
 		return liteflowConfig;
 	}
 
