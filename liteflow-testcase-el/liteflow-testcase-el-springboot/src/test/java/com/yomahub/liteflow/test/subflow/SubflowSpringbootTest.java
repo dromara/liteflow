@@ -36,7 +36,7 @@ public class SubflowSpringbootTest extends BaseTest {
 	public void testSubflow1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(ListUtil.toList("a==>c==>d==>b","a==>c==>b==>d").contains(response.getExecuteStepStr()));
+		Assertions.assertTrue(ListUtil.toList("a==>c==>d==>b","a==>d==>c==>b").contains(response.getExecuteStepStr()));
 	}
 
 	//测试子chain
@@ -44,7 +44,7 @@ public class SubflowSpringbootTest extends BaseTest {
 	public void testSubflow2() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain2", "arg");
 		Assertions.assertTrue(response.isSuccess());
-		Assertions.assertTrue(ListUtil.toList("a==>c==>d==>b","a==>c==>b==>d").contains(response.getExecuteStepStr()));
+		Assertions.assertTrue(ListUtil.toList("a==>c==>d==>b","a==>d==>c==>b").contains(response.getExecuteStepStr()));
 	}
 
 	//测试在组件里调用另一个流程

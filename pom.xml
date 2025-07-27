@@ -81,6 +81,7 @@
 		<dynamic-datasource.version>4.3.1</dynamic-datasource.version>
 		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 		<apache-commons-test.version>1.13.1</apache-commons-test.version>
+		<caffeine.version>2.9.3</caffeine.version>
 	</properties>
 
 	<dependencyManagement>
@@ -338,6 +339,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
 				<version>${apache-commons-test.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.ben-manes.caffeine</groupId>
+				<artifactId>caffeine</artifactId>
+				<version>${caffeine.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

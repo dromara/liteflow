@@ -10,16 +10,20 @@ package com.yomahub.liteflow.flow.element;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.crypto.digest.MD5;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.exception.ChainEndException;
 import com.yomahub.liteflow.exception.FlowSystemException;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
+import com.yomahub.liteflow.meta.LiteflowMetaOperator;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.ElRegexUtil;
@@ -33,6 +37,7 @@ import java.util.List;
  * @author Bryan.Zhang
  * @author jason
  * @author luo yi
+ * @author DaleLee
  */
 public class Chain implements Executable {
 
@@ -117,8 +122,15 @@ public class Chain implements Executable {
 			}
 		}
 
-		if (CollUtil.isEmpty(conditionList)) {
-			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
+		// 这里先拿到this.conditionList的引用
+		// 因为在正式执行condition之前，this.conditionList有可能被其他线程置空
+		// 比如，该chain在规则缓存中被淘汰
+		List<Condition> conditionListRef = this.conditionList;
+		// 但在编译后到拿到引用之前，this.conditionList还是有可能已经被置空了
+		if (CollUtil.isEmpty(conditionListRef)) {
+			// 如果conditionListRef为空，
+			// 尝试构建临时conditionList确保本次一定可以执行
+			conditionListRef = buildTemporaryConditionList();
 		}
 		Slot slot = DataBus.getSlot(slotIndex);
 		try {
@@ -133,7 +145,7 @@ public class Chain implements Executable {
 			slot.setChainId(chainId);
 			slot.addChainInstance(this);
 			// 执行主体Condition
-			for (Condition condition : conditionList) {
+			for (Condition condition : conditionListRef) {
 				condition.setCurrChainId(chainId);
 				condition.execute(slotIndex);
 			}
@@ -260,4 +272,28 @@ public class Chain implements Executable {
     public void setElMd5(String elMd5) {
         this.elMd5 = elMd5;
     }
+
+	// 构建临时的ConditionList
+	private List<Condition> buildTemporaryConditionList() {
+		if (StrUtil.isBlank(el)) {
+			// 无法构建
+			throw new FlowSystemException("no conditionList in this chain[" + chainId + "]");
+		}
+		// 构建临时chain
+		String tempChainId = chainId +  "_temp_" + IdUtil.simpleUUID();
+		// 使用LiteFlowChainELBuilder创建chain，为了设置md5
+		LiteFlowChainELBuilder.createChain()
+						.setChainId(tempChainId)
+						.setEL(el)
+						.build();
+		// 当前模式可能为PARSE_ONE_ON_FIRST_EXEC，所以临时chain可能未编译
+		Chain tempChain = LiteflowMetaOperator.getChain(tempChainId);
+		LiteFlowChainELBuilder.buildUnCompileChain(tempChain);
+		// 移除临时chain
+		LiteflowMetaOperator.removeChain(tempChainId);
+		// 打印警告，可用于排查临时chain与已有chain重名（几乎不可能发生）而将已有chain覆盖的情况
+		LOG.warn("The conditionList of chain[{}] is empty, " +
+				"temporarily using chain[{}] (now removed) to build it.", chainId, tempChainId);
+		return tempChain.getConditionList();
+	}
 }

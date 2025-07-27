@@ -116,6 +116,12 @@ public class LiteflowConfig {
 	// instance id 生成器
 	private String instanceIdGeneratorClass;
 
+	// 是否启用chain缓存
+	private Boolean chainCacheEnabled;
+
+	// chain缓存容量
+	private Integer chainCacheCapacity;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -494,5 +500,27 @@ public class LiteflowConfig {
 
 	public void setInstanceIdGeneratorClass(String instanceIdGeneratorClass) {
 		this.instanceIdGeneratorClass = instanceIdGeneratorClass;
+	}
+
+	public Boolean getChainCacheEnabled() {
+		if (ObjectUtil.isNull(chainCacheEnabled)) {
+			return Boolean.FALSE;
+		}
+		return chainCacheEnabled;
+	}
+
+	public void setChainCacheEnabled(Boolean chainCacheEnabled) {
+		this.chainCacheEnabled = chainCacheEnabled;
+	}
+
+	public Integer getChainCacheCapacity() {
+		if (ObjectUtil.isNull(chainCacheCapacity)) {
+			return 10000;
+		}
+		return chainCacheCapacity;
+	}
+
+	public void setChainCacheCapacity(Integer chainCacheCapacity) {
+		this.chainCacheCapacity = chainCacheCapacity;
 	}
 }
