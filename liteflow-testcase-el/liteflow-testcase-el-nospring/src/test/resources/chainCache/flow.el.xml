@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.chainCache.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.chainCache.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.chainCache.cmp.CCmp"/>
+        <node id="x" class="com.yomahub.liteflow.test.chainCache.cmp.XCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a, c);
+    </chain>
+
+    <chain id="chain3">
+        THEN(b, a);
+    </chain>
+
+    <chain name="chain4">
+        THEN(b, c);
+    </chain>
+
+    <chain name="chain5">
+        THEN(c, a);
+    </chain>
+
+    <chain name="chain6">
+        THEN(c, b);
+    </chain>
+
+    <chain name="chain7">
+        THEN(IF(x, a), b);
+    </chain>
+
+    <chain name="chain8">
+        THEN(IF(x, a), c);
+    </chain>
+
+    <chain name="chain9">
+        WHEN(a, b, c);
+    </chain>
+
+    <chain name="chain10">
+        FOR(5).DO(THEN(a, b, c));
+    </chain>
+
+</flow>
