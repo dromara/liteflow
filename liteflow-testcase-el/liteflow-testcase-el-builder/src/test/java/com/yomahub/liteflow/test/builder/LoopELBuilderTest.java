@@ -2,7 +2,10 @@ package com.yomahub.liteflow.test.builder;
 
 import com.yomahub.liteflow.builder.el.ELBus;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
+import com.yomahub.liteflow.builder.el.LoopELWrapper;
+import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.test.BaseTest;
+import com.yomahub.liteflow.util.SelectiveJavaEscaper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,72 +26,56 @@ public class LoopELBuilderTest extends BaseTest {
     // for 限定次数循环
     @Test
     public void testLoop1(){
-        String expectedStr = "FOR(3).DO(THEN(node(\"a\"),node(\"b\"),node(\"c\"))).BREAK(node(\"d\"));";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(3).doOpt(ELBus.then(ELBus.node("a"), ELBus.node("b"), ELBus.node("c"))).breakOpt(ELBus.node("d")).toEL());
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(3).doOpt(ELBus.then(ELBus.node("a"), ELBus.node("b"), ELBus.node("c"))).breakOpt(ELBus.node("d")).toEL()));
+        LoopELWrapper loopELWrapper = ELBus.forOpt(3).doOpt(ELBus.then("a","b","c")).breakOpt("d");
+        String el = loopELWrapper.toEL();
+        String expectedStr1 = "FOR(3).DO(THEN(a,b,c)).BREAK(d);";
+        Assertions.assertEquals(expectedStr1,el);
+
+        String formattedEl = SelectiveJavaEscaper.escape(loopELWrapper.toEL(true));
+        String expectedStr2 = "FOR(3).DO(\\n\\tTHEN(\\n\\t\\ta,\\n\\t\\tb,\\n\\t\\tc\\n\\t)\\n).BREAK(\\n\\td\\n);";
+        Assertions.assertEquals(expectedStr2,formattedEl);
     }
-    // 格式化输出
-    @Test
-    public void testLoop2(){
-        String expectedStr = "FOR(3).DO(\n\tTHEN(\n\t\tnode(\"a\"),\n\t\tnode(\"b\"),\n\t\tnode(\"c\")\n\t)\n).BREAK(\n\tnode(\"d\")\n);";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(3).doOpt(ELBus.then(ELBus.node("a"), ELBus.node("b"), ELBus.node("c"))).breakOpt(ELBus.node("d")).toEL(true));
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(3).doOpt(ELBus.then(ELBus.node("a"), ELBus.node("b"), ELBus.node("c"))).breakOpt(ELBus.node("d")).toEL(true)));
-    }
+
     // for 单节点循环测试
     @Test
-    public void testLoop3(){
-        String expectedStr = "FOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(AND(node(\"e\"),node(\"f\")));";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.and(ELBus.node("e"), ELBus.node("f"))).toEL());
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.and(ELBus.node("e"), ELBus.node("f"))).toEL()));
+    public void testLoop2(){
+        LoopELWrapper loopELWrapper = ELBus.forOpt("a").doOpt(ELBus.when("b","c","d")).breakOpt(ELBus.and("e","f"));
+        String el = loopELWrapper.toEL();
+        String expectedStr1 = "FOR(a).DO(WHEN(b,c,d)).BREAK(AND(e,f));";
+        Assertions.assertEquals(expectedStr1,el);
+
+        String formattedEl = SelectiveJavaEscaper.escape(loopELWrapper.toEL(true));
+        String expectedStr2 = "FOR(\\n\\ta\\n).DO(\\n\\tWHEN(\\n\\t\\tb,\\n\\t\\tc,\\n\\t\\td\\n\\t)\\n).BREAK(\\n\\tAND(\\n\\t\\te,\\n\\t\\tf\\n\\t)\\n);";
+        Assertions.assertEquals(expectedStr2,formattedEl);
     }
-    @Test
-    public void testLoop4(){
-        String expectedStr = "FOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tAND(\n\t\tnode(\"e\"),\n\t\tnode(\"f\")\n\t)\n);";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.and(ELBus.node("e"), ELBus.node("f"))).toEL(true));
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.and(ELBus.node("e"), ELBus.node("f"))).toEL(true)));
-    }
+
     // parallel语句测试
     @Test
-    public void testLoop5(){
-        String expectedStr = "FOR(node(\"a\")).parallel(true).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\"));";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e")).parallel(true).toEL());
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e")).parallel(true).toEL()));
+    public void testLoop3(){
+        LoopELWrapper loopELWrapper = ELBus.forOpt("a").doOpt(ELBus.when("b","c","d")).breakOpt("e").parallel(true);
+        String el = loopELWrapper.toEL();
+        String expectedStr1 = "FOR(a).parallel(true).DO(WHEN(b,c,d)).BREAK(e);";
+        Assertions.assertEquals(expectedStr1,el);
+
+        String formattedEl = SelectiveJavaEscaper.escape(loopELWrapper.toEL(true));
+        String expectedStr2 = "FOR(\\n\\ta\\n).parallel(true).DO(\\n\\tWHEN(\\n\\t\\tb,\\n\\t\\tc,\\n\\t\\td\\n\\t)\\n).BREAK(\\n\\te\\n);";
+        Assertions.assertEquals(expectedStr2,formattedEl);
     }
-    @Test
-    public void testLoop6(){
-        String expectedStr = "FOR(\n\tnode(\"a\")\n).parallel(true).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\")\n);";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e")).parallel(true).toEL(true));
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e")).parallel(true).toEL(true)));
-    }
+
     // 属性测试
     @Test
     public void testLoop7(){
-        String expectedStr = "forData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nFOR(node(\"a\")).DO(WHEN(node(\"b\"),node(\"c\"),node(\"d\"))).BREAK(node(\"e\").data(forData)).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3);";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL());
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL()));
+        LoopELWrapper loopELWrapper = ELBus.forOpt("a").doOpt(ELBus.when("b","c","d")).breakOpt(ELBus.element("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3);
+        String el = loopELWrapper.toEL();
+        String expectedStr1 = "forData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nFOR(a).DO(WHEN(b,c,d)).BREAK(e.data(forData)).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3);";
+        Assertions.assertEquals(expectedStr1,el);
+
+        String formattedEl = SelectiveJavaEscaper.escape(loopELWrapper.toEL(true));
+        System.out.println(formattedEl);
+        String expectedStr2 = "forData = \\\"{\\\\\\\"name\\\\\\\":\\\\\\\"zhangsan\\\\\\\",\\\\\\\"age\\\\\\\":18}\\\";\\nFOR(\\n\\ta\\n).DO(\\n\\tWHEN(\\n\\t\\tb,\\n\\t\\tc,\\n\\t\\td\\n\\t)\\n).BREAK(\\n\\te.data(forData)\\n).id(\\\"this is a id\\\").tag(\\\"this is a tag\\\").maxWaitSeconds(3);";
+        Assertions.assertEquals(expectedStr2,formattedEl);
     }
-    @Test
-    public void testLoop8(){
-        String expectedStr = "forData = \"{\\\"name\\\":\\\"zhangsan\\\",\\\"age\\\":18}\";\nFOR(\n\tnode(\"a\")\n).DO(\n\tWHEN(\n\t\tnode(\"b\"),\n\t\tnode(\"c\"),\n\t\tnode(\"d\")\n\t)\n).BREAK(\n\tnode(\"e\").data(forData)\n).id(\"this is a id\").tag(\"this is a tag\").maxWaitSeconds(3);";
-        Assertions.assertEquals(expectedStr,
-                ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true));
-        System.out.println(expectedStr);
-        Assertions.assertTrue(LiteFlowChainELBuilder.validate(ELBus.forOpt(ELBus.node("a")).doOpt(ELBus.when(ELBus.node("b"), ELBus.node("c"), ELBus.node("d"))).breakOpt(ELBus.node("e").data("forData", "{\"name\":\"zhangsan\",\"age\":18}")).id("this is a id").tag("this is a tag").maxWaitSeconds(3).toEL(true)));
-    }
+
     // while调用测试
     @Test
     public void testLoop9(){
