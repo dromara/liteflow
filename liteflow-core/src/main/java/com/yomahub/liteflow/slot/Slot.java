@@ -91,8 +91,23 @@ public class Slot {
 	protected ConcurrentHashMap<String, Object> metaDataMap = new ConcurrentHashMap<>();
 
 	private List<Tuple> contextBeanList;
-	
-	private static final TransmittableThreadLocal<Deque<Condition>> conditionStack = TransmittableThreadLocal.withInitial(ConcurrentLinkedDeque::new);
+
+	private static final TransmittableThreadLocal<Deque<Condition>> conditionStack = new TransmittableThreadLocal<Deque<Condition>>() {
+		@Override
+		protected Deque<Condition> initialValue() {
+			return new ConcurrentLinkedDeque<>();
+		}
+
+		@Override
+		public Deque<Condition> copy(Deque<Condition> parentValue) {
+			return new ConcurrentLinkedDeque<>(parentValue);
+		}
+
+		@Override
+		protected Deque<Condition> childValue(Deque<Condition> parentValue) {
+			return copy(parentValue);
+		}
+	};
 
 	private Boolean routeResult;
 
