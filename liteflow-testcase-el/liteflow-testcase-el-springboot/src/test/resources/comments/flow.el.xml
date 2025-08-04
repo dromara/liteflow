@@ -6,8 +6,10 @@
         * 多行注释
         **/
         THEN(
+            /** aaaa **/
             a.data(str),
-            b,
+            /** aaaa **/
+            b,/** bbb **/
             WHEN(
                 c,
                 b
