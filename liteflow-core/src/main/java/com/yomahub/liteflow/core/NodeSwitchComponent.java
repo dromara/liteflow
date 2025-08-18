@@ -7,8 +7,17 @@
  */
 package com.yomahub.liteflow.core;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
+import com.yomahub.liteflow.flow.element.Condition;
+import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.flow.element.condition.SwitchCondition;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.core.proxy.LiteFlowProxyUtil;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 条件路由节点抽象类
@@ -30,6 +39,15 @@ public abstract class NodeSwitchComponent extends NodeComponent {
 	@SuppressWarnings("unchecked")
 	public String getItemResultMetaValue(Integer slotIndex) {
 		return DataBus.getSlot(slotIndex).getSwitchResult(this.getMetaValueKey());
+	}
+
+	public List<String> getTargetList(){
+		Condition condition = this.getSlot().getCurrentCondition();
+		if (condition instanceof SwitchCondition){
+			return ((SwitchCondition)condition).getTargetList().stream().map(Executable::getId).collect(Collectors.toList());
+		}else{
+			return ListUtil.empty();
+		}
 	}
 
 }

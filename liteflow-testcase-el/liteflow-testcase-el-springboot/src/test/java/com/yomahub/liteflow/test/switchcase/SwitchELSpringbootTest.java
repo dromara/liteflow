@@ -1,7 +1,10 @@
 package com.yomahub.liteflow.test.switchcase;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import com.yomahub.liteflow.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * springboot环境EL常规的例子测试
@@ -116,6 +120,17 @@ public class SwitchELSpringbootTest extends BaseTest {
 	@Test
 	public void testSwitch13() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain13", "arg");
+		Assertions.assertTrue(response.isSuccess());
+	}
+
+	// 获取targetList
+	@Test
+	public void testSwitch14() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain14", "arg");
+		DefaultContext context = response.getFirstContextBean();
+		List<String> targetList = context.getData("targetList");
+		boolean flag = CollectionUtil.isEqualList(targetList, ListUtil.toList("sub1", "d", "a", "chain10"));
+		Assertions.assertTrue(flag);
 		Assertions.assertTrue(response.isSuccess());
 	}
 

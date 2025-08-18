@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.test.switchcase.cmp;
 
 import com.yomahub.liteflow.core.NodeSwitchComponent;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.springframework.stereotype.Component;
 
 @Component("e")
@@ -15,6 +16,9 @@ public class ESwitchCmp extends NodeSwitchComponent {
 
 	@Override
 	public String processSwitch() throws Exception {
+		DefaultContext context = this.getFirstContextBean();
+		context.setData("targetList", this.getTargetList());
+
 		return "d";
 	}
 

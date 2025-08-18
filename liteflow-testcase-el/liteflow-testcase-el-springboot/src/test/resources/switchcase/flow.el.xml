@@ -83,4 +83,8 @@
     <chain name="sub1">
         THEN(a);
     </chain>
+
+    <chain name="chain14">
+        SWITCH(e).TO(sub1, d, a, chain10);
+    </chain>
 </flow>

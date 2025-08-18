@@ -55,11 +55,9 @@ public class SwitchCondition extends Condition {
 				String[] target = targetId.split(TAG_FLAG, 2);
 				String _targetId = target[0];
 				String _targetTag = target[1];
-				targetExecutor = targetList.stream().filter(executable -> {
-					return (StrUtil.startWith(_targetId, TAG_PREFIX) && ObjectUtil.equal(_targetTag,executable.getTag()))
-							|| ((StrUtil.isEmpty(_targetId) || _targetId.equals(executable.getId()))
-							&& (StrUtil.isEmpty(_targetTag) || _targetTag.equals(executable.getTag())));
-				}).findFirst().orElse(null);
+				targetExecutor = targetList.stream().filter(executable -> (StrUtil.startWith(_targetId, TAG_PREFIX) && ObjectUtil.equal(_targetTag,executable.getTag()))
+                        || ((StrUtil.isEmpty(_targetId) || _targetId.equals(executable.getId()))
+                        && (StrUtil.isEmpty(_targetTag) || _targetTag.equals(executable.getTag())))).findFirst().orElse(null);
 			}
 			else {
 				targetExecutor = targetList.stream()
