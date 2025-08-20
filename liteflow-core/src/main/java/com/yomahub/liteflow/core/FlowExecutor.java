@@ -496,7 +496,7 @@ public class FlowExecutor {
 		LOG.info("slot[{}] offered", slotIndex);
 
 		if (ObjectUtil.isNotNull(param)) {
-			slot.setRequestData(param);
+			slot.setChainReqData(chainId, param);
 		}
 
 		Chain chain = null;

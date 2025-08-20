@@ -8,6 +8,7 @@
 package com.yomahub.liteflow.core;
 
 import cn.hutool.core.date.StopWatch;
+import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
@@ -36,6 +37,9 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 普通组件抽象类
@@ -347,15 +351,7 @@ public abstract class NodeComponent{
 	}
 
 	public <T> T getRequestData() {
-		return getSlot().getRequestData();
-	}
-
-	public <T> T getSubChainReqData() {
-		return getSlot().getChainReqData(this.getCurrChainId());
-	}
-
-	public <T> T getSubChainReqDataInAsync() {
-		return getSlot().getChainReqDataFromQueue(this.getCurrChainId());
+		return getSlot().getChainReqData(getCurrChainId());
 	}
 
 	public boolean isRollback() {
@@ -535,4 +531,19 @@ public abstract class NodeComponent{
 		return originalClass.getName();
 	}
 
+	public LiteflowResponse invoke2Resp(String chainId, Object requestData){
+		return invoke2Resp(chainId, requestData, this.getSlot());
+	}
+
+	public LiteflowResponse invoke2Resp(String chainId, Object requestData, Slot slot){
+
+		LiteflowResponse response = FlowExecutorHolder.loadInstance().execute2RespWithRid(chainId,
+				requestData,
+				slot.getRequestId(),
+				slot.getContextBeanList().stream().map(tuple -> tuple.get(1)).toArray());
+
+		response.getExecuteStepQueue().forEach(slot::addStep);
+
+		return response;
+	}
 }

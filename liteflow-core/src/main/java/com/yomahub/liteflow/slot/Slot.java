@@ -159,14 +159,6 @@ public class Slot {
 		putMetaDataMap(NODE_OUTPUT_PREFIX + nodeId, t);
 	}
 
-	public <T> T getRequestData() {
-		return (T) metaDataMap.get(REQUEST);
-	}
-
-	public <T> void setRequestData(T t) {
-		putMetaDataMap(REQUEST, t);
-	}
-
 	public <T> T getResponseData() {
 		return (T) metaDataMap.get(RESPONSE);
 	}

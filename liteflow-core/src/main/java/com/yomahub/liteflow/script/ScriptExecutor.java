@@ -77,7 +77,7 @@ public abstract class ScriptExecutor {
 
 		// 在元数据里放入主Chain的流程参数
 		Slot slot = DataBus.getSlot(wrap.getSlotIndex());
-		metaMap.put("requestData", slot.getRequestData());
+		metaMap.put("requestData", wrap.cmp.getRequestData());
 
 		// 如果有隐式流程，则放入隐式流程的流程参数
 		Object subRequestData = slot.getChainReqData(wrap.getCurrChainId());
