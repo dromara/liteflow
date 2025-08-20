@@ -1,11 +1,13 @@
 package com.yomahub.liteflow.flow.element.condition;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.exception.AndOrConditionException;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
+import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.slot.DataBus;
@@ -35,10 +37,30 @@ public class AndOrCondition extends Condition {
         String resultKey = StrUtil.format("{}_{}",this.getClass().getName(),this.hashCode());
         switch (booleanConditionType) {
             case AND:
-                slot.setAndOrResult(resultKey, itemList.stream().allMatch(new AndOrConditionPredicate(slotIndex)));
+                slot.setAndOrResult(resultKey, itemList.stream().filter(executable -> {
+                    try{
+                        boolean flag = executable.isAccess(slotIndex);
+                        if (executable instanceof Node){
+                            ((Node)executable).setAccessResult(flag);
+                        }
+                        return flag;
+                    }catch (Exception e){
+                        return false;
+                    }
+                }).allMatch(new AndOrConditionPredicate(slotIndex)));
                 break;
             case OR:
-                slot.setAndOrResult(resultKey, itemList.stream().anyMatch(new AndOrConditionPredicate(slotIndex)));
+                slot.setAndOrResult(resultKey, itemList.stream().filter(executable -> {
+                    try{
+                        boolean flag = executable.isAccess(slotIndex);
+                        if (executable instanceof Node){
+                            ((Node)executable).setAccessResult(flag);
+                        }
+                        return flag;
+                    }catch (Exception e){
+                        return false;
+                    }
+                }).anyMatch(new AndOrConditionPredicate(slotIndex)));
                 break;
             default:
                 throw new AndOrConditionException("condition type must be 'AND' or 'OR'");
@@ -58,7 +80,7 @@ public class AndOrCondition extends Condition {
             try {
                 executable.setCurrChainId(getCurrChainId());
                 executable.execute(slotIndex);
-                return executable.getItemResultMetaValue(slotIndex);
+                return BooleanUtil.isTrue(executable.getItemResultMetaValue(slotIndex));
             } catch (Exception e) {
                 throw new AndOrConditionException(e.getMessage());
             }

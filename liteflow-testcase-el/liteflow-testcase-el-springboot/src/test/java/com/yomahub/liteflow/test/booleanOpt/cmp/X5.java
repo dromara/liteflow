@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class X5 extends NodeBooleanComponent {
     @Override
     public boolean processBoolean() throws Exception {
-        return false;
+        return true;
     }
 
     @Override

@@ -80,4 +80,12 @@ public class BooleanOptELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("x3==>x4==>b", response.getExecuteStepStr());
 	}
+
+	// AND 有一个isAccess为false
+	@Test
+	public void testBooleanOpt8() throws Exception {
+		LiteflowResponse response = flowExecutor.execute2Resp("chain8", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("x3==>x4==>a", response.getExecuteStepStr());
+	}
 }

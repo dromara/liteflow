@@ -34,4 +34,7 @@
         IF(OR(x3,x4,x5), a, b);
     </chain>
 
+    <chain name="chain8">
+        IF(AND(NOT(x3), NOT(x4), x5), a, b);
+    </chain>
 </flow>

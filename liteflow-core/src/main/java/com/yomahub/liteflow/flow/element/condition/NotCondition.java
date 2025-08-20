@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.flow.element.condition;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -35,7 +36,7 @@ public class NotCondition extends Condition {
     public Boolean getItemResultMetaValue(Integer slotIndex) {
         Slot slot = DataBus.getSlot(slotIndex);
         String resultKey = StrUtil.format("{}_{}",this.getClass().getName(),this.hashCode());
-        return slot.getNotResult(resultKey);
+        return BooleanUtil.isTrue(slot.getNotResult(resultKey));
     }
 
     @Override
