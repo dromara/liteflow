@@ -210,4 +210,23 @@ public class WhenELBuilderTest extends BaseTest {
         WhenELWrapper el = ELBus.when(ELBus.node("a"), ELBus.node("b"), ELBus.node("c")).customThreadExecutor("com.yomahub.liteflow.test.builder.customTreadExecutor.CustomThreadExecutor1");
         Assertions.assertTrue(LiteFlowChainELBuilder.validate(el.toEL()));
     }
+
+    // 测试互斥属性设置
+    @Test
+    public void testWHEN1(){
+        WhenELWrapper el = ELBus.when(ELBus.node("a"), ELBus.node("b")).percentage(0.66).any(true);
+        WhenELWrapper el2 = ELBus.when(ELBus.node("a"), ELBus.node("b")).must("a").any(true);
+        WhenELWrapper el3 = ELBus.when(ELBus.node("a"), ELBus.node("b")).must("a").percentage(0.55);
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, el::toEL);
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, el2::toEL);
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, el3::toEL);
+    }
+
+    // 测试 percentage 属性
+    @Test
+    public void testWHEN2(){
+        WhenELWrapper el = ELBus.when(ELBus.node("a"), ELBus.node("b")).percentage(0.66);
+        Assertions.assertTrue(LiteFlowChainELBuilder.validate(el.toEL()));
+    }
+
 }

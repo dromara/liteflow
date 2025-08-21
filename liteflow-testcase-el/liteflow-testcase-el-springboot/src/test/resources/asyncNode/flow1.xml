@@ -66,4 +66,24 @@
         THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z", g, "task1", "task2"), c);
     </chain>
 
+    <chain name="chain14">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(0.6f);
+    </chain>
+
+    <chain name="chain15">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(0);
+    </chain>
+
+    <chain name="chain16">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(1);
+    </chain>
+
+    <chain name="chain17">
+        WHEN(m.tag("1"), m.tag("2"), n.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).ignoreError(true).percentage(0.5);
+    </chain>
+
+    <chain name="chain18">
+        WHEN(THEN(m.tag("1"), n.tag("1.5")), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).ignoreError(false).percentage(0.4);
+    </chain>
+
 </flow>
