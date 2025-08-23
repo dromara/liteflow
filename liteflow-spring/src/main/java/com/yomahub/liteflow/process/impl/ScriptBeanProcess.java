@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.process.impl;
 
+import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.process.LiteflowScannerProcessStep;
 import com.yomahub.liteflow.process.context.LiteflowScannerProcessStepContext;
 import com.yomahub.liteflow.process.enums.LiteflowScannerProcessStepEnum;
@@ -24,7 +24,7 @@ public class ScriptBeanProcess implements LiteflowScannerProcessStep {
     public boolean filter(LiteflowScannerProcessStepContext ctx) {
         Class clazz = ctx.getClazz();
 
-        ScriptBean outPut = AnnoUtil.getAnnotation(clazz, ScriptBean.class);
+        ScriptBean outPut = AnnotationUtil.getAnnotationAlias(clazz, ScriptBean.class);
         ctx.setOutPut(outPut);
 
         return ObjectUtil.isNotNull(outPut);

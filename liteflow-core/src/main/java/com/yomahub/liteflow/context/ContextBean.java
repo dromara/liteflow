@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.context;
 
-import com.yomahub.liteflow.annotation.LFAliasFor;
+import cn.hutool.core.annotation.MirrorFor;
 
 import java.lang.annotation.*;
 
@@ -15,10 +15,10 @@ import java.lang.annotation.*;
 @Documented
 public @interface ContextBean {
 
-	@LFAliasFor("name")
+	@MirrorFor(attribute = "name")
 	String value() default "";
 
-	@LFAliasFor("value")
+	@MirrorFor(attribute = "value")
 	String name() default "";
 
 }

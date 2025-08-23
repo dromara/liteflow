@@ -8,12 +8,12 @@
  */
 package com.yomahub.liteflow.flow;
 
+import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.FallbackCmp;
-import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.ComponentInitializer;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -397,7 +397,7 @@ public class FlowBus {
 	// 判断是否是降级组件，如果是则添加到 fallbackNodeMap
 	private static void addFallbackNode(Node node) {
 		NodeComponent nodeComponent = node.getInstance();
-		FallbackCmp fallbackCmp = AnnoUtil.getAnnotation(nodeComponent.getClass(), FallbackCmp.class);
+		FallbackCmp fallbackCmp = AnnotationUtil.getAnnotation(nodeComponent.getClass(), FallbackCmp.class);
 		if (fallbackCmp == null) {
 			return;
 		}

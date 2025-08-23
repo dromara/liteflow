@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.annotation;
 
+import cn.hutool.core.annotation.MirrorFor;
 import org.springframework.stereotype.Component;
 import org.springframework.core.annotation.AliasFor;
 import java.lang.annotation.*;
@@ -18,12 +19,10 @@ import java.lang.annotation.*;
 public @interface LiteflowComponent {
 
 	@AliasFor(annotation = Component.class, attribute = "value")
-	@LFAliasFor("id")
-	String value() default "";
+    String value() default "";
 
 	@AliasFor(annotation = Component.class, attribute = "value")
-	@LFAliasFor("value")
-	String id() default "";
+    String id() default "";
 
 	String name() default "";
 

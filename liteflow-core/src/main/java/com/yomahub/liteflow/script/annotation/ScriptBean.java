@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.script.annotation;
 
-import com.yomahub.liteflow.annotation.LFAliasFor;
+import cn.hutool.core.annotation.MirrorFor;
 
 import java.lang.annotation.*;
 
@@ -16,10 +16,10 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ScriptBean {
 
-	@LFAliasFor("name")
+	@MirrorFor(attribute = "name")
 	String value() default "";
 
-	@LFAliasFor("value")
+	@MirrorFor(attribute = "value")
 	String name() default "";
 
 	String[] includeMethodName() default {};

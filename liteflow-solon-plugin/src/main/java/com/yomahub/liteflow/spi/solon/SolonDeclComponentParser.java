@@ -3,17 +3,14 @@ package com.yomahub.liteflow.spi.solon;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.annotation.*;
-import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.core.proxy.DeclWarpBean;
 import com.yomahub.liteflow.core.proxy.MethodWrapBean;
 import com.yomahub.liteflow.core.proxy.ParameterWrapBean;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.CmpDefinitionException;
-import com.yomahub.liteflow.exception.NotSupportDeclException;
 import com.yomahub.liteflow.spi.DeclComponentParser;
 import org.noear.solon.Solon;
 import org.noear.solon.annotation.Component;
-import org.noear.solon.core.BeanWrap;
 
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -39,14 +36,14 @@ public class SolonDeclComponentParser implements DeclComponentParser {
                 method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class) != null
         ).map(method -> {
             LiteflowMethod liteflowMethod = AnnotationUtil.getAnnotation(method, LiteflowMethod.class);
-            LiteflowRetry liteflowRetry = AnnotationUtil.getAnnotation(method, LiteflowRetry.class);
+            LiteflowRetry liteflowRetry = AnnotationUtil.getAnnotationAlias(method, LiteflowRetry.class);
 
             String currNodeId = null;
             String currNodeName = null;
             if (nodeId == null){
                 if (StrUtil.isBlank(liteflowMethod.nodeId())){
-                    LiteflowComponent liteflowComponent = AnnoUtil.getAnnotation(clazz, LiteflowComponent.class);
-                    Component component = AnnoUtil.getAnnotation(clazz, Component.class);
+                    LiteflowComponent liteflowComponent = AnnotationUtil.getAnnotationAlias(clazz, LiteflowComponent.class);
+                    Component component = AnnotationUtil.getAnnotation(clazz, Component.class);
 
                     if(liteflowComponent != null){
                         currNodeId = liteflowComponent.value();

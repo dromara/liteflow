@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.annotation;
 
+import cn.hutool.core.annotation.MirrorFor;
+
 import java.lang.annotation.*;
 
 /**
@@ -14,10 +16,10 @@ import java.lang.annotation.*;
 @Inherited
 public @interface LiteflowComponent {
 
-	@LFAliasFor("id")
+	@MirrorFor(attribute = "id")
 	String value() default "";
 
-	@LFAliasFor("value")
+	@MirrorFor(attribute = "value")
 	String id() default "";
 
 	String name() default "";

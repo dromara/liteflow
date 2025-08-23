@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.process.impl;
 
+import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yomahub.liteflow.annotation.util.AnnoUtil;
 import com.yomahub.liteflow.process.LiteflowScannerProcessStep;
 import com.yomahub.liteflow.process.context.LiteflowScannerProcessStepContext;
 import com.yomahub.liteflow.process.enums.LiteflowScannerProcessStepEnum;
@@ -34,7 +34,7 @@ public class ScriptMethodBeanProcess implements LiteflowScannerProcessStep {
         Class clazz = ctx.getClazz();
 
         List<Method> outPut = Arrays.stream(clazz.getMethods()).filter(method -> {
-            ScriptMethod scriptMethod = AnnoUtil.getAnnotation(method, ScriptMethod.class);
+            ScriptMethod scriptMethod = AnnotationUtil.getAnnotation(method, ScriptMethod.class);
             return ObjectUtil.isNotNull(scriptMethod) && StrUtil.isNotEmpty(scriptMethod.value());
         }).collect(Collectors.toList());
 
@@ -53,7 +53,7 @@ public class ScriptMethodBeanProcess implements LiteflowScannerProcessStep {
         LOG.info("script method[{}] has been found", beanName);
 
         Map<String, List<Method>> scriptMethodsGroupByValue = CollStreamUtil.groupBy(scriptMethods, method -> {
-            ScriptMethod scriptMethod = AnnoUtil.getAnnotation(method, ScriptMethod.class);
+            ScriptMethod scriptMethod = AnnotationUtil.getAnnotation(method, ScriptMethod.class);
             return scriptMethod.value();
         }, Collectors.toList());
 

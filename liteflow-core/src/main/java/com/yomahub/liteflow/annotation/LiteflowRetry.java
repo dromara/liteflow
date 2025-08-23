@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.annotation;
 
+import cn.hutool.core.annotation.MirrorFor;
+
 import java.lang.annotation.*;
 
 /**
@@ -20,10 +22,10 @@ import java.lang.annotation.*;
  */
 public @interface LiteflowRetry {
 
-	@LFAliasFor("retry")
+	@MirrorFor(attribute = "retry")
 	int value() default 0;
 
-	@LFAliasFor("value")
+	@MirrorFor(attribute = "value")
 	int retry() default 0;
 
 	Class<? extends Exception>[] forExceptions() default { Exception.class };
