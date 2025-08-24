@@ -5,8 +5,8 @@ import cn.hutool.core.annotation.MirrorFor;
 import java.lang.annotation.*;
 
 /**
- * LiteFlow组件重试次数
- *
+ * <p>LiteFlow组件重试次数</p>
+ * <p>这个注解已经被废弃，请参考EL中的retry关键字</p>
  * @author Bryan.Zhang
  * @since 2.6.0
  */
@@ -15,11 +15,6 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @Deprecated
-/**
- * This class has been deprecated due to its only component retry function. Please use the retry method in the EL expression.
- * @Deprecated
- * @see # retry(int retryTimes)   e.g. THEN( a, b.retry(3) ); WHEN( a, b ).retry(3);
- */
 public @interface LiteflowRetry {
 
 	@MirrorFor(attribute = "retry")
