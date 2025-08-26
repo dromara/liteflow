@@ -13,8 +13,6 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.test.builder.domain.TestDomain;
 import org.noear.solon.annotation.Inject;
 
-import javax.annotation.Resource;
-
 public class ACmp {
 
 	@Inject

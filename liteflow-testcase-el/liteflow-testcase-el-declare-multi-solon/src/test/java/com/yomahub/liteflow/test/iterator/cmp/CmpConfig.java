@@ -6,9 +6,6 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.test.base.cmp.TestDomain;
-
-import javax.annotation.Resource;
 import java.util.Iterator;
 import java.util.List;
 

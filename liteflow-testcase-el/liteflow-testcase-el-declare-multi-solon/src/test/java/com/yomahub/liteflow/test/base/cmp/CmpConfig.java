@@ -6,8 +6,6 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import org.noear.solon.annotation.Inject;
 
-import javax.annotation.Resource;
-
 @LiteflowComponent
 public class CmpConfig {
 

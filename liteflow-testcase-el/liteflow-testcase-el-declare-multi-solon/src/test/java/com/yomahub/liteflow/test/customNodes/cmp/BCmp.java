@@ -13,8 +13,6 @@ import com.yomahub.liteflow.enums.LiteFlowMethodEnum;
 import com.yomahub.liteflow.test.customNodes.domain.DemoDomain;
 import org.noear.solon.annotation.Inject;
 
-import javax.annotation.Resource;
-
 public class BCmp {
 
 	@Inject
