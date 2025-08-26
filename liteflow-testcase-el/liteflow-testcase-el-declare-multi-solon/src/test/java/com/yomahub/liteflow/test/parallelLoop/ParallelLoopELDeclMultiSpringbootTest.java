@@ -13,7 +13,6 @@ import org.noear.solon.annotation.Inject;
 import org.noear.solon.test.SolonTest;
 
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.regex.Pattern;
 

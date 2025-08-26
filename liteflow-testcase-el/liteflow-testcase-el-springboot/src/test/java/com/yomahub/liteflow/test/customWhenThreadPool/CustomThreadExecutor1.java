@@ -16,7 +16,7 @@ public class CustomThreadExecutor1 implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-        return buildDefaultExecutor(liteflowConfig.getGlobalThreadPoolSize(), liteflowConfig.getGlobalThreadPoolSize(),
+        return buildCommonExecutor(liteflowConfig.getGlobalThreadPoolSize(), liteflowConfig.getGlobalThreadPoolSize(),
                                     liteflowConfig.getQueueLimit(), "customer-when-1-thead-");
 	}
 

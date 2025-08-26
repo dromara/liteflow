@@ -53,6 +53,7 @@ public class LiteflowPropertyAutoConfiguration {
         liteflowConfig.setGlobalThreadPoolQueueSize(property.getGlobalThreadPoolQueueSize());
         liteflowConfig.setGlobalThreadPoolSize(property.getGlobalThreadPoolSize());
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
+		liteflowConfig.setEnableVirtualThread(property.isEnableVirtualThread());
 		liteflowConfig.setChainCacheEnabled(property.getChainCache().isEnabled());
 		liteflowConfig.setChainCacheCapacity(property.getChainCache().getCapacity());
 		return liteflowConfig;

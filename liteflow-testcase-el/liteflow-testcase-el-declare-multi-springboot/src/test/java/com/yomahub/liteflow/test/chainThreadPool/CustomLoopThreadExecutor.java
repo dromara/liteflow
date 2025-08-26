@@ -16,8 +16,7 @@ public class CustomLoopThreadExecutor implements ExecutorBuilder {
         if (ObjectUtil.isNull(liteflowConfig)) {
             liteflowConfig = new LiteflowConfig();
         }
-        return buildDefaultExecutor(16, 16,
-                                    512, "customer-loop-thead");
+        return buildCommonExecutor(16, 16, 512, "customer-loop-thead");
     }
 
 }

@@ -183,7 +183,7 @@
     {
       "name": "liteflow.global-thread-pool-queue-size",
       "type": "java.lang.Integer",
-      "description": "Set the global chain thread pool queue max-size ",
+      "description": "Set the global chain thread pool queue max-size.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": 512
     },
@@ -197,20 +197,27 @@
     {
       "name": "liteflow.script-setting",
       "type": "java.util.Map",
-      "description": "script special settings.",
+      "description": "Script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty"
     },
     {
       "name": "liteflow.enable-node-instance-id",
       "type": "java.lang.Boolean",
-      "description": "enable node instance id",
+      "description": "Whether to enable node instance id.",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.enable-virtual-thread",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable virtual threads(Only in jdk21).",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": false
     },
     {
       "name": "liteflow.chain-cache.enabled",
       "type": "java.lang.Boolean",
-      "description": "Enable chain cache.",
+      "description": "Whether to enable chain cache.",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
       "defaultValue": false
     },

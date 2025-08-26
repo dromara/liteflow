@@ -100,6 +100,9 @@ public class LiteflowProperty {
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
 
+	// 是否开启虚拟线程(只在jdk21环境下奏效)
+	private boolean enableVirtualThread;
+
 	// 规则缓存配置
 	@NestedConfigurationProperty
 	private ChainCacheProperty chainCache;
@@ -366,5 +369,13 @@ public class LiteflowProperty {
 
 	public void setChainCache(ChainCacheProperty chainCache) {
 		this.chainCache = chainCache;
+	}
+
+	public boolean isEnableVirtualThread() {
+		return enableVirtualThread;
+	}
+
+	public void setEnableVirtualThread(boolean enableVirtualThread) {
+		this.enableVirtualThread = enableVirtualThread;
 	}
 }

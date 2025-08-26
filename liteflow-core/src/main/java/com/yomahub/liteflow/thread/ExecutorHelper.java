@@ -9,6 +9,8 @@
 package com.yomahub.liteflow.thread;
 
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.JdkUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
@@ -214,5 +216,9 @@ public class ExecutorHelper {
 		return executor;
 	}
 
+	public boolean isEnabledVirtualThreads(){
+		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+        return BooleanUtil.isTrue(liteflowConfig.getEnableVirtualThread() && JdkUtil.JVM_VERSION == 21);
+	}
 
 }

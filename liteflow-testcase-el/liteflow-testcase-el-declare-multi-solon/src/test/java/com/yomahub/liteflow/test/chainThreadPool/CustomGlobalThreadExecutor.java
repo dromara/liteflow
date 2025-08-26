@@ -16,8 +16,7 @@ public class CustomGlobalThreadExecutor implements ExecutorBuilder {
         if (ObjectUtil.isNull(liteflowConfig)) {
             liteflowConfig = new LiteflowConfig();
         }
-        return buildDefaultExecutor(16, 16,
-                                    512, "customer-global-thead");
+        return buildCommonExecutor(16, 16, 512, "customer-global-thead");
     }
 
 }

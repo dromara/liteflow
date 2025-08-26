@@ -122,6 +122,9 @@ public class LiteflowConfig {
 	// chain缓存容量
 	private Integer chainCacheCapacity;
 
+	// 是否开启虚拟线程(只在jdk21环境下奏效)
+	private Boolean enableVirtualThread;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -522,5 +525,17 @@ public class LiteflowConfig {
 
 	public void setChainCacheCapacity(Integer chainCacheCapacity) {
 		this.chainCacheCapacity = chainCacheCapacity;
+	}
+
+	public Boolean getEnableVirtualThread() {
+		if (ObjectUtil.isNull(enableVirtualThread)) {
+			return Boolean.FALSE;
+		} else {
+			return enableVirtualThread;
+		}
+	}
+
+	public void setEnableVirtualThread(Boolean enableVirtualThread) {
+		this.enableVirtualThread = enableVirtualThread;
 	}
 }

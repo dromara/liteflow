@@ -1,7 +1,9 @@
 package com.yomahub.liteflow.thread;
 
+import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.ttl.threadpool.TtlExecutors;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,18 +20,42 @@ public interface ExecutorBuilder {
 	// 构建默认的线程池对象
 	default ExecutorService buildDefaultExecutor(int corePoolSize, int maximumPoolSize, int queueCapacity,
 			String threadName) {
+		ExecutorService executorService;
+
+		if (ExecutorHelper.loadInstance().isEnabledVirtualThreads()){
+			Method method = ReflectUtil.getMethodByName(Executors.class, "newVirtualThreadPerTaskExecutor");
+			executorService = ReflectUtil.invokeStatic(method);
+		}else{
+			executorService = TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
+					TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueCapacity), new ThreadFactory() {
+				private final AtomicLong number = new AtomicLong();
+
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread newThread = Executors.defaultThreadFactory().newThread(r);
+					newThread.setName(threadName + number.getAndIncrement());
+					newThread.setDaemon(false);
+					return newThread;
+				}
+			}, new ThreadPoolExecutor.CallerRunsPolicy()));
+		}
+		return executorService;
+	}
+
+	default ExecutorService buildCommonExecutor(int corePoolSize, int maximumPoolSize, int queueCapacity,
+												 String threadName) {
 		return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
 				TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueCapacity), new ThreadFactory() {
-					private final AtomicLong number = new AtomicLong();
+			private final AtomicLong number = new AtomicLong();
 
-					@Override
-					public Thread newThread(Runnable r) {
-						Thread newThread = Executors.defaultThreadFactory().newThread(r);
-						newThread.setName(threadName + number.getAndIncrement());
-						newThread.setDaemon(false);
-						return newThread;
-					}
-				}, new ThreadPoolExecutor.CallerRunsPolicy()));
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread newThread = Executors.defaultThreadFactory().newThread(r);
+				newThread.setName(threadName + number.getAndIncrement());
+				newThread.setDaemon(false);
+				return newThread;
+			}
+		}, new ThreadPoolExecutor.CallerRunsPolicy()));
 	}
 
 }

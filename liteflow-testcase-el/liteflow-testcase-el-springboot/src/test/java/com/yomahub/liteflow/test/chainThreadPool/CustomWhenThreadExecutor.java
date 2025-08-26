@@ -16,7 +16,7 @@ public class CustomWhenThreadExecutor implements ExecutorBuilder {
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			liteflowConfig = new LiteflowConfig();
 		}
-		return buildDefaultExecutor(16, 16,
+		return buildCommonExecutor(16, 16,
 									512, "customer-when-thead");
 	}
 
