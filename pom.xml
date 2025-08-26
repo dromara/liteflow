@@ -84,6 +84,46 @@
 		<caffeine.version>2.9.3</caffeine.version>
 	</properties>
 
+	<!--<profiles>
+		<profile>
+			<id>jdk-11-to-16</id>
+			<activation>
+				<jdk>[11, 16]</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.source>11</maven.compiler.source>
+				<maven.compiler.target>11</maven.compiler.target>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>jdk-17-to-20</id>
+			<activation>
+				<jdk>[17, 20]</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.source>17</maven.compiler.source>
+				<maven.compiler.target>17</maven.compiler.target>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>jdk-21-and-above</id>
+			<activation>
+				<jdk>[21,)</jdk>
+			</activation>
+			<properties>
+				<maven.compiler.source>21</maven.compiler.source>
+				<maven.compiler.target>21</maven.compiler.target>
+				<springboot.version>3.2.4</springboot.version>
+				<spring.version> 6.1.5</spring.version>
+				<logback-classic.version>1.4.14</logback-classic.version>
+				<junit.version>5.10.2</junit.version>
+				<org.slf4j.version>2.0.12</org.slf4j.version>
+			</properties>
+		</profile>
+	</profiles>-->
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
