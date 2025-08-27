@@ -529,7 +529,7 @@ public class LiteflowConfig {
 
 	public Boolean getEnableVirtualThread() {
 		if (ObjectUtil.isNull(enableVirtualThread)) {
-			return Boolean.FALSE;
+			return Boolean.TRUE;
 		} else {
 			return enableVirtualThread;
 		}

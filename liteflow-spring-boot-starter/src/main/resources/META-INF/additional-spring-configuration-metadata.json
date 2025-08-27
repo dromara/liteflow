@@ -212,7 +212,7 @@
       "type": "java.lang.Boolean",
       "description": "Whether to enable virtual threads(Only in jdk21).",
       "sourceType": "com.yomahub.liteflow.springboot.LiteflowProperty",
-      "defaultValue": false
+      "defaultValue": true
     },
     {
       "name": "liteflow.chain-cache.enabled",
