@@ -125,12 +125,12 @@ public class Slot {
 	}
 
 	private <T> void putThreadMetaDataMap(String key, T t) {
-		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getName());
+		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getId());
 		putMetaDataMap(threadKey, t);
 	}
 
 	private <T> T getThreadMetaData(String key) {
-		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getName());
+		String threadKey = StrUtil.format("{}_{}", key, Thread.currentThread().getId());
         return (T) metaDataMap.get(threadKey);
 	}
 

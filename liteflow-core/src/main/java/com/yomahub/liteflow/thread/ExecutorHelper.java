@@ -216,9 +216,14 @@ public class ExecutorHelper {
 		return executor;
 	}
 
+	private Boolean isEnabledVirtualThreadsCache;
+
 	public boolean isEnabledVirtualThreads(){
-		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-        return BooleanUtil.isTrue(liteflowConfig.getEnableVirtualThread() && JdkUtil.JVM_VERSION == 21);
+		if (isEnabledVirtualThreadsCache == null){
+			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
+			isEnabledVirtualThreadsCache = BooleanUtil.isTrue(liteflowConfig.getEnableVirtualThread() && JdkUtil.JVM_VERSION == 21);
+		}
+		return isEnabledVirtualThreadsCache;
 	}
 
 }

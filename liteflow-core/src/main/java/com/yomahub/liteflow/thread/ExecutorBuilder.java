@@ -24,7 +24,7 @@ public interface ExecutorBuilder {
 
 		if (ExecutorHelper.loadInstance().isEnabledVirtualThreads()){
 			Method method = ReflectUtil.getMethodByName(Executors.class, "newVirtualThreadPerTaskExecutor");
-			executorService = ReflectUtil.invokeStatic(method);
+			executorService = TtlExecutors.getTtlExecutorService(ReflectUtil.invokeStatic(method));
 		}else{
 			executorService = TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
 					TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueCapacity), new ThreadFactory() {

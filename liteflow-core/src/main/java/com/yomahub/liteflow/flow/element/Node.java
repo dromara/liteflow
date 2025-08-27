@@ -570,13 +570,18 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				if (parentValue == null) {
 					return null;
 				}
-				// 克隆 Stack
-				return (Stack<TupleOf2<Integer, Integer>>) parentValue.clone();
+
+				Stack<TupleOf2<Integer, Integer>> newStack = new Stack<>();
+				for (TupleOf2<Integer, Integer> tuple : parentValue) {
+					newStack.push(new TupleOf2<>(tuple.getA(), tuple.getB()));
+				}
+
+				return newStack;
 			}
 		};
 		node.loopObjectTL = new TransmittableThreadLocal<Stack<TupleOf2<Integer, Object>>>() {
 			/**
-			 * 在你提供的这个 TTL 版本中，我们重写 public T copy(T parentValue) 方法
+			 * 我们重写 public T copy(T parentValue) 方法
 			 * 来实现 Stack 的克隆，以确保线程隔离。
 			 */
 			@Override
@@ -585,8 +590,13 @@ public class Node implements Executable, Cloneable, Rollbackable{
 				if (parentValue == null) {
 					return null;
 				}
-				// 克隆 Stack
-				return (Stack<TupleOf2<Integer, Object>>) parentValue.clone();
+
+				Stack<TupleOf2<Integer, Object>> newStack = new Stack<>();
+				for (TupleOf2<Integer, Object> tuple : parentValue) {
+					newStack.push(new TupleOf2<>(tuple.getA(), tuple.getB()));
+				}
+
+				return newStack;
 			}
 		};
 		node.accessResult = new TransmittableThreadLocal<>();
