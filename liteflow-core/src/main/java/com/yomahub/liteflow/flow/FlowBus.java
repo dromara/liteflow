@@ -24,6 +24,7 @@ import com.yomahub.liteflow.enums.FlowParserTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.ComponentCannotRegisterException;
+import com.yomahub.liteflow.exception.NodeIdUnIllegalException;
 import com.yomahub.liteflow.exception.NullNodeTypeException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
@@ -43,6 +44,7 @@ import com.yomahub.liteflow.spi.ContextAware;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.holder.DeclComponentParserHolder;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
+import com.yomahub.liteflow.util.QlExpressUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -303,6 +305,14 @@ public class FlowBus {
 	// 调用到这里，分两种情况，一是脚本组件，二是通过LiteFlowNodeBuilder代码进行组装的组件
 	private static void addNode(String nodeId, String name, NodeTypeEnum type, Class<?> cmpClazz, String script, String language) {
 		try {
+            String nodeIdStr = StrUtil.isBlank(nodeId) ? name : nodeId;
+            // 检查nodeId是否合法
+            boolean nodeIdFlag = QlExpressUtils.checkVariableName(nodeIdStr);
+            // node id 不合法
+            if (!nodeIdFlag) {
+                throw new NodeIdUnIllegalException(nodeIdStr);
+            }
+
 			// 获得初始化好的NodeComponent
 			// 按理说一个nodeId对应一个NodeComponent，这里得到的是List<NodeComponent>的原因是，声明式组件有可能会有多个nodeId。
 			// 声明式组件又分类声明和方法声明，如果对于方法声明来说，这里的nodeId其实并不是最终真正的nodeId。
@@ -314,7 +324,22 @@ public class FlowBus {
 			for (int i = 0; i < nodes.size(); i++) {
 				addCompiledNode2Map(nodes.get(i), nodeId, script, language, type, cmpInstanceList.get(i));
 			}
-		} catch (Exception e) {
+		} catch (NodeIdUnIllegalException e) {
+            String nodeIdStr = e.getMessage();
+            String error = StrUtil.format(
+                    "component[{}] register error",
+                    StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name)
+            );
+
+            error = "Invalid node id: [" + nodeIdStr + "]. "
+                    + "node id must follow variable naming rules: "
+                    + "cannot start with a digit, must consist of letters, digits, underscores (_), or dollar signs ($), "
+                    + "and must not contain hyphens (-). "
+                    + error;
+
+            LOG.error(error, e);
+            throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
+        } catch (Exception e) {
 			String error = StrUtil.format("component[{}] register error", StrUtil.isEmpty(name) ? nodeId : StrUtil.format("{}({})", nodeId, name));
 			LOG.error(e.getMessage());
 			throw new ComponentCannotRegisterException(StrUtil.format("{} {}", error, e.getMessage()));
