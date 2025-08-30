@@ -62,7 +62,7 @@
 		<groovy.version>3.0.25</groovy.version>
 		<graalvm.version>22.0.0</graalvm.version>
 		<bytebuddy.version>1.17.7</bytebuddy.version>
-		<aspectjweaver.version>1.8.13</aspectjweaver.version>
+		<aspectjweaver.version>1.9.21</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
 		<solon.version>3.0.1</solon.version>
 		<netty.version>4.1.84.Final</netty.version>
