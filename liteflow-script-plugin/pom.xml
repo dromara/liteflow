@@ -13,6 +13,7 @@
 
 
     <artifactId>liteflow-script-plugin</artifactId>
+    <name>${project.artifactId}</name>
 
     <modules>
         <module>liteflow-script-qlexpress</module>
@@ -27,5 +28,4 @@
         <module>liteflow-script-javax-pro</module>
         <module>liteflow-script-kotlin</module>
     </modules>
-
 </project>

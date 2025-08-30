@@ -11,11 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>liteflow-rule-apollo</artifactId>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
+    <name>${project.artifactId}</name>
 
     <dependencies>
         <dependency>

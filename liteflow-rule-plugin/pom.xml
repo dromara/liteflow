@@ -20,6 +20,5 @@
     </modules>
 
     <artifactId>liteflow-rule-plugin</artifactId>
-
-
+    <name>${project.artifactId}</name>
 </project>
