@@ -221,7 +221,7 @@ public class ExecutorHelper {
 	public boolean isEnabledVirtualThreads(){
 		if (isEnabledVirtualThreadsCache == null){
 			LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
-			isEnabledVirtualThreadsCache = BooleanUtil.isTrue(liteflowConfig.getEnableVirtualThread() && JdkUtil.JVM_VERSION == 21);
+			isEnabledVirtualThreadsCache = BooleanUtil.isTrue(liteflowConfig.getEnableVirtualThread() && JdkUtil.JVM_VERSION >= 21);
 		}
 		return isEnabledVirtualThreadsCache;
 	}
