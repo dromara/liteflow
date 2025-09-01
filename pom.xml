@@ -29,13 +29,13 @@
 
 	<issueManagement>
 		<system>Github Issue</system>
-		<url>https://github.com/bryan31/liteflow/issues</url>
+		<url>https://github.com/dromara/liteflow/issues</url>
 	</issueManagement>
 
 	<scm>
-		<connection>scm:git@github.com:bryan31/liteflow.git</connection>
-		<developerConnection>scm:git@github.com:bryan31/liteflow.git</developerConnection>
-		<url>git@github.com:bryan31/liteflow.git</url>
+		<connection>scm:git@github.com:dromara/liteflow.git</connection>
+		<developerConnection>scm:git@github.com:dromara/liteflow.git</developerConnection>
+		<url>git@github.com:dromara/liteflow.git</url>
 	</scm>
 
 	<properties>
