@@ -26,7 +26,7 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 * **规则持久化：** 框架原生支持把规则存储在标准结构化数据库，Nacos，Etcd，Zookeeper，Apollo，redis。您也可以自己扩展，把规则存储在任何地方。
 * **优雅热刷新机制：** 规则变化，无需重启您的应用，即时改变应用的规则。高并发下不会因为刷新规则导致正在执行的规则有任何错乱。
 * **支持广泛：** 不管你的项目是不是基于Springboot，Spring还是任何其他java框架构建，LiteFlow都能游刃有余。
-* **JDK支持：** 从JDK8到JDK17，全部支持。无需担心JDK版本。
+* **JDK支持：** 从JDK8到JDK25，全部支持。无需担心JDK版本。
 * **Springboot支持全面：** 支持Springboot 2.X到最新的Springboot 3.X。
 * **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，Javascript，QLExpress，Python，Lua，Aviator，Java，Kotlin。未来还会支持更多的脚本语言。
 * **脚本和Java全打通：** 所有脚本语言均可调用Java方法，甚至于可以引用任意的实例，在脚本中调用RPC也是支持的。
@@ -97,10 +97,6 @@ LF CLUB里能解决你在使用LiteFlow框架时碰到的所有问题，并有�
 **FastBee物联网平台**
 
 <a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
-
-**JNPF低代码开发平台**
-
-<a href="https://www.jnpfsoft.com/index.html?from=liteflow"><img src="static/img/yinmai-banner.png"></a>
 
 **速众 AI 低代码开发平台**
 
