@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "https://liteflow.cc/liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s_memberDiscountCmp" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.benchmark.bean.PriceStepVO;
+            import com.yomahub.liteflow.benchmark.context.PriceContext;
+            import com.yomahub.liteflow.benchmark.enums.PriceTypeEnum;
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            import java.math.BigDecimal;
+            import java.math.RoundingMode;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    PriceContext context = this.getFirstContextBean();
+                    String memberCode = context.getMemberCode();
+
+                    /***这里Mock下通过memberCode去查会员等级表然后获取的会员折扣为9折的代码***/
+                    BigDecimal memberDiscount = new BigDecimal("0.9");
+
+                    //进行计算会员折扣
+                    BigDecimal prePrice = context.getLastestPriceStep().getCurrPrice();
+                    BigDecimal currPrice = prePrice.multiply(memberDiscount).setScale(2, RoundingMode.HALF_UP);
+
+                    //加入到价格步骤中
+                    context.addPriceStep(new PriceStepVO(PriceTypeEnum.MEMBER_DISCOUNT,
+                            memberCode,
+                            prePrice,
+                            currPrice.subtract(prePrice),
+                            currPrice, PriceTypeEnum.MEMBER_DISCOUNT.getName()));
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="s_couponCmp" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.benchmark.bean.PriceStepVO;
+            import com.yomahub.liteflow.benchmark.context.PriceContext;
+            import com.yomahub.liteflow.benchmark.enums.PriceTypeEnum;
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            import java.math.BigDecimal;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    PriceContext context = this.getFirstContextBean();
+
+                    /**这里Mock下根据couponId取到的优惠卷面值为15元**/
+                    Long couponId = context.getCouponId();
+                    BigDecimal couponPrice = new BigDecimal(15);
+
+                    BigDecimal prePrice = context.getLastestPriceStep().getCurrPrice();
+                    BigDecimal currPrice = prePrice.subtract(couponPrice);
+
+                    context.addPriceStep(new PriceStepVO(PriceTypeEnum.COUPON_DISCOUNT,
+                            couponId.toString(),
+                            prePrice,
+                            currPrice.subtract(prePrice),
+                            currPrice,
+                            PriceTypeEnum.COUPON_DISCOUNT.getName()));
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+
+    <chain name="mainChain">
+        THEN(
+            checkCmp, slotInitCmp, priceStepInitCmp,
+            promotionConvertCmp, s_memberDiscountCmp,
+            promotionChain, s_couponCmp,
+            SWITCH(postageCondCmp).to(postageCmp, overseaPostageCmp),
+            priceResultCmp, stepPrintCmp
+        );
+    </chain>
+</flow>

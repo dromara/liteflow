@@ -1,0 +1,91 @@
+{
+  "couponId": 80081,
+  "memberCode": "M21152",
+  "orderChannel": "APP",
+  "orderNo": "SO2020070611120001",
+  "oversea": false,
+  "productPackList": [
+    {
+      "category": "CLOTHES",
+      "count": 2,
+      "productCode": "PD5001XC",
+      "productId": 5001,
+      "promotionList": [
+        {
+          "id": 1001,
+          "promotionCode": "PM1001",
+          "promotionName": "夏季满减活动",
+          "promotionType": "FULL_CUT"
+        },
+        {
+          "id": 1002,
+          "promotionCode": "PM1002",
+          "promotionName": "夏季满折活动",
+          "promotionType": "FULL_DISCOUNT"
+        }
+      ],
+      "salePrice": 139,
+      "skuCode": "SKU5001XC001",
+      "skuId": 67001441,
+      "skuName": "夏季运动女式短裙M",
+      "skuSource": "RAW"
+    },
+    {
+      "category": "CLOTHES",
+      "count": 3,
+      "productCode": "PD6001XC",
+      "productId": 6001,
+      "promotionList": [
+        {
+          "id": 1001,
+          "promotionCode": "PM1001",
+          "promotionName": "夏季满减活动",
+          "promotionType": "FULL_CUT"
+        }
+      ],
+      "salePrice": 59,
+      "skuCode": "SKU6001XC001",
+      "skuId": 67002334,
+      "skuName": "男士迷彩短袜均码",
+      "skuSource": "RAW"
+    },
+    {
+      "category": "DAILY_USE",
+      "count": 5,
+      "productCode": "PD8001XC",
+      "productId": 8001,
+      "promotionList": [
+        {
+          "id": 1002,
+          "promotionCode": "PM1002",
+          "promotionName": "夏季满折活动",
+          "promotionType": "FULL_DISCOUNT"
+        }
+      ],
+      "salePrice": 28,
+      "skuCode": "SKU8001XC001",
+      "skuId": 87002001,
+      "skuName": "纯棉毛巾",
+      "skuSource": "RAW"
+    },
+    {
+      "category": "DAILY_USE",
+      "count": 2,
+      "productCode": "PD9001XC",
+      "productId": 9001,
+      "promotionList": [
+        {
+          "id": 1003,
+          "promotionCode": "PM1003",
+          "promotionName": "618抢购活动",
+          "promotionType": "RUSH_BUY"
+        }
+      ],
+      "salePrice": 30,
+      "skuCode": "SKU9001XC001",
+      "skuId": 97552001,
+      "skuName": "杀菌护手凝胶",
+      "skuSource": "RAW"
+    }
+  ]
+}

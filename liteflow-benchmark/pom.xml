@@ -47,5 +47,6 @@
         <module>liteflow-benchmark-script-java</module>
         <module>liteflow-benchmark-script-groovy</module>
         <module>liteflow-benchmark-common</module>
+        <module>liteflow-benchmark-common-example</module>
     </modules>
 </project>
