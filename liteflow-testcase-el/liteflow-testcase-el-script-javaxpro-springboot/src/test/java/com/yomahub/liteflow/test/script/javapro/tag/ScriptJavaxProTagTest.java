@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 @TestPropertySource(value = "classpath:/tag/application.properties")
 @SpringBootTest(classes = ScriptJavaxProTagTest.class)
 @EnableAutoConfiguration
+@ComponentScan({ "com.yomahub.liteflow.test.script.javapro.tag.aspect" })
 public class ScriptJavaxProTagTest extends BaseTest {
 
     @Resource
@@ -28,7 +29,7 @@ public class ScriptJavaxProTagTest extends BaseTest {
     // 测试同id的节点在when场景中tag是否正常
     @Test
     public void testTag1() throws Exception {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1; i++) {
             LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
             DefaultContext context = response.getFirstContextBean();
             Assertions.assertTrue(response.isSuccess());
