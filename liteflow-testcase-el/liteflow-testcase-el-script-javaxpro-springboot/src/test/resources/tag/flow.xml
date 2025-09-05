@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="a" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import cn.hutool.core.collection.ConcurrentHashSet;
+            import com.yomahub.liteflow.annotation.LiteflowComponent;
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class B1Cmp extends NodeComponent {
+
+                @Override
+                public void process() {
+                    DefaultContext context = this.getFirstContextBean();
+                    context.setData("test", new ConcurrentHashSet<String>());
+                }
+
+            }
+            ]]>
+        </node>
+
+        <node id="s1" name="普通脚本1" type="script" language="java">
+            <![CDATA[
+            import cn.hutool.core.collection.ConcurrentHashSet;
+            import com.yomahub.liteflow.annotation.LiteflowComponent;
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class JCmp extends NodeComponent {
+
+                @Override
+                public void process() {
+                    DefaultContext context = this.getFirstContextBean();
+                    ConcurrentHashSet<String> set = context.getData("test");
+                    set.add(this.getTag());
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+
+
+    <chain name="chain1">
+        THEN(a, WHEN(s1.tag("1"), s1.tag("2"), s1.tag("3"), s1.tag("4"), s1.tag("5")));
+    </chain>
+
+</flow>
