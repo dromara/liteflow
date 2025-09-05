@@ -19,4 +19,8 @@
     <chain name="chain5">
         WHEN(h.tag("1"));
     </chain>
+
+    <chain name="chain6">
+        THEN(b1, WHEN(j.tag("1"), j.tag("2"), j.tag("3"), j.tag("4"), j.tag("5")));
+    </chain>
 </flow>

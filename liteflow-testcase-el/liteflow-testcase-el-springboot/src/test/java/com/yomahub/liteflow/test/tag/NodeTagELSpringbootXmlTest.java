@@ -74,4 +74,16 @@ public class NodeTagELSpringbootXmlTest extends BaseTest {
 		Assertions.assertEquals("1", context.getData("test"));
 	}
 
+    // 测试同id的节点在when场景中tag是否正常
+    @Test
+    public void testTag6() throws Exception {
+        for (int i = 0; i < 1; i++) {
+            LiteflowResponse response = flowExecutor.execute2Resp("chain6", "arg");
+            DefaultContext context = response.getFirstContextBean();
+            Assertions.assertTrue(response.isSuccess());
+            ConcurrentHashSet<String> testSet = context.getData("test");
+            Assertions.assertEquals(5, testSet.size());
+        }
+    }
+
 }
