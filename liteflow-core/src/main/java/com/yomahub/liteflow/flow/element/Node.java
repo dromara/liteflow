@@ -73,10 +73,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	// 针对于脚本节点，这个属性代表脚本节点的脚本是否已经编译过
 	private volatile boolean isCompiled = true;
 
-	// 此属性代表在EL构建的时候，node节点是否已经从FLowBus中的nodeMap中clone过了。
-	// 如果已经clone过了，不再Clone
-	private boolean isCloned = false;
-
 	// node 的 isAccess 结果，主要用于 WhenCondition 的提前 isAccess 判断，避免 isAccess 方法重复执行
 	private TransmittableThreadLocal<Boolean> accessResult = new TransmittableThreadLocal<>();
 
@@ -147,9 +143,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 	@Override
 	public void setTag(String tag) {
 		this.tag = tag;
-		if (BooleanUtil.isFalse(this.isCloned)){
-			this.setCloned(true);
-		}
 	}
 
 	public String getName() {
@@ -306,9 +299,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void setCmpData(String cmpData) {
 		this.cmpData = cmpData;
-		if (BooleanUtil.isFalse(this.isCloned)){
-			this.setCloned(true);
-		}
 	}
 
 	@Override
@@ -522,9 +512,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public void putBindData(String key, String value) {
 		this.bindDataMap.put(key, value);
-		if (BooleanUtil.isFalse(this.isCloned)){
-			this.setCloned(true);
-		}
 	}
 
 	public boolean hasBindData(String key){
@@ -533,14 +520,6 @@ public class Node implements Executable, Cloneable, Rollbackable{
 
 	public String getBindData(String key) {
 		return this.bindDataMap.get(key);
-	}
-
-	public boolean isCloned() {
-		return isCloned;
-	}
-
-	public void setCloned(boolean cloned) {
-		isCloned = cloned;
 	}
 
 	public Object getStepData(){
@@ -606,7 +585,9 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		node.stepDataTL = new ThreadLocal<>();
 		node.lock4LoopIndex = new ReentrantLock();
 		node.lock4LoopObj = new ReentrantLock();
-		node.bindDataMap = new HashMap<>();
+        node.tag = this.tag;
+        node.cmpData = this.cmpData;
+		node.bindDataMap = new HashMap<>(this.bindDataMap);
 		return node;
 	}
 }
