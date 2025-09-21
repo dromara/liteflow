@@ -13,6 +13,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.annotation.AnnoUtil;
 import com.yomahub.liteflow.context.ContextBean;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
@@ -83,7 +84,7 @@ public class DataBus {
 
 	public static int offerSlotByBean(List<Object> contextList) {
 		List<Tuple> contextBeanList = contextList.stream().filter(Objects::nonNull).map(object -> {
-            ContextBean contextBean = AnnotationUtil.getAnnotationAlias(object.getClass(), ContextBean.class);
+            ContextBean contextBean = AnnoUtil.getAnnotation(object.getClass(), ContextBean.class);
             String contextKey;
             if (contextBean != null && StrUtil.isNotBlank(contextBean.value())){
                 contextKey = contextBean.value();

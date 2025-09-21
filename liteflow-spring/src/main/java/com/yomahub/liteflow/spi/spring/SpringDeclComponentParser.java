@@ -38,7 +38,7 @@ public class SpringDeclComponentParser implements DeclComponentParser {
                 method -> AnnotationUtil.getAnnotation(method, LiteflowMethod.class) != null
         ).map(method -> {
             LiteflowMethod liteflowMethod = AnnotationUtil.getAnnotation(method, LiteflowMethod.class);
-            LiteflowRetry liteflowRetry = AnnotationUtil.getAnnotationAlias(method, LiteflowRetry.class);
+            LiteflowRetry liteflowRetry = AnnoUtil.getAnnotation(method, LiteflowRetry.class);
 
             String currNodeId = null;
             String currNodeName = null;
