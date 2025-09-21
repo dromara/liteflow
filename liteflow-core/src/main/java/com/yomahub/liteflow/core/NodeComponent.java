@@ -351,7 +351,7 @@ public abstract class NodeComponent{
 	}
 
 	public <T> T getRequestData() {
-		return getSlot().getChainReqData(getCurrChainId());
+		return getSlot().getChainReqData(getChainId());
 	}
 
 	public boolean isRollback() {
