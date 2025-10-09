@@ -335,14 +335,6 @@ public class FlowExecutor {
 		// 规范化 el 表达式
 		String normalizedEl = ElRegexUtil.normalize(elStr);
 
-		// 校验 EL 是否正常
-		ValidationResp validationResp = LiteFlowChainELBuilder.validateWithEx(normalizedEl);
-
-		if (!validationResp.isSuccess()) {
-			// 实际封装的是 ELParseException 类型
-			return LiteflowResponse.newMainResponse(validationResp.getCause());
-		}
-
 		// 计算 EL MD5 值，并检查对应的 chain 是否已加载到内存中
 		String elMd5 = MD5.create().digestHex(normalizedEl);
 
