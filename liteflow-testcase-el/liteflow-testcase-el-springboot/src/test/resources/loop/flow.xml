@@ -56,4 +56,8 @@
     <chain name="chain10">
         FOR(4).DO(FOR(3).DO(FOR(2).DO(c)));
     </chain>
+
+    <chain name="chain11">
+        WHILE(true).DO(a).BREAK(y);
+    </chain>
 </flow>

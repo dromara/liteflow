@@ -118,4 +118,11 @@ public class LoopELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("[000][001][010][011][020][021][100][101][110][111][120][121][200][201][210][211][220][221][300][301][310][311][320][321]", assertStr);
 	}
+
+    // WHILE(true)表达式的可行性验证
+    @Test
+    public void testLoop11() throws Exception {
+        LiteflowResponse response = flowExecutor.execute2Resp("chain11", "arg");
+        Assertions.assertTrue(response.isSuccess());
+    }
 }
