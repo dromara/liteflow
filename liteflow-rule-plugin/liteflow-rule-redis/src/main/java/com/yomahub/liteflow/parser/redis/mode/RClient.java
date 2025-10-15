@@ -41,10 +41,9 @@ public class RClient {
         Set<String> mapFieldSet = mapCache.keySet();
         if (CollectionUtil.isEmpty(mapFieldSet)) {
             return map;
-        }
-        for (String field : mapFieldSet) {
-            String value = mapCache.get(field);
-            map.put(field, value);
+        } else {
+            Map<String, String> readAllMap = mapCache.readAllMap();
+            map.putAll(readAllMap);
         }
         return map;
     }
