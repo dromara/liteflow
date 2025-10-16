@@ -37,4 +37,8 @@
     <chain name="chain2">
         THEN(d,SWITCH(s2).to(a,b));
     </chain>
+
+    <chain name="a">
+        THEN(a,b,c);
+    </chain>
 </flow>

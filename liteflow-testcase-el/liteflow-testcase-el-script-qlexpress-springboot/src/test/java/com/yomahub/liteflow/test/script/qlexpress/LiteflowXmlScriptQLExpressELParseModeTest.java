@@ -69,4 +69,12 @@ public class LiteflowXmlScriptQLExpressELParseModeTest extends BaseTest {
 			}
 		}
 	}
+
+	// china 和组件 同名 爆栈
+	@Test
+	public void testScript1() {
+		LiteflowResponse response = flowExecutor.execute2Resp("a", "arg");
+		Assertions.assertTrue(response.isSuccess());
+		Assertions.assertEquals("a==>b==>c", response.getExecuteStepStrWithoutTime());
+	}
 }
