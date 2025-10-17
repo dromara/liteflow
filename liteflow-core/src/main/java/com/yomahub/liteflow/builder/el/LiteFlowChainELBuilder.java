@@ -31,6 +31,7 @@ import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.util.ElRegexUtil;
+import com.yomahub.liteflow.util.QlExpressUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,53 +67,10 @@ public class LiteFlowChainELBuilder {
 	 * 所以在这里做一个缓存，等conditionList全部build完毕后，再去一次性替换chain里面的conditionList
 	 */
 	private final List<Condition> conditionList;
-
-	/**
-	 * EL解析引擎
-	 */
-	public final static ExpressRunner EXPRESS_RUNNER = new ExpressRunner();
-
-	static {
-		// 初始化QLExpress的Runner
-		EXPRESS_RUNNER.addFunction(ChainConstant.THEN, new ThenOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.WHEN, new WhenOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.SER, new ThenOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.PAR, new WhenOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.SWITCH, new SwitchOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.PRE, new PreOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.FINALLY, new FinallyOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.IF, new IfOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.NODE.toUpperCase(), new NodeOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.NODE, new NodeOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.FOR, new ForOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.WHILE, new WhileOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.ITERATOR, new IteratorOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.CATCH, new CatchOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.AND, new AndOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.OR, new OrOperator());
-		EXPRESS_RUNNER.addFunction(ChainConstant.NOT, new NotOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELSE, Object.class, new ElseOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ELIF, Object.class, new ElifOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO, Object.class, new ToOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TO.toLowerCase(), Object.class, new ToOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DEFAULT, Object.class, new DefaultOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.TAG, Object.class, new TagOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ANY, Object.class, new AnyOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MUST, Object.class, new MustOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.PERCENTAGE, Object.class, new PercentageOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.ID, Object.class, new IdOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.IGNORE_ERROR, Object.class, new IgnoreErrorOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.THREAD_POOL, Object.class, new ThreadPoolOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DO, Object.class, new DoOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BREAK, Object.class, new BreakOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.DATA, Object.class, new DataOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MAX_WAIT_SECONDS, Object.class, new MaxWaitSecondsOperator());
-        EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.MAX_WAIT_MILLISECONDS, Object.class, new MaxWaitMillisecondsOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.PARALLEL, Object.class, new ParallelOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.RETRY, Object.class, new RetryOperator());
-		EXPRESS_RUNNER.addFunctionAndClassMethod(ChainConstant.BIND, Object.class, new BindOperator());
-
-	}
+    /**
+     * EL解析引擎
+     */
+    private final static ExpressRunner EXPRESS_RUNNER = QlExpressUtils.getInstance();
 
 	public static LiteFlowChainELBuilder createChain() {
 		return new LiteFlowChainELBuilder();
