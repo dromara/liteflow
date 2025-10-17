@@ -363,7 +363,7 @@ public class LiteFlowChainELBuilder {
 
 			String[] itemArray = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
 			Arrays.stream(itemArray).forEach(item -> {
-                if (FlowBus.containChain(item)){
+                if (FlowBus.containChain(item) && !chain.getChainId().equals(item)) {
 					Chain itemChain = FlowBus.getChain(item);
 					if (!itemChain.isCompiled()){
 						buildUnCompileChain(FlowBus.getChain(item));
