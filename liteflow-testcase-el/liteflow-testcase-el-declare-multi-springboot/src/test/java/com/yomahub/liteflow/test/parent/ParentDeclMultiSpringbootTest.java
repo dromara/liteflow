@@ -31,7 +31,7 @@ public class ParentDeclMultiSpringbootTest extends BaseTest {
 	private FlowExecutor flowExecutor;
 
 	@Test
-	public void testBase1() throws Exception {
+	public void testP1() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2Resp("chain1", "arg");
 		Assertions.assertTrue(response.isSuccess());
 	}
