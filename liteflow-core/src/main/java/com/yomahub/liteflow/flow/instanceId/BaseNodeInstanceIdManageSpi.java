@@ -1,13 +1,13 @@
 package com.yomahub.liteflow.flow.instanceId;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.InstanceInfoDto;
 import com.yomahub.liteflow.util.JsonUtil;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 
@@ -26,7 +26,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
      */
     @Override
     public Node getNodeByIdAndInstanceId(String chainId, String instanceId) {
-        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
+        if (StrUtil.isBlank(chainId) || StrUtil.isBlank(instanceId)) {
             return null;
         }
         Chain chain = FlowBus.getChain(chainId);
@@ -45,7 +45,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
      */
     @Override
     public Node getNodeByIdAndIndex(String chainId, String nodeId, Integer index) {
-        if (StringUtils.isBlank(chainId) || index == null) {
+        if (StrUtil.isBlank(chainId) || index == null) {
             return null;
         }
         Chain chain = FlowBus.getChain(chainId);
@@ -64,7 +64,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
      */
     @Override
     public List<String> getNodeInstanceIds(String chainId, String nodeId) {
-        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(nodeId)) {
+        if (StrUtil.isBlank(chainId) || StrUtil.isBlank(nodeId)) {
             return Collections.emptyList();
         }
         // 第一行为elMd5 第二行为实例id json格式信息
@@ -133,7 +133,7 @@ public abstract class BaseNodeInstanceIdManageSpi implements NodeInstanceIdManag
      */
     @Override
     public int getNodeLocationById(String chainId, String instanceId) {
-        if (StringUtils.isBlank(chainId) || StringUtils.isBlank(instanceId)) {
+        if (StrUtil.isBlank(chainId) || StrUtil.isBlank(instanceId)) {
             return -1;
         }
         // 第一行为elMd5 第二行为实例id json格式信息

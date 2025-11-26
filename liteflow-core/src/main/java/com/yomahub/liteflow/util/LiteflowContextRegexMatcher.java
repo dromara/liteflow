@@ -4,12 +4,14 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ql.util.express.DefaultContext;
-import com.ql.util.express.ExpressRunner;
-import com.ql.util.express.InstructionSet;
+import com.alibaba.qlexpress4.Express4Runner;
+import com.alibaba.qlexpress4.QLResult;
+import com.alibaba.qlexpress4.InitOptions;
+import com.alibaba.qlexpress4.QLOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -26,7 +28,7 @@ import java.util.stream.IntStream;
  */
 public class LiteflowContextRegexMatcher {
 
-    private static final ExpressRunner expressRunner = new ExpressRunner();
+    private static final Express4Runner expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
 
     public static Object searchContext(List<Tuple> contextList, String regPattern){
         // 把上下文数据转换成map形式的，key为别名，value为上下文
@@ -34,16 +36,14 @@ public class LiteflowContextRegexMatcher {
                 Collectors.toMap(tuple -> tuple.get(0), tuple -> tuple.get(1))
         );
 
-        List<String> errorList = new ArrayList<>();
-
         Object result = null;
         // 根据表达式去上下文里搜索相匹配的数据
         for(Map.Entry<String, Object> entry : contextMap.entrySet()){
             try{
-                InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(entry.getKey() + "." + regPattern);
-                DefaultContext<String, Object> context = new DefaultContext<>();
+                Map<String, Object> context = new HashMap<>();
                 context.put(entry.getKey(), entry.getValue());
-                result = expressRunner.execute(instructionSet, context, errorList, false, false);
+                QLResult expressResult = expressRunner.execute(entry.getKey() + "." + regPattern, context, QLOptions.DEFAULT_OPTIONS);
+                result = expressResult.getResult();
                 if (result != null){
                     break;
                 }
@@ -53,10 +53,10 @@ public class LiteflowContextRegexMatcher {
         if (result == null){
             try{
                 // 如果没有搜到，那么尝试推断表达式是指定的上下文，按照指定上下文的方式去再获取
-                InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache("contextMap." + regPattern);
-                DefaultContext<String, Object> context = new DefaultContext<>();
+                Map<String, Object> context = new HashMap<>();
                 context.put("contextMap", contextMap);
-                result = expressRunner.execute(instructionSet, context, errorList, false, false);
+                QLResult expressResult = expressRunner.execute("contextMap." + regPattern, context, QLOptions.DEFAULT_OPTIONS);
+                result = expressResult.getResult();
             }catch (Exception ignore){}
         }
 
@@ -68,8 +68,6 @@ public class LiteflowContextRegexMatcher {
         Map<String, Object> contextMap = contextList.stream().collect(
                 Collectors.toMap(tuple -> tuple.get(0), tuple -> tuple.get(1))
         );
-
-        List<String> errorList = new ArrayList<>();
 
         boolean flag = false;
 
@@ -83,11 +81,10 @@ public class LiteflowContextRegexMatcher {
 
         for(Map.Entry<String, Object> entry : contextMap.entrySet()){
             try{
-                InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(StrUtil.format("{}.{}({})", entry.getKey(), methodExpress, argStr));
-                DefaultContext<String, Object> context = new DefaultContext<>();
+                Map<String, Object> context = new HashMap<>();
                 context.put(entry.getKey(), entry.getValue());
                 tupleList.forEach(tuple -> context.put(tuple.getA(), args[tuple.getB()]));
-                expressRunner.execute(instructionSet, context, errorList, false, false);
+                expressRunner.execute(StrUtil.format("{}.{}({})", entry.getKey(), methodExpress, argStr), context, QLOptions.DEFAULT_OPTIONS);
                 flag = true;
                 break;
             }catch (Exception ignore){}
@@ -97,11 +94,10 @@ public class LiteflowContextRegexMatcher {
         if (BooleanUtil.isFalse(flag)){
             try{
                 // 如果没有搜到，那么尝试推断表达式是指定的上下文，按照指定上下文的方式去再获取
-                InstructionSet instructionSet = expressRunner.getInstructionSetFromLocalCache(StrUtil.format("contextMap.{}({})", methodExpress, argStr));
-                DefaultContext<String, Object> context = new DefaultContext<>();
+                Map<String, Object> context = new HashMap<>();
                 context.put("contextMap", contextMap);
                 tupleList.forEach(tuple -> context.put(tuple.getA(), args[tuple.getB()]));
-                expressRunner.execute(instructionSet, context, errorList, false, false);
+                expressRunner.execute(StrUtil.format("contextMap.{}({})", methodExpress, argStr), context, QLOptions.DEFAULT_OPTIONS);
             }catch (Exception ignore){}
         }
     }

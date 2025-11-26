@@ -3,7 +3,7 @@ package com.yomahub.liteflow.builder.el.operator;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ql.util.express.exception.QLException;
+import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -46,7 +46,7 @@ public class ForOperator extends BaseOperator<ForCondition> {
 			node.setId(nodeForComponent.getNodeId());
 		}
 		else {
-			throw new QLException("The parameter must be Node item");
+			throw new ELParseException("The parameter must be Node item");
 		}
 
 		ForCondition forCondition = new ForCondition();

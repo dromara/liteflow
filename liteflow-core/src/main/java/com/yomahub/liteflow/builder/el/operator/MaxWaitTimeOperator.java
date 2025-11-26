@@ -2,7 +2,7 @@ package com.yomahub.liteflow.builder.el.operator;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.StrFormatter;
-import com.ql.util.express.exception.QLException;
+import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.flow.element.Condition;
@@ -42,7 +42,7 @@ public abstract class MaxWaitTimeOperator extends BaseOperator<Condition> {
         } else if (executable instanceof FinallyCondition) {
             // FINALLY，报错
             String errorMsg = StrFormatter.format("The caller [{}] cannot use the keyword \"{}'\"", executable.toString(), operatorName());
-            throw new QLException(errorMsg);
+            throw new ELParseException(errorMsg);
         } else if (containsFinally(executable)) {
             // 处理 THEN 中的 FINALLY
             ThenCondition thenCondition = OperatorHelper.convert(executable, ThenCondition.class);

@@ -58,7 +58,7 @@
 		<zkclient.version>0.10</zkclient.version>
 		<jetcd.version>0.7.3</jetcd.version>
 		<nacos.version>1.4.4</nacos.version>
-		<qlexpress.version>3.3.4</qlexpress.version>
+		<qlexpress.version>4.0.5</qlexpress.version>
 		<groovy.version>3.0.25</groovy.version>
 		<graalvm.version>22.0.0</graalvm.version>
 		<bytebuddy.version>1.17.7</bytebuddy.version>
@@ -227,7 +227,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba</groupId>
-				<artifactId>QLExpress</artifactId>
+				<artifactId>qlexpress4</artifactId>
 				<version>${qlexpress.version}</version>
 			</dependency>
 			<dependency>

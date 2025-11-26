@@ -2,10 +2,10 @@ package com.yomahub.liteflow.script.qlexpress;
 
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ql.util.express.DefaultContext;
-import com.ql.util.express.ExpressLoader;
-import com.ql.util.express.ExpressRunner;
-import com.ql.util.express.InstructionSet;
+import com.alibaba.qlexpress4.Express4Runner;
+import com.alibaba.qlexpress4.QLResult;
+import com.alibaba.qlexpress4.InitOptions;
+import com.alibaba.qlexpress4.QLOptions;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,13 +31,13 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private ExpressRunner expressRunner;
+	private Express4Runner expressRunner;
 
-	private final Map<String, InstructionSet> compiledScriptMap = new CopyOnWriteHashMap<>();
+	private final Map<String, String> compiledScriptMap = new CopyOnWriteHashMap<>();
 
 	@Override
 	public ScriptExecutor init() {
-		expressRunner = new ExpressRunner(true, false);
+		expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
 		//如果有生命周期则执行相应生命周期实现
 		super.lifeCycle(expressRunner);
 		return this;
@@ -45,7 +46,8 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public void load(String nodeId, String script) {
 		try {
-			compiledScriptMap.put(nodeId, (InstructionSet) compile(script));
+			// QLExpress4 不需要预编译，直接存储脚本内容
+			compiledScriptMap.put(nodeId, script);
 		}
 		catch (Exception e) {
 			String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
@@ -65,24 +67,21 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public Object executeScript(ScriptExecuteWrap wrap) throws Exception {
-		List<String> errorList = new ArrayList<>();
 		try {
 			if (!compiledScriptMap.containsKey(wrap.getNodeId())) {
 				String errorMsg = StrUtil.format("script for node[{}] is not loaded", wrap.getNodeId());
 				throw new ScriptLoadException(errorMsg);
 			}
 
-			InstructionSet instructionSet = compiledScriptMap.get(wrap.getNodeId());
-			DefaultContext<String, Object> context = new DefaultContext<>();
+			String script = compiledScriptMap.get(wrap.getNodeId());
+			Map<String, Object> context = new HashMap<>();
 
 			bindParam(wrap, context::put, context::putIfAbsent);
 
-			return expressRunner.execute(instructionSet, context, errorList, true, false);
+			QLResult expressResult = expressRunner.execute(script, context, QLOptions.DEFAULT_OPTIONS);
+			return expressResult.getResult();
 		}
 		catch (Exception e) {
-			for (String scriptErrorMsg : errorList) {
-				log.error("\n{}", scriptErrorMsg);
-			}
 			throw e;
 		}
 	}
@@ -90,8 +89,10 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public void cleanCache() {
 		compiledScriptMap.clear();
-		expressRunner.clearExpressCache();
-		ReflectUtil.setFieldValue(expressRunner, "loader", new ExpressLoader(expressRunner));
+		// QLExpress4 没有 clearExpressCache 方法，重新初始化 runner
+		expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+		//如果有生命周期则执行相应生命周期实现
+		super.lifeCycle(expressRunner);
 	}
 
 	@Override
@@ -101,7 +102,8 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public Object compile(String script) throws Exception {
-		return expressRunner.getInstructionSetFromLocalCache(script);
+		// QLExpress4 不支持预编译，返回 null
+		return null;
 	}
 
 }

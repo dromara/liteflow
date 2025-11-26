@@ -7,7 +7,6 @@ import com.yomahub.liteflow.parser.sql.exception.ELSQLException;
 import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
 import com.yomahub.liteflow.parser.sql.read.vo.InstanceIdVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,7 +58,7 @@ public class InstanceIdRead extends AbstractSqlRead<InstanceIdVO> {
         String instanceIdApplicationNameField = super.config.getInstanceIdApplicationNameField();
         String applicationName = super.config.getApplicationName();
 
-        if (StringUtils.isEmpty(chainId)) {
+        if (StrUtil.isEmpty(chainId)) {
             throw new IllegalArgumentException("You did not define the chainId");
         }
         return StrUtil.format(SqlReadConstant.SQL_PATTERN_WITH_CHAIN_ID, tableName, instanceIdApplicationNameField
