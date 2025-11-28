@@ -182,13 +182,10 @@ public class LiteFlowChainELBuilder {
 			return this;
 		} catch (QLException e) {
 			// EL 底层会包装异常，这里是曲线处理
-			if (ObjectUtil.isNotNull(e.getCause()) && Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+			if (ObjectUtil.isNotNull(e.getCause())) {
 				// 构建错误信息
 				String msg = buildDataNotFoundExceptionMsg(elStr);
 				throw new ELParseException(msg);
-			}else if (ObjectUtil.isNotNull(e.getCause())){
-				String causeMsg = e.getCause().getMessage();
-				throw new ELParseException(StrUtil.isNotBlank(causeMsg) ? causeMsg : e.getMessage());
 			}else{
 				throw new ELParseException(StrUtil.isNotBlank(e.getMessage()) ? e.getMessage() : "Unknown EL parse error");
 			}

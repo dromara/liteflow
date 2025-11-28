@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.script.qlexpress;
 
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.qlexpress4.Express4Runner;
 import com.alibaba.qlexpress4.QLResult;
 import com.alibaba.qlexpress4.InitOptions;
 import com.alibaba.qlexpress4.QLOptions;
+import com.alibaba.qlexpress4.security.QLSecurityStrategy;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
 import com.yomahub.liteflow.script.ScriptExecutor;
@@ -13,10 +13,7 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.script.ScriptException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public ScriptExecutor init() {
-		expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+		expressRunner = new Express4Runner(InitOptions.builder().securityStrategy(QLSecurityStrategy.open()).build());
 		//如果有生命周期则执行相应生命周期实现
 		super.lifeCycle(expressRunner);
 		return this;
@@ -46,7 +43,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public void load(String nodeId, String script) {
 		try {
-			// QLExpress4 不需要预编译，直接存储脚本内容
+			expressRunner.parseToDefinitionWithCache(script);
 			compiledScriptMap.put(nodeId, script);
 		}
 		catch (Exception e) {
@@ -78,7 +75,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 			bindParam(wrap, context::put, context::putIfAbsent);
 
-			QLResult expressResult = expressRunner.execute(script, context, QLOptions.DEFAULT_OPTIONS);
+			QLResult expressResult = expressRunner.execute(script, context, QLOptions.builder().cache(true).build());
 			return expressResult.getResult();
 		}
 		catch (Exception e) {
@@ -89,8 +86,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 	@Override
 	public void cleanCache() {
 		compiledScriptMap.clear();
-		// QLExpress4 没有 clearExpressCache 方法，重新初始化 runner
-		expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+        expressRunner.clearCompileCache();
 		//如果有生命周期则执行相应生命周期实现
 		super.lifeCycle(expressRunner);
 	}
@@ -102,8 +98,7 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	@Override
 	public Object compile(String script) throws Exception {
-		// QLExpress4 不支持预编译，返回 null
-		return null;
+        return expressRunner.parseToDefinitionWithCache(script);
 	}
 
 }

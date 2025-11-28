@@ -42,7 +42,7 @@ public class LiteflowContextRegexMatcher {
             try{
                 Map<String, Object> context = new HashMap<>();
                 context.put(entry.getKey(), entry.getValue());
-                QLResult expressResult = expressRunner.execute(entry.getKey() + "." + regPattern, context, QLOptions.DEFAULT_OPTIONS);
+                QLResult expressResult = expressRunner.execute(entry.getKey() + "." + regPattern, context, QLOptions.builder().cache(true).build());
                 result = expressResult.getResult();
                 if (result != null){
                     break;
@@ -55,7 +55,7 @@ public class LiteflowContextRegexMatcher {
                 // 如果没有搜到，那么尝试推断表达式是指定的上下文，按照指定上下文的方式去再获取
                 Map<String, Object> context = new HashMap<>();
                 context.put("contextMap", contextMap);
-                QLResult expressResult = expressRunner.execute("contextMap." + regPattern, context, QLOptions.DEFAULT_OPTIONS);
+                QLResult expressResult = expressRunner.execute("contextMap." + regPattern, context, QLOptions.builder().cache(true).build());
                 result = expressResult.getResult();
             }catch (Exception ignore){}
         }
@@ -84,7 +84,7 @@ public class LiteflowContextRegexMatcher {
                 Map<String, Object> context = new HashMap<>();
                 context.put(entry.getKey(), entry.getValue());
                 tupleList.forEach(tuple -> context.put(tuple.getA(), args[tuple.getB()]));
-                expressRunner.execute(StrUtil.format("{}.{}({})", entry.getKey(), methodExpress, argStr), context, QLOptions.DEFAULT_OPTIONS);
+                expressRunner.execute(StrUtil.format("{}.{}({})", entry.getKey(), methodExpress, argStr), context, QLOptions.builder().cache(true).build());
                 flag = true;
                 break;
             }catch (Exception ignore){}
@@ -97,7 +97,7 @@ public class LiteflowContextRegexMatcher {
                 Map<String, Object> context = new HashMap<>();
                 context.put("contextMap", contextMap);
                 tupleList.forEach(tuple -> context.put(tuple.getA(), args[tuple.getB()]));
-                expressRunner.execute(StrUtil.format("contextMap.{}({})", methodExpress, argStr), context, QLOptions.DEFAULT_OPTIONS);
+                expressRunner.execute(StrUtil.format("contextMap.{}({})", methodExpress, argStr), context, QLOptions.builder().cache(true).build());
             }catch (Exception ignore){}
         }
     }
