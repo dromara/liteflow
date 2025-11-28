@@ -7,35 +7,35 @@
 
     <chain name="chain2">
         THEN(
-        a,b,
-        SWITCH(e).to(d,f)
+            a,b,
+            SWITCH(e).to(d,f)
         );
     </chain>
 
     <chain name="chain3">
         THEN(
-        a,
-        WHEN(
-        c,
-        SWITCH(g).to(b, d, THEN(h,i).id("then_1001"))
-        )
+            a,
+            WHEN(
+                c,
+                SWITCH(g).to(b, d, THEN(h,i).id("then_1001"))
+            )
         );
     </chain>
 
     <chain name="chain4">
         THEN(
-        a,b,
-        WHEN(
-        THEN(c, WHEN(j,k)),
-        d,
-        THEN(h, i)
-        ),
-        SWITCH(x).to(
-        m,
-        n,
-        WHEN(q, THEN(p, r)).id("w01")
-        ),
-        z
+            a,b,
+            WHEN(
+                THEN(c, WHEN(j,k)),
+                d,
+                THEN(h, i)
+            ),
+            SWITCH(x).to(
+                m,
+                n,
+                WHEN(q, THEN(p, r)).id("w01")
+            ),
+            z
         );
     </chain>
 
@@ -45,10 +45,10 @@
         t2 = THEN(h, i);
 
         THEN(
-        a,b,
-        WHEN(t1, d, t2 ),
-        SWITCH(x).to(m, n, w1),
-        z
+            a,b,
+            WHEN(t1, d, t2 ),
+            SWITCH(x).to(m, n, w1),
+            z
         );
         THEN(a,b,b,a,SWITCH(e).TO(d,b))
     </chain>
