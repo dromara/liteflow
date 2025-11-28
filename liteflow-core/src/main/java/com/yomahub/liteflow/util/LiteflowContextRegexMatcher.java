@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
  */
 public class LiteflowContextRegexMatcher {
 
-    private static final Express4Runner expressRunner = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+    private static final Express4Runner expressRunner = QlExpressUtils.getContextSearchExpressRunner();
 
     public static Object searchContext(List<Tuple> contextList, String regPattern){
         // 把上下文数据转换成map形式的，key为别名，value为上下文

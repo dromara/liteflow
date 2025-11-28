@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -15,7 +14,7 @@ import com.alibaba.qlexpress4.exception.QLException;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.yomahub.liteflow.builder.el.operator.*;
+
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ParseModeEnum;
@@ -37,9 +36,9 @@ import com.yomahub.liteflow.util.ElRegexUtil;
 import com.yomahub.liteflow.util.QlExpressUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 
 /**
@@ -73,7 +72,7 @@ public class LiteFlowChainELBuilder {
     /**
      * EL解析引擎
      */
-    private final static Express4Runner EXPRESS_RUNNER = QlExpressUtils.getInstance();
+    private final static Express4Runner EXPRESS_RUNNER = QlExpressUtils.getELExpressRunner();
 
 	public static LiteFlowChainELBuilder createChain() {
 		return new LiteFlowChainELBuilder();
@@ -290,25 +289,15 @@ public class LiteFlowChainELBuilder {
 		String msg = String.format("[node/chain is not exist or node/chain not register]\n EL: %s",
 				StrUtil.trim(elStr));
 		try {
-			// QLExpress4 暂时不支持 getInstructionSetFromLocalCache 方法
-			// 这里简化处理，直接返回基本错误信息
-			// TODO: 等待 QLExpress4 提供相应的 API 后再完善此功能
-			return msg;
-
-			/* 旧版本的代码，等待 QLExpress4 支持后再启用
-			InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
-			if (parseResult == null) {
-				return msg;
-			}
-
-			String[] outAttrNames = parseResult.getOutAttrNames();
-			if (ArrayUtil.isEmpty(outAttrNames)) {
+			// 使用 QLExpress4 的 getOutVarNames 方法获取脚本中使用的所有外部变量
+			Set<String> outVarNames = EXPRESS_RUNNER.getOutVarNames(elStr);
+			if (CollUtil.isEmpty(outVarNames)) {
 				return msg;
 			}
 
 			List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
 			List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
-			for (String attrName : outAttrNames) {
+			for (String attrName : outVarNames) {
 				if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
 					msg = String.format(
 							"[%s] is not exist or [%s] is not registered, you need to define a node or chain with id [%s] and register it \n EL: ",
@@ -332,13 +321,12 @@ public class LiteFlowChainELBuilder {
 					// 还有一种特殊情况，就是 EL 表达式中的节点使用 node("a")
 					int nodeIndex = sourceEl.indexOf(String.format("node(\"%s\")", attrName));
 					if (nodeIndex != -1) {
-						// 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0
+						// 需要加上 "EL: " 的长度 4，再加上 "node("" 长度 6，再加上 "^" 的长度 1，indexOf 从 0
 						// 开始，所以还需要加 1
 						return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
 					}
 				}
 			}
-			*/
 		} catch (Exception ex) {
 			// ignore
 		}
@@ -373,12 +361,8 @@ public class LiteFlowChainELBuilder {
 			// 只有当PARSE_ONE_ON_FIRST_EXEC时才会执行这个方法
 			// 那么会有一种级联的情况：这个EL中含有其他的chain，如果这时候不先解析其他chain，就到导致诸如循环场景无法设置index或者obj的情况
 			// 所以这里要判断表达式里有没有其他的chain，如果有，进行先行解析
-
-			// TODO: QLExpress4 暂时没有 getOutVarNames 方法，这里先注释掉级联解析逻辑
-			// 等待 QLExpress4 提供相应的 API 后再恢复
-			/*
-			String[] itemArray = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
-			Arrays.stream(itemArray).forEach(item -> {
+			Set<String> itemSet = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
+			itemSet.stream().forEach(item -> {
                 if (FlowBus.containChain(item) && !chain.getChainId().equals(item)) {
 					Chain itemChain = FlowBus.getChain(item);
 					if (!itemChain.isCompiled()){
@@ -386,7 +370,6 @@ public class LiteFlowChainELBuilder {
 					}
                 }
             });
-			*/
 
 			// 解析el成为一个Condition
 			// 为什么这里只是一个Condition，而不是一个List<Condition>呢

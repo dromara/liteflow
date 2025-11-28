@@ -2,6 +2,7 @@ package com.yomahub.liteflow.util;
 
 import com.alibaba.qlexpress4.Express4Runner;
 import com.alibaba.qlexpress4.InitOptions;
+import com.alibaba.qlexpress4.security.QLSecurityStrategy;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
 
@@ -17,6 +18,11 @@ public class QlExpressUtils {
      * EL解析引擎
      */
     private final static Express4Runner EXPRESS_RUNNER = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+
+    /**
+     * 上下文搜索解析引擎
+     */
+    private final static Express4Runner CONTEXT_SEARCH_EXPRESS_RUNNER = new Express4Runner(InitOptions.builder().securityStrategy(QLSecurityStrategy.open()).build());
 
     static {
         // 初始化QLExpress的Runner
@@ -63,8 +69,15 @@ public class QlExpressUtils {
     /**
      * 获取QLExpress的实例
      */
-    public static Express4Runner getInstance() {
+    public static Express4Runner getELExpressRunner() {
         return EXPRESS_RUNNER;
+    }
+
+    /**
+     * 获取上下文搜索的QLExpress实例
+     */
+    public static Express4Runner getContextSearchExpressRunner() {
+        return CONTEXT_SEARCH_EXPRESS_RUNNER;
     }
 
     /**

@@ -16,7 +16,6 @@ import com.yomahub.liteflow.parser.sql.read.SqlReadFactory;
 import com.yomahub.liteflow.parser.sql.read.vo.ChainVO;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +115,7 @@ public class JDBCHelper {
             String language = scriptVO.getLanguage();
             String elData = scriptVO.getScript();
 
-            if (StringUtils.isNotBlank(scriptVO.getLanguage())) {
+            if (StrUtil.isNotBlank(scriptVO.getLanguage())) {
                 scriptList.add(StrUtil.format(NODE_ITEM_WITH_LANGUAGE_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, language, elData));
             } else {
                 scriptList.add(StrUtil.format(NODE_ITEM_XML_PATTERN, XmlUtil.escape(id), XmlUtil.escape(name), type, elData));
