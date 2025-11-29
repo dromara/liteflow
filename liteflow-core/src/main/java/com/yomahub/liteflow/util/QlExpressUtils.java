@@ -2,6 +2,7 @@ package com.yomahub.liteflow.util;
 
 import com.alibaba.qlexpress4.Express4Runner;
 import com.alibaba.qlexpress4.InitOptions;
+import com.alibaba.qlexpress4.aparser.InterpolationMode;
 import com.alibaba.qlexpress4.security.QLSecurityStrategy;
 import com.yomahub.liteflow.builder.el.operator.*;
 import com.yomahub.liteflow.common.ChainConstant;
@@ -17,7 +18,7 @@ public class QlExpressUtils {
     /**
      * EL解析引擎
      */
-    private final static Express4Runner EXPRESS_RUNNER = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+    private final static Express4Runner EXPRESS_RUNNER = new Express4Runner(InitOptions.builder().interpolationMode(InterpolationMode.DISABLE).build());
 
     /**
      * 上下文搜索解析引擎
