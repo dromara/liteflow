@@ -1,10 +1,13 @@
 package com.yomahub.liteflow.benchmark;
 
 import cn.hutool.core.io.resource.ResourceUtil;
+import com.yomahub.liteflow.benchmark.cmp.TestContext;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.slot.DefaultContext;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -42,7 +45,12 @@ public class CommonBenchmark {
 
     @Benchmark
     public  void test1(){
-        flowExecutor.execute2Resp("chain1");
+        TestContext context = new TestContext();
+        context.setName("tom");
+        context.setAge(21);
+        DefaultContext defaultContext = new DefaultContext();
+
+        flowExecutor.execute2Resp("chain1", null, context,defaultContext);
     }
 
     public static void main(String[] args) throws RunnerException {
