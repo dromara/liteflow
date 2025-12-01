@@ -17,11 +17,13 @@ public class QlExpressUtils {
 
     /**
      * EL解析引擎
+     * InterpolationMode.DISABLE意思是不对插值表达式进行处理
      */
     private final static Express4Runner EXPRESS_RUNNER = new Express4Runner(InitOptions.builder().interpolationMode(InterpolationMode.DISABLE).build());
 
     /**
      * 上下文搜索解析引擎
+     * QLSecurityStrategy.open()意思是将安全策略设置为开放
      */
     private final static Express4Runner CONTEXT_SEARCH_EXPRESS_RUNNER = new Express4Runner(InitOptions.builder().securityStrategy(QLSecurityStrategy.open()).build());
 

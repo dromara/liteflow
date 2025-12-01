@@ -371,7 +371,7 @@ public class LiteFlowChainELBuilder {
 			// 解析el成为一个Condition
 			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
 			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-			QLResult expressResult = EXPRESS_RUNNER.execute(chain.getEl(), context, QLOptions.DEFAULT_OPTIONS);
+			QLResult expressResult = EXPRESS_RUNNER.execute(chain.getEl(), context, QLOptions.builder().cache(true).build());
 			Condition condition = (Condition) expressResult.getResult();
 
 			if (Objects.isNull(condition)){
@@ -431,8 +431,7 @@ public class LiteFlowChainELBuilder {
 		// 解析el成为一个Condition
 		// 为什么这里只是一个Condition，而不是一个List<Condition>呢
 		// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-
-        QLResult expressResult = EXPRESS_RUNNER.execute(elStr, context, QLOptions.DEFAULT_OPTIONS);
+        QLResult expressResult = EXPRESS_RUNNER.execute(elStr, context, QLOptions.builder().cache(true).build());
         return (T) expressResult.getResult();
 	}
 

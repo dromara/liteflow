@@ -11,11 +11,11 @@ public class CmpConfig {
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "b")
     public void processA(NodeComponent bindCmp, @LiteflowFact("name") String name) {
-        System.out.println(name);
+//        System.out.println(name);
     }
 
     @LiteflowMethod(value = LiteFlowMethodEnum.PROCESS, nodeId = "c")
     public void processB(NodeComponent bindCmp, @LiteflowFact("age") int age) {
-        System.out.println(age);
+//        System.out.println(age);
     }
 }
