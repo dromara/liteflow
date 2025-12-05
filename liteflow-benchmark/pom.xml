@@ -16,13 +16,14 @@
 
     <properties>
         <jmh.version>1.37</jmh.version>
+        <liteflow-version>${revision}</liteflow-version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-spring-boot-starter</artifactId>
-            <version>${revision}</version>
+            <version>${liteflow-version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -48,5 +49,6 @@
         <module>liteflow-benchmark-script-groovy</module>
         <module>liteflow-benchmark-common</module>
         <module>liteflow-benchmark-common-example</module>
+        <module>liteflow-benchmark-compile</module>
     </modules>
 </project>

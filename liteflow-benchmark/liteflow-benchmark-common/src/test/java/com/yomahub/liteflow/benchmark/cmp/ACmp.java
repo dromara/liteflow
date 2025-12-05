@@ -22,7 +22,7 @@ public class ACmp extends NodeComponent {
 	public void process() {
 		int v1 = 2;
 		int v2 = 3;
-		DefaultContext ctx = this.getFirstContextBean();
+		DefaultContext ctx = this.getContextBean(DefaultContext.class);
 		ctx.setData("s1", v1 * v2);
 
 		TestDomain domain = ContextAwareHolder.loadContextAware().getBean(TestDomain.class);

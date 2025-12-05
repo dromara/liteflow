@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.builder.el.operator;
 
-import com.ql.util.express.exception.QLException;
+import com.yomahub.liteflow.exception.ELParseException;
 import com.yomahub.liteflow.builder.el.operator.base.BaseOperator;
 import com.yomahub.liteflow.builder.el.operator.base.OperatorHelper;
 import com.yomahub.liteflow.enums.ParallelStrategyEnum;
@@ -24,7 +24,7 @@ public class PercentageOperator extends BaseOperator<WhenCondition> {
         Double percentage = OperatorHelper.convert2Double(objects[1]);
 
         if (percentage > 1 || percentage < 0) {
-            throw new QLException("The percentage must be between 0 and 1.");
+            throw new ELParseException("The percentage must be between 0 and 1.");
         }
 
         whenCondition.setParallelStrategy(ParallelStrategyEnum.PERCENTAGE);

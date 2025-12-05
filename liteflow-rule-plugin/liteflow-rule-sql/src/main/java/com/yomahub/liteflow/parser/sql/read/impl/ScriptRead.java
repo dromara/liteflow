@@ -8,7 +8,6 @@ import com.yomahub.liteflow.parser.sql.read.AbstractSqlRead;
 import com.yomahub.liteflow.parser.sql.read.vo.ScriptVO;
 import com.yomahub.liteflow.parser.sql.util.LiteFlowJdbcUtil;
 import com.yomahub.liteflow.parser.sql.vo.SQLParserVO;
-import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -56,7 +55,7 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
 
     @Override
     public String buildQuerySql() {
-        if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
+        if (StrUtil.isNotBlank(super.config.getScriptCustomSql())) {
             return super.config.getScriptCustomSql();
         }
 
@@ -72,7 +71,7 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
 
     @Override
     public String buildQuerySql(String scriptNodeId) {
-        if (StringUtils.isNotBlank(super.config.getScriptCustomSql())) {
+        if (StrUtil.isNotBlank(super.config.getScriptCustomSql())) {
             return super.config.getScriptCustomSql();
         }
 

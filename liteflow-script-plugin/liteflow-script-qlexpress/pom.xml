@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>QLExpress</artifactId>
+            <artifactId>qlexpress4</artifactId>
         </dependency>
     </dependencies>
 </project>

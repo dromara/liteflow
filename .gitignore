@@ -81,6 +81,5 @@ atlassian-ide-plugin.xml
 */logs
 
 .flattened-pom.xml
-
 .claude
 .vscode

@@ -97,8 +97,17 @@ public class BaseELSpringbootTest extends BaseTest {
 		// 应返回 chain2
 		Assertions.assertEquals("chain2", response.getChainId());
 
-		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("t1=THEN(c, WHEN(j,k));w1 = WHEN(q, THEN(p, r)).id('w01');t2 = THEN(h, i);\n" +
-				"THEN(a,b,WHEN(t1, d, t2 ),SWITCH(x).to(m, n, w1),z);");
+		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("t1 = THEN(c, WHEN(j,k));\n" +
+                "        w1 = WHEN(q, THEN(p, r)).id(\"w01\");\n" +
+                "        t2 = THEN(h, i);\n" +
+                "\n" +
+                "        THEN(\n" +
+                "        a,b,\n" +
+                "        WHEN(t1, d, t2 ),\n" +
+                "        SWITCH(x).to(m, n, w1),\n" +
+                "        z\n" +
+                "        );\n" +
+                "        THEN(a,b,b,a,SWITCH(e).TO(d,b));");
 		Assertions.assertTrue(response1.isSuccess());
 		// 应返回 chain5
 		Assertions.assertEquals("chain5", response1.getChainId());

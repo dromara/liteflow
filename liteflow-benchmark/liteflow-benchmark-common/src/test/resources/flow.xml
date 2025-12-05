@@ -2,6 +2,6 @@
 <!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
 <flow>
     <chain name="chain1">
-        THEN(a);
+        THEN(a,b,c);
     </chain>
 </flow>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="channelSenderChain">
+        selectBestChannel = THEN(WHEN(channel1Query, channel2Query, channel3Query,channel4Query, channel5Query, channel6Query),channelSelector).id("branch1");
+        selectBizChannel = THEN(biz1,SWITCH(if_2).to(channel3,channel4,SWITCH(if_3).to(channel5, channel6).id("s3")).id("s2")).id("branch2");
+        THEN(packageData,SWITCH(if_1).to(channel1,channel2,selectBestChannel,selectBizChannel),batchSender);
+    </chain>
+</flow>

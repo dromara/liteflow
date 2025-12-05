@@ -1,18 +1,20 @@
 package com.yomahub.liteflow.builder.el;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.MD5;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ql.util.express.DefaultContext;
-import com.ql.util.express.ExpressRunner;
-import com.ql.util.express.InstructionSet;
-import com.ql.util.express.exception.QLException;
-import com.yomahub.liteflow.builder.el.operator.*;
+import com.alibaba.qlexpress4.Express4Runner;
+import com.alibaba.qlexpress4.QLOptions;
+import com.alibaba.qlexpress4.QLResult;
+import com.alibaba.qlexpress4.exception.QLException;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ParseModeEnum;
@@ -34,9 +36,9 @@ import com.yomahub.liteflow.util.ElRegexUtil;
 import com.yomahub.liteflow.util.QlExpressUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 
 /**
@@ -70,7 +72,7 @@ public class LiteFlowChainELBuilder {
     /**
      * EL解析引擎
      */
-    private final static ExpressRunner EXPRESS_RUNNER = QlExpressUtils.getInstance();
+    private final static Express4Runner EXPRESS_RUNNER = QlExpressUtils.getELExpressRunner();
 
 	public static LiteFlowChainELBuilder createChain() {
 		return new LiteFlowChainELBuilder();
@@ -131,15 +133,17 @@ public class LiteFlowChainELBuilder {
 				String msg = buildDataNotFoundExceptionMsg(routeEl);
 				throw new ELParseException(msg);
 			}else if (ObjectUtil.isNotNull(e.getCause())){
-				throw new ELParseException(e.getCause().getMessage());
+				String causeMsg = e.getCause().getMessage();
+				throw new ELParseException(StrUtil.isNotBlank(causeMsg) ? causeMsg : e.getMessage());
 			}else{
-				throw new ELParseException(e.getMessage());
+				throw new ELParseException(StrUtil.isNotBlank(e.getMessage()) ? e.getMessage() : "Unknown EL parse error");
 			}
 		}catch (RouteELInvalidException e){
 			throw e;
 		}catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
-			throw new ELParseException(errMsg + e.getMessage());
+			String exMsg = e.getMessage();
+			throw new ELParseException(errMsg + (StrUtil.isNotBlank(exMsg) ? exMsg : e.getClass().getSimpleName()));
 		}
 	}
 
@@ -166,7 +170,7 @@ public class LiteFlowChainELBuilder {
 			Condition condition = compile(elStr, errorList, true);
 
 			if (Objects.isNull(condition)){
-				throw new QLException(StrUtil.format("parse el fail,el:[{}]", elStr));
+				throw new ELParseException(StrUtil.format("parse el fail,el:[{}]", elStr));
 			}
 
 			if (liteflowConfig.getEnableNodeInstanceId()) {
@@ -178,18 +182,17 @@ public class LiteFlowChainELBuilder {
 			return this;
 		} catch (QLException e) {
 			// EL 底层会包装异常，这里是曲线处理
-			if (ObjectUtil.isNotNull(e.getCause()) && Objects.equals(e.getCause().getMessage(), DataNotFoundException.MSG)) {
+			if (ObjectUtil.isNotNull(e.getCause())) {
 				// 构建错误信息
 				String msg = buildDataNotFoundExceptionMsg(elStr);
 				throw new ELParseException(msg);
-			}else if (ObjectUtil.isNotNull(e.getCause())){
-				throw new ELParseException(e.getCause().getMessage());
 			}else{
-				throw new ELParseException(e.getMessage());
+				throw new ELParseException(StrUtil.isNotBlank(e.getMessage()) ? e.getMessage() : "Unknown EL parse error");
 			}
 		} catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
-			throw new ELParseException(errMsg + e.getMessage());
+			String exMsg = e.getMessage();
+			throw new ELParseException(errMsg + (StrUtil.isNotBlank(exMsg) ? exMsg : e.getClass().getSimpleName()));
 		}
 	}
 
@@ -283,19 +286,15 @@ public class LiteFlowChainELBuilder {
 		String msg = String.format("[node/chain is not exist or node/chain not register]\n EL: %s",
 				StrUtil.trim(elStr));
 		try {
-			InstructionSet parseResult = EXPRESS_RUNNER.getInstructionSetFromLocalCache(elStr);
-			if (parseResult == null) {
-				return msg;
-			}
-
-			String[] outAttrNames = parseResult.getOutAttrNames();
-			if (ArrayUtil.isEmpty(outAttrNames)) {
+			// 使用 QLExpress4 的 getOutVarNames 方法获取脚本中使用的所有外部变量
+			Set<String> outVarNames = EXPRESS_RUNNER.getOutVarNames(elStr);
+			if (CollUtil.isEmpty(outVarNames)) {
 				return msg;
 			}
 
 			List<String> chainIds = CollUtil.map(FlowBus.getChainMap().values(), Chain::getChainId, true);
 			List<String> nodeIds = CollUtil.map(FlowBus.getNodeMap().values(), Node::getId, true);
-			for (String attrName : outAttrNames) {
+			for (String attrName : outVarNames) {
 				if (!chainIds.contains(attrName) && !nodeIds.contains(attrName)) {
 					msg = String.format(
 							"[%s] is not exist or [%s] is not registered, you need to define a node or chain with id [%s] and register it \n EL: ",
@@ -319,7 +318,7 @@ public class LiteFlowChainELBuilder {
 					// 还有一种特殊情况，就是 EL 表达式中的节点使用 node("a")
 					int nodeIndex = sourceEl.indexOf(String.format("node(\"%s\")", attrName));
 					if (nodeIndex != -1) {
-						// 需要加上 "EL: " 的长度 4，再加上 “node("” 长度 6，再加上 "^" 的长度 1，indexOf 从 0
+						// 需要加上 "EL: " 的长度 4，再加上 "node("" 长度 6，再加上 "^" 的长度 1，indexOf 从 0
 						// 开始，所以还需要加 1
 						return msg + sourceEl + "\n" + StrUtil.fill("^", CharUtil.SPACE, commaLeftIndex + 12, true);
 					}
@@ -342,9 +341,8 @@ public class LiteFlowChainELBuilder {
 			return;
 		}
 
-		List<String> errorList = new ArrayList<>();
 		try {
-			DefaultContext<String, Object> context = new DefaultContext<>();
+			Map<String, Object> context = new HashMap<>();
 
 			// 这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
 			// 往上下文里放入所有的chain，是的el表达式可以直接引用到chain
@@ -360,9 +358,8 @@ public class LiteFlowChainELBuilder {
 			// 只有当PARSE_ONE_ON_FIRST_EXEC时才会执行这个方法
 			// 那么会有一种级联的情况：这个EL中含有其他的chain，如果这时候不先解析其他chain，就到导致诸如循环场景无法设置index或者obj的情况
 			// 所以这里要判断表达式里有没有其他的chain，如果有，进行先行解析
-
-			String[] itemArray = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
-			Arrays.stream(itemArray).forEach(item -> {
+			Set<String> itemSet = EXPRESS_RUNNER.getOutVarNames(chain.getEl());
+			itemSet.stream().forEach(item -> {
                 if (FlowBus.containChain(item) && !chain.getChainId().equals(item)) {
 					Chain itemChain = FlowBus.getChain(item);
 					if (!itemChain.isCompiled()){
@@ -374,10 +371,11 @@ public class LiteFlowChainELBuilder {
 			// 解析el成为一个Condition
 			// 为什么这里只是一个Condition，而不是一个List<Condition>呢
 			// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-			Condition condition = (Condition) EXPRESS_RUNNER.execute(chain.getEl(), context, errorList, true, true);
+			QLResult expressResult = EXPRESS_RUNNER.execute(chain.getEl(), context, QLOptions.builder().cache(true).build());
+			Condition condition = (Condition) expressResult.getResult();
 
 			if (Objects.isNull(condition)){
-				throw new QLException(StrUtil.format("parse el fail,el:[{}]", chain.getEl()));
+				throw new ELParseException(StrUtil.format("parse el fail,el:[{}]", chain.getEl()));
 			}
 
 			// 设置实例id
@@ -400,19 +398,21 @@ public class LiteFlowChainELBuilder {
 				String msg = buildDataNotFoundExceptionMsg(chain.getEl());
 				throw new ELParseException(msg);
 			}else if (ObjectUtil.isNotNull(e.getCause())){
-				throw new ELParseException(e.getCause().getMessage());
+				String causeMsg = e.getCause().getMessage();
+				throw new ELParseException(StrUtil.isNotBlank(causeMsg) ? causeMsg : e.getMessage());
 			}else{
-				throw new ELParseException(e.getMessage());
+				throw new ELParseException(StrUtil.isNotBlank(e.getMessage()) ? e.getMessage() : "Unknown EL parse error");
 			}
 		} catch (Exception e) {
 			String errMsg = StrUtil.format("parse el fail in this chain[{}];\r\n", chain.getChainId());
-			throw new ELParseException(errMsg + e.getMessage());
+			String exMsg = e.getMessage();
+			throw new ELParseException(errMsg + (StrUtil.isNotBlank(exMsg) ? exMsg : e.getClass().getSimpleName()));
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T extends Executable> T compile(String elStr, List<String> errorList, boolean putChain2Context) throws Exception{
-		DefaultContext<String, Object> context = new DefaultContext<>();
+		Map<String, Object> context = new HashMap<>();
 
 		if (putChain2Context){
 			// 这里一定要先放chain，再放node，因为node优先于chain，所以当重名时，node会覆盖掉chain
@@ -431,8 +431,8 @@ public class LiteFlowChainELBuilder {
 		// 解析el成为一个Condition
 		// 为什么这里只是一个Condition，而不是一个List<Condition>呢
 		// 这里无论多复杂的，外面必定有一个最外层的Condition，所以这里只有一个，内部可以嵌套很多层，这点和以前的不太一样
-
-        return (T) EXPRESS_RUNNER.execute(elStr, context, errorList, true, true);
+        QLResult expressResult = EXPRESS_RUNNER.execute(elStr, context, QLOptions.builder().cache(true).build());
+        return (T) expressResult.getResult();
 	}
 
 }
