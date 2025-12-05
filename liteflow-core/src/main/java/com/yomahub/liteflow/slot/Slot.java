@@ -140,7 +140,7 @@ public class Slot {
 			// NullPointerException
 			throw new NullParamException("data slot can't accept null param");
 		}
-		metaDataMap.put(key, t);
+        metaDataMap.putIfAbsent(key, t);
 	}
 
 	public <T> T getInput(String nodeId) {
