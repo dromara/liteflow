@@ -1,12 +1,6 @@
 package com.yomahub.liteflow.benchmark;
 
-import cn.hutool.core.io.resource.ResourceUtil;
-import com.yomahub.liteflow.benchmark.cmp.TestContext;
-import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
-import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
-import com.yomahub.liteflow.flow.FlowBus;
-import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.slot.DefaultContext;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
@@ -26,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:application.properties")
 @ComponentScan("com.yomahub.liteflow.benchmark.cmp")
-public class CommonBenchmark {
+public class ScriptQLExpressBenchmark {
 
     private ConfigurableApplicationContext applicationContext;
 
@@ -34,7 +28,7 @@ public class CommonBenchmark {
 
     @Setup
     public void setup() {
-        applicationContext = SpringApplication.run(CommonBenchmark.class);
+        applicationContext = SpringApplication.run(ScriptQLExpressBenchmark.class);
         flowExecutor = applicationContext.getBean(FlowExecutor.class);
     }
 
@@ -43,21 +37,17 @@ public class CommonBenchmark {
         applicationContext.close();
     }
 
+    //执行阶段测试
     @Benchmark
     public  void test1(){
-        TestContext context = new TestContext();
-        context.setName("tom");
-        context.setAge(21);
-        DefaultContext defaultContext = new DefaultContext();
-
-        flowExecutor.execute2Resp("chain1", null, context,defaultContext);
+        flowExecutor.execute2Resp("chain1", null, DefaultContext.class);
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(CommonBenchmark.class.getSimpleName())
+                .include(ScriptQLExpressBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
-                .warmupIterations(2)//预热次数
+                .warmupIterations(1)//预热次数
                 .measurementIterations(3)//执行次数
                 .measurementTime(new TimeValue(10, TimeUnit.SECONDS))//每次执行多少时间
                 .threads(100)//多少个线程

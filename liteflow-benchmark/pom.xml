@@ -16,7 +16,7 @@
 
     <properties>
         <jmh.version>1.37</jmh.version>
-        <liteflow-version>${revision}</liteflow-version>
+        <liteflow-version>2.15.1</liteflow-version>
     </properties>
 
     <dependencies>
@@ -50,5 +50,6 @@
         <module>liteflow-benchmark-common</module>
         <module>liteflow-benchmark-common-example</module>
         <module>liteflow-benchmark-compile</module>
+        <module>liteflow-benchmark-script-qlexpress</module>
     </modules>
 </project>

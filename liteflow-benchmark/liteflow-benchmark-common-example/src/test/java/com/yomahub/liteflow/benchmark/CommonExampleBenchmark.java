@@ -1,8 +1,10 @@
 package com.yomahub.liteflow.benchmark;
 
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.benchmark.bean.PriceCalcReqVO;
 import com.yomahub.liteflow.benchmark.context.PriceContext;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.util.JsonUtil;
 import org.openjdk.jmh.annotations.*;
@@ -43,7 +45,8 @@ public class CommonExampleBenchmark {
         applicationContext.close();
     }
 
-    @Benchmark
+    //执行阶段测试
+    //@Benchmark
     public  void test1(){
         flowExecutor.execute2Resp("mainChain", req, PriceContext.class);
     }
@@ -52,7 +55,7 @@ public class CommonExampleBenchmark {
         Options opt = new OptionsBuilder()
                 .include(CommonExampleBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
-                .warmupIterations(1)//预热次数
+                .warmupIterations(2)//预热次数
                 .measurementIterations(3)//执行次数
                 .measurementTime(new TimeValue(10, TimeUnit.SECONDS))//每次执行多少时间
                 .threads(100)//多少个线程

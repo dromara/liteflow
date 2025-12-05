@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本" type="script">
+            <![CDATA[
+                a=3;
+                b=2;
+                defaultContext.setData("s1",a*b);
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(s1);
+    </chain>
+</flow>

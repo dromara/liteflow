@@ -76,16 +76,15 @@ public class FlowBus {
 	static {
 		LiteflowConfig liteflowConfig = LiteflowConfigGetter.get();
 		if (liteflowConfig.getFastLoad()){
-			chainMap = new HashMap<>();
-			nodeMap = new HashMap<>();
-			fallbackNodeMap = new HashMap<>();
-			elMd5Map = new HashMap<>();
+			chainMap = new ConcurrentHashMap<>();
+			nodeMap = new ConcurrentHashMap<>();
+			fallbackNodeMap = new ConcurrentHashMap<>();
 		} else {
 			chainMap = new CopyOnWriteHashMap<>();
 			nodeMap = new CopyOnWriteHashMap<>();
 			fallbackNodeMap = new CopyOnWriteHashMap<>();
-			elMd5Map = new ConcurrentHashMap<>();
 		}
+        elMd5Map = new ConcurrentHashMap<>();
 	}
 
 	public static Chain getChain(String id) {
