@@ -37,8 +37,29 @@ public class TestCompile {
         }
     }
 
+    //每个el都一样，走QL的缓存
     @Test
     public void test2() throws Exception {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        String el = "selectBestChannel = THEN(WHEN(channel1Query, channel2Query, channel3Query,channel4Query, channel5Query, channel6Query),channelSelector).id(\"branch1\");\n" +
+                "        selectBizChannel = THEN(biz1,SWITCH(if_2).to(channel3,channel4,SWITCH(if_3).to(channel5, channel6).id(\"s3\")).id(\"s2\")).id(\"branch2\");\n" +
+                "        THEN(packageData,SWITCH(if_1).to(channel1,channel2,selectBestChannel,selectBizChannel),batchSender);";
+
+        for (int i = 1; i <= 20000; i++) {
+            LiteFlowChainELBuilder.createChain().setChainId("chain_build_"+i).setEL(el).build();
+        }
+
+        stopWatch.stop();
+
+        System.out.println(StrUtil.format("耗时:{}",stopWatch.getTotalTimeMillis()));
+
+    }
+
+    //每个el都不一样，不走QL的缓存
+    @Test
+    public void test3() throws Exception {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 

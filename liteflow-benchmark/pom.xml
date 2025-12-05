@@ -16,7 +16,7 @@
 
     <properties>
         <jmh.version>1.37</jmh.version>
-        <liteflow-version>2.15.2</liteflow-version>
+        <liteflow-version>${revision}</liteflow-version>
     </properties>
 
     <dependencies>
