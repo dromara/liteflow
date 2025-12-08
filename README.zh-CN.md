@@ -85,10 +85,6 @@ LF CLUB里能解决你在使用LiteFlow框架时碰到的所有问题，并有�
 
 <a href="https://www.misboot.com/?from=LiteFlow"><img src="static/img/misboot-banner.png"></a>
 
-**云程企业级低代码平台**
-
-<a href="http://www.yunchengxc.com/"><img src="static/img/yuncheng-banner.png"></a>
-
 **驰骋工作流引擎**
 
 <a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
