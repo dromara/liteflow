@@ -5,6 +5,7 @@ import com.alibaba.qlexpress4.Express4Runner;
 import com.alibaba.qlexpress4.QLResult;
 import com.alibaba.qlexpress4.InitOptions;
 import com.alibaba.qlexpress4.QLOptions;
+import com.alibaba.qlexpress4.ClassSupplier;
 import com.alibaba.qlexpress4.security.QLSecurityStrategy;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.script.ScriptExecuteWrap;
@@ -32,9 +33,69 @@ public class QLExpressScriptExecutor extends ScriptExecutor {
 
 	private final Map<String, String> compiledScriptMap = new CopyOnWriteHashMap<>();
 
+	/**
+	 * 预设的ClassSupplier，用于延迟初始化场景（如插件化）
+	 * 在Spring初始化完成后，插件加载器可以通过 setClassSupplier 方法设置自定义的ClassSupplier，
+	 * 然后调用 reinit() 方法重新初始化QLExpress引擎
+	 */
+	private static volatile ClassSupplier presetClassSupplier;
+
+	/**
+	 * 设置预设的ClassSupplier，用于插件化场景
+	 * 应在插件类加载器准备好之后、调用reinit()之前设置
+	 *
+	 * @param classSupplier 自定义的ClassSupplier实现
+	 */
+	public static void setClassSupplier(ClassSupplier classSupplier) {
+		presetClassSupplier = classSupplier;
+	}
+
+	/**
+	 * 获取当前预设的ClassSupplier
+	 *
+	 * @return 当前预设的ClassSupplier，如果未设置则返回null
+	 */
+	public static ClassSupplier getClassSupplier() {
+		return presetClassSupplier;
+	}
+
 	@Override
 	public ScriptExecutor init() {
-		expressRunner = new Express4Runner(InitOptions.builder().securityStrategy(QLSecurityStrategy.open()).build());
+		return doInit(presetClassSupplier);
+	}
+
+	/**
+	 * 使用指定的ClassSupplier重新初始化QLExpress引擎
+	 * 此方法适用于插件化场景，在插件类加载器准备好之后调用
+	 *
+	 * @param classSupplier 自定义的ClassSupplier实现
+	 * @return this
+	 */
+	public ScriptExecutor reinit(ClassSupplier classSupplier) {
+		// 清理已编译的脚本缓存
+		compiledScriptMap.clear();
+		if (expressRunner != null) {
+			expressRunner.clearCompileCache();
+		}
+		// 更新预设的ClassSupplier
+		presetClassSupplier = classSupplier;
+		return doInit(classSupplier);
+	}
+
+	/**
+	 * 内部初始化方法
+	 */
+	private ScriptExecutor doInit(ClassSupplier classSupplier) {
+		InitOptions.Builder optionsBuilder = InitOptions.builder()
+				.securityStrategy(QLSecurityStrategy.open());
+
+		// 使用传入的ClassSupplier
+		if (classSupplier != null) {
+			optionsBuilder.classSupplier(classSupplier);
+			log.info("QLExpress4 using custom ClassSupplier: {}", classSupplier.getClass().getName());
+		}
+
+		expressRunner = new Express4Runner(optionsBuilder.build());
 		//如果有生命周期则执行相应生命周期实现
 		super.lifeCycle(expressRunner);
 		return this;

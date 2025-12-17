@@ -73,4 +73,39 @@ public class ScriptExecutorFactory {
 		this.scriptExecutorMap.forEach((key, value) -> value.cleanCache());
 	}
 
+	/**
+	 * 根据脚本类型获取已加载的脚本执行器（不会触发新加载）
+	 *
+	 * @param scriptType 脚本类型枚举
+	 * @return 脚本执行器，如果未加载则返回null
+	 */
+	public ScriptExecutor getLoadedScriptExecutor(ScriptTypeEnum scriptType) {
+		if (ObjectUtil.isNull(scriptType)) {
+			return null;
+		}
+		return scriptExecutorMap.get(scriptType.getDisplayName());
+	}
+
+	/**
+	 * 重新初始化指定类型的脚本执行器
+	 * 此方法适用于需要在运行时更换脚本引擎配置的场景（如插件化场景下更换ClassLoader）
+	 *
+	 * @param language 脚本语言类型
+	 * @return 重新初始化后的脚本执行器
+	 */
+	public ScriptExecutor reinitScriptExecutor(String language) {
+		if (StrUtil.isBlank(language)) {
+			language = NONE_LANGUAGE;
+		}
+
+		ScriptExecutor executor = scriptExecutorMap.get(language);
+		if (ObjectUtil.isNotNull(executor)) {
+			// 重新初始化
+			executor.init();
+			return executor;
+		}
+		// 如果还未加载，则走正常加载流程
+		return getScriptExecutor(language);
+	}
+
 }
