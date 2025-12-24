@@ -31,6 +31,9 @@ public class BindOperator extends BaseOperator<Executable> {
         if (objects.length > 3) {
             override.set(OperatorHelper.convert(objects[3], Boolean.class));
         }
+        if (bindItem instanceof Node){
+            override.set(true);
+        }
 
         LiteflowMetaOperator.getNodes(bindItem).forEach(node -> {
             if (BooleanUtil.isFalse(node.hasBindData(key)) || override.get()){
