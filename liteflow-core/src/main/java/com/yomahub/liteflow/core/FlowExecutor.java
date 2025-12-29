@@ -49,6 +49,7 @@ import com.yomahub.liteflow.util.ElRegexUtil;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,8 @@ public class FlowExecutor {
 	private static final String PREFIX_FORMAT_CONFIG_REGEX = "el_xml:|el_json:|el_yml:";
 
 	private LiteflowConfig liteflowConfig;
+
+	private AtomicBoolean startUpPhase = new AtomicBoolean(false);
 
 	public FlowExecutor() {
 		// 设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到
@@ -91,6 +94,8 @@ public class FlowExecutor {
 	 * isStart表示是否是系统启动阶段，启动阶段要做额外的事情，而因为reload所调用的init就不用做
 	 */
 	public void init(boolean isStart) {
+		startUpPhase.compareAndSet(false, true);
+
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			throw new ConfigErrorException("config error, please check liteflow config property");
 		}
@@ -242,6 +247,8 @@ public class FlowExecutor {
 		if (liteflowConfig.getChainCacheEnabled()) {
 			evaluateChainCacheCapacity();
 		}
+
+		startUpPhase.compareAndSet(true, false);
 	}
 
 	// 此方法就是从原有的配置源主动拉取新的进行刷新
@@ -708,5 +715,9 @@ public class FlowExecutor {
 			LOG.warn("The chain cache capacity {} is too small, the current total number of chains is {}, "
 					+"it is recommended to be greater than 30% of the number of chains", capacity, chainNum);
 		}
+	}
+
+	public AtomicBoolean getStartUpPhase() {
+		return startUpPhase;
 	}
 }

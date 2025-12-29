@@ -3,6 +3,7 @@ package com.yomahub.liteflow.script;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.exception.LiteFlowException;
 import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
@@ -36,6 +37,12 @@ public abstract class ScriptExecutor {
 	}
 
 	public abstract void load(String nodeId, String script);
+
+    // 第二段load，通常指合并一起编译/执行
+    // 如果实现了第二段，说明第一段并未真正编译，而是把需要编译的存起来，留到第二段的时候一起编译
+    public void loadSecondPhase(){
+
+    }
 
 	// 卸载脚本（不包含 node）
 	public abstract void unLoad(String nodeId);
@@ -100,6 +107,15 @@ public abstract class ScriptExecutor {
 	 * @throws Exception 例外
 	 */
 	public abstract Object compile(String script) throws Exception;
+
+	public ValidationResp validate(String script){
+		try {
+			compile(script);
+		} catch (Exception e) {
+			return ValidationResp.fail(e);
+		}
+		return ValidationResp.success();
+	}
 
 	public boolean executeIsAccess(ScriptExecuteWrap wrap){
 		return true;
