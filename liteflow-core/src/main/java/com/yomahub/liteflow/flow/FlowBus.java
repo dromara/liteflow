@@ -98,6 +98,10 @@ public class FlowBus {
 		}
 	}
 
+	public static void addChainPhase1(Chain chain){
+		chainMap.put(chain.getChainId(), chain);
+	}
+
 	// 这个方法主要用于第二阶段的替换chain
 	public static void addChain(Chain chain) {
 		//如果有生命周期则执行相应生命周期实现

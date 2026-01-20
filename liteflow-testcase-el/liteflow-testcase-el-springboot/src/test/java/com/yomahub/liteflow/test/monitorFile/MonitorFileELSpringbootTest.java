@@ -68,7 +68,7 @@ public class MonitorFileELSpringbootTest extends BaseTest {
         FileUtil.writeString(newContent, new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
         Thread.sleep(3000);
         LiteflowResponse reloadFailedResponse = flowExecutor.execute2Resp("chain1", "arg");
-        Assertions.assertEquals("a==>b==>c", reloadFailedResponse.getExecuteStepStr());
+        Assertions.assertFalse(reloadFailedResponse.isSuccess());
 
         // 再次变更正确
         newContent = content.replace("THEN(a, b, c);", "THEN(c, b, a);");

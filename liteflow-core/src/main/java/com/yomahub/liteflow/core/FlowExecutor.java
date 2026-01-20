@@ -67,7 +67,7 @@ public class FlowExecutor {
 
 	private LiteflowConfig liteflowConfig;
 
-	private AtomicBoolean startUpPhase = new AtomicBoolean(false);
+	private final AtomicBoolean startUpPhase = new AtomicBoolean(false);
 
 	public FlowExecutor() {
 		// 设置FlowExecutor的Holder，虽然大部分地方都可以通过Spring上下文获取到，但放入Holder，还是为了某些地方能方便的取到

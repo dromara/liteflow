@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.parser.helper;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
@@ -129,8 +132,7 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet,
-                                          Consumer<Element> parseOneChainConsumer) {
+    public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet) {
         //用于存放抽象chain的map
         Map<String,Element> abstratChainMap = new HashMap<>();
         //用于存放已经解析过的实现chain
@@ -145,50 +147,41 @@ public class ParserHelper {
 
             // 先在元数据里放上chain
             for (Element e : chainList) {
-                // 校验加载的 chainName 是否有重复的
-                // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
                 String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
-                // 检查 chainName
+
+                //检查chainId有没有配置
                 checkChainId(chainId, e.getText());
+
+                // 检查chain是否重复
                 if (!chainIdSet.add(chainId)) {
                     throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainId));
                 }
-                // 如果是禁用，就不解析了
-                if (!getEnableByElement(e)) {
-                    continue;
-                }
 
-                FlowBus.addChain(chainId);
-                if(ElRegexUtil.isAbstractChain(e.getText())){
-                    abstratChainMap.put(chainId,e);
-                    //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainId);
-                    chain.getConditionList().add(new AbstractCondition());
+                // 进行解析，但是不编译
+                Chain chain = parseOneChain(e);
+
+                if (chain != null){
+                    FlowBus.addChainPhase1(chain);
                 }
             };
         });
         // 清空
         chainIdSet.clear();
 
-        // 解析每一个chain
-        for (Document document : documentList) {
-            Element rootElement = document.getRootElement();
-            List<Element> chainList = rootElement.elements(CHAIN);
-            for(Element chain:chainList){
-                // 如果是禁用，就不解析了
-                if (!getEnableByElement(chain)) {
-                    continue;
-                }
-
-                //首先需要对继承自抽象Chain的chain进行字符串替换
-                parseImplChain(abstratChainMap, implChainSet, chain);
-                //如果一个chain不为抽象chain，则进行解析
-                String chainId = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
-                if(!abstratChainMap.containsKey(chainId)){
-                    parseOneChainConsumer.accept(chain);
-                }
+        // 这里才是真正的编译阶段
+        FlowBus.getChainMap().entrySet().forEach(entry -> {
+            Chain chain = entry.getValue();
+            // 不编译抽象父类的chain
+            if (BooleanUtil.isTrue(chain.isAbstract())) {
+                return;
             }
-        }
+
+            // TODO:这里还要处理抽象chain的子chain的EL替换问题
+
+            if (BooleanUtil.isFalse(chain.isCompiled())) {
+                LiteFlowChainELBuilder.fromChain(chain).build();
+            }
+        });
     }
 
     public static void parseNodeJson(List<JsonNode> flowJsonObjectList) {
@@ -227,8 +220,7 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet,
-                                      Consumer<JsonNode> parseOneChainConsumer) {
+    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet) {
         //用于存放抽象chain的map
         Map<String,JsonNode> abstratChainMap = new HashMap<>();
         //用于存放已经解析过的实现chain
@@ -243,61 +235,51 @@ public class ParserHelper {
             // 先在元数据里放上chain
             while (iterator.hasNext()) {
                 JsonNode innerJsonObject = iterator.next();
-                // 校验加载的 chainName 是否有重复的
-                // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-                JsonNode chainNameJsonNode = Optional.ofNullable(innerJsonObject.get(ID))
-                        .orElse(innerJsonObject.get(NAME));
-                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-                // 检查 chainName
+                JsonNode chainIdJsonNode = Optional.ofNullable(innerJsonObject.get(ID)).orElse(innerJsonObject.get(NAME));
+                String chainId = Optional.ofNullable(chainIdJsonNode).map(JsonNode::textValue).orElse(null);
+
+                //检查chainId有没有配置
                 checkChainId(chainId, innerJsonObject.toString());
+
+                // 检查 chain 是否重复
                 if (!chainIdSet.add(chainId)) {
                     throw new ChainDuplicateException(String.format("[chain id duplicate] chainId=%s", chainId));
                 }
 
-                // 如果是禁用，就不解析了
-                if (!getEnableByJsonNode(innerJsonObject)) {
-                    continue;
-                }
+                // 进行解析，但是不编译
+                Chain chain = parseOneChain(innerJsonObject);
 
-                FlowBus.addChain(chainId);
-                if(ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
-                    abstratChainMap.put(chainId,innerJsonObject);
-                    //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainId);
-                    chain.getConditionList().add(new AbstractCondition());
+                if (chain != null){
+                    FlowBus.addChainPhase1(chain);
                 }
             }
         });
         // 清空
         chainIdSet.clear();
 
-        for (JsonNode flowJsonNode : flowJsonObjectList) {
-            // 解析每一个chain
-            Iterator<JsonNode> chainIterator = flowJsonNode.get(FLOW).get(CHAIN).elements();
-            while (chainIterator.hasNext()) {
-                JsonNode chainNode = chainIterator.next();
-                // 如果是禁用，就不解析了
-                if (!getEnableByJsonNode(chainNode)) {
-                    continue;
-                }
-
-                //首先需要对继承自抽象Chain的chain进行字符串替换
-                parseImplChain(abstratChainMap, implChainSet, chainNode);
-                //如果一个chain不为抽象chain，则进行解析
-                JsonNode chainNameJsonNode = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME));
-                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-                if(!abstratChainMap.containsKey(chainId)){
-                    parseOneChainConsumer.accept(chainNode);
-                }
+        // 这里才是真正的编译阶段
+        FlowBus.getChainMap().entrySet().forEach(entry -> {
+            Chain chain = entry.getValue();
+            // 不编译抽象父类的chain
+            if (BooleanUtil.isTrue(chain.isAbstract())) {
+                return;
             }
-        }
+
+            // TODO:这里还要处理抽象chain的子chain的EL替换问题
+
+            if (BooleanUtil.isFalse(chain.isCompiled())) {
+                LiteFlowChainELBuilder.fromChain(chain).build();
+            }
+        });
     }
 
-    /**
-     * 解析一个chain的过程
-     * @param chainNode chain 节点
-     */
-    public static void parseOneChainEl(JsonNode chainNode) {
+    public static Chain parseOneChain(JsonNode chainNode) {
+        // 先看是否可用
+        String enableStr = chainNode.get(ENABLE) == null? StrUtil.EMPTY : chainNode.get(ENABLE).textValue();
+        if (StrUtil.isNotBlank(enableStr) && Boolean.FALSE.toString().equalsIgnoreCase(enableStr)) {
+            return null;
+        }
+
         // 构建chainBuilder
         String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 
@@ -310,7 +292,7 @@ public class ParserHelper {
 
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
-                .setThreadPoolExecutorClass(threadPoolExecutorClass);
+                        .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -326,14 +308,24 @@ public class ParserHelper {
         }else{
             builder.setEL(chainNode.get(VALUE).textValue());
         }
-        builder.build();
+
+        // 是否是抽象父类chain
+        boolean isAbstract = ElRegexUtil.isAbstractChain(builder.getChain().getEl());
+        if (BooleanUtil.isTrue(isAbstract)){
+            builder.getChain().setAbstract(true);
+        }
+
+        return builder.getChain();
     }
 
-    /**
-     * 解析一个chain的过程
-     * @param e chain 节点
-     */
-    public static void parseOneChainEl(Element e) {
+
+    public static Chain parseOneChain(Element e){
+        // 先看是否可用
+        String enableStr = e.attributeValue(ENABLE);
+        if (StrUtil.isNotBlank(enableStr) && Boolean.FALSE.toString().equalsIgnoreCase(enableStr)) {
+            return null;
+        }
+
         // 构建chainBuilder
         String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 
@@ -346,7 +338,7 @@ public class ParserHelper {
 
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
-                .setThreadPoolExecutorClass(threadPoolExecutorClass);
+                        .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -362,15 +354,22 @@ public class ParserHelper {
         }else{
             // 即使没有route这个标签，body标签单独写也是被允许的
             Element bodyElement = e.element(BODY);
+            String el;
             if (bodyElement != null){
-                builder.setEL(bodyElement.getText());
+                el = bodyElement.getText();
             }else{
-                builder.setEL(e.getText());
+                el = e.getText();
             }
+            builder.setEL(el);
         }
 
+        // 是否是抽象父类chain
+        boolean isAbstract = ElRegexUtil.isAbstractChain(builder.getChain().getEl());
+        if (BooleanUtil.isTrue(isAbstract)){
+            builder.getChain().setAbstract(true);
+        }
 
-        builder.build();
+        return builder.getChain();
     }
 
     /**

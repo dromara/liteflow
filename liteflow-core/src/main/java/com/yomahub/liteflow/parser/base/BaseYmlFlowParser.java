@@ -38,9 +38,8 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 			jsonObjectList.add(ruleObject);
 		}
 
-		Consumer<JsonNode> parseOneChainConsumer = this::parseOneChain;
 		ParserHelper.parseNodeJson(jsonObjectList);
-		ParserHelper.parseChainJson(jsonObjectList, CHAIN_NAME_SET, parseOneChainConsumer);
+		ParserHelper.parseChainJson(jsonObjectList, CHAIN_NAME_SET);
 	}
 
 	protected JsonNode convertToJson(String yamlString) {
@@ -48,11 +47,4 @@ public abstract class BaseYmlFlowParser implements FlowParser {
 		Map<String, Object> map = yaml.load(yamlString);
 		return JsonUtil.parseObject(JsonUtil.toJsonString(map));
 	}
-
-	/**
-	 * 解析一个 chain 的过程
-	 * @param chain chain
-	 */
-	public abstract void parseOneChain(JsonNode chain);
-
 }

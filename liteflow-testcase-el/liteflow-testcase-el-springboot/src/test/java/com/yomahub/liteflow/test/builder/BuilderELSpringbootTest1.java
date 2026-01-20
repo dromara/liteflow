@@ -3,10 +3,19 @@ package com.yomahub.liteflow.test.builder;
 import com.yomahub.liteflow.builder.LiteFlowNodeBuilder;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.core.FlowExecutor;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
+import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
+import com.yomahub.liteflow.process.holder.SpringCmpAroundAspectHolder;
+import com.yomahub.liteflow.property.LiteflowConfigGetter;
+import com.yomahub.liteflow.spi.holder.SpiFactoryInitializing;
+import com.yomahub.liteflow.spring.ComponentScanner;
 import com.yomahub.liteflow.test.BaseTest;
 import com.yomahub.liteflow.test.builder.cmp1.*;
+import com.yomahub.liteflow.thread.ExecutorHelper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -173,5 +182,4 @@ public class BuilderELSpringbootTest1 extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("a1[组件A1]==>c2[组件C2]==>a2[组件A2]==>c1[组件C1]", response.getExecuteStepStr());
 	}
-
 }
