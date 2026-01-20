@@ -79,9 +79,13 @@ public class MonitorFileELSpringbootTest extends BaseTest {
     }
 
     @AfterEach
-    public void afterEach(){
+    public void afterEach() throws InterruptedException {
         String absolutePath = new ClassPathResource("classpath:/monitorFile/flow.el.xml").getAbsolutePath();
         FileUtil.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><flow><chain name=\"chain1\">THEN(a, b, c);</chain></flow>", new File(absolutePath), CharsetUtil.CHARSET_UTF_8);
+
+        // 等待文件监控处理完成,防止污染下一个测试
+        // 监控间隔是2ms,等待100ms足够处理完成
+        Thread.sleep(100);
     }
 
 }

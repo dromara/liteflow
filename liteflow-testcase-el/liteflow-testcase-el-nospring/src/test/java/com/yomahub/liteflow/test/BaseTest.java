@@ -13,6 +13,7 @@ public class BaseTest {
 
 	@AfterAll
 	public static void cleanScanCache() {
+		FlowBus.cleanMonitorFile();
 		FlowBus.cleanCache();
 		ExecutorHelper.loadInstance().clearExecutorServiceMap();
 		SpiFactoryInitializing.clean();

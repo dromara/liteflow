@@ -14,6 +14,7 @@ public class BaseTest {
 
 	@AfterAll
 	public static void cleanScanCache() {
+		FlowBus.cleanMonitorFile();
 		ComponentScanner.cleanCache();
 		FlowBus.cleanCache();
 		ExecutorHelper.loadInstance().clearExecutorServiceMap();

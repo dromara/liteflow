@@ -133,10 +133,6 @@ public class ParserHelper {
     }
 
     public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet) {
-        //用于存放抽象chain的map
-        Map<String,Element> abstratChainMap = new HashMap<>();
-        //用于存放已经解析过的实现chain
-        Set<Element> implChainSet = new HashSet<>();
         // 先在元数据里放上chain
         // 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
         // 这样就不用去像之前的版本那样回归调用
@@ -163,10 +159,13 @@ public class ParserHelper {
                 if (chain != null){
                     FlowBus.addChainPhase1(chain);
                 }
-            };
+            }
         });
         // 清空
         chainIdSet.clear();
+
+        // 用于记录已经处理过的Chain
+        Set<String> processedChainIds = new HashSet<>();
 
         // 这里才是真正的编译阶段
         FlowBus.getChainMap().entrySet().forEach(entry -> {
@@ -176,7 +175,8 @@ public class ParserHelper {
                 return;
             }
 
-            // TODO:这里还要处理抽象chain的子chain的EL替换问题
+            // 处理抽象chain的继承关系
+            processChainInheritance(chain, processedChainIds);
 
             if (BooleanUtil.isFalse(chain.isCompiled())) {
                 LiteFlowChainELBuilder.fromChain(chain).build();
@@ -221,10 +221,6 @@ public class ParserHelper {
     }
 
     public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet) {
-        //用于存放抽象chain的map
-        Map<String,JsonNode> abstratChainMap = new HashMap<>();
-        //用于存放已经解析过的实现chain
-        Set<JsonNode> implChainSet = new HashSet<>();
         // 先在元数据里放上chain
         // 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
         // 这样就不用去像之前的版本那样回归调用
@@ -257,6 +253,9 @@ public class ParserHelper {
         // 清空
         chainIdSet.clear();
 
+        // 用于记录已经处理过的Chain
+        Set<String> processedChainIds = new HashSet<>();
+
         // 这里才是真正的编译阶段
         FlowBus.getChainMap().entrySet().forEach(entry -> {
             Chain chain = entry.getValue();
@@ -265,7 +264,8 @@ public class ParserHelper {
                 return;
             }
 
-            // TODO:这里还要处理抽象chain的子chain的EL替换问题
+            // 处理抽象chain的继承关系
+            processChainInheritance(chain, processedChainIds);
 
             if (BooleanUtil.isFalse(chain.isCompiled())) {
                 LiteFlowChainELBuilder.fromChain(chain).build();
@@ -275,7 +275,7 @@ public class ParserHelper {
 
     public static Chain parseOneChain(JsonNode chainNode) {
         // 先看是否可用
-        String enableStr = chainNode.get(ENABLE) == null? StrUtil.EMPTY : chainNode.get(ENABLE).textValue();
+        String enableStr = chainNode.get(ENABLE) == null? StrUtil.EMPTY : chainNode.get(ENABLE).asText();
         if (StrUtil.isNotBlank(enableStr) && Boolean.FALSE.toString().equalsIgnoreCase(enableStr)) {
             return null;
         }
@@ -289,6 +289,8 @@ public class ParserHelper {
 
         String threadPoolExecutorClass = chainNode.get(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
                 chainNode.get(THREAD_POOL_EXECUTOR_CLASS).textValue();
+
+        String extendsChainId = chainNode.get(EXTENDS) == null ? null : chainNode.get(EXTENDS).textValue();
 
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
@@ -315,6 +317,11 @@ public class ParserHelper {
             builder.getChain().setAbstract(true);
         }
 
+        // 设置继承的父chain
+        if (StrUtil.isNotBlank(extendsChainId)) {
+            builder.getChain().setExtendsChainId(extendsChainId);
+        }
+
         return builder.getChain();
     }
 
@@ -335,6 +342,8 @@ public class ParserHelper {
 
         String threadPoolExecutorClass = e.attributeValue(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
                 e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
+
+        String extendsChainId = e.attributeValue(EXTENDS);
 
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
@@ -369,6 +378,11 @@ public class ParserHelper {
             builder.getChain().setAbstract(true);
         }
 
+        // 设置继承的父chain
+        if (StrUtil.isNotBlank(extendsChainId)) {
+            builder.getChain().setExtendsChainId(extendsChainId);
+        }
+
         return builder.getChain();
     }
 
@@ -381,6 +395,59 @@ public class ParserHelper {
         if (StrUtil.isBlank(chainId)) {
             throw new ParseException("missing chain id in expression \r\n" + elData);
         }
+    }
+
+    /**
+     * 处理Chain的继承关系，替换抽象Chain的占位符
+     * @param chain 需要处理的Chain
+     * @param processedChainIds 已经处理过的Chain ID集合
+     */
+    private static void processChainInheritance(Chain chain, Set<String> processedChainIds) {
+        if (StrUtil.isNotBlank(chain.getExtendsChainId())) {
+            resolveChainInheritance(chain, processedChainIds);
+        }
+    }
+
+    /**
+     * 递归解析Chain的继承关系
+     * @param chain 需要处理的Chain
+     * @param processedChainIds 已经处理过的Chain ID集合
+     */
+    private static void resolveChainInheritance(Chain chain, Set<String> processedChainIds) {
+        // 如果已经处理过，直接返回
+        if (processedChainIds.contains(chain.getChainId())) {
+            return;
+        }
+
+        String extendsChainId = chain.getExtendsChainId();
+        if (StrUtil.isBlank(extendsChainId)) {
+            return;
+        }
+
+        // 获取父Chain
+        Chain parentChain = FlowBus.getChain(extendsChainId);
+        if (parentChain == null) {
+            throw new ChainNotFoundException(
+                    StrUtil.format("[abstract chain not found] chainId={}", extendsChainId)
+            );
+        }
+
+        // 如果父Chain也有继承关系，先递归处理父Chain
+        if (StrUtil.isNotBlank(parentChain.getExtendsChainId())) {
+            resolveChainInheritance(parentChain, processedChainIds);
+        }
+
+        // 替换当前Chain的EL表达式
+        String parentEl = parentChain.getEl();
+        String currentEl = chain.getEl();
+
+        if (StrUtil.isNotBlank(parentEl) && StrUtil.isNotBlank(currentEl)) {
+            String resolvedEl = ElRegexUtil.replaceAbstractChain(parentEl, currentEl);
+            chain.setEl(resolvedEl);
+        }
+
+        // 标记为已处理
+        processedChainIds.add(chain.getChainId());
     }
 
     /**
@@ -473,7 +540,7 @@ public class ParserHelper {
     }
 
     private static Boolean getEnableByJsonNode(JsonNode nodeObject) {
-        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).toString() : "";
+        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).asText() : "";
         if (StrUtil.isBlank(enableStr)) {
             return true;
         }

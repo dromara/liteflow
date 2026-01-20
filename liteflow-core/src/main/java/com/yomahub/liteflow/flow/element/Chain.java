@@ -50,6 +50,8 @@ public class Chain implements Executable {
 
 	private String routeEl;
 
+	private String extendsChainId;
+
 	private boolean isAbstract = false;
 
 	private volatile boolean isCompiled = false;
@@ -289,6 +291,14 @@ public class Chain implements Executable {
 
 	public void setAbstract(boolean anAbstract) {
 		isAbstract = anAbstract;
+	}
+
+	public String getExtendsChainId() {
+		return extendsChainId;
+	}
+
+	public void setExtendsChainId(String extendsChainId) {
+		this.extendsChainId = extendsChainId;
 	}
 
 	// 构建临时的ConditionList
