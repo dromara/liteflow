@@ -522,6 +522,10 @@ public class Node implements Executable, Cloneable, Rollbackable{
 		return this.bindDataMap.get(key);
 	}
 
+	public void removeBindData(String key) {
+		this.bindDataMap.remove(key);
+	}
+
 	public Object getStepData(){
 		return this.stepDataTL.get();
 	}
