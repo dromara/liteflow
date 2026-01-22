@@ -73,15 +73,91 @@ public class GraalJavaScriptExecutor extends ScriptExecutor {
 			});
 
 			Value value = context.eval(scriptMap.get(wrap.getNodeId()));
+
+			// 处理 null 值
+			if (value.isNull()) {
+				return null;
+			}
+
+			// 处理布尔类型
 			if (value.isBoolean()) {
 				return value.asBoolean();
 			}
-			else if (value.isNumber()) {
-				return value.asInt();
+
+			// 处理数值类型（按精度从高到低处理，避免精度丢失）
+			if (value.isNumber()) {
+				// 优先尝试转换为整数类型
+				if (value.fitsInInt()) {
+					return value.asInt();
+				} else if (value.fitsInLong()) {
+					return value.asLong();
+				}
+				// 浮点数类型
+				else if (value.fitsInFloat()) {
+					return value.asFloat();
+				} else if (value.fitsInDouble()) {
+					return value.asDouble();
+				}
+				// 默认返回 double（兜底方案）
+				return value.asDouble();
 			}
-			else if (value.isString()) {
+
+			// 处理字符串类型
+			if (value.isString()) {
 				return value.asString();
 			}
+
+			// 处理时间日期类型
+			if (value.isDate()) {
+				return value.asDate();
+			}
+			if (value.isTime()) {
+				return value.asTime();
+			}
+			if (value.isInstant()) {
+				return value.asInstant();
+			}
+			if (value.isDuration()) {
+				return value.asDuration();
+			}
+			if (value.isTimeZone()) {
+				return value.asTimeZone();
+			}
+
+			// 处理异常类型
+			if (value.isException()) {
+				try {
+					value.throwException();
+				} catch (Exception e) {
+					throw new RuntimeException("Script execution threw an exception", e);
+				}
+			}
+
+			// 处理 Java 主机对象（直接返回原始 Java 对象）
+			if (value.isHostObject()) {
+				return value.asHostObject();
+			}
+
+			// 处理数组类型（转换为 Java List）
+			if (value.hasArrayElements()) {
+				long size = value.getArraySize();
+				List<Object> list = new ArrayList<>((int) size);
+				for (long i = 0; i < size; i++) {
+					list.add(value.getArrayElement(i));
+				}
+				return list;
+			}
+
+			// 处理对象类型（转换为 Java Map）
+			if (value.hasMembers()) {
+				Map<String, Object> map = new java.util.HashMap<>();
+				for (String key : value.getMemberKeys()) {
+					map.put(key, value.getMember(key));
+				}
+				return map;
+			}
+
+			// 其他类型直接返回 Value 对象
 			return value;
 		}
 		catch (Exception e) {
