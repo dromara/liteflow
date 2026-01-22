@@ -19,6 +19,7 @@ import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ObjectConvertException;
 import com.yomahub.liteflow.flow.FlowBus;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.flow.entity.CmpStep;
 import com.yomahub.liteflow.flow.executor.DefaultNodeExecutor;
@@ -442,7 +443,23 @@ public abstract class NodeComponent{
 	}
 
 	public <T> T getBindData(String key, Class<T> clazz) {
-		String bindData = getRefNode().getBindData(key);
+		String bindData = null;
+
+		// 第一步：先从 Node 级别查找（node.bind(...) 场景，优先级最高）
+		bindData = getRefNode().getBindData(key);
+
+		// 第二步：如果 Node 级别没有找到，从 Condition 栈中查找（从栈顶向下遍历）
+		// 这样可以正确处理 chain.bind(...) 和 THEN(...).bind(...) 的场景
+		if (StrUtil.isBlank(bindData)) {
+			Slot slot = this.getSlot();
+			for (Condition condition : slot.getConditionStack()) {
+				if (condition.hasBindData(key)) {
+					bindData = condition.getBindData(key);
+					break;
+				}
+			}
+		}
+
 		if (StrUtil.isBlank(bindData)) {
 			return null;
 		}
@@ -474,7 +491,22 @@ public abstract class NodeComponent{
 	}
 
 	public <T> List<T> getBindDataList(String key, Class<T> clazz) {
-		String bindData = getRefNode().getBindData(key);
+		String bindData = null;
+
+		// 第一步：先从 Node 级别查找（node.bind(...) 场景，优先级最高）
+		bindData = getRefNode().getBindData(key);
+
+		// 第二步：如果 Node 级别没有找到，从 Condition 栈中查找（从栈顶向下遍历）
+		if (StrUtil.isBlank(bindData)) {
+			Slot slot = this.getSlot();
+			for (Condition condition : slot.getConditionStack()) {
+				if (condition.hasBindData(key)) {
+					bindData = condition.getBindData(key);
+					break;
+				}
+			}
+		}
+
 		if (StrUtil.isBlank(bindData)) {
 			return null;
 		}

@@ -317,6 +317,15 @@ public class Slot {
 	}
 
 	/**
+	 * 获取 Condition 调用栈
+	 * 用于在运行时向上查找 bind 数据
+	 * @return Condition 栈
+	 */
+	public Deque<Condition> getConditionStack() {
+		return conditionStack.get();
+	}
+
+	/**
 	 * @deprecated 请使用 {@link #setChainId(String)}
 	 */
 	@Deprecated

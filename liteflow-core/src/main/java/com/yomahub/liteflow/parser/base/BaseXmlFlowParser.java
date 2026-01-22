@@ -19,7 +19,7 @@ import java.util.function.Consumer;
  */
 public abstract class BaseXmlFlowParser implements FlowParser {
 
-	private final Set<String> CHAIN_NAME_SET = new HashSet<>();
+	private final Set<String> CHAIN_ID_SET = new HashSet<>();
 
 	public void parse(String content) throws Exception {
 		parse(ListUtil.toList(content));
@@ -37,13 +37,6 @@ public abstract class BaseXmlFlowParser implements FlowParser {
 		}
 
 		ParserHelper.parseNodeDocument(documentList);
-		ParserHelper.parseChainDocument(documentList, CHAIN_NAME_SET, this::parseOneChain);
+		ParserHelper.parseChainDocument(documentList, CHAIN_ID_SET);
 	}
-
-	/**
-	 * 解析一个 chain 的过程
-	 * @param chain chain
-	 */
-	public abstract void parseOneChain(Element chain);
-
 }

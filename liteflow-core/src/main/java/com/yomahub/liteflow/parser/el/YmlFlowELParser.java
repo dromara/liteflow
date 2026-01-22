@@ -12,12 +12,4 @@ import com.yomahub.liteflow.parser.helper.ParserHelper;
  */
 public abstract class YmlFlowELParser extends BaseYmlFlowParser {
 
-	/**
-	 * 解析一个chain的过程
-	 */
-	@Override
-	public void parseOneChain(JsonNode chainObject) {
-		ParserHelper.parseOneChainEl(chainObject);
-	}
-
 }

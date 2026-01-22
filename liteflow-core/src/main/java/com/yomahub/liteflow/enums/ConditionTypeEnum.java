@@ -29,7 +29,9 @@ public enum ConditionTypeEnum {
 
 	TYPE_NOT_OPT("not_opt", "not_opt"),
 
-	TYPE_ABSTRACT("abstract", "abstract");
+	TYPE_ABSTRACT("abstract", "abstract"),
+
+	TYPE_CHAIN_BIND_WRAPPER("chain_bind_wrapper", "chain_bind_wrapper");
 
 	private String type;
 

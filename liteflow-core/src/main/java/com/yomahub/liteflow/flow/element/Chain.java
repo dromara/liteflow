@@ -48,7 +48,13 @@ public class Chain implements Executable {
 
 	private String el;
 
-	private volatile boolean isCompiled = true;
+	private String routeEl;
+
+	private String extendsChainId;
+
+	private boolean isAbstract = false;
+
+	private volatile boolean isCompiled = false;
 
 	private String namespace = ChainConstant.DEFAULT_NAMESPACE;
 
@@ -60,6 +66,7 @@ public class Chain implements Executable {
 
 	public Chain(String chainName) {
 		this.chainId = chainName;
+		this.isCompiled = false;
 	}
 
 	public Chain() {
@@ -269,6 +276,30 @@ public class Chain implements Executable {
     public void setElMd5(String elMd5) {
         this.elMd5 = elMd5;
     }
+
+	public String getRouteEl() {
+		return routeEl;
+	}
+
+	public void setRouteEl(String routeEl) {
+		this.routeEl = routeEl;
+	}
+
+	public boolean isAbstract() {
+		return isAbstract;
+	}
+
+	public void setAbstract(boolean anAbstract) {
+		isAbstract = anAbstract;
+	}
+
+	public String getExtendsChainId() {
+		return extendsChainId;
+	}
+
+	public void setExtendsChainId(String extendsChainId) {
+		this.extendsChainId = extendsChainId;
+	}
 
 	// 构建临时的ConditionList
 	private List<Condition> buildTemporaryConditionList() {

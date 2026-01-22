@@ -58,12 +58,7 @@ public class ScriptValidator {
         }
 
         ScriptExecutor scriptExecutor = (scriptType != null) ? scriptExecutors.get(scriptType) : scriptExecutors.values().iterator().next();
-        try {
-            scriptExecutor.compile(script);
-        } catch (Exception e) {
-            return ValidationResp.fail(e);
-        }
-        return ValidationResp.success();
+        return scriptExecutor.validate(script);
     }
 
     /**

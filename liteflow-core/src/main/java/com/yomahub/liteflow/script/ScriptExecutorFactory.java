@@ -70,7 +70,6 @@ public class ScriptExecutorFactory {
 	}
 
 	public void cleanScriptCache() {
-		this.scriptExecutorMap.forEach((key, value) -> value.cleanCache());
+		this.scriptExecutorMap.clear();
 	}
-
 }

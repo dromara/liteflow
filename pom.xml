@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.15.2</revision>
+		<revision>2.15.3</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -58,7 +58,7 @@
 		<zkclient.version>0.10</zkclient.version>
 		<jetcd.version>0.7.3</jetcd.version>
 		<nacos.version>1.4.4</nacos.version>
-		<qlexpress.version>4.0.6</qlexpress.version>
+		<qlexpress.version>4.0.8</qlexpress.version>
 		<groovy.version>3.0.25</groovy.version>
 		<graalvm.version>22.0.0</graalvm.version>
 		<bytebuddy.version>1.17.7</bytebuddy.version>
@@ -77,7 +77,7 @@
 		<redisson.version>3.21.0</redisson.version>
 		<janino.version>3.1.12</janino.version>
 		<kotlin.version>2.2.0</kotlin.version>
-		<liquor.version>1.5.8</liquor.version>
+		<liquor.version>1.6.6</liquor.version>
 		<dynamic-datasource.version>4.3.1</dynamic-datasource.version>
 		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 		<apache-commons-test.version>1.14.0</apache-commons-test.version>
@@ -363,6 +363,24 @@
 				</configuration>
 			</plugin>
 
+			<!-- Source -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<attach>true</attach>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -461,25 +479,6 @@
 						<configuration>
 							<passphrase>${gpg.passphrase}</passphrase>
 						</configuration>
-					</plugin>
-
-
-					<!-- Source -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>3.3.1</version>
-						<configuration>
-							<attach>true</attach>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>compile</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 
 					<!-- Javadoc -->

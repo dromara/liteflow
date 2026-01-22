@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.parser.helper;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.yomahub.liteflow.common.ChainConstant.*;
@@ -129,12 +132,7 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet,
-                                          Consumer<Element> parseOneChainConsumer) {
-        //用于存放抽象chain的map
-        Map<String,Element> abstratChainMap = new HashMap<>();
-        //用于存放已经解析过的实现chain
-        Set<Element> implChainSet = new HashSet<>();
+    public static void parseChainDocument(List<Document> documentList, Set<String> chainIdSet) {
         // 先在元数据里放上chain
         // 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
         // 这样就不用去像之前的版本那样回归调用
@@ -145,50 +143,45 @@ public class ParserHelper {
 
             // 先在元数据里放上chain
             for (Element e : chainList) {
-                // 校验加载的 chainName 是否有重复的
-                // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
                 String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
-                // 检查 chainName
+
+                //检查chainId有没有配置
                 checkChainId(chainId, e.getText());
+
+                // 检查chain是否重复
                 if (!chainIdSet.add(chainId)) {
                     throw new ChainDuplicateException(StrUtil.format("[chain name duplicate] chainName={}", chainId));
                 }
-                // 如果是禁用，就不解析了
-                if (!getEnableByElement(e)) {
-                    continue;
-                }
 
-                FlowBus.addChain(chainId);
-                if(ElRegexUtil.isAbstractChain(e.getText())){
-                    abstratChainMap.put(chainId,e);
-                    //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainId);
-                    chain.getConditionList().add(new AbstractCondition());
+                // 进行解析，但是不编译
+                Chain chain = parseOneChain(e);
+
+                if (chain != null){
+                    FlowBus.addChainPhase1(chain);
                 }
-            };
+            }
         });
         // 清空
         chainIdSet.clear();
 
-        // 解析每一个chain
-        for (Document document : documentList) {
-            Element rootElement = document.getRootElement();
-            List<Element> chainList = rootElement.elements(CHAIN);
-            for(Element chain:chainList){
-                // 如果是禁用，就不解析了
-                if (!getEnableByElement(chain)) {
-                    continue;
-                }
+        // 用于记录已经处理过的Chain
+        Set<String> processedChainIds = new HashSet<>();
 
-                //首先需要对继承自抽象Chain的chain进行字符串替换
-                parseImplChain(abstratChainMap, implChainSet, chain);
-                //如果一个chain不为抽象chain，则进行解析
-                String chainId = Optional.ofNullable(chain.attributeValue(ID)).orElse(chain.attributeValue(NAME));
-                if(!abstratChainMap.containsKey(chainId)){
-                    parseOneChainConsumer.accept(chain);
-                }
+        // 这里才是真正的编译阶段
+        FlowBus.getChainMap().entrySet().forEach(entry -> {
+            Chain chain = entry.getValue();
+            // 不编译抽象父类的chain
+            if (BooleanUtil.isTrue(chain.isAbstract())) {
+                return;
             }
-        }
+
+            // 处理抽象chain的继承关系
+            processChainInheritance(chain, processedChainIds);
+
+            if (BooleanUtil.isFalse(chain.isCompiled())) {
+                LiteFlowChainELBuilder.fromChain(chain).build();
+            }
+        });
     }
 
     public static void parseNodeJson(List<JsonNode> flowJsonObjectList) {
@@ -227,12 +220,7 @@ public class ParserHelper {
         }
     }
 
-    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet,
-                                      Consumer<JsonNode> parseOneChainConsumer) {
-        //用于存放抽象chain的map
-        Map<String,JsonNode> abstratChainMap = new HashMap<>();
-        //用于存放已经解析过的实现chain
-        Set<JsonNode> implChainSet = new HashSet<>();
+    public static void parseChainJson(List<JsonNode> flowJsonObjectList, Set<String> chainIdSet) {
         // 先在元数据里放上chain
         // 先放有一个好处，可以在parse的时候先映射到FlowBus的chainMap，然后再去解析
         // 这样就不用去像之前的版本那样回归调用
@@ -243,61 +231,55 @@ public class ParserHelper {
             // 先在元数据里放上chain
             while (iterator.hasNext()) {
                 JsonNode innerJsonObject = iterator.next();
-                // 校验加载的 chainName 是否有重复的
-                // TODO 这里是否有个问题，当混合格式加载的时候，2个同名的Chain在不同的文件里，就不行了
-                JsonNode chainNameJsonNode = Optional.ofNullable(innerJsonObject.get(ID))
-                        .orElse(innerJsonObject.get(NAME));
-                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-                // 检查 chainName
+                JsonNode chainIdJsonNode = Optional.ofNullable(innerJsonObject.get(ID)).orElse(innerJsonObject.get(NAME));
+                String chainId = Optional.ofNullable(chainIdJsonNode).map(JsonNode::textValue).orElse(null);
+
+                //检查chainId有没有配置
                 checkChainId(chainId, innerJsonObject.toString());
+
+                // 检查 chain 是否重复
                 if (!chainIdSet.add(chainId)) {
                     throw new ChainDuplicateException(String.format("[chain id duplicate] chainId=%s", chainId));
                 }
 
-                // 如果是禁用，就不解析了
-                if (!getEnableByJsonNode(innerJsonObject)) {
-                    continue;
-                }
+                // 进行解析，但是不编译
+                Chain chain = parseOneChain(innerJsonObject);
 
-                FlowBus.addChain(chainId);
-                if(ElRegexUtil.isAbstractChain(innerJsonObject.get(VALUE).textValue())){
-                    abstratChainMap.put(chainId,innerJsonObject);
-                    //如果是抽象chain，则向其中添加一个AbstractCondition,用于标记这个chain为抽象chain
-                    Chain chain = FlowBus.getChain(chainId);
-                    chain.getConditionList().add(new AbstractCondition());
+                if (chain != null){
+                    FlowBus.addChainPhase1(chain);
                 }
             }
         });
         // 清空
         chainIdSet.clear();
 
-        for (JsonNode flowJsonNode : flowJsonObjectList) {
-            // 解析每一个chain
-            Iterator<JsonNode> chainIterator = flowJsonNode.get(FLOW).get(CHAIN).elements();
-            while (chainIterator.hasNext()) {
-                JsonNode chainNode = chainIterator.next();
-                // 如果是禁用，就不解析了
-                if (!getEnableByJsonNode(chainNode)) {
-                    continue;
-                }
+        // 用于记录已经处理过的Chain
+        Set<String> processedChainIds = new HashSet<>();
 
-                //首先需要对继承自抽象Chain的chain进行字符串替换
-                parseImplChain(abstratChainMap, implChainSet, chainNode);
-                //如果一个chain不为抽象chain，则进行解析
-                JsonNode chainNameJsonNode = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME));
-                String chainId = Optional.ofNullable(chainNameJsonNode).map(JsonNode::textValue).orElse(null);
-                if(!abstratChainMap.containsKey(chainId)){
-                    parseOneChainConsumer.accept(chainNode);
-                }
+        // 这里才是真正的编译阶段
+        FlowBus.getChainMap().entrySet().forEach(entry -> {
+            Chain chain = entry.getValue();
+            // 不编译抽象父类的chain
+            if (BooleanUtil.isTrue(chain.isAbstract())) {
+                return;
             }
-        }
+
+            // 处理抽象chain的继承关系
+            processChainInheritance(chain, processedChainIds);
+
+            if (BooleanUtil.isFalse(chain.isCompiled())) {
+                LiteFlowChainELBuilder.fromChain(chain).build();
+            }
+        });
     }
 
-    /**
-     * 解析一个chain的过程
-     * @param chainNode chain 节点
-     */
-    public static void parseOneChainEl(JsonNode chainNode) {
+    public static Chain parseOneChain(JsonNode chainNode) {
+        // 先看是否可用
+        String enableStr = chainNode.get(ENABLE) == null? StrUtil.EMPTY : chainNode.get(ENABLE).asText();
+        if (StrUtil.isNotBlank(enableStr) && Boolean.FALSE.toString().equalsIgnoreCase(enableStr)) {
+            return null;
+        }
+
         // 构建chainBuilder
         String chainId = Optional.ofNullable(chainNode.get(ID)).orElse(chainNode.get(NAME)).textValue();
 
@@ -308,9 +290,11 @@ public class ParserHelper {
         String threadPoolExecutorClass = chainNode.get(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
                 chainNode.get(THREAD_POOL_EXECUTOR_CLASS).textValue();
 
+        String extendsChainId = chainNode.get(EXTENDS) == null ? null : chainNode.get(EXTENDS).textValue();
+
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
-                .setThreadPoolExecutorClass(threadPoolExecutorClass);
+                        .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -326,14 +310,29 @@ public class ParserHelper {
         }else{
             builder.setEL(chainNode.get(VALUE).textValue());
         }
-        builder.build();
+
+        // 是否是抽象父类chain
+        boolean isAbstract = ElRegexUtil.isAbstractChain(builder.getChain().getEl());
+        if (BooleanUtil.isTrue(isAbstract)){
+            builder.getChain().setAbstract(true);
+        }
+
+        // 设置继承的父chain
+        if (StrUtil.isNotBlank(extendsChainId)) {
+            builder.getChain().setExtendsChainId(extendsChainId);
+        }
+
+        return builder.getChain();
     }
 
-    /**
-     * 解析一个chain的过程
-     * @param e chain 节点
-     */
-    public static void parseOneChainEl(Element e) {
+
+    public static Chain parseOneChain(Element e){
+        // 先看是否可用
+        String enableStr = e.attributeValue(ENABLE);
+        if (StrUtil.isNotBlank(enableStr) && Boolean.FALSE.toString().equalsIgnoreCase(enableStr)) {
+            return null;
+        }
+
         // 构建chainBuilder
         String chainId = Optional.ofNullable(e.attributeValue(ID)).orElse(e.attributeValue(NAME));
 
@@ -344,9 +343,11 @@ public class ParserHelper {
         String threadPoolExecutorClass = e.attributeValue(THREAD_POOL_EXECUTOR_CLASS) == null ? null :
                 e.attributeValue(THREAD_POOL_EXECUTOR_CLASS);
 
+        String extendsChainId = e.attributeValue(EXTENDS);
+
         LiteFlowChainELBuilder builder =
                 LiteFlowChainELBuilder.createChain().setChainId(chainId).setNamespace(namespace)
-                .setThreadPoolExecutorClass(threadPoolExecutorClass);
+                        .setThreadPoolExecutorClass(threadPoolExecutorClass);
 
         // 如果有route这个标签，说明是决策表chain
         // 决策表链路必须有route和body这两个标签
@@ -362,15 +363,27 @@ public class ParserHelper {
         }else{
             // 即使没有route这个标签，body标签单独写也是被允许的
             Element bodyElement = e.element(BODY);
+            String el;
             if (bodyElement != null){
-                builder.setEL(bodyElement.getText());
+                el = bodyElement.getText();
             }else{
-                builder.setEL(e.getText());
+                el = e.getText();
             }
+            builder.setEL(el);
         }
 
+        // 是否是抽象父类chain
+        boolean isAbstract = ElRegexUtil.isAbstractChain(builder.getChain().getEl());
+        if (BooleanUtil.isTrue(isAbstract)){
+            builder.getChain().setAbstract(true);
+        }
 
-        builder.build();
+        // 设置继承的父chain
+        if (StrUtil.isNotBlank(extendsChainId)) {
+            builder.getChain().setExtendsChainId(extendsChainId);
+        }
+
+        return builder.getChain();
     }
 
     /**
@@ -382,6 +395,59 @@ public class ParserHelper {
         if (StrUtil.isBlank(chainId)) {
             throw new ParseException("missing chain id in expression \r\n" + elData);
         }
+    }
+
+    /**
+     * 处理Chain的继承关系，替换抽象Chain的占位符
+     * @param chain 需要处理的Chain
+     * @param processedChainIds 已经处理过的Chain ID集合
+     */
+    private static void processChainInheritance(Chain chain, Set<String> processedChainIds) {
+        if (StrUtil.isNotBlank(chain.getExtendsChainId())) {
+            resolveChainInheritance(chain, processedChainIds);
+        }
+    }
+
+    /**
+     * 递归解析Chain的继承关系
+     * @param chain 需要处理的Chain
+     * @param processedChainIds 已经处理过的Chain ID集合
+     */
+    private static void resolveChainInheritance(Chain chain, Set<String> processedChainIds) {
+        // 如果已经处理过，直接返回
+        if (processedChainIds.contains(chain.getChainId())) {
+            return;
+        }
+
+        String extendsChainId = chain.getExtendsChainId();
+        if (StrUtil.isBlank(extendsChainId)) {
+            return;
+        }
+
+        // 获取父Chain
+        Chain parentChain = FlowBus.getChain(extendsChainId);
+        if (parentChain == null) {
+            throw new ChainNotFoundException(
+                    StrUtil.format("[abstract chain not found] chainId={}", extendsChainId)
+            );
+        }
+
+        // 如果父Chain也有继承关系，先递归处理父Chain
+        if (StrUtil.isNotBlank(parentChain.getExtendsChainId())) {
+            resolveChainInheritance(parentChain, processedChainIds);
+        }
+
+        // 替换当前Chain的EL表达式
+        String parentEl = parentChain.getEl();
+        String currentEl = chain.getEl();
+
+        if (StrUtil.isNotBlank(parentEl) && StrUtil.isNotBlank(currentEl)) {
+            String resolvedEl = ElRegexUtil.replaceAbstractChain(parentEl, currentEl);
+            chain.setEl(resolvedEl);
+        }
+
+        // 标记为已处理
+        processedChainIds.add(chain.getChainId());
     }
 
     /**
@@ -474,7 +540,7 @@ public class ParserHelper {
     }
 
     private static Boolean getEnableByJsonNode(JsonNode nodeObject) {
-        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).toString() : "";
+        String enableStr = nodeObject.hasNonNull(ENABLE) ? nodeObject.get(ENABLE).asText() : "";
         if (StrUtil.isBlank(enableStr)) {
             return true;
         }

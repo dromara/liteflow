@@ -32,6 +32,7 @@ import com.yomahub.liteflow.lifecycle.LifeCycleHolder;
 import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.meta.LiteflowMetaOperator;
+import com.yomahub.liteflow.monitor.MonitorFile;
 import com.yomahub.liteflow.parser.el.LocalJsonFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalXmlFlowELParser;
 import com.yomahub.liteflow.parser.el.LocalYmlFlowELParser;
@@ -96,6 +97,10 @@ public class FlowBus {
 		if (!chainMap.containsKey(chainId)) {
 			chainMap.put(chainId, new Chain(chainId));
 		}
+	}
+
+	public static void addChainPhase1(Chain chain){
+		chainMap.put(chain.getChainId(), chain);
 	}
 
 	// 这个方法主要用于第二阶段的替换chain
@@ -363,6 +368,8 @@ public class FlowBus {
 	}
 
 	public static void cleanCache() {
+		// 先清理文件监控系统,防止后续操作触发文件重载
+		cleanMonitorFile();
 		chainMap.clear();
 		nodeMap.clear();
 		fallbackNodeMap.clear();
@@ -376,6 +383,19 @@ public class FlowBus {
 			ScriptExecutorFactory.loadInstance().cleanScriptCache();
 		}
 		catch (ScriptSpiException ignored) {
+		}
+	}
+
+	/**
+	 * 清理文件监控系统
+	 * 停止所有监控线程并清空状态
+	 */
+	public static void cleanMonitorFile() {
+		try {
+			MonitorFile.getInstance().destroy();
+			LOG.debug("MonitorFile cleaned successfully");
+		} catch (Exception e) {
+			LOG.error("Error cleaning MonitorFile", e);
 		}
 	}
 

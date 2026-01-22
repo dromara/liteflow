@@ -49,6 +49,12 @@ public abstract class Condition implements Executable{
 	 */
 	private String currChainId;
 
+	/**
+	 * bind 数据存储，用于存储在该 Condition 上的 bind 数据
+	 * 运行时 node 会通过 Condition 栈向上查找 bind 数据
+	 */
+	private Map<String, String> bindDataMap = new HashMap<>();
+
 	@Override
 	public void execute(Integer slotIndex) throws Exception {
 		Slot slot = DataBus.getSlot(slotIndex);
@@ -190,5 +196,32 @@ public abstract class Condition implements Executable{
 
 	public Map<String, List<Executable>> getExecutableGroup() {
 		return executableGroup;
+	}
+
+	/**
+	 * 设置 bind 数据
+	 * @param key bind 数据的 key
+	 * @param value bind 数据的 value
+	 */
+	public void putBindData(String key, String value) {
+		this.bindDataMap.put(key, value);
+	}
+
+	/**
+	 * 获取 bind 数据
+	 * @param key bind 数据的 key
+	 * @return bind 数据的 value
+	 */
+	public String getBindData(String key) {
+		return this.bindDataMap.get(key);
+	}
+
+	/**
+	 * 判断是否存在指定 key 的 bind 数据
+	 * @param key bind 数据的 key
+	 * @return 是否存在
+	 */
+	public boolean hasBindData(String key) {
+		return this.bindDataMap.containsKey(key);
 	}
 }

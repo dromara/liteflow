@@ -1,12 +1,15 @@
 package com.yomahub.liteflow.builder.el.operator.base;
 
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.enums.ConditionTypeEnum;
 import com.yomahub.liteflow.enums.ExecuteableTypeEnum;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.DataNotFoundException;
 import com.yomahub.liteflow.exception.ELParseException;
+import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Condition;
 import com.yomahub.liteflow.flow.element.Executable;
 import com.yomahub.liteflow.flow.element.Node;
@@ -132,8 +135,7 @@ public class OperatorHelper {
 				if (object instanceof Node) {
 					Node node = (Node) object;
                     return (T) node.clone();
-				}
-				else {
+				}else {
 					return (T) object;
 				}
 			}

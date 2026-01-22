@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-LiteFlow (v2.15.1) is a lightweight rules engine framework for complex component-based business orchestration. It uses a DSL to drive workflows with support for hot reload and 10 scripting languages. The project targets Java 8+ and has 2000+ test cases.
+LiteFlow (v2.15.3) is a lightweight rules engine framework for complex component-based business orchestration. It uses a DSL to drive workflows with support for hot reload and 11 scripting languages. The project targets Java 8+ (up to JDK 25) and has 2000+ test cases.
 
 **Official Documentation**: https://liteflow.cc/pages/5816c5/
 
@@ -121,7 +121,7 @@ Three modes (`ParseModeEnum`):
 - **liteflow-rule-apollo**: Apollo configuration center
 - **liteflow-rule-redis**: Redis configuration source
 
-#### Script Plugins (10 languages in `liteflow-script-plugin/`)
+#### Script Plugins (11 languages in `liteflow-script-plugin/`)
 - **liteflow-script-groovy**: Groovy scripting
 - **liteflow-script-javascript**: Rhino JavaScript (JSR223)
 - **liteflow-script-graaljs**: GraalVM JavaScript
@@ -131,6 +131,7 @@ Three modes (`ParseModeEnum`):
 - **liteflow-script-aviator**: Aviator expression language
 - **liteflow-script-java**: Janino (Java compiler)
 - **liteflow-script-javax**: JSR223 standard Java compiler
+- **liteflow-script-javax-pro**: Liquor-based Java compiler (enhanced)
 - **liteflow-script-kotlin**: Kotlin scripting
 
 #### Framework Integration
@@ -214,4 +215,4 @@ Components implement `rollback()` for automatic rollback on failure (executed in
 - **Fail-Fast**: Validation at parse time with detailed error messages
 - **Fluent APIs**: Builder pattern for chain construction (EL builder)
 - **Namespaces**: Chains can be organized into namespaces
-- **Versioning**: Uses `${revision}` placeholder (currently 2.15.1) via flatten-maven-plugin
+- **Versioning**: Uses `${revision}` placeholder (currently 2.15.3) via flatten-maven-plugin

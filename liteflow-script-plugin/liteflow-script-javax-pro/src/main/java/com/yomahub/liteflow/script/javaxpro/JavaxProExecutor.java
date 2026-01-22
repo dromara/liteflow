@@ -1,7 +1,12 @@
 package com.yomahub.liteflow.script.javaxpro;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.common.entity.ValidationResp;
+import com.yomahub.liteflow.core.FlowExecutorHolder;
+import com.yomahub.liteflow.core.FlowInitHook;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.enums.ScriptTypeEnum;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -12,12 +17,17 @@ import com.yomahub.liteflow.script.exception.ScriptLoadException;
 import com.yomahub.liteflow.script.javaxpro.vo.JavaxProSettingMapKey;
 import com.yomahub.liteflow.util.CopyOnWriteHashMap;
 import org.noear.liquor.eval.CodeSpec;
+import org.noear.liquor.eval.Execable;
 import org.noear.liquor.eval.Scripts;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Javax语言执行器，基于liquor
@@ -26,6 +36,9 @@ import java.util.Map;
  * @since 2.13.0
  */
 public class JavaxProExecutor extends ScriptExecutor {
+
+    private final Map<CodeSpec, String> codeSpecMap = new HashMap<>();
+
     private final Map<String, NodeComponent> compiledScriptMap = new CopyOnWriteHashMap<>();
 
     private boolean isCache;
@@ -37,13 +50,27 @@ public class JavaxProExecutor extends ScriptExecutor {
         isCache = Boolean.parseBoolean(isCacheValue);
         //如果有生命周期则执行相应生命周期实现
         super.lifeCycle(null);
+
+        // 注册第二段批次编译
+        FlowInitHook.addHook(() -> {
+            loadSecondPhase();
+            codeSpecMap.clear();
+            return true;
+        });
         return this;
     }
 
     @Override
     public void load(String nodeId, String script) {
         try{
-            compiledScriptMap.put(nodeId, (NodeComponent) compile(script));
+            boolean startUpPhase = FlowExecutorHolder.loadInstance().getStartUpPhase().get();
+            if (startUpPhase){
+                codeSpecMap.put((CodeSpec) compile(script), nodeId);
+            }else{
+                compiledScriptMap.put(nodeId, (NodeComponent)compile(script));
+            }
+
+
         }catch (InvocationTargetException e){
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getTargetException().getMessage());
             throw new ScriptLoadException(errorMsg);
@@ -51,6 +78,21 @@ public class JavaxProExecutor extends ScriptExecutor {
             String errorMsg = StrUtil.format("script loading error for node[{}],error msg:{}", nodeId, e.getMessage());
             throw new ScriptLoadException(errorMsg);
         }
+    }
+
+    // 第二段编译，指的是合并编译，如果实现了这个方法，说明compile阶段没有真正编译
+    @Override
+    public void loadSecondPhase() {
+        if (MapUtil.isEmpty(codeSpecMap)) {
+            return;
+        }
+
+        Map<CodeSpec, Execable> execableMap = Scripts.compile(new ArrayList<>(codeSpecMap.keySet()));
+
+        execableMap.forEach((k, v) -> {
+            NodeComponent nodeComponent = (NodeComponent)v.exec();
+            compiledScriptMap.put(codeSpecMap.get(k), nodeComponent);
+        });
     }
 
     @Override
@@ -80,12 +122,34 @@ public class JavaxProExecutor extends ScriptExecutor {
         return ScriptTypeEnum.JAVA;
     }
 
+    // 如果在启动时阶段，则不进行编译，只是暂存，然后由loadSecondPhase进行统一编译
+    // 如果不是在启动阶段，则直接进行编译
     @Override
     public Object compile(String script) throws Exception {
-        CodeSpec codeSpec = new CodeSpec(convertScript(script))
-                .returnType(Object.class)
-                .cached(isCache);
-        return Scripts.eval(codeSpec);
+        boolean startUpPhase = FlowExecutorHolder.loadInstance().getStartUpPhase().get();
+        if (startUpPhase){
+            return new CodeSpec(convertScript(script))
+                    .returnType(Object.class)
+                    .cached(isCache);
+        }else{
+            CodeSpec codeSpec = new CodeSpec(convertScript(script))
+                    .returnType(Object.class)
+                    .cached(isCache);
+            return Scripts.eval(codeSpec);
+        }
+    }
+
+    @Override
+    public ValidationResp validate(String script){
+        try {
+            CodeSpec codeSpec = new CodeSpec(convertScript(script))
+                    .returnType(Object.class)
+                    .cached(isCache);
+            Scripts.eval(codeSpec);
+        } catch (Exception e) {
+            return ValidationResp.fail(e);
+        }
+        return ValidationResp.success();
     }
 
     @Override
