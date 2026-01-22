@@ -27,10 +27,7 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 * **优雅热刷新机制：** 规则变化，无需重启您的应用，即时改变应用的规则。高并发下不会因为刷新规则导致正在执行的规则有任何错乱。
 * **支持广泛：** 不管你的项目是不是基于Spring Boot，Spring还是任何其他Java框架构建，LiteFlow都能游刃有余。
 * **JDK支持：** 从JDK8到JDK25，全部支持。无需担心JDK版本。
-* **
-
-### Spring Boot
-支持全面：** 支持Spring Boot2.X到最新的Spring Boot3.X。
+* **Spring Boot支持全面：** 支持Spring Boot2.X到最新的Spring Boot3.X。
 * **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，JavaScript，QLExpress，Python，Lua，Aviator，Java，Kotlin。未来还会支持更多的脚本语言。
 * **脚本和Java全打通：** 所有脚本语言均可调用Java方法，甚至于可以引用任意的实例，在脚本中调用RPC也是支持的。
 * **规则嵌套支持：** 只要你想得出，你可以利用简单的表达式完成多重嵌套的复杂逻辑编排。
