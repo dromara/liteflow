@@ -46,7 +46,7 @@ public class CommonExampleBenchmark {
     }
 
     //执行阶段测试
-    //@Benchmark
+    @Benchmark
     public  void test1(){
         flowExecutor.execute2Resp("mainChain", req, PriceContext.class);
     }
