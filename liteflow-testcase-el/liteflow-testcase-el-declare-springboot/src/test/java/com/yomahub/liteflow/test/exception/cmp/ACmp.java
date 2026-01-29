@@ -24,7 +24,7 @@ public class ACmp {
 	public void process(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new RuntimeException("chain execute execption");
+			throw new RuntimeException("chain execute exception");
 		}
 		LOG.info("Acomp executed!");
 	}
