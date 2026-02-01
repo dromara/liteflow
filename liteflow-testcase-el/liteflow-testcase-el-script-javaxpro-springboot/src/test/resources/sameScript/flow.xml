@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <!-- s1 和 s2 是完全相同的脚本内容，只是 nodeId 不同 -->
+        <node id="s1" name="脚本S1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    // 根据 nodeId 写入不同的数据来验证是否真的执行了对应节点
+                    ctx.setData(this.getNodeId(), "executed by " + this.getNodeId());
+                    System.out.println("Executing node: " + this.getNodeId());
+                }
+            }
+            ]]>
+        </node>
+
+        <!-- s2 和 s1 的脚本内容完全相同 -->
+        <node id="s2" name="脚本S2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class Demo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    // 根据 nodeId 写入不同的数据来验证是否真的执行了对应节点
+                    ctx.setData(this.getNodeId(), "executed by " + this.getNodeId());
+                    System.out.println("Executing node: " + this.getNodeId());
+                }
+            }
+            ]]>
+        </node>
+
+        <!-- a1, a2, a3 三个节点也是完全相同的脚本 -->
+        <node id="a1" name="脚本A1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class AnotherDemo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    ctx.setData(this.getNodeId(), "data from " + this.getNodeId());
+                    System.out.println("Node " + this.getNodeId() + " is working");
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="a2" name="脚本A2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class AnotherDemo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    ctx.setData(this.getNodeId(), "data from " + this.getNodeId());
+                    System.out.println("Node " + this.getNodeId() + " is working");
+                }
+            }
+            ]]>
+        </node>
+
+        <node id="a3" name="脚本A3" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class AnotherDemo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    ctx.setData(this.getNodeId(), "data from " + this.getNodeId());
+                    System.out.println("Node " + this.getNodeId() + " is working");
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <!-- chain1: 测试两个相同脚本的节点 -->
+    <chain name="chain1">
+        THEN(s1, s2);
+    </chain>
+
+    <!-- chain2: 测试三个相同脚本的节点 -->
+    <chain name="chain2">
+        THEN(a1, a2, a3);
+    </chain>
+</flow>
