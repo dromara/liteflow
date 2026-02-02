@@ -94,7 +94,9 @@ public class FlowExecutor {
 	 * isStart表示是否是系统启动阶段，启动阶段要做额外的事情，而因为reload所调用的init就不用做
 	 */
 	public void init(boolean isStart) {
-		startUpPhase.compareAndSet(false, true);
+		if (isStart){
+			startUpPhase.compareAndSet(false, true);
+		}
 
 		if (ObjectUtil.isNull(liteflowConfig)) {
 			throw new ConfigErrorException("config error, please check liteflow config property");
