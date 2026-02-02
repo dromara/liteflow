@@ -23,11 +23,10 @@ import org.noear.liquor.eval.Scripts;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * Javax语言执行器，基于liquor
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class JavaxProExecutor extends ScriptExecutor {
 
-    private final Map<CodeSpec, String> codeSpecMap = new HashMap<>();
+    private final Map<CodeSpec, Set<String>> codeSpecMap = new HashMap<>();
 
     private final Map<String, NodeComponent> compiledScriptMap = new CopyOnWriteHashMap<>();
 
@@ -65,7 +64,10 @@ public class JavaxProExecutor extends ScriptExecutor {
         try{
             boolean startUpPhase = FlowExecutorHolder.loadInstance().getStartUpPhase().get();
             if (startUpPhase){
-                codeSpecMap.put((CodeSpec) compile(script), nodeId);
+                // 启动阶段：同一段脚本可能对应多个 nodeId
+                CodeSpec codeSpec = (CodeSpec) compile(script);
+                codeSpecMap.computeIfAbsent(codeSpec, k -> new HashSet<>())
+                        .add(nodeId);
             }else{
                 compiledScriptMap.put(nodeId, (NodeComponent)compile(script));
             }
@@ -90,8 +92,14 @@ public class JavaxProExecutor extends ScriptExecutor {
         Map<CodeSpec, Execable> execableMap = Scripts.compile(new ArrayList<>(codeSpecMap.keySet()));
 
         execableMap.forEach((k, v) -> {
-            NodeComponent nodeComponent = (NodeComponent)v.exec();
-            compiledScriptMap.put(codeSpecMap.get(k), nodeComponent);
+            Set<String> nodeIdSet = codeSpecMap.get(k);
+            if (CollectionUtil.isEmpty(nodeIdSet)) {
+                return;
+            }
+            nodeIdSet.forEach(nodeId -> {
+                NodeComponent nodeComponent = (NodeComponent) v.exec();
+                compiledScriptMap.put(nodeId, nodeComponent);
+            });
         });
     }
 
