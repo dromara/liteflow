@@ -362,7 +362,7 @@ public class LiteFlowChainELBuilder {
 		// 所以这里要判断表达式里有没有其他的chain，如果有，进行先行解析
 		Set<String> itemSet = EXPRESS_RUNNER.getOutVarNames(elStr);
 		itemSet.forEach(item -> {
-			if (FlowBus.containChain(item) && !chain.getChainId().equals(item)) {
+			if (FlowBus.containChain(item) && ObjectUtil.notEqual(chain.getChainId(), item)) {
 				Chain itemChain = FlowBus.getChain(item);
 				if (!itemChain.isCompiled()){
 					buildUnCompileChain(FlowBus.getChain(item));
