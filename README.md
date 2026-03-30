@@ -57,6 +57,24 @@ LiteFlow has 2000 test cases and more. Complete documentation and comprehensive 
 
 Looking forward to your use！
 
+## Sponsors
+
+**驰骋工作流引擎**
+
+<a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
+
+**FastBee物联网平台**
+
+<a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
+
+**速众 AI 低代码开发平台**
+
+<a href="https://www.suconnect.com?hmsr=LiteFlow&hmpl=&hmcu=LiteFlow&hmkw=&hmci="><img src="static/img/suzhong-banner.jpg"></a>
+
+**Easysearch**
+
+<a href="https://easysearch.cn/"><img src="https://infinilabs.cn/img/download/media-assets/easysearch-banner-4.webp"></a>
+
 **DISCORD LINK**
 
 Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
