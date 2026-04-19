@@ -125,6 +125,9 @@ public class LiteflowConfig {
 	// 是否开启虚拟线程(只在jdk21环境下奏效)
 	private Boolean enableVirtualThread;
 
+	// agent配置
+	private com.yomahub.liteflow.property.agent.AgentConfig agent;
+
 	public Boolean getEnableMonitorFile() {
 		return enableMonitorFile;
 	}
@@ -537,5 +540,13 @@ public class LiteflowConfig {
 
 	public void setEnableVirtualThread(Boolean enableVirtualThread) {
 		this.enableVirtualThread = enableVirtualThread;
+	}
+
+	public com.yomahub.liteflow.property.agent.AgentConfig getAgent() {
+		return agent;
+	}
+
+	public void setAgent(com.yomahub.liteflow.property.agent.AgentConfig agent) {
+		this.agent = agent;
 	}
 }
