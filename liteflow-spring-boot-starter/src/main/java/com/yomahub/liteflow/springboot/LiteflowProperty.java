@@ -107,6 +107,10 @@ public class LiteflowProperty {
 	@NestedConfigurationProperty
 	private ChainCacheProperty chainCache;
 
+	// Agent配置
+	@NestedConfigurationProperty
+	private com.yomahub.liteflow.property.agent.AgentConfig agent;
+
 	public static class ChainCacheProperty {
 		// 是否启用规则缓存
 		private Boolean enabled;
@@ -377,5 +381,13 @@ public class LiteflowProperty {
 
 	public void setEnableVirtualThread(boolean enableVirtualThread) {
 		this.enableVirtualThread = enableVirtualThread;
+	}
+
+	public com.yomahub.liteflow.property.agent.AgentConfig getAgent() {
+		return agent;
+	}
+
+	public void setAgent(com.yomahub.liteflow.property.agent.AgentConfig agent) {
+		this.agent = agent;
 	}
 }
