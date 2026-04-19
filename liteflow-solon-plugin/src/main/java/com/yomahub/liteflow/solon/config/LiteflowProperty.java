@@ -101,6 +101,9 @@ public class LiteflowProperty {
 	//是否启用节点实例ID
 	private boolean enableNodeInstanceId;
 
+	// agent配置
+	private com.yomahub.liteflow.property.agent.AgentConfig agent;
+
 	// 规则缓存配置
 	private ChainCacheProperty chainCache;
 
@@ -367,6 +370,14 @@ public class LiteflowProperty {
 
 	public void setEnableNodeInstanceId(boolean enableNodeInstanceId) {
 		this.enableNodeInstanceId = enableNodeInstanceId;
+	}
+
+	public com.yomahub.liteflow.property.agent.AgentConfig getAgent() {
+		return agent;
+	}
+
+	public void setAgent(com.yomahub.liteflow.property.agent.AgentConfig agent) {
+		this.agent = agent;
 	}
 
 	public ChainCacheProperty getChainCache() {

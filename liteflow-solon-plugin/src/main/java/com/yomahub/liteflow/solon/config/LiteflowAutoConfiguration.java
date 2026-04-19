@@ -53,6 +53,7 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
 		liteflowConfig.setChainCacheEnabled(property.getChainCache().isEnabled());
 		liteflowConfig.setChainCacheCapacity(property.getChainCache().getCapacity());
+		liteflowConfig.setAgent(property.getAgent());
 		return liteflowConfig;
 	}
 
