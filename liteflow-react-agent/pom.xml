@@ -19,7 +19,7 @@
         <module>liteflow-react-agent-core</module>
         <module>liteflow-react-agent-openai</module>
         <module>liteflow-react-agent-anthropic</module>
-        <!-- <module>liteflow-react-agent-gemini</module> -->
+        <module>liteflow-react-agent-gemini</module>
         <module>liteflow-react-agent-dashscope</module>
     </modules>
 </project>
