@@ -440,7 +440,6 @@
 				<module>liteflow-testcase-el</module>
 				<module>liteflow-el-builder</module>
 				<module>liteflow-benchmark</module>
-				<module>liteflow-react-agent</module>
 			</modules>
 			<activation>
 				<activeByDefault>true</activeByDefault>
@@ -457,7 +456,6 @@
 				<module>liteflow-spring</module>
 				<module>liteflow-solon-plugin</module>
 				<module>liteflow-el-builder</module>
-				<module>liteflow-react-agent</module>
 			</modules>
 
 			<build>
@@ -515,6 +513,17 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+
+		<!-- ReAct Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
+		<profile>
+			<id>react-agent</id>
+			<activation>
+				<jdk>[21,)</jdk>
+			</activation>
+			<modules>
+				<module>liteflow-react-agent</module>
+			</modules>
 		</profile>
 	</profiles>
 </project>
