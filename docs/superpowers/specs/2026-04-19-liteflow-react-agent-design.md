@@ -80,14 +80,13 @@ public abstract class ReActAgentComponent extends NodeComponent {
     /** 构建 agentscope 的 Model（平台+模型+apiKey+参数） */
     protected abstract Model buildModel(ReActAgentContext ctx);
 
-    /** 系统提示词；ctx 含 sessionId / workspace 路径，可拼入 prompt */
+    /** 系统提示词；ctx 含 sessionId / workspace 路径，可拼入 prompt。
+     *  一次性会话场景下可返回空串，所有业务意图写在 userPrompt 里即可 */
     protected abstract String systemPrompt(ReActAgentContext ctx);
 
-    /** 本次要发送给 agent 的用户消息；默认从 slot.getRequestData() 取 */
-    protected String userMessage(ReActAgentContext ctx) {
-        Object data = ctx.getSlot().getRequestData();
-        return data == null ? "" : data.toString();
-    }
+    /** 本次要发送给 agent 的用户消息（LLM Role=user）。
+     *  必须实现——一次性会话时核心意图全部写在这里 */
+    protected abstract String userPrompt(ReActAgentContext ctx);
 
     /* ===== 可选覆写 ===== */
 
@@ -134,6 +133,34 @@ public abstract class ReActAgentComponent extends NodeComponent {
 - `process()` final：保证 session 获取/锁/释放与异常处理由框架掌控。
 - Agent 实例**懒构建**并缓存在 `AgentSession`，同一 sessionId 复用，memory 自动累积（多轮对话能力来自此）。
 - 默认 `resolveSessionId = slot.requestId` → 每次执行独立 session（无状态）；覆写后可跨次共享。
+
+### 4.1 模型高级参数（如 thinking level）的处置
+
+各平台的 "thinking level" 参数形态差异很大（Gemini 用 `ThinkingLevelFormatter`、OpenAI o 系列用 `reasoning_effort`、Anthropic 用 `thinking.budget_tokens`、DashScope 用 `enable_thinking`、DeepSeek 用模型名区分）。
+
+**设计决策**：抽象类**不**统一封装，`ReActAgentProperties` 里也**不**提供 thinking 配置项。用户在 `buildModel(ctx)` 内用 agentscope 原生 builder 自行设置。好处：平台演进新增高级参数（temperature / top_p / safety_settings / reasoning_timeout 等）不需要修改 LiteFlow 的 schema 或 core 抽象。
+
+示例：
+
+```java
+// Gemini
+return GeminiChatModel.builder()
+        .apiKey(apiKey).modelName("gemini-3-flash-preview")
+        .formatter(new ThinkingLevelFormatter("high"))
+        .build();
+
+// Anthropic
+return AnthropicChatModel.builder()
+        .apiKey(apiKey).modelName("claude-sonnet-4-6")
+        .thinkingBudgetTokens(8000)
+        .build();
+
+// DashScope（千问）
+return DashScopeChatModel.builder()
+        .apiKey(apiKey).modelName("qwen3-max")
+        .enableThinking(true)
+        .build();
+```
 
 ## 5. 平台子模块便捷工厂
 
@@ -336,7 +363,7 @@ public class PlatformCredential {
                          .hooks(hooks(ctx))
                          .build()
 12.  }
-13.  Msg reply = session.agent.call(Msg.builder().textContent(userMessage(ctx)).build()).block()
+13.  Msg reply = session.agent.call(Msg.builder().textContent(userPrompt(ctx)).build()).block()
 14.  handleReply(reply, ctx)
    } finally {
 15.  session.lock.unlock()
