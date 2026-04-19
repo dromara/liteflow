@@ -75,9 +75,17 @@ OpenAICompatiblePresets.minimax(apiKey, "abab6.5s-chat")
 ```java
 public abstract class ReActAgentComponent extends NodeComponent {
 
+    /* ===== 框架提供的 final 访问器 ===== */
+
+    /** 统一从 LiteflowConfig 取 agent 配置，子类无需 @Resource 注入。final 不可覆写 */
+    protected final AgentConfig agentConfig() {
+        return LiteflowConfigGetter.get().getAgent();
+    }
+
     /* ===== 必须实现 ===== */
 
-    /** 构建 agentscope 的 Model（平台+模型+apiKey+参数） */
+    /** 构建 agentscope 的 Model（平台+模型+apiKey+参数）。
+     *  子类通过 agentConfig() 直接拿 apiKey / baseUrl，无需注入配置类 */
     protected abstract Model buildModel(ReActAgentContext ctx);
 
     /** 系统提示词；ctx 含 sessionId / workspace 路径，可拼入 prompt。
@@ -124,7 +132,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
 
 | 类型 | 作用 |
 |------|------|
-| `ReActAgentContext` | 持有 `Slot`, `sessionId`, `Path workspaceDir`, `ReActAgentProperties` |
+| `ReActAgentContext` | 持有 `Slot`, `sessionId`, `Path workspaceDir`（`AgentConfig` 通过 `agentConfig()` 取，不重复放入 ctx） |
 | `AgentSession` | 单 sessionId 对应的 `ReActAgent` 实例 + `workspace` + `ReentrantLock` + `lastActive` |
 | `AgentSessionManager` | `ConcurrentHashMap<String, AgentSession>` + 定时回收 + LRU 淘汰 |
 
@@ -138,7 +146,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
 
 各平台的 "thinking level" 参数形态差异很大（Gemini 用 `ThinkingLevelFormatter`、OpenAI o 系列用 `reasoning_effort`、Anthropic 用 `thinking.budget_tokens`、DashScope 用 `enable_thinking`、DeepSeek 用模型名区分）。
 
-**设计决策**：抽象类**不**统一封装，`ReActAgentProperties` 里也**不**提供 thinking 配置项。用户在 `buildModel(ctx)` 内用 agentscope 原生 builder 自行设置。好处：平台演进新增高级参数（temperature / top_p / safety_settings / reasoning_timeout 等）不需要修改 LiteFlow 的 schema 或 core 抽象。
+**设计决策**：抽象类**不**统一封装，`AgentConfig` 里也**不**提供 thinking 配置项。用户在 `buildModel(ctx)` 内用 agentscope 原生 builder 自行设置。好处：平台演进新增高级参数（temperature / top_p / safety_settings / reasoning_timeout 等）不需要修改 LiteFlow 的 schema 或 core 抽象。
 
 示例：
 
@@ -196,22 +204,26 @@ public final class DashScopeModelFactory {
 }
 ```
 
-**用户代码示例**：
+**用户代码示例**（无 `@Resource`，apiKey 走 `agentConfig()`）：
 
 ```java
 @LiteflowComponent("reviewAgent")
 public class ReviewAgent extends ReActAgentComponent {
-    @Resource private ReActAgentProperties props;
 
     @Override
     protected Model buildModel(ReActAgentContext ctx) {
-        PlatformCredential c = props.getOpenaiCompatible().get("deepseek");
+        PlatformCredential c = agentConfig().getOpenaiCompatible().get("deepseek");
         return OpenAICompatiblePresets.deepseek(c.getApiKey(), "deepseek-chat");
     }
 
     @Override
     protected String systemPrompt(ReActAgentContext ctx) {
         return "你是合同审核专家，当前工作区：" + ctx.getWorkspaceDir();
+    }
+
+    @Override
+    protected String userPrompt(ReActAgentContext ctx) {
+        return ctx.getSlot().getRequestData(String.class);
     }
 
     @Override
@@ -223,9 +235,15 @@ public class ReviewAgent extends ReActAgentComponent {
 
 EL 里像普通节点编排：`THEN(prepare, reviewAgent, notify);`
 
-## 6. 配置结构 `ReActAgentProperties`
+## 6. 配置结构 `AgentConfig`
 
-前缀 `liteflow.agent`，放在 core 模块。Spring Boot 用 `@ConfigurationProperties`；非 Spring 场景提供 `ReActAgentPropertiesLoader` 从 yml/properties 手动加载。
+**与 `LiteflowConfig` 的融合**：不新增独立的 `@ConfigurationProperties` 类。在 `LiteflowConfig` 上新增一个字段 `private AgentConfig agent`，Spring Boot 的 `@ConfigurationProperties(prefix = "liteflow")`（LiteFlow 现有装配入口）会自动把 `liteflow.agent.*` 映射到 `LiteflowConfig.agent.*`，零改造。
+
+**类的归属**（方案 Z）：`AgentConfig` 及其嵌套类型（`Workspace` / `Session` / `Shell` / `Defaults` / `PlatformCredential`）放在 `liteflow-core` 模块的 `com.yomahub.liteflow.property.agent` 包下。**严格保证纯 POJO**：只有配置字段 + getter/setter，不引用 agentscope、不引用任何第三方 SDK。这样 `liteflow-core` 仅多一个配置容器，零额外传递依赖；真正 agent 的执行代码全在 `liteflow-react-agent-core` 及各平台模块。
+
+**访问方式**：`LiteflowConfigGetter.get().getAgent()`——复用现有机制，Spring / Solon / 非 Spring 三种场景统一。
+
+前缀 `liteflow.agent`。Spring Boot 下自动装配；非 Spring 场景通过 `new LiteflowConfig()` + `setAgent(...)` 手动构造后传给 `FlowExecutorHolder.loadInstance(config)`。
 
 ```yaml
 liteflow:
@@ -278,11 +296,20 @@ liteflow:
         base-url: https://api.minimax.chat/v1
 ```
 
-**Java 侧**：
+**Java 侧**（`liteflow-core` 中）：
 
 ```java
-@ConfigurationProperties(prefix = "liteflow.agent")
-public class ReActAgentProperties {
+// liteflow-core: LiteflowConfig 上新增一个字段
+public class LiteflowConfig {
+    // ... 现有所有字段保持不变 ...
+    private AgentConfig agent;
+
+    public AgentConfig getAgent() { return agent; }
+    public void setAgent(AgentConfig agent) { this.agent = agent; }
+}
+
+// liteflow-core 新包 com.yomahub.liteflow.property.agent
+public class AgentConfig {
     private Workspace workspace = new Workspace();
     private Session session = new Session();
     private Shell shell = new Shell();
@@ -292,6 +319,7 @@ public class ReActAgentProperties {
     private PlatformCredential gemini = new PlatformCredential();
     private PlatformCredential dashscope = new PlatformCredential();
     private Map<String, PlatformCredential> openaiCompatible = new LinkedHashMap<>();
+    // + getter/setter（全部纯 POJO，无 agentscope / 第三方 SDK 依赖）
 }
 
 public class PlatformCredential {
@@ -301,7 +329,9 @@ public class PlatformCredential {
 }
 ```
 
-**自动装配**：`liteflow-spring-boot-starter` 的 `LiteflowAutoConfiguration` 增加条件装配：classpath 存在 `ReActAgentComponent` 时才装配 `ReActAgentProperties` + `AgentSessionManager`，保持 starter 向后兼容。
+**装配逻辑**：
+- Spring Boot：`LiteflowProperty` 已经以 prefix `liteflow` 映射到 `LiteflowConfig`，`liteflow.agent.*` 会被 Spring Boot 自动嵌套装配进去，无需额外 `@ConfigurationProperties`
+- `AgentSessionManager` 在 `liteflow-react-agent-core` 模块中以 Spring Bean 注册（或非 Spring 下懒加载静态单例），不需要修改 starter 模块
 
 ## 7. Workspace 与 Shell 管控
 
@@ -349,24 +379,25 @@ public class PlatformCredential {
 3. session.lock.lock()
    try {
 4.   if (session.agent == null) {
-5.       ctx = new ReActAgentContext(slot, sessionId, workspace, props)
-6.       Model model = buildModel(ctx)
-7.       Toolkit toolkit = new Toolkit()
-8.       tools(ctx).forEach(toolkit::registerTool)
-9.       if (enableWorkspaceFileTools()) toolkit.registerTool(new WorkspaceFileTools(workspace, props))
-10.      if (enableShellTool())          toolkit.registerTool(new ManagedShellCommandTool(workspace, props))
-11.      session.agent = ReActAgent.builder()
+5.       AgentConfig cfg = LiteflowConfigGetter.get().getAgent()
+6.       ctx = new ReActAgentContext(slot, sessionId, workspace)
+7.       Model model = buildModel(ctx)                                     // 子类内可调 agentConfig() 取 apiKey
+8.       Toolkit toolkit = new Toolkit()
+9.       tools(ctx).forEach(toolkit::registerTool)
+10.      if (enableWorkspaceFileTools()) toolkit.registerTool(new WorkspaceFileTools(workspace, cfg))
+11.      if (enableShellTool())          toolkit.registerTool(new ManagedShellCommandTool(workspace, cfg))
+12.      session.agent = ReActAgent.builder()
                          .model(model).toolkit(toolkit)
                          .sysPrompt(systemPrompt(ctx))
                          .memory(new InMemoryMemory())
                          .maxIters(resolvedMaxIterations())
                          .hooks(hooks(ctx))
                          .build()
-12.  }
-13.  Msg reply = session.agent.call(Msg.builder().textContent(userPrompt(ctx)).build()).block()
-14.  handleReply(reply, ctx)
+13.  }
+14.  Msg reply = session.agent.call(Msg.builder().textContent(userPrompt(ctx)).build()).block()
+15.  handleReply(reply, ctx)
    } finally {
-15.  session.lock.unlock()
+16.  session.lock.unlock()
    }
 ```
 
@@ -435,16 +466,17 @@ public class PlatformCredential {
 | workspace 根目录无写权限 | 启动期 `@PostConstruct` 尝试创建/写测试文件，失败抛 `AgentConfigException` |
 | 长链路异步调用中 lock 持有时间过长 | `agent.call().block()` 期间 lock 保护 memory 一致性；配合 `TIMEOUT` EL 控制上限 |
 | OpenAI 兼容厂商协议偏差 | preset 仅保底常见场景；特殊厂商用户自行 `OpenAIModelFactory.custom()` |
-| shell 命令首 token 解析误判（如引号嵌套、管道） | 初期只支持单命令（不拆分 `|` `&&`）；复杂场景拒绝执行并返错误给 LLM |
+| shell 命令首 token 解析误判（如引号嵌套、管道） | 初期只支持单命令（不拆分 `\|` `&&`）；复杂场景拒绝执行并返错误给 LLM |
+| `AgentConfig` 引入 `liteflow-core` 造成 core 污染 | `AgentConfig` 及嵌套类强制纯 POJO，无 agentscope/第三方 SDK 依赖；通过 PR review 卡准 |
 
 ## 12. 交付物清单
 
+- `liteflow-core`：在 `LiteflowConfig` 上新增 `private AgentConfig agent` 字段 + 新包 `com.yomahub.liteflow.property.agent`（`AgentConfig`、`Workspace`、`Session`、`Shell`、`Defaults`、`PlatformCredential` 纯 POJO）
 - `liteflow-react-agent/` 父 pom
-- `liteflow-react-agent-core/` + 源码 + 单元测试
+- `liteflow-react-agent-core/` + 源码 + 单元测试（抽象类、`AgentSessionManager`、`WorkspaceFileTools`、`ManagedShellCommandTool` 等）
 - `liteflow-react-agent-{openai,anthropic,gemini,dashscope}/` + 源码 + 单元测试
 - `liteflow-testcase-el/liteflow-testcase-el-springboot-agent/` 集成测试模块
 - 根 `pom.xml` 新增模块声明
-- `liteflow-spring-boot-starter` 条件装配
 - 各模块 `README.md`
 
 ## 13. 未决事项（后续实施计划阶段再定）
