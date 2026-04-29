@@ -10,7 +10,7 @@ class ModelSpecTest {
 
     /** 仅用于测试的最小 ModelSpec 子类。 */
     static class TestSpec extends ModelSpec<TestSpec> {
-        @Override protected Model resolve(AgentConfig cfg) { return null; }
+        @Override public Model resolve(AgentConfig cfg) { return null; }
     }
 
     @Test

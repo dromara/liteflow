@@ -48,6 +48,9 @@ public abstract class ModelSpec<SELF extends ModelSpec<SELF>> {
      * 把本描述符解析为 agentscope {@link Model} 实例。
      * 实现需从 {@link AgentConfig} 中读取对应平台的 credential，
      * 并把共性 + 个性参数翻译成 agentscope 的 GenerateOptions。
+     * <p>
+     * 本方法是框架 SPI：{@code ReActAgentComponent} 在不同包中调用，
+     * 因此必须为 {@code public}。
      */
-    protected abstract Model resolve(AgentConfig cfg);
+    public abstract Model resolve(AgentConfig cfg);
 }
