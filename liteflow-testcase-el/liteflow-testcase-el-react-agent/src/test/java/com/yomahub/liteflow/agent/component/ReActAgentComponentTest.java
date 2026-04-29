@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.flow.element.Node;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -8,7 +9,6 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.slot.DataBus;
 import com.yomahub.liteflow.slot.Slot;
-import io.agentscope.core.model.Model;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -45,7 +45,14 @@ class ReActAgentComponentTest {
      */
     static class TestAgent extends ReActAgentComponent {
         @Override
-        protected Model buildModel(ReActAgentContext ctx) { return new FakeEchoModel(); }
+        @SuppressWarnings("rawtypes")
+        protected ModelSpec model(ReActAgentContext ctx) {
+            return new ModelSpec() {
+                @Override public io.agentscope.core.model.Model resolve(AgentConfig cfg) {
+                    return new FakeEchoModel();
+                }
+            };
+        }
         @Override
         protected String systemPrompt(ReActAgentContext ctx) { return "you are helpful"; }
         @Override
