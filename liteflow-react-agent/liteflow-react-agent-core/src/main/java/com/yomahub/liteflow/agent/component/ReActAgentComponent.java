@@ -8,35 +8,40 @@ import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.MemoryStorageConfig;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.hook.Hook;
 import io.agentscope.core.memory.InMemoryMemory;
 import io.agentscope.core.message.Msg;
+import com.yomahub.liteflow.agent.model.ModelSpec;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.tool.Toolkit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * Abstract LiteFlow component that wraps an agentscope ReActAgent.
+ * 封装 agentscope ReActAgent 的 LiteFlow 抽象组件。
  * <p>
- * Subclasses must provide {@link #buildModel}, {@link #systemPrompt}, and
- * {@link #userPrompt}.  Optional overrides allow custom tools, hooks, and
- * lifecycle callbacks.
+ * 子类必须提供 {@link #model}、{@link #systemPrompt} 和
+ * {@link #userPrompt}。可选覆写方法用于自定义工具、钩子和生命周期回调。
  * <p>
- * The {@link #process()} method is {@code final} so that the framework can
- * guarantee proper session management and agent lifecycle.
+ * {@link #process()} 方法被声明为 {@code final}，由框架统一保证 session
+ * 管理和 agent 生命周期的正确性。
  */
 public abstract class ReActAgentComponent extends NodeComponent {
 
-    /* ===== Framework-provided final accessor ===== */
+    private static final Logger LOG = LoggerFactory.getLogger(ReActAgentComponent.class);
+
+    /* ===== 框架提供的 final 访问器 ===== */
 
     /**
-     * Returns the agent section of the current LiteflowConfig.
+     * 返回当前 LiteflowConfig 中的 agent 配置段。
      *
-     * @throws AgentConfigException if liteflow.agent has not been configured
+     * @throws AgentConfigException 当 liteflow.agent 尚未配置时抛出
      */
     protected final AgentConfig agentConfig() {
         AgentConfig c = LiteflowConfigGetter.get().getAgent();
@@ -47,82 +52,95 @@ public abstract class ReActAgentComponent extends NodeComponent {
         return c;
     }
 
-    /* ===== Must implement ===== */
+    /* ===== 必须实现 ===== */
 
     /**
-     * Build the {@link Model} instance used by the ReActAgent.
-     * Subclasses typically choose a specific provider (OpenAI, Anthropic, etc.)
-     * based on configuration from {@link AgentConfig}.
+     * 构建本组件使用的模型描述符。子类按"哪个平台 + 哪个模型 + 可选高级参数"
+     * 三段式给出，由框架负责从 {@link AgentConfig} 解析 credential 并构造
+     * agentscope {@link Model}。例如：
+     * <pre>{@code
+     *     return DeepSeek.of("deepseek-chat").temperature(0.7);
+     * }</pre>
      */
-    protected abstract Model buildModel(ReActAgentContext ctx);
+    protected abstract ModelSpec<?> model(ReActAgentContext ctx);
 
     /**
-     * Return the system prompt for the agent. Called once when the agent is built.
+     * Escape hatch：高级用户可整体绕过 {@link ModelSpec} 自行构造 {@link Model}。
+     * 默认实现委派给 {@code model(ctx).resolve(agentConfig())}，无需覆写。
+     */
+    protected Model buildModel(ReActAgentContext ctx) {
+        return model(ctx).resolve(agentConfig());
+    }
+
+    /**
+     * 返回 agent 的系统提示词。构建 agent 时只调用一次。
      */
     protected abstract String systemPrompt(ReActAgentContext ctx);
 
     /**
-     * Return the user prompt for this execution. Called on every {@link #process()}.
+     * 返回本次执行的用户提示词。每次 {@link #process()} 都会调用。
      */
     protected abstract String userPrompt(ReActAgentContext ctx);
 
-    /* ===== Optional overrides ===== */
+    /* ===== 可选覆写 ===== */
 
     /**
-     * Provide additional tool objects to register with the agent's {@link Toolkit}.
-     * Each object's methods annotated with {@code @Tool} will be discovered automatically.
-     * Returns an empty list by default.
+     * 提供要注册到 agent {@link Toolkit} 中的额外工具对象。
+     * 对象中标注了 {@code @Tool} 的方法会被自动发现。
+     * 默认返回空列表。
      */
     protected List<Object> tools(ReActAgentContext ctx) { return List.of(); }
 
     /**
-     * Derive the session id from the current slot. Defaults to the slot's requestId.
+     * 从当前 slot 推导 session id。默认使用 slot 的 requestId。
      */
     protected String resolveSessionId(Slot slot) { return slot.getRequestId(); }
 
     /**
-     * Maximum ReAct iterations. A value of -1 (default) means "use the global default
-     * from {@link com.yomahub.liteflow.property.agent.DefaultsConfig}".
+     * ReAct 最大迭代次数。返回 -1（默认值）表示使用
+     * {@link com.yomahub.liteflow.property.agent.DefaultsConfig} 中的全局默认值。
      */
     protected int maxIterations() { return -1; }
 
     /**
-     * Whether to register the built-in {@link WorkspaceFileTools}. Default true.
+     * 是否注册内置 {@link ManagedShellCommandTool}。默认开启。
      */
     protected boolean enableShellTool() { return true; }
 
     /**
-     * Whether to register the built-in {@link ManagedShellCommandTool}. Default true.
+     * 是否注册内置 {@link WorkspaceFileTools}。默认开启。
      */
     protected boolean enableWorkspaceFileTools() { return true; }
 
     /**
-     * Provide hooks for the agent. Returns an empty list by default.
+     * 提供 agent 钩子。默认返回空列表。
      */
     protected List<Hook> hooks(ReActAgentContext ctx) { return List.of(); }
 
     /**
-     * Called after the agent replies. The default implementation writes
-     * {@code reply.getTextContent()} into the slot's response data.
+     * agent 回复后调用。默认实现会把 {@code reply.getTextContent()}
+     * 写入 slot 的响应数据。
      */
     protected void handleReply(Msg reply, ReActAgentContext ctx) {
         ctx.getSlot().setResponseData(reply == null ? null : reply.getTextContent());
     }
 
-    /* ===== Framework final execution body ===== */
+    /* ===== 框架 final 执行体 ===== */
 
     /**
-     * Executes the ReActAgent within a managed session.
+     * 在受管 session 中执行 ReActAgent。
      * <ol>
-     *   <li>Acquires (or creates) an {@link AgentSession} keyed by session id</li>
-     *   <li>Builds a {@link ReActAgent} on first use, then reuses it</li>
-     *   <li>Calls the agent with the user prompt and handles the reply</li>
+     *   <li>根据 session id 获取（或创建）{@link AgentSession}</li>
+     *   <li>首次使用时构建 {@link ReActAgent}，之后复用</li>
+     *   <li>使用用户提示词调用 agent，并处理回复</li>
      * </ol>
-     * This method is {@code final} to ensure correct session locking.
+     * 该方法被声明为 {@code final}，用于保证 session 加锁逻辑正确执行。
      */
     @Override
     public final void process() throws Exception {
-        AgentSessionManager mgr = AgentSessionManagerHolder.getOrCreate(agentConfig());
+        AgentConfig cfg = agentConfig();
+        AgentSessionManager mgr = AgentSessionManagerHolder.getOrCreate(cfg);
+        MemoryStorageConfig mc = cfg.getSession().getMemory();
         Slot slot = this.getSlot();
         String sid = resolveSessionId(slot);
         AgentSession session = mgr.acquire(sid);
@@ -132,11 +150,32 @@ public abstract class ReActAgentComponent extends NodeComponent {
             ReActAgent agent = (ReActAgent) session.getAgent();
             if (agent == null) {
                 agent = buildAgent(ctx);
+                // 懒加载：同一个 sessionId 在当前 JVM 中首次出现时才恢复一次。
+                mgr.loadIfExists(session, agent);
                 session.setAgent(agent);
             }
-            Msg userMsg = Msg.builder().textContent(userPrompt(ctx)).build();
-            Msg reply = agent.call(List.of(userMsg)).block();
-            handleReply(reply, ctx);
+            Throwable processError = null;
+            try {
+                Msg userMsg = Msg.builder().textContent(userPrompt(ctx)).build();
+                Msg reply = agent.call(List.of(userMsg)).block();
+                handleReply(reply, ctx);
+            } catch (Throwable t) {
+                processError = t;
+                throw t;
+            } finally {
+                boolean shouldSave = (processError == null) ? mc.isSaveAfterCall() : mc.isSaveOnError();
+                if (shouldSave) {
+                    try {
+                        mgr.save(session, agent);
+                    } catch (Exception persistEx) {
+                        if (processError != null) {
+                            processError.addSuppressed(persistEx);
+                        } else {
+                            LOG.warn("session memory save failed for sid={}", session.getSessionId(), persistEx);
+                        }
+                    }
+                }
+            }
         } finally {
             session.getLock().unlock();
         }
@@ -166,7 +205,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
                 .build();
     }
 
-    /** Holds singleton AgentSessionManager; lazily created on first process() */
+    /** 持有单例 AgentSessionManager；首次 process() 时懒创建。 */
     static final class AgentSessionManagerHolder {
         private static volatile AgentSessionManager INSTANCE;
         static AgentSessionManager getOrCreate(AgentConfig cfg) {
