@@ -13,6 +13,7 @@ public class AgentConfig {
     private PlatformCredential gemini = new PlatformCredential();
     private PlatformCredential dashscope = new PlatformCredential();
     private Map<String, PlatformCredential> openaiCompatible = new LinkedHashMap<>();
+    private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
 
     public WorkspaceConfig getWorkspace() { return workspace; }
     public void setWorkspace(WorkspaceConfig v) { this.workspace = v; }
@@ -32,4 +33,6 @@ public class AgentConfig {
     public void setDashscope(PlatformCredential v) { this.dashscope = v; }
     public Map<String, PlatformCredential> getOpenaiCompatible() { return openaiCompatible; }
     public void setOpenaiCompatible(Map<String, PlatformCredential> v) { this.openaiCompatible = v; }
+    public Map<String, PlatformCredential> getAnthropicCompatible() { return anthropicCompatible; }
+    public void setAnthropicCompatible(Map<String, PlatformCredential> v) { this.anthropicCompatible = v; }
 }

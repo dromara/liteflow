@@ -90,7 +90,7 @@ class ModelSpecTest {
 
     /** 仅用于测试的最小 ModelSpec 子类。 */
     static class TestSpec extends ModelSpec<TestSpec> {
-        @Override protected Model resolve(AgentConfig cfg) { return null; }
+        @Override public Model resolve(AgentConfig cfg) { return null; }
     }
 
     @Test
@@ -192,10 +192,15 @@ public abstract class ModelSpec<SELF extends ModelSpec<SELF>> {
      * 把本描述符解析为 agentscope {@link Model} 实例。
      * 实现需从 {@link AgentConfig} 中读取对应平台的 credential，
      * 并把共性 + 个性参数翻译成 agentscope 的 GenerateOptions。
+     * <p>
+     * 本方法是框架 SPI：{@code ReActAgentComponent} 在不同包中调用，
+     * 因此必须为 {@code public}（subclass override 同样需要 {@code public}）。
      */
-    protected abstract Model resolve(AgentConfig cfg);
+    public abstract Model resolve(AgentConfig cfg);
 }
 ```
+
+> **重要**：`resolve` 必须是 `public`，因为 Task 8 中 `ReActAgentComponent`（在 `com.yomahub.liteflow.agent.component` 包）会调用 `model(ctx).resolve(agentConfig())`。Java 不允许 override 缩小可见性，所以后续 Tasks 3-7 中所有 spec 子类的 `resolve` override 也必须是 `public`，测试中的 `TestSpec.resolve` 同理。
 
 - [ ] **Step 4: 再次运行测试，确认通过**
 
@@ -513,7 +518,7 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
     public Double getPresencePenalty()   { return presencePenalty; }
 
     @Override
-    protected Model resolve(AgentConfig cfg) {
+    public Model resolve(AgentConfig cfg) {
         PlatformCredential cred = CredentialResolver.requireFirstClass(
                 cfg.getOpenai(), "liteflow.agent.openai");
         return buildModel(cred.getApiKey(), cred.getBaseUrl());
@@ -740,7 +745,7 @@ public class OpenAICompatibleSpec extends OpenAISpec {
     }
 
     @Override
-    protected Model resolve(AgentConfig cfg) {
+    public Model resolve(AgentConfig cfg) {
         PlatformCredential cred = CredentialResolver.requireCompatible(
                 cfg.getOpenaiCompatible(), configKey, "liteflow.agent.openai-compatible");
         String baseUrl = (cred.getBaseUrl() != null && !cred.getBaseUrl().isBlank())
@@ -1018,7 +1023,7 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
     public Boolean getThinkingEnabled()  { return thinkingEnabled; }
 
     @Override
-    protected Model resolve(AgentConfig cfg) {
+    public Model resolve(AgentConfig cfg) {
         PlatformCredential cred;
         if (compatibleConfigKey == null) {
             cred = CredentialResolver.requireFirstClass(
@@ -1239,7 +1244,7 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
     public Integer getThinkingBudget() { return thinkingBudget; }
 
     @Override
-    protected Model resolve(AgentConfig cfg) {
+    public Model resolve(AgentConfig cfg) {
         PlatformCredential cred = CredentialResolver.requireFirstClass(
                 cfg.getGemini(), "liteflow.agent.gemini");
 
@@ -1429,7 +1434,7 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
     public Integer getThinkingBudget() { return thinkingBudget; }
 
     @Override
-    protected Model resolve(AgentConfig cfg) {
+    public Model resolve(AgentConfig cfg) {
         PlatformCredential cred = CredentialResolver.requireFirstClass(
                 cfg.getDashscope(), "liteflow.agent.dashscope");
 

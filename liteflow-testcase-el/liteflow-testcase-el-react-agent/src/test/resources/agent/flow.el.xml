@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+
+    <!-- 1. 最简单的 Agent 调用链：准备 -> Agent 推理 -> 记录回复 -->
+    <chain name="deepseekChain">
+        THEN(prepare, deepseekAgent, recordReply);
+    </chain>
+
+    <chain name="openaiChain">
+        THEN(prepare, openaiAgent, recordReply);
+    </chain>
+
+    <chain name="anthropicChain">
+        THEN(prepare, anthropicAgent, recordReply);
+    </chain>
+
+    <chain name="dashscopeChain">
+        THEN(prepare, dashscopeAgent, recordReply);
+    </chain>
+
+    <chain name="geminiChain">
+        THEN(prepare, geminiAgent, recordReply);
+    </chain>
+
+    <!-- 2. 自定义工具示例：mathAgent 注册了 CalculatorTool -->
+    <chain name="mathChain">
+        THEN(prepare, mathAgent, recordReply);
+    </chain>
+
+    <!-- 3. 用 IF EL 路由：算术题走 mathAgent，其他走 deepseekAgent -->
+    <chain name="routerChain">
+        THEN(
+            prepare,
+            IF(isMath, mathAgent, deepseekAgent),
+            recordReply
+        );
+    </chain>
+
+    <!-- 4. 并行 WHEN：同时跑两个不同后端的 Agent，用 maxWaitSeconds 限时 -->
+    <chain name="parallelChain">
+        THEN(
+            prepare,
+            WHEN(deepseekAgent, dashscopeAgent).maxWaitSeconds(60),
+            recordReply
+        );
+    </chain>
+
+</flow>

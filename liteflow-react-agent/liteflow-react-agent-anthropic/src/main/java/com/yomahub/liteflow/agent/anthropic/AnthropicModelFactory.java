@@ -11,4 +11,12 @@ public final class AnthropicModelFactory {
                 .modelName(modelName)
                 .build();
     }
+
+    public static AnthropicChatModel custom(String apiKey, String baseUrl, String modelName) {
+        return AnthropicChatModel.builder()
+                .apiKey(apiKey)
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .build();
+    }
 }

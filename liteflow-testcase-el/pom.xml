@@ -46,4 +46,17 @@
         <module>liteflow-testcase-el-sql-springboot-sharding-jdbc</module>
         <module>liteflow-testcase-el-script-javaxpro-springboot</module>
     </modules>
+
+    <profiles>
+        <!-- ReAct Agent 测试模块依赖 JDK 21（agentscope-java），仅在 JDK 17+ 构建中拉入 -->
+        <profile>
+            <id>testcase-react-agent</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <modules>
+                <module>liteflow-testcase-el-react-agent</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

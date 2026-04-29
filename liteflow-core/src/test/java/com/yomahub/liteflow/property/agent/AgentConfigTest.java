@@ -15,6 +15,8 @@ class AgentConfigTest {
         assertNotNull(c.getDefaults());
         assertNotNull(c.getOpenaiCompatible());
         assertTrue(c.getOpenaiCompatible().isEmpty());
+        assertNotNull(c.getAnthropicCompatible());
+        assertTrue(c.getAnthropicCompatible().isEmpty());
 
         WorkspaceConfig w = c.getWorkspace();
         assertNull(w.getRoot());
@@ -43,8 +45,12 @@ class AgentConfigTest {
     void platform_credentials_are_independent_instances() {
         AgentConfig c = new AgentConfig();
         c.getOpenai().setApiKey("k1");
+        c.getOpenaiCompatible().put("compatible-openai", new PlatformCredential());
+        c.getAnthropicCompatible().put("compatible-anthropic", new PlatformCredential());
         assertNull(c.getAnthropic().getApiKey());
         assertNull(c.getGemini().getApiKey());
         assertNull(c.getDashscope().getApiKey());
+        assertFalse(c.getOpenaiCompatible().containsKey("compatible-anthropic"));
+        assertFalse(c.getAnthropicCompatible().containsKey("compatible-openai"));
     }
 }
