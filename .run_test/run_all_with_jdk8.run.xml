@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run all" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="run_all_with_jdk8" type="JUnit" factoryName="JUnit">
     <extension name="coverage" track_test_folders="true" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
