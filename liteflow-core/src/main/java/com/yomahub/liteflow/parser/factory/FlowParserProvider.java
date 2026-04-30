@@ -133,17 +133,17 @@ public class FlowParserProvider {
 	 */
 	protected static class ConfigRegexConstant {
 
-		public static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.xml$";
+		public static final String LOCAL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.xml$";
 
-		public static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.json$";
+		public static final String LOCAL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.json$";
 
-		public static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.yml$";
+		public static final String LOCAL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.yml$";
 
-		public static final String LOCAL_EL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.el\\.xml$";
+		public static final String LOCAL_EL_XML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.el\\.xml$";
 
-		public static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.el\\.json$";
+		public static final String LOCAL_EL_JSON_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.el\\.json$";
 
-		public static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*]+\\.el\\.yml$";
+		public static final String LOCAL_EL_YML_CONFIG_REGEX = "^[\\w\\:\\-\\.\\@\\/\\\\\\*\\+]+\\.el\\.yml$";
 
 		public static final String PREFIX_FORMAT_CONFIG_REGEX = "xml:|json:|yml:|el_xml:|el_json:|el_yml:";
 
