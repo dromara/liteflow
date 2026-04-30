@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="chain1">
+        ITERATOR(it).DO(a);
+    </chain>
+
+    <chain name="chain2">
+        ITERATOR(it).DO(a).BREAK(b);
+    </chain>
+
+    <chain name="chain3">
+        ITERATOR(x1).DO(
+            THEN(
+                c,
+                ITERATOR(x2).DO(c)
+            )
+
+        );
+    </chain>
+
+    <chain name="chain4">
+        ITERATOR(x1).DO(
+            ITERATOR(x2).DO(e)
+        );
+    </chain>
+
+    <chain name="chain5">
+        ITERATOR(x1).parallel(true).DO(
+            ITERATOR(x2).parallel(true).DO(
+                ITERATOR(x3).parallel(true).DO(
+                    ITERATOR(x4).parallel(true).DO(
+                        ITERATOR(x5).parallel(true).DO(f)
+                    )
+                )
+            )
+        );
+    </chain>
+</flow>

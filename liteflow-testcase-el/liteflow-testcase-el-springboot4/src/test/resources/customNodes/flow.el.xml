@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <nodes>
+        <node id="a" class="com.yomahub.liteflow.test.customNodes.cmp.ACmp"/>
+        <node id="b" class="com.yomahub.liteflow.test.customNodes.cmp.BCmp"/>
+        <node id="c" class="com.yomahub.liteflow.test.customNodes.cmp.CCmp"/>
+        <node id="d" class="com.yomahub.liteflow.test.customNodes.cmp.DCmp"/>
+        <node id="e" class="com.yomahub.liteflow.test.customNodes.cmp.ECmp"/>
+        <node id="f" class="com.yomahub.liteflow.test.customNodes.cmp.FCmp"/>
+    </nodes>
+
+    <chain name="chain1">
+        WHEN(a, b, c);
+    </chain>
+
+    <chain name="chain2">
+        WHEN(d, e, f);
+    </chain>
+</flow>

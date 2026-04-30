@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        /**
+        * 多行注释
+        **/
+        oracleUrl = "jdbc:oracle:thin:@//localhost:1521/USERS";
+        THEN(
+            a.data(oracleUrl),
+            b,
+            WHEN(
+                c,
+                b
+            )
+        );
+    </chain>
+</flow>

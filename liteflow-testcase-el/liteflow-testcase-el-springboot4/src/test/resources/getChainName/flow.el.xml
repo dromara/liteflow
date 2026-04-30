@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        WHEN(sub1, sub2, sub3, sub4);
+    </chain>
+
+    <chain name="sub1">
+        THEN(a);
+    </chain>
+
+    <chain name="sub2">
+        THEN(b);
+    </chain>
+
+    <chain name="sub3">
+        THEN(c);
+    </chain>
+
+    <chain name="sub4">
+        THEN(d);
+    </chain>
+
+    <chain name="sub5">
+        THEN(e, f);
+    </chain>
+
+    <chain name="sub6">
+        SWITCH(h).to(j, k);
+    </chain>
+
+    <chain name="chain2">
+        THEN(
+            g,
+            WHEN(sub1, WHEN(sub2, sub3)),
+            sub4, sub5, e, sub6
+        );
+    </chain>
+</flow>

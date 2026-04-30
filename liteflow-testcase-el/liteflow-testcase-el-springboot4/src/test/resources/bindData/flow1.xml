@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain id="chain1">
+        THEN(a.bind("k1", "test"), b);
+    </chain>
+
+    <chain id="chain2">
+        THEN(a,b).bind("k1","test");
+    </chain>
+
+    <chain id="chain3">
+        THEN(SWITCH(y).TO(d,c), WHEN(a, b), IF(x, c, d)).bind("k1", "test")
+    </chain>
+
+    <chain id="sub">
+        THEN(a,IF(NOT(x), b, c));
+    </chain>
+
+    <chain id="chain4">
+        THEN(d, sub.bind("k1", "test2"))
+    </chain>
+
+    <chain id="chain5">
+        v = "{\"name\":\"jack\", \"age\":19, \"birth1\":\"1990-06-01T12:00:00\", \"birth2\":\"1990-06-01\", \"birth3\":\"1990-06-01T12:00:00\"}";
+        THEN(f.bind("key",v));
+    </chain>
+
+    <chain id="chain6">
+        THEN(a, b.bind("k1", "test_b"), c).bind("k1", "test");
+    </chain>
+
+    <chain id="chain7">
+        THEN(a, b.bind("k1", "test_b"), c).bind("k1", "test", true);
+    </chain>
+</flow>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- base test -->
+    <chain name="chain1">
+        THEN(
+            a,b,c,
+            WHEN(d, SWITCH(e).to(f,g)),
+            chain2
+        );
+    </chain>
+
+
+    <chain name="chain2">
+        THEN(b, SWITCH(j).to(a, chain3));
+    </chain>
+
+    <chain name="chain3">
+        WHEN(g, f, h);
+    </chain>
+
+    <chain name="chain3-1">
+        THEN(WHEN(f, g, i), WHEN(h));
+    </chain>
+
+    <chain name="chain3-2">
+        THEN(WHEN(f, g, i).ignoreError(true), WHEN(h));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, b, c, WHEN(d, i, g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain5">
+        THEN(a, b, c, WHEN(d, i, g, i, h));
+    </chain>
+
+    <chain name="chain6">
+        THEN(a, b, c, WHEN(d, i), WHEN(g, i, h).ignoreError(true));
+    </chain>
+
+    <chain name="chain7">
+        THEN(a, b, c, WHEN(d, i).ignoreError(true), WHEN(g, i, h));
+    </chain>
+
+    <chain name="chain8">
+        THEN(WHEN(d, g, h).any(true), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain9">
+        THEN(WHEN(d, g, h).must("h"), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain10">
+        THEN(WHEN(d, g, k, l).must("g").ignoreError(false), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain11">
+        THEN(WHEN(d, g, k, l).ignoreError(true).must("d"), THEN(a, b, c));
+    </chain>
+
+    <chain name="chain12">
+        THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z"), c);
+    </chain>
+
+    <chain name="chain13">
+        THEN(WHEN(d, g, l, a, THEN(k, b).id("z")).ignoreError(true).must("z", g, "task1", "task2"), c);
+    </chain>
+
+    <chain name="chain14">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(0.6f);
+    </chain>
+
+    <chain name="chain15">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(0);
+    </chain>
+
+    <chain name="chain16">
+        WHEN(m.tag("1"), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).percentage(1);
+    </chain>
+
+    <chain name="chain17">
+        WHEN(m.tag("1"), m.tag("2"), n.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).ignoreError(true).percentage(0.5);
+    </chain>
+
+    <chain name="chain18">
+        WHEN(THEN(m.tag("1"), n.tag("1.5")), m.tag("2"), m.tag("3"), m.tag("4"), m.tag("5")).ignoreError(false).percentage(0.4);
+    </chain>
+
+</flow>

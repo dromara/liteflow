@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(PRE(p1, p2), THEN(a, b, c), FINALLY(f1, f2));
+    </chain>
+
+    <chain name="chain2">
+        THEN(a, PRE(p1, p2), FINALLY(f1, f2), THEN(b, c));
+    </chain>
+
+    <chain name="chain3">
+        THEN(PRE(p1, p2), THEN(a, d, c), FINALLY(f1, f2));
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, d, c, FINALLY(f3));
+    </chain>
+
+    <chain name="chain5">
+        THEN(PRE(p1, p2), chain1, FINALLY(f1));
+    </chain>
+
+    <chain name="chain6">
+        c1 = THEN(PRE(p1, p2), THEN(a, b, c), FINALLY(f1, f2));
+        THEN(PRE(p1, p2), c1, FINALLY(f1));
+    </chain>
+
+    <chain name="chain7">
+        THEN(a, b, THEN(PRE(p1), FINALLY(f1), c), PRE(p2), FINALLY(f2));
+    </chain>
+</flow>

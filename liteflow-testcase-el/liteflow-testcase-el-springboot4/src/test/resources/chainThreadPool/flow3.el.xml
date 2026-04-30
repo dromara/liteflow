@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        WHEN(a,b);
+    </chain>
+
+    <chain name="chain2">
+        FOR(5).parallel(true).DO(THEN(a,f)
+        );
+    </chain>
+
+    <chain name="chain3">
+        WHILE(z).parallel(true).DO(THEN(w,d));
+    </chain>
+
+    <chain name="chain4">
+        ITERATOR(it).parallel(true).DO(THEN(a,i));
+    </chain>
+</flow>

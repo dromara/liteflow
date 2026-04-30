@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a);
+    </chain>
+
+    <chain name="chain2">
+        THEN(b);
+    </chain>
+
+    <chain name="chain3">
+        THEN(c);
+    </chain>
+
+    <chain name="chain4">
+        THEN(d);
+    </chain>
+</flow>

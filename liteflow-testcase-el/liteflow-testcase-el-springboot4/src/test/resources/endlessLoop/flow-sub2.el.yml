@@ -1,0 +1,6 @@
+flow:
+  chain:
+    - name: chain2
+      value: "THEN(c, d, chain3);"
+    - name: chain3
+      value: "THEN(a, chain2);"

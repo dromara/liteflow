@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        sql = "select * from member t
+            where t.id=10001";
+        cmpData = '{"name":"jack","age":27,"birth":"1995-10-01"}';
+
+        THEN(
+            a.data(sql),
+            b.data(cmpData)
+        );
+    </chain>
+
+    <chain name="chain2">
+        WHEN(
+            c.data("1"),
+            c.data("2"),
+            c.data("3"),
+            c.data("4"),
+            c.data("5"),
+            c.data("6"),
+            c.data("7"),
+            c.data("8")
+        );
+    </chain>
+
+    <chain name="chain3">
+        cmpDataList = '[{"name":"jack","age":27,"birth":"1995-10-01"}, {"name":"mike","age":32,"birth":"1992-08-16"}, {"name":"david","age":11,"birth":"2013-09-27"}]';
+        cmpDataEmptyList = '[]';
+
+        THEN(d.data(cmpDataList), e.data(cmpDataEmptyList));
+    </chain>
+</flow>

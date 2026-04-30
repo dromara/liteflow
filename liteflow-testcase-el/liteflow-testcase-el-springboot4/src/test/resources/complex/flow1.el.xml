@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1_1">
+        THEN(
+            A,
+            WHEN(
+                THEN(B, C),
+                THEN(D, E, F),
+                THEN(
+                    SWITCH(G).to(
+                        THEN(H, I, WHEN(J, K)).id("t1"),
+                        THEN(L, M).id("t2")
+                    ),
+                N
+                )
+            ),
+            Z
+        );
+    </chain>
+
+    <chain name="chain1_2">
+        item1 = THEN(B, C);
+        item2 = THEN(D, E, F);
+        item3_1 = THEN(H, I, WHEN(J, K)).id("t1");
+        item3_2 = THEN(L, M).id("t2");
+        item3 = THEN(SWITCH(G).to(item3_1, item3_2), N);
+
+        THEN(
+            A,
+            WHEN(item1, item2, item3),
+            Z
+        );
+    </chain>
+</flow>

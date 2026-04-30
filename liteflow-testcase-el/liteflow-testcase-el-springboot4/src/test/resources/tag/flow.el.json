@@ -1,0 +1,22 @@
+{
+  "flow": {
+    "chain": [
+      {
+        "name": "chain1",
+        "value": "THEN(a.tag(\"1\"), a.tag(\"2\"), a.tag(\"3\"));"
+      },
+      {
+        "name": "chain2",
+        "value": "THEN(a.tag(\"1\"), a.tag(\"2\"), a.tag(\"3\"), SWITCH(c.tag(\"2\")).to(d.tag(\"5\"), e.tag(\"6\")));"
+      },
+      {
+        "name": "chain3",
+        "value": "THEN(b1, WHEN(b.tag(\"1\"), b.tag(\"2\"), b.tag(\"3\")));"
+      },
+      {
+        "name": "chain4",
+        "value": "THEN(f.tag(\"false\"), g);"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a,b,c,d,e);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,b,c,WHEN(d,e));
+    </chain>
+
+    <chain name="chain3">
+        THEN(a,b,c,f);
+    </chain>
+
+    <chain name="chain4">
+        THEN(a, f, b, c);
+    </chain>
+
+    <chain name="chain5">
+        THEN(a, b, WHEN(f, e), c);
+    </chain>
+
+</flow>

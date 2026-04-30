@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain3">
+        THEN(f, g);
+    </chain>
+
+    <chain name="chain4">
+        THEN(h, m);
+    </chain>
+
+    <chain name="c1">
+        THEN(p);
+    </chain>
+
+    <chain name="c2">
+        THEN(q);
+    </chain>
+
+    <chain name="chain_r">
+        THEN(r);
+    </chain>
+
+    <chain name="chain_s">
+        THEN(s);
+    </chain>
+</flow>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- base test -->
+    <chain name="chain1">
+        WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f, WHEN(f)))))));
+    </chain>
+</flow>

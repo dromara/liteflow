@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN(a,b,c,d);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a,a,a,a);
+    </chain>
+
+    <chain name="chain3">
+        IF(x1.tag("true"), THEN(a, b));
+    </chain>
+
+    <chain name="chain4">
+        FOR(x).DO(CATCH(THEN(a,b,a)));
+    </chain>
+
+    <chain name="chain5">
+        THEN(SWITCH(e).to(b, c));
+    </chain>
+
+    <chain name="chain6">
+        THEN(a,WHEN(b, c),a);
+    </chain>
+
+    <chain name="chain7">
+        CATCH(THEN(a,b)).DO(c)
+    </chain>
+</flow>

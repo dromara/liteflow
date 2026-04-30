@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- THEN 普通组件降级 -->
+    <chain name="then1">
+        THEN(a, node("x"));
+    </chain>
+    
+    <chain name="then2">
+        THEN(PRE(node("x1")), node("x2"), FINALLY(node("x3")));
+    </chain>
+
+    <!-- WHEN 普通组件降级 -->
+    <chain name="when1">
+        WHEN(b, node("x"));
+    </chain>
+
+    <!-- IF 条件组件降级 -->
+    <chain name="if1">
+        IF(node("x"), a)
+    </chain>
+    
+    <!-- IF 普通组件降级 -->
+    <chain name="if2">
+        IF(ifn1, node("x"))
+    </chain>
+    
+    <!-- FOR 次数循环组件降级 -->
+    <chain name="for1">
+        FOR(node("x")).DO(a);
+    </chain>
+    
+    <!-- FOR 普通组件降级 -->
+    <chain name="for2">
+        FOR(3).DO(node("x"));
+    </chain>
+    
+    <!-- WHILE 条件循环组件降级 -->
+    <chain name="while1">
+        WHILE(node("x")).DO(a)
+    </chain>
+    
+    <!-- ITERATOR 迭代组件降级 -->
+    <chain name="iterator1">
+        ITERATOR(node("x")).DO(a)
+    </chain>
+    
+    <!-- BREAK 退出循环组件降级 -->
+    <chain name="break1">
+        FOR(3).DO(a).BREAK(node("x"));
+    </chain>
+    
+    <!-- SWITCH 选择组件降级 -->
+    <chain name="switch1">
+        SWITCH(node("x")).to(a,b);
+    </chain>
+    
+    <!-- AND 条件组件降级 -->
+    <chain name="and1">
+        IF(AND(node("x"),ifn1), a);
+    </chain>
+    
+    <!-- OR 条件组件降级 -->
+    <chain name="or1">
+        IF(OR(node("x"),ifn1), a);
+    </chain>
+    
+    <!-- NOT 条件组件降级 -->
+    <chain name="not1">
+        IF(NOT(node("x")), a);
+    </chain>
+    
+    <!-- CATCH 普通组件降级 -->
+    <chain name="catch1">
+            CATCH(THEN(a, d)).DO(node("x"))
+    </chain>
+    
+    <!-- 多个组件降级 -->
+    <chain name="multi1">
+        THEN(
+            a,
+            node("x1"),
+            IF(node("x2"), b)
+        );
+    </chain>
+    
+    <chain name="multi2">
+        IF(
+            OR(node("x1"), ifn1),
+            THEN(a, node("x2"))
+        );
+    </chain>
+    
+    <chain name="multi3">
+        FOR(node("x1")).DO(
+            THEN(b, node("x2"))
+        );
+    </chain>
+
+    <!-- 并发降级测试 -->
+    <chain name="concurrent1">
+        WHEN(
+            THEN(node("x1")),
+            IF(node("x2"), b)
+        ).maxWaitSeconds(10000);
+    </chain>
+
+    <chain name="concurrent2">
+        WHEN(
+            node("x1"),
+            IF(node("x2"), b)
+        ).maxWaitSeconds(10000);
+    </chain>
+</flow>

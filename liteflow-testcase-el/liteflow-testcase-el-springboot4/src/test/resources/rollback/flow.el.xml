@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        THEN( a, b, WHEN(c, d).ignoreError(true), CATCH(e) );
+    </chain>
+
+    <chain name="chain2">
+        THEN( a, b, WHEN(c, d) );
+    </chain>
+
+    <chain name="chain3">
+        THEN( IF(x, d, a), CATCH(IF(x, d, a)) );
+    </chain>
+
+    <chain name="chain4">
+        SWITCH(f).TO(a, b).DEFAULT(d);
+    </chain>
+
+    <chain name="chain5">
+        FOR(g).DO(THEN(b, c)).BREAK(h);;
+    </chain>
+
+    <chain name="chain6">
+        WHILE(w).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain7">
+        ITERATOR(i).DO(THEN(a, b, d));
+    </chain>
+
+    <chain name="chain8">
+        CATCH( THEN(b, c, d) ).DO(a);
+    </chain>
+
+    <chain name="chain9">
+        THEN(a.tag("1"), a.tag("2"), a.tag("3"), d);
+    </chain>
+
+    <chain name="chain10">
+        THEN( m, n );
+    </chain>
+</flow>

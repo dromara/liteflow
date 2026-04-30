@@ -1,0 +1,46 @@
+{
+  "flow": {
+    "nodes": {
+      "node": [
+        {
+          "id": "a",
+          "class": "com.yomahub.liteflow.test.parser.cmp.ACmp"
+        },
+        {
+          "id": "b",
+          "class": "com.yomahub.liteflow.test.parser.cmp.BCmp"
+        },
+        {
+          "id": "c",
+          "class": "com.yomahub.liteflow.test.parser.cmp.CCmp"
+        },
+        {
+          "id": "d",
+          "class": "com.yomahub.liteflow.test.parser.cmp.DCmp"
+        },
+        {
+          "id": "e",
+          "class": "com.yomahub.liteflow.test.parser.cmp.ECmp"
+        },
+        {
+          "id": "f",
+          "class": "com.yomahub.liteflow.test.parser.cmp.FCmp"
+        },
+        {
+          "id": "g",
+          "class": "com.yomahub.liteflow.test.parser.cmp.GCmp"
+        }
+      ]
+    },
+    "chain": [
+      {
+        "name": "chain2",
+        "value": "THEN(c,g,f);"
+      },
+      {
+        "name": "chain1",
+        "value": "THEN(a,c,WHEN(b,d,SWITCH(e).to(f,g)), chain2);"
+      }
+    ]
+  }
+}

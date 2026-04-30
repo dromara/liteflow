@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="chain1">
+        THEN(a1);
+    </chain>
+
+    <chain name="chain2">
+        THEN(a2);
+    </chain>
+
+    <chain name="chain3">
+        THEN(a3);
+    </chain>
+
+    <chain name="chain4">
+        THEN(a4);
+    </chain>
+
+    <chain name="chain5">
+        THEN(a5);
+    </chain>
+
+    <chain name="chain6">
+        THEN(a6);
+    </chain>
+</flow>

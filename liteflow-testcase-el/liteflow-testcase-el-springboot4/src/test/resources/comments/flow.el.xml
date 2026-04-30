@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        str = "https://liteflow.yomahub.com";
+        /**
+        * 多行注释
+        **/
+        THEN(
+            /** aaaa **/
+            a.data(str),
+            /** aaaa **/
+            b,/** bbb **/
+            WHEN(
+                c,
+                b
+            )
+        );
+    </chain>
+</flow>

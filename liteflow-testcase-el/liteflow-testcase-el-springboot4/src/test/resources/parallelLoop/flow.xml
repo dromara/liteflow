@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <chain name="chain1">
+        FOR(2).parallel(true).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain2">
+        FOR(x).parallel(true).DO(THEN(a,b,c));
+    </chain>
+
+    <chain name="chain3">
+        FOR(100).parallel(true).DO(THEN(a,b,d)).BREAK(y);
+    </chain>
+
+    <chain name="chain4">
+        FOR(x).parallel(true).DO(THEN(a,b,f));
+    </chain>
+
+    <chain name="chain5">
+        FOR(x).parallel(true).DO(THEN(a,b,g));
+    </chain>
+
+    <chain name="chain6">
+        WHILE(z).parallel(true).DO(THEN(a,d));
+    </chain>
+
+    <chain name="chain7">
+        ITERATOR(it).parallel(true).DO(THEN(a,b));
+    </chain>
+
+    <chain name="chain8">
+        FOR(5).parallel(true).DO(
+            WHEN(
+                THEN(a,e.tag("e1")),
+                THEN(c,e.tag("e2")),
+                THEN(b,e.tag("e3"))
+            )
+        );
+    </chain>
+
+
+    <chain name="chain9">
+        FOR(x).parallel(true).DO(THEN(a,b,h));
+    </chain>
+
+</flow>
