@@ -11,21 +11,11 @@
     <artifactId>liteflow-react-agent-gemini</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-core</artifactId>
             <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.agentscope</groupId>
-            <artifactId>agentscope</artifactId>
-            <version>${agentscope.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.genai</groupId>
