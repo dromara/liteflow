@@ -11,7 +11,6 @@ package com.yomahub.liteflow.core;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
@@ -214,16 +213,6 @@ public class FlowExecutor {
 						e.getMessage());
 				LOG.error(e.getMessage(), e);
 				throw new FlowExecutorNotInitException(errorMsg);
-			}
-		}
-
-		// 如果是ruleSource方式的，最后判断下有没有解析出来,如果没有解析出来则报错
-		if (StrUtil.isBlank(liteflowConfig.getRuleSourceExtData())
-				&& MapUtil.isEmpty(liteflowConfig.getRuleSourceExtDataMap())) {
-			if (FlowBus.getChainMap().isEmpty()) {
-				String errMsg = StrUtil.format("no valid rule config found in rule path [{}]",
-						liteflowConfig.getRuleSource());
-				throw new ConfigErrorException(errMsg);
 			}
 		}
 

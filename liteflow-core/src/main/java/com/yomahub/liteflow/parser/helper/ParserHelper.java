@@ -226,8 +226,13 @@ public class ParserHelper {
         // 这样就不用去像之前的版本那样回归调用
         // 同时也解决了不能循环依赖的问题
         flowJsonObjectList.forEach(jsonObject -> {
+            JsonNode flowNode = jsonObject.get(FLOW);
+            if (flowNode == null || !flowNode.has(CHAIN)) {
+                return;
+            }
+
             // 解析chain节点
-            Iterator<JsonNode> iterator = jsonObject.get(FLOW).get(CHAIN).elements();
+            Iterator<JsonNode> iterator = flowNode.get(CHAIN).elements();
             // 先在元数据里放上chain
             while (iterator.hasNext()) {
                 JsonNode innerJsonObject = iterator.next();
