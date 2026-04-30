@@ -147,11 +147,12 @@ if (response.isSuccess()) {
 | `systemPrompt(ctx)` | 是 | 无 | 返回系统提示词，同一 Session 首次构建 Agent 时调用 |
 | `userPrompt(ctx)` | 是 | 无 | 返回本轮用户消息，每次 `process()` 都调用 |
 | `tools(ctx)` | 否 | 空列表 | 注册自定义 `@Tool` 对象 |
-| `resolveSessionId(slot)` | 否 | `slot.getRequestId()` | 决定本次调用使用哪个 Session |
+| `resolveSessionId(slot)` | 否 | `NanoIdSessionIdGenerator.generate()`，格式 `YYYYMMDD_NanoId(12)` | 决定本次调用使用哪个 Session；默认每次调用生成新 ID（单轮无状态） |
 | `maxIterations()` | 否 | `-1` | 返回正数时覆盖全局 `defaults.max-iterations` |
 | `enableShellTool()` | 否 | `true` | 是否注册内置受管 Shell 工具 |
 | `enableWorkspaceFileTools()` | 否 | `true` | 是否注册内置 workspace 文件工具 |
 | `hooks(ctx)` | 否 | 空列表 | 注册 agentscope `Hook` |
+| `enableReActLogging()` | 否 | 读 `liteflow.agent.logging.react-enabled`（默认 `true`） | 是否注册内置 `ReActLoggingHook`，将 reason / act / error 事件写到日志 |
 | `handleReply(reply, ctx)` | 否 | 写入 `slot.responseData` | 自定义回复处理逻辑 |
 | `buildModel(ctx)` | 否 | 委派 `model(ctx).resolve(agentConfig())` | 逃生舱：完全自行构造 agentscope `Model` |
 
@@ -380,11 +381,11 @@ protected Model buildModel(ReActAgentContext ctx) {
 
 ```java
 protected String resolveSessionId(Slot slot) {
-    return slot.getRequestId();
+    return NanoIdSessionIdGenerator.generate();
 }
 ```
 
-LiteFlow 的 `requestId` 通常是一次执行级别的 ID，所以默认行为更接近"一次调用一个会话"。如果要实现多轮对话，应该覆写为业务会话 ID：
+`NanoIdSessionIdGenerator.generate()` 返回 `YYYYMMDD_<12 位 NanoId>` 形式的字符串（例如 `20260430_3F7K9PQRSTUV`），每次调用都会生成一个全新的 ID。这意味着默认情况下"一次调用一个会话"，会话之间互不共享 memory 与 workspace。如果要实现多轮对话，必须覆写为业务会话 ID：
 
 ```java
 @Override
@@ -538,6 +539,27 @@ liteflow.agent.shell.mode=disabled
 
 ---
 
+## 6.5 ReAct 事件日志
+
+框架内置 `ReActLoggingHook`，把 agent 的 `reason` / `act` / `error` 事件写入 SLF4J，便于在终端直接观察 ReAct 推理过程：
+
+| 事件 | 日志格式 |
+| --- | --- |
+| `PreReasoningEvent` | `[agent:reason][sid] >>> model=... messages=N` |
+| `PostReasoningEvent` | `[agent:reason][sid] <<< text=... toolCalls=[...]` |
+| `PreActingEvent` | `[agent:act][sid] >>> tool=... input=...` |
+| `PostActingEvent` | `[agent:act][sid] <<< tool=... result=...` |
+| `ErrorEvent` | `[agent:error][sid] ...` |
+
+- 全局开关：`liteflow.agent.logging.react-enabled`（默认 `true`）。
+- 单组件开关：覆写 `enableReActLogging()` 强制返回 `true` / `false`。
+- 输出 logger 名：`com.yomahub.liteflow.agent.hook.ReActLoggingHook`（可在 logback / log4j2 中独立调级）。
+- 文本字段超过 500 字会被截断为 `...(truncated)`。
+
+如果业务侧已经通过自定义 `Hook` 处理事件流，建议关掉内置日志钩子以避免重复输出。
+
+---
+
 ## 7. 常见编排方式
 
 ### 7.1 注册自定义工具
@@ -660,6 +682,9 @@ liteflow.agent.shell.mode=disabled
 liteflow.agent.shell.timeout=30s
 liteflow.agent.shell.max-output-bytes=1048576
 
+# ReAct 内部事件日志（reason / act / error）
+liteflow.agent.logging.react-enabled=true
+
 # ReAct 默认最大迭代次数
 liteflow.agent.defaults.max-iterations=15
 
@@ -695,7 +720,7 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | `cannot create workspace root` | 根目录不可写，或父目录权限不足 | 换到应用可写目录，或提前创建并授权 |
 | `workspace root does not exist` | `auto-create=false` 且目录不存在 | 提前创建目录，或开启 `auto-create` |
 | `Missing API key: please configure liteflow.agent.openai.api-key` | 对应平台凭据未配置 | 配置对应平台的 `api-key` |
-| 多轮对话没有记忆 | 默认 Session ID 是单次执行的 `requestId` | 覆写 `resolveSessionId`，返回业务会话 ID |
+| 多轮对话没有记忆 | 默认 Session ID 由 `NanoIdSessionIdGenerator` 每次随机生成 | 覆写 `resolveSessionId`，返回稳定的业务会话 ID |
 | 重启后没有历史记忆 | `session.memory.mode=JVM` 或 `NONE` | 改为 `WORKSPACE_FILE`、`REDIS` 或 `MYSQL` |
 | Redis 模式启动失败 | 未配置 Bean 名，或 Bean 类型与 `client-type` 不匹配 | 检查 `bean-name`、`client-type` 和 classpath 依赖 |
 | MySQL 模式启动失败 | 未配置 `DataSource` Bean，或 Bean 类型错误 | 配置正确的 `data-source-bean-name` |
