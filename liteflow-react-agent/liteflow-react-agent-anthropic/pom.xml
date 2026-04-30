@@ -13,11 +13,6 @@
     <artifactId>liteflow-react-agent-anthropic</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
@@ -25,14 +20,9 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>io.agentscope</groupId>
-            <artifactId>agentscope</artifactId>
-            <version>${agentscope.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.anthropic</groupId>
             <artifactId>anthropic-java</artifactId>
-            <version>1.2.0</version>
+            <version>${anthropic-java.version}</version>
         </dependency>
     </dependencies>
 </project>
