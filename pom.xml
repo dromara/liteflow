@@ -45,6 +45,7 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.6.8</springboot.version>
+		<springboot4.version>4.0.6</springboot4.version>
 		<spring.version>5.3.20</spring.version>
 		<org.slf4j.version>1.7.32</org.slf4j.version>
 		<jackson.version>2.16.0</jackson.version>
@@ -530,68 +531,6 @@
 			</activation>
 		</profile>
 
-		<profile>
-			<id>release-main</id>
-			<modules>
-				<module>liteflow-core</module>
-				<module>liteflow-script-plugin</module>
-				<module>liteflow-rule-plugin</module>
-				<module>liteflow-spring-boot-starter</module>
-				<module>liteflow-spring</module>
-				<module>liteflow-solon-plugin</module>
-				<module>liteflow-el-builder</module>
-			</modules>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.central</groupId>
-						<artifactId>central-publishing-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>release-react-agent</id>
-			<modules>
-				<module>liteflow-react-agent</module>
-			</modules>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.central</groupId>
-						<artifactId>central-publishing-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
 		<!-- ReAct Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
 		<profile>
 			<id>compile-17+</id>
@@ -603,6 +542,7 @@
 				<module>liteflow-script-plugin</module>
 				<module>liteflow-rule-plugin</module>
 				<module>liteflow-spring-boot-starter</module>
+				<module>liteflow-spring-boot4-starter</module>
 				<module>liteflow-spring</module>
 				<module>liteflow-solon-plugin</module>
 				<module>liteflow-testcase-el</module>
@@ -610,6 +550,69 @@
 				<module>liteflow-benchmark</module>
 				<module>liteflow-react-agent</module>
 			</modules>
+		</profile>
+
+		<profile>
+			<id>release-on-8</id>
+			<modules>
+				<module>liteflow-core</module>
+				<module>liteflow-script-plugin</module>
+				<module>liteflow-rule-plugin</module>
+				<module>liteflow-spring-boot-starter</module>
+				<module>liteflow-spring</module>
+				<module>liteflow-solon-plugin</module>
+				<module>liteflow-el-builder</module>
+			</modules>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>release-on-17</id>
+			<modules>
+				<module>liteflow-react-agent</module>
+				<module>liteflow-spring-boot4-starter</module>
+			</modules>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

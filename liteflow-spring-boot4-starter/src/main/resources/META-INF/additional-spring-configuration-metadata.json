@@ -1,0 +1,232 @@
+{
+  "properties": [
+    {
+      "name": "liteflow.rule-source-ext-data",
+      "type": "java.lang.String",
+      "description": "rule source extended data.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.rule-source-ext-data-map",
+      "type": "java.util.Map",
+      "description": "rule source extended data map.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.request-id-generator-class",
+      "type": "java.lang.String",
+      "description": "Custom requestId builder.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.flow.id.DefaultRequestIdGenerator"
+    },
+    {
+      "name": "liteflow.rule-source",
+      "type": "java.lang.String",
+      "description": "Location of the flow rule source.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "config/flow.xml"
+    },
+    {
+      "name": "liteflow.enable",
+      "type": "java.lang.Boolean",
+      "description": "Whether to turn on liteflow.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.print-banner",
+      "type": "java.lang.Boolean",
+      "description": "Whether to print liteflow banner.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.slot-size",
+      "type": "java.lang.Integer",
+      "description": "Set concurrent data slot size.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 1024
+    },
+    {
+      "name": "liteflow.main-executor-works",
+      "type": "java.lang.Integer",
+      "description": "Max thread count for main executor,only for FlowExecutor.execute2Future.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 64
+    },
+    {
+      "name": "liteflow.main-executor-class",
+      "type": "java.lang.String",
+      "description": "Custom thread pool implement for main executor.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultMainExecutorBuilder"
+    },
+    {
+      "name": "liteflow.when-max-wait-seconds",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread max wait seconds on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 0
+    },
+    {
+      "name": "liteflow.when-max-wait-time",
+      "type": "java.lang.Integer",
+      "description": "Set the async thread max wait time on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 15000
+    },
+    {
+      "name": "liteflow.when-max-wait-time-unit",
+      "type": "java.util.concurrent.TimeUnit",
+      "description": "Set the async thread max wait time unit on \" when \" mode.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "MILLISECONDS"
+    },
+    {
+      "name": "liteflow.when-thread-pool-isolate",
+      "type": "java.lang.Boolean",
+      "description": "set whether the asynchronous thread pool is isolated.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.parse-mode",
+      "type": "com.yomahub.liteflow.enums.ParseModeEnum",
+      "description": "Set parse mode at startup.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "PARSE_ALL_ON_START"
+    },
+    {
+      "name": "liteflow.retry-count",
+      "type": "java.lang.Integer",
+      "description": "Number of component retries.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 0
+    },
+    {
+      "name": "liteflow.support-multiple-type",
+      "type": "java.lang.Boolean",
+      "description": "Whether to support multiple types of configuration.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.node-executor-class",
+      "type": "java.lang.String",
+      "description": "Executor class of node.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.flow.executor.DefaultNodeExecutor"
+    },
+    {
+      "name": "liteflow.print-execution-log",
+      "type": "java.lang.Boolean",
+      "description": "Whether to print logs during execution.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.fallback-cmp-enable",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable component fallback.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.fast-load",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable fast load mode.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.monitor.enable-log",
+      "type": "java.lang.Boolean",
+      "description": "Enable monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.monitor.queue-limit",
+      "type": "java.lang.Integer",
+      "description": "Set monitor queue size.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "defaultValue": 200
+    },
+    {
+      "name": "liteflow.monitor.delay",
+      "type": "java.lang.Long",
+      "description": "Set delay time to print monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "defaultValue": 300000
+    },
+    {
+      "name": "liteflow.monitor.period",
+      "type": "java.lang.Long",
+      "description": "Set period time to print monitor log.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "defaultValue": 300000
+    },
+    {
+      "name": "liteflow.enable-monitor-file",
+      "type": "java.lang.Boolean",
+      "description": "Set file change monitoring.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.global-thread-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Set the global chain thread pool worker max-size.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 16
+    },
+    {
+      "name": "liteflow.global-thread-pool-queue-size",
+      "type": "java.lang.Integer",
+      "description": "Set the global chain thread pool queue max-size.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 512
+    },
+    {
+      "name": "liteflow.global-thread-pool-executor-class",
+      "type": "java.lang.String",
+      "description": "Custom the global chain thread pool implement for global chain executor.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": "com.yomahub.liteflow.thread.LiteFlowDefaultGlobalExecutorBuilder"
+    },
+    {
+      "name": "liteflow.script-setting",
+      "type": "java.util.Map",
+      "description": "Script special settings.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty"
+    },
+    {
+      "name": "liteflow.enable-node-instance-id",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable node instance id.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.enable-virtual-thread",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable virtual threads(Only in jdk21).",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.chain-cache.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable chain cache.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.chain-cache.capacity",
+      "type": "java.lang.Integer",
+      "description": "Set chain cache capacity.",
+      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
+      "defaultValue": 10000
+    }
+  ]
+}

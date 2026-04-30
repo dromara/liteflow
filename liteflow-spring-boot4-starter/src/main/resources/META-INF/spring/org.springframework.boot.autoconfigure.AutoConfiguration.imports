@@ -1,0 +1,2 @@
+com.yomahub.liteflow.springboot4.config.LiteflowPropertyAutoConfiguration
+com.yomahub.liteflow.springboot4.config.LiteflowMainAutoConfiguration
