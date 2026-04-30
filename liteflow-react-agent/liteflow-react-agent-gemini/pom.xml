@@ -25,12 +25,12 @@
         <dependency>
             <groupId>io.agentscope</groupId>
             <artifactId>agentscope</artifactId>
-            <version>1.0.9</version>
+            <version>${agentscope.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.genai</groupId>
             <artifactId>google-genai</artifactId>
-            <version>0.2.0</version>
+            <version>${google-genai.version}</version>
         </dependency>
     </dependencies>
 </project>
