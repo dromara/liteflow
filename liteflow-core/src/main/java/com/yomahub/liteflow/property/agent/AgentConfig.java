@@ -8,6 +8,7 @@ public class AgentConfig {
     private SessionConfig session = new SessionConfig();
     private ShellConfig shell = new ShellConfig();
     private DefaultsConfig defaults = new DefaultsConfig();
+    private LoggingConfig logging = new LoggingConfig();
     private PlatformCredential openai = new PlatformCredential();
     private PlatformCredential anthropic = new PlatformCredential();
     private PlatformCredential gemini = new PlatformCredential();
@@ -23,6 +24,8 @@ public class AgentConfig {
     public void setShell(ShellConfig v) { this.shell = v; }
     public DefaultsConfig getDefaults() { return defaults; }
     public void setDefaults(DefaultsConfig v) { this.defaults = v; }
+    public LoggingConfig getLogging() { return logging; }
+    public void setLogging(LoggingConfig v) { this.logging = v; }
     public PlatformCredential getOpenai() { return openai; }
     public void setOpenai(PlatformCredential v) { this.openai = v; }
     public PlatformCredential getAnthropic() { return anthropic; }

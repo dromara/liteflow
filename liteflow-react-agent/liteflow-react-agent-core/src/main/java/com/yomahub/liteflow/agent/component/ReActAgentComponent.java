@@ -1,8 +1,10 @@
 package com.yomahub.liteflow.agent.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.hook.ReActLoggingHook;
 import com.yomahub.liteflow.agent.session.AgentSession;
 import com.yomahub.liteflow.agent.session.AgentSessionManager;
+import com.yomahub.liteflow.agent.session.NanoIdSessionIdGenerator;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -21,6 +23,7 @@ import io.agentscope.core.tool.Toolkit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -92,9 +95,11 @@ public abstract class ReActAgentComponent extends NodeComponent {
     protected List<Object> tools(ReActAgentContext ctx) { return List.of(); }
 
     /**
-     * 从当前 slot 推导 session id。默认使用 slot 的 requestId。
+     * 从当前 slot 推导 session id。默认生成 {@code YYYYMMDD + NanoId(18)} 格式。
      */
-    protected String resolveSessionId(Slot slot) { return slot.getRequestId(); }
+    protected String resolveSessionId(Slot slot) {
+        return NanoIdSessionIdGenerator.generate();
+    }
 
     /**
      * ReAct 最大迭代次数。返回 -1（默认值）表示使用
@@ -116,6 +121,16 @@ public abstract class ReActAgentComponent extends NodeComponent {
      * 提供 agent 钩子。默认返回空列表。
      */
     protected List<Hook> hooks(ReActAgentContext ctx) { return List.of(); }
+
+    /**
+     * 是否在日志中输出 agent 的 reason / act / error 事件。
+     * <p>默认从配置 {@code liteflow.agent.logging.react-enabled} 读取（默认 true），
+     * 子类可覆写返回 {@code true}/{@code false} 强制开关。
+     * 输出在 logger {@code com.yomahub.liteflow.agent.hook.ReActLoggingHook} 上。
+     */
+    protected boolean enableReActLogging() {
+        return agentConfig().getLogging().isReactEnabled();
+    }
 
     /**
      * agent 回复后调用。默认实现会把 {@code reply.getTextContent()}
@@ -194,6 +209,11 @@ public abstract class ReActAgentComponent extends NodeComponent {
             toolkit.registerTool(new ManagedShellCommandTool(ctx.getWorkspaceDir(), cfg));
         }
 
+        List<Hook> allHooks = new ArrayList<>(hooks(ctx));
+        if (enableReActLogging()) {
+            allHooks.add(new ReActLoggingHook(ctx.getSessionId()));
+        }
+
         return ReActAgent.builder()
                 .name(getNodeId() == null ? "liteflow-agent" : getNodeId())
                 .sysPrompt(systemPrompt(ctx))
@@ -201,7 +221,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
                 .toolkit(toolkit)
                 .memory(new InMemoryMemory())
                 .maxIters(iters)
-                .hooks(hooks(ctx))
+                .hooks(allHooks)
                 .build();
     }
 
