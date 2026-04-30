@@ -22,8 +22,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.js</groupId>
-            <artifactId>js</artifactId>
+            <groupId>${graaljs.polyglot.groupId}</groupId>
+            <artifactId>${graaljs.polyglot.artifactId}</artifactId>
+            <type>${graaljs.polyglot.type}</type>
+        </dependency>
+        <dependency>
+            <groupId>${graaljs.groupId}</groupId>
+            <artifactId>${graaljs.artifactId}</artifactId>
+            <type>${graaljs.type}</type>
         </dependency>
     </dependencies>
 </project>

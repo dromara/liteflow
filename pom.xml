@@ -60,7 +60,14 @@
 		<nacos.version>1.4.4</nacos.version>
 		<qlexpress.version>4.1.0</qlexpress.version>
 		<groovy.version>3.0.25</groovy.version>
-		<graalvm.version>22.0.0</graalvm.version>
+		<graaljs.groupId>org.graalvm.js</graaljs.groupId>
+		<graaljs.artifactId>js</graaljs.artifactId>
+		<graaljs.version>22.0.0</graaljs.version>
+		<graaljs.type>jar</graaljs.type>
+		<graaljs.polyglot.groupId>org.graalvm.sdk</graaljs.polyglot.groupId>
+		<graaljs.polyglot.artifactId>graal-sdk</graaljs.polyglot.artifactId>
+		<graaljs.polyglot.version>22.0.0</graaljs.polyglot.version>
+		<graaljs.polyglot.type>jar</graaljs.polyglot.type>
 		<bytebuddy.version>1.17.7</bytebuddy.version>
 		<aspectjweaver.version>1.9.21</aspectjweaver.version>
 		<logback-classic.version>1.2.3</logback-classic.version>
@@ -248,9 +255,16 @@
 				<version>${bytebuddy.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.graalvm.js</groupId>
-				<artifactId>js</artifactId>
-				<version>${graalvm.version}</version>
+				<groupId>${graaljs.groupId}</groupId>
+				<artifactId>${graaljs.artifactId}</artifactId>
+				<version>${graaljs.version}</version>
+				<type>${graaljs.type}</type>
+			</dependency>
+			<dependency>
+				<groupId>${graaljs.polyglot.groupId}</groupId>
+				<artifactId>${graaljs.polyglot.artifactId}</artifactId>
+				<version>${graaljs.polyglot.version}</version>
+				<type>${graaljs.polyglot.type}</type>
 			</dependency>
 			<dependency>
 				<groupId>commons-beanutils</groupId>
@@ -482,6 +496,23 @@
 
 	<profiles>
 		<profile>
+			<id>graaljs-jdk17-plus</id>
+			<activation>
+				<jdk>[17,)</jdk>
+			</activation>
+			<properties>
+				<graaljs.groupId>org.graalvm.polyglot</graaljs.groupId>
+				<graaljs.artifactId>js</graaljs.artifactId>
+				<graaljs.version>25.0.2</graaljs.version>
+				<graaljs.type>pom</graaljs.type>
+				<graaljs.polyglot.groupId>org.graalvm.polyglot</graaljs.polyglot.groupId>
+				<graaljs.polyglot.artifactId>polyglot</graaljs.polyglot.artifactId>
+				<graaljs.polyglot.version>25.0.2</graaljs.polyglot.version>
+				<graaljs.polyglot.type>jar</graaljs.polyglot.type>
+			</properties>
+		</profile>
+
+		<profile>
 			<id>compile-8-to-16</id>
 			<modules>
 				<module>liteflow-core</module>
@@ -582,4 +613,3 @@
 		</profile>
 	</profiles>
 </project>
-
