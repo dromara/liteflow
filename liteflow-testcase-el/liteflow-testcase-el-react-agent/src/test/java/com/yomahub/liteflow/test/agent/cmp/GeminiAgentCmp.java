@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component("geminiAgent")
 public class GeminiAgentCmp extends ReActAgentComponent {
 
-    @Value("${test.gemini.model:gemini-2.5-flash}")
+    @Value("${test.gemini.model:gemini-3-flash-preview}")
     private String modelName;
 
     @Override
@@ -20,14 +20,12 @@ public class GeminiAgentCmp extends ReActAgentComponent {
 
     @Override
     protected String systemPrompt(ReActAgentContext ctx) {
-        return "You are a concise assistant. Answer in Chinese, one sentence.";
+        return "你是一个助手，需要回答我的问题，你可以执行 shell 来获得必要的答案";
     }
 
     @Override
     protected String userPrompt(ReActAgentContext ctx) {
-        return String.valueOf(ctx.getSlot().getChainReqData(ctx.getSlot().getChainId()));
+        Object reqData = ctx.getSlot().getChainReqData(ctx.getSlot().getChainId());
+        return reqData == null ? "" : reqData.toString();
     }
-
-    @Override protected boolean enableShellTool() { return false; }
-    @Override protected boolean enableWorkspaceFileTools() { return false; }
 }
