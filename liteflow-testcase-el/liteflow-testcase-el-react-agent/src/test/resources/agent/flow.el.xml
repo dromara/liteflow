@@ -6,4 +6,20 @@
         THEN(prepare, geminiAgent, recordReply);
     </chain>
 
+    <chain name="openAIChain">
+        THEN(prepare, openAIAgent, recordReply);
+    </chain>
+
+    <chain name="anthropicChain">
+        THEN(prepare, anthropicAgent, recordReply);
+    </chain>
+
+    <chain name="dashScopeChain">
+        THEN(prepare, dashScopeAgent, recordReply);
+    </chain>
+
+    <chain name="stubAgentChain">
+        THEN(prepare, stubAgent, recordReply);
+    </chain>
+
 </flow>

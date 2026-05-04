@@ -29,6 +29,21 @@
             <artifactId>liteflow-react-agent-gemini</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-openai</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-anthropic</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-dashscope</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

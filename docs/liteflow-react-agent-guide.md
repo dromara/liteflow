@@ -135,6 +135,54 @@ if (response.isSuccess()) {
 
 默认情况下，Agent 回复会通过 `reply.getTextContent()` 写入 `slot.responseData`。如果后续节点希望从指定位置读取回复，可以覆写 `handleReply(reply, ctx)`，或者像测试用例中的 `RecordReplyCmp` 一样把 `responseData` 转存到节点输出。
 
+### 2.3 下游节点如何拿到 Agent 的执行结果
+
+ReAct Agent 节点执行完后，结果传递给下一个节点有两种方式：
+
+**方式 1：默认走 `slot.responseData`（最简单）**
+
+`ReActAgentComponent#handleReply()` 默认实现：
+
+```java
+protected void handleReply(Msg reply, ReActAgentContext ctx) {
+    ctx.getSlot().setResponseData(reply == null ? null : reply.getTextContent());
+}
+```
+
+下一个普通 `NodeComponent` 直接读取即可：
+
+```java
+@LiteflowComponent("recordReply")
+public class RecordReplyCmp extends NodeComponent {
+    @Override
+    public void process() {
+        String reply = (String) this.getSlot().getResponseData();
+        // 进行后续处理 ...
+    }
+}
+```
+
+链路结束后，外部调用方也可以通过 `response.getSlot().getResponseData()` 拿到。
+
+**方式 2：覆写 `handleReply` 写入自定义位置**
+
+需要做结构化处理、写到 ContextBean、或者一个链路里有**多个 Agent 节点**时，必须覆写 `handleReply`，否则后一个 Agent 的 `responseData` 会覆盖前一个：
+
+```java
+@Override
+protected void handleReply(Msg reply, ReActAgentContext ctx) {
+    String text = reply == null ? null : reply.getTextContent();
+    // 选择 1：写入自定义 ContextBean
+    ctx.getSlot().getContextBean(MyAgentCtx.class).setReply(getNodeId(), text);
+    // 选择 2：以 nodeId 为 key 存到 slot 输出，避免相互覆盖
+    ctx.getSlot().setOutput(getNodeId(), text);
+}
+```
+
+下游节点对应使用 `slot.getContextBean(MyAgentCtx.class)` 或 `slot.getOutput(nodeId)` 读取。
+
+> **多 Agent 节点共存的注意事项**：默认 `responseData` 是 slot 级别的单一字段，后写覆盖先写。链路中存在多个 ReAct Agent 时，请务必覆写 `handleReply` 用 `setOutput(nodeId, ...)` 或自定义 ContextBean 区分各 Agent 的输出。
+
 ---
 
 ## 3. ReActAgentComponent 扩展点
