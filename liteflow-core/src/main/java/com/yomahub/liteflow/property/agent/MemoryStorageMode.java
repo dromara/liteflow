@@ -1,24 +1,33 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * Storage backend used to persist a ReActAgent's memory across executions
- * within a session.
+ * ReActAgent 在同一会话中跨多次执行所使用的记忆持久化后端。
  *
  * <ul>
- *   <li>{@link #NONE} – do not persist or even hold memory; equivalent to a stateless agent</li>
- *   <li>{@link #JVM} – keep memory in JVM heap only (default; behaviour identical to pre-2.15.4 releases)</li>
- *   <li>{@link #WORKSPACE_FILE} – persist memory as JSON files under each session's workspace directory
- *       using AgentScope's JsonSession</li>
- *   <li>{@link #REDIS} – persist memory through AgentScope's RedisSession; requires the user to
- *       provide a {@code RedissonClient} / {@code UnifiedJedis} / {@code RedisClient} bean</li>
- *   <li>{@link #MYSQL} – persist memory through AgentScope's MysqlSession; requires the user to
- *       provide a {@code javax.sql.DataSource} bean</li>
+ *   <li>{@link #NONE} – 不保留也不持久化任何记忆，等价于无状态 agent</li>
+ *   <li>{@link #JVM} – 仅保留在 JVM 堆内（默认行为，与 2.15.4 之前版本一致）</li>
+ *   <li>{@link #WORKSPACE_FILE} – 通过 AgentScope 的 JsonSession，把记忆以 JSON 文件
+ *       形式持久化到每个会话工作区目录下</li>
+ *   <li>{@link #REDIS} – 通过 AgentScope 的 RedisSession 持久化，
+ *       需要用户提供 {@code RedissonClient} / {@code UnifiedJedis} / {@code RedisClient} bean</li>
+ *   <li>{@link #MYSQL} – 通过 AgentScope 的 MysqlSession 持久化，
+ *       需要用户提供 {@code javax.sql.DataSource} bean</li>
  * </ul>
  */
 public enum MemoryStorageMode {
+
+    /** 完全无状态：既不持久化也不在内存中保留对话历史。 */
     NONE,
+
+    /** 仅 JVM 堆内缓存，进程重启即丢失；为默认值。 */
     JVM,
+
+    /** 工作区文件持久化，每个会话一个 JSON 文件，便于排查与离线分析。 */
     WORKSPACE_FILE,
+
+    /** Redis 持久化，适合多实例部署、高并发场景。 */
     REDIS,
+
+    /** MySQL 持久化，适合长期归档、跨服务共享的场景。 */
     MYSQL
 }

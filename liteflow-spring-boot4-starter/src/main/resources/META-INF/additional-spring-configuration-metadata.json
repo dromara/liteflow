@@ -227,6 +227,260 @@
       "description": "Set chain cache capacity.",
       "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty",
       "defaultValue": 10000
+    },
+    {
+      "name": "liteflow.agent.session.idle-timeout",
+      "type": "java.time.Duration",
+      "description": "Agent session idle timeout.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SessionConfig",
+      "defaultValue": "30m"
+    },
+    {
+      "name": "liteflow.agent.session.cleanup-interval",
+      "type": "java.time.Duration",
+      "description": "Agent session cleanup interval.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SessionConfig",
+      "defaultValue": "1m"
+    },
+    {
+      "name": "liteflow.agent.session.max-sessions",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of concurrent agent sessions.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SessionConfig",
+      "defaultValue": 10000
+    },
+    {
+      "name": "liteflow.agent.session.memory.mode",
+      "type": "com.yomahub.liteflow.property.agent.MemoryStorageMode",
+      "description": "Agent session memory storage mode.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
+      "defaultValue": "JVM"
+    },
+    {
+      "name": "liteflow.agent.session.memory.load-on-first-use",
+      "type": "java.lang.Boolean",
+      "description": "Load session memory on first use.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.session.memory.save-after-call",
+      "type": "java.lang.Boolean",
+      "description": "Save session memory after each tool call.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.session.memory.save-on-error",
+      "type": "java.lang.Boolean",
+      "description": "Save session memory on error.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.session.memory.redis.bean-name",
+      "type": "java.lang.String",
+      "description": "Redis client bean name for session memory storage.",
+      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig"
+    },
+    {
+      "name": "liteflow.agent.session.memory.redis.client-type",
+      "type": "com.yomahub.liteflow.property.agent.RedisMemoryConfig$RedisClientType",
+      "description": "Redis client type (REDISSON, JEDIS, LETTUCE).",
+      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig",
+      "defaultValue": "REDISSON"
+    },
+    {
+      "name": "liteflow.agent.session.memory.redis.key-prefix",
+      "type": "java.lang.String",
+      "description": "Redis key prefix for session memory storage.",
+      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig",
+      "defaultValue": "liteflow:agent:session"
+    },
+    {
+      "name": "liteflow.agent.session.memory.mysql.data-source-bean-name",
+      "type": "java.lang.String",
+      "description": "MySQL data source bean name for session memory storage.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig"
+    },
+    {
+      "name": "liteflow.agent.session.memory.mysql.database-name",
+      "type": "java.lang.String",
+      "description": "MySQL database name for session memory storage.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig"
+    },
+    {
+      "name": "liteflow.agent.session.memory.mysql.table-name",
+      "type": "java.lang.String",
+      "description": "MySQL table name for session memory storage.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig"
+    },
+    {
+      "name": "liteflow.agent.session.memory.mysql.create-if-not-exist",
+      "type": "java.lang.Boolean",
+      "description": "Create MySQL table if not exist.",
+      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.agent.workspace.root",
+      "type": "java.lang.String",
+      "description": "Agent workspace root directory.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig"
+    },
+    {
+      "name": "liteflow.agent.workspace.auto-create",
+      "type": "java.lang.Boolean",
+      "description": "Auto create workspace directory.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.workspace.cleanup-on-session-expire",
+      "type": "java.lang.Boolean",
+      "description": "Cleanup workspace files when session expires.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.workspace.cleanup-on-jvm-shutdown",
+      "type": "java.lang.Boolean",
+      "description": "Cleanup workspace files on JVM shutdown.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.agent.workspace.max-file-bytes",
+      "type": "java.lang.Long",
+      "description": "Max file size in bytes for workspace files.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
+      "defaultValue": 10485760
+    },
+    {
+      "name": "liteflow.agent.workspace.max-list-size",
+      "type": "java.lang.Integer",
+      "description": "Max list size for workspace operations.",
+      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
+      "defaultValue": 1000
+    },
+    {
+      "name": "liteflow.agent.shell.mode",
+      "type": "com.yomahub.liteflow.property.agent.ShellMode",
+      "description": "Shell command filter mode (WHITELIST, BLACKLIST, DISABLED).",
+      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
+      "defaultValue": "WHITELIST"
+    },
+    {
+      "name": "liteflow.agent.shell.whitelist",
+      "type": "java.util.List",
+      "description": "Shell command whitelist.",
+      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig"
+    },
+    {
+      "name": "liteflow.agent.shell.blacklist",
+      "type": "java.util.List",
+      "description": "Shell command blacklist.",
+      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig"
+    },
+    {
+      "name": "liteflow.agent.shell.timeout",
+      "type": "java.time.Duration",
+      "description": "Shell command execution timeout.",
+      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "liteflow.agent.shell.max-output-bytes",
+      "type": "java.lang.Long",
+      "description": "Max output bytes for shell command.",
+      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
+      "defaultValue": 1048576
+    },
+    {
+      "name": "liteflow.agent.defaults.max-iterations",
+      "type": "java.lang.Integer",
+      "description": "Default max iterations for agent.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DefaultsConfig",
+      "defaultValue": 15
+    },
+    {
+      "name": "liteflow.agent.logging.react-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable react agent internal event logging.",
+      "sourceType": "com.yomahub.liteflow.property.agent.LoggingConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.openai.api-key",
+      "type": "java.lang.String",
+      "description": "OpenAI API key.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.openai.base-url",
+      "type": "java.lang.String",
+      "description": "OpenAI base URL.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.openai.extra",
+      "type": "java.util.Map",
+      "description": "Extra parameters for OpenAI.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.anthropic.api-key",
+      "type": "java.lang.String",
+      "description": "Anthropic API key.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.anthropic.base-url",
+      "type": "java.lang.String",
+      "description": "Anthropic base URL.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.anthropic.extra",
+      "type": "java.util.Map",
+      "description": "Extra parameters for Anthropic.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.gemini.api-key",
+      "type": "java.lang.String",
+      "description": "Gemini API key.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.gemini.base-url",
+      "type": "java.lang.String",
+      "description": "Gemini base URL.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.gemini.extra",
+      "type": "java.util.Map",
+      "description": "Extra parameters for Gemini.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.dashscope.api-key",
+      "type": "java.lang.String",
+      "description": "DashScope API key.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.dashscope.base-url",
+      "type": "java.lang.String",
+      "description": "DashScope base URL.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.dashscope.extra",
+      "type": "java.util.Map",
+      "description": "Extra parameters for DashScope.",
+      "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
     }
   ]
 }
