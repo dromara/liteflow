@@ -15,10 +15,10 @@ import java.util.ServiceLoader;
  * <p>解析顺序：
  * <ol>
  *   <li>通过 {@link ServiceLoader} 注册的外部工厂</li>
- *   <li>框架内置工厂（JVM、workspace、Redis、MySQL、none）</li>
+ *   <li>框架内置工厂（JVM、local-file、Redis、MySQL、none）</li>
  * </ol>
  * 出现冲突时外部工厂优先，因此用户可以覆盖内置实现
- * （例如用自定义加密 JSON 工厂替换默认 workspace 工厂）。
+ * （例如用自定义加密 JSON 工厂替换默认本地文件工厂）。
  */
 public final class AgentSessionFactoryRegistry {
 
@@ -27,7 +27,7 @@ public final class AgentSessionFactoryRegistry {
     static {
         // 先注册内置实现；如果存在 SPI 实现，再由 SPI 覆盖。
         register(new InMemoryAgentSessionFactory());
-        register(new WorkspaceAgentSessionFactory());
+        register(new LocalFileAgentSessionFactory());
         register(new RedisAgentSessionFactory());
         register(new MysqlAgentSessionFactory());
         register(new NoneAgentSessionFactory());

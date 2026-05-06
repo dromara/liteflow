@@ -6,7 +6,7 @@ package com.yomahub.liteflow.property.agent;
  *
  * <p>本配置与 {@link SessionConfig} 是正交的关注点：
  * {@link SessionConfig} 控制 JVM 内 agent 实例的缓存、空闲超时与 LRU 淘汰；
- * 而本配置决定 agent 的对话历史 <em>持久化到哪里</em>，例如 JVM 堆内、工作区文件、
+ * 而本配置决定 agent 的对话历史 <em>持久化到哪里</em>，例如 JVM 堆内、本地文件、
  * Redis 或 MySQL。
  */
 public class MemoryStorageConfig {
@@ -19,8 +19,8 @@ public class MemoryStorageConfig {
      */
     private MemoryStorageMode mode = MemoryStorageMode.JVM;
 
-    /** {@link MemoryStorageMode#WORKSPACE_FILE} 模式下生效的子配置。 */
-    private WorkspaceMemoryConfig workspace = new WorkspaceMemoryConfig();
+    /** {@link MemoryStorageMode#LOCAL_FILE} 模式下生效的子配置。 */
+    private LocalFileMemoryConfig localFile = new LocalFileMemoryConfig();
 
     /** {@link MemoryStorageMode#REDIS} 模式下生效的子配置。 */
     private RedisMemoryConfig redis = new RedisMemoryConfig();
@@ -60,12 +60,12 @@ public class MemoryStorageConfig {
         this.mode = mode;
     }
 
-    public WorkspaceMemoryConfig getWorkspace() {
-        return workspace;
+    public LocalFileMemoryConfig getLocalFile() {
+        return localFile;
     }
 
-    public void setWorkspace(WorkspaceMemoryConfig workspace) {
-        this.workspace = workspace;
+    public void setLocalFile(LocalFileMemoryConfig localFile) {
+        this.localFile = localFile;
     }
 
     public RedisMemoryConfig getRedis() {

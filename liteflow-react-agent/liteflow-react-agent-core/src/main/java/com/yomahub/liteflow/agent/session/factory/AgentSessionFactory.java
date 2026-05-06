@@ -7,7 +7,7 @@ import io.agentscope.core.session.Session;
 /**
  * 用于为 {@link io.agentscope.core.session.Session} 接入额外持久化后端的 SPI。
  *
- * <p>框架内置模式（{@code JVM}、{@code WORKSPACE_FILE}、{@code REDIS}、
+ * <p>框架内置模式（{@code JVM}、{@code LOCAL_FILE}、{@code REDIS}、
  * {@code MYSQL}、{@code NONE}）。需要其他后端（例如 PostgreSQL、OSS、
  * 加密 JSON）的用户，可以在 {@code META-INF/services/}{@link AgentSessionFactory}
  * 下注册自定义工厂。
