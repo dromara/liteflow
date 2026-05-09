@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.test.agent.cmp;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.component.ReActAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.openai.OpenAI;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,18 +19,18 @@ public class OpenAIAgentCmp extends ReActAgentComponent {
     private String modelName;
 
     @Override
-    protected ModelSpec<?> model(ReActAgentContext ctx) {
+    protected ModelSpec<?> model() {
         return OpenAI.of(modelName);
     }
 
     @Override
-    protected String systemPrompt(ReActAgentContext ctx) {
+    protected String systemPrompt() {
         return "你是 OpenAI 连通性测试助手，只需要用一句中文简短回答。";
     }
 
     @Override
-    protected String userPrompt(ReActAgentContext ctx) {
-        Object reqData = ctx.getSlot().getChainReqData(ctx.getSlot().getChainId());
+    protected String userPrompt() {
+        Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
 

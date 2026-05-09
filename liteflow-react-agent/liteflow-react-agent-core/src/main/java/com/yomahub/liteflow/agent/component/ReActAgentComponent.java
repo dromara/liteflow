@@ -4,7 +4,7 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.hook.ReActLoggingHook;
 import com.yomahub.liteflow.agent.session.AgentSession;
 import com.yomahub.liteflow.agent.session.AgentSessionManager;
-import com.yomahub.liteflow.agent.session.NanoIdSessionIdGenerator;
+import com.yomahub.liteflow.util.ConversationIdGenerator;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -25,19 +25,49 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 封装 agentscope ReActAgent 的 LiteFlow 抽象组件。
  * <p>
- * 子类必须提供 {@link #model}、{@link #systemPrompt} 和
- * {@link #userPrompt}。可选覆写方法用于自定义工具、钩子和生命周期回调。
- * <p>
- * {@link #process()} 方法被声明为 {@code final}，由框架统一保证 session
- * 管理和 agent 生命周期的正确性。
+ * 子类必须提供 {@link #model()}、{@link #systemPrompt()} 和 {@link #userPrompt()}。
+ * 可选覆写方法用于自定义工具、钩子和生命周期回调。
+ *
+ * <p>所有 hook 方法均为无参——通过 {@link #ctx()} 动态获取当次执行的
+ * {@link ReActAgentContext}。该 ctx 与 {@link Slot} 同生命周期，由 {@link #process()}
+ * 自动挂载与解绑，按 {@code nodeId} 隔离以支持同 chain 内 WHEN 并发执行多个 agent。
+ *
+ * <p>会话标识被拆为两层：
+ * <ul>
+ *   <li>{@code conversationId}：业务/对话维度，决定 workspace 共享范围与对话连续性。
+ *       由 {@link #resolveConversationId()} 解析，整条 chain 内只解析一次，
+ *       后续 agent 通过 {@link Slot#getConversationId()} 复用。</li>
+ *   <li>{@code agentKey}：组件维度，默认 {@code nodeId}，用于在同一段对话中区分
+ *       不同 agent 的 ReActAgent 实例与对话记忆。</li>
+ * </ul>
+ *
+ * <p><b>注意：勿在跨 invocation 缓存的对象（自定义工具/Hook/Model 等）中持有
+ * {@link ReActAgentContext} 引用</b>——这些对象会被缓存的 agent 复用，捕获的 ctx
+ * 会在下一次 {@code process()} 时变成陈旧引用（其中的 slot 已经被回收）。
+ * 正确做法：持有组件实例引用，运行时通过 {@code component.ctx()} 动态获取。
+ *
+ * <p>{@link #process()} 方法被声明为 {@code final}，由框架统一保证 session
+ * 管理和 ctx 生命周期的正确性。
  */
 public abstract class ReActAgentComponent extends NodeComponent {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReActAgentComponent.class);
+
+    /** 默认从 chain requestData 中读取 conversationId 时使用的约定 key。 */
+    public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
+
+    /** 在 Slot attachment 上存储 ctx 时使用的 key 前缀，按 nodeId 隔离。 */
+    private static final String CTX_KEY_PREFIX = "_react_agent_ctx_";
+
+    private String ctxKey() {
+        String nodeId = getNodeId();
+        return CTX_KEY_PREFIX + (nodeId == null ? "default" : nodeId);
+    }
 
     /* ===== 框架提供的 final 访问器 ===== */
 
@@ -55,153 +85,167 @@ public abstract class ReActAgentComponent extends NodeComponent {
         return c;
     }
 
+    /**
+     * 返回当次执行的 {@link ReActAgentContext}。
+     * 必须在 {@link #process()} 执行期间内调用（包括由 process() 触发的工具回调内）。
+     *
+     * @throws IllegalStateException 在 process() 生命周期之外调用时抛出
+     */
+    protected final ReActAgentContext ctx() {
+        Slot slot = getSlot();
+        ReActAgentContext c = slot.getAttachment(ctxKey());
+        if (c == null) {
+            throw new IllegalStateException(
+                    "ReActAgentContext is not bound on slot; ctx() must be called during process()");
+        }
+        return c;
+    }
+
     /* ===== 必须实现 ===== */
 
     /**
-     * 构建本组件使用的模型描述符。子类按"哪个平台 + 哪个模型 + 可选高级参数"
-     * 三段式给出，由框架负责从 {@link AgentConfig} 解析 credential 并构造
-     * agentscope {@link Model}。例如：
-     * <pre>{@code
-     *     return DeepSeek.of("deepseek-chat").temperature(0.7);
-     * }</pre>
+     * 构建本组件使用的模型描述符。
      */
-    protected abstract ModelSpec<?> model(ReActAgentContext ctx);
+    protected abstract ModelSpec<?> model();
 
     /**
      * Escape hatch：高级用户可整体绕过 {@link ModelSpec} 自行构造 {@link Model}。
-     * 默认实现委派给 {@code model(ctx).resolve(agentConfig())}，无需覆写。
+     * 默认实现委派给 {@code model().resolve(agentConfig())}，无需覆写。
      */
-    protected Model buildModel(ReActAgentContext ctx) {
-        return model(ctx).resolve(agentConfig());
+    protected Model buildModel() {
+        return model().resolve(agentConfig());
     }
 
     /**
      * 返回 agent 的系统提示词。构建 agent 时只调用一次。
      */
-    protected abstract String systemPrompt(ReActAgentContext ctx);
+    protected abstract String systemPrompt();
 
     /**
      * 返回本次执行的用户提示词。每次 {@link #process()} 都会调用。
      */
-    protected abstract String userPrompt(ReActAgentContext ctx);
+    protected abstract String userPrompt();
 
     /* ===== 可选覆写 ===== */
 
     /**
      * 提供要注册到 agent {@link Toolkit} 中的额外工具对象。
-     * 对象中标注了 {@code @Tool} 的方法会被自动发现。
      * 默认返回空列表。
      */
-    protected List<Object> tools(ReActAgentContext ctx) { return List.of(); }
+    protected List<Object> tools() { return List.of(); }
 
     /**
-     * 从当前 slot 推导 session id。默认生成 {@code YYYYMMDD + NanoId(18)} 格式。
+     * 解析本次执行的 {@code conversationId}。
+     *
+     * <p>默认实现：先看 slot 上已有 conversationId，再看 chainReqData 里有没有，
+     * 最后生成一次性 id。
+     *
+     * <p>该方法在 ctx 还未构造时被调用，只能通过 {@link #getSlot()} 访问 slot。
      */
-    protected String resolveSessionId(Slot slot) {
-        return NanoIdSessionIdGenerator.generate();
+    protected String resolveConversationId() {
+        Slot slot = getSlot();
+        String existing = slot.getConversationId();
+        if (existing != null && !existing.isEmpty()) {
+            return existing;
+        }
+        Object req = slot.getChainReqData(slot.getChainId());
+        if (req instanceof Map<?, ?> map) {
+            Object v = map.get(CONVERSATION_ID_REQUEST_KEY);
+            if (v != null) {
+                String s = v.toString();
+                if (!s.isEmpty()) {
+                    return s;
+                }
+            }
+        }
+        return ConversationIdGenerator.generate();
     }
 
     /**
-     * ReAct 最大迭代次数。返回 -1（默认值）表示使用
-     * {@link com.yomahub.liteflow.property.agent.DefaultsConfig} 中的全局默认值。
+     * 用于在同一段对话中区分不同 agent 的 key，默认是 {@code nodeId}。
      */
+    protected String agentKey() {
+        String nodeId = getNodeId();
+        return (nodeId == null || nodeId.isEmpty()) ? "default" : nodeId;
+    }
+
     protected int maxIterations() { return -1; }
-
-    /**
-     * 是否注册内置 {@link ManagedShellCommandTool}。默认开启。
-     */
     protected boolean enableShellTool() { return true; }
-
-    /**
-     * 是否注册内置 {@link WorkspaceFileTools}。默认开启。
-     */
     protected boolean enableWorkspaceFileTools() { return true; }
+    protected List<Hook> hooks() { return List.of(); }
 
-    /**
-     * 提供 agent 钩子。默认返回空列表。
-     */
-    protected List<Hook> hooks(ReActAgentContext ctx) { return List.of(); }
-
-    /**
-     * 是否在日志中输出 agent 的 reason / act / error 事件。
-     * <p>默认从配置 {@code liteflow.agent.logging.react-enabled} 读取（默认 true），
-     * 子类可覆写返回 {@code true}/{@code false} 强制开关。
-     * 输出在 logger {@code com.yomahub.liteflow.agent.hook.ReActLoggingHook} 上。
-     */
     protected boolean enableReActLogging() {
         return agentConfig().getLogging().isReactEnabled();
     }
 
-    /**
-     * agent 回复后调用。默认实现会把 {@code reply.getTextContent()}
-     * 写入 slot 的响应数据。
-     */
-    protected void handleReply(Msg reply, ReActAgentContext ctx) {
-        ctx.getSlot().setResponseData(reply == null ? null : reply.getTextContent());
+    protected void handleReply(Msg reply) {
+        ctx().getSlot().setResponseData(reply == null ? null : reply.getTextContent());
     }
 
     /* ===== 框架 final 执行体 ===== */
 
-    /**
-     * 在受管 session 中执行 ReActAgent。
-     * <ol>
-     *   <li>根据 session id 获取（或创建）{@link AgentSession}</li>
-     *   <li>首次使用时构建 {@link ReActAgent}，之后复用</li>
-     *   <li>使用用户提示词调用 agent，并处理回复</li>
-     * </ol>
-     * 该方法被声明为 {@code final}，用于保证 session 加锁逻辑正确执行。
-     */
     @Override
     public final void process() throws Exception {
         AgentConfig cfg = agentConfig();
         AgentSessionManager mgr = AgentSessionManagerHolder.getOrCreate(cfg);
         MemoryStorageConfig mc = cfg.getSession().getMemory();
         Slot slot = this.getSlot();
-        String sid = resolveSessionId(slot);
-        AgentSession session = mgr.acquire(sid);
+
+        String cid = resolveConversationId();
+        slot.setConversationId(cid);
+
+        String akey = agentKey();
+        AgentSession session = mgr.acquire(cid, akey);
         session.getLock().lock();
         try {
-            ReActAgentContext ctx = new ReActAgentContext(slot, session.getSessionId(), session.getWorkspaceDir());
-            ReActAgent agent = (ReActAgent) session.getAgent();
-            if (agent == null) {
-                agent = buildAgent(ctx);
-                // 懒加载：同一个 sessionId 在当前 JVM 中首次出现时才恢复一次。
-                mgr.loadIfExists(session, agent);
-                session.setAgent(agent);
-            }
-            Throwable processError = null;
+            ReActAgentContext ctx = new ReActAgentContext(
+                    slot, session.getConversationId(), session.getAgentKey(), session.getWorkspaceDir());
+            slot.setAttachment(ctxKey(), ctx);
             try {
-                Msg userMsg = Msg.builder().textContent(userPrompt(ctx)).build();
-                Msg reply = agent.call(List.of(userMsg)).block();
-                handleReply(reply, ctx);
-            } catch (Throwable t) {
-                processError = t;
-                throw t;
-            } finally {
-                boolean shouldSave = (processError == null) ? mc.isSaveAfterCall() : mc.isSaveOnError();
-                if (shouldSave) {
-                    try {
-                        mgr.save(session, agent);
-                    } catch (Exception persistEx) {
-                        if (processError != null) {
-                            processError.addSuppressed(persistEx);
-                        } else {
-                            LOG.warn("session memory save failed for sid={}", session.getSessionId(), persistEx);
+                ReActAgent agent = (ReActAgent) session.getAgent();
+                if (agent == null) {
+                    agent = buildAgent();
+                    mgr.loadIfExists(session, agent);
+                    session.setAgent(agent);
+                }
+                Throwable processError = null;
+                try {
+                    Msg userMsg = Msg.builder().textContent(userPrompt()).build();
+                    Msg reply = agent.call(List.of(userMsg)).block();
+                    handleReply(reply);
+                } catch (Throwable t) {
+                    processError = t;
+                    throw t;
+                } finally {
+                    boolean shouldSave = (processError == null) ? mc.isSaveAfterCall() : mc.isSaveOnError();
+                    if (shouldSave) {
+                        try {
+                            mgr.save(session, agent);
+                        } catch (Exception persistEx) {
+                            if (processError != null) {
+                                processError.addSuppressed(persistEx);
+                            } else {
+                                LOG.warn("session memory save failed for cacheKey={}",
+                                        session.getCacheKey(), persistEx);
+                            }
                         }
                     }
                 }
+            } finally {
+                slot.removeAttachment(ctxKey());
             }
         } finally {
             session.getLock().unlock();
         }
     }
 
-    private ReActAgent buildAgent(ReActAgentContext ctx) {
+    private ReActAgent buildAgent() {
         AgentConfig cfg = agentConfig();
         int iters = maxIterations() > 0 ? maxIterations() : cfg.getDefaults().getMaxIterations();
+        ReActAgentContext ctx = ctx();
 
         Toolkit toolkit = new Toolkit();
-        tools(ctx).forEach(toolkit::registerTool);
+        tools().forEach(toolkit::registerTool);
         if (enableWorkspaceFileTools()) {
             toolkit.registerTool(new WorkspaceFileTools(ctx.getWorkspaceDir(), cfg));
         }
@@ -209,15 +253,15 @@ public abstract class ReActAgentComponent extends NodeComponent {
             toolkit.registerTool(new ManagedShellCommandTool(ctx.getWorkspaceDir(), cfg));
         }
 
-        List<Hook> allHooks = new ArrayList<>(hooks(ctx));
+        List<Hook> allHooks = new ArrayList<>(hooks());
         if (enableReActLogging()) {
-            allHooks.add(new ReActLoggingHook(ctx.getSessionId()));
+            allHooks.add(new ReActLoggingHook(ctx.getConversationId() + ":" + ctx.getAgentKey()));
         }
 
         return ReActAgent.builder()
                 .name(getNodeId() == null ? "liteflow-agent" : getNodeId())
-                .sysPrompt(systemPrompt(ctx))
-                .model(buildModel(ctx))
+                .sysPrompt(systemPrompt())
+                .model(buildModel())
                 .toolkit(toolkit)
                 .memory(new InMemoryMemory())
                 .maxIters(iters)

@@ -1,7 +1,6 @@
 package com.yomahub.liteflow.test.agent.cmp;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.component.ReActAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.ReActAgent;
@@ -20,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component("stubAgent")
 public class StubReActAgentCmp extends ReActAgentComponent {
 
-    public static final String FIXED_SESSION_ID = "fixed-session";
+    public static final String FIXED_CONVERSATION_ID = "fixed-conversation";
     public static final AtomicInteger SPEC_RESOLVE_COUNT = new AtomicInteger();
     public static final AtomicInteger BUILD_MODEL_COUNT = new AtomicInteger();
     public static final AtomicInteger SYSTEM_PROMPT_COUNT = new AtomicInteger();
@@ -62,34 +60,34 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected ModelSpec<?> model(ReActAgentContext ctx) {
-        return new StubModelSpec(ctx);
+    protected ModelSpec<?> model() {
+        return new StubModelSpec(this);
     }
 
     @Override
-    protected String systemPrompt(ReActAgentContext ctx) {
+    protected String systemPrompt() {
         SYSTEM_PROMPT_COUNT.incrementAndGet();
-        return "system:" + ctx.getSessionId();
+        return "system:" + ctx().getConversationId() + ":" + ctx().getAgentKey();
     }
 
     @Override
-    protected String userPrompt(ReActAgentContext ctx) {
+    protected String userPrompt() {
         USER_PROMPT_COUNT.incrementAndGet();
-        Object reqData = ctx.getSlot().getChainReqData(ctx.getSlot().getChainId());
+        Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         String prompt = reqData == null ? "" : reqData.toString();
         USER_PROMPTS.add(prompt);
         return prompt;
     }
 
     @Override
-    protected List<Object> tools(ReActAgentContext ctx) {
+    protected List<Object> tools() {
         CUSTOM_TOOL_REGISTER_COUNT.incrementAndGet();
         return List.of(new EchoTool());
     }
 
     @Override
-    protected String resolveSessionId(com.yomahub.liteflow.slot.Slot slot) {
-        return FIXED_SESSION_ID;
+    protected String resolveConversationId() {
+        return FIXED_CONVERSATION_ID;
     }
 
     @Override
@@ -108,7 +106,7 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected List<Hook> hooks(ReActAgentContext ctx) {
+    protected List<Hook> hooks() {
         return List.of(new Hook() {
             @Override
             public <T extends HookEvent> Mono<T> onEvent(T event) {
@@ -127,46 +125,48 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected void handleReply(Msg reply, ReActAgentContext ctx) {
+    protected void handleReply(Msg reply) {
         HANDLE_REPLY_COUNT.incrementAndGet();
         if (customHandleReply) {
-            ctx.getSlot().setResponseData("handled:" + (reply == null ? null : reply.getTextContent()));
+            ctx().getSlot().setResponseData("handled:" + (reply == null ? null : reply.getTextContent()));
             return;
         }
-        super.handleReply(reply, ctx);
+        super.handleReply(reply);
     }
 
     public static class StubModelSpec extends ModelSpec<StubModelSpec> {
-        private final ReActAgentContext ctx;
+        private final StubReActAgentCmp comp;
 
-        StubModelSpec(ReActAgentContext ctx) {
-            this.ctx = ctx;
+        StubModelSpec(StubReActAgentCmp comp) {
+            this.comp = comp;
         }
 
         @Override
         public Model resolve(AgentConfig cfg) {
             SPEC_RESOLVE_COUNT.incrementAndGet();
             BUILD_MODEL_COUNT.incrementAndGet();
-            return new StubModel(ctx);
+            return new StubModel(comp);
         }
     }
 
     public static class StubModel implements Model {
-        private final ReActAgentContext ctx;
+        private final StubReActAgentCmp comp;
         private final AtomicInteger callCount = new AtomicInteger();
 
-        StubModel(ReActAgentContext ctx) {
-            this.ctx = ctx;
+        StubModel(StubReActAgentCmp comp) {
+            this.comp = comp;
         }
 
         @Override
         public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> toolSchemas, GenerateOptions options) {
+            var ctx = comp.ctx();
             List<String> toolNames = toolSchemas == null ? List.of() : toolSchemas.stream()
                     .map(ToolSchema::getName)
                     .sorted()
                     .toList();
             ModelProbe probe = new ModelProbe(
-                    ctx.getSessionId(),
+                    ctx.getConversationId(),
+                    ctx.getAgentKey(),
                     ctx.getWorkspaceDir().toString(),
                     Files.isDirectory(ctx.getWorkspaceDir()),
                     callCount.incrementAndGet(),
@@ -174,7 +174,7 @@ public class StubReActAgentCmp extends ReActAgentComponent {
                     toolNames,
                     options == null ? null : options.getTemperature());
             MODEL_PROBES.add(probe);
-            String text = "reply:" + probe.sessionId + ":" + probe.callCount + ":" + probe.inputTexts;
+            String text = "reply:" + probe.conversationId + ":" + probe.callCount + ":" + probe.inputTexts;
             return Flux.just(ChatResponse.builder()
                     .content(List.of(TextBlock.builder().text(text).build()))
                     .finishReason("stop")
@@ -195,7 +195,8 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     }
 
     public record ModelProbe(
-            String sessionId,
+            String conversationId,
+            String agentKey,
             String workspaceDir,
             boolean workspaceExists,
             int callCount,
