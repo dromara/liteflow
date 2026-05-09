@@ -181,6 +181,10 @@ public class LiteflowResponse {
 		return this.getSlot().getRequestId();
 	}
 
+	public String getConversationId() {
+		return this.getSlot().getConversationId();
+	}
+
 	public String getChainId() {
 		return chainId;
 	}

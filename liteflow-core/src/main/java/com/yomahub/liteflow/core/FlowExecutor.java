@@ -43,6 +43,7 @@ import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
+import com.yomahub.liteflow.util.ConversationIdGenerator;
 import com.yomahub.liteflow.util.ElRegexUtil;
 
 import java.util.*;
@@ -386,6 +387,69 @@ public class FlowExecutor {
 		return this.execute2Resp(chainId, param, requestId, null, contextBeanArray);
 	}
 
+	/**
+	 * 使用 {@link ExecuteOption} 执行 chain，自由组合 requestId、conversationId、上下文等执行维度。
+	 *
+	 * <p>这是新代码的推荐入口。当需要 conversationId（典型场景：ReAct Agent 连续对话）、
+	 * 同时传入 requestId 与多上下文时，相比多个 {@code WithXxx} 方法 overload，
+	 * 单一 ExecuteOption 入口能避免命名爆炸：
+	 * <pre>{@code
+	 *     flowExecutor.execute2Resp("chain1", param,
+	 *         ExecuteOption.of()
+	 *             .requestId(rid)
+	 *             .conversationId(cid)
+	 *             .contextClass(MyCtx.class));
+	 * }</pre>
+	 *
+	 * <p>已有 {@code execute2RespWithRid(...)} 等方法继续可用，行为不变。
+	 *
+	 * @param chainId chain id
+	 * @param param   入参，将作为 chainReqData 注入 slot
+	 * @param option  执行选项；{@code null} 等价于 {@link ExecuteOption#of()}
+	 * @return LiteflowResponse
+	 */
+	public LiteflowResponse execute2Resp(String chainId, Object param, ExecuteOption option) {
+		ExecuteOption opt = option == null ? ExecuteOption.of() : option;
+		return this.execute2Resp(chainId, param, opt.getRequestId(), resolveConversationId(opt),
+				opt.getContextBeanClasses(), opt.getContextBeans());
+	}
+
+	/**
+	 * 异步版本：{@link #execute2Resp(String, Object, ExecuteOption)}。
+	 */
+	public Future<LiteflowResponse> execute2Future(String chainId, Object param, ExecuteOption option) {
+		ExecuteOption opt = option == null ? ExecuteOption.of() : option;
+		// 注意：cid 解析必须在主线程完成，否则 NanoId 会延迟到 worker 线程才生成，
+		// 导致调用方拿到的 Future 关联的 cid 与 response 不一致的可能性。这里提前定型。
+		String resolvedCid = resolveConversationId(opt);
+		String requestId = opt.getRequestId();
+		Class<?>[] ctxClasses = opt.getContextBeanClasses();
+		Object[] ctxBeans = opt.getContextBeans();
+		return ExecutorHelper.loadInstance()
+				.buildMainExecutor(liteflowConfig.getMainExecutorClass())
+				.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(
+						chainId, param, requestId, resolvedCid, ctxClasses, ctxBeans));
+	}
+
+	/**
+	 * 把 ExecuteOption 中关于 conversationId 的两类语义（显式值 / 自动生成）
+	 * 归约成一个最终值：
+	 * <ul>
+	 *   <li>显式 {@code conversationId(...)}（非空白）→ 用之；</li>
+	 *   <li>{@code autoConversationId()} → 调用 {@link ConversationIdGenerator} 生成；</li>
+	 *   <li>都未声明 → 返回 {@code null}，由后续组件按需自行处理（不主动写入 slot）。</li>
+	 * </ul>
+	 */
+	private String resolveConversationId(ExecuteOption opt) {
+		if (StrUtil.isNotBlank(opt.getConversationId())) {
+			return opt.getConversationId();
+		}
+		if (opt.isAutoConversationId()) {
+			return ConversationIdGenerator.generate();
+		}
+		return null;
+	}
+
 	public List<LiteflowResponse> executeRouteChainWithRid(Object param, String requestId, Object... contextBeanArray) {
 		return this.executeWithRoute(null, param, requestId, null, contextBeanArray);
 	}
@@ -433,7 +497,12 @@ public class FlowExecutor {
 
 	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray,
 			Object[] contextBeanArray) {
-		Slot slot = doExecute(chainId, param, requestId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY);
+		return execute2Resp(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray);
+	}
+
+	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, String conversationId,
+			Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
+		Slot slot = doExecute(chainId, param, requestId, conversationId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY);
 		return LiteflowResponse.newMainResponse(slot);
 	}
 
@@ -443,6 +512,12 @@ public class FlowExecutor {
 	}
 
 	private Slot doExecute(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
+						   ChainExecuteModeEnum chainExecuteModeEnum) {
+		return doExecute(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray, chainExecuteModeEnum);
+	}
+
+	private Slot doExecute(String chainId, Object param, String requestId, String conversationId,
+						   Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
 						   ChainExecuteModeEnum chainExecuteModeEnum) {
 		if (FlowBus.needInit()) {
 			init(true);
@@ -481,6 +556,13 @@ public class FlowExecutor {
 			slot.generateRequestId();
 			LFLoggerManager.setRequestId(slot.getRequestId());
 			LOG.info("requestId has generated");
+		}
+
+		// 如果调用方明确传入了 conversationId，则写入 slot；用于 ReAct Agent 等
+		// 需要在 chain 内多个组件之间共享会话上下文的场景。未传入时不主动设置，
+		// 由具体组件按其默认策略处理（例如 ReActAgentComponent 会按需懒生成）。
+		if (StrUtil.isNotBlank(conversationId)){
+			slot.setConversationId(conversationId);
 		}
 
 		LOG.info("slot[{}] offered", slotIndex);
