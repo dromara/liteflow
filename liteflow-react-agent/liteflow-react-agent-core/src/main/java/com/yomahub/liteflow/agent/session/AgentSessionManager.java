@@ -25,21 +25,26 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
- * 跟踪当前 JVM 中存活的 AgentSession，并桥接到可插拔的
+ * 跟踪当前 JVM 中存活的 {@link AgentSession}，并桥接到可插拔的
  * {@link Session}（由 {@link AgentSessionFactoryRegistry} 提供）。
  *
- * <p>这里将两类职责保持独立：
+ * <p>会话标识被拆分为两个维度：
  * <ul>
- *   <li>JVM 内缓存、加锁和 LRU 淘汰（本类负责）</li>
- *   <li>持久化存储（委托给 AgentScope 的 Session 抽象）</li>
+ *   <li>{@code conversationId}：业务/对话维度，决定 workspace 目录与连续对话的恢复。</li>
+ *   <li>{@code agentKey}：组件维度（默认为 {@code nodeId}），用于在同一段对话内
+ *       区分不同 agent 的 ReActAgent 实例与对话记忆。</li>
  * </ul>
  *
- * <p>淘汰（空闲或超过容量）只移除缓存的 agent 实例。
- * workspace 文件以及磁盘、Redis、MySQL 中的持久化 session 数据会被保留。
+ * <p>缓存与持久化都按 {@code (conversationId, agentKey)} 组合 key 隔离；
+ * workspace 目录则只按 {@code conversationId} 建一份，让同一段对话中的多个 agent
+ * 通过共享文件协作。
  */
 public class AgentSessionManager implements AutoCloseable {
 
     private static final Pattern SAFE = Pattern.compile("[a-zA-Z0-9_\\-]+");
+
+    /** 缓存 key 内部使用的分隔符；不在 SAFE 字符集中以外，且不会出现在 NanoId 输出里。 */
+    static final String KEY_SEPARATOR = "__";
 
     private final AgentConfig config;
     private final Path root;
@@ -73,26 +78,37 @@ public class AgentSessionManager implements AutoCloseable {
         cleaner.scheduleWithFixedDelay(this::cleanup, every, every, TimeUnit.MILLISECONDS);
     }
 
-    public AgentSession acquire(String sessionId) {
-        String safe = safeId(sessionId);
-        AgentSession s = sessions.computeIfAbsent(safe, id -> {
-            Path ws = root.resolve(id);
-            try { Files.createDirectories(ws); }
-            catch (IOException e) { throw new AgentConfigException("cannot create workspace: " + ws, e); }
-            return new AgentSession(id, ws);
+    /**
+     * 获取（或创建）一个 agent 会话。
+     *
+     * <p>同一 {@code conversationId} 下的多个 {@code agentKey} 共享同一个 workspace 目录，
+     * 但分别拥有独立的 {@link AgentSession}（独立的 ReActAgent 实例、独立的记忆持久化 key）。
+     */
+    public AgentSession acquire(String conversationId, String agentKey) {
+        String safeCid = safeId(conversationId);
+        String safeKey = safeId(agentKey);
+        String cacheKey = safeCid + KEY_SEPARATOR + safeKey;
+        AgentSession s = sessions.computeIfAbsent(cacheKey, k -> {
+            Path ws = root.resolve(safeCid);
+            try {
+                Files.createDirectories(ws);
+            } catch (IOException e) {
+                throw new AgentConfigException("cannot create workspace: " + ws, e);
+            }
+            return new AgentSession(safeCid, safeKey, k, ws);
         });
         s.touch();
         enforceMaxSessions();
         return s;
     }
 
-    public boolean contains(String sessionId) {
-        return sessions.containsKey(safeId(sessionId));
+    public boolean contains(String conversationId, String agentKey) {
+        return sessions.containsKey(safeId(conversationId) + KEY_SEPARATOR + safeId(agentKey));
     }
 
     /**
      * 将之前持久化的状态懒加载恢复到 agent 中。
-     * 同一个 session id 在当前 JVM 生命周期内应只调用一次，并且应在 agent
+     * 同一个 {@code (conversationId, agentKey)} 在当前 JVM 生命周期内应只调用一次，并且应在 agent
      * 构建完成后、首次 {@code agent.call(...)} 前调用。
      */
     public void loadIfExists(AgentSession session, ReActAgent agent) {
@@ -100,7 +116,7 @@ public class AgentSessionManager implements AutoCloseable {
         MemoryStorageConfig mc = config.getSession().getMemory();
         if (!mc.isLoadOnFirstUse()) return;
         if (mc.getMode() == MemoryStorageMode.NONE) return;
-        SessionManager.forSessionId(session.getSessionId())
+        SessionManager.forSessionId(session.getCacheKey())
                 .withSession(storage)
                 .addComponent(agent)
                 .loadIfExists();
@@ -111,7 +127,7 @@ public class AgentSessionManager implements AutoCloseable {
         if (storage == null || agent == null) return;
         MemoryStorageConfig mc = config.getSession().getMemory();
         if (mc.getMode() == MemoryStorageMode.NONE) return;
-        SessionManager.forSessionId(session.getSessionId())
+        SessionManager.forSessionId(session.getCacheKey())
                 .withSession(storage)
                 .addComponent(agent)
                 .saveSession();
@@ -149,16 +165,25 @@ public class AgentSessionManager implements AutoCloseable {
     }
 
     /**
-     * @param cleanWorkspace 为 true 时，同时删除磁盘上的 workspace 目录
-     *                       （保留历史行为）。存储在其他位置的持久化 session
-     *                       状态（例如 workspaceRoot/.agent-session、Redis、
-     *                       MySQL）不会在这里被删除。
+     * @param cleanWorkspace 为 true 时同时尝试删除磁盘上的 workspace 目录。由于同一 workspace
+     *                       可能被 {@code (conversationId, *)} 下的多个 agent 共享，仅在该
+     *                       conversation 下没有其他存活会话时才会真正删除目录。
+     *                       存储在其他位置的持久化 session 状态（例如 workspaceRoot/.agent-session、
+     *                       Redis、MySQL）不会在这里被删除。
      */
     private void evictFromCache(AgentSession s, boolean cleanWorkspace) {
-        sessions.remove(s.getSessionId(), s);
-        if (cleanWorkspace) {
+        sessions.remove(s.getCacheKey(), s);
+        if (cleanWorkspace && !hasSiblingInSameConversation(s)) {
             deleteRecursively(s.getWorkspaceDir());
         }
+    }
+
+    private boolean hasSiblingInSameConversation(AgentSession evicted) {
+        String prefix = evicted.getConversationId() + KEY_SEPARATOR;
+        for (String key : sessions.keySet()) {
+            if (key.startsWith(prefix)) return true;
+        }
+        return false;
     }
 
     private static void deleteRecursively(Path p) {

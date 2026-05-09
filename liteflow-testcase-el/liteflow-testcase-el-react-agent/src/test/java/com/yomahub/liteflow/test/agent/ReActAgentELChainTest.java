@@ -31,7 +31,7 @@ public class ReActAgentELChainTest extends AbstractReActAgentSpringbootTest {
         // recordReply 会把 agent 回复保存到本节点 output，测试由此确认后置节点拿到了回复。
         Object reply = response.getSlot().getOutput(RecordReplyCmp.NODE_ID);
         Assertions.assertNotNull(reply);
-        Assertions.assertTrue(reply.toString().contains("reply:" + StubReActAgentCmp.FIXED_SESSION_ID));
+        Assertions.assertTrue(reply.toString().contains("reply:" + StubReActAgentCmp.FIXED_CONVERSATION_ID));
 
         // userPrompt 必须来自 prepare 写入的 chainReqData，不能绕开 LiteFlow slot 上下文。
         Assertions.assertEquals(List.of("hello-liteflow-agent"), StubReActAgentCmp.USER_PROMPTS);

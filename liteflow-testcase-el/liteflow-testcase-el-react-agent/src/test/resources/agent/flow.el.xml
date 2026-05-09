@@ -22,4 +22,8 @@
         THEN(prepare, stubAgent, recordReply);
     </chain>
 
+    <chain name="collabAgentChain">
+        THEN(prepare, collabAgentA, collabAgentB, recordReply);
+    </chain>
+
 </flow>
