@@ -74,6 +74,8 @@ public class Slot {
 
 	private static final String REQUEST_ID = "_req_id";
 
+	private static final String CONVERSATION_ID = "_conversation_id";
+
 	private static final String EXCEPTION = "_exception";
 
 	private static final String SUB_EXCEPTION_PREFIX = "_sub_exception_";
@@ -141,6 +143,29 @@ public class Slot {
 			throw new NullParamException("data slot can't accept null param");
 		}
 		metaDataMap.put(key, t);
+	}
+
+	/**
+	 * 通用挂载点：写入一个由调用方约定 key 的对象。
+	 *
+	 * @param key 调用方负责选用具有充分前缀的 key，避免与 Slot 内部保留 key 冲突
+	 * @throws com.yomahub.liteflow.exception.NullParamException value 为 null 时抛出
+	 */
+	public <T> void setAttachment(String key, T value) {
+		putMetaDataMap(key, value);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getAttachment(String key) {
+		return (T) metaDataMap.get(key);
+	}
+
+	public boolean hasAttachment(String key) {
+		return metaDataMap.containsKey(key);
+	}
+
+	public void removeAttachment(String key) {
+		metaDataMap.remove(key);
 	}
 
 	public <T> T getInput(String nodeId) {
@@ -464,6 +489,21 @@ public class Slot {
 
 	public String getRequestId() {
 		return (String) metaDataMap.get(REQUEST_ID);
+	}
+
+	/**
+	 * 设置当前 chain 执行的会话标识。
+	 *
+	 * <p>用于 ReAct Agent 等需要在多个组件之间共享同一会话上下文的场景：
+	 * 同 chain 内首个 agent 解析后写回 slot，后续 agent 直接复用，从而保证
+	 * 整条链路属于同一段对话（共享 workspace、各 agent 的记忆按 nodeId 分桶）。
+	 */
+	public void setConversationId(String conversationId) {
+		putMetaDataMap(CONVERSATION_ID, conversationId);
+	}
+
+	public String getConversationId() {
+		return (String) metaDataMap.get(CONVERSATION_ID);
 	}
 
 	public Deque<CmpStep> getExecuteSteps() {
