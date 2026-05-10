@@ -36,6 +36,8 @@ public class ShellConfig {
             "date", "whoami", "hostname", "uname", "env", "df", "du", "ps",
             // 哈希与数据格式
             "md5sum", "sha256sum", "jq",
+            // 网络请求
+            "curl", "wget",
             // 脚本解释器
             "python3", "node");
 
