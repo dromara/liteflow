@@ -7,7 +7,7 @@
 - 引入对应模型平台模块，并完成 `liteflow.agent.*` 配置；
 - 编写一个继承 `ReActAgentComponent` 的 Agent 组件；
 - 在 EL 中组合 Agent、普通节点、条件路由和并行节点；
-- 正确理解 conversation、agentKey、memory、workspace、内置文件工具和 Shell 工具的边界。
+- 正确理解 conversation、agentKey、memory、workspace、内置文件工具、Shell 工具和 Skills 的边界。
 
 > 当前仓库根版本：`2.16.0`。
 >
@@ -200,6 +200,9 @@ protected void handleReply(Msg reply) {
 | `systemPrompt()` | 是 | 无 | 返回系统提示词，同一 `(conversationId, agentKey)` 首次构建 Agent 时调用 |
 | `userPrompt()` | 是 | 无 | 返回本轮用户消息，每次 `process()` 都调用 |
 | `tools()` | 否 | 空列表 | 注册自定义 `@Tool` 对象 |
+| `skills()` | 否 | 空列表 | 返回本 Agent 可使用的技能名白名单；空列表表示允许使用配置目录中的全部技能 |
+| `enableSkills()` | 否 | 读取 `liteflow.agent.skills.enabled`（默认 `false`） | 是否为本组件启用 AgentScope skills；全局关闭时可保持既有 Agent 行为不变 |
+| `usedSkills()` | 否 | 本轮已成功加载技能名列表 | 只能在 `process()` 触发的生命周期内读取，例如 `userPrompt()`、工具回调、Hook 回调和 `handleReply()` |
 | `resolveConversationId()` | 否 | 先复用 `slot.conversationId`，再读 `chainReqData` Map 中的 `conversationId`，最后调用 `ConversationIdGenerator.generate()` | 决定本次调用所属业务会话；同一条 chain 内首个 Agent 写回 slot 后，后续 Agent 默认复用 |
 | `agentKey()` | 否 | 当前 `nodeId`，为空时为 `default` | 在同一 conversation 中区分不同 Agent 实例和记忆；默认不同节点互相隔离 |
 | `maxIterations()` | 否 | `-1` | 返回正数时覆盖全局 `defaults.max-iterations` |
@@ -671,9 +674,145 @@ liteflow.agent.shell.mode=disabled
 
 ---
 
-## 7. 常见编排方式
+## 7. Skills 支持
 
-### 7.1 注册自定义工具
+`liteflow-react-agent` 支持加载 AgentScope 的 filesystem skills。Skill 适合承载“什么时候使用”“如何执行”的长指令，也可以把某些 Java `@Tool` 只绑定到指定 skill 上，避免所有工具都全局暴露给 Agent。
+
+### 7.1 开启 Skills
+
+Skills 默认关闭。开启后，框架会从 `liteflow.agent.skills.path` 指向的目录扫描技能：
+
+```properties
+liteflow.agent.skills.enabled=true
+liteflow.agent.skills.path=./skills
+liteflow.agent.skills.strict=true
+```
+
+| 配置项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `enabled` | `false` | 是否启用配置驱动的 skills 支持；关闭时不会注册 `load_skill_through_path` 工具 |
+| `path` | `./skills` | skills 根目录，目录下每个子目录表示一个 skill |
+| `strict` | `true` | 严格模式。目录缺失、声明的 skill 不存在、`tools` 类加载失败等问题会快速失败；设为 `false` 时记录 warn 并尽量继续 |
+
+配置只是把可选技能放入 Agent 的 `SkillBox`。某个技能是否在本轮真正被使用，取决于 AgentScope ReAct 运行过程中是否调用 `load_skill_through_path` 加载该技能。
+
+### 7.2 目录结构与 SKILL.md
+
+推荐目录结构：
+
+```text
+skills/
+├── demo/
+│   └── SKILL.md
+└── tool-skill/
+    └── SKILL.md
+```
+
+最小 `SKILL.md` 示例：
+
+```markdown
+---
+name: demo
+description: Demo skill for LiteFlow ReAct agent
+---
+
+# Demo Skill
+
+Use this skill when the request is about a simple demonstration.
+```
+
+`name` 是组件 `skills()` 过滤时使用的技能名，也会出现在 `usedSkills()` 返回值中。建议让目录名与 `name` 保持一致，便于排查。
+
+### 7.3 组件级技能过滤
+
+如果某个 Agent 只能在指定技能内选择，覆写 `skills()` 即可：
+
+```java
+@Override
+protected List<String> skills() {
+    return List.of("demo", "tool-skill");
+}
+```
+
+语义如下：
+
+- `skills()` 返回空列表：允许使用 `skills.path` 下的全部技能；
+- `skills()` 返回非空列表：只把这些技能放入本 Agent 的 `SkillBox`；
+- 严格模式下，白名单中有不存在的技能会抛出 `AgentConfigException`；非严格模式下会记录 warn，并加载能找到的技能；
+- 不需要额外的 `dependentSkills()`。`skills()` 本身就是本 Agent 的技能选择范围。
+
+也可以让某个组件在全局开启时仍然禁用 skills：
+
+```java
+@Override
+protected boolean enableSkills() {
+    return false;
+}
+```
+
+注意：`skills()` 与 `enableSkills()` 只在某个 `(conversationId, agentKey)` 首次构建并缓存 `ReActAgent` 时求值。它们表示组件能力声明，不应依赖单次请求数据；同一 Session 后续复用缓存 Agent 时不会重新读取这些声明。
+
+### 7.4 Skill 专属 Java 工具
+
+如果某个 Java 工具只应随指定 skill 可用，可以在 `SKILL.md` frontmatter 中声明 `tools`：
+
+```markdown
+---
+name: tool-skill
+description: Skill that binds a Java tool
+tools: com.example.agent.tool.SkillEchoTool
+---
+
+# Tool Skill
+
+Use this skill when a Java tool should be available after loading the skill.
+```
+
+多个工具类可以用逗号分隔：
+
+```markdown
+tools: com.example.agent.tool.SkillEchoTool, com.example.agent.tool.OrderTool
+```
+
+工具类要求：
+
+- 必须在应用 classpath 上；
+- 必须有无参构造器；
+- 工具方法仍按 agentscope-java 的 `@Tool` / `@ToolParam` 方式声明；
+- LiteFlow 会通过 `SkillBox.registration().skill(skill).tool(tool).apply()` 把工具绑定到该 skill，不会把它作为全局 `tools()` 工具注册。
+
+`SkillToolManifest` 可以识别 YAML list 形式的 `tools`，但为了兼容 AgentScope 当前 filesystem skill repository 的简单 YAML 解析，文档推荐使用上面的标量或逗号分隔写法。
+
+### 7.5 记录本轮使用的技能
+
+`usedSkills()` 返回当前 invocation 中已经成功加载过的技能名列表。典型用法是在 `handleReply()` 中把回复和技能使用情况一起写到下游可读的位置：
+
+```java
+@Override
+protected void handleReply(Msg reply) {
+    ctx().getSlot().setOutput(getNodeId(), Map.of(
+            "reply", reply == null ? "" : reply.getTextContent(),
+            "skillsUsed", usedSkills()
+    ));
+}
+```
+
+使用边界：
+
+- 每次 `process()` 开始前会清空上一轮记录；
+- 只有 `load_skill_through_path` 成功加载的技能会被记录；
+- 可在 `process()` 触发的调用链内读取，例如 `userPrompt()`、工具回调、Hook 回调和 `handleReply()`；
+- `process()` 最终清理后，后续 LiteFlow 生命周期回调不应再依赖 `usedSkills()`。
+
+### 7.6 当前边界
+
+当前实现只接入 AgentScope 的 skill repository、`SkillBox` 和 skill-loading 工具，不会启用 AgentScope 的 `skillBox.codeExecution()`。文件读写和命令执行仍使用 LiteFlow 自己的 `WorkspaceFileTools` 与 `ManagedShellCommandTool`，并继续受 `liteflow.agent.workspace.*` 与 `liteflow.agent.shell.*` 配置控制。
+
+---
+
+## 8. 常见编排方式
+
+### 8.1 注册自定义工具
 
 自定义工具是普通对象，方法上使用 agentscope 的 `@Tool` 和 `@ToolParam`：
 
@@ -703,7 +842,7 @@ protected List<Object> tools() {
 
 如果工具需要访问当前 `Slot`、workspace 或 conversation 信息，不要在构造工具时捕获 `ctx()` 的返回值；可以把工具写成组件内部类，或由组件提供一个公开代理方法，在工具方法执行时再间接调用受保护的 `ctx()`。
 
-### 7.2 用 IF 做路由
+### 8.2 用 IF 做路由
 
 ```xml
 <chain name="routerChain">
@@ -717,7 +856,7 @@ protected List<Object> tools() {
 
 `isMath` 可以是普通的 `NodeBooleanComponent`，`mathAgent` 和 `deepseekAgent` 都是 `ReActAgentComponent` 子类。
 
-### 7.3 用 WHEN 并行调用多个模型
+### 8.3 用 WHEN 并行调用多个模型
 
 ```xml
 <chain name="parallelChain">
@@ -740,7 +879,7 @@ protected String agentKey() {
 }
 ```
 
-### 7.4 多轮对话
+### 8.4 多轮对话
 
 多轮对话的关键是让多次调用使用同一个 `conversationId`，同时需要让同一个 Agent 节点保持同一个 `agentKey`（默认 nodeId 已满足）：
 
@@ -770,7 +909,7 @@ protected String resolveConversationId() {
 
 ---
 
-## 8. 完整配置速查
+## 9. 完整配置速查
 
 ```properties
 # LiteFlow 规则
@@ -817,6 +956,11 @@ liteflow.agent.logging.react-enabled=true
 # ReAct 默认最大迭代次数
 liteflow.agent.defaults.max-iterations=15
 
+# Skills
+liteflow.agent.skills.enabled=false
+liteflow.agent.skills.path=./skills
+liteflow.agent.skills.strict=true
+
 # 平台凭据
 liteflow.agent.openai.api-key=${OPENAI_API_KEY}
 liteflow.agent.anthropic.api-key=${ANTHROPIC_API_KEY}
@@ -830,7 +974,7 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 
 ---
 
-## 9. 安全建议
+## 10. 安全建议
 
 1. 生产环境默认关闭 Shell：`liteflow.agent.shell.mode=disabled`。
 2. `workspace.root` 使用专门目录，不要和业务源码、日志、密钥目录混放。
@@ -839,10 +983,11 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 5. 根据业务体量设置 `max-file-bytes`、`max-output-bytes`、`timeout` 和 `max-sessions`，避免 Agent 调用消耗不可控。
 6. 选择 `REDIS` 或 `MYSQL` 记忆模式时，连接 Bean 由业务应用提供，权限和网络访问也应由业务应用控制。
 7. 多个 Agent 共享同一个 conversation workspace 时，建议约定各自的文件名前缀或子目录，避免并行写冲突。
+8. 开启 Skills 时，`skills.path` 建议使用只读、受版本管理或受发布流程控制的目录；不要让普通用户直接写入 `SKILL.md` 或其中声明的 Java 工具类。
 
 ---
 
-## 10. 故障排查
+## 11. 故障排查
 
 | 现象 | 常见原因 | 处理方式 |
 | --- | --- | --- |
@@ -857,16 +1002,23 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | MySQL 模式启动失败 | 未配置 `DataSource` Bean，或 Bean 类型错误 | 配置正确的 `data-source-bean-name` |
 | Shell 返回 `command 'xxx' not allowed by whitelist` | 白名单模式下命令未放行 | 加入白名单，或继续保持禁用 |
 | `path escapes workspace` | 文件工具收到绝对路径或越界路径 | 使用相对路径，并限制在当前 workspace 内 |
+| `Skills root not found` | 开启 skills 后，`liteflow.agent.skills.path` 指向的目录不存在 | 创建 skills 根目录；或关闭 skills；或在开发环境把 `strict=false` 以记录 warn 后继续 |
+| `Declared skills not found: [...]` | 组件 `skills()` 声明了不存在的技能名，或 `SKILL.md` 中的 `name` 与预期不一致 | 检查技能目录与 `SKILL.md` frontmatter 的 `name`；严格模式下必须全部存在 |
+| `references unknown tool class` | `SKILL.md` 的 `tools` 字段声明了 classpath 上找不到的 Java 工具类 | 确认工具类全限定名正确、依赖已打包、类有无参构造器 |
+| `usedSkills()` 为空 | 本轮 Agent 没有成功调用 `load_skill_through_path`，或读取时已离开 `process()` 生命周期 | 在 `handleReply()` 或工具回调中读取；确认模型确实加载了对应 skill |
 | `WHEN` 中多个 Agent 看起来没有并行 | 多个组件解析到了相同 `(conversationId, agentKey)`，共用了同一把锁；或下游等待最慢分支 | 确保需要并行的 Agent 使用不同 `agentKey()`；如还要隔离文件，则使用不同 conversation 或子目录 |
 
 ---
 
-## 11. 参考位置
+## 12. 参考位置
 
 - Core 模块：`liteflow-react-agent/liteflow-react-agent-core/`
 - OpenAI 模块：`liteflow-react-agent/liteflow-react-agent-openai/`
 - Anthropic 模块：`liteflow-react-agent/liteflow-react-agent-anthropic/`
 - Gemini 模块：`liteflow-react-agent/liteflow-react-agent-gemini/`
 - DashScope 模块：`liteflow-react-agent/liteflow-react-agent-dashscope/`
+- Skill 入口：`liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/`
+- Skill 配置：`liteflow-core/src/main/java/com/yomahub/liteflow/property/agent/SkillsConfig.java`
 - 示例测试：`liteflow-testcase-el/liteflow-testcase-el-react-agent/`
 - 规则示例：`liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/agent/flow.el.xml`
+- Skill 示例：`liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/agent/skills/`
