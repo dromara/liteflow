@@ -50,6 +50,14 @@ import java.util.Map;
  *       不同 agent 的 ReActAgent 实例与对话记忆。</li>
  * </ul>
  *
+ * <p>When {@code liteflow.agent.skills.enabled=true}, the component can load
+ * agent-scope skills from {@code liteflow.agent.skills.path}. Override
+ * {@link #skills()} to restrict the component to a fixed allow-list; an empty
+ * list means all configured skills are available. The allow-list and
+ * {@link #enableSkills()} are evaluated only when the cached ReActAgent is built
+ * for a {@code (conversationId, agentKey)} session, so they are stable component
+ * capability declarations and should not depend on request data.
+ *
  * <p><b>注意：勿在跨 invocation 缓存的对象（自定义工具/Hook/Model 等）中持有
  * {@link ReActAgentContext} 引用</b>——这些对象会被缓存的 agent 复用，捕获的 ctx
  * 会在下一次 {@code process()} 时变成陈旧引用（其中的 slot 已经被回收）。
