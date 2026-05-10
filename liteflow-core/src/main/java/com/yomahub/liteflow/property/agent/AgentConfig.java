@@ -29,6 +29,9 @@ public class AgentConfig {
     /** 日志开关配置，控制 ReAct 内部 reason / act / error 等事件日志是否输出。 */
     private LoggingConfig logging = new LoggingConfig();
 
+    /** 技能配置，控制 ReAct Agent 是否启用配置驱动的技能目录与解析策略。 */
+    private SkillsConfig skills = new SkillsConfig();
+
     /** OpenAI 头等平台凭证（{@code liteflow.agent.openai.*}），由 {@code OpenAISpec} 解析使用。 */
     private PlatformCredential openai = new PlatformCredential();
 
@@ -91,6 +94,14 @@ public class AgentConfig {
 
     public void setLogging(LoggingConfig v) {
         this.logging = v;
+    }
+
+    public SkillsConfig getSkills() {
+        return skills;
+    }
+
+    public void setSkills(SkillsConfig skills) {
+        this.skills = skills;
     }
 
     public PlatformCredential getOpenai() {
