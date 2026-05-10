@@ -1,8 +1,7 @@
 ---
 name: tool-skill
 description: Skill that binds a Java tool for LiteFlow ReAct agent tests
-tools:
-  - com.yomahub.liteflow.test.agent.tool.SkillEchoTool
+tools: com.yomahub.liteflow.test.agent.tool.SkillEchoTool
 ---
 
 # Tool Skill
