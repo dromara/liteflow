@@ -2,9 +2,11 @@ package com.yomahub.liteflow.agent.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.hook.ReActLoggingHook;
+import com.yomahub.liteflow.agent.skill.SkillBoxFactory;
+import com.yomahub.liteflow.agent.skill.SkillLoadResult;
+import com.yomahub.liteflow.agent.skill.SkillTrackingHook;
 import com.yomahub.liteflow.agent.session.AgentSession;
 import com.yomahub.liteflow.agent.session.AgentSessionManager;
-import com.yomahub.liteflow.util.ConversationIdGenerator;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -13,12 +15,14 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.MemoryStorageConfig;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.slot.Slot;
+import com.yomahub.liteflow.util.ConversationIdGenerator;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.hook.Hook;
 import io.agentscope.core.memory.InMemoryMemory;
 import io.agentscope.core.message.Msg;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.skill.SkillBox;
 import io.agentscope.core.tool.Toolkit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,11 @@ import java.util.Map;
  * 会在下一次 {@code process()} 时变成陈旧引用（其中的 slot 已经被回收）。
  * 正确做法：持有组件实例引用，运行时通过 {@code component.ctx()} 动态获取。
  *
+ * <p>技能相关的 {@link #skills()} 与 {@link #enableSkills()} 只在为某个
+ * {@code (conversationId, agentKey)} session 首次构建并缓存 ReActAgent 时求值。
+ * 它们表示组件能力声明，不应依赖单次请求数据；同一 session 复用缓存 agent 时不会
+ * 重新读取这些声明。
+ *
  * <p>{@link #process()} 方法被声明为 {@code final}，由框架统一保证 session
  * 管理和 ctx 生命周期的正确性。
  */
@@ -64,9 +73,17 @@ public abstract class ReActAgentComponent extends NodeComponent {
     /** 在 Slot attachment 上存储 ctx 时使用的 key 前缀，按 nodeId 隔离。 */
     private static final String CTX_KEY_PREFIX = "_react_agent_ctx_";
 
+    /** 在 Slot attachment 上存储技能跟踪 Hook 时使用的 key 前缀，按 nodeId 隔离。 */
+    private static final String SKILL_HOOK_KEY_PREFIX = "_react_agent_skill_hook_";
+
     private String ctxKey() {
         String nodeId = getNodeId();
         return CTX_KEY_PREFIX + (nodeId == null ? "default" : nodeId);
+    }
+
+    private String skillHookKey() {
+        String nodeId = getNodeId();
+        return SKILL_HOOK_KEY_PREFIX + (nodeId == null ? "default" : nodeId);
     }
 
     /* ===== 框架提供的 final 访问器 ===== */
@@ -133,6 +150,37 @@ public abstract class ReActAgentComponent extends NodeComponent {
      * 默认返回空列表。
      */
     protected List<Object> tools() { return List.of(); }
+
+    /**
+     * Return skill names this component may use. Empty means all configured skills.
+     *
+     * <p>This is evaluated only when the cached ReActAgent is built for a
+     * {@code (conversationId, agentKey)} session. Treat it as a stable component
+     * capability declaration; do not vary it per request.
+     */
+    protected List<String> skills() { return List.of(); }
+
+    /**
+     * Whether agent-scope skills should be enabled for this component.
+     *
+     * <p>This is evaluated only when the cached ReActAgent is built for a
+     * {@code (conversationId, agentKey)} session. Treat it as a stable component
+     * capability declaration; do not vary it per request.
+     */
+    protected boolean enableSkills() { return agentConfig().getSkills().isEnabled(); }
+
+    /**
+     * Return skill names loaded by this agent during the current invocation.
+     *
+     * <p>This is available only while this component's {@link #process()} body has
+     * bound the invocation skill hook, including calls from {@link #userPrompt()},
+     * tool callbacks, and {@link #handleReply(Msg)}. After {@code process()} final
+     * cleanup, later lifecycle callbacks must not rely on it.
+     */
+    protected final List<String> usedSkills() {
+        SkillTrackingHook hook = getSlot().getAttachment(skillHookKey());
+        return hook == null ? List.of() : hook.getUsedSkills();
+    }
 
     /**
      * 解析本次执行的 {@code conversationId}。
@@ -204,9 +252,16 @@ public abstract class ReActAgentComponent extends NodeComponent {
             try {
                 ReActAgent agent = (ReActAgent) session.getAgent();
                 if (agent == null) {
-                    agent = buildAgent();
+                    BuiltAgent built = buildAgent();
+                    agent = built.agent();
+                    session.setSkillTrackingHook(built.skillTrackingHook());
                     mgr.loadIfExists(session, agent);
                     session.setAgent(agent);
+                }
+                SkillTrackingHook skillHook = session.getSkillTrackingHook();
+                if (skillHook != null) {
+                    skillHook.clear();
+                    slot.setAttachment(skillHookKey(), skillHook);
                 }
                 Throwable processError = null;
                 try {
@@ -233,13 +288,17 @@ public abstract class ReActAgentComponent extends NodeComponent {
                 }
             } finally {
                 slot.removeAttachment(ctxKey());
+                slot.removeAttachment(skillHookKey());
             }
         } finally {
             session.getLock().unlock();
         }
     }
 
-    private ReActAgent buildAgent() {
+    private record BuiltAgent(ReActAgent agent, SkillTrackingHook skillTrackingHook) {
+    }
+
+    private BuiltAgent buildAgent() {
         AgentConfig cfg = agentConfig();
         int iters = maxIterations() > 0 ? maxIterations() : cfg.getDefaults().getMaxIterations();
         ReActAgentContext ctx = ctx();
@@ -258,15 +317,29 @@ public abstract class ReActAgentComponent extends NodeComponent {
             allHooks.add(new ReActLoggingHook(ctx.getConversationId() + ":" + ctx.getAgentKey()));
         }
 
-        return ReActAgent.builder()
+        SkillTrackingHook skillTrackingHook = null;
+        SkillBox skillBox = null;
+        if (enableSkills()) {
+            SkillLoadResult skillLoadResult = SkillBoxFactory.build(toolkit, cfg, skills());
+            skillBox = skillLoadResult.skillBox();
+            skillTrackingHook = new SkillTrackingHook(skillLoadResult.skillIdToName());
+            allHooks.add(skillTrackingHook);
+        }
+
+        ReActAgent.Builder builder = ReActAgent.builder()
                 .name(getNodeId() == null ? "liteflow-agent" : getNodeId())
                 .sysPrompt(systemPrompt())
                 .model(buildModel())
                 .toolkit(toolkit)
                 .memory(new InMemoryMemory())
                 .maxIters(iters)
-                .hooks(allHooks)
-                .build();
+                .hooks(allHooks);
+
+        if (skillBox != null) {
+            builder.skillBox(skillBox);
+        }
+
+        return new BuiltAgent(builder.build(), skillTrackingHook);
     }
 
     /** 持有单例 AgentSessionManager；首次 process() 时懒创建。 */

@@ -8,6 +8,7 @@ import io.agentscope.core.hook.Hook;
 import io.agentscope.core.hook.HookEvent;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.message.ToolUseBlock;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,6 +39,8 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     public static final List<Integer> MAX_ITERATIONS_SEEN = new CopyOnWriteArrayList<>();
     public static final List<String> USER_PROMPTS = new CopyOnWriteArrayList<>();
     public static final List<ModelProbe> MODEL_PROBES = new CopyOnWriteArrayList<>();
+    public static volatile List<String> allowedSkills = List.of();
+    public static final List<List<String>> USED_SKILL_PROBES = new CopyOnWriteArrayList<>();
     public static volatile boolean shellToolEnabled = true;
     public static volatile boolean workspaceFileToolsEnabled = true;
     public static volatile boolean customHandleReply = false;
@@ -53,6 +57,8 @@ public class StubReActAgentCmp extends ReActAgentComponent {
         MAX_ITERATIONS_SEEN.clear();
         USER_PROMPTS.clear();
         MODEL_PROBES.clear();
+        allowedSkills = List.of();
+        USED_SKILL_PROBES.clear();
         shellToolEnabled = true;
         workspaceFileToolsEnabled = true;
         customHandleReply = false;
@@ -83,6 +89,11 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     protected List<Object> tools() {
         CUSTOM_TOOL_REGISTER_COUNT.incrementAndGet();
         return List.of(new EchoTool());
+    }
+
+    @Override
+    protected List<String> skills() {
+        return allowedSkills;
     }
 
     @Override
@@ -126,6 +137,7 @@ public class StubReActAgentCmp extends ReActAgentComponent {
 
     @Override
     protected void handleReply(Msg reply) {
+        USED_SKILL_PROBES.add(usedSkills());
         HANDLE_REPLY_COUNT.incrementAndGet();
         if (customHandleReply) {
             ctx().getSlot().setResponseData("handled:" + (reply == null ? null : reply.getTextContent()));
@@ -152,6 +164,10 @@ public class StubReActAgentCmp extends ReActAgentComponent {
     public static class StubModel implements Model {
         private final StubReActAgentCmp comp;
         private final AtomicInteger callCount = new AtomicInteger();
+        private volatile String lastConversationId;
+        private volatile String lastAgentKey;
+        private volatile String lastWorkspaceDir;
+        private volatile boolean lastWorkspaceExists;
 
         StubModel(StubReActAgentCmp comp) {
             this.comp = comp;
@@ -159,21 +175,45 @@ public class StubReActAgentCmp extends ReActAgentComponent {
 
         @Override
         public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> toolSchemas, GenerateOptions options) {
-            var ctx = comp.ctx();
+            try {
+                var ctx = comp.ctx();
+                lastConversationId = ctx.getConversationId();
+                lastAgentKey = ctx.getAgentKey();
+                lastWorkspaceDir = ctx.getWorkspaceDir().toString();
+                lastWorkspaceExists = Files.isDirectory(ctx.getWorkspaceDir());
+            } catch (IllegalStateException | NullPointerException ignored) {
+                // Agentscope may call the model again from a worker thread after tool execution.
+                // The test model reuses the invocation metadata captured from the first call.
+            }
             List<String> toolNames = toolSchemas == null ? List.of() : toolSchemas.stream()
                     .map(ToolSchema::getName)
                     .sorted()
                     .toList();
+            List<String> inputTexts = messages == null ? List.of() : messages.stream().map(Msg::getTextContent).toList();
+            int currentCall = callCount.incrementAndGet();
             ModelProbe probe = new ModelProbe(
-                    ctx.getConversationId(),
-                    ctx.getAgentKey(),
-                    ctx.getWorkspaceDir().toString(),
-                    Files.isDirectory(ctx.getWorkspaceDir()),
-                    callCount.incrementAndGet(),
-                    messages == null ? List.of() : messages.stream().map(Msg::getTextContent).toList(),
+                    lastConversationId,
+                    lastAgentKey,
+                    lastWorkspaceDir,
+                    lastWorkspaceExists,
+                    currentCall,
+                    inputTexts,
                     toolNames,
                     options == null ? null : options.getTemperature());
             MODEL_PROBES.add(probe);
+
+            if (currentCall == 1 && inputTexts.contains("load-demo-skill")) {
+                return Flux.just(ChatResponse.builder()
+                        .content(List.of(new ToolUseBlock(
+                                "load-demo-skill-tool-call",
+                                "load_skill_through_path",
+                                Map.of("skillId", "demo_filesystem-agent_skills", "path", "SKILL.md"),
+                                "{\"skillId\":\"demo_filesystem-agent_skills\",\"path\":\"SKILL.md\"}",
+                                null)))
+                        .finishReason("tool_calls")
+                        .build());
+            }
+
             String text = "reply:" + probe.conversationId + ":" + probe.callCount + ":" + probe.inputTexts;
             return Flux.just(ChatResponse.builder()
                     .content(List.of(TextBlock.builder().text(text).build()))

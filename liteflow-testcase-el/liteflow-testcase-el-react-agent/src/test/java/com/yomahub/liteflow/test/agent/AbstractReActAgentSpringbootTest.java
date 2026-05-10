@@ -61,6 +61,9 @@ public abstract class AbstractReActAgentSpringbootTest {
         agentConfig.getShell().setMode(ShellMode.BLACKLIST);
         agentConfig.getDefaults().setMaxIterations(20);
         agentConfig.getLogging().setReactEnabled(true);
+        agentConfig.getSkills().setEnabled(false);
+        agentConfig.getSkills().setPath("src/test/resources/agent/skills");
+        agentConfig.getSkills().setStrict(true);
     }
 
     /**
