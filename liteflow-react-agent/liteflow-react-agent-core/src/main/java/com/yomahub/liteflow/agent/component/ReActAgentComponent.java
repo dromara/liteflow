@@ -10,6 +10,8 @@ import com.yomahub.liteflow.agent.session.AgentSessionManager;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.core.NodeComponent;
+import com.yomahub.liteflow.flow.FlowEvent;
+import com.yomahub.liteflow.flow.FlowEventPublisher;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.MemoryStorageConfig;
@@ -17,6 +19,9 @@ import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.util.ConversationIdGenerator;
 import io.agentscope.core.ReActAgent;
+import io.agentscope.core.agent.Event;
+import io.agentscope.core.agent.EventType;
+import io.agentscope.core.agent.StreamOptions;
 import io.agentscope.core.hook.Hook;
 import io.agentscope.core.memory.InMemoryMemory;
 import io.agentscope.core.message.Msg;
@@ -30,6 +35,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import reactor.core.publisher.Mono;
 
 /**
  * 封装 agentscope ReActAgent 的 LiteFlow 抽象组件。
@@ -74,6 +82,11 @@ import java.util.Map;
 public abstract class ReActAgentComponent extends NodeComponent {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReActAgentComponent.class);
+
+    public static final String FLOW_EVENT_TYPE_REASONING = "agent.reasoning";
+    public static final String FLOW_EVENT_TYPE_TOOL_RESULT = "agent.tool_result";
+    public static final String FLOW_EVENT_TYPE_SUMMARY = "agent.summary";
+    public static final String FLOW_EVENT_TYPE_RESULT = "agent.result";
 
     /** 默认从 chain requestData 中读取 conversationId 时使用的约定 key。 */
     public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
@@ -274,7 +287,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
                 Throwable processError = null;
                 try {
                     Msg userMsg = Msg.builder().textContent(userPrompt()).build();
-                    Msg reply = agent.call(List.of(userMsg)).block();
+                    Msg reply = callAgent(agent, userMsg, slot);
                     handleReply(reply);
                 } catch (Throwable t) {
                     processError = t;
@@ -301,6 +314,74 @@ public abstract class ReActAgentComponent extends NodeComponent {
         } finally {
             session.getLock().unlock();
         }
+    }
+
+    private Msg callAgent(ReActAgent agent, Msg userMsg, Slot slot) {
+        if (!FlowEventPublisher.hasListener(slot)) {
+            return agent.call(List.of(userMsg)).block();
+        }
+        return streamAgent(agent, userMsg, slot).block();
+    }
+
+    private Mono<Msg> streamAgent(ReActAgent agent, Msg userMsg, Slot slot) {
+        AtomicReference<Msg> finalMsg = new AtomicReference<>();
+        AtomicReference<Msg> fallbackFinalMsg = new AtomicReference<>();
+        StreamOptions options = StreamOptions.builder()
+                .eventTypes(EventType.REASONING, EventType.TOOL_RESULT, EventType.SUMMARY, EventType.AGENT_RESULT)
+                .incremental(true)
+                .build();
+
+        return agent.stream(List.of(userMsg), options)
+                .doOnNext(event -> {
+                    if (event.getType() == EventType.AGENT_RESULT) {
+                        finalMsg.set(event.getMessage());
+                    } else if (event.isLast()) {
+                        fallbackFinalMsg.set(event.getMessage());
+                    }
+                    publishAgentEvent(slot, event);
+                })
+                .then(Mono.defer(() -> {
+                    Msg msg = finalMsg.get();
+                    if (msg != null) {
+                        return Mono.just(msg);
+                    }
+                    Msg fallback = fallbackFinalMsg.get();
+                    return fallback == null ? Mono.empty() : Mono.just(fallback);
+                }));
+    }
+
+    private void publishAgentEvent(Slot slot, Event event) {
+        String type = toFlowEventType(event.getType());
+        if (type == null) {
+            return;
+        }
+        Msg msg = event.getMessage();
+        FlowEventPublisher.publish(slot, FlowEvent.builder()
+                .type(type)
+                .chainId(slot.getChainId())
+                .nodeId(getNodeId())
+                .requestId(slot.getRequestId())
+                .conversationId(slot.getConversationId())
+                .text(msg == null ? null : msg.getTextContent())
+                .last(event.isLast())
+                .data(event)
+                .build());
+    }
+
+    private String toFlowEventType(EventType type) {
+        if (type == EventType.REASONING) {
+            return FLOW_EVENT_TYPE_REASONING;
+        }
+        if (type == EventType.TOOL_RESULT) {
+            return FLOW_EVENT_TYPE_TOOL_RESULT;
+        }
+        if (type == EventType.SUMMARY) {
+            return FLOW_EVENT_TYPE_SUMMARY;
+        }
+        if (type == EventType.AGENT_RESULT) {
+            return FLOW_EVENT_TYPE_RESULT;
+        }
+        return null;
     }
 
     private record BuiltAgent(ReActAgent agent, SkillTrackingHook skillTrackingHook) {

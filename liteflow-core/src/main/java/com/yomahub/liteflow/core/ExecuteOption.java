@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.core;
 
+import com.yomahub.liteflow.flow.FlowEventListener;
+
 /**
  * {@link FlowExecutor} 的执行选项参数对象。
  *
@@ -33,6 +35,7 @@ public class ExecuteOption {
     private boolean autoConversationId;
     private Class<?>[] contextBeanClasses;
     private Object[] contextBeans;
+    private FlowEventListener eventListener;
 
     private ExecuteOption() {}
 
@@ -89,6 +92,17 @@ public class ExecuteOption {
         return this;
     }
 
+    /**
+     * 指定本次执行期间的事件监听器。
+     *
+     * <p>监听器会挂载到当前 {@code Slot}，组件可在 chain 执行期间通过通用事件通道
+     * 推送进度、流式文本、工具调用结果等信息。未设置时不会产生额外行为。
+     */
+    public ExecuteOption eventListener(FlowEventListener eventListener) {
+        this.eventListener = eventListener;
+        return this;
+    }
+
     public String getRequestId() {
         return requestId;
     }
@@ -107,5 +121,9 @@ public class ExecuteOption {
 
     public Object[] getContextBeans() {
         return contextBeans;
+    }
+
+    public FlowEventListener getEventListener() {
+        return eventListener;
     }
 }

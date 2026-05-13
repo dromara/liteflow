@@ -7,6 +7,7 @@
 - 引入对应模型平台模块，并完成 `liteflow.agent.*` 配置；
 - 编写一个继承 `ReActAgentComponent` 的 Agent 组件；
 - 在 EL 中组合 Agent、普通节点、条件路由和并行节点；
+- 通过 `ExecuteOption.eventListener(...)` 接收 Agent 执行中的流式事件；
 - 正确理解 conversation、agentKey、memory、workspace、内置文件工具、Shell 工具和 Skills 的边界。
 
 > 当前仓库根版本：`2.16.0`。
@@ -21,7 +22,7 @@
 
 | 模块 | 作用 |
 | --- | --- |
-| `liteflow-react-agent-core` | `ReActAgentComponent`、`ModelSpec` 基础设施、conversation / agentKey 会话管理、memory 持久化、workspace 文件工具、受管 Shell 工具 |
+| `liteflow-react-agent-core` | `ReActAgentComponent`、`ModelSpec` 基础设施、conversation / agentKey 会话管理、memory 持久化、流式事件桥接、workspace 文件工具、受管 Shell 工具 |
 | `liteflow-react-agent-openai` | OpenAI 官方 API + OpenAI 兼容协议，内置 DeepSeek、Kimi、GLM、Minimax 便捷入口 |
 | `liteflow-react-agent-anthropic` | Anthropic Claude 模型入口 |
 | `liteflow-react-agent-gemini` | Google Gemini 模型入口 |
@@ -188,6 +189,49 @@ protected void handleReply(Msg reply) {
 
 > **多 Agent 节点共存的注意事项**：默认 `responseData` 是 slot 级别的单一字段，后写覆盖先写。链路中存在多个 ReAct Agent 时，请覆写 `handleReply` 用 `setOutput(nodeId, ...)` 或自定义 ContextBean 区分各 Agent 的输出。
 
+### 2.6 流式输出
+
+LiteFlow 的 `execute2Resp(...)` 仍然保持原有语义：整条 chain 执行完成后返回 `LiteflowResponse`。如果希望在 Agent 执行过程中实时拿到模型输出、工具结果或最终结果，可以通过 `ExecuteOption.eventListener(...)` 注册事件监听器。
+
+```java
+import com.yomahub.liteflow.core.ExecuteOption;
+import com.yomahub.liteflow.flow.FlowEvent;
+import com.yomahub.liteflow.flow.LiteflowResponse;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+List<FlowEvent> events = new CopyOnWriteArrayList<>();
+
+LiteflowResponse response = flowExecutor.execute2Resp("deepseekChain", "用一句话介绍 LiteFlow",
+        ExecuteOption.of()
+                .conversationId("chat-user-1-conv-1")
+                .eventListener(event -> {
+                    if ("agent.reasoning".equals(event.getType()) && event.getText() != null) {
+                        // 可在这里转发到 SSE、WebSocket 或命令行输出。
+                        System.out.print(event.getText());
+                    }
+                    events.add(event);
+                }));
+
+if (response.isSuccess()) {
+    Object finalReply = response.getSlot().getResponseData();
+}
+```
+
+当前 ReAct Agent 会把 AgentScope 的流事件转换成 LiteFlow 通用 `FlowEvent`：
+
+| `FlowEvent#getType()` | 含义 | 典型内容 |
+| --- | --- | --- |
+| `agent.reasoning` | 模型推理 / 回复过程 | 增量文本、最终 assistant 消息、工具调用请求 |
+| `agent.tool_result` | 工具执行结果 | 工具输出或工具执行中的增量片段 |
+| `agent.summary` | 达到最大迭代次数后的总结 | summary 生成过程或最终 summary |
+| `agent.result` | 本轮 Agent 最终结果 | 与最终 `handleReply(reply)` 使用的消息一致 |
+
+`FlowEvent` 会携带 `chainId`、`nodeId`、`requestId`、`conversationId`、`text`、`last`、`timestamp` 和原始 `data`。其中 `nodeId` 对多 Agent 链路很重要：`WHEN(agentA, agentB)` 并发执行时，多个 Agent 的流式事件可能交错到达，调用方应按 `nodeId`、`conversationId` 或业务自定义字段分组展示。
+
+没有注册 `eventListener` 时，`ReActAgentComponent` 会继续走原来的阻塞调用路径，不会产生额外事件开销；注册 listener 后，组件会使用 AgentScope 的 `agent.stream(...)` 执行，并在流结束后照常调用 `handleReply(reply)`、保存 memory、返回 `LiteflowResponse`。
+
 ---
 
 ## 3. ReActAgentComponent 扩展点
@@ -241,10 +285,12 @@ protected void handleReply(Msg reply) {
 | `topK(int)` | `Integer` | top-k sampling |
 | `maxTokens(int)` | `Integer` | 最大输出 token |
 | `seed(long)` | `Long` | 随机种子 |
-| `stream(boolean)` | `Boolean` | 是否流式 |
+| `stream(boolean)` | `Boolean` | 是否让底层模型请求使用流式模式 |
 | `cacheControl(boolean)` | `Boolean` | 缓存控制；当前 OpenAI 与 DashScope 内置解析会下发该参数 |
 
 所有参数均为可选，未设置时不写入 `GenerateOptions` 或模型 Builder，agentscope 使用服务端或 SDK 默认值。
+
+注意：`ModelSpec.stream(true)` 只控制底层模型请求是否使用流式传输；调用方是否能在 LiteFlow 执行期间收到事件，取决于本次调用是否通过 `ExecuteOption.eventListener(...)` 注册了监听器。没有 listener 时，最终仍然只通过 `LiteflowResponse` 读取结果。
 
 ### 4.2 平台入口一览
 
@@ -1006,6 +1052,7 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | `Declared skills not found: [...]` | 组件 `skills()` 声明了不存在的技能名，或 `SKILL.md` 中的 `name` 与预期不一致 | 检查技能目录与 `SKILL.md` frontmatter 的 `name`；严格模式下必须全部存在 |
 | `references unknown tool class` | `SKILL.md` 的 `tools` 字段声明了 classpath 上找不到的 Java 工具类 | 确认工具类全限定名正确、依赖已打包、类有无参构造器 |
 | `usedSkills()` 为空 | 本轮 Agent 没有成功调用 `load_skill_through_path`，或读取时已离开 `process()` 生命周期 | 在 `handleReply()` 或工具回调中读取；确认模型确实加载了对应 skill |
+| 没有收到流式事件 | 本次调用没有使用 `ExecuteOption.eventListener(...)`，或链路中没有 ReAct Agent 节点 | 注册 listener；确认事件类型是否为 `agent.reasoning`、`agent.tool_result`、`agent.summary` 或 `agent.result` |
 | `WHEN` 中多个 Agent 看起来没有并行 | 多个组件解析到了相同 `(conversationId, agentKey)`，共用了同一把锁；或下游等待最慢分支 | 确保需要并行的 Agent 使用不同 `agentKey()`；如还要隔离文件，则使用不同 conversation 或子目录 |
 
 ---

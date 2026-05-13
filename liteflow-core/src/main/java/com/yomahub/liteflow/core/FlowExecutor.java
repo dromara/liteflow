@@ -20,6 +20,8 @@ import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
 import com.yomahub.liteflow.flow.FlowBus;
+import com.yomahub.liteflow.flow.FlowEventListener;
+import com.yomahub.liteflow.flow.FlowEventPublisher;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.flow.element.Node;
@@ -411,7 +413,7 @@ public class FlowExecutor {
 	public LiteflowResponse execute2Resp(String chainId, Object param, ExecuteOption option) {
 		ExecuteOption opt = option == null ? ExecuteOption.of() : option;
 		return this.execute2Resp(chainId, param, opt.getRequestId(), resolveConversationId(opt),
-				opt.getContextBeanClasses(), opt.getContextBeans());
+				opt.getContextBeanClasses(), opt.getContextBeans(), opt.getEventListener());
 	}
 
 	/**
@@ -425,10 +427,11 @@ public class FlowExecutor {
 		String requestId = opt.getRequestId();
 		Class<?>[] ctxClasses = opt.getContextBeanClasses();
 		Object[] ctxBeans = opt.getContextBeans();
+		FlowEventListener eventListener = opt.getEventListener();
 		return ExecutorHelper.loadInstance()
 				.buildMainExecutor(liteflowConfig.getMainExecutorClass())
 				.submit(() -> FlowExecutorHolder.loadInstance().execute2Resp(
-						chainId, param, requestId, resolvedCid, ctxClasses, ctxBeans));
+						chainId, param, requestId, resolvedCid, ctxClasses, ctxBeans, eventListener));
 	}
 
 	/**
@@ -497,12 +500,17 @@ public class FlowExecutor {
 
 	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray,
 			Object[] contextBeanArray) {
-		return execute2Resp(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray);
+		return execute2Resp(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray, null);
 	}
 
 	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, String conversationId,
 			Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
-		Slot slot = doExecute(chainId, param, requestId, conversationId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY);
+		return execute2Resp(chainId, param, requestId, conversationId, contextBeanClazzArray, contextBeanArray, null);
+	}
+
+	private LiteflowResponse execute2Resp(String chainId, Object param, String requestId, String conversationId,
+			Class<?>[] contextBeanClazzArray, Object[] contextBeanArray, FlowEventListener eventListener) {
+		Slot slot = doExecute(chainId, param, requestId, conversationId, contextBeanClazzArray, contextBeanArray, ChainExecuteModeEnum.BODY, eventListener);
 		return LiteflowResponse.newMainResponse(slot);
 	}
 
@@ -513,12 +521,18 @@ public class FlowExecutor {
 
 	private Slot doExecute(String chainId, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
 						   ChainExecuteModeEnum chainExecuteModeEnum) {
-		return doExecute(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray, chainExecuteModeEnum);
+		return doExecute(chainId, param, requestId, null, contextBeanClazzArray, contextBeanArray, chainExecuteModeEnum, null);
 	}
 
 	private Slot doExecute(String chainId, Object param, String requestId, String conversationId,
 						   Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
 						   ChainExecuteModeEnum chainExecuteModeEnum) {
+		return doExecute(chainId, param, requestId, conversationId, contextBeanClazzArray, contextBeanArray, chainExecuteModeEnum, null);
+	}
+
+	private Slot doExecute(String chainId, Object param, String requestId, String conversationId,
+						   Class<?>[] contextBeanClazzArray, Object[] contextBeanArray,
+						   ChainExecuteModeEnum chainExecuteModeEnum, FlowEventListener eventListener) {
 		if (FlowBus.needInit()) {
 			init(true);
 		}
@@ -540,6 +554,8 @@ public class FlowExecutor {
 		if (ObjectUtil.isNull(slot)) {
 			throw new NoAvailableSlotException(StrUtil.format("the slot[{}] is not exist", slotIndex));
 		}
+
+		FlowEventPublisher.setListener(slot, eventListener);
 
 		// 如果有FlowExecute生命周期实现，则执行
 		if (CollUtil.isNotEmpty(LifeCycleHolder.getPostProcessFlowExecuteLifeCycleList())){
@@ -623,6 +639,7 @@ public class FlowExecutor {
 		}
 		finally {
 			slot.printStep();
+			FlowEventPublisher.removeListener(slot);
 			DataBus.releaseSlot(slotIndex);
 			LFLoggerManager.removeRequestId();
 
