@@ -83,3 +83,6 @@ atlassian-ide-plugin.xml
 .flattened-pom.xml
 
 .node_instance_id
+
+# Local test credentials (never commit)
+liteflow-testcase-el-react-agent/src/test/resources/env.txt

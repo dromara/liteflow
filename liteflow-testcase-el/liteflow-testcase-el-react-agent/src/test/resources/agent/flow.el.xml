@@ -2,28 +2,90 @@
 <!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
 <flow>
 
-    <chain name="geminiChain">
-        THEN(prepare, geminiAgent, recordReply);
+    <!-- ============== 基础链路：单 Agent + prepare/record ============== -->
+    <chain name="basicAgentChain">
+        THEN(preparePrompt, basicAgent, recordReply);
     </chain>
 
-    <chain name="openAIChain">
-        THEN(prepare, openAIAgent, recordReply);
+    <!-- ============== 自定义 handleReply 的 Agent ============== -->
+    <chain name="customHandleReplyChain">
+        THEN(preparePrompt, customHandleReplyAgent, recordReply);
     </chain>
 
-    <chain name="anthropicChain">
-        THEN(prepare, anthropicAgent, recordReply);
+    <!-- ============== 多 Agent 在同一条 THEN 链 ============== -->
+    <chain name="multiAgentChain">
+        THEN(preparePrompt, multiAgentA, multiAgentB, recordReply);
     </chain>
 
-    <chain name="dashScopeChain">
-        THEN(prepare, dashScopeAgent, recordReply);
+    <!-- ============== WHEN 并发执行多 Agent ============== -->
+    <chain name="whenParallelChain">
+        THEN(
+            preparePrompt,
+            WHEN(parallelAgentA, parallelAgentB).maxWaitSeconds(120),
+            recordReply
+        );
     </chain>
 
-    <chain name="stubAgentChain">
-        THEN(prepare, stubAgent, recordReply);
+    <!-- ============== IF 路由分支 ============== -->
+    <chain name="ifRoutingChain">
+        THEN(
+            preparePrompt,
+            IF(isMathRequest, mathBranchAgent, defaultBranchAgent),
+            recordReply
+        );
     </chain>
 
-    <chain name="collabAgentChain">
-        THEN(prepare, collabAgentA, collabAgentB, recordReply);
+    <!-- ============== 自定义工具的 Agent ============== -->
+    <chain name="customToolChain">
+        THEN(preparePrompt, customToolAgent, recordReply);
+    </chain>
+
+    <!-- ============== 流式事件 ============== -->
+    <chain name="streamingChain">
+        THEN(preparePrompt, streamingAgent, recordReply);
+    </chain>
+
+    <!-- ============== Hook 注册 ============== -->
+    <chain name="hookChain">
+        THEN(preparePrompt, hookAgent, recordReply);
+    </chain>
+
+    <!-- ============== maxIterations 覆写 ============== -->
+    <chain name="maxIterationsChain">
+        THEN(preparePrompt, maxIterationsAgent, recordReply);
+    </chain>
+
+    <!-- ============== Workspace 文件工具 ============== -->
+    <chain name="workspaceToolsChain">
+        THEN(preparePrompt, workspaceToolsAgent, recordReply);
+    </chain>
+
+    <!-- ============== Shell 工具 ============== -->
+    <chain name="shellToolsChain">
+        THEN(preparePrompt, shellToolsAgent, recordReply);
+    </chain>
+
+    <!-- ============== Skills 加载 ============== -->
+    <chain name="skillsChain">
+        THEN(preparePrompt, skillsAgent, recordReply);
+    </chain>
+
+    <!-- ============== 会话连续性 / agentKey 自定义 ============== -->
+    <chain name="memoryChain">
+        THEN(preparePrompt, memoryAgent, recordReply);
+    </chain>
+
+    <chain name="customAgentKeyChain">
+        THEN(preparePrompt, customAgentKeyAgent, recordReply);
+    </chain>
+
+    <chain name="resolveCidChain">
+        THEN(preparePrompt, resolveCidAgent, recordReply);
+    </chain>
+
+    <!-- ============== buildModel 逃生舱 ============== -->
+    <chain name="buildModelEscapeChain">
+        THEN(preparePrompt, buildModelEscapeAgent, recordReply);
     </chain>
 
 </flow>

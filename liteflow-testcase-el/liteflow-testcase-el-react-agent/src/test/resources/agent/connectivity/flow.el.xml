@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <!-- 每个平台一个 chain，链路统一为 THEN(prepare, <platform>Agent, record)。 -->
+
+    <chain name="openaiChain">
+        THEN(preparePrompt, openaiAgent, recordReply);
+    </chain>
+
+    <chain name="anthropicChain">
+        THEN(preparePrompt, anthropicAgent, recordReply);
+    </chain>
+
+    <chain name="geminiChain">
+        THEN(preparePrompt, geminiAgent, recordReply);
+    </chain>
+
+    <chain name="dashscopeChain">
+        THEN(preparePrompt, dashscopeAgent, recordReply);
+    </chain>
+
+    <chain name="deepseekChain">
+        THEN(preparePrompt, deepseekAgent, recordReply);
+    </chain>
+
+    <chain name="kimiChain">
+        THEN(preparePrompt, kimiAgent, recordReply);
+    </chain>
+
+    <chain name="glmChain">
+        THEN(preparePrompt, glmAgent, recordReply);
+    </chain>
+
+    <chain name="minimaxChain">
+        THEN(preparePrompt, minimaxAgent, recordReply);
+    </chain>
+
+    <chain name="openaiCompatibleCustomChain">
+        THEN(preparePrompt, openaiCompatibleCustomAgent, recordReply);
+    </chain>
+
+    <chain name="anthropicCompatibleChain">
+        THEN(preparePrompt, anthropicCompatibleAgent, recordReply);
+    </chain>
+</flow>
