@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+
+    <!-- compatible-custom 功能包：EL 统一使用 THEN 覆盖 LiteFlow 整体编排。 -->
+    <chain name="compatibleCustomFeatureChain">
+        THEN(compatibleCustomPrepare, compatibleCustomAgent, compatibleCustomRecord);
+    </chain>
+
+</flow>
