@@ -481,6 +481,39 @@
       "type": "java.util.Map",
       "description": "Extra parameters for DashScope.",
       "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
+    },
+    {
+      "name": "liteflow.agent.skills.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable configuration-driven agent skills.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.agent.skills.path",
+      "type": "java.lang.String",
+      "description": "Skills directory path used to discover SKILL.md repositories.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
+      "defaultValue": "./skills"
+    },
+    {
+      "name": "liteflow.agent.skills.strict",
+      "type": "java.lang.Boolean",
+      "description": "Fail fast when an illegal skill configuration is detected.",
+      "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.openai-compatible",
+      "type": "java.util.Map<java.lang.String,com.yomahub.liteflow.property.agent.PlatformCredential>",
+      "description": "Credentials for OpenAI-compatible platforms, keyed by user-defined platform name.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentConfig"
+    },
+    {
+      "name": "liteflow.agent.anthropic-compatible",
+      "type": "java.util.Map<java.lang.String,com.yomahub.liteflow.property.agent.PlatformCredential>",
+      "description": "Credentials for Anthropic-compatible platforms, keyed by user-defined platform name.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentConfig"
     }
   ]
 }
