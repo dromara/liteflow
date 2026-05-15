@@ -409,7 +409,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
         SkillTrackingHook skillTrackingHook = null;
         SkillBox skillBox = null;
         if (enableSkills()) {
-            SkillLoadResult skillLoadResult = SkillBoxFactory.build(toolkit, cfg, skills());
+            SkillLoadResult skillLoadResult = SkillBoxFactory.build(toolkit, cfg, skills(), ctx.getWorkspaceDir());
             skillBox = skillLoadResult.skillBox();
             skillTrackingHook = new SkillTrackingHook(skillLoadResult.skillIdToName());
             allHooks.add(skillTrackingHook);

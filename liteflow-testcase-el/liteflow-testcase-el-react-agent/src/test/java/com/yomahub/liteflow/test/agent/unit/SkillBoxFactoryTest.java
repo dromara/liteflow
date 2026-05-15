@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,11 @@ public class SkillBoxFactoryTest {
     public void setUp() {
         cfg = new AgentConfig();
         cfg.getSkills().setEnabled(true);
-        cfg.getSkills().setPath("src/test/resources/agent/skills");
+        Path moduleRelative = Path.of("src/test/resources/agent/skills");
+        Path rootRelative = Path.of("liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/agent/skills");
+        cfg.getSkills().setPath(Files.isRegularFile(moduleRelative.resolve("demo/SKILL.md"))
+                ? moduleRelative.toString()
+                : rootRelative.toString());
         cfg.getSkills().setStrict(true);
         SkillEchoTool.reset();
     }
@@ -70,6 +75,16 @@ public class SkillBoxFactoryTest {
 
         Assertions.assertEquals(List.of("tool-skill"), result.skillNames());
         Assertions.assertEquals(1, SkillEchoTool.CONSTRUCT_COUNT.get());
+    }
+
+    @Test
+    public void testSkillBoxUsesConversationWorkspaceForCodeExecution() throws Exception {
+        Path workspace = Files.createTempDirectory("liteflow-skill-workspace-test-");
+
+        SkillLoadResult result = SkillBoxFactory.build(new Toolkit(), cfg, List.of("demo"), workspace);
+
+        Assertions.assertEquals(workspace.toAbsolutePath().normalize(), result.skillBox().getCodeExecutionWorkDir());
+        Assertions.assertEquals(workspace.toAbsolutePath().normalize().resolve("skills"), result.skillBox().getUploadDir());
     }
 
     @Test

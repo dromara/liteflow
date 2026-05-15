@@ -30,10 +30,18 @@ public final class SkillBoxFactory {
     }
 
     public static SkillLoadResult build(Toolkit toolkit, AgentConfig agentConfig, List<String> allowedSkills) {
+        return build(toolkit, agentConfig, allowedSkills, null);
+    }
+
+    public static SkillLoadResult build(
+            Toolkit toolkit,
+            AgentConfig agentConfig,
+            List<String> allowedSkills,
+            Path workspaceDir) {
         SkillsConfig skillsConfig = agentConfig.getSkills();
         Path root = Path.of(skillsConfig.getPath()).normalize();
         if (!Files.isDirectory(root)) {
-            return handleMissingRoot(root, skillsConfig, toolkit);
+            return handleMissingRoot(root, skillsConfig, toolkit, workspaceDir);
         }
 
         try {
@@ -41,7 +49,7 @@ public final class SkillBoxFactory {
             List<AgentSkill> allSkills = repository.getAllSkills();
             List<AgentSkill> selected = selectSkills(allSkills, allowedSkills, skillsConfig);
             SkillToolManifest manifest = new SkillToolManifest(root, skillsConfig);
-            SkillBox skillBox = new SkillBox(toolkit);
+            SkillBox skillBox = createSkillBox(toolkit, workspaceDir);
             Map<String, String> skillIdToName = new LinkedHashMap<>();
             List<String> skillNames = new ArrayList<>();
 
@@ -68,17 +76,31 @@ public final class SkillBoxFactory {
                 throw new AgentConfigException("Failed to load skills from: " + root, e);
             }
             LOG.warn("Failed to load skills from {}: {}", root, e.getMessage());
-            return new SkillLoadResult(new SkillBox(toolkit), Map.of(), List.of());
+            return new SkillLoadResult(createSkillBox(toolkit, workspaceDir), Map.of(), List.of());
         }
     }
 
-    private static SkillLoadResult handleMissingRoot(Path root, SkillsConfig skillsConfig, Toolkit toolkit) {
+    private static SkillLoadResult handleMissingRoot(
+            Path root,
+            SkillsConfig skillsConfig,
+            Toolkit toolkit,
+            Path workspaceDir) {
         String message = "Skills root not found: " + root;
         if (skillsConfig.isStrict()) {
             throw new AgentConfigException(message);
         }
         LOG.warn(message);
-        return new SkillLoadResult(new SkillBox(toolkit), Map.of(), List.of());
+        return new SkillLoadResult(createSkillBox(toolkit, workspaceDir), Map.of(), List.of());
+    }
+
+    private static SkillBox createSkillBox(Toolkit toolkit, Path workspaceDir) {
+        SkillBox skillBox = new SkillBox(toolkit);
+        if (workspaceDir != null) {
+            skillBox.codeExecution()
+                    .workDir(workspaceDir.toAbsolutePath().normalize().toString())
+                    .enable();
+        }
+        return skillBox;
     }
 
     private static List<AgentSkill> selectSkills(
