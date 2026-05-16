@@ -75,8 +75,9 @@ public class ReActLoggingHook implements Hook {
                         sessionId, t.getName(), truncate(String.valueOf(t.getInput()), MAX_TEXT_LEN));
             } else if (event instanceof PostActingEvent e) {
                 ToolResultBlock r = e.getToolResult();
-                LOG.info("[agent:act][{}] <<< tool={} result={}",
-                        sessionId, r.getName(), truncate(blocksToString(r), MAX_RESULT_LEN));
+                String result = blocksToString(r);
+                LOG.info("[agent:act][{}] <<< {} 结果:", sessionId, r.getName());
+                LOG.info("[agent:act][...]        {}", truncate(result, MAX_RESULT_LEN));
             } else if (event instanceof ErrorEvent e) {
                 LOG.warn("[agent:error][{}] {}", sessionId, e.getError().toString(), e.getError());
             }
