@@ -52,7 +52,7 @@ public class ReActLoggingHook implements Hook {
                         sessionId, e.getModelName(), msgs == null ? 0 : msgs.size());
             } else if (event instanceof PostReasoningEvent e) {
                 Msg reply = e.getReasoningMessage();
-                String text = reply == null ? "" : truncate(reply.getTextContent());
+                String text = reply == null ? "" : truncate(reply.getTextContent(), MAX_TEXT_LEN);
                 List<ToolUseBlock> tools = reply == null
                         ? List.of()
                         : reply.getContentBlocks(ToolUseBlock.class);
@@ -65,11 +65,11 @@ public class ReActLoggingHook implements Hook {
             } else if (event instanceof PreActingEvent e) {
                 ToolUseBlock t = e.getToolUse();
                 LOG.info("[agent:act][{}] >>> tool={} input={}",
-                        sessionId, t.getName(), truncate(String.valueOf(t.getInput())));
+                        sessionId, t.getName(), truncate(String.valueOf(t.getInput()), MAX_TEXT_LEN));
             } else if (event instanceof PostActingEvent e) {
                 ToolResultBlock r = e.getToolResult();
                 LOG.info("[agent:act][{}] <<< tool={} result={}",
-                        sessionId, r.getName(), truncate(blocksToString(r)));
+                        sessionId, r.getName(), truncate(blocksToString(r), MAX_RESULT_LEN));
             } else if (event instanceof ErrorEvent e) {
                 LOG.warn("[agent:error][{}] {}", sessionId, e.getError().toString(), e.getError());
             }
@@ -91,7 +91,7 @@ public class ReActLoggingHook implements Hook {
             if (i > 0) sb.append(", ");
             sb.append(t.getName()).append("(").append(t.getInput()).append(")");
         }
-        return truncate(sb.append("]").toString());
+        return truncate(sb.append("]").toString(), MAX_TEXT_LEN);
     }
 
     private static String blocksToString(ToolResultBlock r) {
