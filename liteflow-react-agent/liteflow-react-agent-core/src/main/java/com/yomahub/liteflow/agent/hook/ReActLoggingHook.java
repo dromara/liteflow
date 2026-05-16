@@ -52,15 +52,22 @@ public class ReActLoggingHook implements Hook {
                         sessionId, e.getModelName(), msgs == null ? 0 : msgs.size());
             } else if (event instanceof PostReasoningEvent e) {
                 Msg reply = e.getReasoningMessage();
-                String text = reply == null ? "" : truncate(reply.getTextContent(), MAX_TEXT_LEN);
+                String thinking = extractThinking(reply);
+                String text = truncate(reply.getTextContent(), MAX_TEXT_LEN);
                 List<ToolUseBlock> tools = reply == null
                         ? List.of()
                         : reply.getContentBlocks(ToolUseBlock.class);
-                if (tools.isEmpty()) {
-                    LOG.info("[agent:reason][{}] <<< text={}", sessionId, text);
-                } else {
-                    LOG.info("[agent:reason][{}] <<< text={} toolCalls={}",
-                            sessionId, text, summarizeToolUses(tools));
+
+                if (!thinking.isEmpty()) {
+                    LOG.info("[agent:reason][{}] <<< thinking={}", sessionId, thinking);
+                }
+                if (!text.isEmpty() || !tools.isEmpty()) {
+                    if (tools.isEmpty()) {
+                        LOG.info("[agent:reason][{}] <<< text={}", sessionId, text);
+                    } else {
+                        LOG.info("[agent:reason][{}] <<< text={} toolCalls={}",
+                                sessionId, text, summarizeToolUses(tools));
+                    }
                 }
             } else if (event instanceof PreActingEvent e) {
                 ToolUseBlock t = e.getToolUse();
