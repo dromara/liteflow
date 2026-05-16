@@ -34,6 +34,8 @@ public class ReActLoggingHook implements Hook {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReActLoggingHook.class);
     private static final int MAX_TEXT_LEN = 500;
+    private static final int MAX_THINKING_LEN = 1000;
+    private static final int MAX_RESULT_LEN = 2000;
 
     private final String sessionId;
 
