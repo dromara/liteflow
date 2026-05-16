@@ -94,6 +94,13 @@ public class ReActLoggingHook implements Hook {
         return truncate(sb.append("]").toString(), MAX_TEXT_LEN);
     }
 
+    private static String extractThinking(Msg msg) {
+        if (msg == null) return "";
+        List<ThinkingBlock> blocks = msg.getContentBlocks(ThinkingBlock.class);
+        if (blocks.isEmpty()) return "";
+        return truncate(blocks.get(0).getThinking(), MAX_THINKING_LEN);
+    }
+
     private static String blocksToString(ToolResultBlock r) {
         if (r.getOutput() == null) return "";
         StringBuilder sb = new StringBuilder();
