@@ -11,7 +11,7 @@ public class DefaultsConfig {
      * <p>仅在 {@code ReActAgentComponent#maxIterations()} 未显式覆盖（返回值 ≤ 0）时生效，
      * 用于防止 LLM 陷入死循环造成无限调用。
      */
-    private int maxIterations = 15;
+    private int maxIterations = 50;
 
     public int getMaxIterations() {
         return maxIterations;

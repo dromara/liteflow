@@ -90,7 +90,7 @@
 		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 		<apache-commons-test.version>1.14.0</apache-commons-test.version>
 		<caffeine.version>2.9.3</caffeine.version>
-		<agentscope.version>1.0.11</agentscope.version>
+		<agentscope.version>1.0.12</agentscope.version>
 		<google-genai.version>1.38.0</google-genai.version>
 		<anthropic-java.version>1.2.0</anthropic-java.version>
 	</properties>

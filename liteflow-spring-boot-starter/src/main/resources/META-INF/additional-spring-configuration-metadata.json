@@ -401,7 +401,7 @@
       "type": "java.lang.Integer",
       "description": "Default max iterations for agent.",
       "sourceType": "com.yomahub.liteflow.property.agent.DefaultsConfig",
-      "defaultValue": 15
+      "defaultValue": 50
     },
     {
       "name": "liteflow.agent.logging.react-enabled",

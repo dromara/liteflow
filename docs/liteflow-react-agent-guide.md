@@ -69,6 +69,8 @@ liteflow.agent.openai-compatible.deepseek.base-url=https://api.deepseek.com/v1
 AgentConfigException: liteflow.agent.workspace.root is required
 ```
 
+**路径形式**：`workspace.root` 同时支持绝对路径与相对路径。框架内部通过 `Paths.get(root).toAbsolutePath().normalize()` 解析，相对路径会基于 JVM 启动时的 `user.dir`（当前工作目录）拼成绝对路径。由于 `user.dir` 在 IDE 启动、`java -jar`、systemd、容器等不同场景下差异巨大，**生产环境一律建议使用绝对路径**（如示例中的 `/var/lib/liteflow/agent-workspaces`），避免同一份配置在不同部署方式下落盘到不同位置，进而影响 session 持久化、conversation workspace 复用等行为。
+
 ### 2.3 编写 Agent 组件
 
 Agent 组件继承 `ReActAgentComponent`，至少实现三个无参方法：
@@ -750,6 +752,8 @@ liteflow.agent.skills.strict=true
 | `path` | `./skills` | skills 根目录，目录下每个子目录表示一个 skill |
 | `strict` | `true` | 严格模式。目录缺失、声明的 skill 不存在、`tools` 类加载失败等问题会快速失败；设为 `false` 时记录 warn 并尽量继续 |
 
+**路径形式**：`skills.path` 同时支持绝对路径与相对路径，与 [`workspace.root`](#22-配置-liteflow-与-agent) 同样基于 JVM `user.dir` 解析相对路径。默认值 `./skills` 只是开发与本地 demo 的便利值，**生产环境建议改成绝对路径**（如 `/opt/liteflow/skills`），既能避免不同启动方式定位到不同目录，又便于配合只读挂载、版本化发布等运维约束。若开启 skills 但目录不存在：`strict=true` 抛出 `Skills root not found`；`strict=false` 仅记录 warn 后跳过 skills 加载。
+
 配置只是把可选技能放入 Agent 的 `SkillBox`。某个技能是否在本轮真正被使用，取决于 AgentScope ReAct 运行过程中是否调用 `load_skill_through_path` 加载该技能。
 
 ### 7.2 目录结构与 SKILL.md
@@ -1010,7 +1014,7 @@ liteflow.agent.shell.max-output-bytes=1048576
 liteflow.agent.logging.react-enabled=true
 
 # ReAct 默认最大迭代次数
-liteflow.agent.defaults.max-iterations=15
+liteflow.agent.defaults.max-iterations=50
 
 # Skills
 liteflow.agent.skills.enabled=false
