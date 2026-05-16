@@ -101,9 +101,9 @@ public class ReActLoggingHook implements Hook {
         return sb.toString();
     }
 
-    private static String truncate(String s) {
+    private static String truncate(String s, int maxLen) {
         if (s == null) return "";
         s = s.replaceAll("\\s+", " ").trim();
-        return s.length() <= MAX_TEXT_LEN ? s : s.substring(0, MAX_TEXT_LEN) + "...(truncated)";
+        return s.length() <= maxLen ? s : s.substring(0, maxLen) + "...(truncated)";
     }
 }
