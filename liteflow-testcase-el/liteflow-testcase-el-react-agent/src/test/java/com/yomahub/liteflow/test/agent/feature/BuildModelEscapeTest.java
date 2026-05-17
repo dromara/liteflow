@@ -4,7 +4,6 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.cmp.RecordReplyCmp;
 import com.yomahub.liteflow.test.agent.feature.cmp.BuildModelEscapeAgentCmp;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,6 @@ public class BuildModelEscapeTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         BuildModelEscapeAgentCmp.reset();
-        LiveTestSupport.ensureCompatibleCustomCredentialOrSkip(liteflowConfig, "BuildModelEscapeTest");
     }
 
     @Test

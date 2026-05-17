@@ -31,7 +31,6 @@ public class SessionReuseTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         MemoryAgentCmp.reset();
-        LiveTestSupport.ensureCompatibleCustomCredentialOrSkip(liteflowConfig, "SessionReuseTest");
     }
 
     @Test

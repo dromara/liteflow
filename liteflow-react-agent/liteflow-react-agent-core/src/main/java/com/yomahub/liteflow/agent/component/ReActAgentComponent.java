@@ -91,6 +91,16 @@ public abstract class ReActAgentComponent extends NodeComponent {
     /** 默认从 chain requestData 中读取 conversationId 时使用的约定 key。 */
     public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
 
+    /**
+     * 框架统一系统提示词。子类 {@link #systemPrompt()} 返回的内容会追加在该提示词之后。
+     */
+    public static final String DEFAULT_SYSTEM_PROMPT = """
+            你是 LiteFlow ReAct Agent 助手。
+            请使用用户提问所用的语言回答，除非用户明确要求使用其他语言。
+            每次调用工具前，先用一两句话简短说明当前判断和下一步动作，便于日志观察可见推理摘要。
+            不要展开隐藏思维链，只输出面向用户和调试日志都可读的简短说明。
+            """;
+
     /** 在 Slot attachment 上存储 ctx 时使用的 key 前缀，按 nodeId 隔离。 */
     private static final String CTX_KEY_PREFIX = "_react_agent_ctx_";
 
@@ -155,9 +165,20 @@ public abstract class ReActAgentComponent extends NodeComponent {
     }
 
     /**
-     * 返回 agent 的系统提示词。构建 agent 时只调用一次。
+     * 返回组件自定义系统提示词。构建 agent 时只调用一次，并追加在框架统一系统提示词之后。
      */
     protected abstract String systemPrompt();
+
+    /**
+     * 返回传递给底层 ReActAgent 的最终系统提示词。
+     */
+    protected final String effectiveSystemPrompt() {
+        String customPrompt = systemPrompt();
+        if (customPrompt == null || customPrompt.isBlank()) {
+            return DEFAULT_SYSTEM_PROMPT.strip();
+        }
+        return DEFAULT_SYSTEM_PROMPT.strip() + "\n\n" + customPrompt.strip();
+    }
 
     /**
      * 返回本次执行的用户提示词。每次 {@link #process()} 都会调用。
@@ -248,7 +269,10 @@ public abstract class ReActAgentComponent extends NodeComponent {
     }
 
     protected void handleReply(Msg reply) {
-        ctx().getSlot().setResponseData(reply == null ? null : reply.getTextContent());
+        if (reply == null || reply.getTextContent() == null) {
+            return;
+        }
+        ctx().getSlot().setResponseData(reply.getTextContent());
     }
 
     /* ===== 框架 final 执行体 ===== */
@@ -417,7 +441,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
 
         ReActAgent.Builder builder = ReActAgent.builder()
                 .name(getNodeId() == null ? "liteflow-agent" : getNodeId())
-                .sysPrompt(systemPrompt())
+                .sysPrompt(effectiveSystemPrompt())
                 .model(buildModel())
                 .toolkit(toolkit)
                 .memory(new InMemoryMemory())

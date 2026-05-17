@@ -71,6 +71,17 @@ public class ManagedShellCommandToolUnitTest {
     }
 
     @Test
+    public void testUnsupportedShellSyntaxIsRejectedBeforeExecution() {
+        AgentConfig cfg = newConfig(ShellMode.WHITELIST);
+        cfg.getShell().setWhitelist(List.of("python3", "echo"));
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(workspace, cfg);
+
+        Assertions.assertTrue(tool.executeCommand("python3 - <<'PY'").contains("unsupported shell syntax"));
+        Assertions.assertTrue(tool.executeCommand("echo hi | wc -c").contains("unsupported shell syntax"));
+        Assertions.assertTrue(tool.executeCommand("echo hi && echo bye").contains("unsupported shell syntax"));
+    }
+
+    @Test
     public void testTimeoutKillsLongRunningCommand() {
         AgentConfig cfg = newConfig(ShellMode.WHITELIST);
         cfg.getShell().setWhitelist(List.of("yes"));
@@ -79,6 +90,18 @@ public class ManagedShellCommandToolUnitTest {
         ManagedShellCommandTool tool = new ManagedShellCommandTool(workspace, cfg);
         String out = tool.executeCommand("yes");
         Assertions.assertTrue(out.contains("timeout"), "should timeout, got: " + out);
+    }
+
+    @Test
+    public void testCommandWaitingForStdinReturnsWithinShellTimeout() {
+        AgentConfig cfg = newConfig(ShellMode.WHITELIST);
+        cfg.getShell().setWhitelist(List.of("cat"));
+        cfg.getShell().setTimeout(Duration.ofMillis(200));
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(workspace, cfg);
+
+        String out = Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2),
+                () -> tool.executeCommand("cat"));
+        Assertions.assertTrue(out.isBlank() || out.contains("timeout"), "should not hang, got: " + out);
     }
 
     @Test

@@ -13,7 +13,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ManagedShellCommandTool {
 
@@ -36,6 +41,9 @@ public class ManagedShellCommandTool {
         if (command == null || command.isBlank()) {
             return "{\"error\":\"empty command\"}";
         }
+        if (containsUnsupportedShellSyntax(command)) {
+            return "{\"error\":\"unsupported shell syntax: pipes, redirection, and command chaining are not supported\"}";
+        }
         String[] tokens = command.trim().split("\\s+");
         String first = tokens[0];
         if (shell.getMode() == ShellMode.WHITELIST && !shell.getWhitelist().contains(first)) {
@@ -49,16 +57,54 @@ public class ManagedShellCommandTool {
             pb.directory(workspace.toFile());
             pb.redirectErrorStream(true);
             Process p = pb.start();
-            String out = readLimited(p.getInputStream(), shell.getMaxOutputBytes());
-            boolean done = p.waitFor(shell.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
-            if (!done) {
-                p.destroyForcibly();
-                return "{\"error\":\"timeout after " + shell.getTimeout().toMillis() + "ms\"}";
+            closeQuietly(p.getOutputStream());
+            ExecutorService outputReader = Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "liteflow-agent-shell-output-reader");
+                t.setDaemon(true);
+                return t;
+            });
+            Future<String> outputFuture = outputReader.submit(() -> readLimited(p.getInputStream(), shell.getMaxOutputBytes()));
+            try {
+                boolean done = p.waitFor(shell.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+                if (!done) {
+                    p.destroyForcibly();
+                    closeQuietly(p.getInputStream());
+                    outputFuture.cancel(true);
+                    return "{\"error\":\"timeout after " + shell.getTimeout().toMillis() + "ms\"}";
+                }
+                return outputFuture.get(1, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                return "{\"error\":\"" + (cause == null ? e.getMessage() : cause.getMessage()).replace("\"", "'") + "\"}";
+            } catch (TimeoutException e) {
+                outputFuture.cancel(true);
+                return "{\"error\":\"output read timeout\"}";
+            } finally {
+                outputReader.shutdownNow();
             }
-            return out;
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             return "{\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+        }
+    }
+
+    private static boolean containsUnsupportedShellSyntax(String command) {
+        return command.contains("|")
+                || command.contains("<")
+                || command.contains(">")
+                || command.contains("&&")
+                || command.contains("||")
+                || command.contains(";");
+    }
+
+    private static void closeQuietly(java.io.Closeable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (IOException ignored) {
+            // ignore close failures while cleaning up process streams
         }
     }
 

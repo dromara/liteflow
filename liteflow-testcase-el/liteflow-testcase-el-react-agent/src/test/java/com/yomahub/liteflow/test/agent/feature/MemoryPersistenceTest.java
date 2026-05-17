@@ -4,7 +4,6 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.agent.MemoryStorageMode;
 import com.yomahub.liteflow.test.agent.feature.cmp.MemoryAgentCmp;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,6 @@ public class MemoryPersistenceTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         MemoryAgentCmp.reset();
-        LiveTestSupport.ensureCompatibleCustomCredentialOrSkip(liteflowConfig, "MemoryPersistenceTest");
     }
 
     @Test
