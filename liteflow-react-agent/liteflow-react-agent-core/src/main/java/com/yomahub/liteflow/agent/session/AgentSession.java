@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.session;
 
+import com.yomahub.liteflow.agent.hook.ChatUsageTrackingHook;
 import com.yomahub.liteflow.agent.skill.SkillTrackingHook;
 
 import java.nio.file.Path;
@@ -30,6 +31,7 @@ public class AgentSession {
     private final ReentrantLock lock = new ReentrantLock();
     private volatile Object agent;
     private volatile SkillTrackingHook skillTrackingHook;
+    private volatile ChatUsageTrackingHook chatUsageTrackingHook;
     private volatile Instant lastActive = Instant.now();
 
     public AgentSession(String conversationId, String agentKey, String cacheKey, Path workspaceDir) {
@@ -76,6 +78,14 @@ public class AgentSession {
 
     public void setSkillTrackingHook(SkillTrackingHook skillTrackingHook) {
         this.skillTrackingHook = skillTrackingHook;
+    }
+
+    public ChatUsageTrackingHook getChatUsageTrackingHook() {
+        return chatUsageTrackingHook;
+    }
+
+    public void setChatUsageTrackingHook(ChatUsageTrackingHook chatUsageTrackingHook) {
+        this.chatUsageTrackingHook = chatUsageTrackingHook;
     }
 
     public Instant getLastActive() {

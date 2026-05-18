@@ -11,6 +11,7 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.message.ToolUseBlock;
 import io.agentscope.core.message.ThinkingBlock;
+import io.agentscope.core.model.ChatUsage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -68,6 +69,15 @@ public class ReActLoggingHook implements Hook {
                         LOG.info("[agent:reason][{}] <<< text={} toolCalls={}",
                                 sessionId, text, summarizeToolUses(tools));
                     }
+                }
+                ChatUsage usage = reply == null ? null : reply.getChatUsage();
+                if (usage != null) {
+                    LOG.info("[agent:reason][{}] <<< usage input={} output={} total={} time={}s",
+                            sessionId,
+                            usage.getInputTokens(),
+                            usage.getOutputTokens(),
+                            usage.getTotalTokens(),
+                            usage.getTime());
                 }
             } else if (event instanceof PreActingEvent e) {
                 ToolUseBlock t = e.getToolUse();

@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.hook.ChatUsageTrackingHook;
 import com.yomahub.liteflow.slot.Slot;
+import io.agentscope.core.model.ChatUsage;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -28,6 +30,7 @@ public class ReActAgentContext {
     private final String conversationId;
     private final String agentKey;
     private final Path workspaceDir;
+    private volatile ChatUsageTrackingHook chatUsageTrackingHook;
 
     public ReActAgentContext(Slot slot, String conversationId, String agentKey, Path workspaceDir) {
         this.slot = Objects.requireNonNull(slot, "slot");
@@ -43,4 +46,25 @@ public class ReActAgentContext {
     public String getAgentKey() { return agentKey; }
 
     public Path getWorkspaceDir() { return workspaceDir; }
+
+    /**
+     * 由框架注入：本次 {@code process()} 调用使用的 token 累加 hook。
+     */
+    public void setChatUsageTrackingHook(ChatUsageTrackingHook hook) {
+        this.chatUsageTrackingHook = hook;
+    }
+
+    /**
+     * 返回本次 {@code process()} 截至当前已累计的 token 用量。
+     *
+     * <p>{@link ChatUsage#getInputTokens()} / {@link ChatUsage#getOutputTokens()} /
+     * {@link ChatUsage#getTotalTokens()} 给出累计 token，{@link ChatUsage#getTime()}
+     * 给出累计推理耗时（秒）。在 {@code handleReply()} 中调用拿到的就是整次调用的累计值。
+     *
+     * @return 累计 ChatUsage；若未观察到任何 usage（模型未上报或 reply 为 null）则返回 {@code null}
+     */
+    public ChatUsage getChatUsage() {
+        ChatUsageTrackingHook hook = this.chatUsageTrackingHook;
+        return hook == null ? null : hook.snapshot();
+    }
 }

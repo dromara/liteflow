@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.hook.ChatUsageTrackingHook;
 import com.yomahub.liteflow.agent.hook.ReActLoggingHook;
 import com.yomahub.liteflow.agent.skill.SkillBoxFactory;
 import com.yomahub.liteflow.agent.skill.SkillLoadResult;
@@ -300,6 +301,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
                     BuiltAgent built = buildAgent();
                     agent = built.agent();
                     session.setSkillTrackingHook(built.skillTrackingHook());
+                    session.setChatUsageTrackingHook(built.chatUsageTrackingHook());
                     mgr.loadIfExists(session, agent);
                     session.setAgent(agent);
                 }
@@ -307,6 +309,11 @@ public abstract class ReActAgentComponent extends NodeComponent {
                 if (skillHook != null) {
                     skillHook.clear();
                     slot.setAttachment(skillHookKey(), skillHook);
+                }
+                ChatUsageTrackingHook usageHook = session.getChatUsageTrackingHook();
+                if (usageHook != null) {
+                    usageHook.reset();
+                    ctx.setChatUsageTrackingHook(usageHook);
                 }
                 Throwable processError = null;
                 try {
@@ -408,7 +415,8 @@ public abstract class ReActAgentComponent extends NodeComponent {
         return null;
     }
 
-    private record BuiltAgent(ReActAgent agent, SkillTrackingHook skillTrackingHook) {
+    private record BuiltAgent(ReActAgent agent, SkillTrackingHook skillTrackingHook,
+                              ChatUsageTrackingHook chatUsageTrackingHook) {
     }
 
     private BuiltAgent buildAgent() {
@@ -429,6 +437,9 @@ public abstract class ReActAgentComponent extends NodeComponent {
         if (enableReActLogging()) {
             allHooks.add(new ReActLoggingHook(ctx.getConversationId() + ":" + ctx.getAgentKey()));
         }
+
+        ChatUsageTrackingHook chatUsageTrackingHook = new ChatUsageTrackingHook();
+        allHooks.add(chatUsageTrackingHook);
 
         SkillTrackingHook skillTrackingHook = null;
         SkillBox skillBox = null;
@@ -452,7 +463,7 @@ public abstract class ReActAgentComponent extends NodeComponent {
             builder.skillBox(skillBox);
         }
 
-        return new BuiltAgent(builder.build(), skillTrackingHook);
+        return new BuiltAgent(builder.build(), skillTrackingHook, chatUsageTrackingHook);
     }
 
     /** 持有单例 AgentSessionManager；首次 process() 时懒创建。 */

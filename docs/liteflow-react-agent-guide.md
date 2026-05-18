@@ -184,10 +184,20 @@ protected void handleReply(Msg reply) {
     ctx().getSlot().getContextBean(MyAgentCtx.class).setReply(getNodeId(), text);
     // 选择 2：以 nodeId 为 key 存到 slot 输出，避免相互覆盖
     ctx().getSlot().setOutput(getNodeId(), text);
+    // 选择 3：把本轮累计 token 用量一起落盘，供下游节点或调用方读取
+    ChatUsage usage = ctx().getChatUsage();
+    if (usage != null) {
+        ctx().getSlot().setOutput(getNodeId() + ".usage", Map.of(
+                "inputTokens", usage.getInputTokens(),
+                "outputTokens", usage.getOutputTokens(),
+                "totalTokens", usage.getTotalTokens(),
+                "timeSeconds", usage.getTime()
+        ));
+    }
 }
 ```
 
-下游节点对应使用 `slot.getContextBean(MyAgentCtx.class)` 或 `slot.getOutput(nodeId)` 读取。
+下游节点对应使用 `slot.getContextBean(MyAgentCtx.class)` 或 `slot.getOutput(nodeId)` 读取。`ChatUsage` 来自 `io.agentscope.core.model.ChatUsage`；`ctx().getChatUsage()` 的语义与边界见 [§ 3](#3-reactagentcomponent-扩展点) 中 `ReActAgentContext` 表格说明。
 
 > **多 Agent 节点共存的注意事项**：默认 `responseData` 是 slot 级别的单一字段，后写覆盖先写。链路中存在多个 ReAct Agent 时，请覆写 `handleReply` 用 `setOutput(nodeId, ...)` 或自定义 ContextBean 区分各 Agent 的输出。
 
@@ -261,7 +271,7 @@ if (response.isSuccess()) {
 | `handleReply(reply)` | 否 | 写入 `slot.responseData` | 自定义回复处理逻辑 |
 | `buildModel()` | 否 | 委派 `model().resolve(agentConfig())` | 逃生舱：完全自行构造 agentscope `Model` |
 
-`ReActAgentContext` 可通过组件的 `ctx()` 方法取得，提供四项执行上下文：
+`ReActAgentContext` 可通过组件的 `ctx()` 方法取得，提供以下执行上下文：
 
 | 方法 | 说明 |
 | --- | --- |
@@ -269,8 +279,11 @@ if (response.isSuccess()) {
 | `getConversationId()` | 安全化后的 conversation ID，决定 workspace 子目录 |
 | `getAgentKey()` | 安全化后的 Agent key，默认来自 `nodeId` |
 | `getWorkspaceDir()` | 当前 conversation 对应的 workspace 目录 |
+| `getChatUsage()` | 本次 `process()` 截至当前已累计的 token 用量（agentscope `ChatUsage`，含 `getInputTokens()` / `getOutputTokens()` / `getTotalTokens()` / `getTime()`（秒））；模型未上报或本轮尚未发生过 reasoning step 时返回 `null` |
 
 注意：`systemPrompt()` 只在同一 `(conversationId, agentKey)` 下首次构建 Agent 时调用；后续调用会复用同一个 Agent 实例和 memory。动态输入应放在 `userPrompt()` 中，并通过 `ctx()` 或 `getSlot()` 读取当次 invocation 的数据。
+
+`getChatUsage()` 的累计口径：底层 agentscope 每次 `reasoning(iter)` 都会新建一个 `ReasoningContext`，所以 `Msg#getChatUsage()` 反映的是**当前这一步** LLM 调用的累计（流式聚合），而不是跨多步 ReAct 循环的累计。框架默认始终注册一个内部 `ChatUsageTrackingHook`，在每次 `PostReasoningEvent` 时把该步 usage 累加到 Session 缓存的计数器，并在每次 `process()` 开始前清零，因此 `ctx().getChatUsage()` 给出的是**整次 `process()` 调用**累计后的值。该 hook 无配置开关，业务无需启用；如果完全不希望产生这部分计数开销，可通过覆写 `buildModel()` 走完全自定义路径绕开 `ReActAgentComponent` 的默认构建流程。
 
 同理，`tools()`、`hooks()`、`skills()`、`enableSkills()`、`enableReActLogging()` 和 `buildModel()` 都属于 Agent 构建期能力声明，通常只在同一 `(conversationId, agentKey)` 首次构建缓存 Agent 时生效。不要让这些方法依赖单次请求数据；如果确实需要按请求隔离模型、工具或 hook，请把请求维度体现在 `agentKey()` 或 `conversationId` 中，让框架构建新的 AgentSession。
 
@@ -719,9 +732,12 @@ liteflow.agent.shell.mode=disabled
 | --- | --- |
 | `PreReasoningEvent` | `[agent:reason][conversationId:agentKey] >>> model=... messages=N` |
 | `PostReasoningEvent` | `[agent:reason][conversationId:agentKey] <<< text=... toolCalls=[...]` |
+| `PostReasoningEvent`（usage 附加行） | `[agent:reason][conversationId:agentKey] <<< usage input=N output=N total=N time=Ns`（仅当本步消息上报了 `ChatUsage` 时输出） |
 | `PreActingEvent` | `[agent:act][conversationId:agentKey] >>> tool=... input=...` |
 | `PostActingEvent` | `[agent:act][conversationId:agentKey] <<< tool=... result=...` |
 | `ErrorEvent` | `[agent:error][conversationId:agentKey] ...` |
+
+`PostReasoningEvent` 的 usage 行直接来自当前这一步 reasoning message 的 `ChatUsage`（agentscope 单步累计 / 流式聚合的结果），不是跨步累计；想要看整次 `process()` 调用的总 token，请使用 `ctx().getChatUsage()`（见 [§ 3](#3-reactagentcomponent-扩展点)）。
 
 - 全局开关：`liteflow.agent.logging.react-enabled`（默认 `true`）。
 - 单组件开关：覆写 `enableReActLogging()` 强制返回 `true` / `false`。
@@ -1070,6 +1086,8 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | `ctx() must be called during process()` | 在构造器、Bean 初始化、异步线程或 `process()` 结束后的生命周期中调用了 `ctx()` | 只在 `userPrompt()`、工具回调、Hook 回调和 `handleReply()` 等 `process()` 触发的调用链内读取；跨 invocation 缓存的对象不要保存 `ReActAgentContext` |
 | 注册 listener 后链路失败 | `eventListener` 回调中抛出了异常，或执行了阻塞 I/O 导致上游超时 | listener 内只做轻量处理并自行捕获异常；重型转发逻辑放到外部队列或线程池 |
 | `WHEN` 中多个 Agent 看起来没有并行 | 多个组件解析到了相同 `(conversationId, agentKey)`，共用了同一把锁；或下游等待最慢分支 | 确保需要并行的 Agent 使用不同 `agentKey()`；如还要隔离文件，则使用不同 conversation 或子目录 |
+| `ctx().getChatUsage()` 返回 `null` | 本轮还没发生过 reasoning step（如 `userPrompt()` 阶段就读取），或模型 / 网关未在响应里上报 `ChatUsage`（部分流式实现或代理网关会丢失 usage） | 改到 `handleReply()` 等本轮 reasoning 结束后的时机再读；或确认模型 / 网关在响应 metadata 中带回 usage 字段 |
+| `ctx().getChatUsage()` 的累计 token 比 SDK 单次响应大 | 同一次 `process()` 内 ReAct 触发了多轮 reasoning，框架内置 `ChatUsageTrackingHook` 会把每步 LLM 调用的 usage 都累加进来 | 这是预期行为：`getChatUsage()` 是本次调用的总计；若需要单步 usage，从 `ReActLoggingHook` 的 `PostReasoningEvent` 日志或自定义 hook 读取 |
 
 ---
 
