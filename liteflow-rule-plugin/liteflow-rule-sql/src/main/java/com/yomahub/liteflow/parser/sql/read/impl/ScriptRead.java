@@ -49,7 +49,7 @@ public class ScriptRead extends AbstractSqlRead<ScriptVO> {
     public boolean getEnableFiledValue(ResultSet rs) throws SQLException {
         String scriptEnableField = super.config.getScriptEnableField();
 
-        return rs.getBoolean(scriptEnableField);;
+        return rs.getBoolean(scriptEnableField);
     }
 
     @Override
