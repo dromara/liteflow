@@ -52,6 +52,7 @@ Thumbs.db
 # Build output directies
 /target
 */target
+target/
 /build
 */build
 
@@ -83,3 +84,5 @@ atlassian-ide-plugin.xml
 .flattened-pom.xml
 .claude
 .vscode
+.codegraph
+*.factorypath
