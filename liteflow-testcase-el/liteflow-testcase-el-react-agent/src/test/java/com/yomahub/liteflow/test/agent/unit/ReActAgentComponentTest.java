@@ -1,7 +1,10 @@
-package com.yomahub.liteflow.agent.component;
+package com.yomahub.liteflow.test.agent.unit;
 
+import com.yomahub.liteflow.agent.component.ReActAgentComponent;
+import com.yomahub.liteflow.agent.component.ReActAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.slot.Slot;
+import io.agentscope.core.message.Msg;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -11,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ReActAgentComponentTest {
+public class ReActAgentComponentTest {
 
     @Test
     void effectiveSystemPromptPrependsFrameworkPromptAndAppendsComponentPrompt() {
         TestAgentComponent component = new TestAgentComponent();
 
-        String prompt = component.effectiveSystemPrompt();
+        String prompt = component.effectiveSystemPromptForTest();
 
         assertTrue(prompt.contains("使用用户提问所用的语言"));
         assertTrue(prompt.contains("每次调用工具前"));
@@ -71,7 +74,11 @@ class ReActAgentComponentTest {
             return "hello";
         }
 
-        void handleReplyForTest(io.agentscope.core.message.Msg reply) {
+        String effectiveSystemPromptForTest() {
+            return effectiveSystemPrompt();
+        }
+
+        void handleReplyForTest(Msg reply) {
             handleReply(reply);
         }
     }

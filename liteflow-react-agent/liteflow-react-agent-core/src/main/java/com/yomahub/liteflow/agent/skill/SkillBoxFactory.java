@@ -48,7 +48,7 @@ public final class SkillBoxFactory {
             FileSystemSkillRepository repository = new FileSystemSkillRepository(root);
             List<AgentSkill> allSkills = repository.getAllSkills();
             List<AgentSkill> selected = selectSkills(allSkills, allowedSkills, skillsConfig);
-            SkillToolManifest manifest = new SkillToolManifest(root, skillsConfig);
+            SkillToolResolver toolResolver = new SkillToolResolver(skillsConfig);
             SkillBox skillBox = createSkillBox(toolkit, workspaceDir);
             Map<String, String> skillIdToName = new LinkedHashMap<>();
             List<String> skillNames = new ArrayList<>();
@@ -56,7 +56,7 @@ public final class SkillBoxFactory {
             for (AgentSkill skill : selected) {
                 skillIdToName.put(skill.getSkillId(), skill.getName());
                 skillNames.add(skill.getName());
-                List<Object> skillTools = manifest.instantiateTools(skill.getName());
+                List<Object> skillTools = toolResolver.instantiateTools(skill);
                 if (skillTools.isEmpty()) {
                     skillBox.registerSkill(skill);
                 } else {
