@@ -24,7 +24,6 @@
 *.del
 *.pmd
 .tern-project
-*.factorypath
 
 
 # Logs and databases #
@@ -86,3 +85,5 @@ atlassian-ide-plugin.xml
 .flattened-pom.xml
 .claude
 .vscode
+.codegraph
+*.factorypath
