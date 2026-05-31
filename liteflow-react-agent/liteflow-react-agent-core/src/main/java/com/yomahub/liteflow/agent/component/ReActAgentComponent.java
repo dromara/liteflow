@@ -96,7 +96,6 @@ public abstract class ReActAgentComponent extends NodeComponent {
      * 框架统一系统提示词。子类 {@link #systemPrompt()} 返回的内容会追加在该提示词之后。
      */
     public static final String DEFAULT_SYSTEM_PROMPT = """
-            你是 LiteFlow ReAct Agent 助手。
             请使用用户提问所用的语言回答，除非用户明确要求使用其他语言。
             每次调用工具前，先用一两句话简短说明当前判断和下一步动作，便于日志观察可见推理摘要。
             不要展开隐藏思维链，只输出面向用户和调试日志都可读的简短说明。

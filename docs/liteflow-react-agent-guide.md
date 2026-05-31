@@ -286,7 +286,6 @@ if (response.isSuccess()) {
 **框架统一系统提示词**：你在 `systemPrompt()` 中返回的内容不是最终系统提示词。框架在 `effectiveSystemPrompt()` 中会**始终在你的提示词前面拼接**一段内置的 `DEFAULT_SYSTEM_PROMPT`，最终下发给底层 ReActAgent 的是 `DEFAULT_SYSTEM_PROMPT + "\n\n" + 你的 systemPrompt()`。这段默认提示词的内容大致是：
 
 ```text
-你是 LiteFlow ReAct Agent 助手。
 请使用用户提问所用的语言回答，除非用户明确要求使用其他语言。
 每次调用工具前，先用一两句话简短说明当前判断和下一步动作，便于日志观察可见推理摘要。
 不要展开隐藏思维链，只输出面向用户和调试日志都可读的简短说明。
