@@ -101,6 +101,36 @@ public class SkillBoxFactoryTest {
     }
 
     @Test
+    public void testToolFallsBackToReflectionWhenAbsentFromContainer() throws Exception {
+        StubContextAware emptyContainer = new StubContextAware(); // 不注册任何 bean
+        installContextAware(emptyContainer);
+        try {
+            SkillLoadResult result = SkillBoxFactory.build(new Toolkit(), cfg, List.of("tool-skill"));
+
+            Assertions.assertEquals(List.of("tool-skill"), result.skillNames());
+            // 容器中无该 bean，降级反射实例化一次
+            Assertions.assertEquals(1, SkillEchoTool.CONSTRUCT_COUNT.get());
+        } finally {
+            ContextAwareHolder.clean();
+        }
+    }
+
+    @Test
+    public void testToolFallsBackToReflectionWhenContainerAccessFails() throws Exception {
+        StubContextAware brokenContainer = new StubContextAware(true); // hasBean 抛异常，模拟容器未就绪
+        installContextAware(brokenContainer);
+        try {
+            SkillLoadResult result = SkillBoxFactory.build(new Toolkit(), cfg, List.of("tool-skill"));
+
+            Assertions.assertEquals(List.of("tool-skill"), result.skillNames());
+            // 容器访问异常被吞掉并降级反射实例化一次
+            Assertions.assertEquals(1, SkillEchoTool.CONSTRUCT_COUNT.get());
+        } finally {
+            ContextAwareHolder.clean();
+        }
+    }
+
+    @Test
     public void testEmptyAllowListLoadsAllSkills() {
         SkillLoadResult result = SkillBoxFactory.build(new Toolkit(), cfg, List.of());
         Set<String> expectedNames = Set.of("demo", "research", "tool-skill");
