@@ -76,7 +76,7 @@ AgentConfigException: liteflow.agent.workspace.root is required
 Agent 组件继承 `ReActAgentComponent`，至少实现三个无参方法：
 
 - `model()`：返回一个 `ModelSpec<?>`，声明使用哪个平台、哪个模型及可选高级参数；
-- `systemPrompt()`：创建 Agent 时使用的系统提示词；
+- `systemPrompt()`：创建 Agent 时使用的系统提示词（框架会在它前面自动拼接一段统一系统提示词，详见 [§ 3](#3-reactagentcomponent-扩展点)）；
 - `userPrompt()`：每次调用时发送给 Agent 的用户消息。
 
 当前源码已把执行上下文改为通过 `ctx()` 动态获取，而不是把 `ReActAgentContext` 作为参数传入各个 hook。`ctx()` 只能在 `process()` 生命周期内调用，包括 `systemPrompt()`、`userPrompt()`、自定义工具回调、Hook 回调和 `handleReply()`。
@@ -282,6 +282,21 @@ if (response.isSuccess()) {
 | `getChatUsage()` | 本次 `process()` 截至当前已累计的 token 用量（agentscope `ChatUsage`，含 `getInputTokens()` / `getOutputTokens()` / `getTotalTokens()` / `getTime()`（秒））；模型未上报或本轮尚未发生过 reasoning step 时返回 `null` |
 
 注意：`systemPrompt()` 只在同一 `(conversationId, agentKey)` 下首次构建 Agent 时调用；后续调用会复用同一个 Agent 实例和 memory。动态输入应放在 `userPrompt()` 中，并通过 `ctx()` 或 `getSlot()` 读取当次 invocation 的数据。
+
+**框架统一系统提示词**：你在 `systemPrompt()` 中返回的内容不是最终系统提示词。框架在 `effectiveSystemPrompt()` 中会**始终在你的提示词前面拼接**一段内置的 `DEFAULT_SYSTEM_PROMPT`，最终下发给底层 ReActAgent 的是 `DEFAULT_SYSTEM_PROMPT + "\n\n" + 你的 systemPrompt()`。这段默认提示词的内容大致是：
+
+```text
+你是 LiteFlow ReAct Agent 助手。
+请使用用户提问所用的语言回答，除非用户明确要求使用其他语言。
+每次调用工具前，先用一两句话简短说明当前判断和下一步动作，便于日志观察可见推理摘要。
+不要展开隐藏思维链，只输出面向用户和调试日志都可读的简短说明。
+```
+
+由此带来的几个行为，做提示词工程时需要心里有数：
+
+- 模型默认会**用用户提问所用的语言**回答；如需固定输出语言，应在自己的 `systemPrompt()` 里显式覆盖；
+- 模型在每次调用工具前会**先输出一两句推理摘要**——这正是 `ReActLoggingHook` 日志和流式 `agent.reasoning` 事件里出现简短中文/原语言推理片段的来源，属于预期行为，而非你的 `systemPrompt()` "没生效"；
+- 当 `systemPrompt()` 返回空字符串或空白时，框架会**单独使用**这段默认提示词。
 
 `getChatUsage()` 的累计口径：底层 agentscope 每次 `reasoning(iter)` 都会新建一个 `ReasoningContext`，所以 `Msg#getChatUsage()` 反映的是**当前这一步** LLM 调用的累计（流式聚合），而不是跨多步 ReAct 循环的累计。框架默认始终注册一个内部 `ChatUsageTrackingHook`，在每次 `PostReasoningEvent` 时把该步 usage 累加到 Session 缓存的计数器，并在每次 `process()` 开始前清零，因此 `ctx().getChatUsage()` 给出的是**整次 `process()` 调用**累计后的值。该 hook 无配置开关，业务无需启用；如果完全不希望产生这部分计数开销，可通过覆写 `buildModel()` 走完全自定义路径绕开 `ReActAgentComponent` 的默认构建流程。
 
@@ -646,6 +661,34 @@ liteflow.agent.session.memory.mysql.create-if-not-exist=false
 
 LiteFlow 不创建 JDBC 连接池，`DataSource` 也需要由业务应用提供。
 
+### 5.6 自定义持久化后端（SPI）
+
+除内置的五种 `memory.mode` 外，框架还通过 `AgentSessionFactory` SPI 开放了持久化后端扩展点。如果要接入 PostgreSQL、对象存储、加密 JSON 等其它后端，可以实现该接口并在 `META-INF/services/com.yomahub.liteflow.agent.session.factory.AgentSessionFactory` 中注册：
+
+```java
+public class EncryptedFileSessionFactory implements AgentSessionFactory {
+
+    @Override
+    public MemoryStorageMode mode() {
+        // 绑定到某个已有模式枚举；与内置工厂同模式时由本实现覆盖内置实现
+        return MemoryStorageMode.LOCAL_FILE;
+    }
+
+    @Override
+    public Session create(AgentConfig agentConfig) {
+        // 返回 AgentScope Session；返回 null 表示本模式跳过持久化
+        return new MyEncryptedJsonSession(agentConfig);
+    }
+}
+```
+
+规则与边界：
+
+- `AgentSessionFactoryRegistry` 先注册全部内置工厂，再加载 SPI 工厂；同一个 `mode()` 冲突时 **SPI 工厂优先**，因此自定义实现的典型用途是**覆盖某个内置模式的 Session 构建逻辑**（例如把 `LOCAL_FILE` 换成加密落盘）；
+- `mode()` 返回的是固定的 `MemoryStorageMode` 枚举，SPI **不能新增模式名**，只能复用并覆盖已有的五种之一；
+- `create(...)` 在首次执行 Agent 组件时**懒调用**，而不是框架启动时；
+- 返回 `null` 表示该模式不做持久化（内置 `NONE` 模式即如此）。
+
 ---
 
 ## 6. Workspace 与内置工具
@@ -853,11 +896,15 @@ tools: com.example.agent.tool.SkillEchoTool, com.example.agent.tool.OrderTool
 工具类要求：
 
 - 必须在应用 classpath 上；
-- 必须有无参构造器；
+- **推荐注册为框架容器（Spring / Solon）的 bean**：`SkillToolResolver` 会优先按类型从容器获取实例，从而让依赖注入生效；只有当容器中不存在该类型、容器尚未就绪、或获取时抛异常时，才**降级为反射调用无参构造器**实例化（此时依赖注入不可用，并会打印一条降级日志）。因此工具类要么是可被容器管理的 bean，要么至少提供一个公有无参构造器作为兜底；
 - 工具方法仍按 agentscope-java 的 `@Tool` / `@ToolParam` 方式声明；
 - LiteFlow 会通过 `SkillBox.registration().skill(skill).tool(tool).apply()` 把工具绑定到该 skill，不会把它作为全局 `tools()` 工具注册。
 
-`SkillToolManifest` 可以识别 YAML list 形式的 `tools`，但为了兼容 AgentScope 当前 filesystem skill repository 的简单 YAML 解析，文档推荐使用上面的标量或逗号分隔写法。
+`tools` 字段直接取自 AgentScope 已用 SnakeYAML 解析好的 skill frontmatter（`AgentSkill#getMetadataValue("tools")`），因此除了上面的标量、逗号分隔写法外，也**原生支持 `tools: [a, b]` 这类 YAML 行内数组写法**：
+
+```markdown
+tools: [com.example.agent.tool.SkillEchoTool, com.example.agent.tool.OrderTool]
+```
 
 ### 7.5 记录本轮使用的技能
 
@@ -882,7 +929,9 @@ protected void handleReply(Msg reply) {
 
 ### 7.6 当前边界
 
-当前实现只接入 AgentScope 的 skill repository、`SkillBox` 和 skill-loading 工具，不会启用 AgentScope 的 `skillBox.codeExecution()`。文件读写和命令执行仍使用 LiteFlow 自己的 `WorkspaceFileTools` 与 `ManagedShellCommandTool`，并继续受 `liteflow.agent.workspace.*` 与 `liteflow.agent.shell.*` 配置控制。
+当前实现接入了 AgentScope 的 skill repository、`SkillBox` 和 skill-loading 工具。`SkillBox` 由 `SkillBoxFactory` 构建：当存在 conversation workspace 目录时（正常执行下一定存在），框架会调用 `skillBox.codeExecution().workDir(<当前 conversation workspace>).enable()`，即**在该 workspace 目录内启用 AgentScope 的 skill 代码执行能力**。
+
+需要特别注意这条安全边界：一旦为某个组件开启 skills（`enableSkills()` 为 `true`），就等于在其 conversation workspace 内启用了 AgentScope 的 skill 代码执行。它与 LiteFlow 自带的 `WorkspaceFileTools`、`ManagedShellCommandTool` 是**并存的两条执行路径**——后两者仍照常注册，并继续受 `liteflow.agent.workspace.*` 与 `liteflow.agent.shell.*` 配置控制；而 AgentScope 的 skill 代码执行走的是 AgentScope 自身路径，不经过 `ManagedShellCommandTool`，因此**不受 `liteflow.agent.shell.*` 的白名单 / 黑名单约束**。即使把 `liteflow.agent.shell.mode` 设为 `disabled`，开启 skills 后这条代码执行路径依然存在。生产环境开启 skills 前应一并评估该路径的安全影响，并严格控制 `skills.path` 下的内容来源（见 [§ 10](#10-安全建议)）。
 
 ---
 
@@ -1060,6 +1109,7 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 6. 选择 `REDIS` 或 `MYSQL` 记忆模式时，连接 Bean 由业务应用提供，权限和网络访问也应由业务应用控制。
 7. 多个 Agent 共享同一个 conversation workspace 时，建议约定各自的文件名前缀或子目录，避免并行写冲突。
 8. 开启 Skills 时，`skills.path` 建议使用只读、受版本管理或受发布流程控制的目录；不要让普通用户直接写入 `SKILL.md` 或其中声明的 Java 工具类。
+9. 注意开启 Skills 会在 conversation workspace 内启用 AgentScope 的 skill 代码执行路径（见 [§ 7.6](#76-当前边界)）。该路径独立于 `liteflow.agent.shell.*`，即使 Shell 工具已 `disabled` 也不受其白名单约束。对安全敏感的部署，应在开启 skills 前评估这条执行路径，并严格管控技能目录与其引用工具类的来源。
 
 ---
 
@@ -1080,7 +1130,8 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | `path escapes workspace` | 文件工具收到绝对路径或越界路径 | 使用相对路径，并限制在当前 workspace 内 |
 | `Skills root not found` | 开启 skills 后，`liteflow.agent.skills.path` 指向的目录不存在 | 创建 skills 根目录；或关闭 skills；或在开发环境把 `strict=false` 以记录 warn 后继续 |
 | `Declared skills not found: [...]` | 组件 `skills()` 声明了不存在的技能名，或 `SKILL.md` 中的 `name` 与预期不一致 | 检查技能目录与 `SKILL.md` frontmatter 的 `name`；严格模式下必须全部存在 |
-| `references unknown tool class` | `SKILL.md` 的 `tools` 字段声明了 classpath 上找不到的 Java 工具类 | 确认工具类全限定名正确、依赖已打包、类有无参构造器 |
+| `references unknown tool class` | `SKILL.md` 的 `tools` 字段声明了 classpath 上找不到的 Java 工具类 | 确认工具类全限定名正确、依赖已打包 |
+| `tool class ... instantiation failed` | 工具类既不在容器中（无法按类型取 bean），又没有可用的公有无参构造器 | 把工具类注册为 Spring / Solon bean 以走依赖注入，或为它补一个公有无参构造器作为兜底 |
 | `usedSkills()` 为空 | 本轮 Agent 没有成功调用 `load_skill_through_path`，或读取时已离开 `process()` 生命周期 | 在 `handleReply()` 或工具回调中读取；确认模型确实加载了对应 skill |
 | 没有收到流式事件 | 本次调用没有使用 `ExecuteOption.eventListener(...)`，或链路中没有 ReAct Agent 节点 | 注册 listener；确认事件类型是否为 `agent.reasoning`、`agent.tool_result`、`agent.summary` 或 `agent.result` |
 | `ctx() must be called during process()` | 在构造器、Bean 初始化、异步线程或 `process()` 结束后的生命周期中调用了 `ctx()` | 只在 `userPrompt()`、工具回调、Hook 回调和 `handleReply()` 等 `process()` 触发的调用链内读取；跨 invocation 缓存的对象不要保存 `ReActAgentContext` |
