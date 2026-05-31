@@ -480,6 +480,57 @@ public class FlowBus {
 				.unLoad(nodeId);
 		// 移除脚本
 		return removeNode(nodeId);
+
+	/**
+	 * Batch cleanup for dynamic script nodes with automatic ClassLoader reset.
+	 * 
+	 * Recommended for scenarios where you frequently create and destroy script nodes
+	 * (e.g., ETL systems, dynamic workflow engines). This method combines:
+	 * 1. Unload all specified script nodes
+	 * 2. Reset the underlying ClassLoader to release Metaspace
+	 * 
+	 * Typical usage:
+	 * <pre>
+	 * try {
+	 *     // Create and execute nodes
+	 *     LiteFlowNodeBuilder.createScriptNode()...build();
+	 *     // ... execute ...
+	 * } finally {
+	 *     // Cleanup: unload + reset ClassLoader
+	 *     FlowBus.unloadScriptNodesAndResetClassLoader("node1", "node2", "node3");
+	 * }
+	 * </pre>
+	 * 
+	 * @param nodeIds Variable arguments: IDs of nodes to unload
+	 * @see #unloadScriptNode(String)
+	 */
+	public static void unloadScriptNodesAndResetClassLoader(String... nodeIds) {
+		// Phase 1: Unload all script nodes
+		for (String nodeId : nodeIds) {
+			try {
+				unloadScriptNode(nodeId);
+			} catch (Exception e) {
+				LOG.warn("Failed to unload script node: " + nodeId, e);
+				// Continue with remaining nodes even if one fails
+			}
+		}
+		
+		// Phase 2: Reset ClassLoader to force Metaspace cleanup
+		try {
+			ScriptExecutor scriptExecutor = ScriptExecutorFactory.loadInstance().getScriptExecutor("javax");
+			if (scriptExecutor != null && scriptExecutor.getClass().getSimpleName().equals("JavaxExecutor")) {
+				// Use reflection to call resetClassLoader since we may not have direct access
+				java.lang.reflect.Method resetMethod = scriptExecutor.getClass().getDeclaredMethod("resetClassLoader");
+				resetMethod.setAccessible(true);
+				resetMethod.invoke(scriptExecutor);
+			}
+		} catch (Exception e) {
+			LOG.warn("Failed to reset ClassLoader after unloading script nodes", e);
+			// Graceful degradation: Metaspace cleanup may be delayed,
+			// but process continues normally
+		}
+	}
+
 	}
 
 	// 重新加载规则
