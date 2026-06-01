@@ -264,7 +264,7 @@ if (response.isSuccess()) {
 | `resolveConversationId()` | 否 | 先复用 `slot.conversationId`，再读 `chainReqData` Map 中的 `conversationId`，最后调用 `ConversationIdGenerator.generate()` | 决定本次调用所属业务会话；同一条 chain 内首个 Agent 写回 slot 后，后续 Agent 默认复用 |
 | `agentKey()` | 否 | 当前 `nodeId`，为空时为 `default` | 在同一 conversation 中区分不同 Agent 实例和记忆；默认不同节点互相隔离 |
 | `maxIterations()` | 否 | `-1` | 返回正数时覆盖全局 `defaults.max-iterations` |
-| `enableShellTool()` | 否 | `true` | 是否注册内置受管 Shell 工具；配置为 `DISABLED` 时即使返回 `true` 也不会注册 |
+| `enableShellTool()` | 否 | `true` | 是否注册内置受管 Shell 工具；与 `shell.mode` 取**逻辑与**——组件返回 `true` 且配置不为 `DISABLED` 时才注册，任一方关闭即不注册 |
 | `enableWorkspaceFileTools()` | 否 | `true` | 是否注册内置 workspace 文件工具 |
 | `hooks()` | 否 | 空列表 | 注册 agentscope `Hook` |
 | `enableReActLogging()` | 否 | 读 `liteflow.agent.logging.react-enabled`（默认 `true`） | 是否注册内置 `ReActLoggingHook`，将 reason / act / error 事件写到日志 |
@@ -300,6 +300,22 @@ if (response.isSuccess()) {
 `getChatUsage()` 的累计口径：底层 agentscope 每次 `reasoning(iter)` 都会新建一个 `ReasoningContext`，所以 `Msg#getChatUsage()` 反映的是**当前这一步** LLM 调用的累计（流式聚合），而不是跨多步 ReAct 循环的累计。框架默认始终注册一个内部 `ChatUsageTrackingHook`，在每次 `PostReasoningEvent` 时把该步 usage 累加到 Session 缓存的计数器，并在每次 `process()` 开始前清零，因此 `ctx().getChatUsage()` 给出的是**整次 `process()` 调用**累计后的值。该 hook 无配置开关，业务无需启用；如果完全不希望产生这部分计数开销，可通过覆写 `buildModel()` 走完全自定义路径绕开 `ReActAgentComponent` 的默认构建流程。
 
 同理，`tools()`、`hooks()`、`skills()`、`enableSkills()`、`enableReActLogging()` 和 `buildModel()` 都属于 Agent 构建期能力声明，通常只在同一 `(conversationId, agentKey)` 首次构建缓存 Agent 时生效。不要让这些方法依赖单次请求数据；如果确实需要按请求隔离模型、工具或 hook，请把请求维度体现在 `agentKey()` 或 `conversationId` 中，让框架构建新的 AgentSession。
+
+**组件方法与 application 配置的优先级**
+
+`ReActAgentComponent` 的部分受保护方法与 `liteflow.agent.*` 配置项控制的是同一件事。它们冲突时的合并规则并不统一，分三种：
+
+| 重叠项 | 组件方法 | 对应配置 | 合并规则 |
+| --- | --- | --- | --- |
+| ReAct 日志 | `enableReActLogging()` | `liteflow.agent.logging.react-enabled` | 方法默认实现即读该配置；**一旦覆写，返回值取代配置** |
+| Skills 开关 | `enableSkills()` | `liteflow.agent.skills.enabled` | 同上：默认读配置，覆写后以组件为准（可在全局开启时单独关闭某组件） |
+| 最大迭代 | `maxIterations()` | `liteflow.agent.defaults.max-iterations` | 方法**返回正数时覆盖**配置；返回默认 `-1`（或非正数）时用配置 |
+| Shell 工具 | `enableShellTool()` | `liteflow.agent.shell.mode` | 两者取**逻辑与**：组件返回 `true` 且配置不为 `DISABLED` 才注册，任一方关闭即不注册；`shell.mode=DISABLED` 是组件无法突破的安全底线 |
+| workspace 文件工具 | `enableWorkspaceFileTools()` | （无全局开关） | 纯组件级，默认 `true` |
+
+可以记成两句话：**能在组件里覆写的开关，覆写后基本以组件为准**（`enableReActLogging` / `enableSkills` / `maxIterations`）；**唯独 Shell 例外——它与 `shell.mode` 取最严格的一方，`shell.mode=disabled` 是组件破不了的安全底线**。
+
+其余 `liteflow.agent.*` 配置（如 `workspace.root`、`session.*`、`workspace.max-file-bytes` 等）没有对应的组件方法，只能通过配置设置；而 `model()` / `buildModel()` 与凭据配置是分工而非重叠——组件声明“用哪个模型 + 参数”，凭据（`api-key` / `base-url`）始终从 `liteflow.agent.<platform>.*` 读取。
 
 ---
 
@@ -963,6 +979,44 @@ protected List<Object> tools() {
     return List.of(new OrderTool());
 }
 ```
+
+#### Spring / Solon 环境下获取带依赖注入的工具实例
+
+上面的示例用 `new OrderTool()` 直接构造，适用于工具无外部依赖的简单场景。当工具类需要 Spring bean 注入（如数据库客户端、远程服务）时，应将工具类注册为容器 bean，再在组件中注入使用：
+
+```java
+// 1. 工具类标 @Component，依赖由容器注入
+@Component
+public class OrderTool {
+
+    @Resource
+    private OrderService orderService;  // ← Spring DI
+
+    @Tool(name = "query_order_status", description = "Query order status by order number")
+    public String query(@ToolParam(name = "orderNo") String orderNo) {
+        return orderService.queryStatus(orderNo);
+    }
+}
+
+// 2. Agent 组件通过 @Resource 注入工具 bean
+@Component("orderAgent")
+public class OrderAgentCmp extends ReActAgentComponent {
+
+    @Resource
+    private OrderTool orderTool;  // ← 容器注入，DI 已生效
+
+    @Override
+    protected List<Object> tools() {
+        return List.of(orderTool);  // 返回容器管理的实例
+    }
+
+    // ... model(), systemPrompt(), userPrompt() 等省略
+}
+```
+
+**原理**：`ReActAgentComponent` 本身就是 Spring bean，因此它的字段天然由容器管理。通过 `@Resource` / `@Autowired` 注入的 bean 所有依赖都已就绪，直接放进 `tools()` 即可。不要在组件里 `new` 一个需要 DI 的工具类——那样注入不会生效。
+
+> **与 Skill 层 `tools` 的区别**：Skill frontmatter 中的 `tools` 字段（见 [§ 7.4](#74-skill-专属-java-工具)）写的是类名，框架的 `SkillToolResolver` 会自动按类型从容器查找 bean（DI ✅），找不到时降级为反射实例化（DI ❌）。而组件层 `tools()` 返回的是对象实例，获取实例的工作由开发者完成。
 
 如果工具需要访问当前 `Slot`、workspace 或 conversation 信息，不要在构造工具时捕获 `ctx()` 的返回值；可以把工具写成组件内部类，或由组件提供一个公开代理方法，在工具方法执行时再间接调用受保护的 `ctx()`。
 

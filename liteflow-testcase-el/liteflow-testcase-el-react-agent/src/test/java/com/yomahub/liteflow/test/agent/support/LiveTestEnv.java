@@ -11,14 +11,14 @@ import java.util.Map;
 /**
  * 统一管理本测试模块需要的所有真实平台凭据环境变量与系统属性。
  *
- * <p>以避免分散硬编码：所有真实 apikey/baseUrl/model 都来自这里，缺失时由
- * 各测试用 {@code Assumptions.assumeTrue} 跳过。
+ * <p>这是整个模块唯一共享的「凭据解析插管」之一：所有真实 apikey/baseUrl/model
+ * 都从这里解析，缺失时由各测试用 {@code Assumptions.assumeTrue} 跳过。
  *
  * <p>查找顺序：环境变量 → JVM system property（便于 IDE -D 指定）→ classpath 下的 env.txt 文件。
  */
 public final class LiveTestEnv {
 
-    /* compatible-custom 功能测试用一组凭据 */
+    /* 功能测试统一使用的 OpenAI 兼容自定义入口（自定义 baseUrl + apiKey） */
     public static final String COMPATIBLE_API_KEY = "LITEFLOW_AGENT_TEST_API_KEY";
     public static final String COMPATIBLE_BASE_URL = "LITEFLOW_AGENT_TEST_BASE_URL";
     public static final String COMPATIBLE_MODEL = "LITEFLOW_AGENT_TEST_MODEL";
