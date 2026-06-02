@@ -21,6 +21,8 @@
             <map>
               <entry key="release-on-8" value="true" />
               <entry key="open" value="true" />
+              <entry key="compile-8-to-16" value="false" />
+              <entry key="compile-17+" value="false" />
             </map>
           </option>
           <option name="projectsCmdOptionValues">
