@@ -9,9 +9,11 @@
 <h3>Your star is my motivation to keep going. If you like LiteFlow, please help me with a star in the upper right corner.</h3>
 
 ## Overview
-LiteFlow is a lightweight and powerful rules engine framework, which can be used in the field of complex componenzed business orchestration. DSL rules drive the whole complex business, and can achieve smooth refresh hot deployment, supporting the embedding of multiple scripting language rules. Help the system become more silky and flexible.
+LiteFlow is a powerful, modern rules engine framework that combines the best of orchestration and rules engines. It can be used in the field of complex componentized business orchestration. DSL rules drive the whole complex business, and can achieve smooth refresh hot deployment, supporting the embedding of multiple scripting language rules. Help the system become more silky and flexible.
 
 LiteFlow was officially open-sourced in 2020 and has since become an indispensable presence in the field of open-source rule engines in China. What's more, the most crucial aspect is that LiteFlow is an open-source project that continues to iterate at a high speed.
+
+Starting from v2.16.0, LiteFlow even turns an AI Agent into a first-class citizen that can be orchestrated directly into your rules, standing shoulder to shoulder with your existing business nodes.
 
 LiteFlow is a community-driven project with a strong emphasis on its large and active user community. We welcome you to raise any issues or suggestions you may have within the community.
 
@@ -25,12 +27,14 @@ You can find out how to join the community on the official website!
 * **Rules lightweight:** based on the rules file to arrange the process, learning the rules entry only takes 5 minutes, a read both understand.
 * **Rule diversification:** rules support XML, JSON, YML three rule file writing methods, which you like to use.
 * **Arbitrary arrangement:** Synchronous asynchronous mixing, no matter how complex the logic process, using LiteFlow rules, are easy to do, see the rules file to see how the logic works.
-* **Rules can be loaded from anywhere:** The framework provides implementations of local file configuration sources and ZK configuration sources, as well as an extension interface that allows you to store rules anywhere.
+* **Rules can be loaded from anywhere:** The framework natively supports storing rules in a structured database, Nacos, Etcd, Zookeeper, Apollo and Redis. It also provides an extension interface that allows you to store rules anywhere.
 * **Elegant hot refresh mechanism:** Rule changes, instant change of application rules without restarting your application. High concurrency does not cause any errors in executing rules due to refreshing rules.
-* **Wide support:** LiteFlow works regardless of whether your project is built on Springboot, Spring, or any other Java framework.
-* **JDK support:** From JDK8 to JDK25. Don't worry about JDK versions.
-* **Full Springboot support:** Supports Springboot 2.X through the latest Springboot 3.X.
-* **Scripting language support:** You can define script language nodes that support Groovy, Javascript, QLExpress, Python, Lua, Kotlin and Aviator. More script languages will be supported in the future.
+* **Wide support:** LiteFlow works regardless of whether your project is built on Spring Boot, Spring, or any other Java framework.
+* **JDK support:** From JDK8 to JDK25. Don't worry about JDK versions. Virtual threads are supported on JDK21 and above.
+* **Full Spring Boot support:** Supports Spring Boot 2.X, 3.X, and now the latest Spring Boot 4.X.
+* **Scripting language support:** You can define script language nodes that support Groovy, Java, Kotlin, JavaScript, QLExpress, Python, Lua and Aviator. More script languages will be supported in the future.
+* **Scripts fully connected with Java:** All scripting languages can call Java methods, reference any instance, and even make RPC calls inside scripts.
+* **AI Agent orchestration:** Wraps a full ReAct Agent into a standard LiteFlow component, so AI can be orchestrated directly into your business rules.
 * **Rule nesting support:** You can use simple expressions to create multiple nested complex logic layouts if you want.
 * **Component retry support:** Components can support retry, and each component can customize the retry configuration and specify exceptions.
 * **Context isolation mechanism:** Reliable context isolation mechanism, you do not have to worry about high concurrency data flow.
@@ -56,6 +60,34 @@ LiteFlow has an extremely detailed and easy-to-understand documentation， it ca
 LiteFlow has 2000 test cases and more. Complete documentation and comprehensive test case coverage guarantee the stability of LiteFlow framework!
 
 Looking forward to your use！
+
+## AI Agent Orchestration (New in v2.16.0)
+
+Starting from v2.16.0, LiteFlow ships its own AI Agent module, `liteflow-react-agent`.
+
+It is not a simple "LLM component". Instead, it wraps a full **ReAct (Reasoning + Acting) Agent** into a standard LiteFlow component — **one component is one Agent**. You only declare a component and implement a few simple methods; talking to LLM providers, multi-turn conversation memory, and the Skills system are all handled for you by the module.
+
+Once an Agent becomes a LiteFlow component, it automatically inherits the full orchestration power of LiteFlow. You write rules exactly the way you always have — except one of the nodes is now a thinking AI:
+
+```
+// Sequential orchestration, the AI node naturally sits between business nodes
+THEN(prepare, deepseekAgent, recordReply);
+
+// Let two different LLMs analyze the same question in parallel
+WHEN(deepseekAgent, qwenAgent);
+
+// Route to different Agents based on a condition
+IF(isMath, mathAgent, deepseekAgent);
+
+// Multi-Agent collaboration: parallel analysis + aggregated decision
+THEN(prepare, WHEN(analyzerAgent, riskAgent), summaryAgent, notify);
+```
+
+None of `THEN`, `WHEN`, `IF`, `SWITCH` or `FOR` here is newly invented for AI — they are the same orchestration operators LiteFlow has used for years. **If you can orchestrate LiteFlow, you can orchestrate AI.**
+
+The module connects to mainstream LLM platforms — OpenAI, Claude, Gemini, DeepSeek, Qwen (DashScope), Kimi, GLM and more — and provides multi-turn conversation memory, the Skills system, workspace file tools, streaming output, and so on. Switching models is basically a one-line change to `model()`.
+
+> Note: The AI Agent module is built on agentscope-java and requires JDK 21+ at runtime. See the [official documentation](https://liteflow.cc/) for the full usage guide.
 
 ## Sponsors
 
