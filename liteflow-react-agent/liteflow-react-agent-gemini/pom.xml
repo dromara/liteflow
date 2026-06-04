@@ -9,6 +9,7 @@
     </parent>
 
     <artifactId>liteflow-react-agent-gemini</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

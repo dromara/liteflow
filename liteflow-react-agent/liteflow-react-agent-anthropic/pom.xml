@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>liteflow-react-agent-anthropic</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

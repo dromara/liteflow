@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>liteflow-react-agent-openai</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

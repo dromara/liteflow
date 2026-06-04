@@ -490,6 +490,7 @@
 					<configuration>
 						<publishingServerId>oss</publishingServerId>
 						<autoPublish>true</autoPublish>
+						<ignorePublishedComponents>true</ignorePublishedComponents>
 					</configuration>
 				</plugin>
 			</plugins>
