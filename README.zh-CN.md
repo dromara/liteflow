@@ -4,12 +4,16 @@
 </a>
 </p>
 
+[English](README.md)
+
 <h3>您的star是我继续前进的动力，如果喜欢LiteFlow请右上角帮忙点个star</h3>
 
 ## 🌈概述
-LiteFlow是一个轻量且强大的国产规则引擎框架，可用于复杂的组件化业务的编排领域，独有的DSL规则驱动整个复杂业务，并可实现平滑刷新热部署，支持多种脚本语言规则的嵌入。帮助系统变得更加丝滑且灵活。
+LiteFlow是一个非常强大的现代化的规则引擎框架，融合了编排特性和规则引擎的所有特性。它可用于复杂的组件化业务的编排领域，独有的DSL规则驱动整个复杂业务，并可实现平滑刷新热部署，支持多种脚本语言规则的嵌入。帮助系统变得更加丝滑且灵活。
 
 LiteFlow于2020年正式开源，直到现在已经是国内开源规则引擎中不可忽视的存在，而且最关键的是，LiteFlow还是一个持续高速迭代的开源项目。
+
+从 v2.16.0 起，LiteFlow 更是把 AI Agent 变成了可以被直接编排进规则的"一等公民"，让 AI 与你现有的业务节点平起平坐、自由编排。
 
 LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥有一个庞大的使用者社区，在使用中碰到任何问题或者建议都可以在社区中反应。
 
@@ -23,13 +27,14 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 * **规则轻量：** 基于规则文件来编排流程，学习规则入门只需要5分钟，一看即懂。
 * **规则多样化：** 规则支持xml、json、yml三种规则文件写法方式，喜欢哪种用哪个。
 * **任意编排：** 再复杂的逻辑过程，利用LiteFlow的规则，都是很容易做到的，看规则文件就能知道逻辑是如何运转的。
-* **规则持久化：** 框架原生支持把规则存储在标准结构化数据库，Nacos，Etcd，Zookeeper，Apollo，redis。您也可以自己扩展，把规则存储在任何地方。
+* **规则持久化：** 框架原生支持把规则存储在标准结构化数据库，Nacos，Etcd，Zookeeper，Apollo，Redis。您也可以自己扩展，把规则存储在任何地方。
 * **优雅热刷新机制：** 规则变化，无需重启您的应用，即时改变应用的规则。高并发下不会因为刷新规则导致正在执行的规则有任何错乱。
 * **支持广泛：** 不管你的项目是不是基于Spring Boot，Spring还是任何其他Java框架构建，LiteFlow都能游刃有余。
-* **JDK支持：** 从JDK8到JDK25，全部支持。无需担心JDK版本。
-* **Spring Boot支持全面：** 支持Spring Boot2.X到最新的Spring Boot3.X。
-* **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，JavaScript，QLExpress，Python，Lua，Aviator，Java，Kotlin。未来还会支持更多的脚本语言。
+* **JDK支持：** 从JDK8到JDK25，统统支持。无需担心JDK版本。JDK21以上支持虚拟线程。
+* **Spring Boot支持全面：** 支持Spring Boot 2.X、3.X，并已支持最新的Spring Boot 4.X。
+* **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，Java，Kotlin，JavaScript，QLExpress，Python，Lua，Aviator。未来还会支持更多的脚本语言。
 * **脚本和Java全打通：** 所有脚本语言均可调用Java方法，甚至于可以引用任意的实例，在脚本中调用RPC也是支持的。
+* **AI Agent编排：** 把一个完整的 ReAct Agent 封装成标准的 LiteFlow 组件，让 AI 直接被编排进你的业务规则。
 * **规则嵌套支持：** 只要你想得出，你可以利用简单的表达式完成多重嵌套的复杂逻辑编排。
 * **组件重试支持：** 组件可以支持重试，每个组件均可自定义重试配置和指定异常。
 * **上下文隔离机制：** 可靠的上下文隔离机制，你无需担心高并发情况下的数据串流。
@@ -55,6 +60,34 @@ LiteFlow拥有极其详细易懂的文档体系，能帮助你解决在使用框
 目前为止，LiteFlow拥有2000多个测试用例，并且不断在增加中。完备的文档+覆盖全面的测试用例保障了LiteFlow框架的稳定性！
 
 LiteFlow期待你的了解！
+
+## 🤖AI Agent编排（v2.16.0 全新特性）
+
+从 v2.16.0 起，LiteFlow 拥有了自己的 AI Agent 模块 `liteflow-react-agent`。
+
+它做的不是简单的"大模型组件"，而是把一个完整的 **ReAct（Reasoning + Acting）Agent** 封装成标准的 LiteFlow 组件——**一个组件，就是一个 Agent**。你只需声明一个组件、实现几个简单的方法，对接大模型、多轮会话记忆、Skills 技能体系这些能力，模块都替你包揽好了。
+
+而一旦 Agent 变成了 LiteFlow 组件，它就自动继承了 LiteFlow 的全套编排能力。你原来怎么写规则，现在还怎么写，只不过其中某个节点，是一个会思考的 AI：
+
+```
+// 串行编排，AI 节点自然地夹在业务节点中间
+THEN(prepare, deepseekAgent, recordReply);
+
+// 让两个不同的大模型并行分析同一个问题
+WHEN(deepseekAgent, qwenAgent);
+
+// 根据条件路由到不同的 Agent
+IF(isMath, mathAgent, deepseekAgent);
+
+// 多 Agent 协同：并行分析 + 汇总决策
+THEN(prepare, WHEN(analyzerAgent, riskAgent), summaryAgent, notify);
+```
+
+这里的 `THEN`、`WHEN`、`IF`、`SWITCH`、`FOR` 没有一个是为 AI 新造的，全是 LiteFlow 用了多年的编排算子。**你会编排 LiteFlow，你就会编排 AI。**
+
+该模块对接了主流大模型平台：OpenAI、Claude、Gemini、DeepSeek、通义千问（DashScope）、Kimi、GLM 等，并提供多轮会话记忆、Skills 技能体系、工作空间文件工具、流式输出等能力，换模型基本就是换一行 `model()` 的事。
+
+> 提示：AI Agent 模块基于 agentscope-java，运行时需要 JDK 21+。完整使用方式请查阅[官方文档](https://liteflow.cc/)。
 
 ## 👑LF CLUB社区
 
