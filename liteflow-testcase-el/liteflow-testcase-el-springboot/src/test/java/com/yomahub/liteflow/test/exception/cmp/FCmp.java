@@ -23,7 +23,7 @@ public class FCmp extends NodeComponent {
 	public void process() {
 		String str = this.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("custom-stateful-exception")) {
-			throw new CustomStatefulException("300", "chain execute custom stateful execption");
+			throw new CustomStatefulException("300", "chain execute custom stateful exception");
 		}
 		LOG.info("Fcomp executed!");
 	}

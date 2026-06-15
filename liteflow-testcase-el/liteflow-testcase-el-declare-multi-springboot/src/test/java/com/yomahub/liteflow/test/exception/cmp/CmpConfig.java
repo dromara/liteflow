@@ -19,7 +19,7 @@ public class CmpConfig {
 	public void processA(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new RuntimeException("chain execute execption");
+			throw new RuntimeException("chain execute exception");
 		}
 		LOG.info("Acomp executed!");
 	}
@@ -67,7 +67,7 @@ public class CmpConfig {
 	public void processF(NodeComponent bindCmp) {
 		String str = bindCmp.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("custom-stateful-exception")) {
-			throw new CustomStatefulException("300", "chain execute custom stateful execption");
+			throw new CustomStatefulException("300", "chain execute custom stateful exception");
 		}
 		LOG.info("Fcomp executed!");
 	}
