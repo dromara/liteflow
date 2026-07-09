@@ -14,7 +14,7 @@ public class MinimaxPlatformAgentCmp extends ReActAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
-        String model = LiveTestEnv.resolveOrDefault(LiveTestEnv.MINIMAX_MODEL, "MiniMax-Text-01");
+        String model = LiveTestEnv.resolveOrDefault(LiveTestEnv.MINIMAX_MODEL, "MiniMax-M3");
         return Minimax.of(model).temperature(0.1).maxTokens(64);
     }
 

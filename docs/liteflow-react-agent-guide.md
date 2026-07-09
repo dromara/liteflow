@@ -480,6 +480,9 @@ liteflow:
       kimi:
         api-key: ${KIMI_API_KEY}
         base-url: https://api.moonshot.cn/v1
+      minimax:
+        api-key: ${MINIMAX_API_KEY}
+        base-url: https://api.minimax.io/v1
     anthropic-compatible:
       gateway:
         api-key: ${ANTHROPIC_GATEWAY_API_KEY}
