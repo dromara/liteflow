@@ -93,23 +93,23 @@ The module connects to mainstream LLM platforms — OpenAI, Claude, Gemini, Deep
 
 **驰骋工作流引擎**
 
-<a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png"></a>
+<a href="https://ccbpm.cn/?frm=liteFlow"><img src="static/img/chicheng-banner.png" width="896"></a>
 
 **FastBee物联网平台**
 
-<a href="https://fastbee.cn/"><img src="static/img/fb-banner.png"></a>
+<a href="https://fastbee.cn/"><img src="static/img/fb-banner.png" width="896"></a>
 
 **速众 AI 低代码开发平台**
 
-<a href="https://www.suconnect.com?hmsr=LiteFlow&hmpl=&hmcu=LiteFlow&hmkw=&hmci="><img src="static/img/suzhong-banner.jpg"></a>
+<a href="https://www.suconnect.com?hmsr=LiteFlow&hmpl=&hmcu=LiteFlow&hmkw=&hmci="><img src="static/img/suzhong-banner.jpg" width="896"></a>
 
 **Easysearch**
 
-<a href="https://easysearch.cn/"><img src="https://infinilabs.cn/img/download/media-assets/easysearch-banner-4.webp"></a>
+<a href="https://easysearch.cn/"><img src="https://infinilabs.cn/img/download/media-assets/easysearch-banner-4.webp" width="896"></a>
 
 **SX.ORG**
 
-<a href="https://sx.org/?c=lite"><img src="static/img/sx-banner.png"></a>
+<a href="https://sx.org/?c=lite"><img src="static/img/sx-banner.png" width="896"></a>
 
 **DISCORD LINK**
 
