@@ -107,6 +107,10 @@ The module connects to mainstream LLM platforms — OpenAI, Claude, Gemini, Deep
 
 <a href="https://easysearch.cn/"><img src="https://infinilabs.cn/img/download/media-assets/easysearch-banner-4.webp"></a>
 
+**SX.ORG**
+
+<a href="https://sx.org/?c=lite"><img src="static/img/sx-banner.png"></a>
+
 **DISCORD LINK**
 
 Discord Link: [https://discord.gg/MpdBSBnFTu](https://discord.gg/MpdBSBnFTu)
