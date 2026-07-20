@@ -398,6 +398,50 @@ protected ModelSpec<?> model() {
 
 凭据来源：`liteflow.agent.openai-compatible.myvendor.api-key` / `base-url`。自定义厂商没有内置默认地址，通常需要配置 `base-url`。
 
+**MiniMax compatible endpoints and current models:**
+
+```java
+@Override
+protected ModelSpec<?> model() {
+    return Minimax.of("MiniMax-M3");
+}
+```
+
+`Minimax.of(...)` uses `liteflow.agent.openai-compatible.minimax` and defaults to the global OpenAI-compatible endpoint. Both `MiniMax-M3` and `MiniMax-M2.7` can also use the Anthropic-compatible adapter:
+
+```java
+@Override
+protected ModelSpec<?> model() {
+    return AnthropicCompatible.custom("minimax", "MiniMax-M2.7");
+}
+```
+
+`AnthropicCompatible.custom(...)` uses `liteflow.agent.anthropic-compatible.minimax`. Select the endpoint for the account region through the matching `base-url` setting:
+
+| Region | OpenAI-compatible base URL | Anthropic-compatible base URL |
+| --- | --- | --- |
+| Global | `https://api.minimax.io/v1` | `https://api.minimax.io/anthropic` |
+| CN | `https://api.minimaxi.com/v1` | `https://api.minimaxi.com/anthropic` |
+
+The Anthropic-compatible base URLs intentionally end in `/anthropic`; the client appends `/v1/messages` when sending a request.
+
+The context window is the combined input and output limit. Current model capabilities are:
+
+| Model | Context window | Input modalities | Thinking |
+| --- | ---: | --- | --- |
+| `MiniMax-M3` | 1,000,000 | text, image, video | adaptive or disabled; enabled by default |
+| `MiniMax-M2.7` | 204,800 | text | always on |
+
+Current pay-as-you-go pricing is in USD per one million tokens:
+
+| Model | Service tier and input range | Input | Output | Cache read | Cache write |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `MiniMax-M3` | standard, up to 512,000 input tokens | 0.30 | 1.20 | 0.06 | N/A |
+| `MiniMax-M3` | standard, over 512,000 input tokens | 0.60 | 2.40 | 0.12 | N/A |
+| `MiniMax-M3` | priority, up to 512,000 input tokens | 0.45 | 1.80 | 0.09 | N/A |
+| `MiniMax-M3` | priority, over 512,000 input tokens | 0.90 | 3.60 | 0.18 | N/A |
+| `MiniMax-M2.7` | standard | 0.30 | 1.20 | 0.06 | 0.375 |
+
 **Anthropic Claude：**
 
 ```java
@@ -480,7 +524,13 @@ liteflow:
       kimi:
         api-key: ${KIMI_API_KEY}
         base-url: https://api.moonshot.cn/v1
+      minimax:
+        api-key: ${MINIMAX_API_KEY}
+        base-url: https://api.minimax.io/v1
     anthropic-compatible:
+      minimax:
+        api-key: ${MINIMAX_API_KEY}
+        base-url: https://api.minimax.io/anthropic
       gateway:
         api-key: ${ANTHROPIC_GATEWAY_API_KEY}
         base-url: https://anthropic-gateway.example.com

@@ -15,6 +15,6 @@ public final class OpenAICompatiblePresets {
         return OpenAIModelFactory.custom(apiKey, "https://open.bigmodel.cn/api/paas/v4", modelName);
     }
     public static OpenAIChatModel minimax(String apiKey, String modelName) {
-        return OpenAIModelFactory.custom(apiKey, "https://api.minimax.chat/v1", modelName);
+        return OpenAIModelFactory.custom(apiKey, "https://api.minimax.io/v1", modelName);
     }
 }
