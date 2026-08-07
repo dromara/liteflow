@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.16.1</revision>
+		<revision>2.16.1.1</revision>
 		<micrometer.version>1.8.5</micrometer.version>
 		<skipTests>true</skipTests>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
