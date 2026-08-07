@@ -115,9 +115,10 @@ public class JavaxProExecutor extends ScriptExecutor {
 
     @Override
     public Object executeScript(ScriptExecuteWrap wrap) throws Exception {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.process();
-        return cmp.getItemResultMetaValue(wrap.slotIndex);
+        return withExecutableCmp(wrap, cmp -> {
+            cmp.process();
+            return cmp.getItemResultMetaValue(wrap.slotIndex);
+        });
     }
 
     @Override
@@ -162,50 +163,78 @@ public class JavaxProExecutor extends ScriptExecutor {
 
     @Override
     public boolean executeIsAccess(ScriptExecuteWrap wrap) {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        return cmp.isAccess();
+        return withExecutableCmp(wrap, NodeComponent::isAccess);
     }
 
     @Override
     public boolean executeIsContinueOnError(ScriptExecuteWrap wrap) {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        return cmp.isContinueOnError();
+        return withExecutableCmp(wrap, NodeComponent::isContinueOnError);
     }
 
     @Override
     public boolean executeIsEnd(ScriptExecuteWrap wrap) {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        return cmp.isEnd();
+        return withExecutableCmp(wrap, NodeComponent::isEnd);
     }
 
     @Override
     public void executeBeforeProcess(ScriptExecuteWrap wrap) {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.beforeProcess();
+        runWithExecutableCmp(wrap, NodeComponent::beforeProcess);
     }
 
     @Override
     public void executeAfterProcess(ScriptExecuteWrap wrap) {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.afterProcess();
+        runWithExecutableCmp(wrap, NodeComponent::afterProcess);
     }
 
     @Override
     public void executeOnSuccess(ScriptExecuteWrap wrap) throws Exception {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.onSuccess();
+        runWithExecutableCmp(wrap, NodeComponent::onSuccess);
     }
 
     @Override
     public void executeOnError(ScriptExecuteWrap wrap, Exception e) throws Exception {
-        NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.onError(e);
+        runWithExecutableCmp(wrap, cmp -> cmp.onError(e));
     }
 
     @Override
     public void executeRollback(ScriptExecuteWrap wrap) throws Exception {
+        runWithExecutableCmp(wrap, NodeComponent::rollback);
+    }
+
+    /**
+     * 在编译出的脚本组件上执行一段有返回值的动作。
+     * <p>
+     * 编译产物是跨执行共享的单例，每次调用前都要把当前执行现场（refNode 等）注入进去，
+     * 因此用完必须成对地清理，否则 refNodeStackTL 会随调用次数无界增长（内存泄漏）。
+     * 这里是全类唯一的注入 + 清理点，新增入口只要走这个方法就不可能漏掉清理。
+     *
+     * @param wrap   脚本执行元参数
+     * @param action 要在脚本组件上执行的动作
+     * @param <T>    动作的返回值类型
+     * @param <E>    动作抛出的异常类型（不抛受检异常时会推断为 RuntimeException）
+     */
+    private <T, E extends Exception> T withExecutableCmp(ScriptExecuteWrap wrap, CmpFunction<T, E> action) throws E {
         NodeComponent cmp = getExecutableCmp(wrap);
-        cmp.rollback();
+        try {
+            return action.apply(cmp);
+        } finally {
+            cmp.removeRefNode();
+        }
+    }
+
+    /**
+     * 在编译出的脚本组件上执行一段无返回值的动作，语义同 {@link #withExecutableCmp(ScriptExecuteWrap, CmpFunction)}
+     * <p>
+     * 这里没有和上面的方法同名重载，是因为 lambda 形态的实参（如 {@code cmp -> cmp.onError(e)}）
+     * 无法靠返回类型在两个函数式接口之间消歧，会导致编译期歧义。
+     */
+    private <E extends Exception> void runWithExecutableCmp(ScriptExecuteWrap wrap, CmpConsumer<E> action) throws E {
+        NodeComponent cmp = getExecutableCmp(wrap);
+        try {
+            action.accept(cmp);
+        } finally {
+            cmp.removeRefNode();
+        }
     }
 
     private NodeComponent getExecutableCmp(ScriptExecuteWrap wrap){
@@ -220,6 +249,16 @@ public class JavaxProExecutor extends ScriptExecutor {
         cmp.setType(wrap.getCmp().getType());
         cmp.setSelf(cmp);
         return cmp;
+    }
+
+    @FunctionalInterface
+    private interface CmpFunction<T, E extends Exception> {
+        T apply(NodeComponent cmp) throws E;
+    }
+
+    @FunctionalInterface
+    private interface CmpConsumer<E extends Exception> {
+        void accept(NodeComponent cmp) throws E;
     }
 
     private String convertScript(String script){

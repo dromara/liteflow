@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="脚本S1" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+            import com.yomahub.liteflow.slot.DefaultContext;
+
+            public class LeakDemo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    DefaultContext ctx = this.getFirstContextBean();
+                    ctx.setData(this.getNodeId(), "executed by " + this.getNodeId());
+                }
+            }
+            ]]>
+        </node>
+        <!-- 抛异常的脚本节点，用于验证异常路径下 refNode 也会被清理 -->
+        <node id="s2" name="脚本S2" type="script" language="java">
+            <![CDATA[
+            import com.yomahub.liteflow.core.NodeComponent;
+
+            public class ErrorDemo extends NodeComponent {
+                @Override
+                public void process() throws Exception {
+                    throw new RuntimeException("script error on purpose");
+                }
+            }
+            ]]>
+        </node>
+    </nodes>
+
+    <!-- 两条 chain 引用同一个脚本节点 s1，EL 构建时会出现两个不同的 Node 克隆对象 -->
+    <chain name="chainA">
+        THEN(s1);
+    </chain>
+
+    <chain name="chainB">
+        THEN(s1);
+    </chain>
+
+    <!-- 异常场景：两条 chain 引用同一个会抛错的脚本节点 s2 -->
+    <chain name="errChainA">
+        THEN(s2);
+    </chain>
+
+    <chain name="errChainB">
+        THEN(s2);
+    </chain>
+</flow>
