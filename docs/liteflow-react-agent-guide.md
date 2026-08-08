@@ -434,13 +434,10 @@ The context window is the combined input and output limit. Current model capabil
 
 Current pay-as-you-go pricing is in USD per one million tokens:
 
-| Model | Service tier and input range | Input | Output | Cache read | Cache write |
-| --- | --- | ---: | ---: | ---: | ---: |
-| `MiniMax-M3` | standard, up to 512,000 input tokens | 0.30 | 1.20 | 0.06 | N/A |
-| `MiniMax-M3` | standard, over 512,000 input tokens | 0.60 | 2.40 | 0.12 | N/A |
-| `MiniMax-M3` | priority, up to 512,000 input tokens | 0.45 | 1.80 | 0.09 | N/A |
-| `MiniMax-M3` | priority, over 512,000 input tokens | 0.90 | 3.60 | 0.18 | N/A |
-| `MiniMax-M2.7` | standard | 0.30 | 1.20 | 0.06 | 0.375 |
+| Model | Input | Output | Cache read | Cache write |
+| --- | ---: | ---: | ---: | ---: |
+| `MiniMax-M3` | 0.60 | 2.40 | 0.12 | N/A |
+| `MiniMax-M2.7` | 0.30 | 1.20 | 0.06 | 0.375 |
 
 **Anthropic Claude：**
 
