@@ -421,7 +421,7 @@ next.apply(new ModelCallInput(
 
 builder 配置测试固定 `maxIterations()`、`modelExecutionConfig()`、`toolExecutionConfig()`、`maxRetries()`、`fallbackModel()`、`permissionContext()`、`stopOnReject()` 和 `customizeAgent()` 的映射；customizer 必须最后执行。default／fallback／routing models 都纳入 runtime ownership，关闭时各关闭一次。
 
-`ReActRetryFallbackTest` 使用计数 fake model：主模型前两次返回可重试错误、第三次成功时总调用次数为 3；主模型耗尽重试后只切换一次 fallback；fallback 也失败时保留主错误和 suppressed fallback 错误；`ExecutionConfig` deadline 到期会取消 subscription、不会继续重试，并映射为 LiteFlow `TIMEOUT`。
+`ReActRetryFallbackTest` 使用计数 fake model：`maxRetries()` 必须映射到传给 `Model.stream(...)` 的 `GenerateOptions`，不在 fake 内重复测试 Provider 自己的重试实现；主模型失败后按 AgentScope 2.0.2 原生语义只切换一次 fallback；fallback 成功时返回其结果，fallback 也失败时传播 fallback 错误。AgentScope 2.0.2 的 `ReActAgent.modelForCall()` 会丢弃主错误而不附加 suppressed，本模块明确接受并刻画这一上游限制，不额外发明模型执行包装层。`ExecutionConfig` deadline 到期会取消 subscription、不会继续调用，并映射为 LiteFlow `TIMEOUT`。
 
 - [ ] **Step 2: 运行测试并确认旧 Hook 无法满足断言**
 
