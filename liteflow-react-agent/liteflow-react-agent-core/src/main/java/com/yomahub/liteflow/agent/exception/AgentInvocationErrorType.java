@@ -5,5 +5,6 @@ public enum AgentInvocationErrorType {
     TIMEOUT,
     INTERRUPTED,
     ACQUISITION_FAILED,
+    PERMISSION,
     STRUCTURED_OUTPUT
 }

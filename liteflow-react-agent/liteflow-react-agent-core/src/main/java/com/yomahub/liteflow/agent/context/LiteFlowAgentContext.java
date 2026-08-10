@@ -3,6 +3,7 @@ package com.yomahub.liteflow.agent.context;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.model.ChatUsage;
+import io.agentscope.core.event.RequireUserConfirmEvent;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,6 +35,8 @@ public final class LiteFlowAgentContext {
     private final AtomicReference<ChatUsage> chatUsage = new AtomicReference<>();
     private final Set<String> recordedUsageEvents = ConcurrentHashMap.newKeySet();
     private final Set<String> usedSkills = Collections.synchronizedSet(new LinkedHashSet<>());
+    private final List<RequireUserConfirmEvent> confirmationEvents =
+            new CopyOnWriteArrayList<>();
 
     public LiteFlowAgentContext(
             AgentInvocationIdentity identity,
@@ -172,6 +176,16 @@ public final class LiteFlowAgentContext {
         synchronized (usedSkills) {
             return List.copyOf(usedSkills);
         }
+    }
+
+    public void recordConfirmationEvent(RequireUserConfirmEvent event) {
+        if (event != null) {
+            confirmationEvents.add(event);
+        }
+    }
+
+    public List<RequireUserConfirmEvent> getConfirmationEvents() {
+        return List.copyOf(confirmationEvents);
     }
 
     private static String requireText(String value, String name) {

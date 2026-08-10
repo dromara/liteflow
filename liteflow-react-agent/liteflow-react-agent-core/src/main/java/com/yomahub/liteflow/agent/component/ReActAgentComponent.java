@@ -2,6 +2,9 @@ package com.yomahub.liteflow.agent.component;
 
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler;
+import com.yomahub.liteflow.agent.hitl.AgentConfirmationHandlerResolver;
+import com.yomahub.liteflow.agent.hitl.ReActCallExecutor;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.middleware.ChatUsageMiddleware;
@@ -155,6 +158,10 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
 
     protected boolean enableShellTool() {
         return false;
+    }
+
+    protected AgentConfirmationHandler confirmationHandler() {
+        return null;
     }
 
     protected AgentStateStoreResolver stateStoreResolver() {
@@ -326,11 +333,26 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             return Mono.error(new AgentConfigException(
                     "Agent identity changed after this component runtime was initialized"));
         }
-        return switch (output.kind()) {
-            case TEXT -> runtime.agent().call(input, runtimeContext);
-            case JAVA_TYPE -> runtime.agent().call(input, output.javaType(), runtimeContext);
-            case JSON_SCHEMA -> runtime.agent().call(input, output.jsonSchema(), runtimeContext);
-        };
+        AgentConfirmationHandler handler = new AgentConfirmationHandlerResolver()
+                .resolve(confirmationHandler());
+        return new ReActCallExecutor().execute(
+                runtime.agent(),
+                input,
+                output,
+                runtimeContext,
+                liteflowContext,
+                handler,
+                agentConfig().getHitl().getConfirmationTimeout(),
+                agentConfig().getHitl().isFailOnDeniedTool(),
+                agentConfig().getRuntime().getTimeout());
+    }
+
+    @Override
+    protected Mono<Msg> applyRuntimeTimeout(
+            Mono<Msg> invocation,
+            java.time.Duration runtimeTimeout,
+            LiteFlowAgentContext context) {
+        return invocation;
     }
 
     private BuildOptions buildOptions(AgentRuntimeBuildContext context) {

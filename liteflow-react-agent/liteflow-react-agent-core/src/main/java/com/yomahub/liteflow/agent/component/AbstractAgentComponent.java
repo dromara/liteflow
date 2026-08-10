@@ -114,6 +114,21 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         return false;
     }
 
+    /** Applies the logical invocation deadline; specializations may own it internally. */
+    protected Mono<Msg> applyRuntimeTimeout(
+            Mono<Msg> invocation,
+            Duration runtimeTimeout,
+            LiteFlowAgentContext context) {
+        return invocation
+                .timeout(runtimeTimeout,
+                        Mono.error(new RuntimeDeadlineExceededException(runtimeTimeout)))
+                .onErrorMap(RuntimeDeadlineExceededException.class, failure ->
+                        new AgentInvocationException(
+                                AgentInvocationErrorType.TIMEOUT,
+                                failure.getMessage(),
+                                failure));
+    }
+
     @Override
     public final void process() throws Exception {
         Lock invocationLease = lifecycleLock.readLock();
@@ -188,15 +203,10 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
                 if (invocation == null) {
                     throw new AgentConfigException("invokeRuntime must not return null");
                 }
-                Msg reply = invocation
-                        .doOnCancel(context::cancel)
-                        .timeout(runtimeTimeout,
-                                Mono.error(new RuntimeDeadlineExceededException(runtimeTimeout)))
-                        .onErrorMap(RuntimeDeadlineExceededException.class, failure ->
-                                new AgentInvocationException(
-                                        AgentInvocationErrorType.TIMEOUT,
-                                        failure.getMessage(),
-                                        failure))
+                Msg reply = applyRuntimeTimeout(
+                                invocation.doOnCancel(context::cancel),
+                                runtimeTimeout,
+                                context)
                         .block();
                 handleReply(reply, context);
             } finally {
@@ -263,6 +273,16 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         if (runtimeTimeout == null || runtimeTimeout.isZero() || runtimeTimeout.isNegative()) {
             throw new AgentConfigException(
                     "liteflow.agent.runtime.timeout must be positive");
+        }
+        if (config.getHitl() == null) {
+            throw new AgentConfigException("liteflow.agent.hitl must not be null");
+        }
+        Duration confirmationTimeout = config.getHitl().getConfirmationTimeout();
+        if (confirmationTimeout == null
+                || confirmationTimeout.isZero()
+                || confirmationTimeout.isNegative()) {
+            throw new AgentConfigException(
+                    "liteflow.agent.hitl.confirmation-timeout must be positive");
         }
         if (config.getStateStore() == null || config.getStateStore().getType() == null) {
             throw new AgentConfigException(

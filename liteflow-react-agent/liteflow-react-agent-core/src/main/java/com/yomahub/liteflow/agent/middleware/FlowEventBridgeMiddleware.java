@@ -10,6 +10,7 @@ import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
+import io.agentscope.core.event.RequireUserConfirmEvent;
 import io.agentscope.core.middleware.AgentInput;
 import io.agentscope.core.middleware.MiddlewareBase;
 import reactor.core.publisher.Flux;
@@ -89,6 +90,9 @@ public final class FlowEventBridgeMiddleware implements MiddlewareBase {
             AgentEvent source,
             LiteFlowAgentContext context,
             AtomicReference<Throwable> listenerFailure) {
+        if (source instanceof RequireUserConfirmEvent confirmationEvent) {
+            context.recordConfirmationEvent(confirmationEvent);
+        }
         if (!FlowEventPublisher.hasListener(context.getSlot())) {
             return;
         }
