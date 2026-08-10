@@ -1,7 +1,7 @@
 # liteflow-react-agent 升级 AgentScope 2.0.2 设计
 
 - **日期**：2026-08-10
-- **状态**：待复核
+- **状态**：已批准
 - **目标版本**：AgentScope Java 2.0.2
 - **作用范围**：`liteflow-react-agent`、`liteflow-core` 中的 Agent 配置、`liteflow-testcase-el-react-agent`、相关集成与文档
 - **迁移类型**：允许破坏式升级
@@ -206,6 +206,14 @@ A2A 是独立的跨服务 Agent 协议，不等同于本地 subagent 或 Agent P
 - 将远程任务状态和事件桥接为 LiteFlow FlowEvent；
 - 提供 `AgentScopeA2aServer` 与 LiteFlow Agent runtime 的服务端适配示例；
 - 不在 core 中传递 A2A 客户端、服务端和 Web 框架依赖。
+
+AgentScope 2.0.2 的 A2A 扩展尚未完全迁移到 2.0 的无状态执行契约：客户端
+`A2aAgent` 明确持有单次请求状态且不允许并发复用，服务端 `AgentRunner` 仍以已弃用的
+粗粒度 `Event` 作为协议内适配类型。因此本模块采用隔离策略：客户端每次 LiteFlow
+调用创建独立 `A2aAgent`；服务端从 `streamEvents(..., RuntimeContext)` 获取类型化事件，
+只在 A2A 边界转换为粗粒度 `Event`。除这一上游协议边界外，core、Harness 和 Provider
+代码不得新增旧 Hook／Event API。该限制必须写入迁移文档，并由依赖升级测试监控，待
+AgentScope A2A 完成 2.0 原生迁移后删除边界适配层。
 
 ## 7. 组件 API
 
