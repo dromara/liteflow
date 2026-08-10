@@ -5,6 +5,8 @@ import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.tool.mcp.McpClientWrapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +22,8 @@ public final class ReActAgentRuntime implements AutoCloseable {
     private final ReActAgent agent;
     private final GuardedNamespacedAgentStateStore stateStore;
     private final ResolvedAgentStateStore resolvedStateStore;
+    private final List<McpClientWrapper> ownedMcpClients;
+    private final List<AgentSkillRepository> ownedSkillRepositories;
     private final List<Model> ownedModels;
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -28,11 +32,24 @@ public final class ReActAgentRuntime implements AutoCloseable {
             GuardedNamespacedAgentStateStore stateStore,
             ResolvedAgentStateStore resolvedStateStore,
             List<? extends Model> ownedModels) {
+        this(agent, stateStore, resolvedStateStore, List.of(), List.of(), ownedModels);
+    }
+
+    public ReActAgentRuntime(
+            ReActAgent agent,
+            GuardedNamespacedAgentStateStore stateStore,
+            ResolvedAgentStateStore resolvedStateStore,
+            List<McpClientRegistration> mcpClients,
+            List<? extends AgentSkillRepository> ownedSkillRepositories,
+            List<? extends Model> ownedModels) {
         this.agent = Objects.requireNonNull(agent, "agent");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.resolvedStateStore = Objects.requireNonNull(
                 resolvedStateStore, "resolvedStateStore");
-        this.ownedModels = identityDistinct(ownedModels);
+        this.ownedMcpClients = ownedMcpClients(mcpClients);
+        this.ownedSkillRepositories = identityDistinct(
+                ownedSkillRepositories, "ownedSkillRepositories");
+        this.ownedModels = identityDistinct(ownedModels, "ownedModels");
     }
 
     public ReActAgent agent() {
@@ -43,13 +60,19 @@ public final class ReActAgentRuntime implements AutoCloseable {
         return stateStore;
     }
 
-    /** Close order is Agent, models in reverse build order, state decorator, ownership wrapper. */
+    /** Close order is Agent, owned MCP/repositories/models, then StateStore wrappers. */
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
         Throwable failure = closeResource(agent, null);
+        for (int index = ownedMcpClients.size() - 1; index >= 0; index--) {
+            failure = closeResource(ownedMcpClients.get(index), failure);
+        }
+        for (int index = ownedSkillRepositories.size() - 1; index >= 0; index--) {
+            failure = closeResource(ownedSkillRepositories.get(index), failure);
+        }
         for (int index = ownedModels.size() - 1; index >= 0; index--) {
             failure = closeResource(ownedModels.get(index), failure);
         }
@@ -78,14 +101,28 @@ public final class ReActAgentRuntime implements AutoCloseable {
         return existingFailure;
     }
 
-    private static List<Model> identityDistinct(List<? extends Model> models) {
-        Objects.requireNonNull(models, "ownedModels");
-        Set<Model> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        List<Model> distinct = new ArrayList<>();
-        for (Model model : models) {
-            Objects.requireNonNull(model, "ownedModels must not contain null");
-            if (seen.add(model)) {
-                distinct.add(model);
+    private static List<McpClientWrapper> ownedMcpClients(
+            List<McpClientRegistration> registrations) {
+        Objects.requireNonNull(registrations, "mcpClients");
+        Set<McpClientWrapper> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<McpClientWrapper> distinct = new ArrayList<>();
+        for (McpClientRegistration registration : registrations) {
+            Objects.requireNonNull(registration, "mcpClients must not contain null");
+            if (registration.owned() && seen.add(registration.client())) {
+                distinct.add(registration.client());
+            }
+        }
+        return List.copyOf(distinct);
+    }
+
+    private static <T> List<T> identityDistinct(List<? extends T> resources, String name) {
+        Objects.requireNonNull(resources, name);
+        Set<T> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<T> distinct = new ArrayList<>();
+        for (T resource : resources) {
+            Objects.requireNonNull(resource, name + " must not contain null");
+            if (seen.add(resource)) {
+                distinct.add(resource);
             }
         }
         return List.copyOf(distinct);

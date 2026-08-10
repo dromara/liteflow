@@ -1,18 +1,20 @@
 package com.yomahub.liteflow.agent.tool;
 
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.ShellConfig;
 import com.yomahub.liteflow.property.agent.ShellMode;
+import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,17 +24,26 @@ import java.util.concurrent.TimeoutException;
 
 public class ManagedShellCommandTool {
 
-    private final Path workspace;
+    private final GuardedWorkspacePathResolver resolver;
     private final ShellConfig shell;
 
-    public ManagedShellCommandTool(Path workspace, AgentConfig cfg) {
-        this.workspace = workspace.toAbsolutePath().normalize();
+    public ManagedShellCommandTool(GuardedWorkspacePathResolver resolver, AgentConfig cfg) {
+        this.resolver = java.util.Objects.requireNonNull(resolver, "resolver");
         this.shell = cfg.getShell();
     }
 
+    public ManagedShellCommandTool(Path root, AgentConfig cfg) {
+        this(new GuardedWorkspacePathResolver(
+                root,
+                cfg.getWorkspace().getMaxFileBytes(),
+                cfg.getWorkspace().isAutoCreate()), cfg);
+    }
+
     @Tool(name = "execute_shell_command",
-          description = "Execute a controlled shell command in the current workspace. Path traversal and blacklisted commands are blocked.")
+          description = "Execute a controlled command in the trusted local workspace.",
+          concurrencySafe = false)
     public String executeCommand(
+            RuntimeContext runtimeContext,
             @ToolParam(name = "command", description = "Single command string (pipes && || are rejected)")
             String command) {
         if (shell.getMode() == ShellMode.DISABLED) {
@@ -52,6 +63,8 @@ public class ManagedShellCommandTool {
         if (shell.getMode() == ShellMode.BLACKLIST && shell.getBlacklist().contains(first)) {
             return "{\"error\":\"command '" + first + "' not allowed by blacklist\"}";
         }
+        LiteFlowAgentContext context = requireContext(runtimeContext);
+        Path workspace = resolver.sessionRoot(context.getRuntimeSessionId());
         try {
             ProcessBuilder pb = new ProcessBuilder(Arrays.asList(tokens));
             pb.directory(workspace.toFile());
@@ -63,7 +76,8 @@ public class ManagedShellCommandTool {
                 t.setDaemon(true);
                 return t;
             });
-            Future<String> outputFuture = outputReader.submit(() -> readLimited(p.getInputStream(), shell.getMaxOutputBytes()));
+            Future<String> outputFuture = outputReader.submit(
+                    () -> readLimited(p.getInputStream(), shell.getMaxOutputBytes()));
             try {
                 boolean done = p.waitFor(shell.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
                 if (!done) {
@@ -83,8 +97,10 @@ public class ManagedShellCommandTool {
                 outputReader.shutdownNow();
             }
         } catch (IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
-            return "{\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return "{\"error\":\"" + safeMessage(e) + "\"}";
         }
     }
 
@@ -110,19 +126,34 @@ public class ManagedShellCommandTool {
 
     private static String readLimited(InputStream in, long max) throws IOException {
         byte[] buf = new byte[4096];
-        List<byte[]> chunks = new ArrayList<>();
-        long total = 0;
-        int n;
-        while ((n = in.read(buf)) > 0 && total < max) {
-            int toCopy = (int) Math.min(n, max - total);
-            byte[] c = new byte[toCopy];
-            System.arraycopy(buf, 0, c, 0, toCopy);
-            chunks.add(c);
-            total += toCopy;
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        long remaining = Math.max(0, max);
+        while (remaining > 0) {
+            int request = (int) Math.min(buf.length, remaining);
+            int read = in.read(buf, 0, request);
+            if (read < 0) {
+                break;
+            }
+            output.write(buf, 0, read);
+            remaining -= read;
         }
-        byte[] all = new byte[(int) total];
-        int pos = 0;
-        for (byte[] c : chunks) { System.arraycopy(c, 0, all, pos, c.length); pos += c.length; }
-        return new String(all, StandardCharsets.UTF_8);
+        return output.toString(StandardCharsets.UTF_8);
+    }
+
+    private static LiteFlowAgentContext requireContext(RuntimeContext runtimeContext) {
+        if (runtimeContext == null) {
+            throw new AgentConfigException("RuntimeContext is required for shell tools");
+        }
+        LiteFlowAgentContext context = runtimeContext.get(LiteFlowAgentContext.class);
+        if (context == null) {
+            throw new AgentConfigException("LiteFlowAgentContext is required for shell tools");
+        }
+        return context;
+    }
+
+    private static String safeMessage(Throwable failure) {
+        String message = failure.getMessage();
+        return (message == null ? failure.getClass().getSimpleName() : message)
+                .replace("\"", "'");
     }
 }

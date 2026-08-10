@@ -13,11 +13,18 @@ import com.yomahub.liteflow.agent.middleware.SkillTrackingMiddleware;
 import com.yomahub.liteflow.agent.middleware.StateStoreFailureMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.runtime.McpClientRegistration;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
+import com.yomahub.liteflow.agent.tool.GuardedWorkspacePathResolver;
+import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
+import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
+import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.ShellMode;
+import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.agent.config.ModelConfig;
@@ -26,12 +33,24 @@ import io.agentscope.core.model.ExecutionConfig;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionContextState;
+import io.agentscope.core.skill.AgentSkill;
+import io.agentscope.core.skill.DynamicSkillMiddleware;
+import io.agentscope.core.skill.SkillFilter;
+import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.Toolkit;
+import io.agentscope.core.tool.ToolkitConfig;
+import io.agentscope.core.tool.mcp.McpClientWrapper;
 import reactor.core.publisher.Mono;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** AgentScope 2 ReAct specialization of the shared LiteFlow invocation template. */
 public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAgentRuntime> {
@@ -100,6 +119,45 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
         return builder;
     }
 
+    protected List<Object> tools() {
+        return List.of();
+    }
+
+    protected void customizeToolkit(Toolkit toolkit) {
+    }
+
+    protected List<McpClientWrapper> mcpClients() {
+        return List.of();
+    }
+
+    protected boolean ownsMcpClient(McpClientWrapper client) {
+        return false;
+    }
+
+    protected List<AgentSkillRepository> skillRepositories() {
+        return List.of();
+    }
+
+    protected boolean ownsSkillRepository(AgentSkillRepository repository) {
+        return false;
+    }
+
+    protected SkillFilter skillFilter() {
+        return SkillFilter.all();
+    }
+
+    protected boolean dynamicSkillsEnabled() {
+        return true;
+    }
+
+    protected boolean enableWorkspaceFileTools() {
+        return false;
+    }
+
+    protected boolean enableShellTool() {
+        return false;
+    }
+
     protected AgentStateStoreResolver stateStoreResolver() {
         return new DefaultAgentStateStoreResolver();
     }
@@ -118,8 +176,12 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
         }
         GuardedNamespacedAgentStateStore namespaced = null;
         List<Model> ownedModels = new ArrayList<>();
+        List<McpClientRegistration> registeredMcpClients = new ArrayList<>();
+        List<AgentSkillRepository> repositories = new ArrayList<>();
+        List<AgentSkillRepository> ownedRepositories = new ArrayList<>();
         ReActAgent agent = null;
         try {
+            collectSkillRepositories(repositories, ownedRepositories);
             namespaced = new GuardedNamespacedAgentStateStore(
                     resolved.store(), buildContext.agentNamespace());
             Model defaultModel = requireModel(buildModel(), "buildModel must not return null");
@@ -153,7 +215,8 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             FlowEventBridgeMiddleware eventMiddleware =
                     new FlowEventBridgeMiddleware(options.listenerFailureMode());
             ChatUsageMiddleware usageMiddleware = new ChatUsageMiddleware();
-            SkillTrackingMiddleware skillMiddleware = new SkillTrackingMiddleware(Map.of());
+            SkillTrackingMiddleware skillMiddleware =
+                    new SkillTrackingMiddleware(skillIdToName(repositories));
             LiteFlowSystemPromptMiddleware promptMiddleware =
                     new LiteFlowSystemPromptMiddleware(this::transformSystemPrompt);
             ModelRoutingMiddleware routingMiddleware =
@@ -167,11 +230,13 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     skillMiddleware,
                     promptMiddleware,
                     routingMiddleware);
+            Toolkit toolkit = buildToolkit(buildContext.agentConfig(), registeredMcpClients);
+            Map<String, AgentTool> requiredTools = registeredToolIdentities(toolkit);
             ReActAgent.Builder builder = ReActAgent.builder()
                     .name(buildContext.agentName())
                     .sysPrompt(effectiveSystemPrompt())
                     .model(defaultModel)
-                    .toolkit(new Toolkit())
+                    .toolkit(toolkit)
                     .maxIters(options.maxIterations())
                     .modelExecutionConfig(options.modelExecutionConfig())
                     .toolExecutionConfig(options.toolExecutionConfig())
@@ -186,6 +251,17 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     .middleware(eventMiddleware)
                     .middleware(usageMiddleware)
                     .middleware(skillMiddleware);
+            for (AgentSkillRepository repository : repositories) {
+                builder.skillRepository(repository);
+            }
+            SkillFilter baseSkillFilter = skillFilter();
+            if (baseSkillFilter == null) {
+                throw new AgentConfigException("skillFilter must not return null");
+            }
+            boolean dynamicSkills = dynamicSkillsEnabled();
+            builder.skillFilter(baseSkillFilter)
+                    .dynamicSkillsEnabled(dynamicSkills)
+                    .skillCodeExecutionEnabled(false);
             for (MiddlewareBase middleware : options.userMiddlewares()) {
                 builder.middleware(AgentMiddlewareOrder.user(middleware));
             }
@@ -198,13 +274,36 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             }
             agent = customized.build();
             validateCustomizedAgent(
-                    agent, namespaced, managedModels, mandatoryMiddlewares);
+                    agent,
+                    namespaced,
+                    managedModels,
+                    mandatoryMiddlewares,
+                    requiredTools,
+                    !repositories.isEmpty() && dynamicSkills);
             routingMiddleware.finalizeDefaultModel(agent.getModel());
-            return new ReActAgentRuntime(agent, namespaced, resolved, managedModels);
+            return new ReActAgentRuntime(
+                    agent,
+                    namespaced,
+                    resolved,
+                    registeredMcpClients,
+                    ownedRepositories,
+                    managedModels);
         } catch (RuntimeException | Error failure) {
-            closeAfterBuildFailure(failure, agent, ownedModels, namespaced, resolved);
+            closeAfterBuildFailure(
+                    failure,
+                    agent,
+                    registeredMcpClients,
+                    ownedRepositories,
+                    ownedModels,
+                    namespaced,
+                    resolved);
             throw failure;
         }
+    }
+
+    @Override
+    protected boolean requiresWorkspaceLease() {
+        return enableWorkspaceFileTools() || enableShellTool();
     }
 
     @Override
@@ -286,7 +385,9 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             ReActAgent agent,
             GuardedNamespacedAgentStateStore namespacedStateStore,
             List<Model> managedModels,
-            List<MiddlewareBase> mandatoryMiddlewares) {
+            List<MiddlewareBase> mandatoryMiddlewares,
+            Map<String, AgentTool> requiredTools,
+            boolean dynamicSkillsRequired) {
         if (agent.getStateStore() != namespacedStateStore) {
             throw new AgentConfigException(
                     "customizeAgent must retain the LiteFlow namespaced StateStore");
@@ -305,6 +406,18 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
         if (customizedFallback != null && !identityContains(managedModels, customizedFallback)) {
             throw new AgentConfigException(
                     "customizeAgent introduced an unmanaged fallback model");
+        }
+        for (Map.Entry<String, AgentTool> required : requiredTools.entrySet()) {
+            if (agent.getToolkit().getTool(required.getKey()) != required.getValue()) {
+                throw new AgentConfigException(
+                        "customizeAgent must retain the LiteFlow Toolkit tool identity: "
+                                + required.getKey());
+            }
+        }
+        if (dynamicSkillsRequired && agent.getMiddlewares().stream()
+                .noneMatch(DynamicSkillMiddleware.class::isInstance)) {
+            throw new AgentConfigException(
+                    "customizeAgent must retain AgentScope DynamicSkillMiddleware");
         }
     }
 
@@ -336,15 +449,172 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
     private static void closeAfterBuildFailure(
             Throwable failure,
             ReActAgent agent,
+            List<McpClientRegistration> mcpClients,
+            List<AgentSkillRepository> repositories,
             List<Model> models,
             GuardedNamespacedAgentStateStore stateStore,
             ResolvedAgentStateStore resolvedStateStore) {
         addCloseFailure(failure, agent);
+        Set<McpClientWrapper> closedMcp =
+                Collections.newSetFromMap(new IdentityHashMap<>());
+        for (int index = mcpClients.size() - 1; index >= 0; index--) {
+            McpClientRegistration registration = mcpClients.get(index);
+            if (registration.owned() && closedMcp.add(registration.client())) {
+                addCloseFailure(failure, registration.client());
+            }
+        }
+        Set<AgentSkillRepository> closedRepositories =
+                Collections.newSetFromMap(new IdentityHashMap<>());
+        for (int index = repositories.size() - 1; index >= 0; index--) {
+            AgentSkillRepository repository = repositories.get(index);
+            if (closedRepositories.add(repository)) {
+                addCloseFailure(failure, repository);
+            }
+        }
         for (int index = models.size() - 1; index >= 0; index--) {
             addCloseFailure(failure, models.get(index));
         }
         addCloseFailure(failure, stateStore);
         addCloseFailure(failure, resolvedStateStore);
+    }
+
+    private Toolkit buildToolkit(
+            AgentConfig config, List<McpClientRegistration> registeredMcpClients) {
+        if (config.getToolkit() == null) {
+            throw new AgentConfigException("liteflow.agent.toolkit must not be null");
+        }
+        Toolkit toolkit = new Toolkit(ToolkitConfig.builder()
+                .parallel(config.getToolkit().isParallel())
+                .build());
+        List<Object> configuredTools = tools();
+        if (configuredTools == null) {
+            throw new AgentConfigException("tools must not return null");
+        }
+        for (Object tool : configuredTools) {
+            if (tool == null) {
+                throw new AgentConfigException("tools must not contain null");
+            }
+            toolkit.registerTool(tool);
+        }
+
+        if (enableWorkspaceFileTools() || enableShellTool()) {
+            GuardedWorkspacePathResolver workspace = guardedWorkspace(config);
+            if (enableWorkspaceFileTools()) {
+                toolkit.registerTool(new WorkspaceFileTools(workspace, config));
+            }
+            if (enableShellTool()) {
+                if (config.getShell() == null || config.getShell().getMode() == null
+                        || config.getShell().getMode() == ShellMode.DISABLED) {
+                    throw new AgentConfigException(
+                            "enableShellTool requires liteflow.agent.shell.mode != DISABLED");
+                }
+                toolkit.registerTool(new ManagedShellCommandTool(workspace, config));
+            }
+        }
+
+        customizeToolkit(toolkit);
+        List<McpClientWrapper> clients = mcpClients();
+        if (clients == null) {
+            throw new AgentConfigException("mcpClients must not return null");
+        }
+        Set<McpClientWrapper> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (McpClientWrapper client : clients) {
+            if (client == null) {
+                throw new AgentConfigException("mcpClients must not contain null");
+            }
+            if (!seen.add(client)) {
+                continue;
+            }
+            McpClientRegistration registration =
+                    new McpClientRegistration(client, ownsMcpClient(client));
+            registeredMcpClients.add(registration);
+            toolkit.registerMcpClient(client)
+                    .timeout(config.getRuntime().getTimeout())
+                    .block();
+        }
+        return toolkit;
+    }
+
+    private GuardedWorkspacePathResolver guardedWorkspace(AgentConfig config) {
+        if (config.getWorkspace() == null) {
+            throw new AgentConfigException("liteflow.agent.workspace must not be null");
+        }
+        if (config.getWorkspace().getBackend() != WorkspaceBackend.GUARDED_LOCAL) {
+            throw new AgentConfigException(
+                    "built-in workspace tools require WorkspaceBackend.GUARDED_LOCAL");
+        }
+        if (!config.getWorkspace().isTrustedLocal()) {
+            throw new AgentConfigException(
+                    "built-in workspace tools require workspace.trustedLocal=true");
+        }
+        String root = config.getWorkspace().getRoot();
+        if (root == null || root.isBlank()) {
+            throw new AgentConfigException(
+                    "built-in workspace tools require a valid workspace.root");
+        }
+        if (config.getWorkspace().getMaxFileBytes() <= 0) {
+            throw new AgentConfigException("workspace.maxFileBytes must be positive");
+        }
+        if (config.getWorkspace().getMaxListSize() <= 0) {
+            throw new AgentConfigException("workspace.maxListSize must be positive");
+        }
+        try {
+            return new GuardedWorkspacePathResolver(
+                    Path.of(root),
+                    config.getWorkspace().getMaxFileBytes(),
+                    config.getWorkspace().isAutoCreate());
+        } catch (IllegalArgumentException failure) {
+            throw new AgentConfigException("invalid guarded local workspace.root", failure);
+        }
+    }
+
+    private void collectSkillRepositories(
+            List<AgentSkillRepository> repositories,
+            List<AgentSkillRepository> ownedRepositories) {
+        List<AgentSkillRepository> configured = skillRepositories();
+        if (configured == null) {
+            throw new AgentConfigException("skillRepositories must not return null");
+        }
+        Set<AgentSkillRepository> seen =
+                Collections.newSetFromMap(new IdentityHashMap<>());
+        for (AgentSkillRepository repository : configured) {
+            if (repository == null) {
+                throw new AgentConfigException("skillRepositories must not contain null");
+            }
+            if (!seen.add(repository)) {
+                continue;
+            }
+            repositories.add(repository);
+            if (ownsSkillRepository(repository)) {
+                ownedRepositories.add(repository);
+            }
+        }
+    }
+
+    private static Map<String, String> skillIdToName(
+            List<AgentSkillRepository> repositories) {
+        Map<String, String> names = new LinkedHashMap<>();
+        for (AgentSkillRepository repository : repositories) {
+            List<AgentSkill> skills = repository.getAllSkills();
+            if (skills == null) {
+                throw new AgentConfigException(
+                        "AgentSkillRepository.getAllSkills must not return null");
+            }
+            for (AgentSkill skill : skills) {
+                if (skill != null) {
+                    names.put(skill.getSkillId(), skill.getName());
+                }
+            }
+        }
+        return Map.copyOf(names);
+    }
+
+    private static Map<String, AgentTool> registeredToolIdentities(Toolkit toolkit) {
+        Map<String, AgentTool> tools = new LinkedHashMap<>();
+        for (String name : toolkit.getToolNames()) {
+            tools.put(name, toolkit.getTool(name));
+        }
+        return Map.copyOf(tools);
     }
 
     private static void addCloseFailure(Throwable failure, Object resource) {
