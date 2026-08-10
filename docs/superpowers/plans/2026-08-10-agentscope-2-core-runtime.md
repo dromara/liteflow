@@ -410,12 +410,18 @@ git commit -m "feat(agent): add typed replies and explicit runtime context"
 
 - [ ] **Step 1: 写顺序、模型替换、事件和 listener 策略失败测试**
 
-固定 order：state-store failure 10,000；logging 9,000；flow event 8,000；usage／skill 7,000；用户 Middleware 1,000。模型路由保留 messages／tools／options，只替换 model：
+固定 order：state-store failure 10,000；logging 9,000；flow event 8,000；usage／skill 7,000；用户 Middleware 1,000。模型路由保留 messages／tools／options，只替换 model；当路由选择 managed default 时，必须保留 `input.model()`，因为 AgentScope 2.0.2 会在此处传入包含原生 fallback 的组合模型：
 
 ```java
+Model selectedModel = routeModel(defaultModel, context);
+Model effectiveModel = selectedModel == defaultModel
+        ? input.model()
+        : selectedModel;
 next.apply(new ModelCallInput(
-        input.messages(), input.tools(), input.options(), selectedModel));
+        input.messages(), input.tools(), input.options(), effectiveModel));
 ```
+
+`routeModel` 返回值仍必须按对象身份属于 runtime 管理的 default／fallback／routing models；只有“路由已选择 managed default”这一分支可以信任 AgentScope 提供的 `input.model()` 组合包装器。显式选择 fallback 或 routing model 时直接替换，并按该选择绕过 default 的原生 fallback 链。
 
 事件测试覆盖 start/end、text/thinking delta、tool call/result start/delta/end、confirm required/result、result 和 error，并保留 reasoning／tool_result／summary／result 四个兼容事件名。listener 覆盖 `FAIL_FAST` 与 `LOG_AND_CONTINUE`；无 listener 时不发布。usage 跨多次 model call 聚合，每次 invocation 清零。
 
@@ -440,7 +446,7 @@ Expected: FAIL。
 
 每个 Middleware 只保存不可变策略，从 `RuntimeContext.get(LiteFlowAgentContext.class)` 读取调用数据。`AgentFlowEventData` 保存原始 `AgentEvent`、原始 user／conversation／agentKey，以及 chainId／nodeId／requestId／traceId／taskId／replyId。
 
-`ModelRoutingMiddleware` 只能选择 runtime handle 已管理的 default／fallback／routing models；route 返回 null 或未管理 model 时在调用前失败，不得在请求路径 `ModelRegistry.resolve()`。
+`ModelRoutingMiddleware` 只能选择 runtime handle 已管理的 default／fallback／routing models；route 返回 null 或未管理 model 时在调用前失败，不得在请求路径 `ModelRegistry.resolve()`。选择 default 时保留上游 `input.model()` 以兼容 AgentScope 原生 fallback 组合包装器；选择其他 managed model 时才替换模型。
 
 `ReActAgentComponent` 明确开放并映射 2.0 builder：
 
