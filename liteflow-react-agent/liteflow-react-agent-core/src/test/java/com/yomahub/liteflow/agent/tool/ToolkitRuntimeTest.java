@@ -21,11 +21,16 @@ import io.agentscope.core.tool.ToolParam;
 import io.agentscope.core.tool.Toolkit;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -152,6 +157,162 @@ class ToolkitRuntimeTest {
                 AgentConfigException.class, () -> component.runtime(config()));
 
         assertTrue(failure.getMessage().contains("Toolkit"));
+    }
+
+    @Test
+    void shellDrainsExcessOutputAndReturnsAnExplicitTruncationMarker() throws Exception {
+        Path root = Files.createTempDirectory("liteflow-shell-drain-");
+        AgentConfig shellConfig = shellConfig(root, Duration.ofMillis(500), 64);
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(root, shellConfig);
+
+        String result = tool.executeCommand(
+                AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
+                fixtureCommand("flood", "2097152"));
+
+        assertTrue(result.contains("truncated after 64 bytes"), result);
+        assertFalse(result.contains("timeout"), result);
+    }
+
+    @Test
+    void shellRegistrationRejectsInvalidTimeoutOutputAndModeLists() throws Exception {
+        Path root = Files.createTempDirectory("liteflow-shell-config-");
+        assertInvalidShell(root, config -> config.getShell().setTimeout(Duration.ZERO));
+        assertInvalidShell(root, config -> config.getShell()
+                .setTimeout(Duration.ofSeconds(Long.MAX_VALUE)));
+        assertInvalidShell(root, config -> config.getShell().setMaxOutputBytes(0));
+        assertInvalidShell(root, config -> config.getShell().setMaxOutputBytes(Long.MAX_VALUE));
+        assertInvalidShell(root, config -> config.getShell().setWhitelist(null));
+        assertInvalidShell(root, config -> config.getShell().setWhitelist(List.of("java", " ")));
+        assertInvalidShell(root, config -> {
+            config.getShell().setMode(ShellMode.BLACKLIST);
+            config.getShell().setBlacklist(null);
+        });
+        assertInvalidShell(root, config -> {
+            config.getShell().setMode(ShellMode.BLACKLIST);
+            config.getShell().setBlacklist(List.of("rm", ""));
+        });
+    }
+
+    @Test
+    void shellTimeoutTerminatesParentAndDescendantProcesses() throws Exception {
+        Path root = Files.createTempDirectory("liteflow-shell-timeout-");
+        AgentConfig shellConfig = shellConfig(root, Duration.ofMillis(750), 1024);
+        GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(root, 1024);
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(resolver, shellConfig);
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        Path session = resolver.sessionRoot(invocation.getRuntimeSessionId());
+        Path parentPid = session.resolve("parent.pid");
+        Path childPid = session.resolve("child.pid");
+        long parent = -1;
+        long child = -1;
+        try {
+            String result = tool.executeCommand(
+                    AgentTestContexts.runtimeContext(invocation),
+                    fixtureCommand("tree", "parent.pid", "child.pid"));
+            assertTrue(result.contains("timeout"), result);
+            parent = readPid(parentPid);
+            child = readPid(childPid);
+            assertProcessExited(parent);
+            assertProcessExited(child);
+        } finally {
+            forceKill(child);
+            forceKill(parent);
+        }
+    }
+
+    @Test
+    void shellCancellationTerminatesParentAndDescendantProcesses() throws Exception {
+        Path root = Files.createTempDirectory("liteflow-shell-cancel-");
+        AgentConfig shellConfig = shellConfig(root, Duration.ofSeconds(5), 1024);
+        GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(root, 1024);
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(resolver, shellConfig);
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        Path session = resolver.sessionRoot(invocation.getRuntimeSessionId());
+        Path parentPid = session.resolve("parent.pid");
+        Path childPid = session.resolve("child.pid");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> call = executor.submit(() -> tool.executeCommand(
+                AgentTestContexts.runtimeContext(invocation),
+                fixtureCommand("tree", "parent.pid", "child.pid")));
+        long parent = -1;
+        long child = -1;
+        try {
+            awaitFile(childPid, Duration.ofSeconds(2));
+            parent = readPid(parentPid);
+            child = readPid(childPid);
+            invocation.cancel();
+            String result = call.get(2, TimeUnit.SECONDS);
+            assertTrue(result.contains("cancelled"), result);
+            assertProcessExited(parent);
+            assertProcessExited(child);
+        } finally {
+            call.cancel(true);
+            executor.shutdownNow();
+            forceKill(child);
+            forceKill(parent);
+        }
+    }
+
+    private static AgentConfig shellConfig(Path root, Duration timeout, long maxOutputBytes) {
+        AgentConfig config = config();
+        config.getWorkspace().setRoot(root.toString());
+        config.getWorkspace().setTrustedLocal(true);
+        config.getShell().setMode(ShellMode.WHITELIST);
+        config.getShell().setWhitelist(List.of(javaExecutable()));
+        config.getShell().setTimeout(timeout);
+        config.getShell().setMaxOutputBytes(maxOutputBytes);
+        return config;
+    }
+
+    private static void assertInvalidShell(
+            Path root, java.util.function.Consumer<AgentConfig> invalidator) {
+        AgentConfig config = shellConfig(root, Duration.ofSeconds(1), 1024);
+        invalidator.accept(config);
+        TestComponent component = new TestComponent();
+        component.shellTool = true;
+        assertThrows(AgentConfigException.class, () -> component.runtime(config));
+    }
+
+    private static String fixtureCommand(String... arguments) {
+        String testClasses = Path.of("target", "test-classes").toAbsolutePath().toString();
+        return String.join(" ", java.util.stream.Stream.concat(
+                        java.util.stream.Stream.of(
+                                javaExecutable(), "-cp", testClasses,
+                                ShellProcessFixture.class.getName()),
+                        java.util.Arrays.stream(arguments))
+                .toList());
+    }
+
+    private static String javaExecutable() {
+        return Path.of(System.getProperty("java.home"), "bin", "java").toString();
+    }
+
+    private static void awaitFile(Path path, Duration timeout) throws Exception {
+        Instant deadline = Instant.now().plus(timeout);
+        while (!Files.exists(path) && Instant.now().isBefore(deadline)) {
+            Thread.onSpinWait();
+        }
+        assertTrue(Files.exists(path), "fixture did not publish pid file: " + path);
+    }
+
+    private static long readPid(Path path) throws Exception {
+        awaitFile(path, Duration.ofSeconds(1));
+        return Long.parseLong(Files.readString(path));
+    }
+
+    private static void assertProcessExited(long pid) throws Exception {
+        ProcessHandle handle = ProcessHandle.of(pid).orElse(null);
+        if (handle != null && handle.isAlive()) {
+            handle.onExit().get(2, TimeUnit.SECONDS);
+        }
+        assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false),
+                "process is still alive: " + pid);
+    }
+
+    private static void forceKill(long pid) {
+        if (pid > 0) {
+            ProcessHandle.of(pid).ifPresent(ProcessHandle::destroyForcibly);
+        }
     }
 
     private static AgentConfig config() {

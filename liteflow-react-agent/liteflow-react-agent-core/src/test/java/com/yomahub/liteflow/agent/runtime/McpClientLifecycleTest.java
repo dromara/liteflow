@@ -69,6 +69,26 @@ class McpClientLifecycleTest {
     }
 
     @Test
+    void priorBorrowedClientStaysOpenWhenNthOwnedClientFailsRegistration() {
+        FakeMcpClient priorBorrowed = FakeMcpClient.success("prior-borrowed");
+        RuntimeException registrationFailure = new RuntimeException("owned list failed");
+        FakeMcpClient failingOwned = FakeMcpClient.listFailure(
+                "failing-owned", registrationFailure);
+        TestComponent component = new TestComponent(
+                List.of(priorBorrowed, failingOwned), List.of(failingOwned));
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> component.runtime(config(Duration.ofSeconds(1))));
+
+        assertSame(registrationFailure, rootCause(thrown));
+        assertEquals(1, priorBorrowed.initializeCount.get());
+        assertEquals(0, priorBorrowed.closeCount.get());
+        assertEquals(1, failingOwned.initializeCount.get());
+        assertEquals(1, failingOwned.closeCount.get());
+    }
+
+    @Test
     void failedOrTimedOutOwnedClientIsClosedAndNoRuntimeIsPublished() {
         FakeMcpClient failingOwned = FakeMcpClient.listFailure(
                 "failing-owned", new IllegalStateException("boom"));

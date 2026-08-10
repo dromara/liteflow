@@ -125,7 +125,32 @@ class AgentSkillRepositoryIntegrationTest {
                                             })))
                     .blockLast();
 
-            assertEquals(List.of("shared"), invocation.getUsedSkills());
+            assertEquals(List.of(skill.getSkillId()), invocation.getUsedSkills());
+        } finally {
+            runtime.close();
+        }
+    }
+
+    @Test
+    void repositoriesAreEnumeratedOnlyAtInvocationTime() {
+        AgentSkill skill = skill("deferred", "deferred-description", null);
+        DeferredRepository repository = new DeferredRepository(skill);
+        TestComponent component = new TestComponent(List.of(repository), List.of());
+
+        ReActAgentRuntime runtime = component.runtime(config());
+        try {
+            assertEquals(0, repository.enumerationCount.get());
+            repository.open = true;
+            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            String prompt = dynamic.onSystemPrompt(
+                            runtime.agent(),
+                            AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
+                            "base")
+                    .block();
+
+            assertNotNull(prompt);
+            assertTrue(prompt.contains("deferred-description"), prompt);
+            assertEquals(1, repository.enumerationCount.get());
         } finally {
             runtime.close();
         }
@@ -141,6 +166,9 @@ class AgentSkillRepositoryIntegrationTest {
         ReActAgentRuntime runtime = component.runtime(config());
         try {
             DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            assertEquals(1, runtime.agent().getMiddlewares().stream()
+                    .filter(DynamicSkillMiddleware.class::isInstance)
+                    .count());
             String prompt = dynamic.onSystemPrompt(
                             runtime.agent(),
                             AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
@@ -197,6 +225,36 @@ class AgentSkillRepositoryIntegrationTest {
 
         assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
         assertEquals(1, owned.closeCount.get());
+    }
+
+    @Test
+    void customizerCannotEnableASecondCodeExecutingDynamicSkillMiddleware() {
+        InMemoryRepository repository = new InMemoryRepository(
+                "secured", List.of(skill("secured-skill", "secured-description", null)));
+        TestComponent component = new TestComponent(List.of(repository), List.of());
+        component.customizer = builder -> builder
+                .dynamicSkillsEnabled(true)
+                .skillCodeExecutionEnabled(true);
+
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class, () -> component.runtime(config()));
+
+        assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
+    }
+
+    @Test
+    void customizerCannotReplaceManagedDynamicSkillMiddlewareWithAnEmptyOne() {
+        InMemoryRepository repository = new InMemoryRepository(
+                "secured", List.of(skill("secured-skill", "secured-description", null)));
+        TestComponent component = new TestComponent(List.of(repository), List.of());
+        component.customizer = builder -> builder
+                .middleware(new DynamicSkillMiddleware(List.of(), new io.agentscope.core.tool.Toolkit()))
+                .dynamicSkillsEnabled(false);
+
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class, () -> component.runtime(config()));
+
+        assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
     }
 
     private static ToolResultEndEvent successEvent(ToolUseBlock toolUse) {
@@ -357,6 +415,69 @@ class AgentSkillRepositoryIntegrationTest {
         @Override
         public void close() {
             closeCount.incrementAndGet();
+        }
+    }
+
+    private static final class DeferredRepository implements AgentSkillRepository {
+        private final AgentSkill skill;
+        private final AtomicInteger enumerationCount = new AtomicInteger();
+        private volatile boolean open;
+
+        private DeferredRepository(AgentSkill skill) {
+            this.skill = skill;
+        }
+
+        @Override
+        public AgentSkill getSkill(String name) {
+            return skill.getName().equals(name) ? skill : null;
+        }
+
+        @Override
+        public List<String> getAllSkillNames() {
+            return List.of(skill.getSkillId());
+        }
+
+        @Override
+        public List<AgentSkill> getAllSkills() {
+            enumerationCount.incrementAndGet();
+            if (!open) {
+                throw new IllegalStateException("repository is not available during build");
+            }
+            return List.of(skill);
+        }
+
+        @Override
+        public boolean save(List<AgentSkill> skills, boolean force) {
+            return false;
+        }
+
+        @Override
+        public boolean delete(String skillName) {
+            return false;
+        }
+
+        @Override
+        public boolean skillExists(String skillName) {
+            return skill.getName().equals(skillName);
+        }
+
+        @Override
+        public AgentSkillRepositoryInfo getRepositoryInfo() {
+            return new AgentSkillRepositoryInfo("memory", "deferred", false);
+        }
+
+        @Override
+        public String getSource() {
+            return "memory_deferred";
+        }
+
+        @Override
+        public void setWriteable(boolean writeable) {
+        }
+
+        @Override
+        public boolean isWriteable() {
+            return false;
         }
     }
 }

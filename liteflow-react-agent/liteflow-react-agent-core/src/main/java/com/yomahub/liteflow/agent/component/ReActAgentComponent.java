@@ -33,7 +33,6 @@ import io.agentscope.core.model.ExecutionConfig;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionContextState;
-import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.DynamicSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
@@ -215,22 +214,34 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             FlowEventBridgeMiddleware eventMiddleware =
                     new FlowEventBridgeMiddleware(options.listenerFailureMode());
             ChatUsageMiddleware usageMiddleware = new ChatUsageMiddleware();
-            SkillTrackingMiddleware skillMiddleware =
-                    new SkillTrackingMiddleware(skillIdToName(repositories));
+            SkillTrackingMiddleware skillMiddleware = new SkillTrackingMiddleware(Map.of());
             LiteFlowSystemPromptMiddleware promptMiddleware =
                     new LiteFlowSystemPromptMiddleware(this::transformSystemPrompt);
             ModelRoutingMiddleware routingMiddleware =
                     ModelRoutingMiddleware.awaitingDefaultModel(
                             managedModels, this::routeModel);
-            List<MiddlewareBase> mandatoryMiddlewares = List.of(
+            SkillFilter baseSkillFilter = skillFilter();
+            if (baseSkillFilter == null) {
+                throw new AgentConfigException("skillFilter must not return null");
+            }
+            boolean dynamicSkills = dynamicSkillsEnabled();
+            Toolkit toolkit = buildToolkit(buildContext.agentConfig(), registeredMcpClients);
+            DynamicSkillMiddleware managedDynamicSkills =
+                    !repositories.isEmpty() && dynamicSkills
+                            ? new DynamicSkillMiddleware(
+                                    repositories, toolkit, baseSkillFilter, false, null)
+                            : null;
+            List<MiddlewareBase> mandatoryMiddlewares = new ArrayList<>(List.of(
                     failureMiddleware,
                     loggingMiddleware,
                     eventMiddleware,
                     usageMiddleware,
                     skillMiddleware,
                     promptMiddleware,
-                    routingMiddleware);
-            Toolkit toolkit = buildToolkit(buildContext.agentConfig(), registeredMcpClients);
+                    routingMiddleware));
+            if (managedDynamicSkills != null) {
+                mandatoryMiddlewares.add(managedDynamicSkills);
+            }
             Map<String, AgentTool> requiredTools = registeredToolIdentities(toolkit);
             ReActAgent.Builder builder = ReActAgent.builder()
                     .name(buildContext.agentName())
@@ -251,16 +262,14 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     .middleware(eventMiddleware)
                     .middleware(usageMiddleware)
                     .middleware(skillMiddleware);
+            if (managedDynamicSkills != null) {
+                builder.middleware(managedDynamicSkills);
+            }
             for (AgentSkillRepository repository : repositories) {
                 builder.skillRepository(repository);
             }
-            SkillFilter baseSkillFilter = skillFilter();
-            if (baseSkillFilter == null) {
-                throw new AgentConfigException("skillFilter must not return null");
-            }
-            boolean dynamicSkills = dynamicSkillsEnabled();
             builder.skillFilter(baseSkillFilter)
-                    .dynamicSkillsEnabled(dynamicSkills)
+                    .dynamicSkillsEnabled(false)
                     .skillCodeExecutionEnabled(false);
             for (MiddlewareBase middleware : options.userMiddlewares()) {
                 builder.middleware(AgentMiddlewareOrder.user(middleware));
@@ -279,7 +288,7 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     managedModels,
                     mandatoryMiddlewares,
                     requiredTools,
-                    !repositories.isEmpty() && dynamicSkills);
+                    managedDynamicSkills);
             routingMiddleware.finalizeDefaultModel(agent.getModel());
             return new ReActAgentRuntime(
                     agent,
@@ -387,13 +396,17 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
             List<Model> managedModels,
             List<MiddlewareBase> mandatoryMiddlewares,
             Map<String, AgentTool> requiredTools,
-            boolean dynamicSkillsRequired) {
+            DynamicSkillMiddleware managedDynamicSkills) {
         if (agent.getStateStore() != namespacedStateStore) {
             throw new AgentConfigException(
                     "customizeAgent must retain the LiteFlow namespaced StateStore");
         }
         for (MiddlewareBase mandatory : mandatoryMiddlewares) {
             if (!identityContains(agent.getMiddlewares(), mandatory)) {
+                if (mandatory == managedDynamicSkills) {
+                    throw new AgentConfigException(
+                            "customizeAgent must retain the managed DynamicSkillMiddleware");
+                }
                 throw new AgentConfigException(
                         "customizeAgent must retain all LiteFlow core middlewares");
             }
@@ -414,10 +427,15 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                                 + required.getKey());
             }
         }
-        if (dynamicSkillsRequired && agent.getMiddlewares().stream()
-                .noneMatch(DynamicSkillMiddleware.class::isInstance)) {
-            throw new AgentConfigException(
-                    "customizeAgent must retain AgentScope DynamicSkillMiddleware");
+        if (managedDynamicSkills != null) {
+            for (MiddlewareBase middleware : agent.getMiddlewares()) {
+                if (middleware instanceof DynamicSkillMiddleware
+                        && middleware != managedDynamicSkills) {
+                    throw new AgentConfigException(
+                            "customizeAgent must not add or replace the managed "
+                                    + "DynamicSkillMiddleware");
+                }
+            }
         }
     }
 
@@ -589,24 +607,6 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                 ownedRepositories.add(repository);
             }
         }
-    }
-
-    private static Map<String, String> skillIdToName(
-            List<AgentSkillRepository> repositories) {
-        Map<String, String> names = new LinkedHashMap<>();
-        for (AgentSkillRepository repository : repositories) {
-            List<AgentSkill> skills = repository.getAllSkills();
-            if (skills == null) {
-                throw new AgentConfigException(
-                        "AgentSkillRepository.getAllSkills must not return null");
-            }
-            for (AgentSkill skill : skills) {
-                if (skill != null) {
-                    names.put(skill.getSkillId(), skill.getName());
-                }
-            }
-        }
-        return Map.copyOf(names);
     }
 
     private static Map<String, AgentTool> registeredToolIdentities(Toolkit toolkit) {
