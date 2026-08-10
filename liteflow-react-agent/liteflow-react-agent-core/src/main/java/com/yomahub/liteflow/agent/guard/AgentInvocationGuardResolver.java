@@ -6,6 +6,7 @@ import com.yomahub.liteflow.property.agent.AgentInvocationGuardConfig;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentStateStoreType;
 import com.yomahub.liteflow.property.agent.DistributedCoordinationMode;
+import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.Objects;
@@ -14,11 +15,11 @@ import java.util.function.Consumer;
 /** Resolves the configured guard and validates distributed coordination declarations. */
 public final class AgentInvocationGuardResolver {
 
-    private final AgentInvocationGuard localGuard = new LocalAgentInvocationGuard();
+    private static final AgentInvocationGuard PROCESS_GUARD = new LocalAgentInvocationGuard();
     private final Consumer<String> warningSink;
 
     public AgentInvocationGuardResolver() {
-        this(message -> { });
+        this(message -> LFLoggerManager.getLogger(AgentInvocationGuardResolver.class).warn(message));
     }
 
     public AgentInvocationGuardResolver(Consumer<String> warningSink) {
@@ -29,7 +30,7 @@ public final class AgentInvocationGuardResolver {
         validate(config);
         AgentInvocationGuardConfig guardConfig = config.getInvocationGuard();
         if (guardConfig.getMode() == null || guardConfig.getMode() == AgentInvocationGuardMode.LOCAL) {
-            return localGuard;
+            return PROCESS_GUARD;
         }
         if (guardConfig.getMode() != AgentInvocationGuardMode.BEAN) {
             throw new AgentConfigException("Unsupported invocation guard mode: " + guardConfig.getMode());

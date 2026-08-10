@@ -58,4 +58,17 @@ class InvocationIdentityResolverTest {
         assertThrows(IllegalArgumentException.class,
                 () -> AgentInvocationKey.state("tenant", "user", "conversation", " "));
     }
+
+    @Test
+    void directConstructionRecomputesDerivedIdentifiersInsteadOfAcceptingInconsistentValues() {
+        AgentInvocationIdentity identity = new AgentInvocationIdentity(
+                "tenant-a", "user-a", "conversation-a", "agent-a",
+                "forged-runtime", "forged-agent-namespace", "forged-store-session");
+        AgentInvocationIdentity resolved = new InvocationIdentityResolver("tenant-a")
+                .resolve("user-a", "conversation-a", "agent-a");
+
+        assertEquals(resolved.runtimeSessionId(), identity.runtimeSessionId());
+        assertEquals(resolved.agentNamespace(), identity.agentNamespace());
+        assertEquals(resolved.storeSessionId(), identity.storeSessionId());
+    }
 }

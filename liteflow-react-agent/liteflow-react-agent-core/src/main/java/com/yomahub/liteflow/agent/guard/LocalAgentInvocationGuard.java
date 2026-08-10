@@ -31,40 +31,53 @@ public final class LocalAgentInvocationGuard implements AgentInvocationGuard {
             return value;
         });
         try {
-            if (!entry.lock.tryLock(timeout.toNanos(), TimeUnit.NANOSECONDS)) {
-                releaseRegistration(key, entry);
+            if (!entry.lock.tryLock(timeoutNanos(timeout), TimeUnit.NANOSECONDS)) {
+                releaseRegistration(key, entry, true);
                 throw new AgentInvocationException(AgentInvocationErrorType.TIMEOUT,
                         "Timed out acquiring invocation lease for " + key);
             }
-            entry.waiters.decrementAndGet();
+            markLeaseActive(key, entry);
             return new LocalLease(key, entry);
         } catch (InterruptedException exception) {
-            releaseRegistration(key, entry);
+            releaseRegistration(key, entry, true);
             Thread.currentThread().interrupt();
             throw new AgentInvocationException(AgentInvocationErrorType.INTERRUPTED,
                     "Interrupted while acquiring invocation lease for " + key, exception);
         } catch (RuntimeException exception) {
             if (!(exception instanceof AgentInvocationException)) {
-                releaseRegistration(key, entry);
+                releaseRegistration(key, entry, true);
             }
             throw exception;
         }
     }
 
-    boolean isTracked(AgentInvocationKey key) {
-        return entries.containsKey(key);
-    }
-
-    int waiterCount(AgentInvocationKey key) {
-        Entry entry = entries.get(key);
-        return entry == null ? 0 : entry.waiters.get();
-    }
-
-    private void releaseRegistration(AgentInvocationKey key, Entry entry) {
-        entry.waiters.updateAndGet(value -> value > 0 ? value - 1 : 0);
-        if (entry.registrations.decrementAndGet() == 0) {
-            entries.remove(key, entry);
+    private static long timeoutNanos(Duration timeout) {
+        try {
+            return timeout.toNanos();
+        } catch (ArithmeticException exception) {
+            return Long.MAX_VALUE;
         }
+    }
+
+    private void markLeaseActive(AgentInvocationKey key, Entry entry) {
+        entries.computeIfPresent(key, (ignored, current) -> {
+            if (current == entry) {
+                entry.waiters.decrementAndGet();
+            }
+            return current;
+        });
+    }
+
+    private void releaseRegistration(AgentInvocationKey key, Entry entry, boolean wasWaiting) {
+        entries.computeIfPresent(key, (ignored, current) -> {
+            if (current != entry) {
+                return current;
+            }
+            if (wasWaiting) {
+                entry.waiters.decrementAndGet();
+            }
+            return entry.registrations.decrementAndGet() == 0 ? null : entry;
+        });
     }
 
     private final class LocalLease implements AgentInvocationLease {
@@ -86,7 +99,7 @@ public final class LocalAgentInvocationGuard implements AgentInvocationGuard {
         public void close() {
             if (closed.compareAndSet(false, true)) {
                 entry.lock.unlock();
-                releaseRegistration(key, entry);
+                releaseRegistration(key, entry, false);
             }
         }
     }

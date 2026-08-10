@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,23 +34,35 @@ class LocalAgentInvocationGuardTest {
         LocalAgentInvocationGuard guard = new LocalAgentInvocationGuard();
         AgentInvocationKey key = key("agent-a");
         List<Integer> entered = new ArrayList<>();
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch firstEntered = new CountDownLatch(1);
+        CountDownLatch releaseFirst = new CountDownLatch(1);
+        CountDownLatch secondEntered = new CountDownLatch(1);
+        CountDownLatch releaseSecond = new CountDownLatch(1);
+        Thread first = queuedEntryThread(guard, key, 1, entered, firstEntered, releaseFirst);
+        Thread second = queuedEntryThread(guard, key, 2, entered, secondEntered, releaseSecond);
 
         try (AgentInvocationLease holder = guard.acquire(key, WAIT)) {
-            Future<?> first = executor.submit(() -> enter(guard, key, 1, entered));
-            awaitWaiters(guard, key, 1);
-            Future<?> second = executor.submit(() -> enter(guard, key, 2, entered));
-            awaitWaiters(guard, key, 2);
-            assertTrue(guard.isTracked(key));
+            first.start();
+            awaitThreadState(first, Thread.State.TIMED_WAITING);
+            second.start();
+            awaitThreadState(second, Thread.State.TIMED_WAITING);
             holder.close();
-            first.get(2, TimeUnit.SECONDS);
-            second.get(2, TimeUnit.SECONDS);
-        } finally {
-            executor.shutdownNow();
+            assertTrue(firstEntered.await(2, TimeUnit.SECONDS));
+            assertEquals(List.of(1), entered);
+            awaitThreadState(second, Thread.State.TIMED_WAITING);
+            releaseFirst.countDown();
+            assertTrue(secondEntered.await(2, TimeUnit.SECONDS));
+            releaseSecond.countDown();
         }
+        first.join(2_000);
+        second.join(2_000);
+        assertFalse(first.isAlive());
+        assertFalse(second.isAlive());
 
         assertEquals(List.of(1, 2), entered);
-        assertFalse(guard.isTracked(key));
+        try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
+            assertEquals(key, ignored.key());
+        }
     }
 
     @Test
@@ -84,8 +97,6 @@ class LocalAgentInvocationGuardTest {
             AgentInvocationException exception = assertThrows(AgentInvocationException.class,
                     () -> guard.acquire(key, Duration.ofMillis(20)));
             assertEquals(AgentInvocationErrorType.TIMEOUT, exception.getErrorType());
-            assertTrue(guard.isTracked(key));
-            assertEquals(0, guard.waiterCount(key));
             release.countDown();
             holder.get(2, TimeUnit.SECONDS);
         } catch (Exception exception) {
@@ -94,7 +105,9 @@ class LocalAgentInvocationGuardTest {
             release.countDown();
             executor.shutdownNow();
         }
-        assertFalse(guard.isTracked(key));
+        try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
+            assertEquals(key, ignored.key());
+        }
     }
 
     @Test
@@ -113,7 +126,9 @@ class LocalAgentInvocationGuardTest {
             assertEquals("call failed", expected.getMessage());
         }
 
-        assertFalse(guard.isTracked(key));
+        try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
+            assertEquals(key, ignored.key());
+        }
     }
 
     @Test
@@ -133,15 +148,27 @@ class LocalAgentInvocationGuardTest {
 
         try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
             waiter.start();
-            awaitWaiters(guard, key, 1);
+            awaitThreadState(waiter, Thread.State.TIMED_WAITING);
             waiter.interrupt();
             waiter.join(2_000);
             assertFalse(waiter.isAlive());
             assertEquals(AgentInvocationErrorType.INTERRUPTED, failure.get().getErrorType());
             assertTrue(interrupted.get());
-            assertEquals(0, guard.waiterCount(key));
         }
-        assertFalse(guard.isTracked(key));
+        try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
+            assertEquals(key, ignored.key());
+        }
+    }
+
+    @Test
+    void veryLargePositiveTimeoutAcquiresAvailableKeyWithoutOverflow() {
+        LocalAgentInvocationGuard guard = new LocalAgentInvocationGuard();
+
+        assertDoesNotThrow(() -> {
+            try (AgentInvocationLease ignored = guard.acquire(key("agent-a"), Duration.ofSeconds(Long.MAX_VALUE))) {
+                assertTrue(ignored.fencingToken().isEmpty());
+            }
+        });
     }
 
     @Test
@@ -183,6 +210,25 @@ class LocalAgentInvocationGuardTest {
     }
 
     @Test
+    void coordinatorClosesWorkspaceAfterStateCloseFailsAndSuppressesWorkspaceFailureOnce() {
+        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "user", "conversation");
+        AgentInvocationKey state = AgentInvocationKey.state("tenant", "user", "conversation", "agent");
+        List<String> events = new ArrayList<>();
+        RuntimeException stateFailure = new IllegalStateException("state close failed");
+        RuntimeException workspaceFailure = new IllegalStateException("workspace close failed");
+        AgentInvocationGuard guard = (key, timeout) -> new RecordingLease(key, events,
+                key.scope() == AgentInvocationScope.STATE ? stateFailure : workspaceFailure);
+
+        AgentInvocationLease lease = new AgentInvocationCoordinator(guard).acquire(workspace, state, WAIT);
+        RuntimeException failure = assertThrows(RuntimeException.class, lease::close);
+
+        assertEquals(stateFailure, failure);
+        assertEquals(List.of("close:STATE", "close:WORKSPACE"), events);
+        assertEquals(1, failure.getSuppressed().length);
+        assertEquals(workspaceFailure, failure.getSuppressed()[0]);
+    }
+
+    @Test
     void resolverRejectsPotentiallyDistributedBeanStoreWithoutCoordinationInStrictMode() {
         AgentConfig config = distributedBeanStoreConfig();
 
@@ -196,18 +242,51 @@ class LocalAgentInvocationGuardTest {
         config.getInvocationGuard().setStrictDistributed(false);
         List<String> warnings = new ArrayList<>();
 
-        new AgentInvocationGuardResolver(warnings::add).validate(config);
+        AgentInvocationGuard resolved = new AgentInvocationGuardResolver(warnings::add).resolve(config);
 
+        assertTrue(resolved instanceof LocalAgentInvocationGuard);
         assertEquals(1, warnings.size());
         assertTrue(warnings.get(0).contains("strictDistributed=false"));
     }
 
-    private static void enter(LocalAgentInvocationGuard guard, AgentInvocationKey key, int value, List<Integer> entered) {
-        try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
-            synchronized (entered) {
-                entered.add(value);
+    @Test
+    void localGuardIsSharedAcrossResolversForTheSameKey() throws Exception {
+        AgentConfig config = new AgentConfig();
+        AgentInvocationGuard firstGuard = new AgentInvocationGuardResolver().resolve(config);
+        AgentInvocationGuard secondGuard = new AgentInvocationGuardResolver().resolve(config);
+        AgentInvocationKey key = key("agent-a");
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        Thread waiter = new Thread(() -> {
+            try (AgentInvocationLease ignored = secondGuard.acquire(key, WAIT)) {
+                entered.countDown();
+                await(release);
             }
+        });
+
+        try (AgentInvocationLease ignored = firstGuard.acquire(key, WAIT)) {
+            waiter.start();
+            awaitThreadState(waiter, Thread.State.TIMED_WAITING);
+            assertEquals(1, entered.getCount());
         }
+        assertTrue(entered.await(2, TimeUnit.SECONDS));
+        release.countDown();
+        waiter.join(2_000);
+        assertFalse(waiter.isAlive());
+    }
+
+    private static Thread queuedEntryThread(LocalAgentInvocationGuard guard, AgentInvocationKey key, int value,
+                                             List<Integer> entered, CountDownLatch enteredLatch,
+                                             CountDownLatch release) {
+        return new Thread(() -> {
+            try (AgentInvocationLease ignored = guard.acquire(key, WAIT)) {
+                synchronized (entered) {
+                    entered.add(value);
+                }
+                enteredLatch.countDown();
+                await(release);
+            }
+        });
     }
 
     private static void holdUntilReleased(LocalAgentInvocationGuard guard, AgentInvocationKey key,
@@ -226,13 +305,12 @@ class LocalAgentInvocationGuardTest {
         }
     }
 
-    private static void awaitWaiters(LocalAgentInvocationGuard guard, AgentInvocationKey key, int expected)
-            throws InterruptedException {
+    private static void awaitThreadState(Thread thread, Thread.State expected) {
         long deadline = System.nanoTime() + WAIT.toNanos();
-        while (guard.waiterCount(key) != expected && System.nanoTime() < deadline) {
+        while (thread.getState() != expected && System.nanoTime() < deadline) {
             Thread.yield();
         }
-        assertEquals(expected, guard.waiterCount(key));
+        assertEquals(expected, thread.getState());
     }
 
     private static void await(CountDownLatch latch) {
@@ -259,11 +337,17 @@ class LocalAgentInvocationGuardTest {
     private static final class RecordingLease implements AgentInvocationLease {
         private final AgentInvocationKey key;
         private final List<String> events;
+        private final RuntimeException closeFailure;
         private final AtomicBoolean closed = new AtomicBoolean();
 
         private RecordingLease(AgentInvocationKey key, List<String> events) {
+            this(key, events, null);
+        }
+
+        private RecordingLease(AgentInvocationKey key, List<String> events, RuntimeException closeFailure) {
             this.key = key;
             this.events = events;
+            this.closeFailure = closeFailure;
         }
 
         @Override
@@ -275,6 +359,9 @@ class LocalAgentInvocationGuardTest {
         public void close() {
             if (closed.compareAndSet(false, true)) {
                 events.add("close:" + key.scope());
+                if (closeFailure != null) {
+                    throw closeFailure;
+                }
             }
         }
     }
