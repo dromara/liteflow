@@ -63,6 +63,16 @@ class AgentConfigV2Test {
 	}
 
 	@Test
+	void rejectsLegacyMemoryBeforeBlankRuntimeNamespace() {
+		AgentConfig config = new AgentConfig();
+		config.getSession().getMemory().setMode(MemoryStorageMode.NONE);
+
+		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
+
+		assertTrue(error.getMessage().contains("session.memory -> state-store"));
+	}
+
+	@Test
 	void rejectsExplicitLegacyNestedMemoryConfigurationWithMigrationHint() {
 		AgentConfig config = configuredConfig();
 		config.getSession().getMemory().getRedis().setBeanName("legacyRedis");
@@ -72,9 +82,25 @@ class AgentConfigV2Test {
 		assertTrue(error.getMessage().contains("session.memory -> state-store"));
 	}
 
+	@Test
+	void rejectsNullLegacyNestedStoresWithMigrationHint() {
+		AgentConfig redisConfig = configuredConfig();
+		redisConfig.getSession().getMemory().setRedis(null);
+		assertMigrationError(redisConfig);
+
+		AgentConfig mysqlConfig = configuredConfig();
+		mysqlConfig.getSession().getMemory().setMysql(null);
+		assertMigrationError(mysqlConfig);
+	}
+
 	private AgentConfig configuredConfig() {
 		AgentConfig config = new AgentConfig();
 		config.getRuntime().setNamespace("orders");
 		return config;
+	}
+
+	private void assertMigrationError(AgentConfig config) {
+		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
+		assertTrue(error.getMessage().contains("session.memory -> state-store"));
 	}
 }

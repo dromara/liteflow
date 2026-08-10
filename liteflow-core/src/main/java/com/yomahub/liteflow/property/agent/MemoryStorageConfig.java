@@ -122,7 +122,8 @@ public class MemoryStorageConfig {
 	}
 
 	boolean isExplicitlyConfigured() {
-		return explicitlyConfigured || redis.isExplicitlyConfigured() || mysql.isExplicitlyConfigured();
+		return explicitlyConfigured || (redis != null && redis.isExplicitlyConfigured())
+				|| (mysql != null && mysql.isExplicitlyConfigured());
 	}
 
 	void markExplicitlyConfigured() {

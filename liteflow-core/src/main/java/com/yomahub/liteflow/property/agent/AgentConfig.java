@@ -130,11 +130,11 @@ public class AgentConfig {
 	 * the untouched default instance is not treated as an explicit legacy configuration.</p>
 	 */
 	public void validateForExecution() {
-		if (runtime == null || isBlank(runtime.getNamespace())) {
-			throw new IllegalStateException("liteflow.agent.runtime.namespace is required before execution");
-		}
 		if (session != null && session.getMemory() != null && session.getMemory().isExplicitlyConfigured()) {
 			throw new IllegalStateException("liteflow.agent.session.memory -> state-store migration is required");
+		}
+		if (runtime == null || isBlank(runtime.getNamespace())) {
+			throw new IllegalStateException("liteflow.agent.runtime.namespace is required before execution");
 		}
 	}
 
