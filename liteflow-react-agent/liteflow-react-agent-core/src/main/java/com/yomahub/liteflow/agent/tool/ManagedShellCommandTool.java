@@ -18,7 +18,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,7 +33,6 @@ public class ManagedShellCommandTool {
 
     static final long MAX_COLLECTABLE_OUTPUT_BYTES = 16L * 1024 * 1024;
     private static final long WAIT_SLICE_NANOS = TimeUnit.MILLISECONDS.toNanos(25);
-    private static final long OUTPUT_JOIN_NANOS = TimeUnit.SECONDS.toNanos(1);
     private static final long PROCESS_CLEANUP_NANOS = TimeUnit.SECONDS.toNanos(1);
 
     private final GuardedWorkspacePathResolver resolver;
@@ -85,15 +86,17 @@ public class ManagedShellCommandTool {
         LiteFlowAgentContext context = requireContext(runtimeContext);
         Path workspace = resolver.sessionRoot(context.getRuntimeSessionId());
         Process process = null;
+        ManagedProcessTree processTree = null;
         ExecutorService outputReader = null;
         Future<OutputCapture> outputFuture = null;
-        boolean exitedNormally = false;
         boolean interrupted = false;
+        long processStartedAt = System.nanoTime();
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(Arrays.asList(tokens));
             processBuilder.directory(workspace.toFile());
             processBuilder.redirectErrorStream(true);
             process = processBuilder.start();
+            processTree = new ManagedProcessTree(process.toHandle());
             closeQuietly(process.getOutputStream());
             Process runningProcess = process;
             outputReader = Executors.newSingleThreadExecutor(runnable -> {
@@ -104,37 +107,27 @@ public class ManagedShellCommandTool {
             outputFuture = outputReader.submit(
                     () -> drainOutput(runningProcess.getInputStream(), maxOutputBytes));
 
-            WaitResult waitResult = waitForProcess(process, context);
+            WaitResult waitResult = waitForProcess(
+                    process, context, processStartedAt, processTree);
             if (waitResult != WaitResult.EXITED) {
-                return switch (waitResult) {
-                    case CANCELLED -> "{\"error\":\"shell execution cancelled\"}";
-                    case INVOCATION_DEADLINE ->
-                            "{\"error\":\"invocation deadline exceeded\"}";
-                    case TOOL_TIMEOUT ->
-                            "{\"error\":\"timeout after " + shell.getTimeout() + "\"}";
-                    default -> throw new IllegalStateException("unexpected wait result");
-                };
+                return errorFor(waitResult);
             }
-            OutputCapture capture = outputFuture.get(OUTPUT_JOIN_NANOS, TimeUnit.NANOSECONDS);
-            exitedNormally = true;
-            return capture.render(maxOutputBytes);
+            OutputWait output = waitForOutput(outputFuture, context, processStartedAt);
+            return output.capture() == null
+                    ? errorFor(output.result())
+                    : output.capture().render(maxOutputBytes);
         } catch (InterruptedException failure) {
             interrupted = true;
             return "{\"error\":\"shell execution interrupted\"}";
         } catch (ExecutionException failure) {
             Throwable cause = failure.getCause();
             return "{\"error\":\"" + safeMessage(cause == null ? failure : cause) + "\"}";
-        } catch (TimeoutException failure) {
-            return "{\"error\":\"output drain timeout\"}";
         } catch (IOException failure) {
             return "{\"error\":\"" + safeMessage(failure) + "\"}";
         } finally {
-            if (process != null && !exitedNormally) {
-                try {
-                    terminateProcessTree(process);
-                } catch (RuntimeException ignored) {
-                    // Continue with stream and reader cleanup if ProcessHandle cleanup fails.
-                }
+            long cleanupDeadline = System.nanoTime() + PROCESS_CLEANUP_NANOS;
+            if (processTree != null) {
+                interrupted |= terminateProcessTree(processTree, cleanupDeadline);
             }
             if (process != null) {
                 closeQuietly(process.getOutputStream());
@@ -147,8 +140,10 @@ public class ManagedShellCommandTool {
             if (outputReader != null) {
                 outputReader.shutdownNow();
                 try {
-                    outputReader.awaitTermination(
-                            OUTPUT_JOIN_NANOS, TimeUnit.NANOSECONDS);
+                    long remaining = cleanupDeadline - System.nanoTime();
+                    if (remaining > 0) {
+                        outputReader.awaitTermination(remaining, TimeUnit.NANOSECONDS);
+                    }
                 } catch (InterruptedException failure) {
                     interrupted = true;
                 }
@@ -159,31 +154,75 @@ public class ManagedShellCommandTool {
         }
     }
 
-    private WaitResult waitForProcess(Process process, LiteFlowAgentContext context)
+    private WaitResult waitForProcess(
+            Process process,
+            LiteFlowAgentContext context,
+            long processStartedAt,
+            ManagedProcessTree processTree)
             throws InterruptedException {
-        long started = System.nanoTime();
         while (true) {
-            if (context.isCancelled()) {
-                return WaitResult.CANCELLED;
+            processTree.captureDescendantsWhileParentAlive();
+            WaitWindow window = waitWindow(context, processStartedAt);
+            if (window.result() != WaitResult.ACTIVE) {
+                return window.result();
             }
-            Instant now = Instant.now();
-            if (!now.isBefore(context.getDeadline())) {
-                return WaitResult.INVOCATION_DEADLINE;
-            }
-            long remaining = timeoutNanos - (System.nanoTime() - started);
-            if (remaining <= 0) {
-                return WaitResult.TOOL_TIMEOUT;
-            }
-            long waitNanos = Math.min(WAIT_SLICE_NANOS, remaining);
-            long invocationRemaining = nanosUntil(now, context.getDeadline());
-            waitNanos = Math.min(waitNanos, invocationRemaining);
-            if (waitNanos <= 0) {
-                return WaitResult.INVOCATION_DEADLINE;
-            }
-            if (process.waitFor(waitNanos, TimeUnit.NANOSECONDS)) {
+            if (process.waitFor(window.waitNanos(), TimeUnit.NANOSECONDS)) {
                 return WaitResult.EXITED;
             }
         }
+    }
+
+    private OutputWait waitForOutput(
+            Future<OutputCapture> outputFuture,
+            LiteFlowAgentContext context,
+            long processStartedAt)
+            throws InterruptedException, ExecutionException {
+        while (true) {
+            if (outputFuture.isDone()) {
+                return new OutputWait(WaitResult.EXITED, outputFuture.get());
+            }
+            WaitWindow window = waitWindow(context, processStartedAt);
+            if (window.result() != WaitResult.ACTIVE) {
+                return new OutputWait(window.result(), null);
+            }
+            try {
+                return new OutputWait(
+                        WaitResult.EXITED,
+                        outputFuture.get(window.waitNanos(), TimeUnit.NANOSECONDS));
+            } catch (TimeoutException ignored) {
+                // Re-check cancellation and both deadlines on the next bounded slice.
+            }
+        }
+    }
+
+    private WaitWindow waitWindow(LiteFlowAgentContext context, long processStartedAt) {
+        if (context.isCancelled()) {
+            return new WaitWindow(WaitResult.CANCELLED, 0);
+        }
+        Instant now = Instant.now();
+        if (!now.isBefore(context.getDeadline())) {
+            return new WaitWindow(WaitResult.INVOCATION_DEADLINE, 0);
+        }
+        long toolRemaining = timeoutNanos - (System.nanoTime() - processStartedAt);
+        if (toolRemaining <= 0) {
+            return new WaitWindow(WaitResult.TOOL_TIMEOUT, 0);
+        }
+        long invocationRemaining = nanosUntil(now, context.getDeadline());
+        if (invocationRemaining <= 0) {
+            return new WaitWindow(WaitResult.INVOCATION_DEADLINE, 0);
+        }
+        return new WaitWindow(
+                WaitResult.ACTIVE,
+                Math.min(WAIT_SLICE_NANOS, Math.min(toolRemaining, invocationRemaining)));
+    }
+
+    private String errorFor(WaitResult result) {
+        return switch (result) {
+            case CANCELLED -> "{\"error\":\"shell execution cancelled\"}";
+            case INVOCATION_DEADLINE -> "{\"error\":\"invocation deadline exceeded\"}";
+            case TOOL_TIMEOUT -> "{\"error\":\"timeout after " + shell.getTimeout() + "\"}";
+            default -> throw new IllegalStateException("unexpected wait result: " + result);
+        };
     }
 
     private static long nanosUntil(Instant now, Instant deadline) {
@@ -257,50 +296,54 @@ public class ManagedShellCommandTool {
         return new OutputCapture(output.toString(StandardCharsets.UTF_8), truncated);
     }
 
-    private static void terminateProcessTree(Process process) {
-        ProcessHandle parent = process.toHandle();
-        List<ProcessHandle> descendants = new ArrayList<>(parent.descendants().toList());
-        for (int index = descendants.size() - 1; index >= 0; index--) {
-            descendants.get(index).destroy();
+    private static boolean terminateProcessTree(
+            ManagedProcessTree processTree, long cleanupDeadline) {
+        List<ProcessHandle> handles = processTree.capturedChildFirst();
+        for (ProcessHandle handle : handles) {
+            destroyQuietly(handle, false);
         }
-        parent.destroy();
-        awaitExit(descendants, parent, PROCESS_CLEANUP_NANOS / 2);
-        for (int index = descendants.size() - 1; index >= 0; index--) {
-            ProcessHandle descendant = descendants.get(index);
-            if (descendant.isAlive()) {
-                descendant.destroyForcibly();
+        long gracefulDeadline = System.nanoTime()
+                + Math.max(0, cleanupDeadline - System.nanoTime()) / 2;
+        boolean interrupted = awaitExit(handles, gracefulDeadline);
+        for (ProcessHandle handle : handles) {
+            destroyQuietly(handle, true);
+        }
+        return awaitExit(handles, cleanupDeadline) || interrupted;
+    }
+
+    private static void destroyQuietly(ProcessHandle handle, boolean forcibly) {
+        try {
+            if (handle.isAlive()) {
+                if (forcibly) {
+                    handle.destroyForcibly();
+                } else {
+                    handle.destroy();
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // One inaccessible process must not prevent cleanup of other captured identities.
+        }
+    }
+
+    private static boolean awaitExit(List<ProcessHandle> handles, long deadline) {
+        boolean interrupted = false;
+        for (ProcessHandle handle : handles) {
+            try {
+                if (!handle.isAlive()) {
+                    continue;
+                }
+                long remaining = deadline - System.nanoTime();
+                if (remaining <= 0) {
+                    continue;
+                }
+                handle.onExit().get(remaining, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException failure) {
+                interrupted = true;
+            } catch (ExecutionException | TimeoutException | RuntimeException ignored) {
+                // Continue across the remaining captured process identities.
             }
         }
-        if (parent.isAlive()) {
-            parent.destroyForcibly();
-        }
-        awaitExit(descendants, parent, PROCESS_CLEANUP_NANOS / 2);
-    }
-
-    private static void awaitExit(
-            List<ProcessHandle> descendants, ProcessHandle parent, long budgetNanos) {
-        long deadline = System.nanoTime() + budgetNanos;
-        for (ProcessHandle handle : descendants) {
-            awaitExit(handle, deadline);
-        }
-        awaitExit(parent, deadline);
-    }
-
-    private static void awaitExit(ProcessHandle handle, long deadline) {
-        if (!handle.isAlive()) {
-            return;
-        }
-        long remaining = deadline - System.nanoTime();
-        if (remaining <= 0) {
-            return;
-        }
-        try {
-            handle.onExit().get(remaining, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException | TimeoutException ignored) {
-            // The second cleanup phase escalates to destroyForcibly within the shared budget.
-        }
+        return interrupted;
     }
 
     private static boolean containsUnsupportedShellSyntax(String command) {
@@ -341,10 +384,48 @@ public class ManagedShellCommandTool {
     }
 
     private enum WaitResult {
+        ACTIVE,
         EXITED,
         CANCELLED,
         INVOCATION_DEADLINE,
         TOOL_TIMEOUT
+    }
+
+    private record WaitWindow(WaitResult result, long waitNanos) {
+    }
+
+    private record OutputWait(WaitResult result, OutputCapture capture) {
+    }
+
+    private static final class ManagedProcessTree {
+        private final ProcessHandle parent;
+        private final Set<ProcessHandle> descendants = new LinkedHashSet<>();
+
+        private ManagedProcessTree(ProcessHandle parent) {
+            this.parent = parent;
+        }
+
+        private void captureDescendantsWhileParentAlive() {
+            try {
+                if (parent.isAlive()) {
+                    try (var currentDescendants = parent.descendants()) {
+                        currentDescendants.forEach(descendants::add);
+                    }
+                }
+            } catch (RuntimeException ignored) {
+                // A later bounded slice can retry while the original parent remains alive.
+            }
+        }
+
+        private List<ProcessHandle> capturedChildFirst() {
+            List<ProcessHandle> handles = new ArrayList<>(descendants.size() + 1);
+            List<ProcessHandle> captured = List.copyOf(descendants);
+            for (int index = captured.size() - 1; index >= 0; index--) {
+                handles.add(captured.get(index));
+            }
+            handles.add(parent);
+            return handles;
+        }
     }
 
     private record OutputCapture(String content, boolean truncated) {

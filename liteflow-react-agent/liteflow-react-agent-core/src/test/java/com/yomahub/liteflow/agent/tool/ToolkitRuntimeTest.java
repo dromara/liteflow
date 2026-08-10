@@ -28,10 +28,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
@@ -253,6 +255,60 @@ class ToolkitRuntimeTest {
         }
     }
 
+    @Test
+    void shellCancellationDuringOutputJoinReturnsPromptlyAndTerminatesOrphan() throws Exception {
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        try (OrphanInvocation orphan = OrphanInvocation.start(
+                Duration.ofSeconds(5), invocation, "cancel-join")) {
+            orphan.awaitReadyAndReleaseParent();
+
+            long cancelledAt = System.nanoTime();
+            invocation.cancel();
+            String result = orphan.result(Duration.ofSeconds(2));
+            long cancellationLatency = System.nanoTime() - cancelledAt;
+
+            assertTrue(result.contains("cancelled"), result);
+            assertTrue(cancellationLatency < Duration.ofMillis(500).toNanos(),
+                    "cancellation was not observed in bounded slices: "
+                            + Duration.ofNanos(cancellationLatency));
+            orphan.assertChildExited();
+        }
+    }
+
+    @Test
+    void invocationDeadlineDuringOutputJoinTerminatesOrphan() throws Exception {
+        LiteFlowAgentContext invocation = withDeadline(Duration.ofSeconds(2));
+        try (OrphanInvocation orphan = OrphanInvocation.start(
+                Duration.ofSeconds(5), invocation, "deadline-join")) {
+            orphan.awaitReadyAndReleaseParent();
+            assertTrue(Instant.now().isBefore(invocation.getDeadline()),
+                    "parent must exit before the invocation deadline");
+
+            String result = orphan.result(Duration.ofSeconds(3));
+
+            assertTrue(result.contains("invocation deadline exceeded"), result);
+            orphan.assertChildExited();
+        }
+    }
+
+    @Test
+    void shellToolTimeoutDuringOutputJoinTerminatesOrphan() throws Exception {
+        Duration toolTimeout = Duration.ofMillis(900);
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        try (OrphanInvocation orphan = OrphanInvocation.start(
+                toolTimeout, invocation, "timeout-join")) {
+            orphan.awaitReadyAndReleaseParent();
+
+            String result = orphan.result(Duration.ofSeconds(2));
+            long elapsed = System.nanoTime() - orphan.startedAtNanos;
+
+            assertEquals("{\"error\":\"timeout after " + toolTimeout + "\"}", result);
+            assertTrue(elapsed < toolTimeout.plusMillis(400).toNanos(),
+                    "tool timeout was not shared with output join: " + Duration.ofNanos(elapsed));
+            orphan.assertChildExited();
+        }
+    }
+
     private static AgentConfig shellConfig(Path root, Duration timeout, long maxOutputBytes) {
         AgentConfig config = config();
         config.getWorkspace().setRoot(root.toString());
@@ -287,6 +343,20 @@ class ToolkitRuntimeTest {
         return Path.of(System.getProperty("java.home"), "bin", "java").toString();
     }
 
+    private static LiteFlowAgentContext withDeadline(Duration duration) {
+        LiteFlowAgentContext base = AgentTestContexts.liteFlowContext();
+        return new LiteFlowAgentContext(
+                base.getIdentity(),
+                base.getSlot(),
+                base.getChainId(),
+                base.getNodeId(),
+                base.getRequestId(),
+                base.getTraceId(),
+                Instant.now().plus(duration),
+                base.getOutputSpec(),
+                base.getAttachmentKey());
+    }
+
     private static void awaitFile(Path path, Duration timeout) throws Exception {
         Instant deadline = Instant.now().plus(timeout);
         while (!Files.exists(path) && Instant.now().isBefore(deadline)) {
@@ -311,7 +381,92 @@ class ToolkitRuntimeTest {
 
     private static void forceKill(long pid) {
         if (pid > 0) {
-            ProcessHandle.of(pid).ifPresent(ProcessHandle::destroyForcibly);
+            ProcessHandle.of(pid).ifPresent(handle -> {
+                handle.destroyForcibly();
+                try {
+                    handle.onExit().get(2, TimeUnit.SECONDS);
+                } catch (InterruptedException failure) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException | TimeoutException ignored) {
+                    // Best-effort test teardown after the behavioral assertion has already failed.
+                }
+            });
+        }
+    }
+
+    private static final class OrphanInvocation implements AutoCloseable {
+        private final Path parentPid;
+        private final Path childPid;
+        private final Path release;
+        private final ExecutorService executor;
+        private final Future<String> call;
+        private final long startedAtNanos;
+
+        private OrphanInvocation(
+                Path parentPid,
+                Path childPid,
+                Path release,
+                ExecutorService executor,
+                Future<String> call,
+                long startedAtNanos) {
+            this.parentPid = parentPid;
+            this.childPid = childPid;
+            this.release = release;
+            this.executor = executor;
+            this.call = call;
+            this.startedAtNanos = startedAtNanos;
+        }
+
+        private static OrphanInvocation start(
+                Duration toolTimeout,
+                LiteFlowAgentContext invocation,
+                String prefix) throws Exception {
+            Path root = Files.createTempDirectory("liteflow-shell-" + prefix + "-");
+            AgentConfig shellConfig = shellConfig(root, toolTimeout, 1024);
+            GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(root, 1024);
+            ManagedShellCommandTool tool = new ManagedShellCommandTool(resolver, shellConfig);
+            Path session = resolver.sessionRoot(invocation.getRuntimeSessionId());
+            Path parentPid = session.resolve("parent.pid");
+            Path childPid = session.resolve("child.pid");
+            Path release = session.resolve("release");
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            long startedAtNanos = System.nanoTime();
+            Future<String> call = executor.submit(() -> tool.executeCommand(
+                    AgentTestContexts.runtimeContext(invocation),
+                    fixtureCommand("orphan", "parent.pid", "child.pid", "release")));
+            return new OrphanInvocation(
+                    parentPid, childPid, release, executor, call, startedAtNanos);
+        }
+
+        private void awaitReadyAndReleaseParent() throws Exception {
+            awaitFile(childPid, Duration.ofSeconds(2));
+            new CountDownLatch(1).await(100, TimeUnit.MILLISECONDS);
+            Files.writeString(release, "release");
+            assertProcessExited(readPid(parentPid));
+        }
+
+        private String result(Duration timeout) throws Exception {
+            return call.get(timeout.toNanos(), TimeUnit.NANOSECONDS);
+        }
+
+        private void assertChildExited() throws Exception {
+            assertProcessExited(readPid(childPid));
+        }
+
+        @Override
+        public void close() {
+            call.cancel(true);
+            executor.shutdownNow();
+            forceKill(readPidIfPresent(childPid));
+            forceKill(readPidIfPresent(parentPid));
+        }
+
+        private static long readPidIfPresent(Path path) {
+            try {
+                return Files.exists(path) ? Long.parseLong(Files.readString(path)) : -1;
+            } catch (Exception ignored) {
+                return -1;
+            }
         }
     }
 

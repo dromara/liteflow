@@ -14,6 +14,8 @@ public final class ShellProcessFixture {
         switch (args[0]) {
             case "flood" -> flood(Integer.parseInt(args[1]));
             case "tree" -> tree(Path.of(args[1]), Path.of(args[2]));
+            case "orphan" -> orphan(
+                    Path.of(args[1]), Path.of(args[2]), Path.of(args[3]));
             case "child" -> new CountDownLatch(1).await();
             default -> throw new IllegalArgumentException("unknown fixture mode: " + args[0]);
         }
@@ -45,5 +47,22 @@ public final class ShellProcessFixture {
                 .start();
         Files.writeString(childPid, Long.toString(child.pid()));
         new CountDownLatch(1).await();
+    }
+
+    private static void orphan(Path parentPid, Path childPid, Path release) throws Exception {
+        Files.writeString(parentPid, Long.toString(ProcessHandle.current().pid()));
+        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        Process child = new ProcessBuilder(
+                        java,
+                        "-cp",
+                        System.getProperty("java.class.path"),
+                        ShellProcessFixture.class.getName(),
+                        "child")
+                .inheritIO()
+                .start();
+        Files.writeString(childPid, Long.toString(child.pid()));
+        while (!Files.exists(release)) {
+            Thread.onSpinWait();
+        }
     }
 }

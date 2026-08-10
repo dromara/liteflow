@@ -31,11 +31,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -255,6 +257,57 @@ class AgentSkillRepositoryIntegrationTest {
                 AgentConfigException.class, () -> component.runtime(config()));
 
         assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
+    }
+
+    @Test
+    void distinctBuilderRetainsManagedDynamicIdentityAndRebindsFinalToolkit() {
+        AgentSkill skill = skill("distinct", "distinct-description", null);
+        InMemoryRepository repository = new InMemoryRepository("distinct", List.of(skill));
+        TestComponent component = new TestComponent(List.of(repository), List.of());
+        AtomicReference<DynamicSkillMiddleware> managedIdentity = new AtomicReference<>();
+        AtomicReference<io.agentscope.core.tool.Toolkit> replacementToolkit =
+                new AtomicReference<>();
+        component.customizer = builder -> {
+            ReActAgent snapshot = builder.build();
+            try {
+                managedIdentity.set(snapshot.getMiddlewares().stream()
+                        .filter(DynamicSkillMiddleware.class::isInstance)
+                        .map(DynamicSkillMiddleware.class::cast)
+                        .findFirst()
+                        .orElseThrow());
+                io.agentscope.core.tool.Toolkit toolkit = new io.agentscope.core.tool.Toolkit();
+                replacementToolkit.set(toolkit);
+                return ReActAgent.builder()
+                        .name("distinct-builder")
+                        .sysPrompt("distinct-builder")
+                        .model(component.model)
+                        .toolkit(toolkit)
+                        .defaultSessionId(snapshot.getDefaultSessionId())
+                        .stateStore(snapshot.getStateStore())
+                        .middlewares(snapshot.getMiddlewares());
+            } finally {
+                snapshot.close();
+            }
+        };
+
+        ReActAgentRuntime runtime = component.runtime(config());
+        try {
+            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            assertSame(managedIdentity.get(), dynamic);
+
+            dynamic.onSystemPrompt(
+                            runtime.agent(),
+                            AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
+                            "base")
+                    .block();
+
+            assertTrue(runtime.agent().getToolkit().getToolNames()
+                    .contains(SkillTrackingMiddleware.LOAD_SKILL_TOOL_NAME));
+            assertFalse(replacementToolkit.get().getToolNames()
+                    .contains(SkillTrackingMiddleware.LOAD_SKILL_TOOL_NAME));
+        } finally {
+            runtime.close();
+        }
     }
 
     private static ToolResultEndEvent successEvent(ToolUseBlock toolUse) {
