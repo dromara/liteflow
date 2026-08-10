@@ -301,7 +301,7 @@ public class ManagedShellCommandTool {
 
     private static boolean terminateProcessTree(
             ManagedProcessTree processTree, long cleanupDeadline) {
-        processTree.expandFrontier();
+        processTree.expandFrontier(cleanupDeadline);
         List<ProcessHandle> handles = processTree.capturedChildFirst();
         for (ProcessHandle handle : handles) {
             destroyQuietly(handle, false);
@@ -309,7 +309,7 @@ public class ManagedShellCommandTool {
         long gracefulDeadline = System.nanoTime()
                 + Math.max(0, cleanupDeadline - System.nanoTime()) / 2;
         boolean interrupted = awaitExit(handles, gracefulDeadline);
-        processTree.expandFrontier();
+        processTree.expandFrontier(cleanupDeadline);
         handles = processTree.capturedChildFirst();
         for (ProcessHandle handle : handles) {
             destroyQuietly(handle, true);
@@ -403,32 +403,41 @@ public class ManagedShellCommandTool {
     private record OutputWait(WaitResult result, OutputCapture capture) {
     }
 
-    private static final class ManagedProcessTree {
+    static final class ManagedProcessTree {
         private final ProcessHandle parent;
         private final Set<ProcessHandle> descendants = new LinkedHashSet<>();
 
-        private ManagedProcessTree(ProcessHandle parent) {
+        ManagedProcessTree(ProcessHandle parent) {
             this.parent = parent;
         }
 
-        private void expandFrontier() {
-            boolean expanded;
-            do {
-                int capturedBefore = descendants.size();
-                List<ProcessHandle> frontier = new ArrayList<>(descendants.size() + 1);
-                if (isAlive(parent)) {
-                    frontier.add(parent);
+        void expandFrontier() {
+            expandFrontier(Long.MAX_VALUE);
+        }
+
+        private void expandFrontier(long deadlineNanos) {
+            List<ProcessHandle> frontier = new ArrayList<>(descendants.size() + 1);
+            if (hasTimeRemaining(deadlineNanos) && isAlive(parent)) {
+                frontier.add(parent);
+            }
+            for (ProcessHandle descendant : List.copyOf(descendants)) {
+                if (!hasTimeRemaining(deadlineNanos)) {
+                    return;
                 }
-                for (ProcessHandle descendant : List.copyOf(descendants)) {
-                    if (isAlive(descendant)) {
-                        frontier.add(descendant);
-                    }
+                if (isAlive(descendant)) {
+                    frontier.add(descendant);
                 }
-                for (ProcessHandle ancestor : frontier) {
-                    captureDescendants(ancestor);
+            }
+            for (ProcessHandle ancestor : frontier) {
+                if (!hasTimeRemaining(deadlineNanos)) {
+                    return;
                 }
-                expanded = descendants.size() > capturedBefore;
-            } while (expanded);
+                captureDescendants(ancestor);
+            }
+        }
+
+        private static boolean hasTimeRemaining(long deadlineNanos) {
+            return deadlineNanos == Long.MAX_VALUE || System.nanoTime() < deadlineNanos;
         }
 
         private void captureDescendants(ProcessHandle ancestor) {
