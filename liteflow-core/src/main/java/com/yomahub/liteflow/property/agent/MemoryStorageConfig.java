@@ -11,6 +11,12 @@ package com.yomahub.liteflow.property.agent;
  */
 public class MemoryStorageConfig {
 
+	/*
+	 * Setters are the property-binding boundary. The flag intentionally distinguishes an
+	 * untouched default from an explicit legacy session.memory.* configuration.
+	 */
+	private boolean explicitlyConfigured;
+
     /**
      * 记忆存储后端。
      *
@@ -56,55 +62,70 @@ public class MemoryStorageConfig {
         return mode;
     }
 
-    public void setMode(MemoryStorageMode mode) {
-        this.mode = mode;
+	public void setMode(MemoryStorageMode mode) {
+		markExplicitlyConfigured();
+		this.mode = mode;
     }
 
     public LocalFileMemoryConfig getLocalFile() {
         return localFile;
     }
 
-    public void setLocalFile(LocalFileMemoryConfig localFile) {
-        this.localFile = localFile;
+	public void setLocalFile(LocalFileMemoryConfig localFile) {
+		markExplicitlyConfigured();
+		this.localFile = localFile;
     }
 
     public RedisMemoryConfig getRedis() {
         return redis;
     }
 
-    public void setRedis(RedisMemoryConfig redis) {
-        this.redis = redis;
+	public void setRedis(RedisMemoryConfig redis) {
+		markExplicitlyConfigured();
+		this.redis = redis;
     }
 
     public MysqlMemoryConfig getMysql() {
         return mysql;
     }
 
-    public void setMysql(MysqlMemoryConfig mysql) {
-        this.mysql = mysql;
+	public void setMysql(MysqlMemoryConfig mysql) {
+		markExplicitlyConfigured();
+		this.mysql = mysql;
     }
 
     public boolean isLoadOnFirstUse() {
         return loadOnFirstUse;
     }
 
-    public void setLoadOnFirstUse(boolean loadOnFirstUse) {
-        this.loadOnFirstUse = loadOnFirstUse;
+	public void setLoadOnFirstUse(boolean loadOnFirstUse) {
+		markExplicitlyConfigured();
+		this.loadOnFirstUse = loadOnFirstUse;
     }
 
     public boolean isSaveAfterCall() {
         return saveAfterCall;
     }
 
-    public void setSaveAfterCall(boolean saveAfterCall) {
-        this.saveAfterCall = saveAfterCall;
+	public void setSaveAfterCall(boolean saveAfterCall) {
+		markExplicitlyConfigured();
+		this.saveAfterCall = saveAfterCall;
     }
 
     public boolean isSaveOnError() {
         return saveOnError;
     }
 
-    public void setSaveOnError(boolean saveOnError) {
-        this.saveOnError = saveOnError;
-    }
+	public void setSaveOnError(boolean saveOnError) {
+		markExplicitlyConfigured();
+		this.saveOnError = saveOnError;
+	}
+
+	boolean isExplicitlyConfigured() {
+		return explicitlyConfigured || redis.isExplicitlyConfigured() || mysql.isExplicitlyConfigured();
+	}
+
+	void markExplicitlyConfigured() {
+		this.explicitlyConfigured = true;
+	}
 }

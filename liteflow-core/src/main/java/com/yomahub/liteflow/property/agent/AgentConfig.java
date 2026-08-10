@@ -14,6 +14,24 @@ import java.util.Map;
  */
 public class AgentConfig {
 
+	/** AgentScope 2 runtime identity and timeout settings. */
+	private AgentRuntimeConfig runtime = new AgentRuntimeConfig();
+
+	/** Agent state persistence settings. */
+	private AgentStateStoreConfig stateStore = new AgentStateStoreConfig();
+
+	/** Toolkit execution settings. */
+	private AgentToolkitConfig toolkit = new AgentToolkitConfig();
+
+	/** Agent event delivery settings. */
+	private AgentEventConfig event = new AgentEventConfig();
+
+	/** Cross-invocation coordination settings. */
+	private AgentInvocationGuardConfig invocationGuard = new AgentInvocationGuardConfig();
+
+	/** Human-in-the-loop confirmation settings. */
+	private AgentHitlConfig hitl = new AgentHitlConfig();
+
     /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
     private WorkspaceConfig workspace = new WorkspaceConfig();
 
@@ -54,7 +72,75 @@ public class AgentConfig {
      * Anthropic 兼容平台凭证集合，key 为用户自定义平台名，
      * 由 {@code AnthropicSpec}（带 compatibleConfigKey）通过 key 查找对应凭证。
      */
-    private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
+	private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
+
+	public AgentRuntimeConfig getRuntime() {
+		return runtime;
+	}
+
+	public void setRuntime(AgentRuntimeConfig runtime) {
+		this.runtime = runtime;
+	}
+
+	public AgentStateStoreConfig getStateStore() {
+		return stateStore;
+	}
+
+	public void setStateStore(AgentStateStoreConfig stateStore) {
+		this.stateStore = stateStore;
+	}
+
+	public AgentToolkitConfig getToolkit() {
+		return toolkit;
+	}
+
+	public void setToolkit(AgentToolkitConfig toolkit) {
+		this.toolkit = toolkit;
+	}
+
+	public AgentEventConfig getEvent() {
+		return event;
+	}
+
+	public void setEvent(AgentEventConfig event) {
+		this.event = event;
+	}
+
+	public AgentInvocationGuardConfig getInvocationGuard() {
+		return invocationGuard;
+	}
+
+	public void setInvocationGuard(AgentInvocationGuardConfig invocationGuard) {
+		this.invocationGuard = invocationGuard;
+	}
+
+	public AgentHitlConfig getHitl() {
+		return hitl;
+	}
+
+	public void setHitl(AgentHitlConfig hitl) {
+		this.hitl = hitl;
+	}
+
+	/**
+	 * Validates configuration needed by the AgentScope 2 runtime immediately before use.
+	 *
+	 * <p>{@code SessionConfig} remains temporarily for 1.x source compatibility. A legacy
+	 * memory setting is detected only when a {@link MemoryStorageConfig} setter was called;
+	 * the untouched default instance is not treated as an explicit legacy configuration.</p>
+	 */
+	public void validateForExecution() {
+		if (runtime == null || isBlank(runtime.getNamespace())) {
+			throw new IllegalStateException("liteflow.agent.runtime.namespace is required before execution");
+		}
+		if (session != null && session.getMemory() != null && session.getMemory().isExplicitlyConfigured()) {
+			throw new IllegalStateException("liteflow.agent.session.memory -> state-store migration is required");
+		}
+	}
+
+	private static boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
+	}
 
     public WorkspaceConfig getWorkspace() {
         return workspace;

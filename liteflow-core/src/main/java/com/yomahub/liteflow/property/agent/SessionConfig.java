@@ -70,7 +70,10 @@ public class SessionConfig {
         return memory;
     }
 
-    public void setMemory(MemoryStorageConfig memory) {
-        this.memory = memory;
-    }
+	public void setMemory(MemoryStorageConfig memory) {
+		if (memory != null) {
+			memory.markExplicitlyConfigured();
+		}
+		this.memory = memory;
+	}
 }

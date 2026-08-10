@@ -10,6 +10,8 @@ package com.yomahub.liteflow.property.agent;
  */
 public class MysqlMemoryConfig {
 
+	private boolean explicitlyConfigured;
+
     /**
      * 用于查找 {@link javax.sql.DataSource} 的 Bean 名称（必填）。
      *
@@ -46,6 +48,7 @@ public class MysqlMemoryConfig {
     }
 
     public void setDataSourceBeanName(String dataSourceBeanName) {
+		this.explicitlyConfigured = true;
         this.dataSourceBeanName = dataSourceBeanName;
     }
 
@@ -54,6 +57,7 @@ public class MysqlMemoryConfig {
     }
 
     public void setDatabaseName(String databaseName) {
+		this.explicitlyConfigured = true;
         this.databaseName = databaseName;
     }
 
@@ -62,6 +66,7 @@ public class MysqlMemoryConfig {
     }
 
     public void setTableName(String tableName) {
+		this.explicitlyConfigured = true;
         this.tableName = tableName;
     }
 
@@ -70,6 +75,11 @@ public class MysqlMemoryConfig {
     }
 
     public void setCreateIfNotExist(boolean createIfNotExist) {
+		this.explicitlyConfigured = true;
         this.createIfNotExist = createIfNotExist;
     }
+
+	boolean isExplicitlyConfigured() {
+		return explicitlyConfigured;
+	}
 }

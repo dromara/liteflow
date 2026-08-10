@@ -9,6 +9,8 @@ package com.yomahub.liteflow.property.agent;
  */
 public class RedisMemoryConfig {
 
+	private boolean explicitlyConfigured;
+
     /**
      * 用于查找 Redis 客户端 Bean 的名称（必填）。
      *
@@ -37,6 +39,7 @@ public class RedisMemoryConfig {
     }
 
     public void setBeanName(String beanName) {
+		this.explicitlyConfigured = true;
         this.beanName = beanName;
     }
 
@@ -45,6 +48,7 @@ public class RedisMemoryConfig {
     }
 
     public void setClientType(RedisClientType clientType) {
+		this.explicitlyConfigured = true;
         this.clientType = clientType;
     }
 
@@ -53,8 +57,13 @@ public class RedisMemoryConfig {
     }
 
     public void setKeyPrefix(String keyPrefix) {
+		this.explicitlyConfigured = true;
         this.keyPrefix = keyPrefix;
     }
+
+	boolean isExplicitlyConfigured() {
+		return explicitlyConfigured;
+	}
 
     /**
      * Redis 客户端类型枚举，每一项对应 AgentScope RedisSession 支持的一种客户端实现。

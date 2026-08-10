@@ -9,6 +9,12 @@ package com.yomahub.liteflow.property.agent;
  */
 public class WorkspaceConfig {
 
+	/** Backend boundary used for the workspace. */
+	private WorkspaceBackend backend = WorkspaceBackend.GUARDED_LOCAL;
+
+	/** Whether the guarded local backend is explicitly trusted for local use. */
+	private boolean trustedLocal;
+
     /**
      * 工作区根目录（必填）。
      *
@@ -55,7 +61,23 @@ public class WorkspaceConfig {
      * <p>{@code WorkspaceFileTools} 在执行列出工作区文件等操作时使用，避免
      * 大目录返回过多条目导致 LLM 上下文被塞满。
      */
-    private int maxListSize = 1000;
+	private int maxListSize = 1000;
+
+	public WorkspaceBackend getBackend() {
+		return backend;
+	}
+
+	public void setBackend(WorkspaceBackend backend) {
+		this.backend = backend;
+	}
+
+	public boolean isTrustedLocal() {
+		return trustedLocal;
+	}
+
+	public void setTrustedLocal(boolean trustedLocal) {
+		this.trustedLocal = trustedLocal;
+	}
 
     public String getRoot() {
         return root;

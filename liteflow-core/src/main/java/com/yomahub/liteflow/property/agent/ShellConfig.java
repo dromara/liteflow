@@ -18,7 +18,7 @@ public class ShellConfig {
      * <p>{@code ManagedShellCommandTool} 取出待执行命令的第一个 token，根据该模式
      * 与 {@link #whitelist} / {@link #blacklist} 比对，决定是否放行。
      */
-    private ShellMode mode = ShellMode.WHITELIST;
+	private ShellMode mode = ShellMode.DISABLED;
 
     /**
      * 白名单模式下允许执行的命令列表（仅匹配命令第一段）。
