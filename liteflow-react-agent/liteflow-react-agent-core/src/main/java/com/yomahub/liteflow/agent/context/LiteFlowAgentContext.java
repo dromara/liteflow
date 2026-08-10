@@ -147,13 +147,19 @@ public final class LiteFlowAgentContext {
         if (eventId != null && !eventId.isBlank() && !recordedUsageEvents.add(eventId)) {
             return;
         }
-        chatUsage.updateAndGet(current -> current == null
-                ? usage
-                : new ChatUsage(
-                        current.getInputTokens() + usage.getInputTokens(),
-                        current.getOutputTokens() + usage.getOutputTokens(),
-                        current.getCachedTokens() + usage.getCachedTokens(),
-                        current.getTime() + usage.getTime()));
+        chatUsage.updateAndGet(current -> new SaturatingChatUsage(
+                saturatingAdd(
+                        current == null ? 0 : current.getInputTokens(),
+                        usage.getInputTokens()),
+                saturatingAdd(
+                        current == null ? 0 : current.getOutputTokens(),
+                        usage.getOutputTokens()),
+                saturatingAdd(
+                        current == null ? 0 : current.getCachedTokens(),
+                        usage.getCachedTokens()),
+                saturatingAdd(
+                        current == null ? 0.0 : current.getTime(),
+                        usage.getTime())));
     }
 
     public void recordUsedSkill(String skill) {
@@ -173,5 +179,40 @@ public final class LiteFlowAgentContext {
             throw new IllegalArgumentException(name + " must not be blank");
         }
         return value;
+    }
+
+    private static int saturatingAdd(int left, int right) {
+        long sum = (long) Math.max(0, left) + Math.max(0, right);
+        return sum >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) sum;
+    }
+
+    private static double saturatingAdd(double left, double right) {
+        double sanitizedLeft = sanitizeTime(left);
+        double sanitizedRight = sanitizeTime(right);
+        if (sanitizedLeft == Double.MAX_VALUE || sanitizedRight == Double.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        double sum = sanitizedLeft + sanitizedRight;
+        return Double.isFinite(sum) ? sum : Double.MAX_VALUE;
+    }
+
+    private static double sanitizeTime(double value) {
+        if (Double.isNaN(value) || value <= 0.0) {
+            return 0.0;
+        }
+        return Double.isFinite(value) ? value : Double.MAX_VALUE;
+    }
+
+    private static final class SaturatingChatUsage extends ChatUsage {
+
+        private SaturatingChatUsage(
+                int inputTokens, int outputTokens, int cachedTokens, double time) {
+            super(inputTokens, outputTokens, cachedTokens, time);
+        }
+
+        @Override
+        public int getTotalTokens() {
+            return saturatingAdd(getInputTokens(), getOutputTokens());
+        }
     }
 }

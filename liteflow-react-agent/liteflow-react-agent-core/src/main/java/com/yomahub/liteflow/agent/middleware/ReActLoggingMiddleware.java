@@ -13,18 +13,24 @@ import io.agentscope.core.middleware.ModelCallInput;
 import io.agentscope.core.middleware.ReasoningInput;
 import reactor.core.publisher.Flux;
 
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /** AgentScope 2 middleware logging lifecycle boundaries without retaining invocation state. */
 public final class ReActLoggingMiddleware implements MiddlewareBase {
 
     private static final LFLog LOG = LFLoggerManager.getLogger(ReActLoggingMiddleware.class);
-    private static final int MAX_ERROR_CODE_POINTS = 500;
-
     private final boolean enabled;
+    private final Consumer<String> warningSink;
 
     public ReActLoggingMiddleware(boolean enabled) {
+        this(enabled, message -> LOG.warn(message));
+    }
+
+    ReActLoggingMiddleware(boolean enabled, Consumer<String> warningSink) {
         this.enabled = enabled;
+        this.warningSink = Objects.requireNonNull(warningSink, "warningSink");
     }
 
     @Override
@@ -100,13 +106,13 @@ public final class ReActLoggingMiddleware implements MiddlewareBase {
         });
     }
 
-    private static void safeError(
+    private void safeError(
             String phase, LiteFlowAgentContext context, Throwable failure) {
-        safeLog(() -> LOG.warn(
-                "[agent:{}][{}] error={}",
-                phase,
-                contextLabel(context),
-                truncate(String.valueOf(failure), MAX_ERROR_CODE_POINTS)));
+        String category = failure == null ? "unknown" : failure.getClass().getName();
+        safeLog(() -> warningSink.accept(
+                "Agent execution failed category=" + category
+                        + " phase=" + phase
+                        + " " + contextLabel(context)));
     }
 
     private static void safeLog(Runnable action) {

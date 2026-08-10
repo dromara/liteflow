@@ -2,9 +2,11 @@ package com.yomahub.liteflow.agent.component;
 
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.middleware.ModelRoutingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
+import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.config.ModelConfig;
@@ -12,6 +14,7 @@ import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.middleware.ModelCallInput;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.ExecutionConfig;
 import io.agentscope.core.model.GenerateOptions;
@@ -26,6 +29,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -149,6 +153,107 @@ class ReActAgentBuilderConfigurationTest {
     }
 
     @Test
+    void sameBuilderMaySelectOtherManagedModelsAndRoutingUsesTheFinalPrimary() {
+        CloseableModel originalDefault = new CloseableModel("original", new ArrayList<>());
+        CloseableModel originalFallback = new CloseableModel("fallback", new ArrayList<>());
+        CloseableModel finalPrimary = new CloseableModel("routing", new ArrayList<>());
+        CloseableModel composedDefaultPath = new CloseableModel("composed", new ArrayList<>());
+        TestComponent component = new TestComponent(originalDefault);
+        component.fallback = originalFallback;
+        component.routing = List.of(finalPrimary);
+        component.customizer = builder -> builder
+                .model(finalPrimary)
+                .fallbackModel(originalDefault);
+
+        ReActAgentRuntime runtime = component.runtime(config());
+        try {
+            assertSame(finalPrimary, runtime.agent().getModel());
+            assertSame(originalDefault, runtime.agent().getModelConfig().fallbackModel());
+
+            ModelRoutingMiddleware routing = runtime.agent().getMiddlewares().stream()
+                    .filter(ModelRoutingMiddleware.class::isInstance)
+                    .map(ModelRoutingMiddleware.class::cast)
+                    .findFirst()
+                    .orElseThrow();
+            AtomicReference<ModelCallInput> forwarded = new AtomicReference<>();
+            ModelCallInput input = new ModelCallInput(
+                    List.of(), List.of(), null, composedDefaultPath);
+            routing.onModelCall(
+                            runtime.agent(),
+                            AgentTestContexts.runtimeContext(
+                                    AgentTestContexts.liteFlowContext()),
+                            input,
+                            nextInput -> {
+                                forwarded.set(nextInput);
+                                return Flux.empty();
+                            })
+                    .blockLast();
+
+            assertSame(composedDefaultPath, forwarded.get().model(),
+                    "the final primary must preserve AgentScope's composed fallback model");
+        } finally {
+            runtime.close();
+        }
+    }
+
+    @Test
+    void distinctReturnedBuilderIsAcceptedWhenItRetainsMandatoryResources() {
+        CloseableModel originalDefault = new CloseableModel("original", new ArrayList<>());
+        CloseableModel originalFallback = new CloseableModel("fallback", new ArrayList<>());
+        CloseableModel finalPrimary = new CloseableModel("routing", new ArrayList<>());
+        TestComponent component = new TestComponent(originalDefault);
+        component.fallback = originalFallback;
+        component.routing = List.of(finalPrimary);
+        component.customizer = builder -> copyBuilderRetainingLiteFlowResources(
+                builder, finalPrimary, originalDefault, true);
+
+        ReActAgentRuntime runtime = component.runtime(config());
+        try {
+            assertSame(finalPrimary, runtime.agent().getModel());
+            assertSame(originalDefault, runtime.agent().getModelConfig().fallbackModel());
+            assertTrue(runtime.agent().getMiddlewares().stream()
+                    .anyMatch(ModelRoutingMiddleware.class::isInstance));
+        } finally {
+            runtime.close();
+        }
+    }
+
+    @Test
+    void nullOrMissingMandatoryCustomizerResourcesAreRejectedAndOwnedModelsCloseOnce() {
+        CloseableModel nullResultModel = new CloseableModel("null-result", new ArrayList<>());
+        TestComponent nullResult = new TestComponent(nullResultModel);
+        nullResult.customizer = builder -> null;
+
+        AgentConfigException nullFailure = assertThrows(
+                AgentConfigException.class, () -> nullResult.runtime(config()));
+        assertTrue(nullFailure.getMessage().contains("must not return null"));
+        assertEquals(1, nullResultModel.closeCount.get());
+
+        CloseableModel missingStateModel = new CloseableModel("missing-state", new ArrayList<>());
+        TestComponent missingState = new TestComponent(missingStateModel);
+        missingState.customizer = builder -> ReActAgent.builder()
+                .name("unsafe")
+                .sysPrompt("unsafe")
+                .model(missingStateModel);
+
+        AgentConfigException stateFailure = assertThrows(
+                AgentConfigException.class, () -> missingState.runtime(config()));
+        assertTrue(stateFailure.getMessage().contains("namespaced StateStore"));
+        assertEquals(1, missingStateModel.closeCount.get());
+
+        CloseableModel missingMiddlewareModel =
+                new CloseableModel("missing-middleware", new ArrayList<>());
+        TestComponent missingMiddleware = new TestComponent(missingMiddlewareModel);
+        missingMiddleware.customizer = builder -> copyBuilderRetainingLiteFlowResources(
+                builder, missingMiddlewareModel, null, false);
+
+        AgentConfigException middlewareFailure = assertThrows(
+                AgentConfigException.class, () -> missingMiddleware.runtime(config()));
+        assertTrue(middlewareFailure.getMessage().contains("core middlewares"));
+        assertEquals(1, missingMiddlewareModel.closeCount.get());
+    }
+
+    @Test
     void invalidCountsAndNullExtensionCollectionsFailDuringBuild() {
         CloseableModel model = new CloseableModel("default", new ArrayList<>());
         TestComponent invalidRetries = new TestComponent(model);
@@ -172,6 +277,31 @@ class ReActAgentBuilderConfigurationTest {
         AgentConfig config = new AgentConfig();
         config.getRuntime().setNamespace("builder-test");
         return config;
+    }
+
+    private static ReActAgent.Builder copyBuilderRetainingLiteFlowResources(
+            ReActAgent.Builder source,
+            Model primary,
+            Model fallback,
+            boolean copyMiddlewares) {
+        ReActAgent snapshot = source.build();
+        try {
+            ReActAgent.Builder copy = ReActAgent.Builder.fromAgent(snapshot)
+                    .model(primary)
+                    .fallbackModel(fallback)
+                    .modelExecutionConfig(snapshot.getModelExecutionConfig())
+                    .toolExecutionConfig(snapshot.getToolExecutionConfig())
+                    .permissionContext(snapshot.getPermissionContext())
+                    .stopOnReject(snapshot.getReactConfig().stopOnReject())
+                    .defaultSessionId(snapshot.getDefaultSessionId())
+                    .stateStore(snapshot.getStateStore());
+            if (copyMiddlewares) {
+                copy.middlewares(snapshot.getMiddlewares());
+            }
+            return copy;
+        } finally {
+            snapshot.close();
+        }
     }
 
     private static final class TestComponent extends ReActAgentComponent {

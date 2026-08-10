@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -138,8 +139,10 @@ class MiddlewareOrderTest {
     @Test
     void loggingUsesCurrentSafeIdentifiersAndNeverReplacesExecutionFailure() {
         LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
-        RuntimeException failure = new RuntimeException("model failed");
-        ReActLoggingMiddleware middleware = new ReActLoggingMiddleware(true);
+        String secret = "sentinel-provider-api-key-and-tool-arguments";
+        RuntimeException failure = new RuntimeException(secret);
+        List<String> warnings = new ArrayList<>();
+        ReActLoggingMiddleware middleware = new ReActLoggingMiddleware(true, warnings::add);
 
         assertEquals(
                 "user=user-1 conversation=conversation-1 agent=agent-1 "
@@ -157,6 +160,11 @@ class MiddlewareOrderTest {
                                 ignored -> Flux.error(failure))
                         .blockLast());
         assertSame(failure, thrown);
+        assertEquals(1, warnings.size());
+        assertFalse(warnings.get(0).contains(secret));
+        assertTrue(warnings.get(0).contains("category=java.lang.RuntimeException"));
+        assertTrue(warnings.get(0).contains("phase=agent"));
+        assertTrue(warnings.get(0).contains("request=request-1"));
     }
 
     private static AgentInput nextInput(

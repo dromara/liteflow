@@ -148,6 +148,25 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     namespaced,
                     buildContext.agentConfig().getStateStore().getFailurePolicy());
             List<Model> managedModels = List.copyOf(ownedModels);
+            ReActLoggingMiddleware loggingMiddleware =
+                    new ReActLoggingMiddleware(options.loggingEnabled());
+            FlowEventBridgeMiddleware eventMiddleware =
+                    new FlowEventBridgeMiddleware(options.listenerFailureMode());
+            ChatUsageMiddleware usageMiddleware = new ChatUsageMiddleware();
+            SkillTrackingMiddleware skillMiddleware = new SkillTrackingMiddleware(Map.of());
+            LiteFlowSystemPromptMiddleware promptMiddleware =
+                    new LiteFlowSystemPromptMiddleware(this::transformSystemPrompt);
+            ModelRoutingMiddleware routingMiddleware =
+                    ModelRoutingMiddleware.awaitingDefaultModel(
+                            managedModels, this::routeModel);
+            List<MiddlewareBase> mandatoryMiddlewares = List.of(
+                    failureMiddleware,
+                    loggingMiddleware,
+                    eventMiddleware,
+                    usageMiddleware,
+                    skillMiddleware,
+                    promptMiddleware,
+                    routingMiddleware);
             ReActAgent.Builder builder = ReActAgent.builder()
                     .name(buildContext.agentName())
                     .sysPrompt(effectiveSystemPrompt())
@@ -163,27 +182,24 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                     .defaultSessionId(buildContext.agentNamespace())
                     .stateStore(namespaced)
                     .middleware(failureMiddleware)
-                    .middleware(new ReActLoggingMiddleware(options.loggingEnabled()))
-                    .middleware(new FlowEventBridgeMiddleware(options.listenerFailureMode()))
-                    .middleware(new ChatUsageMiddleware())
-                    .middleware(new SkillTrackingMiddleware(Map.of()));
+                    .middleware(loggingMiddleware)
+                    .middleware(eventMiddleware)
+                    .middleware(usageMiddleware)
+                    .middleware(skillMiddleware);
             for (MiddlewareBase middleware : options.userMiddlewares()) {
                 builder.middleware(AgentMiddlewareOrder.user(middleware));
             }
-            builder.middleware(new LiteFlowSystemPromptMiddleware(this::transformSystemPrompt));
-            builder.middleware(new ModelRoutingMiddleware(
-                    defaultModel, managedModels, this::routeModel));
+            builder.middleware(promptMiddleware);
+            builder.middleware(routingMiddleware);
 
             ReActAgent.Builder customized = customizeAgent(builder);
             if (customized == null) {
                 throw new AgentConfigException("customizeAgent must not return null");
             }
-            if (customized != builder) {
-                throw new AgentConfigException(
-                        "customizeAgent must return the provided builder instance");
-            }
             agent = customized.build();
-            validateCustomizedModels(agent, defaultModel, managedModels);
+            validateCustomizedAgent(
+                    agent, namespaced, managedModels, mandatoryMiddlewares);
+            routingMiddleware.finalizeDefaultModel(agent.getModel());
             return new ReActAgentRuntime(agent, namespaced, resolved, managedModels);
         } catch (RuntimeException | Error failure) {
             closeAfterBuildFailure(failure, agent, ownedModels, namespaced, resolved);
@@ -266,21 +282,40 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
         return model;
     }
 
-    private static void validateCustomizedModels(
-            ReActAgent agent, Model defaultModel, List<Model> managedModels) {
-        if (agent.getModel() != defaultModel) {
-            if (!identityContains(managedModels, agent.getModel())) {
-                throw new AgentConfigException(
-                        "customizeAgent introduced an unmanaged primary model");
-            }
+    private static void validateCustomizedAgent(
+            ReActAgent agent,
+            GuardedNamespacedAgentStateStore namespacedStateStore,
+            List<Model> managedModels,
+            List<MiddlewareBase> mandatoryMiddlewares) {
+        if (agent.getStateStore() != namespacedStateStore) {
             throw new AgentConfigException(
-                    "customizeAgent must retain the runtime default model; use routeModel instead");
+                    "customizeAgent must retain the LiteFlow namespaced StateStore");
+        }
+        for (MiddlewareBase mandatory : mandatoryMiddlewares) {
+            if (!identityContains(agent.getMiddlewares(), mandatory)) {
+                throw new AgentConfigException(
+                        "customizeAgent must retain all LiteFlow core middlewares");
+            }
+        }
+        if (!identityContains(managedModels, agent.getModel())) {
+            throw new AgentConfigException(
+                    "customizeAgent introduced an unmanaged primary model");
         }
         Model customizedFallback = agent.getModelConfig().fallbackModel();
         if (customizedFallback != null && !identityContains(managedModels, customizedFallback)) {
             throw new AgentConfigException(
                     "customizeAgent introduced an unmanaged fallback model");
         }
+    }
+
+    private static boolean identityContains(
+            List<? extends MiddlewareBase> middlewares, MiddlewareBase expected) {
+        for (MiddlewareBase middleware : middlewares) {
+            if (middleware == expected) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean identityContains(List<Model> models, Model expected) {

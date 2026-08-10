@@ -10,8 +10,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ChatUsageMiddlewareTest {
@@ -48,5 +50,51 @@ class ChatUsageMiddlewareTest {
         assertEquals(5, usage.getCachedTokens());
         assertEquals(1.75, usage.getTime(), 0.0001);
         assertNull(second.getChatUsage());
+    }
+
+    @Test
+    void saturatesMalformedAndOverflowingUsageUnderConcurrentAggregation() {
+        LiteFlowAgentContext malformedFirst = AgentTestContexts.liteFlowContext();
+        malformedFirst.recordChatUsage(
+                "malformed-first",
+                new ChatUsage(-1, -2, -3, Double.NaN));
+
+        ChatUsage sanitized = malformedFirst.getChatUsage();
+        assertEquals(0, sanitized.getInputTokens());
+        assertEquals(0, sanitized.getOutputTokens());
+        assertEquals(0, sanitized.getCachedTokens());
+        assertEquals(0.0, sanitized.getTime());
+
+        LiteFlowAgentContext concurrent = AgentTestContexts.liteFlowContext();
+        List<ChatUsage> contributions = IntStream.range(0, 128)
+                .mapToObj(index -> switch (index) {
+                    case 0 -> new ChatUsage(
+                            Integer.MAX_VALUE,
+                            -7,
+                            Integer.MAX_VALUE,
+                            Double.MAX_VALUE);
+                    case 1 -> new ChatUsage(1, 1, 1, Double.POSITIVE_INFINITY);
+                    case 2 -> new ChatUsage(-100, -100, -100, Double.NaN);
+                    default -> new ChatUsage(1, 1, 1, 0.25);
+                })
+                .toList();
+
+        Flux.range(0, contributions.size())
+                .parallel()
+                .runOn(Schedulers.parallel())
+                .doOnNext(index -> concurrent.recordChatUsage(
+                        "boundary-" + index,
+                        contributions.get(index)))
+                .sequential()
+                .blockLast();
+
+        ChatUsage usage = concurrent.getChatUsage();
+        assertEquals(Integer.MAX_VALUE, usage.getInputTokens());
+        assertEquals(126, usage.getOutputTokens());
+        assertEquals(Integer.MAX_VALUE, usage.getCachedTokens());
+        assertEquals(Integer.MAX_VALUE, usage.getTotalTokens());
+        assertEquals(Double.MAX_VALUE, usage.getTime());
+        assertFalse(Double.isNaN(usage.getTime()));
+        assertFalse(Double.isInfinite(usage.getTime()));
     }
 }

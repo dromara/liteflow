@@ -27,6 +27,7 @@ import io.agentscope.core.message.ToolResultState;
 import io.agentscope.core.message.ToolUseBlock;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -125,6 +126,20 @@ class AgentEventTypeMapperTest {
         AgentFlowEventData data = (AgentFlowEventData) mapped.getData();
         assertNull(data.event());
         assertNull(data.replyId());
+    }
+
+    @Test
+    void resultThenEndExposesExactlyOneTerminalBoundary() {
+        LiteFlowAgentContext context = AgentTestContexts.liteFlowContext();
+        Msg result = AssistantMessage.builder().textContent("final answer").build();
+        List<FlowEvent> sequence = new ArrayList<>();
+        sequence.addAll(AgentEventTypeMapper.map(new AgentResultEvent(result), context));
+        sequence.addAll(AgentEventTypeMapper.map(new AgentEndEvent("reply-1"), context));
+
+        List<FlowEvent> terminal = sequence.stream().filter(FlowEvent::isLast).toList();
+
+        assertEquals(1, terminal.size());
+        assertEquals("agent.result", terminal.get(0).getType());
     }
 
     private record EventCase(

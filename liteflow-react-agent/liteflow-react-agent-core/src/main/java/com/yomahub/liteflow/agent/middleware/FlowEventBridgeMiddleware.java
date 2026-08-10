@@ -79,7 +79,7 @@ public final class FlowEventBridgeMiddleware implements MiddlewareBase {
                     listenerFailure.set(deliveryFailure);
                     return Flux.error(deliveryFailure);
                 }
-                warn(deliveryFailure);
+                warn(deliveryFailure, AgentEventTypeMapper.ERROR, context);
             }
         }
         return Flux.error(sourceFailure);
@@ -100,7 +100,7 @@ public final class FlowEventBridgeMiddleware implements MiddlewareBase {
                     listenerFailure.set(deliveryFailure);
                     throw deliveryFailure;
                 }
-                warn(deliveryFailure);
+                warn(deliveryFailure, event.getType(), context);
             }
         }
     }
@@ -109,12 +109,20 @@ public final class FlowEventBridgeMiddleware implements MiddlewareBase {
         FlowEventPublisher.publish(context.getSlot(), event);
     }
 
-    private void warn(Throwable failure) {
+    private void warn(
+            Throwable failure, String eventType, LiteFlowAgentContext context) {
         try {
-            warningSink.accept("Agent flow-event listener failed: " + failure);
+            warningSink.accept("Agent flow-event listener failed category="
+                    + errorCategory(failure)
+                    + " eventType=" + eventType
+                    + " " + ReActLoggingMiddleware.contextLabel(context));
         } catch (Throwable ignored) {
             // Logging must never replace the model or listener failure being handled.
         }
+    }
+
+    private static String errorCategory(Throwable failure) {
+        return failure == null ? "unknown" : failure.getClass().getName();
     }
 
     private static LiteFlowAgentContext requireContext(RuntimeContext runtimeContext) {

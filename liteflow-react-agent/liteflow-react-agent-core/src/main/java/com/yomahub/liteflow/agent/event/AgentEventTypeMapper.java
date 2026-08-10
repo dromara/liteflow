@@ -51,7 +51,7 @@ public final class AgentEventTypeMapper {
             return one(event, context, AGENT_START, null, false);
         }
         if (event instanceof AgentEndEvent) {
-            return one(event, context, AGENT_END, null, true);
+            return one(event, context, AGENT_END, null, false);
         }
         if (event instanceof TextBlockDeltaEvent text) {
             return List.of(

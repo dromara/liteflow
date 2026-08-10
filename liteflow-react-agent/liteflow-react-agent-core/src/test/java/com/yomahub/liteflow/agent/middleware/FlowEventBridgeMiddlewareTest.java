@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlowEventBridgeMiddlewareTest {
 
@@ -72,9 +74,10 @@ class FlowEventBridgeMiddlewareTest {
         LiteFlowAgentContext context = AgentTestContexts.liteFlowContext();
         AtomicInteger attempts = new AtomicInteger();
         List<String> warnings = new ArrayList<>();
+        String sentinelSecret = "sentinel-provider-api-key-and-tool-arguments";
         FlowEventPublisher.setListener(context.getSlot(), event -> {
             attempts.incrementAndGet();
-            throw new IllegalStateException("observer unavailable");
+            throw new IllegalStateException(sentinelSecret);
         });
         FlowEventBridgeMiddleware middleware = new FlowEventBridgeMiddleware(
                 AgentListenerFailureMode.LOG_AND_CONTINUE,
@@ -93,6 +96,14 @@ class FlowEventBridgeMiddlewareTest {
         assertEquals(List.of(source), forwarded);
         assertEquals(2, attempts.get(), "typed text and compatibility reasoning both publish");
         assertEquals(2, warnings.size());
+        assertFalse(warnings.stream().anyMatch(message -> message.contains(sentinelSecret)));
+        assertTrue(warnings.stream().allMatch(message ->
+                message.contains("category=java.lang.IllegalStateException")));
+        assertTrue(warnings.stream().allMatch(message -> message.contains("request=request-1")));
+        assertEquals(List.of("agent.text.delta", "agent.reasoning"), warnings.stream()
+                .map(message -> message.substring(message.indexOf("eventType=") + 10)
+                        .split(" ", 2)[0])
+                .toList());
     }
 
     @Test
