@@ -112,7 +112,8 @@ public class ManagedShellCommandTool {
             if (waitResult != WaitResult.EXITED) {
                 return errorFor(waitResult);
             }
-            OutputWait output = waitForOutput(outputFuture, context, processStartedAt);
+            OutputWait output = waitForOutput(
+                    outputFuture, context, processStartedAt, processTree);
             return output.capture() == null
                     ? errorFor(output.result())
                     : output.capture().render(maxOutputBytes);
@@ -161,7 +162,7 @@ public class ManagedShellCommandTool {
             ManagedProcessTree processTree)
             throws InterruptedException {
         while (true) {
-            processTree.captureDescendantsWhileParentAlive();
+            processTree.expandFrontier();
             WaitWindow window = waitWindow(context, processStartedAt);
             if (window.result() != WaitResult.ACTIVE) {
                 return window.result();
@@ -175,9 +176,11 @@ public class ManagedShellCommandTool {
     private OutputWait waitForOutput(
             Future<OutputCapture> outputFuture,
             LiteFlowAgentContext context,
-            long processStartedAt)
+            long processStartedAt,
+            ManagedProcessTree processTree)
             throws InterruptedException, ExecutionException {
         while (true) {
+            processTree.expandFrontier();
             if (outputFuture.isDone()) {
                 return new OutputWait(WaitResult.EXITED, outputFuture.get());
             }
@@ -298,6 +301,7 @@ public class ManagedShellCommandTool {
 
     private static boolean terminateProcessTree(
             ManagedProcessTree processTree, long cleanupDeadline) {
+        processTree.expandFrontier();
         List<ProcessHandle> handles = processTree.capturedChildFirst();
         for (ProcessHandle handle : handles) {
             destroyQuietly(handle, false);
@@ -305,6 +309,8 @@ public class ManagedShellCommandTool {
         long gracefulDeadline = System.nanoTime()
                 + Math.max(0, cleanupDeadline - System.nanoTime()) / 2;
         boolean interrupted = awaitExit(handles, gracefulDeadline);
+        processTree.expandFrontier();
+        handles = processTree.capturedChildFirst();
         for (ProcessHandle handle : handles) {
             destroyQuietly(handle, true);
         }
@@ -405,15 +411,39 @@ public class ManagedShellCommandTool {
             this.parent = parent;
         }
 
-        private void captureDescendantsWhileParentAlive() {
-            try {
-                if (parent.isAlive()) {
-                    try (var currentDescendants = parent.descendants()) {
-                        currentDescendants.forEach(descendants::add);
+        private void expandFrontier() {
+            boolean expanded;
+            do {
+                int capturedBefore = descendants.size();
+                List<ProcessHandle> frontier = new ArrayList<>(descendants.size() + 1);
+                if (isAlive(parent)) {
+                    frontier.add(parent);
+                }
+                for (ProcessHandle descendant : List.copyOf(descendants)) {
+                    if (isAlive(descendant)) {
+                        frontier.add(descendant);
                     }
                 }
+                for (ProcessHandle ancestor : frontier) {
+                    captureDescendants(ancestor);
+                }
+                expanded = descendants.size() > capturedBefore;
+            } while (expanded);
+        }
+
+        private void captureDescendants(ProcessHandle ancestor) {
+            try (var currentDescendants = ancestor.descendants()) {
+                currentDescendants.forEach(descendants::add);
             } catch (RuntimeException ignored) {
-                // A later bounded slice can retry while the original parent remains alive.
+                // Continue across the remaining captured process identities.
+            }
+        }
+
+        private static boolean isAlive(ProcessHandle handle) {
+            try {
+                return handle.isAlive();
+            } catch (RuntimeException ignored) {
+                return false;
             }
         }
 

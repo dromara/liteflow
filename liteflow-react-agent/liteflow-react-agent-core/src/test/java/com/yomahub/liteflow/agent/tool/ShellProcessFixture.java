@@ -16,6 +16,15 @@ public final class ShellProcessFixture {
             case "tree" -> tree(Path.of(args[1]), Path.of(args[2]));
             case "orphan" -> orphan(
                     Path.of(args[1]), Path.of(args[2]), Path.of(args[3]));
+            case "frontier" -> frontier(
+                    Path.of(args[1]),
+                    Path.of(args[2]),
+                    Path.of(args[3]),
+                    Path.of(args[4]),
+                    Path.of(args[5]),
+                    Path.of(args[6]));
+            case "frontier-child" -> frontierChild(
+                    Path.of(args[1]), Path.of(args[2]), Path.of(args[3]));
             case "child" -> new CountDownLatch(1).await();
             default -> throw new IllegalArgumentException("unknown fixture mode: " + args[0]);
         }
@@ -64,5 +73,55 @@ public final class ShellProcessFixture {
         while (!Files.exists(release)) {
             Thread.onSpinWait();
         }
+    }
+
+    private static void frontier(
+            Path parentPid,
+            Path childPid,
+            Path releaseParent,
+            Path spawnGrandchild,
+            Path grandchildPid,
+            Path completeOutput) throws Exception {
+        Files.writeString(parentPid, Long.toString(ProcessHandle.current().pid()));
+        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        Process child = new ProcessBuilder(
+                        java,
+                        "-cp",
+                        System.getProperty("java.class.path"),
+                        ShellProcessFixture.class.getName(),
+                        "frontier-child",
+                        spawnGrandchild.toString(),
+                        grandchildPid.toString(),
+                        completeOutput.toString())
+                .inheritIO()
+                .start();
+        Files.writeString(childPid, Long.toString(child.pid()));
+        while (!Files.exists(releaseParent)) {
+            Thread.onSpinWait();
+        }
+    }
+
+    private static void frontierChild(
+            Path spawnGrandchild, Path grandchildPid, Path completeOutput) throws Exception {
+        while (!Files.exists(spawnGrandchild)) {
+            Thread.onSpinWait();
+        }
+        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        Process grandchild = new ProcessBuilder(
+                        java,
+                        "-cp",
+                        System.getProperty("java.class.path"),
+                        ShellProcessFixture.class.getName(),
+                        "child")
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
+                .start();
+        Files.writeString(grandchildPid, Long.toString(grandchild.pid()));
+        while (!Files.exists(completeOutput)) {
+            Thread.onSpinWait();
+        }
+        System.out.close();
+        System.err.close();
+        new CountDownLatch(1).await();
     }
 }

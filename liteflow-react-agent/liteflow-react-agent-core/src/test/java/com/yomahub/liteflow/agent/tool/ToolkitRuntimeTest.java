@@ -309,6 +309,37 @@ class ToolkitRuntimeTest {
         }
     }
 
+    @Test
+    void shellCancellationExpandsCapturedFrontierDuringOutputJoin() throws Exception {
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        try (FrontierInvocation frontier = FrontierInvocation.start(invocation, "frontier-cancel")) {
+            frontier.awaitParentExitAndOutputJoin();
+            frontier.spawnGrandchild();
+            new CountDownLatch(1).await(100, TimeUnit.MILLISECONDS);
+
+            invocation.cancel();
+            String result = frontier.result(Duration.ofSeconds(2));
+
+            assertTrue(result.contains("cancelled"), result);
+            frontier.assertDescendantsExited();
+        }
+    }
+
+    @Test
+    void normalOutputCompletionCleansDescendantsAddedAfterParentExit() throws Exception {
+        LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
+        try (FrontierInvocation frontier = FrontierInvocation.start(invocation, "frontier-normal")) {
+            frontier.awaitParentExitAndOutputJoin();
+            frontier.spawnGrandchild();
+            frontier.completeOutput();
+
+            String result = frontier.result(Duration.ofSeconds(2));
+
+            assertEquals("", result);
+            frontier.assertDescendantsExited();
+        }
+    }
+
     private static AgentConfig shellConfig(Path root, Duration timeout, long maxOutputBytes) {
         AgentConfig config = config();
         config.getWorkspace().setRoot(root.toString());
@@ -394,6 +425,14 @@ class ToolkitRuntimeTest {
         }
     }
 
+    private static long readPidIfPresent(Path path) {
+        try {
+            return Files.exists(path) ? Long.parseLong(Files.readString(path)) : -1;
+        } catch (Exception ignored) {
+            return -1;
+        }
+    }
+
     private static final class OrphanInvocation implements AutoCloseable {
         private final Path parentPid;
         private final Path childPid;
@@ -461,12 +500,104 @@ class ToolkitRuntimeTest {
             forceKill(readPidIfPresent(parentPid));
         }
 
-        private static long readPidIfPresent(Path path) {
-            try {
-                return Files.exists(path) ? Long.parseLong(Files.readString(path)) : -1;
-            } catch (Exception ignored) {
-                return -1;
-            }
+    }
+
+    private static final class FrontierInvocation implements AutoCloseable {
+        private final Path parentPid;
+        private final Path childPid;
+        private final Path grandchildPid;
+        private final Path releaseParent;
+        private final Path spawnGrandchild;
+        private final Path completeOutput;
+        private final ExecutorService executor;
+        private final Future<String> call;
+
+        private FrontierInvocation(
+                Path parentPid,
+                Path childPid,
+                Path grandchildPid,
+                Path releaseParent,
+                Path spawnGrandchild,
+                Path completeOutput,
+                ExecutorService executor,
+                Future<String> call) {
+            this.parentPid = parentPid;
+            this.childPid = childPid;
+            this.grandchildPid = grandchildPid;
+            this.releaseParent = releaseParent;
+            this.spawnGrandchild = spawnGrandchild;
+            this.completeOutput = completeOutput;
+            this.executor = executor;
+            this.call = call;
+        }
+
+        private static FrontierInvocation start(
+                LiteFlowAgentContext invocation, String prefix) throws Exception {
+            Path root = Files.createTempDirectory("liteflow-shell-" + prefix + "-");
+            AgentConfig shellConfig = shellConfig(root, Duration.ofSeconds(5), 1024);
+            GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(root, 1024);
+            ManagedShellCommandTool tool = new ManagedShellCommandTool(resolver, shellConfig);
+            Path session = resolver.sessionRoot(invocation.getRuntimeSessionId());
+            Path parentPid = session.resolve("parent.pid");
+            Path childPid = session.resolve("child.pid");
+            Path grandchildPid = session.resolve("grandchild.pid");
+            Path releaseParent = session.resolve("release-parent");
+            Path spawnGrandchild = session.resolve("spawn-grandchild");
+            Path completeOutput = session.resolve("complete-output");
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<String> call = executor.submit(() -> tool.executeCommand(
+                    AgentTestContexts.runtimeContext(invocation),
+                    fixtureCommand(
+                            "frontier",
+                            "parent.pid",
+                            "child.pid",
+                            "release-parent",
+                            "spawn-grandchild",
+                            "grandchild.pid",
+                            "complete-output")));
+            return new FrontierInvocation(
+                    parentPid,
+                    childPid,
+                    grandchildPid,
+                    releaseParent,
+                    spawnGrandchild,
+                    completeOutput,
+                    executor,
+                    call);
+        }
+
+        private void awaitParentExitAndOutputJoin() throws Exception {
+            awaitFile(childPid, Duration.ofSeconds(2));
+            new CountDownLatch(1).await(100, TimeUnit.MILLISECONDS);
+            Files.writeString(releaseParent, "release");
+            assertProcessExited(readPid(parentPid));
+        }
+
+        private void spawnGrandchild() throws Exception {
+            Files.writeString(spawnGrandchild, "spawn");
+            awaitFile(grandchildPid, Duration.ofSeconds(2));
+        }
+
+        private void completeOutput() throws Exception {
+            Files.writeString(completeOutput, "complete");
+        }
+
+        private String result(Duration timeout) throws Exception {
+            return call.get(timeout.toNanos(), TimeUnit.NANOSECONDS);
+        }
+
+        private void assertDescendantsExited() throws Exception {
+            assertProcessExited(readPid(childPid));
+            assertProcessExited(readPid(grandchildPid));
+        }
+
+        @Override
+        public void close() {
+            call.cancel(true);
+            executor.shutdownNow();
+            forceKill(readPidIfPresent(grandchildPid));
+            forceKill(readPidIfPresent(childPid));
+            forceKill(readPidIfPresent(parentPid));
         }
     }
 
