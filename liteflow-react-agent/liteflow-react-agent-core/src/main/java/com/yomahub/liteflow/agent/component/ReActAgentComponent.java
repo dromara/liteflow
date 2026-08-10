@@ -29,6 +29,7 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.tool.Toolkit;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -136,12 +137,12 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
 
         AgentInvocationGuard guard = new AgentInvocationGuardResolver().resolve(config);
         AgentInvocationCoordinator coordinator = new AgentInvocationCoordinator(guard);
-        ReActAgentRuntime runtime = null;
         try (AgentInvocationLease ignored = coordinator.acquire(
                 identity, false, config.getInvocationGuard().getAcquireTimeout())) {
             AgentRuntimeBuildContext buildContext = new AgentRuntimeBuildContext(
                     config, runtimeAgentName(), currentAgentKey, identity.agentNamespace());
-            runtime = runtimeHandle.getOrCreate(() -> buildRuntime(buildContext));
+            ReActAgentRuntime runtime = runtimeHandle.getOrCreate(
+                    () -> buildRuntime(buildContext));
             if (!runtime.stateStore().agentNamespace().equals(identity.agentNamespace())) {
                 throw new AgentConfigException(
                         "Agent identity changed after this component runtime was initialized");
@@ -154,19 +155,15 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
                     .build();
             Msg reply = runtime.agent()
                     .call(List.of(new UserMessage(userPrompt())), runtimeContext)
-                    .timeout(runtimeTimeout)
-                    .onErrorMap(TimeoutException.class, failure ->
+                    .timeout(runtimeTimeout,
+                            Mono.error(new RuntimeDeadlineExceededException(runtimeTimeout)))
+                    .onErrorMap(RuntimeDeadlineExceededException.class, failure ->
                             new AgentInvocationException(
                                     AgentInvocationErrorType.TIMEOUT,
-                                    "Agent invocation exceeded runtime timeout " + runtimeTimeout,
+                                    failure.getMessage(),
                                     failure))
                     .block();
             handleReply(reply);
-        } finally {
-            if (runtime != null) {
-                runtime.stateStore().clearLoadFailure(
-                        identity.userId(), identity.runtimeSessionId());
-            }
         }
     }
 
@@ -247,5 +244,12 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
     @Override
     public final void close() {
         runtimeHandle.close();
+    }
+
+    private static final class RuntimeDeadlineExceededException extends TimeoutException {
+
+        private RuntimeDeadlineExceededException(Duration runtimeTimeout) {
+            super("Agent invocation exceeded runtime timeout " + runtimeTimeout);
+        }
     }
 }

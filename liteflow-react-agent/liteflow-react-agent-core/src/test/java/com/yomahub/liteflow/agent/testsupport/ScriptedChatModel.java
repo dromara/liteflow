@@ -20,22 +20,31 @@ public final class ScriptedChatModel implements Model {
 
     private final String responseText;
     private final CountDownLatch firstCallCancellation;
+    private final Throwable immediateFailure;
     private final AtomicInteger callCount = new AtomicInteger();
     private final List<List<Msg>> inputs = new CopyOnWriteArrayList<>();
     private final List<RuntimeContext> runtimeContexts = new CopyOnWriteArrayList<>();
 
     public ScriptedChatModel(String responseText) {
-        this(responseText, null);
+        this(responseText, null, null);
     }
 
-    private ScriptedChatModel(String responseText, CountDownLatch firstCallCancellation) {
+    private ScriptedChatModel(
+            String responseText,
+            CountDownLatch firstCallCancellation,
+            Throwable immediateFailure) {
         this.responseText = responseText;
         this.firstCallCancellation = firstCallCancellation;
+        this.immediateFailure = immediateFailure;
     }
 
     public static ScriptedChatModel neverThenReply(
             String responseText, CountDownLatch firstCallCancellation) {
-        return new ScriptedChatModel(responseText, firstCallCancellation);
+        return new ScriptedChatModel(responseText, firstCallCancellation, null);
+    }
+
+    public static ScriptedChatModel immediateFailure(Throwable failure) {
+        return new ScriptedChatModel(null, null, failure);
     }
 
     @Override
@@ -48,6 +57,9 @@ public final class ScriptedChatModel implements Model {
             if (invocation == 1 && firstCallCancellation != null) {
                 return Flux.<ChatResponse>never()
                         .doOnCancel(firstCallCancellation::countDown);
+            }
+            if (immediateFailure != null) {
+                return Flux.error(immediateFailure);
             }
             return Flux.just(ChatResponse.builder()
                     .content(List.of(TextBlock.builder().text(responseText).build()))
