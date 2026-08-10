@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /** Shared lifecycle template for LiteFlow components backed by an Agent runtime. */
 public abstract class AbstractAgentComponent<R extends AutoCloseable>
@@ -39,6 +41,7 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
     public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
 
     private final AgentRuntimeHandle<R> runtimeHandle = new AgentRuntimeHandle<>();
+    private final ReentrantReadWriteLock lifecycleLock = new ReentrantReadWriteLock(true);
 
     protected abstract R buildRuntime(AgentRuntimeBuildContext buildContext);
 
@@ -113,6 +116,19 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
 
     @Override
     public final void process() throws Exception {
+        Lock invocationLease = lifecycleLock.readLock();
+        invocationLease.lock();
+        try {
+            if (runtimeHandle.isClosed()) {
+                throw new IllegalStateException("Agent component is closed");
+            }
+            processWithRuntime();
+        } finally {
+            invocationLease.unlock();
+        }
+    }
+
+    private void processWithRuntime() throws Exception {
         AgentConfig config = agentConfig();
         validateForExecution(config);
         AgentOutputSpec output = resolveOutputSpec();
@@ -191,7 +207,17 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
 
     @Override
     public final void close() {
-        runtimeHandle.close();
+        if (lifecycleLock.getReadHoldCount() > 0) {
+            throw new IllegalStateException(
+                    "Cannot close agent component from an active invocation");
+        }
+        Lock closeLease = lifecycleLock.writeLock();
+        closeLease.lock();
+        try {
+            runtimeHandle.close();
+        } finally {
+            closeLease.unlock();
+        }
     }
 
     private AgentOutputSpec resolveOutputSpec() {

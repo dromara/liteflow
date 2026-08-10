@@ -28,7 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -207,6 +214,107 @@ class AbstractAgentComponentTest {
         assertFalse(slot.hasAttachment(context.getAttachmentKey()));
     }
 
+    @Test
+    void closeWaitsForActiveInvocationBeforeClosingRuntime() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getRuntime().setTimeout(Duration.ofSeconds(10));
+        TestComponent component = component(slot());
+        CountDownLatch invocationEntered = new CountDownLatch(1);
+        CountDownLatch releaseInvocation = new CountDownLatch(1);
+        CountDownLatch closeStarted = new CountDownLatch(1);
+        CountDownLatch closeFinished = new CountDownLatch(1);
+        component.reply = Mono.fromCallable(() -> {
+            invocationEntered.countDown();
+            assertTrue(releaseInvocation.await(5, TimeUnit.SECONDS));
+            return AssistantMessage.builder().textContent("answer").build();
+        });
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> invocation = executor.submit(() -> {
+                component.process();
+                return null;
+            });
+            assertTrue(invocationEntered.await(5, TimeUnit.SECONDS));
+            Future<?> close = executor.submit(() -> {
+                closeStarted.countDown();
+                component.close();
+                closeFinished.countDown();
+                return null;
+            });
+            assertTrue(closeStarted.await(5, TimeUnit.SECONDS));
+
+            assertFalse(closeFinished.await(200, TimeUnit.MILLISECONDS));
+            assertEquals(0, component.runtime.get().closeCount.get());
+
+            releaseInvocation.countDown();
+            invocation.get(5, TimeUnit.SECONDS);
+            close.get(5, TimeUnit.SECONDS);
+            assertEquals(1, component.runtime.get().closeCount.get());
+            assertThrows(IllegalStateException.class, component::process);
+        } finally {
+            releaseInvocation.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void differentInvocationsCanUseOneComponentRuntimeConcurrently() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getRuntime().setTimeout(Duration.ofSeconds(10));
+        TestComponent component = component(slot());
+        component.distinctConversationPerCall = true;
+        CountDownLatch bothInvocationsEntered = new CountDownLatch(2);
+        CountDownLatch releaseInvocations = new CountDownLatch(1);
+        AtomicInteger activeInvocations = new AtomicInteger();
+        AtomicInteger maximumActiveInvocations = new AtomicInteger();
+        component.reply = Mono.fromCallable(() -> {
+            int active = activeInvocations.incrementAndGet();
+            maximumActiveInvocations.accumulateAndGet(active, Math::max);
+            bothInvocationsEntered.countDown();
+            try {
+                assertTrue(releaseInvocations.await(5, TimeUnit.SECONDS));
+                return AssistantMessage.builder().textContent("answer").build();
+            } finally {
+                activeInvocations.decrementAndGet();
+            }
+        });
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> first = executor.submit(() -> {
+                component.process();
+                return null;
+            });
+            Future<?> second = executor.submit(() -> {
+                component.process();
+                return null;
+            });
+
+            assertTrue(bothInvocationsEntered.await(5, TimeUnit.SECONDS));
+            assertEquals(2, maximumActiveInvocations.get());
+            releaseInvocations.countDown();
+            first.get(5, TimeUnit.SECONDS);
+            second.get(5, TimeUnit.SECONDS);
+        } finally {
+            releaseInvocations.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void closeFromInvocationHookIsRejectedWithoutClosingRuntime() {
+        configureAgent();
+        TestComponent component = component(slot());
+        component.closeDuringInvoke = true;
+
+        IllegalStateException thrown = assertThrows(
+                IllegalStateException.class, component::process);
+
+        assertTrue(thrown.getMessage().contains("active invocation"));
+        assertEquals(0, component.runtime.get().closeCount.get());
+    }
+
     private TestComponent component(Slot slot) {
         TestComponent component = new TestComponent(slot);
         component.setNodeId("abstract-agent");
@@ -267,11 +375,13 @@ class AbstractAgentComponentTest {
         private final Slot slot;
         private final AtomicInteger buildCount = new AtomicInteger();
         private final AtomicInteger invokeCount = new AtomicInteger();
-        private final List<String> events = new ArrayList<>();
-        private final List<Boolean> contextWasExposedDuringBuild = new ArrayList<>();
-        private final List<Boolean> attachmentVisibleDuringInvoke = new ArrayList<>();
-        private final List<LiteFlowAgentContext> contexts = new ArrayList<>();
-        private final List<RuntimeContext> runtimeContexts = new ArrayList<>();
+        private final AtomicInteger conversationSequence = new AtomicInteger();
+        private final AtomicReference<TestRuntime> runtime = new AtomicReference<>();
+        private final List<String> events = new CopyOnWriteArrayList<>();
+        private final List<Boolean> contextWasExposedDuringBuild = new CopyOnWriteArrayList<>();
+        private final List<Boolean> attachmentVisibleDuringInvoke = new CopyOnWriteArrayList<>();
+        private final List<LiteFlowAgentContext> contexts = new CopyOnWriteArrayList<>();
+        private final List<RuntimeContext> runtimeContexts = new CopyOnWriteArrayList<>();
         private Mono<Msg> reply = Mono.just(AssistantMessage.builder()
                 .metadata(Map.of(MessageMetadataKeys.STRUCTURED_OUTPUT,
                         Map.of("answer", "structured")))
@@ -282,6 +392,8 @@ class AbstractAgentComponentTest {
         private RuntimeException customizationFailure;
         private RuntimeException promptFailure;
         private boolean replaceAttachmentDuringInvoke;
+        private boolean distinctConversationPerCall;
+        private boolean closeDuringInvoke;
 
         private TestComponent(Slot slot) {
             this.slot = slot;
@@ -293,6 +405,14 @@ class AbstractAgentComponentTest {
         }
 
         @Override
+        protected String resolveConversationId(Slot slot) {
+            if (distinctConversationPerCall) {
+                return "parallel-conversation-" + conversationSequence.incrementAndGet();
+            }
+            return super.resolveConversationId(slot);
+        }
+
+        @Override
         protected TestRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             events.add("buildRuntime");
             buildCount.incrementAndGet();
@@ -300,7 +420,9 @@ class AbstractAgentComponentTest {
             if (buildFailure != null) {
                 throw buildFailure;
             }
-            return new TestRuntime();
+            TestRuntime built = new TestRuntime();
+            runtime.set(built);
+            return built;
         }
 
         @Override
@@ -318,6 +440,9 @@ class AbstractAgentComponentTest {
                     slot.getAttachment(liteflowContext.getAttachmentKey()) == liteflowContext);
             if (replaceAttachmentDuringInvoke) {
                 slot.setAttachment(liteflowContext.getAttachmentKey(), "replacement");
+            }
+            if (closeDuringInvoke) {
+                close();
             }
             return reply;
         }

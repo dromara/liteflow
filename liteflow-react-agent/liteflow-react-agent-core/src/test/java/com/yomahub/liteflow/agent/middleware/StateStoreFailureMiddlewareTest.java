@@ -1,30 +1,32 @@
 package com.yomahub.liteflow.agent.middleware;
 
-import com.yomahub.liteflow.agent.exception.AgentException;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import io.agentscope.core.ReActAgent;
+import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.middleware.AgentInput;
+import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
 import io.agentscope.core.tool.Toolkit;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,16 +43,20 @@ class StateStoreFailureMiddlewareTest {
         ScriptedChatModel model = new ScriptedChatModel("must-not-run");
         StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
                 store, AgentStateStoreFailurePolicy.FAIL_FAST, warning -> { });
-        ReActAgent agent = buildAgent(store, model, middleware);
+        RuntimeException transformFailure = new RuntimeException("transform must not run");
+        PromptTransformMiddleware transform = new PromptTransformMiddleware(
+                new ArrayList<>(), transformFailure);
+        ReActAgent agent = buildAgent(store, model, middleware, transform);
         RuntimeContext context = RuntimeContext.builder()
                 .userId("alice")
                 .sessionId(SESSION)
                 .build();
 
         try {
-            AgentException thrown = assertThrows(AgentException.class,
+            RuntimeException thrown = assertThrows(RuntimeException.class,
                     () -> agent.call(List.of(new UserMessage("hello")), context).block());
-            assertSame(loadFailure, thrown.getCause());
+            assertTrue(hasCause(thrown, loadFailure));
+            assertEquals(0, transform.callCount.get());
             assertEquals(0, model.callCount());
             assertTrue(store.takeLoadFailure("alice", SESSION).isEmpty());
             assertEquals(Integer.MAX_VALUE, middleware.order());
@@ -66,9 +72,14 @@ class StateStoreFailureMiddlewareTest {
                 new LoadFailingStore(loadFailure), NAMESPACE);
         ScriptedChatModel model = new ScriptedChatModel("continued reply");
         List<String> warnings = new ArrayList<>();
+        List<String> events = new ArrayList<>();
         StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.LOG_AND_CONTINUE, warnings::add);
-        ReActAgent agent = buildAgent(store, model, middleware);
+                store, AgentStateStoreFailurePolicy.LOG_AND_CONTINUE, warning -> {
+                    warnings.add(warning);
+                    events.add("warning");
+                });
+        PromptTransformMiddleware transform = new PromptTransformMiddleware(events, null);
+        ReActAgent agent = buildAgent(store, model, middleware, transform);
         RuntimeContext context = RuntimeContext.builder()
                 .userId("alice")
                 .sessionId(SESSION)
@@ -79,6 +90,8 @@ class StateStoreFailureMiddlewareTest {
 
             assertNotNull(reply);
             assertEquals("continued reply", reply.getTextContent());
+            assertEquals(List.of("warning", "transform"), events);
+            assertEquals(1, transform.callCount.get());
             assertEquals(1, model.callCount());
             assertEquals(1, warnings.size());
             assertTrue(warnings.get(0).contains("state backend unavailable"));
@@ -115,7 +128,7 @@ class StateStoreFailureMiddlewareTest {
     private static ReActAgent buildAgent(
             AgentStateStore store,
             ScriptedChatModel model,
-            StateStoreFailureMiddleware middleware) {
+            MiddlewareBase... middlewares) {
         return ReActAgent.builder()
                 .name("state-failure-test")
                 .sysPrompt("Answer directly.")
@@ -123,8 +136,39 @@ class StateStoreFailureMiddlewareTest {
                 .toolkit(new Toolkit())
                 .maxIters(2)
                 .stateStore(store)
-                .middleware(middleware)
+                .middlewares(List.of(middlewares))
                 .build();
+    }
+
+    private static boolean hasCause(Throwable failure, Throwable expected) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (current == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final class PromptTransformMiddleware implements MiddlewareBase {
+        private final List<String> events;
+        private final RuntimeException failure;
+        private final AtomicInteger callCount = new AtomicInteger();
+
+        private PromptTransformMiddleware(List<String> events, RuntimeException failure) {
+            this.events = events;
+            this.failure = failure;
+        }
+
+        @Override
+        public Mono<String> onSystemPrompt(
+                Agent agent, RuntimeContext context, String currentPrompt) {
+            callCount.incrementAndGet();
+            events.add("transform");
+            if (failure != null) {
+                return Mono.error(failure);
+            }
+            return Mono.just(currentPrompt + " transformed");
+        }
     }
 
     private static final class LoadFailingStore implements AgentStateStore {

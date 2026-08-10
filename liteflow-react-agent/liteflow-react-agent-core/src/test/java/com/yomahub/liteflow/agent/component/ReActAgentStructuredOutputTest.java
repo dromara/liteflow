@@ -5,13 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
+import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.state.AgentStateStore;
+import io.agentscope.core.state.State;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -19,6 +24,8 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -126,6 +133,40 @@ class ReActAgentStructuredOutputTest {
         assertEquals(0, model.callCount());
     }
 
+    @Test
+    void strictStateStoreFailurePrecedesPrivatePromptTransformAndModelEntry() {
+        configureAgent().getStateStore().setFailurePolicy(
+                AgentStateStoreFailurePolicy.FAIL_FAST);
+        RuntimeException loadFailure = new RuntimeException("state backend unavailable");
+        ScriptedChatModel model = new ScriptedChatModel("must not run");
+        TestComponent component = component(slot("strict-state-request"), model);
+        component.stateLoadFailure = loadFailure;
+        component.transformFailure = new RuntimeException("transform must not run");
+
+        RuntimeException thrown = assertThrows(RuntimeException.class, component::process);
+
+        assertTrue(hasCause(thrown, loadFailure));
+        assertEquals(0, component.transformCount.get());
+        assertEquals(0, model.callCount());
+    }
+
+    @Test
+    void nonStrictStateStoreFailureAllowsPrivatePromptTransformAndModelEntry()
+            throws Exception {
+        configureAgent().getStateStore().setFailurePolicy(
+                AgentStateStoreFailurePolicy.LOG_AND_CONTINUE);
+        ScriptedChatModel model = new ScriptedChatModel("continued reply");
+        Slot slot = slot("non-strict-state-request");
+        TestComponent component = component(slot, model);
+        component.stateLoadFailure = new RuntimeException("state backend unavailable");
+
+        component.process();
+
+        assertEquals("continued reply", slot.getResponseData());
+        assertEquals(1, component.transformCount.get());
+        assertEquals(1, model.callCount());
+    }
+
     private TestComponent component(Slot slot, ScriptedChatModel model) {
         TestComponent component = new TestComponent(slot, model);
         component.setNodeId("react-agent");
@@ -172,6 +213,15 @@ class ReActAgentStructuredOutputTest {
         return false;
     }
 
+    private static boolean hasCause(Throwable failure, Throwable expected) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (current == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static final class StructuredReply {
         public String answer;
     }
@@ -185,6 +235,8 @@ class ReActAgentStructuredOutputTest {
         private Class<?> outputType;
         private JsonNode outputSchema;
         private boolean emptyTransformedPrompt;
+        private RuntimeException transformFailure;
+        private RuntimeException stateLoadFailure;
 
         private TestComponent(Slot slot, ScriptedChatModel model) {
             this.slot = slot;
@@ -224,11 +276,23 @@ class ReActAgentStructuredOutputTest {
                 String currentPrompt, LiteFlowAgentContext context) {
             return Mono.defer(() -> {
                 transformCount.incrementAndGet();
+                if (transformFailure != null) {
+                    return Mono.error(transformFailure);
+                }
                 if (emptyTransformedPrompt) {
                     return Mono.empty();
                 }
                 return Mono.just(currentPrompt + "\ndynamic " + context.getConversationId());
             });
+        }
+
+        @Override
+        protected AgentStateStoreResolver stateStoreResolver() {
+            if (stateLoadFailure == null) {
+                return super.stateStoreResolver();
+            }
+            return ignored -> new ResolvedAgentStateStore(
+                    new LoadFailingStore(stateLoadFailure), false);
         }
 
         @Override
@@ -239,6 +303,49 @@ class ReActAgentStructuredOutputTest {
         @Override
         protected JsonNode structuredOutputSchema() {
             return outputSchema;
+        }
+    }
+
+    private static final class LoadFailingStore implements AgentStateStore {
+        private final RuntimeException failure;
+
+        private LoadFailingStore(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public void save(String userId, String sessionId, String key, State value) {
+        }
+
+        @Override
+        public void save(
+                String userId, String sessionId, String key, List<? extends State> values) {
+        }
+
+        @Override
+        public <T extends State> Optional<T> get(
+                String userId, String sessionId, String key, Class<T> type) {
+            throw failure;
+        }
+
+        @Override
+        public <T extends State> List<T> getList(
+                String userId, String sessionId, String key, Class<T> itemType) {
+            return List.of();
+        }
+
+        @Override
+        public boolean exists(String userId, String sessionId) {
+            return false;
+        }
+
+        @Override
+        public void delete(String userId, String sessionId) {
+        }
+
+        @Override
+        public Set<String> listSessionIds(String userId) {
+            return Set.of();
         }
     }
 }

@@ -65,6 +65,12 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
     }
 
     @Override
+    public Mono<String> onSystemPrompt(
+            Agent agent, RuntimeContext context, String currentPrompt) {
+        return checkLoadFailure(context).thenReturn(currentPrompt);
+    }
+
+    @Override
     public Flux<AgentEvent> onReasoning(
             Agent agent,
             RuntimeContext context,
