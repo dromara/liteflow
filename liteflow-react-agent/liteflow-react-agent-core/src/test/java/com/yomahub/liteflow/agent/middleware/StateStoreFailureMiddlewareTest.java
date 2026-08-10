@@ -59,7 +59,7 @@ class StateStoreFailureMiddlewareTest {
             assertEquals(0, transform.callCount.get());
             assertEquals(0, model.callCount());
             assertTrue(store.takeLoadFailure("alice", SESSION).isEmpty());
-            assertEquals(Integer.MAX_VALUE, middleware.order());
+            assertEquals(10_000, middleware.order());
         } finally {
             agent.close();
         }

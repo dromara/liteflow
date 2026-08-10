@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,6 +31,7 @@ public final class LiteFlowAgentContext {
     private final String attachmentKey;
     private final AtomicBoolean cancelled = new AtomicBoolean();
     private final AtomicReference<ChatUsage> chatUsage = new AtomicReference<>();
+    private final Set<String> recordedUsageEvents = ConcurrentHashMap.newKeySet();
     private final Set<String> usedSkills = Collections.synchronizedSet(new LinkedHashSet<>());
 
     public LiteFlowAgentContext(
@@ -135,6 +137,23 @@ public final class LiteFlowAgentContext {
 
     public void setChatUsage(ChatUsage usage) {
         chatUsage.set(usage);
+    }
+
+    /** Adds one model-call usage event, ignoring duplicate delivery of the same event id. */
+    public void recordChatUsage(String eventId, ChatUsage usage) {
+        if (usage == null) {
+            return;
+        }
+        if (eventId != null && !eventId.isBlank() && !recordedUsageEvents.add(eventId)) {
+            return;
+        }
+        chatUsage.updateAndGet(current -> current == null
+                ? usage
+                : new ChatUsage(
+                        current.getInputTokens() + usage.getInputTokens(),
+                        current.getOutputTokens() + usage.getOutputTokens(),
+                        current.getCachedTokens() + usage.getCachedTokens(),
+                        current.getTime() + usage.getTime()));
     }
 
     public void recordUsedSkill(String skill) {

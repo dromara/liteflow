@@ -51,7 +51,7 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
 
     @Override
     public int order() {
-        return Integer.MAX_VALUE;
+        return AgentMiddlewareOrder.STATE_STORE_FAILURE;
     }
 
     @Override
