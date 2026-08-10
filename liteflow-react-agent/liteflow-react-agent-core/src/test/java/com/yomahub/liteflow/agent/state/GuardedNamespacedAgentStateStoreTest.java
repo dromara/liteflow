@@ -12,6 +12,7 @@ import io.agentscope.core.state.State;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -204,6 +205,21 @@ class GuardedNamespacedAgentStateStoreTest {
         AgentConfigException thrown = assertThrows(AgentConfigException.class,
                 () -> throwingResolver.resolve(missingBean));
         assertSame(lookupFailure, thrown.getCause());
+    }
+
+    @Test
+    void resolverWrapsMalformedJsonRootAsConfigurationFailure() {
+        DefaultAgentStateStoreResolver resolver =
+                new DefaultAgentStateStoreResolver(name -> null);
+        AgentStateStoreConfig malformedJson = new AgentStateStoreConfig();
+        malformedJson.setType(AgentStateStoreType.JSON);
+        malformedJson.setJsonRoot("invalid\0root");
+
+        AgentConfigException thrown = assertThrows(AgentConfigException.class,
+                () -> resolver.resolve(malformedJson));
+
+        assertTrue(thrown.getMessage().contains("liteflow.agent.state-store.json-root"));
+        assertInstanceOf(InvalidPathException.class, thrown.getCause());
     }
 
     @Test

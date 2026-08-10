@@ -3,6 +3,8 @@ package com.yomahub.liteflow.agent.component;
 import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
 import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
+import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.guard.AgentInvocationCoordinator;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuard;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuardResolver;
@@ -31,6 +33,7 @@ import io.agentscope.core.tool.Toolkit;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Minimal AgentScope 2 ReAct bridge used by the core runtime vertical slice.
@@ -121,6 +124,7 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
     public final void process() {
         AgentConfig config = agentConfig();
         validateForExecution(config);
+        Duration runtimeTimeout = config.getRuntime().getTimeout();
 
         Slot slot = getSlot();
         String conversationId = resolveConversationId();
@@ -150,6 +154,12 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
                     .build();
             Msg reply = runtime.agent()
                     .call(List.of(new UserMessage(userPrompt())), runtimeContext)
+                    .timeout(runtimeTimeout)
+                    .onErrorMap(TimeoutException.class, failure ->
+                            new AgentInvocationException(
+                                    AgentInvocationErrorType.TIMEOUT,
+                                    "Agent invocation exceeded runtime timeout " + runtimeTimeout,
+                                    failure))
                     .block();
             handleReply(reply);
         } finally {
@@ -209,6 +219,11 @@ public abstract class ReActAgentComponent extends NodeComponent implements AutoC
                 || config.getRuntime().getDefaultUserId().isBlank()) {
             throw new AgentConfigException(
                     "liteflow.agent.runtime.default-user-id must not be blank");
+        }
+        Duration runtimeTimeout = config.getRuntime().getTimeout();
+        if (runtimeTimeout == null || runtimeTimeout.isZero() || runtimeTimeout.isNegative()) {
+            throw new AgentConfigException(
+                    "liteflow.agent.runtime.timeout must be positive");
         }
         if (config.getStateStore() == null || config.getStateStore().getType() == null) {
             throw new AgentConfigException(

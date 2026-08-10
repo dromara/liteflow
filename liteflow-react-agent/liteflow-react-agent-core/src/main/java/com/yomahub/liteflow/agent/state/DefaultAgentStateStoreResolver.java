@@ -45,7 +45,15 @@ public final class DefaultAgentStateStoreResolver implements AgentStateStoreReso
             throw new AgentConfigException(
                     "liteflow.agent.state-store.json-root is required when type=JSON");
         }
-        return new ResolvedAgentStateStore(new JsonFileAgentStateStore(Path.of(jsonRoot)), true);
+        try {
+            return new ResolvedAgentStateStore(
+                    new JsonFileAgentStateStore(Path.of(jsonRoot)), true);
+        } catch (RuntimeException | LinkageError failure) {
+            throw new AgentConfigException(
+                    "JSON state store could not be created from "
+                            + "liteflow.agent.state-store.json-root",
+                    failure);
+        }
     }
 
     private ResolvedAgentStateStore resolveBean(AgentStateStoreConfig config) {

@@ -8,16 +8,20 @@ import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
+import io.agentscope.core.middleware.AgentInput;
+import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
 import io.agentscope.core.tool.Toolkit;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -82,6 +86,30 @@ class StateStoreFailureMiddlewareTest {
         } finally {
             agent.close();
         }
+    }
+
+    @Test
+    void onAgentClearsFailureWhenLifecycleEndsBeforeInnerMiddlewareHooks() {
+        RuntimeException loadFailure = new RuntimeException("state backend unavailable");
+        GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(
+                new LoadFailingStore(loadFailure), NAMESPACE);
+        StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
+                store, AgentStateStoreFailurePolicy.FAIL_FAST, warning -> { });
+        RuntimeContext context = RuntimeContext.builder()
+                .userId("alice")
+                .sessionId(SESSION)
+                .build();
+
+        middleware.onAgent(null, context, new AgentInput(List.of()), input -> {
+            assertThrows(RuntimeException.class,
+                    () -> store.get("alice", SESSION, "state", UserMessage.class));
+            return Flux.empty();
+        }).blockLast();
+
+        ReasoningInput laterReasoning = new ReasoningInput(List.of(), List.of(), null);
+        assertDoesNotThrow(() -> middleware.onReasoning(
+                null, context, laterReasoning, ignored -> Flux.empty()).blockLast());
+        assertTrue(store.takeLoadFailure("alice", SESSION).isEmpty());
     }
 
     private static ReActAgent buildAgent(

@@ -1,5 +1,8 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
+import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -12,11 +15,17 @@ import io.agentscope.core.model.Model;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReActAgentPlainTextTest {
@@ -80,13 +89,61 @@ class ReActAgentPlainTextTest {
         assertEquals(0, component.modelBuildCount.get());
     }
 
-    private void configureAgent(String namespace, String defaultUserId) {
+    @Test
+    void nullZeroOrNegativeRuntimeTimeoutFailsBeforeModelInvocation() {
+        AgentConfig agentConfig = configureAgent("plain-text-test", "test-user");
+        Slot slot = new Slot();
+        slot.setChainId("plain-chain");
+        slot.setConversationId("conversation-7");
+        ScriptedChatModel model = new ScriptedChatModel("must-not-run");
+        component = new TestComponent(slot, model);
+        component.setNodeId("plain-agent");
+
+        for (Duration invalid : new Duration[]{null, Duration.ZERO, Duration.ofMillis(-1)}) {
+            agentConfig.getRuntime().setTimeout(invalid);
+            AgentConfigException thrown = assertThrows(
+                    AgentConfigException.class, component::process);
+            assertTrue(thrown.getMessage().contains("runtime.timeout"));
+        }
+        assertEquals(0, model.callCount());
+        assertEquals(0, component.modelBuildCount.get());
+    }
+
+    @Test
+    void runtimeTimeoutCancelsCallClassifiesFailureAndReleasesGuardForRetry() throws Exception {
+        AgentConfig agentConfig = configureAgent("plain-text-test", "test-user");
+        agentConfig.getRuntime().setTimeout(Duration.ofMillis(25));
+        Slot slot = new Slot();
+        slot.setChainId("plain-chain");
+        slot.setConversationId("conversation-7");
+        CountDownLatch cancellation = new CountDownLatch(1);
+        ScriptedChatModel model = ScriptedChatModel.neverThenReply(
+                "reply after timeout", cancellation);
+        component = new TestComponent(slot, model);
+        component.setNodeId("plain-agent");
+
+        AgentInvocationException thrown = assertTimeoutPreemptively(
+                Duration.ofSeconds(1),
+                () -> assertThrows(AgentInvocationException.class, component::process));
+        assertEquals(AgentInvocationErrorType.TIMEOUT, thrown.getErrorType());
+        assertInstanceOf(TimeoutException.class, thrown.getCause());
+        assertTrue(thrown.getMessage().contains("runtime timeout"));
+        assertTrue(cancellation.await(5, TimeUnit.SECONDS));
+
+        assertTimeoutPreemptively(Duration.ofSeconds(1), component::process);
+        assertEquals("reply after timeout", slot.getResponseData());
+        assertEquals(2, model.callCount());
+        assertEquals(1, component.modelBuildCount.get());
+    }
+
+    private AgentConfig configureAgent(String namespace, String defaultUserId) {
         AgentConfig agentConfig = new AgentConfig();
         agentConfig.getRuntime().setNamespace(namespace);
         agentConfig.getRuntime().setDefaultUserId(defaultUserId);
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agentConfig);
         LiteflowConfigGetter.setLiteflowConfig(config);
+        return agentConfig;
     }
 
     private static final class TestComponent extends ReActAgentComponent {

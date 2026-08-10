@@ -9,6 +9,7 @@ import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
 import io.agentscope.core.middleware.ActingInput;
+import io.agentscope.core.middleware.AgentInput;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.middleware.ModelCallInput;
 import io.agentscope.core.middleware.ReasoningInput;
@@ -54,12 +55,22 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
     }
 
     @Override
+    public Flux<AgentEvent> onAgent(
+            Agent agent,
+            RuntimeContext context,
+            AgentInput input,
+            Function<AgentInput, Flux<AgentEvent>> next) {
+        return Flux.defer(() -> next.apply(input))
+                .doFinally(signal -> clearLoadFailure(context));
+    }
+
+    @Override
     public Flux<AgentEvent> onReasoning(
             Agent agent,
             RuntimeContext context,
             ReasoningInput input,
             Function<ReasoningInput, Flux<AgentEvent>> next) {
-        return checkLoadFailure(context).thenMany(next.apply(input));
+        return checkLoadFailure(context).thenMany(Flux.defer(() -> next.apply(input)));
     }
 
     @Override
@@ -68,7 +79,7 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
             RuntimeContext context,
             ActingInput input,
             Function<ActingInput, Flux<AgentEvent>> next) {
-        return checkLoadFailure(context).thenMany(next.apply(input));
+        return checkLoadFailure(context).thenMany(Flux.defer(() -> next.apply(input)));
     }
 
     @Override
@@ -77,7 +88,7 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
             RuntimeContext context,
             ModelCallInput input,
             Function<ModelCallInput, Flux<AgentEvent>> next) {
-        return checkLoadFailure(context).thenMany(next.apply(input));
+        return checkLoadFailure(context).thenMany(Flux.defer(() -> next.apply(input)));
     }
 
     private Mono<Void> checkLoadFailure(RuntimeContext context) {
@@ -100,5 +111,11 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
             warningSink.accept(message);
             return Mono.empty();
         });
+    }
+
+    private void clearLoadFailure(RuntimeContext context) {
+        if (context != null && context.getSessionId() != null) {
+            stateStore.clearLoadFailure(context.getUserId(), context.getSessionId());
+        }
     }
 }
