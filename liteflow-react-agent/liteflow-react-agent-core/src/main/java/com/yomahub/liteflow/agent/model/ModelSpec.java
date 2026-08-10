@@ -11,7 +11,7 @@ import io.agentscope.core.model.Model;
  * <p>
  * {@link #resolve(AgentConfig)} 由各 provider 模块的子类实现：
  * 从 {@link AgentConfig} 取出 credential，把共性 + 个性参数翻译成
- * agentscope 的 {@code GenerateOptions}，并构造对应的 {@link Model}。
+ * AgentScope 2 extension 的 {@code GenerateOptions}，并构造对应的 {@link Model}。
  *
  * @param <SELF> fluent self-type，便于子类链式调用保留具体类型
  */
@@ -47,7 +47,7 @@ public abstract class ModelSpec<SELF extends ModelSpec<SELF>> {
     /**
      * 把本描述符解析为 agentscope {@link Model} 实例。
      * 实现需从 {@link AgentConfig} 中读取对应平台的 credential，
-     * 并把共性 + 个性参数翻译成 agentscope 的 GenerateOptions。
+     * 并把共性 + 个性参数翻译成 AgentScope 2 的 GenerateOptions。
      * <p>
      * 本方法是框架 SPI：{@code ReActAgentComponent} 在不同包中调用，
      * 因此必须为 {@code public}。

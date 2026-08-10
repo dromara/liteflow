@@ -96,9 +96,8 @@ public final class SkillBoxFactory {
     private static SkillBox createSkillBox(Toolkit toolkit, Path workspaceDir) {
         SkillBox skillBox = new SkillBox(toolkit);
         if (workspaceDir != null) {
-            skillBox.codeExecution()
-                    .workDir(workspaceDir.toAbsolutePath().normalize().toString())
-                    .enable();
+            skillBox.setWorkDir(workspaceDir.toAbsolutePath().normalize());
+            skillBox.getSkillPromptProvider().setCodeExecutionEnable(true);
         }
         return skillBox;
     }
