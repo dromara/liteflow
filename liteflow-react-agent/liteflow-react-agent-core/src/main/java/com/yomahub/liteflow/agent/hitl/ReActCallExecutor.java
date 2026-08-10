@@ -7,8 +7,10 @@ import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.ConfirmResult;
+import io.agentscope.core.event.RequireUserConfirmEvent;
 import io.agentscope.core.message.GenerateReason;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.message.ToolUseBlock;
 import io.agentscope.core.message.UserMessage;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -22,7 +24,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-/** Executes an initial ReAct call and an optional HITL continuation as one transaction. */
+/** Executes an initial ReAct call and every required HITL continuation as one transaction. */
 public final class ReActCallExecutor {
 
     private final Supplier<Instant> now;
@@ -56,34 +58,58 @@ public final class ReActCallExecutor {
         requirePositive(cleanupTimeout, "cleanupTimeout");
         AgentCall call = agentCall(agent, output, runtimeContext);
 
-        return awaitTermination(withRuntimeDeadline(
-                        call.invoke(input), context))
-                .flatMap(reply -> reply.getGenerateReason() == GenerateReason.PERMISSION_ASKING
-                        ? continueAfterConfirmation(
-                                call,
-                                context,
-                                reply,
-                                handler,
-                                confirmationTimeout,
-                                failOnDeniedTool,
-                                cleanupTimeout)
-                        : Mono.just(reply));
+        return Mono.defer(() -> {
+            int eventOffset = confirmationEventCount(context);
+            return awaitTermination(withRuntimeDeadline(call.invoke(input), context))
+                    .flatMap(reply -> completeNormalRounds(
+                            call,
+                            context,
+                            new NormalRound(reply, eventOffset),
+                            handler,
+                            confirmationTimeout,
+                            failOnDeniedTool,
+                            cleanupTimeout));
+        });
     }
 
-    private Mono<Msg> continueAfterConfirmation(
+    private Mono<Msg> completeNormalRounds(
             AgentCall call,
             LiteFlowAgentContext context,
-            Msg reply,
+            NormalRound initialRound,
             AgentConfirmationHandler handler,
             Duration confirmationTimeout,
             boolean failOnDeniedTool,
             Duration cleanupTimeout) {
-        List<io.agentscope.core.message.ToolUseBlock> pending =
-                ConfirmationResultValidator.pendingTools(reply);
+        return Mono.just(initialRound)
+                .expand(round -> isAsking(round.reply())
+                        ? advanceNormalRound(
+                                call,
+                                context,
+                                round,
+                                handler,
+                                confirmationTimeout,
+                                failOnDeniedTool,
+                                cleanupTimeout)
+                        : Mono.empty())
+                .filter(round -> !isAsking(round.reply()))
+                .next()
+                .map(NormalRound::reply);
+    }
+
+    private Mono<NormalRound> advanceNormalRound(
+            AgentCall call,
+            LiteFlowAgentContext context,
+            NormalRound round,
+            AgentConfirmationHandler handler,
+            Duration confirmationTimeout,
+            boolean failOnDeniedTool,
+            Duration cleanupTimeout) {
+        Msg reply = round.reply();
+        List<ToolUseBlock> pending = ConfirmationResultValidator.pendingTools(reply);
         ConfirmationRequest request;
         try {
             request = ConfirmationResultValidator.request(
-                    reply, context.getConfirmationEvents());
+                    reply, confirmationEventsSince(context, round.eventOffset()));
         } catch (RuntimeException failure) {
             return cleanupThenFail(
                     call,
@@ -105,26 +131,57 @@ public final class ReActCallExecutor {
         return withConfirmationDeadline(decisions, context, confirmationTimeout)
                 .switchIfEmpty(Mono.error(permissionFailure(
                         "AgentConfirmationHandler completed without results", null)))
-                .onErrorMap(failure -> failure instanceof AgentInvocationException
-                        ? failure
-                        : permissionFailure("AgentConfirmationHandler failed", failure))
-                .flatMap(results -> {
-                    List<ConfirmResult> validated;
-                    try {
-                        validated = ConfirmationResultValidator.validateResults(request, results);
-                    } catch (RuntimeException failure) {
-                        return Mono.error(permissionFailure(
-                                "Invalid HITL confirmation results", failure));
-                    }
-                    if (failOnDeniedTool
-                            && validated.stream().anyMatch(result -> !result.isConfirmed())) {
-                        return Mono.error(permissionFailure(
-                                "A tool confirmation was denied", null));
-                    }
-                    return awaitTermination(withRuntimeDeadline(
-                            call.invoke(resumeMessage(validated)),
-                            context));
-                })
+                .onErrorMap(failure -> handlerFailure(failure, confirmationTimeout))
+                .map(results -> new HandlerDecision(results, null))
+                .onErrorResume(AgentInvocationException.class, failure ->
+                        Mono.just(new HandlerDecision(null, failure)))
+                .flatMap(decision -> decision.failure() == null
+                        ? continueWithResults(
+                                call,
+                                context,
+                                request,
+                                decision.results(),
+                                failOnDeniedTool,
+                                cleanupTimeout)
+                        : cleanupThenFail(
+                                call,
+                                context,
+                                request.toolCalls(),
+                                decision.failure(),
+                                cleanupTimeout));
+    }
+
+    private Mono<NormalRound> continueWithResults(
+            AgentCall call,
+            LiteFlowAgentContext context,
+            ConfirmationRequest request,
+            List<ConfirmResult> results,
+            boolean failOnDeniedTool,
+            Duration cleanupTimeout) {
+        List<ConfirmResult> validated;
+        try {
+            validated = ConfirmationResultValidator.validateResults(request, results);
+        } catch (RuntimeException failure) {
+            return cleanupThenFail(
+                    call,
+                    context,
+                    request.toolCalls(),
+                    permissionFailure("Invalid HITL confirmation results", failure),
+                    cleanupTimeout);
+        }
+        if (failOnDeniedTool
+                && validated.stream().anyMatch(result -> !result.isConfirmed())) {
+            return cleanupThenFail(
+                    call,
+                    context,
+                    request.toolCalls(),
+                    permissionFailure("A tool confirmation was denied", null),
+                    cleanupTimeout);
+        }
+        int eventOffset = confirmationEventCount(context);
+        Mono<Msg> continuation = awaitTermination(withRuntimeDeadline(
+                call.invoke(resumeMessage(validated)), context));
+        return continuation
                 .onErrorResume(AgentInvocationException.class, failure ->
                         failure.getErrorType() == AgentInvocationErrorType.PERMISSION
                                 || failure.getErrorType() == AgentInvocationErrorType.TIMEOUT
@@ -134,7 +191,8 @@ public final class ReActCallExecutor {
                                         request.toolCalls(),
                                         failure,
                                         cleanupTimeout)
-                                : Mono.error(failure));
+                                : Mono.error(failure))
+                .map(nextReply -> new NormalRound(nextReply, eventOffset));
     }
 
     private Mono<List<ConfirmResult>> invokeHandler(
@@ -163,20 +221,27 @@ public final class ReActCallExecutor {
                 : new ConfirmationDeadlineExceededException(confirmationTimeout);
         if (timeout.isZero() || timeout.isNegative()) {
             context.cancel();
-            return Mono.error(runtimeFailure(marker));
+            return Mono.error(marker);
         }
         return source.timeout(timeout, Mono.error(marker), timeoutScheduler)
-                .onErrorMap(RuntimeDeadlineExceededException.class, failure -> {
-                    context.cancel();
-                    return runtimeFailure(failure);
-                })
-                .onErrorMap(ConfirmationDeadlineExceededException.class, failure -> {
-                    context.cancel();
-                    return new AgentInvocationException(
-                            AgentInvocationErrorType.TIMEOUT,
-                            failure.getMessage(),
-                            failure);
-                });
+                .doOnError(RuntimeDeadlineExceededException.class, failure ->
+                        context.cancel())
+                .doOnError(ConfirmationDeadlineExceededException.class, failure ->
+                        context.cancel());
+    }
+
+    private static Throwable handlerFailure(
+            Throwable failure, Duration confirmationTimeout) {
+        if (failure instanceof RuntimeDeadlineExceededException) {
+            return runtimeFailure(failure);
+        }
+        if (failure instanceof ConfirmationDeadlineExceededException) {
+            return new AgentInvocationException(
+                    AgentInvocationErrorType.TIMEOUT,
+                    "Agent confirmation exceeded timeout " + confirmationTimeout,
+                    failure);
+        }
+        return permissionFailure("AgentConfirmationHandler failed", failure);
     }
 
     private Mono<Msg> withRuntimeDeadline(
@@ -196,26 +261,56 @@ public final class ReActCallExecutor {
                 });
     }
 
-    private Mono<Msg> cleanupThenFail(
+    private <T> Mono<T> cleanupThenFail(
             AgentCall call,
             LiteFlowAgentContext context,
-            List<io.agentscope.core.message.ToolUseBlock> pending,
+            List<ToolUseBlock> pending,
             AgentInvocationException intendedFailure,
             Duration cleanupTimeout) {
-        List<ConfirmResult> denied = ConfirmationResultValidator.denyAll(pending);
-        Mono<Msg> cleanup = call.invoke(resumeMessage(denied))
+        Mono<Void> cleanup = Mono.just(new CleanupRound(pending, false))
+                .expand(round -> round.complete()
+                        ? Mono.empty()
+                        : advanceCleanupRound(call, context, round.pending()))
+                .filter(CleanupRound::complete)
+                .next()
+                .then()
                 .timeout(
                         cleanupTimeout,
                         Mono.error(new CleanupDeadlineExceededException(cleanupTimeout)),
                         timeoutScheduler);
-        return awaitTermination(cleanup)
-                .then(Mono.<Msg>error(intendedFailure))
-                .onErrorResume(cleanupFailure -> {
-                    if (cleanupFailure != intendedFailure) {
-                        intendedFailure.addSuppressed(cleanupFailure);
+        return cleanup
+                .then(Mono.<T>error(intendedFailure))
+                .onErrorResume(cleanupFailure -> failAfterCleanup(
+                        intendedFailure, cleanupFailure));
+    }
+
+    private Mono<CleanupRound> advanceCleanupRound(
+            AgentCall call,
+            LiteFlowAgentContext context,
+            List<ToolUseBlock> pending) {
+        List<ConfirmResult> denied = ConfirmationResultValidator.denyAll(pending);
+        int eventOffset = confirmationEventCount(context);
+        return awaitTermination(call.invoke(resumeMessage(denied)))
+                .map(reply -> {
+                    if (!isAsking(reply)) {
+                        return new CleanupRound(List.of(), true);
                     }
-                    return Mono.<Msg>error(intendedFailure);
+                    ConfirmationRequest request = ConfirmationResultValidator.request(
+                            reply, confirmationEventsSince(context, eventOffset));
+                    return new CleanupRound(request.toolCalls(), false);
                 });
+    }
+
+    private static <T> Mono<T> failAfterCleanup(
+            AgentInvocationException intendedFailure, Throwable cleanupFailure) {
+        if (cleanupFailure != intendedFailure) {
+            intendedFailure.addSuppressed(cleanupFailure);
+        }
+        return Mono.error(intendedFailure);
+    }
+
+    private static boolean isAsking(Msg reply) {
+        return reply.getGenerateReason() == GenerateReason.PERMISSION_ASKING;
     }
 
     private static Mono<Msg> awaitTermination(Mono<Msg> source) {
@@ -255,6 +350,19 @@ public final class ReActCallExecutor {
         return List.of(UserMessage.builder()
                 .metadata(Map.of(Msg.METADATA_CONFIRM_RESULTS, List.copyOf(results)))
                 .build());
+    }
+
+    private static int confirmationEventCount(LiteFlowAgentContext context) {
+        return context.getConfirmationEvents().size();
+    }
+
+    private static List<RequireUserConfirmEvent> confirmationEventsSince(
+            LiteFlowAgentContext context, int eventOffset) {
+        List<RequireUserConfirmEvent> snapshot = context.getConfirmationEvents();
+        if (eventOffset < 0 || eventOffset > snapshot.size()) {
+            throw new IllegalArgumentException("Invalid confirmation event offset " + eventOffset);
+        }
+        return List.copyOf(snapshot.subList(eventOffset, snapshot.size()));
     }
 
     private Duration remaining(LiteFlowAgentContext context) {
@@ -301,5 +409,15 @@ public final class ReActCallExecutor {
     @FunctionalInterface
     private interface AgentCall {
         Mono<Msg> invoke(List<Msg> input);
+    }
+
+    private record HandlerDecision(
+            List<ConfirmResult> results, AgentInvocationException failure) {
+    }
+
+    private record NormalRound(Msg reply, int eventOffset) {
+    }
+
+    private record CleanupRound(List<ToolUseBlock> pending, boolean complete) {
     }
 }

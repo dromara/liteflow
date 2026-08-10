@@ -52,7 +52,9 @@ public final class ConfirmationResultValidator {
         for (Map.Entry<String, ToolUseBlock> entry : replyById.entrySet()) {
             ToolUseBlock fromReply = entry.getValue();
             ToolUseBlock fromEvent = eventById.get(entry.getKey());
-            if (!sameTool(fromReply, fromEvent)) {
+            if (!sameToolData(fromReply, fromEvent)
+                    || fromReply.getState() != ToolCallState.ASKING
+                    || !isConfirmEventState(fromEvent.getState())) {
                 throw new IllegalArgumentException(
                         "Event and reply tool data do not match for ID " + entry.getKey());
             }
@@ -137,12 +139,15 @@ public final class ConfirmationResultValidator {
         return value;
     }
 
-    private static boolean sameTool(ToolUseBlock left, ToolUseBlock right) {
+    private static boolean sameToolData(ToolUseBlock left, ToolUseBlock right) {
         return Objects.equals(left.getId(), right.getId())
                 && Objects.equals(left.getName(), right.getName())
                 && Objects.equals(left.getInput(), right.getInput())
                 && Objects.equals(left.getContent(), right.getContent())
-                && Objects.equals(left.getMetadata(), right.getMetadata())
-                && left.getState() == right.getState();
+                && Objects.equals(left.getMetadata(), right.getMetadata());
+    }
+
+    private static boolean isConfirmEventState(ToolCallState state) {
+        return state == ToolCallState.PENDING || state == ToolCallState.ASKING;
     }
 }

@@ -18,10 +18,23 @@ import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.GenerateReason;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.ToolCallState;
+import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.ToolUseBlock;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.middleware.AgentInput;
+import io.agentscope.core.model.ChatResponse;
+import io.agentscope.core.model.GenerateOptions;
+import io.agentscope.core.model.Model;
+import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.permission.PermissionBehavior;
+import io.agentscope.core.permission.PermissionContextState;
+import io.agentscope.core.permission.PermissionRule;
+import io.agentscope.core.tool.ToolBase;
+import io.agentscope.core.tool.ToolCallParam;
+import io.agentscope.core.tool.Toolkit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -61,10 +74,53 @@ class ReActCallExecutorTest {
     private static final Duration CONFIRMATION_TIMEOUT = Duration.ofSeconds(1);
 
     @Test
+    void realAgentScopeAskTransitionKeepsEventPendingAndMarksReplyAsking() {
+        Scenario scenario = scenarioWithoutEvent();
+        ToolUseBlock modelTool = new ToolUseBlock(
+                "real-tool-1",
+                "approval_probe",
+                Map.of("query", "original"),
+                "{\"query\":\"original\"}",
+                Map.of("provider", "scripted"));
+        Toolkit toolkit = new Toolkit();
+        toolkit.registerAgentTool(new ApprovalProbeTool());
+        PermissionRule askRule = new PermissionRule(
+                "approval_probe", null, PermissionBehavior.ASK, "test");
+        ReActAgent agent = ReActAgent.builder()
+                .name("real-hitl-agent")
+                .sysPrompt("Use the approval probe once.")
+                .model(new ToolCallModel(modelTool))
+                .toolkit(toolkit)
+                .permissionContext(PermissionContextState.builder()
+                        .addAskRule("approval_probe", askRule)
+                        .build())
+                .middlewares(List.of(new FlowEventBridgeMiddleware(
+                        AgentListenerFailureMode.FAIL_FAST)))
+                .build();
+
+        try {
+            Msg reply = agent.call(
+                            List.of(new UserMessage("probe")), scenario.runtimeContext)
+                    .block(Duration.ofSeconds(3));
+            RequireUserConfirmEvent event = scenario.context.getConfirmationEvents().get(0);
+            ToolUseBlock eventTool = event.getToolCalls().get(0);
+            ToolUseBlock replyTool = reply.getContentBlocks(ToolUseBlock.class).get(0);
+
+            assertEquals(ToolCallState.PENDING, eventTool.getState());
+            assertEquals(ToolCallState.ASKING, replyTool.getState());
+            ConfirmationRequest request = ConfirmationResultValidator.request(
+                    reply, List.of(event));
+            assertSame(event, request.event());
+        } finally {
+            agent.close();
+        }
+    }
+
+    @Test
     void allowUsesSameAgentRuntimeContextOutputAndMetadataOnlyResumeMessage() {
         Scenario scenario = scenario();
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         Msg result = executor().execute(
                         scenario.agent,
@@ -89,7 +145,7 @@ class ReActCallExecutorTest {
     void explicitDenyRunsContinuationAndReturnsItsReply() {
         Scenario scenario = scenario();
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
         AgentConfirmationHandler deny = (event, context) ->
                 Mono.just(List.of(new ConfirmResult(false, event.getToolCalls().get(0))));
 
@@ -112,12 +168,167 @@ class ReActCallExecutorTest {
     }
 
     @Test
+    void normalContinuationHandlesASecondAskBeforeReturningFinalReply() {
+        Scenario scenario = scenario();
+        ToolUseBlock secondTool = tool("tool-2", "search");
+        RequireUserConfirmEvent secondEvent = new RequireUserConfirmEvent(
+                "reply-2", List.of(secondTool));
+        Msg secondReply = askingReply("reply-2", secondTool);
+        AtomicInteger handlerCalls = new AtomicInteger();
+        AgentConfirmationHandler handler = (event, context) -> {
+            assertSame(scenario.context, context);
+            handlerCalls.incrementAndGet();
+            return Mono.just(event.getToolCalls().stream()
+                    .map(tool -> new ConfirmResult(true, tool))
+                    .toList());
+        };
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenReturn(
+                        initialAsking(scenario),
+                        askingRound(scenario.context, secondEvent, secondReply),
+                        Mono.just(scenario.finalReply));
+
+        Msg result = executor().execute(
+                        scenario.agent,
+                        List.of(new UserMessage("question")),
+                        scenario.output,
+                        scenario.runtimeContext,
+                        scenario.context,
+                        handler,
+                        CONFIRMATION_TIMEOUT,
+                        false,
+                        RUNTIME_TIMEOUT)
+                .block();
+
+        assertSame(scenario.finalReply, result);
+        assertEquals(2, handlerCalls.get());
+        verify(scenario.agent, times(3)).call(anyList(), same(scenario.runtimeContext));
+        assertEquals(2, scenario.context.getConfirmationEvents().size());
+    }
+
+    @Test
+    void cleanupKeepsDenyingAdditionalAskRoundsWithoutInvokingHandler() {
+        Scenario scenario = scenario();
+        AtomicInteger handlerCalls = new AtomicInteger();
+        ToolUseBlock secondTool = tool("tool-2", "search");
+        RequireUserConfirmEvent secondEvent = new RequireUserConfirmEvent(
+                "reply-2", List.of(secondTool));
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenReturn(
+                        initialAsking(scenario),
+                        askingRound(
+                                scenario.context,
+                                secondEvent,
+                                askingReply("reply-2", secondTool)),
+                        Mono.just(scenario.finalReply));
+
+        AgentInvocationException thrown = assertThrows(
+                AgentInvocationException.class,
+                () -> executor().execute(
+                                scenario.agent,
+                                List.of(new UserMessage("question")),
+                                scenario.output,
+                                scenario.runtimeContext,
+                                scenario.context,
+                                (event, context) -> {
+                                    handlerCalls.incrementAndGet();
+                                    return Mono.error(new IllegalStateException(
+                                            "start cleanup"));
+                                },
+                                CONFIRMATION_TIMEOUT,
+                                false,
+                                RUNTIME_TIMEOUT)
+                        .block());
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, thrown.getErrorType());
+        assertEquals(1, handlerCalls.get());
+        ArgumentCaptor<List<Msg>> calls = listCaptor();
+        verify(scenario.agent, times(3)).call(calls.capture(), same(scenario.runtimeContext));
+        assertResumeMetadataOnly(calls.getAllValues().get(1), false);
+        assertResumeMetadataOnly(calls.getAllValues().get(2), false);
+    }
+
+    @Test
+    void repeatedCleanupAskingUsesOneAbsoluteDeadlineAndKeepsIntendedFailure() {
+        VirtualTimeScheduler scheduler = VirtualTimeScheduler.create();
+        Supplier<Instant> now = () -> NOW.plusMillis(scheduler.now(TimeUnit.MILLISECONDS));
+        Scenario scenario = scenario(NOW.plusSeconds(20));
+        ToolUseBlock repeatedTool = tool("cleanup-tool", "search");
+        RequireUserConfirmEvent repeatedEvent = new RequireUserConfirmEvent(
+                "cleanup-reply", List.of(repeatedTool));
+        Msg repeatedReply = askingReply("cleanup-reply", repeatedTool);
+        Mono<Msg> slowRepeatedAsk = Mono.delay(Duration.ofSeconds(2), scheduler)
+                .then(askingRound(scenario.context, repeatedEvent, repeatedReply));
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenReturn(initialAsking(scenario), slowRepeatedAsk);
+
+        Mono<Msg> invocation = new ReActCallExecutor(now, scheduler).execute(
+                scenario.agent,
+                List.of(new UserMessage("question")),
+                scenario.output,
+                scenario.runtimeContext,
+                scenario.context,
+                null,
+                CONFIRMATION_TIMEOUT,
+                false,
+                Duration.ofSeconds(3));
+
+        StepVerifier.withVirtualTime(() -> invocation, () -> scheduler, 1)
+                .thenAwait(Duration.ofSeconds(3))
+                .expectErrorSatisfies(failure -> {
+                    AgentInvocationException typed = assertInstanceOf(
+                            AgentInvocationException.class, failure);
+                    assertEquals(AgentInvocationErrorType.PERMISSION, typed.getErrorType());
+                    assertTrue(List.of(typed.getSuppressed()).stream()
+                            .anyMatch(suppressed -> suppressed instanceof TimeoutException
+                                    && suppressed.getMessage().contains(
+                                            "Denied HITL cleanup exceeded timeout")));
+                })
+                .verify();
+        verify(scenario.agent, times(3)).call(anyList(), same(scenario.runtimeContext));
+    }
+
+    @Test
+    void synchronousImmediateCleanupRoundsAreStackSafe() {
+        Scenario scenario = scenario();
+        AtomicInteger calls = new AtomicInteger();
+        int askingRounds = 2_000;
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenAnswer(invocation -> Mono.fromSupplier(() -> {
+                    int call = calls.incrementAndGet();
+                    if (call <= askingRounds) {
+                        scenario.context.recordConfirmationEvent(scenario.event);
+                        return scenario.askingReply;
+                    }
+                    return scenario.finalReply;
+                }));
+
+        AgentInvocationException thrown = assertThrows(
+                AgentInvocationException.class,
+                () -> executor().execute(
+                                scenario.agent,
+                                List.of(new UserMessage("question")),
+                                scenario.output,
+                                scenario.runtimeContext,
+                                scenario.context,
+                                (event, context) -> Mono.error(
+                                        new IllegalStateException("start cleanup")),
+                                CONFIRMATION_TIMEOUT,
+                                false,
+                                Duration.ofSeconds(5))
+                        .block());
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, thrown.getErrorType());
+        assertEquals(askingRounds + 1, calls.get());
+    }
+
+    @Test
     void handlerIsInvokedOnlyAfterFirstCallMonoTerminates() {
         Scenario scenario = scenario();
         AtomicBoolean firstCallTerminated = new AtomicBoolean();
         AtomicBoolean handlerObservedTermination = new AtomicBoolean();
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply)
+                .thenReturn(initialAsking(scenario)
                                 .doOnTerminate(() -> firstCallTerminated.set(true)),
                         Mono.just(scenario.finalReply));
         AgentConfirmationHandler handler = (event, context) -> {
@@ -151,6 +362,40 @@ class ReActCallExecutorTest {
                 IllegalStateException.class);
     }
 
+    @ParameterizedTest
+    @EnumSource(
+            value = AgentInvocationErrorType.class,
+            names = {"STRUCTURED_OUTPUT", "TIMEOUT", "INTERRUPTED"})
+    void typedHandlerErrorsArePermissionFailuresWithOriginalCauseAfterCleanup(
+            AgentInvocationErrorType handlerType) {
+        Scenario scenario = scenario();
+        AgentInvocationException handlerFailure = new AgentInvocationException(
+                handlerType, "handler-owned " + handlerType);
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
+
+        AgentInvocationException thrown = assertThrows(
+                AgentInvocationException.class,
+                () -> executor().execute(
+                                scenario.agent,
+                                List.of(new UserMessage("question")),
+                                scenario.output,
+                                scenario.runtimeContext,
+                                scenario.context,
+                                (event, context) -> Mono.error(handlerFailure),
+                                CONFIRMATION_TIMEOUT,
+                                false,
+                                RUNTIME_TIMEOUT)
+                        .block());
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, thrown.getErrorType());
+        assertSame(handlerFailure, thrown.getCause());
+        assertFalse(scenario.context.isCancelled());
+        ArgumentCaptor<List<Msg>> calls = listCaptor();
+        verify(scenario.agent, times(2)).call(calls.capture(), same(scenario.runtimeContext));
+        assertResumeMetadataOnly(calls.getAllValues().get(1), false);
+    }
+
     @Test
     void replyEventAndToolProtocolFailuresCleanupAsDeniedBeforePermissionFailure() {
         Scenario missingEvent = scenarioWithoutEvent();
@@ -165,9 +410,32 @@ class ReActCallExecutorTest {
         assertProtocolFailure(toolMismatch, allowAll());
 
         Scenario duplicateEvent = scenario();
-        duplicateEvent.context.recordConfirmationEvent(
-                new RequireUserConfirmEvent("reply-1", List.of(duplicateEvent.tool)));
+        duplicateEvent = duplicateEvent.withEventCopies(2);
         assertProtocolFailure(duplicateEvent, allowAll());
+    }
+
+    @Test
+    void eventAndReplyToolCorrelationRejectsEveryNonStateFieldMismatch() {
+        assertProtocolFailure(scenarioWithEvent(new RequireUserConfirmEvent(
+                "reply-1",
+                List.of(new ToolUseBlock(
+                        "tool-1", "search", Map.of("query", "changed"), null, Map.of(),
+                        ToolCallState.ASKING)))), allowAll());
+        assertProtocolFailure(scenarioWithEvent(new RequireUserConfirmEvent(
+                "reply-1",
+                List.of(new ToolUseBlock(
+                        "tool-1", "search", Map.of("query", "original"), "raw", Map.of(),
+                        ToolCallState.ASKING)))), allowAll());
+        assertProtocolFailure(scenarioWithEvent(new RequireUserConfirmEvent(
+                "reply-1",
+                List.of(new ToolUseBlock(
+                        "tool-1", "search", Map.of("query", "original"), null,
+                        Map.of("provider", "changed"), ToolCallState.ASKING)))), allowAll());
+        assertProtocolFailure(scenarioWithEvent(new RequireUserConfirmEvent(
+                "reply-1",
+                List.of(new ToolUseBlock(
+                        "tool-1", "search", Map.of("query", "original"), null, Map.of(),
+                        ToolCallState.ALLOWED)))), allowAll());
     }
 
     @Test
@@ -195,7 +463,7 @@ class ReActCallExecutorTest {
         Supplier<Instant> now = () -> NOW.plusMillis(scheduler.now(TimeUnit.MILLISECONDS));
         Scenario scenario = scenario(NOW.plusSeconds(10));
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         Mono<Msg> invocation = new ReActCallExecutor(now, scheduler).execute(
                 scenario.agent,
@@ -229,7 +497,7 @@ class ReActCallExecutorTest {
         Scenario scenario = scenario(NOW.plus(equalDefaults));
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
                 .thenReturn(Mono.delay(Duration.ofMinutes(1), scheduler)
-                                .thenReturn(scenario.askingReply),
+                                .then(initialAsking(scenario)),
                         Mono.just(scenario.finalReply));
 
         Mono<Msg> invocation = new ReActCallExecutor(now, scheduler).execute(
@@ -260,7 +528,7 @@ class ReActCallExecutorTest {
         Scenario scenario = scenario();
         IllegalStateException cleanupFailure = new IllegalStateException("cleanup failed");
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.error(cleanupFailure));
+                .thenReturn(initialAsking(scenario), Mono.error(cleanupFailure));
 
         AgentInvocationException thrown = assertThrows(
                 AgentInvocationException.class,
@@ -284,7 +552,7 @@ class ReActCallExecutorTest {
     void failOnDeniedToolUsesAllDeniedCleanupThenRaisesPermissionFailure() {
         Scenario scenario = scenario();
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         AgentInvocationException thrown = assertThrows(
                 AgentInvocationException.class,
@@ -313,7 +581,7 @@ class ReActCallExecutorTest {
         ToolUseBlock modified = new ToolUseBlock(
                 "tool-1", "search", Map.of("query", "approved"));
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         executor().execute(
                         scenario.agent,
@@ -405,7 +673,7 @@ class ReActCallExecutorTest {
         Supplier<Instant> now = () -> NOW.plusMillis(scheduler.now(TimeUnit.MILLISECONDS));
         Scenario scenario = scenario(NOW.plusSeconds(2));
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.never());
+                .thenReturn(initialAsking(scenario), Mono.never());
         Mono<Msg> invocation = new ReActCallExecutor(now, scheduler).execute(
                 scenario.agent,
                 List.of(new UserMessage("question")),
@@ -430,6 +698,48 @@ class ReActCallExecutorTest {
                 .verify();
         assertTrue(scenario.context.isCancelled());
         verify(scenario.agent, times(3)).call(anyList(), same(scenario.runtimeContext));
+    }
+
+    @Test
+    void multipleNormalRoundsShareOneLogicalRuntimeDeadline() {
+        VirtualTimeScheduler scheduler = VirtualTimeScheduler.create();
+        Supplier<Instant> now = () -> NOW.plusMillis(scheduler.now(TimeUnit.MILLISECONDS));
+        Scenario scenario = scenario(NOW.plusSeconds(3));
+        ToolUseBlock secondTool = tool("tool-2", "search");
+        RequireUserConfirmEvent secondEvent = new RequireUserConfirmEvent(
+                "reply-2", List.of(secondTool));
+        when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
+                .thenReturn(
+                        initialAsking(scenario),
+                        Mono.delay(Duration.ofSeconds(2), scheduler).then(askingRound(
+                                scenario.context,
+                                secondEvent,
+                                askingReply("reply-2", secondTool))),
+                        Mono.never(),
+                        Mono.just(scenario.finalReply));
+
+        Mono<Msg> invocation = new ReActCallExecutor(now, scheduler).execute(
+                scenario.agent,
+                List.of(new UserMessage("question")),
+                scenario.output,
+                scenario.runtimeContext,
+                scenario.context,
+                allowAll(),
+                Duration.ofSeconds(10),
+                false,
+                Duration.ofSeconds(2));
+
+        StepVerifier.withVirtualTime(() -> invocation, () -> scheduler, 1)
+                .thenAwait(Duration.ofSeconds(3))
+                .expectErrorSatisfies(failure -> {
+                    AgentInvocationException typed = assertInstanceOf(
+                            AgentInvocationException.class, failure);
+                    assertEquals(AgentInvocationErrorType.TIMEOUT, typed.getErrorType());
+                    assertTrue(typed.getMessage().contains("runtime timeout"));
+                })
+                .verify();
+        assertTrue(scenario.context.isCancelled());
+        verify(scenario.agent, times(4)).call(anyList(), same(scenario.runtimeContext));
     }
 
     @Test
@@ -498,14 +808,14 @@ class ReActCallExecutorTest {
         Scenario scenario = scenario(output, NOW.plus(RUNTIME_TIMEOUT));
         switch (output.kind()) {
             case TEXT -> when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                    .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                    .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
             case JAVA_TYPE -> when(scenario.agent.call(
                             anyList(), any(Class.class), same(scenario.runtimeContext)))
-                    .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                    .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
             case JSON_SCHEMA -> when(scenario.agent.call(
                             anyList(), any(com.fasterxml.jackson.databind.JsonNode.class),
                             same(scenario.runtimeContext)))
-                    .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                    .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
         }
 
         Msg result = executor().execute(
@@ -541,7 +851,7 @@ class ReActCallExecutorTest {
             AgentConfirmationHandler handler, Class<? extends Throwable> expectedCause) {
         Scenario scenario = scenario();
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         AgentInvocationException thrown = assertThrows(
                 AgentInvocationException.class,
@@ -569,7 +879,7 @@ class ReActCallExecutorTest {
     private static void assertProtocolFailure(
             Scenario scenario, AgentConfirmationHandler handler) {
         when(scenario.agent.call(anyList(), same(scenario.runtimeContext)))
-                .thenReturn(Mono.just(scenario.askingReply), Mono.just(scenario.finalReply));
+                .thenReturn(initialAsking(scenario), Mono.just(scenario.finalReply));
 
         AgentInvocationException thrown = assertThrows(
                 AgentInvocationException.class,
@@ -662,9 +972,6 @@ class ReActCallExecutorTest {
         if (addDefaultEvent) {
             event = new RequireUserConfirmEvent(replyId, List.of(tool));
         }
-        if (event != null) {
-            context.recordConfirmationEvent(event);
-        }
         RuntimeContext runtimeContext = RuntimeContext.builder()
                 .userId(context.getRuntimeUserId())
                 .sessionId(context.getRuntimeSessionId())
@@ -677,8 +984,39 @@ class ReActCallExecutorTest {
                 context,
                 runtimeContext,
                 tool,
+                event,
+                1,
                 askingReply,
                 AssistantMessage.builder().textContent("final reply").build());
+    }
+
+    private static Mono<Msg> initialAsking(Scenario scenario) {
+        return Mono.fromSupplier(() -> {
+            for (int i = 0; i < scenario.eventCopies; i++) {
+                if (scenario.event != null) {
+                    scenario.context.recordConfirmationEvent(scenario.event);
+                }
+            }
+            return scenario.askingReply;
+        });
+    }
+
+    private static Mono<Msg> askingRound(
+            LiteFlowAgentContext context,
+            RequireUserConfirmEvent event,
+            Msg reply) {
+        return Mono.fromSupplier(() -> {
+            context.recordConfirmationEvent(event);
+            return reply;
+        });
+    }
+
+    private static Msg askingReply(String replyId, ToolUseBlock tool) {
+        return AssistantMessage.builder()
+                .content(tool)
+                .metadata(Map.of(Msg.METADATA_CONFIRM_REQUEST_REPLY_ID, replyId))
+                .generateReason(GenerateReason.PERMISSION_ASKING)
+                .build();
     }
 
     private static ToolUseBlock tool(String id, String name) {
@@ -719,13 +1057,68 @@ class ReActCallExecutorTest {
     private record StructuredReply(String value) {
     }
 
+    private static final class ToolCallModel implements Model {
+
+        private final ToolUseBlock tool;
+
+        private ToolCallModel(ToolUseBlock tool) {
+            this.tool = tool;
+        }
+
+        @Override
+        public Flux<ChatResponse> stream(
+                List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+            return Flux.just(ChatResponse.builder()
+                    .content(List.<ContentBlock>of(tool))
+                    .finishReason("tool_calls")
+                    .build());
+        }
+
+        @Override
+        public String getModelName() {
+            return "hitl-tool-call-model";
+        }
+    }
+
+    private static final class ApprovalProbeTool extends ToolBase {
+
+        private ApprovalProbeTool() {
+            super(ToolBase.builder()
+                    .name("approval_probe")
+                    .description("Probe permission handling")
+                    .inputSchema(Map.of(
+                            "type", "object",
+                            "properties", Map.of("query", Map.of("type", "string")))));
+        }
+
+        @Override
+        public Mono<io.agentscope.core.message.ToolResultBlock> callAsync(ToolCallParam param) {
+            return Mono.error(new AssertionError("ASK tool must not execute before confirmation"));
+        }
+    }
+
     private record Scenario(
             ReActAgent agent,
             AgentOutputSpec output,
             LiteFlowAgentContext context,
             RuntimeContext runtimeContext,
             ToolUseBlock tool,
+            RequireUserConfirmEvent event,
+            int eventCopies,
             Msg askingReply,
             Msg finalReply) {
+
+        private Scenario withEventCopies(int copies) {
+            return new Scenario(
+                    agent,
+                    output,
+                    context,
+                    runtimeContext,
+                    tool,
+                    event,
+                    copies,
+                    askingReply,
+                    finalReply);
+        }
     }
 }

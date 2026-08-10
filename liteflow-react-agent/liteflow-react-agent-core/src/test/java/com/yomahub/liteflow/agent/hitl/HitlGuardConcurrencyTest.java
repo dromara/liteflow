@@ -71,13 +71,19 @@ class HitlGuardConcurrencyTest {
         configure(Duration.ofSeconds(5), Duration.ofSeconds(2));
         ToolUseBlock pending = tool();
         CountDownLatch handlerEntered = new CountDownLatch(1);
+        CountDownLatch secondHandlerEntered = new CountDownLatch(1);
         CountDownLatch continuationEntered = new CountDownLatch(1);
         CountDownLatch secondEntered = new CountDownLatch(1);
+        AtomicInteger handlerCalls = new AtomicInteger();
         Sinks.One<List<ConfirmResult>> handlerRelease = Sinks.one();
         Sinks.One<Msg> continuationRelease = Sinks.one();
         TestComponent first = component(slot(), (event, context) -> {
-            handlerEntered.countDown();
-            return handlerRelease.asMono();
+            if (handlerCalls.incrementAndGet() == 1) {
+                handlerEntered.countDown();
+                return handlerRelease.asMono();
+            }
+            secondHandlerEntered.countDown();
+            return Mono.just(List.of(new ConfirmResult(true, pending)));
         });
         TestComponent second = component(slot(), null);
         first.answer = (messages, runtimeContext) -> {
@@ -87,6 +93,11 @@ class HitlGuardConcurrencyTest {
                 return Mono.just(askingReply(pending));
             }
             continuationEntered.countDown();
+            if (first.callCount.get() == 2) {
+                runtimeContext.get(LiteFlowAgentContext.class).recordConfirmationEvent(
+                        new RequireUserConfirmEvent("reply-1", List.of(pending)));
+                return Mono.just(askingReply(pending));
+            }
             return continuationRelease.asMono();
         };
         second.answer = (messages, runtimeContext) -> {
@@ -109,6 +120,7 @@ class HitlGuardConcurrencyTest {
 
             handlerRelease.tryEmitValue(List.of(new ConfirmResult(true, pending)));
             assertTrue(continuationEntered.await(5, TimeUnit.SECONDS));
+            assertTrue(secondHandlerEntered.await(5, TimeUnit.SECONDS));
             assertFalse(secondEntered.await(200, TimeUnit.MILLISECONDS));
 
             continuationRelease.tryEmitValue(
@@ -117,6 +129,8 @@ class HitlGuardConcurrencyTest {
             secondRun.get(5, TimeUnit.SECONDS);
             assertEquals("first", first.getSlot().getResponseData());
             assertEquals("second", second.getSlot().getResponseData());
+            assertEquals(2, handlerCalls.get());
+            assertEquals(3, first.callCount.get());
             assertNoAgentAttachments(first.getSlot());
             assertNoAgentAttachments(second.getSlot());
 
