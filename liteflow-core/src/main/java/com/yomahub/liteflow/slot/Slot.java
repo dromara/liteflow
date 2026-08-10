@@ -168,6 +168,10 @@ public class Slot {
 		metaDataMap.remove(key);
 	}
 
+	public boolean removeAttachment(String key, Object expectedValue) {
+		return metaDataMap.remove(key, expectedValue);
+	}
+
 	public <T> T getInput(String nodeId) {
 		return (T) metaDataMap.get(NODE_INPUT_PREFIX + nodeId);
 	}
@@ -190,6 +194,10 @@ public class Slot {
 
 	public <T> void setResponseData(T t) {
 		putMetaDataMap(RESPONSE, t);
+	}
+
+	public void clearResponseData() {
+		metaDataMap.remove(RESPONSE);
 	}
 
 	public <T> T getChainReqData(String chainId) {

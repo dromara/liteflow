@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.agent.exception.AgentInvocationException;
@@ -271,13 +272,13 @@ class ReActAgentPlainTextTest {
         }
 
         @Override
-        protected String userPrompt() {
+        protected String userPrompt(LiteFlowAgentContext context) {
             return "hello from slot";
         }
 
         private GuardedNamespacedAgentStateStore runtimeStateStore() {
             try {
-                Field handleField = ReActAgentComponent.class.getDeclaredField("runtimeHandle");
+                Field handleField = AbstractAgentComponent.class.getDeclaredField("runtimeHandle");
                 handleField.setAccessible(true);
                 AgentRuntimeHandle<?> handle = (AgentRuntimeHandle<?>) handleField.get(this);
                 Field runtimeField = AgentRuntimeHandle.class.getDeclaredField("runtime");

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.agent.testsupport;
 
 import io.agentscope.core.agent.AgentBase;
 import io.agentscope.core.agent.RuntimeContext;
+import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.model.ChatResponse;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class ScriptedChatModel implements Model {
 
     private final String responseText;
+    private final boolean nativeStructuredOutput;
     private final CountDownLatch firstCallCancellation;
     private final Throwable immediateFailure;
     private final AtomicInteger callCount = new AtomicInteger();
@@ -26,25 +28,31 @@ public final class ScriptedChatModel implements Model {
     private final List<RuntimeContext> runtimeContexts = new CopyOnWriteArrayList<>();
 
     public ScriptedChatModel(String responseText) {
-        this(responseText, null, null);
+        this(responseText, null, null, false);
     }
 
     private ScriptedChatModel(
             String responseText,
             CountDownLatch firstCallCancellation,
-            Throwable immediateFailure) {
+            Throwable immediateFailure,
+            boolean nativeStructuredOutput) {
         this.responseText = responseText;
         this.firstCallCancellation = firstCallCancellation;
         this.immediateFailure = immediateFailure;
+        this.nativeStructuredOutput = nativeStructuredOutput;
     }
 
     public static ScriptedChatModel neverThenReply(
             String responseText, CountDownLatch firstCallCancellation) {
-        return new ScriptedChatModel(responseText, firstCallCancellation, null);
+        return new ScriptedChatModel(responseText, firstCallCancellation, null, false);
     }
 
     public static ScriptedChatModel immediateFailure(Throwable failure) {
-        return new ScriptedChatModel(null, null, failure);
+        return new ScriptedChatModel(null, null, failure, false);
+    }
+
+    public static ScriptedChatModel nativeStructuredJson(String responseJson) {
+        return new ScriptedChatModel(responseJson, null, null, true);
     }
 
     @Override
@@ -61,11 +69,17 @@ public final class ScriptedChatModel implements Model {
             if (immediateFailure != null) {
                 return Flux.error(immediateFailure);
             }
+            ContentBlock content = TextBlock.builder().text(responseText).build();
             return Flux.just(ChatResponse.builder()
-                    .content(List.of(TextBlock.builder().text(responseText).build()))
+                    .content(List.of(content))
                     .finishReason("stop")
                     .build());
         });
+    }
+
+    @Override
+    public boolean supportsNativeStructuredOutput() {
+        return nativeStructuredOutput;
     }
 
     @Override

@@ -4,5 +4,6 @@ package com.yomahub.liteflow.agent.exception;
 public enum AgentInvocationErrorType {
     TIMEOUT,
     INTERRUPTED,
-    ACQUISITION_FAILED
+    ACQUISITION_FAILED,
+    STRUCTURED_OUTPUT
 }
