@@ -610,6 +610,14 @@ class ReActCallExecutorTest {
     }
 
     @Test
+    void providerNeutralCallTargetSupportsEveryRuntimeContextOutputShape() {
+        assertProviderNeutralOutputMode(AgentOutputSpec.text());
+        assertProviderNeutralOutputMode(AgentOutputSpec.javaType(StructuredReply.class));
+        assertProviderNeutralOutputMode(AgentOutputSpec.jsonSchema(
+                MAPPER.createObjectNode().put("type", "object")));
+    }
+
+    @Test
     void upstreamTimeoutExceptionIsNeverMisclassifiedAsFrameworkDeadline() {
         Scenario scenario = scenario();
         TimeoutException upstream = new TimeoutException("upstream-owned timeout");
@@ -845,6 +853,58 @@ class ReActCallExecutorTest {
                 assertSame(schemas.getAllValues().get(0), schemas.getAllValues().get(1));
             }
         }
+    }
+
+    private static void assertProviderNeutralOutputMode(AgentOutputSpec output) {
+        Scenario scenario = scenario(output, NOW.plus(RUNTIME_TIMEOUT));
+        AtomicInteger textCalls = new AtomicInteger();
+        AtomicInteger javaTypeCalls = new AtomicInteger();
+        AtomicInteger schemaCalls = new AtomicInteger();
+        AgentCallTarget target = new AgentCallTarget() {
+            @Override
+            public Mono<Msg> call(List<Msg> input, RuntimeContext runtimeContext) {
+                assertSame(scenario.runtimeContext, runtimeContext);
+                textCalls.incrementAndGet();
+                return Mono.just(scenario.finalReply);
+            }
+
+            @Override
+            public Mono<Msg> call(
+                    List<Msg> input, Class<?> javaType, RuntimeContext runtimeContext) {
+                assertSame(scenario.runtimeContext, runtimeContext);
+                assertSame(output.javaType(), javaType);
+                javaTypeCalls.incrementAndGet();
+                return Mono.just(scenario.finalReply);
+            }
+
+            @Override
+            public Mono<Msg> call(
+                    List<Msg> input,
+                    com.fasterxml.jackson.databind.JsonNode jsonSchema,
+                    RuntimeContext runtimeContext) {
+                assertSame(scenario.runtimeContext, runtimeContext);
+                assertEquals(output.jsonSchema(), jsonSchema);
+                schemaCalls.incrementAndGet();
+                return Mono.just(scenario.finalReply);
+            }
+        };
+
+        Msg result = executor().execute(
+                        target,
+                        List.of(new UserMessage("question")),
+                        output,
+                        scenario.runtimeContext,
+                        scenario.context,
+                        allowAll(),
+                        CONFIRMATION_TIMEOUT,
+                        false,
+                        RUNTIME_TIMEOUT)
+                .block();
+
+        assertSame(scenario.finalReply, result);
+        assertEquals(output.kind() == AgentOutputSpec.Kind.TEXT ? 1 : 0, textCalls.get());
+        assertEquals(output.kind() == AgentOutputSpec.Kind.JAVA_TYPE ? 1 : 0, javaTypeCalls.get());
+        assertEquals(output.kind() == AgentOutputSpec.Kind.JSON_SCHEMA ? 1 : 0, schemaCalls.get());
     }
 
     private static void assertHandlerFailure(

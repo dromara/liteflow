@@ -50,13 +50,58 @@ public final class ReActCallExecutor {
             boolean failOnDeniedTool,
             Duration cleanupTimeout) {
         Objects.requireNonNull(agent, "agent");
+        return execute(
+                new AgentCallTarget() {
+                    @Override
+                    public Mono<Msg> call(
+                            List<Msg> messages, RuntimeContext context) {
+                        return agent.call(messages, context);
+                    }
+
+                    @Override
+                    public Mono<Msg> call(
+                            List<Msg> messages,
+                            Class<?> javaType,
+                            RuntimeContext context) {
+                        return agent.call(messages, javaType, context);
+                    }
+
+                    @Override
+                    public Mono<Msg> call(
+                            List<Msg> messages,
+                            com.fasterxml.jackson.databind.JsonNode jsonSchema,
+                            RuntimeContext context) {
+                        return agent.call(messages, jsonSchema, context);
+                    }
+                },
+                input,
+                output,
+                runtimeContext,
+                context,
+                handler,
+                confirmationTimeout,
+                failOnDeniedTool,
+                cleanupTimeout);
+    }
+
+    public Mono<Msg> execute(
+            AgentCallTarget target,
+            List<Msg> input,
+            AgentOutputSpec output,
+            RuntimeContext runtimeContext,
+            LiteFlowAgentContext context,
+            AgentConfirmationHandler handler,
+            Duration confirmationTimeout,
+            boolean failOnDeniedTool,
+            Duration cleanupTimeout) {
+        Objects.requireNonNull(target, "target");
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(output, "output");
         Objects.requireNonNull(runtimeContext, "runtimeContext");
         Objects.requireNonNull(context, "context");
         requirePositive(confirmationTimeout, "confirmationTimeout");
         requirePositive(cleanupTimeout, "cleanupTimeout");
-        AgentCall call = agentCall(agent, output, runtimeContext);
+        AgentCall call = agentCall(target, output, runtimeContext);
 
         return Mono.defer(() -> {
             int eventOffset = confirmationEventCount(context);
@@ -330,18 +375,18 @@ public final class ReActCallExecutor {
     }
 
     private static AgentCall agentCall(
-            ReActAgent agent,
+            AgentCallTarget target,
             AgentOutputSpec output,
             RuntimeContext runtimeContext) {
         return switch (output.kind()) {
-            case TEXT -> input -> agent.call(input, runtimeContext);
+            case TEXT -> input -> target.call(input, runtimeContext);
             case JAVA_TYPE -> {
                 Class<?> javaType = output.javaType();
-                yield input -> agent.call(input, javaType, runtimeContext);
+                yield input -> target.call(input, javaType, runtimeContext);
             }
             case JSON_SCHEMA -> {
                 com.fasterxml.jackson.databind.JsonNode jsonSchema = output.jsonSchema();
-                yield input -> agent.call(input, jsonSchema, runtimeContext);
+                yield input -> target.call(input, jsonSchema, runtimeContext);
             }
         };
     }
