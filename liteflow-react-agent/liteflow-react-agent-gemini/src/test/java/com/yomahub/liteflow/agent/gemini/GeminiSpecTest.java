@@ -29,6 +29,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GeminiSpecTest {
 
     @Test
+    void modelFactoryReturnsAnOwningAutoCloseableModel() throws Exception {
+        Model model = GeminiModelFactory.of("factory-key", "gemini-factory");
+        try {
+            assertInstanceOf(AutoCloseable.class, model);
+            assertEquals("gemini-factory", model.getModelName());
+            ThinkingConfig thinking = requestConfig(
+                    model,
+                    GenerateOptions.builder().reasoningEffort("high").build())
+                    .thinkingConfig()
+                    .orElseThrow();
+            assertEquals("high", thinking.thinkingLevel().orElseThrow().toString());
+        } finally {
+            close(model);
+        }
+    }
+
+    @Test
     void finalRequestConfigContainsDefaultThinkingLevelAndBudget() throws Exception {
         Model model = Gemini.of("gemini-thinking-default")
                 .apiKey("test-key")

@@ -13,16 +13,16 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Runtime-owned facade for AgentScope's closeable-but-not-AutoCloseable Gemini model. */
-final class OwnedGeminiModel implements Model, AutoCloseable {
+public final class OwnedGeminiModel implements Model, AutoCloseable {
 
     private final GeminiChatModel delegate;
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    OwnedGeminiModel(GeminiChatModel delegate) {
+    public OwnedGeminiModel(GeminiChatModel delegate) {
         this.delegate = Objects.requireNonNull(delegate, "delegate");
     }
 
-    GeminiChatModel delegate() {
+    public GeminiChatModel delegate() {
         return delegate;
     }
 
