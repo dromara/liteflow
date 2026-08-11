@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.agent.gemini;
 
-import io.agentscope.core.model.GeminiChatModel;
+import io.agentscope.extensions.model.gemini.GeminiChatModel;
 
 public final class GeminiModelFactory {
     private GeminiModelFactory() {}
