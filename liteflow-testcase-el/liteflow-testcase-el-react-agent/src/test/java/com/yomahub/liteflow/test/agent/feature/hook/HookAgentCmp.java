@@ -3,15 +3,15 @@ package com.yomahub.liteflow.test.agent.feature.hook;
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
+import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 简单的 Hook 注册 Agent：用 AgentProbe.hook() 抓取 reasoning 事件，
- * 用以断言组件覆写的 {@code hooks()} 被注册并真实生效。
+ * 简单的 Middleware 注册 Agent：用 AgentProbe.middleware() 抓取 reasoning 阶段，
+ * 用以断言组件覆写的 {@code middlewares()} 被注册并真实生效。
  */
 @Component("hookAgent")
 public class HookAgentCmp extends ReActAgentComponent {
@@ -33,7 +33,7 @@ public class HookAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -54,13 +54,8 @@ public class HookAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected List<Hook> hooks() {
+    protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.hook());
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 }

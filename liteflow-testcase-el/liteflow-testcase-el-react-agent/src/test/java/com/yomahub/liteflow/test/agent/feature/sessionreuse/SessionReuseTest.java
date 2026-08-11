@@ -1,6 +1,5 @@
 package com.yomahub.liteflow.test.agent.feature.sessionreuse;
 
-import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
@@ -15,8 +14,8 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * 覆盖 guide §5.1：同一 {@code (conversationId, agentKey)} 的多次调用复用同一 ReActAgent。
  *
- * <p>通过 Hook 抓取的 agentId 判断：两次执行 agentId 一致即说明 Agent 实例被缓存复用；
- * 重置 SessionManager 后应得到不同 agentId。
+ * <p>通过探针抓取的 agentId 判断：两次执行 agentId 一致即说明组件持有的 Agent
+ * runtime 被复用。
  */
 @TestPropertySource("classpath:/feature/sessionreuse/application.properties")
 @SpringBootTest(classes = SessionReuseTest.class)
@@ -45,27 +44,5 @@ public class SessionReuseTest extends BaseAgentLiveTest {
         String secondAgentId = MemoryAgentCmp.PROBE.get().observedAgentId();
         Assertions.assertEquals(firstAgentId, secondAgentId,
                 "同一 (conversationId, agentKey) 多次调用应复用同一个 ReActAgent 实例");
-    }
-
-    @Test
-    public void testResetSessionManagerProducesIndependentAgentInstance() {
-        LiteflowResponse first = flowExecutor.execute2Resp("memoryChain", "你好");
-        Assertions.assertTrue(first.isSuccess());
-        String firstAgentId = MemoryAgentCmp.PROBE.get().observedAgentId();
-
-        // 重置 SessionManager 模拟全新 JVM 状态，确认 agentId 重新生成。
-        MemoryAgentCmp.reset();
-        try {
-            LiveTestSupport.resetAgentSessionManager();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        LiteflowResponse second = flowExecutor.execute2Resp("memoryChain", "你好",
-                ExecuteOption.of().requestId("rid-2"));
-        Assertions.assertTrue(second.isSuccess());
-        String secondAgentId = MemoryAgentCmp.PROBE.get().observedAgentId();
-
-        Assertions.assertNotEquals(firstAgentId, secondAgentId,
-                "重置 SessionManager 后，新的 ReActAgent 应该获得不同的 agentId");
     }
 }

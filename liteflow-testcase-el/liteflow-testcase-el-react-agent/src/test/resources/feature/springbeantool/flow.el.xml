@@ -4,7 +4,4 @@
     <chain name="componentToolChain">
         THEN(componentToolAgent);
     </chain>
-    <chain name="skillToolChain">
-        THEN(skillToolAgent);
-    </chain>
 </flow>

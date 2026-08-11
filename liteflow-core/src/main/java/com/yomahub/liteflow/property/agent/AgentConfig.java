@@ -7,8 +7,8 @@ import java.util.Map;
  * ReAct Agent 模块的根配置对象。
  *
  * <p>对应 Spring Boot 配置段 {@code liteflow.agent.*}，作为 LiteFlow 中所有
- * agent 子配置的聚合入口；其内部字段会在 {@code ReActAgentComponent}、
- * {@code AgentSessionManager}、各 ProviderSpec（OpenAI / Anthropic / Gemini /
+ * agent 子配置的聚合入口；其内部字段会在 AgentScope 2 运行时组件、
+ * 各 ProviderSpec（OpenAI / Anthropic / Gemini /
  * DashScope 等）以及工具类（{@code ManagedShellCommandTool}、
  * {@code WorkspaceFileTools}）中分别被读取使用。
  */
@@ -35,7 +35,7 @@ public class AgentConfig {
     /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
     private WorkspaceConfig workspace = new WorkspaceConfig();
 
-    /** 会话配置，控制内存中 agent 实例的空闲超时、清理周期、并发上限以及记忆持久化方式。 */
+    /** 仅用于绑定并诊断 1.x {@code session.memory.*} 配置的迁移兼容对象。 */
     private SessionConfig session = new SessionConfig();
 
     /** Shell 工具配置，决定 agent 调用 shell 工具时的命令过滤模式、超时与输出截断。 */
@@ -47,7 +47,7 @@ public class AgentConfig {
     /** 日志开关配置，控制 ReAct 内部 reason / act / error 等事件日志是否输出。 */
     private LoggingConfig logging = new LoggingConfig();
 
-    /** Skills configuration for loading agent-scope SkillBox entries from SKILL.md repositories. */
+    /** Skills configuration for loading AgentSkillRepository entries from SKILL.md repositories. */
     private SkillsConfig skills = new SkillsConfig();
 
     /** OpenAI 头等平台凭证（{@code liteflow.agent.openai.*}），由 {@code OpenAISpec} 解析使用。 */

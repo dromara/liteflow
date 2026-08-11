@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.buildmodel;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * 覆盖 guide §4.6：覆写 {@code buildModel()} 时 {@code model().resolve(...)} 不会被调用，
- * 但仍能完成 ReActAgent 构造和真实模型调用。
+ * 但仍能完成 ReActAgent 构造和确定性模型调用。
  */
 @TestPropertySource("classpath:/feature/buildmodel/application.properties")
 @SpringBootTest(classes = BuildModelEscapeTest.class)
@@ -24,7 +23,6 @@ public class BuildModelEscapeTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         BuildModelEscapeAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "BuildModelEscapeTest");
     }
 
     @Test

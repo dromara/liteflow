@@ -7,18 +7,14 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import org.junit.jupiter.api.Assumptions;
 
-import java.lang.reflect.Method;
-
 /**
- * 整个模块唯一共享的「凭据/skip/重置」插管。
+ * 整个模块唯一共享的凭据与条件跳过支持。
  *
- * <p>按用户约定：不同 package 之间只共享这一层（凭据解析、无 key 即 skip、SessionManager 重置）；
+ * <p>按用户约定：不同 package 之间只共享这一层（凭据解析、无 key 即 skip）；
  * 其余 agent 组件、辅助节点、探针、flow xml、application.properties 一律每个 package 各自冗余。
  *
  * <p>提供：
  * <ul>
- *   <li>{@link #resetAgentSessionManager()}：反射重置 ReActAgentComponent 内部单例 SessionManager，
- *       避免跨测试类的全局静态状态互相污染；</li>
  *   <li>{@link #compatibleCustomModel()}：功能测试统一用的 OpenAI 兼容自定义模型描述符；</li>
  *   <li>各平台的「装凭据或 skip」方法：把真实 apikey/baseUrl 从环境变量装入 AgentConfig，
  *       缺失即 {@code Assumptions.assumeTrue} 跳过当前测试。</li>
@@ -33,18 +29,6 @@ public final class LiveTestSupport {
     public static final String ANTHROPIC_GATEWAY_CONFIG_KEY = "gateway";
 
     private LiveTestSupport() {
-    }
-
-    /**
-     * 强行重置 ReActAgentComponent 内部缓存的单例 SessionManager。
-     * 否则跨 test class 的 JVM 静态状态复用时，前一个测试遗留的 Session 会污染当前断言。
-     */
-    public static void resetAgentSessionManager() throws Exception {
-        Class<?> holder = Class.forName(
-                "com.yomahub.liteflow.agent.component.ReActAgentComponent$AgentSessionManagerHolder");
-        Method reset = holder.getDeclaredMethod("resetForTesting");
-        reset.setAccessible(true);
-        reset.invoke(null);
     }
 
     /**

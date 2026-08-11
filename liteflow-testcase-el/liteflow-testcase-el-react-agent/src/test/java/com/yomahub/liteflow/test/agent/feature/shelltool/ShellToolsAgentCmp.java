@@ -4,7 +4,7 @@ import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
+import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -55,22 +55,25 @@ public class ShellToolsAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected List<Hook> hooks() {
+    protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.hook());
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 
     @Override
-    protected String userPrompt() {
-        ManagedShellCommandTool tool = new ManagedShellCommandTool(ctx().getWorkspaceDir(), agentConfig());
-        WORKSPACE.set(ctx().getWorkspaceDir().toAbsolutePath().normalize().toString());
-        PWD_OUTPUT.set(tool.executeCommand("pwd"));
-        BLOCKED_OUTPUT.set(tool.executeCommand("rm -rf /"));
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        java.nio.file.Path root = java.nio.file.Path.of(agentConfig().getWorkspace().getRoot());
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(root, agentConfig());
+        io.agentscope.core.agent.RuntimeContext runtimeContext =
+                io.agentscope.core.agent.RuntimeContext.builder()
+                        .userId(context.getRuntimeUserId())
+                        .sessionId(context.getRuntimeSessionId())
+                        .put(com.yomahub.liteflow.agent.context.LiteFlowAgentContext.class, context)
+                        .put(com.yomahub.liteflow.slot.Slot.class, context.getSlot())
+                        .build();
+        WORKSPACE.set(root.resolve(context.getRuntimeSessionId()).toAbsolutePath().normalize().toString());
+        PWD_OUTPUT.set(tool.executeCommand(runtimeContext, "pwd"));
+        BLOCKED_OUTPUT.set(tool.executeCommand(runtimeContext, "rm -rf /"));
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }

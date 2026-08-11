@@ -3,9 +3,8 @@ package com.yomahub.liteflow.property.agent;
 /**
  * Agent 工作区配置，对应配置段 {@code liteflow.agent.workspace.*}。
  *
- * <p>工作区是每个会话独立的本地目录，agent 可在其中读写文件、执行 shell 命令。
- * 各字段会在 {@code AgentSessionManager}（管理目录生命周期）和
- * {@code WorkspaceFileTools}（文件读写工具）中分别使用。
+ * <p>AgentScope 2 通过受保护的路径解析器按运行时身份隔离目录，并由组件运行时
+ * 持有相关资源；核心不会注册静态会话管理器或 JVM shutdown hook。
  */
 public class WorkspaceConfig {
 
@@ -18,32 +17,24 @@ public class WorkspaceConfig {
     /**
      * 工作区根目录（必填）。
      *
-     * <p>{@code AgentSessionManager} 启动时会规范化该路径，并按会话维度在其下创建
-     * 子目录；为空时会跳过工作区相关初始化（含会话清理任务）。
+     * <p>受保护的工作区路径解析器会规范化该路径，并按运行时身份创建子目录。
      */
     private String root;
 
     /**
      * 是否在启动时自动创建 {@link #root} 目录。
      *
-     * <p>{@code AgentSessionManager} 据此调用 {@code Files.createDirectories(...)}，
-     * 关闭后用户需保证目录已存在，否则会话写入会失败。
+     * <p>关闭后用户需保证目录已存在，否则工作区工具初始化会失败。
      */
     private boolean autoCreate = true;
 
     /**
-     * 会话超时被淘汰时是否同时清理其工作区目录。
-     *
-     * <p>{@code AgentSessionManager} 在 LRU / 空闲淘汰一个会话时根据该开关
-     * 决定是否递归删除目录，关闭后历史文件会保留供事后排查。
+     * 1.x 会话淘汰清理开关，仅为配置绑定兼容保留；AgentScope 2 核心不执行会话淘汰。
      */
     private boolean cleanupOnSessionExpire = true;
 
     /**
-     * JVM 关闭时是否清理整个工作区根目录。
-     *
-     * <p>{@code AgentSessionManager} 会在该开关打开时注册关停钩子；默认关闭，
-     * 避免因进程异常退出而误删用户的持久化数据。
+     * 1.x JVM 清理开关，仅为配置绑定兼容保留；AgentScope 2 核心不注册关停钩子。
      */
     private boolean cleanupOnJvmShutdown = false;
 

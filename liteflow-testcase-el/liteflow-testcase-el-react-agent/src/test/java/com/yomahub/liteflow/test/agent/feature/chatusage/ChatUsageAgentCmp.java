@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 验证 guide §3 中 {@code ctx().getChatUsage()}：本次 process() 累计的 token 用量，
+ * 验证 guide §3 中 {@code context.getChatUsage()}：本次 process() 累计的 token 用量，
  * 在 handleReply（本轮 reasoning 结束后）可读。
  */
 @Component("chatUsageAgent")
@@ -36,7 +36,7 @@ public class ChatUsageAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -57,15 +57,10 @@ public class ChatUsageAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected void handleReply(Msg reply) {
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         // getChatUsage() 只能在 process() 生命周期内调用，handleReply 是合法时机。
         GET_USAGE_CALLED.set(true);
-        CAPTURED.set(ctx().getChatUsage());
-        super.handleReply(reply);
+        CAPTURED.set(context.getChatUsage());
+        super.handleReply(reply, context);
     }
 }

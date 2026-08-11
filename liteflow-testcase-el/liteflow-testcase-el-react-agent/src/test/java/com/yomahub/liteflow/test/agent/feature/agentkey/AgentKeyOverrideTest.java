@@ -14,7 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * 覆盖 guide §5.3：组件覆写 {@code agentKey()} 后，ctx 中应反映新的 key，
- * 进而决定 SessionManager 缓存条目的隔离；含特殊字符的 key 应被 safeId 处理。
+ * 进而决定 AgentScope 2 state namespace 的隔离；含特殊字符的 key 应被 safeId 处理。
  */
 @TestPropertySource("classpath:/feature/agentkey/application.properties")
 @SpringBootTest(classes = AgentKeyOverrideTest.class)

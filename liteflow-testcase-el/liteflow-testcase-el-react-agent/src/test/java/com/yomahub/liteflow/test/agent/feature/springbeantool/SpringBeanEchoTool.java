@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * 用于验证：
  * <ul>
  *   <li>组件层 {@code tools()} 通过 {@code @Resource} 注入此 bean 后注册到 Toolkit；</li>
- *   <li>Skill 层 {@code SkillToolResolver} 从容器按类型取到此 bean（而非反射降级实例化）。</li>
  * </ul>
  *
  * <p>通过静态 {@code INSTANCE} 和 {@code CONSTRUCT_COUNT} 暴露内部状态供测试断言。

@@ -4,7 +4,7 @@ import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
+import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -60,32 +60,36 @@ public class WorkspaceToolsAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected List<Hook> hooks() {
+    protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.hook());
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 
     @Override
-    protected String userPrompt() {
-        WorkspaceFileTools tools = new WorkspaceFileTools(ctx().getWorkspaceDir(), agentConfig());
-        tools.writeFile("notes/a.txt", "abcdef");
-        tools.writeFile("notes/b.txt", "ghijkl");
-        TRUNCATED_READ.set(tools.readFile("notes/a.txt"));
-        LIST_RESULT.set(tools.listFiles("notes"));
-        tools.deleteFile("notes/b.txt");
-        DELETED.set(!java.nio.file.Files.exists(ctx().getWorkspaceDir().resolve("notes/b.txt")));
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        java.nio.file.Path root = java.nio.file.Path.of(agentConfig().getWorkspace().getRoot());
+        WorkspaceFileTools tools = new WorkspaceFileTools(root, agentConfig());
+        io.agentscope.core.agent.RuntimeContext runtimeContext =
+                io.agentscope.core.agent.RuntimeContext.builder()
+                        .userId(context.getRuntimeUserId())
+                        .sessionId(context.getRuntimeSessionId())
+                        .put(com.yomahub.liteflow.agent.context.LiteFlowAgentContext.class, context)
+                        .put(com.yomahub.liteflow.slot.Slot.class, context.getSlot())
+                        .build();
+        tools.writeFile(runtimeContext, "notes/a.txt", "abcdef");
+        tools.writeFile(runtimeContext, "notes/b.txt", "ghijkl");
+        TRUNCATED_READ.set(tools.readFile(runtimeContext, "notes/a.txt"));
+        LIST_RESULT.set(tools.listFiles(runtimeContext, "notes"));
+        tools.deleteFile(runtimeContext, "notes/b.txt");
+        DELETED.set(!java.nio.file.Files.exists(root.resolve(context.getRuntimeSessionId())
+                .resolve("notes/b.txt")));
         try {
-            tools.readFile("../escape.txt");
+            tools.readFile(runtimeContext, "../escape.txt");
         } catch (SecurityException e) {
             RELATIVE_ESCAPE.set(e.getMessage());
         }
         try {
-            tools.readFile("/tmp/escape.txt");
+            tools.readFile(runtimeContext, "/tmp/escape.txt");
         } catch (SecurityException e) {
             ABSOLUTE_ESCAPE.set(e.getMessage());
         }

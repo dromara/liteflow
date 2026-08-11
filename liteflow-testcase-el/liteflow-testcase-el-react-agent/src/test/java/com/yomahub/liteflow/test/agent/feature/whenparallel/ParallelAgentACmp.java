@@ -49,26 +49,21 @@ public class ParallelAgentACmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
     protected String agentKey() {
         return "parallelAgentA__" + getSlot().getRequestId();
     }
 
     @Override
-    protected String userPrompt() {
-        SEEN_AGENT_KEY.set(ctx().getAgentKey());
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        SEEN_AGENT_KEY.set(context.getAgentKey());
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
 
     @Override
-    protected void handleReply(Msg reply) {
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         String text = reply == null ? "" : reply.getTextContent();
         SEEN_REPLY.set(text);
-        ctx().getSlot().setOutput("parallelAgentA", text);
+        context.getSlot().setOutput("parallelAgentA", text);
     }
 }

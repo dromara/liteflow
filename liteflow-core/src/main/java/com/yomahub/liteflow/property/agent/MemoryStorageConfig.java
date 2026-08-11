@@ -1,13 +1,11 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * ReActAgent 会话记忆持久化设置，对应配置段
+ * AgentScope 1 会话记忆持久化兼容设置，对应旧配置段
  * {@code liteflow.agent.session.memory.*}。
  *
- * <p>本配置与 {@link SessionConfig} 是正交的关注点：
- * {@link SessionConfig} 控制 JVM 内 agent 实例的缓存、空闲超时与 LRU 淘汰；
- * 而本配置决定 agent 的对话历史 <em>持久化到哪里</em>，例如 JVM 堆内、本地文件、
- * Redis 或 MySQL。
+ * <p>AgentScope 2 不读取这些存储选项；setter 仅记录用户显式使用了旧配置，
+ * 以便 {@link AgentConfig} 在执行前给出迁移到 {@code state-store.*} 的诊断。
  */
 public class MemoryStorageConfig {
 
@@ -37,24 +35,21 @@ public class MemoryStorageConfig {
     /**
      * 是否在首次 {@code process()} 调用时延迟加载已存在的会话状态。
      *
-     * <p>由 {@code AgentSessionManager} 在装载历史记忆时读取；为 false 时新 agent
-     * 始终从空白记忆开始，不会回放历史。
+     * <p>仅为 1.x 配置绑定兼容保留。
      */
     private boolean loadOnFirstUse = true;
 
     /**
      * {@code process()} 成功执行后是否回写会话状态。
      *
-     * <p>由 {@code ReActAgentComponent} 在执行结束（无异常）时读取，决定是否将本轮
-     * 对话追加保存到所选存储后端。
+     * <p>仅为 1.x 配置绑定兼容保留。
      */
     private boolean saveAfterCall = true;
 
     /**
      * {@code process()} 抛出异常时是否仍回写会话状态。
      *
-     * <p>由 {@code ReActAgentComponent} 在异常分支中读取；开启后即使本轮失败也会
-     * 保留上下文以便后续诊断或重试。
+     * <p>仅为 1.x 配置绑定兼容保留。
      */
     private boolean saveOnError = true;
 

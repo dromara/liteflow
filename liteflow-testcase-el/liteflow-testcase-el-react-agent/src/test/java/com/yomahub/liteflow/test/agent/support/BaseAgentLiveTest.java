@@ -2,16 +2,15 @@ package com.yomahub.liteflow.test.agent.support;
 
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.property.LiteflowConfig;
-import org.junit.jupiter.api.BeforeEach;
-
 import javax.annotation.Resource;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * 各场景测试公共基类（共享插管之一）。
  *
- * <p>只负责两件事：注入 {@link FlowExecutor} / {@link LiteflowConfig}，
- * 以及在每个 @Test 前重置 ReActAgentComponent 缓存的 SessionManager，
- * 避免 JVM 内全局静态状态在不同测试类之间互相污染。
+ * <p>负责注入 {@link FlowExecutor} / {@link LiteflowConfig}，并为旧场景夹具补齐
+ * AgentScope 2 执行所需的测试 namespace。AgentScope 2 运行时
+ * 由各组件实例持有，并随容器中的组件 bean 一起关闭，不再维护可反射重置的静态会话缓存。
  *
  * <p>agent 运行配置（workspace / shell / iterations / skills 等）由每个 package
  * 自己的 application.properties 声明；凭据由各测试在 @BeforeEach 中调用
@@ -26,7 +25,11 @@ public abstract class BaseAgentLiveTest {
     protected LiteflowConfig liteflowConfig;
 
     @BeforeEach
-    public void resetAgentRuntime() throws Exception {
-        LiveTestSupport.resetAgentSessionManager();
+    void configureAgentScope2Runtime() {
+        if (liteflowConfig.getAgent().getRuntime().getNamespace() == null
+                || liteflowConfig.getAgent().getRuntime().getNamespace().isBlank()) {
+            liteflowConfig.getAgent().getRuntime().setNamespace("react-agent-test");
+        }
     }
+
 }

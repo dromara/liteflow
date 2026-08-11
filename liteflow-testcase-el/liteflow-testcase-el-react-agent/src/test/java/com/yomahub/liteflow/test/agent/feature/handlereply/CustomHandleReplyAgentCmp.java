@@ -26,7 +26,7 @@ public class CustomHandleReplyAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -47,12 +47,7 @@ public class CustomHandleReplyAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected void handleReply(Msg reply) {
-        ctx().getSlot().setOutput(OUTPUT_KEY, reply == null ? null : reply.getTextContent());
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        context.getSlot().setOutput(OUTPUT_KEY, reply == null ? null : reply.getTextContent());
     }
 }

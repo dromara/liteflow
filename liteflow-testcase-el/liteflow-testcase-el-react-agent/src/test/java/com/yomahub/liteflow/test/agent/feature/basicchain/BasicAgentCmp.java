@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.agent.feature.basicchain;
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
+import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.message.Msg;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 基础链路 Agent。同时捕获 ctx()、systemPrompt/userPrompt/handleReply 调用次数，
+ * 基础链路 Agent。同时捕获 context、systemPrompt/userPrompt/handleReply 调用次数，
  * 让 {@code BasicChainTest} 一次链路调用即可断言多个基础行为。
  */
 @Component("basicAgent")
@@ -51,11 +51,12 @@ public class BasicAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         USER_PROMPT_COUNT.incrementAndGet();
-        SEEN_CONVERSATION_ID.set(ctx().getConversationId());
-        SEEN_AGENT_KEY.set(ctx().getAgentKey());
-        SEEN_WORKSPACE.set(ctx().getWorkspaceDir());
+        SEEN_CONVERSATION_ID.set(context.getConversationId());
+        SEEN_AGENT_KEY.set(context.getAgentKey());
+        SEEN_WORKSPACE.set(java.nio.file.Path.of(agentConfig().getWorkspace().getRoot())
+                .resolve(context.getRuntimeSessionId()));
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -76,20 +77,15 @@ public class BasicAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected List<Hook> hooks() {
+    protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.hook());
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 
     @Override
-    protected void handleReply(Msg reply) {
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         HANDLE_REPLY_COUNT.incrementAndGet();
         LAST_REPLY.set(reply == null ? null : reply.getTextContent());
-        super.handleReply(reply);
+        super.handleReply(reply, context);
     }
 }

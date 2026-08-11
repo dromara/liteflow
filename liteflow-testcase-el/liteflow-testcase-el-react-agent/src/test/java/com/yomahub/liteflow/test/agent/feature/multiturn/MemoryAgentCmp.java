@@ -3,10 +3,8 @@ package com.yomahub.liteflow.test.agent.feature.multiturn;
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
-import io.agentscope.core.hook.HookEvent;
+import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,22 +13,13 @@ import java.util.concurrent.atomic.AtomicReference;
  * 会话 / Session 复用 Agent。固定 conversationId 让多次调用进入同一 Session，
  * AgentProbe 捕获 agentId 以断言 ReActAgent 实例是否复用。
  *
- * <p>由于 hooks() 只在首次构建缓存 Agent 时求值，这里注册一个固定的转发 Hook，
- * 运行期再委派到当前 PROBE，使得每次 reset() 后仍能抓到本轮事件。
+ * <p>探针通过 AgentScope 2 middleware 注册到组件持有的 runtime。
  */
 @Component("memoryAgent")
 public class MemoryAgentCmp extends ReActAgentComponent {
 
     public static final String FIXED_CONVERSATION_ID = "multiturn-conversation";
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
-    private static final Hook PROBE_FORWARDING_HOOK = new Hook() {
-        @Override
-        public <T extends HookEvent> Mono<T> onEvent(T event) {
-            AgentProbe probe = PROBE.get();
-            return probe == null ? Mono.just(event) : probe.hook().onEvent(event);
-        }
-    };
-
     public static void reset() {
         PROBE.set(new AgentProbe());
     }
@@ -46,7 +35,7 @@ public class MemoryAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -67,17 +56,13 @@ public class MemoryAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected String resolveConversationId() {
+    protected String resolveConversationId(com.yomahub.liteflow.slot.Slot slot) {
         return FIXED_CONVERSATION_ID;
     }
 
     @Override
-    protected List<Hook> hooks() {
-        return List.of(PROBE_FORWARDING_HOOK);
+    protected List<MiddlewareBase> middlewares() {
+        AgentProbe probe = PROBE.get();
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 }

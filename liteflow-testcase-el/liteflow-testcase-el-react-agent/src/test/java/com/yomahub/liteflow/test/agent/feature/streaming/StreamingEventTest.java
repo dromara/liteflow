@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.streaming;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
+import com.yomahub.liteflow.agent.event.AgentEventTypeMapper;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.FlowEvent;
 import com.yomahub.liteflow.flow.LiteflowResponse;
@@ -47,7 +47,7 @@ public class StreamingEventTest extends BaseAgentLiveTest {
 
         // 至少一条 agent.reasoning 事件，nodeId/conversationId 都应填充。
         Assertions.assertTrue(events.stream().anyMatch(e ->
-                        ReActAgentComponent.FLOW_EVENT_TYPE_REASONING.equals(e.getType())
+                        AgentEventTypeMapper.REASONING.equals(e.getType())
                                 && "streamingAgent".equals(e.getNodeId())
                                 && e.getConversationId() != null
                                 && !e.getConversationId().isBlank()),
@@ -55,7 +55,7 @@ public class StreamingEventTest extends BaseAgentLiveTest {
 
         // 最终的 agent.result 事件应有 isLast=true。
         Assertions.assertTrue(events.stream().anyMatch(e ->
-                        ReActAgentComponent.FLOW_EVENT_TYPE_RESULT.equals(e.getType())
+                        AgentEventTypeMapper.RESULT.equals(e.getType())
                                 && e.isLast()
                                 && "streamingAgent".equals(e.getNodeId())),
                 "stream listener should receive a final agent.result event");

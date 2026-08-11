@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.agent.feature.maxiterations;
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
-import io.agentscope.core.hook.Hook;
+import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public class MaxIterationsAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -55,13 +55,8 @@ public class MaxIterationsAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected List<Hook> hooks() {
+    protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.hook());
+        return probe == null ? List.of() : List.of(probe.middleware());
     }
 }

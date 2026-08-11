@@ -47,24 +47,19 @@ public class ResolveCidAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected String resolveConversationId() {
+    protected String resolveConversationId(com.yomahub.liteflow.slot.Slot slot) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         if (reqData instanceof Map<?, ?> map) {
             Object userId = map.get("userId");
             Object convId = map.get("convId");
             return "user-" + userId + "-conv-" + convId;
         }
-        return super.resolveConversationId();
+        return super.resolveConversationId(slot);
     }
 
     @Override
-    protected String userPrompt() {
-        SEEN_CID.set(ctx().getConversationId());
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        SEEN_CID.set(context.getConversationId());
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         if (reqData instanceof Map<?, ?> map) {
             Object p = map.get("prompt");

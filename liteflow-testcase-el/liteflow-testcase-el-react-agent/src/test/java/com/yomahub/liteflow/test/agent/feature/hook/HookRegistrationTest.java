@@ -12,7 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * 覆盖 guide §3 {@code hooks()} 扩展点：覆写返回的 Hook 必须在 Agent 构建后注册到 ReActAgent，
+ * 覆盖 guide §3 {@code middlewares()} 扩展点：覆写返回的 Middleware 必须在 Agent 构建后注册到 ReActAgent，
  * 在真实模型调用过程中能收到 PreReasoning 等生命周期事件。
  */
 @TestPropertySource("classpath:/feature/hook/application.properties")
@@ -28,13 +28,13 @@ public class HookRegistrationTest extends BaseAgentLiveTest {
     }
 
     @Test
-    public void testComponentHooksAreInvokedDuringAgentExecution() {
+    public void testComponentMiddlewareIsInvokedDuringAgentExecution() {
         LiteflowResponse response = flowExecutor.execute2Resp("hookChain", "你好，请用一句话作答。");
 
         Assertions.assertTrue(response.isSuccess(),
                 "chain failed: " + (response.getCause() == null ? "" : response.getCause().getMessage()));
         Assertions.assertTrue(HookAgentCmp.PROBE.get().reasoningCount() > 0,
-                "AgentProbe.hook() 在真实模型调用时应至少收到一次 PreReasoning 事件");
+                "AgentProbe.middleware() 在真实模型调用时应至少收到一次 reasoning 事件");
         Assertions.assertNotNull(HookAgentCmp.PROBE.get().observedAgentId());
     }
 }

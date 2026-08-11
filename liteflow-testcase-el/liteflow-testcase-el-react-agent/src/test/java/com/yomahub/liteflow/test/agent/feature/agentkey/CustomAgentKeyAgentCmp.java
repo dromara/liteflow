@@ -49,19 +49,14 @@ public class CustomAgentKeyAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
     protected String agentKey() {
         return overriddenKey;
     }
 
     @Override
-    protected String userPrompt() {
-        SEEN_AGENT_KEY.set(ctx().getAgentKey());
-        SEEN_CID.set(ctx().getConversationId());
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        SEEN_AGENT_KEY.set(context.getAgentKey());
+        SEEN_CID.set(context.getConversationId());
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }

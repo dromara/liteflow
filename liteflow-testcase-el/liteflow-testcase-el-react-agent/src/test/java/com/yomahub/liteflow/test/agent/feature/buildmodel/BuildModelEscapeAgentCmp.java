@@ -2,19 +2,22 @@ package com.yomahub.liteflow.test.agent.feature.buildmodel;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.agent.openai.OpenAIModelFactory;
-import com.yomahub.liteflow.property.agent.PlatformCredential;
-import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import io.agentscope.core.message.ContentBlock;
+import io.agentscope.core.message.Msg;
+import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.model.ChatResponse;
+import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.model.ToolSchema;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 演示 guide §4.6 buildModel() 逃生舱：完全自行构造 agentscope Model。
- * 这里用 OpenAI 兼容自定义凭据构造一个真实 OpenAIChatModel，验证覆写 buildModel()
- * 后 {@code model().resolve(...)} 不再被调用，但仍能完成真实模型调用。
+ * 演示 guide §4.6 buildModel() 逃生舱：完全自行构造确定性的 AgentScope Model。
+ * 验证覆写 buildModel() 后 {@code model().resolve(...)} 不再被调用。
  */
 @Component("buildModelEscapeAgent")
 public class BuildModelEscapeAgentCmp extends ReActAgentComponent {
@@ -27,16 +30,13 @@ public class BuildModelEscapeAgentCmp extends ReActAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
-        // model() 仍是抽象，必须实现；但 buildModel() 覆写后 resolve 不会被调用。
-        return LiveTestSupport.compatibleCustomModel();
+        throw new AssertionError("buildModel override must bypass model().resolve(...)");
     }
 
     @Override
     protected Model buildModel() {
         BUILD_MODEL_COUNT.incrementAndGet();
-        PlatformCredential cred = agentConfig().getOpenaiCompatible().get(LiveTestSupport.COMPATIBLE_CONFIG_KEY);
-        String model = LiveTestEnv.resolveOrDefault(LiveTestEnv.COMPATIBLE_MODEL, "gpt-4o-mini");
-        return OpenAIModelFactory.custom(cred.getApiKey(), cred.getBaseUrl(), model);
+        return new DeterministicModel();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class BuildModelEscapeAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -65,8 +65,20 @@ public class BuildModelEscapeAgentCmp extends ReActAgentComponent {
         return false;
     }
 
-    @Override
-    protected boolean enableReActLogging() {
-        return false;
+    private static final class DeterministicModel implements Model {
+        @Override
+        public Flux<ChatResponse> stream(
+                List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+            ContentBlock content = TextBlock.builder().text("deterministic reply").build();
+            return Flux.just(ChatResponse.builder()
+                    .content(List.of(content))
+                    .finishReason("stop")
+                    .build());
+        }
+
+        @Override
+        public String getModelName() {
+            return "build-model-escape-test";
+        }
     }
 }

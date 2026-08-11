@@ -25,6 +25,7 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
 import reactor.core.publisher.Mono;
 
+import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -36,7 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /** Shared lifecycle template for LiteFlow components backed by an Agent runtime. */
 public abstract class AbstractAgentComponent<R extends AutoCloseable>
-        extends NodeComponent implements AutoCloseable {
+        extends NodeComponent implements Closeable {
 
     public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
 

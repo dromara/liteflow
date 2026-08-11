@@ -6,6 +6,7 @@ import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.CmpAroundAspect;
 import org.noear.solon.Solon;
+import org.noear.solon.core.AppContext;
 
 /**
  * Solon 环境全局组件切面实现
@@ -18,7 +19,11 @@ public class SolonCmpAroundAspect implements CmpAroundAspect {
 	public ICmpAroundAspect cmpAroundAspect;
 
 	public SolonCmpAroundAspect(){
-		Solon.context().getBeanAsync(ICmpAroundAspect.class, bean -> {
+		AppContext context = Solon.context();
+		if (context == null) {
+			return;
+		}
+		context.getBeanAsync(ICmpAroundAspect.class, bean -> {
 			cmpAroundAspect = bean;
 		});
 	}

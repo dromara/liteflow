@@ -57,15 +57,11 @@ public class MultiAgentBCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected String userPrompt() {
-        SEEN_CONVERSATION_ID.set(ctx().getConversationId());
-        SEEN_AGENT_KEY.set(ctx().getAgentKey());
-        Path ws = ctx().getWorkspaceDir();
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        SEEN_CONVERSATION_ID.set(context.getConversationId());
+        SEEN_AGENT_KEY.set(context.getAgentKey());
+        Path ws = Path.of(agentConfig().getWorkspace().getRoot())
+                .resolve(context.getRuntimeSessionId());
         SEEN_WORKSPACE.set(ws);
         try {
             Path marker = ws.resolve(MultiAgentACmp.MARKER_FILE);
@@ -86,7 +82,7 @@ public class MultiAgentBCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected void handleReply(Msg reply) {
-        ctx().getSlot().setOutput("multiAgentB", reply == null ? null : reply.getTextContent());
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        context.getSlot().setOutput("multiAgentB", reply == null ? null : reply.getTextContent());
     }
 }

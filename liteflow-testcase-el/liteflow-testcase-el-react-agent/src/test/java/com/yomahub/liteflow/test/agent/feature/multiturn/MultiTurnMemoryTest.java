@@ -13,7 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * 覆盖 guide §8.4 多轮对话：同一 conversationId 下连续两次调用同一个 Agent，
- * 第二次复用同一个 ReActAgent 实例（来自 Hook 抓取的 agentId），两轮回复都非空，
+ * 第二次复用同一个 ReActAgent 实例（来自 Middleware 抓取的 agentId），两轮回复都非空，
  * 证明 memory 在 JVM 模式下能跨调用复用。
  */
 @TestPropertySource("classpath:/feature/multiturn/application.properties")

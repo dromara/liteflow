@@ -22,7 +22,7 @@ public class StreamingAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -39,11 +39,6 @@ public class StreamingAgentCmp extends ReActAgentComponent {
 
     @Override
     protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableReActLogging() {
         return false;
     }
 }

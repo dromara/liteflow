@@ -25,7 +25,7 @@ public class MemoryAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -46,12 +46,7 @@ public class MemoryAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected String resolveConversationId() {
+    protected String resolveConversationId(com.yomahub.liteflow.slot.Slot slot) {
         return FIXED_CONVERSATION_ID;
     }
 }

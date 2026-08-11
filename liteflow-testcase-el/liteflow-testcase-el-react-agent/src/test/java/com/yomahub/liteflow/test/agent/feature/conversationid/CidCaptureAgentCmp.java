@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 在 userPrompt 中捕获 ctx().getConversationId()，用于验证 conversationId 的多条解析路径。
+ * 在 userPrompt 中捕获 context.getConversationId()，用于验证 conversationId 的多条解析路径。
  */
 @Component("cidCaptureAgent")
 public class CidCaptureAgentCmp extends ReActAgentComponent {
@@ -30,8 +30,8 @@ public class CidCaptureAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected String userPrompt() {
-        SEEN_CONVERSATION_ID.set(ctx().getConversationId());
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        SEEN_CONVERSATION_ID.set(context.getConversationId());
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
@@ -48,11 +48,6 @@ public class CidCaptureAgentCmp extends ReActAgentComponent {
 
     @Override
     protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableReActLogging() {
         return false;
     }
 }

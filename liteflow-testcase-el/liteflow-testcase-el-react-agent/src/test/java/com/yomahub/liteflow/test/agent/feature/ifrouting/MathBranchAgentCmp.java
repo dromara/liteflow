@@ -47,12 +47,7 @@ public class MathBranchAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected boolean enableReActLogging() {
-        return false;
-    }
-
-    @Override
-    protected String userPrompt() {
+    protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         INVOCATION_COUNT.incrementAndGet();
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         if (reqData instanceof Map<?, ?> map) {
@@ -65,7 +60,7 @@ public class MathBranchAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected void handleReply(Msg reply) {
-        ctx().getSlot().setOutput("mathBranchAgent", reply == null ? null : reply.getTextContent());
+    protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
+        context.getSlot().setOutput("mathBranchAgent", reply == null ? null : reply.getTextContent());
     }
 }

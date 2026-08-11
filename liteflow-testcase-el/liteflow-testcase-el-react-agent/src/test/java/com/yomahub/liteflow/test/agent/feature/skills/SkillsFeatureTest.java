@@ -20,9 +20,7 @@ import java.util.Set;
  * 覆盖 guide §7 Skills 集成：
  * <ul>
  *   <li>{@code skills.enabled=true} 时 toolkit 应包含 {@code load_skill_through_path}；</li>
- *   <li>组件 {@code skills()} 白名单过滤；</li>
- *   <li>SKILL.md frontmatter 中的 tools 在加载时被构造；</li>
- *   <li>严格模式下声明不存在的技能会快速失败。</li>
+ *   <li>组件 {@code skillFilter()} 白名单通过 AgentScope 2 仓库生效。</li>
  * </ul>
  */
 @TestPropertySource("classpath:/feature/skills/application.properties")
@@ -34,7 +32,6 @@ public class SkillsFeatureTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         SkillsAgentCmp.reset();
-        SkillEchoTool.reset();
         LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "SkillsFeatureTest");
         liteflowConfig.getAgent().getSkills().setEnabled(true);
         liteflowConfig.getAgent().getSkills().setPath(resolveSkillsPath());
@@ -63,7 +60,7 @@ public class SkillsFeatureTest extends BaseAgentLiveTest {
         Assertions.assertTrue(tools.contains("load_skill_through_path"),
                 "开启 skills 后 Toolkit 应包含 AgentScope 的 load_skill_through_path 工具");
         Assertions.assertNotNull(SkillsAgentCmp.USED_SKILLS_SNAPSHOT.get(),
-                "handleReply 中应能读取 usedSkills() 列表（即便为空）");
+                "handleReply 中应能读取当前调用的技能使用记录（即便为空）");
     }
 
     @Test
@@ -77,25 +74,4 @@ public class SkillsFeatureTest extends BaseAgentLiveTest {
         Assertions.assertTrue(tools.contains("load_skill_through_path"));
     }
 
-    @Test
-    public void testSkillFrontmatterToolClassIsInstantiatedDuringAgentBuild() {
-        SkillsAgentCmp.allowedSkills = List.of("tool-skill");
-        LiteflowResponse response = flowExecutor.execute2Resp("skillsChain", "请用一句话作答。");
-
-        Assertions.assertTrue(response.isSuccess(),
-                "chain failed: " + (response.getCause() == null ? "" : response.getCause().getMessage()));
-        Assertions.assertEquals(1, SkillEchoTool.CONSTRUCT_COUNT.get(),
-                "tool-skill 的 frontmatter 中声明的 SkillEchoTool 应在 Agent 构建时被实例化");
-    }
-
-    @Test
-    public void testMissingComponentSkillFailsChainInStrictMode() {
-        SkillsAgentCmp.allowedSkills = List.of("does-not-exist");
-        LiteflowResponse response = flowExecutor.execute2Resp("skillsChain", "请用一句话作答。");
-
-        Assertions.assertFalse(response.isSuccess(),
-                "严格模式下声明不存在技能应让 chain 直接失败");
-        Assertions.assertTrue(response.getMessage().contains("does-not-exist"),
-                "失败信息应包含缺失技能名");
-    }
 }

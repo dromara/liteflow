@@ -14,7 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * 验证 guide §3 中 {@code maxIterations()} 覆写值会传递到 ReActAgent。
  *
- * <p>断言通过组件注册的 Hook 读取 {@code ReActAgent.getMaxIters()}：全局默认值与组件覆写值
+ * <p>断言通过组件注册的 Middleware 读取 {@code ReActAgent.getMaxIters()}：全局默认值与组件覆写值
  * ({@link MaxIterationsAgentCmp#OVERRIDDEN_MAX_ITERS}=7) 不同，确认覆写生效。
  */
 @TestPropertySource("classpath:/feature/maxiterations/application.properties")
