@@ -4,6 +4,7 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.HttpOptions;
+import com.google.genai.types.ThinkingConfig;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.formatter.Formatter;
@@ -23,8 +24,87 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GeminiSpecTest {
+
+    @Test
+    void finalRequestConfigContainsDefaultThinkingLevelAndBudget() throws Exception {
+        Model model = Gemini.of("gemini-thinking-default")
+                .apiKey("test-key")
+                .thinking(thinking -> thinking.level("medium").budget(321))
+                .resolve(new AgentConfig());
+        try {
+            ThinkingConfig thinking = requestConfig(model, null)
+                    .thinkingConfig()
+                    .orElseThrow();
+
+            assertAll(
+                    () -> assertEquals("medium", thinking.thinkingLevel().orElseThrow().toString()),
+                    () -> assertEquals(321, thinking.thinkingBudget().orElseThrow()),
+                    () -> assertTrue(thinking.includeThoughts().orElseThrow()));
+        } finally {
+            close(model);
+        }
+    }
+
+    @Test
+    void perCallThinkingLevelOverridesDefaultAndKeepsDefaultBudget() throws Exception {
+        Model model = Gemini.of("gemini-thinking-per-call")
+                .apiKey("test-key")
+                .thinking(thinking -> thinking.level("low").budget(222))
+                .resolve(new AgentConfig());
+        try {
+            GenerateOptions perCall = GenerateOptions.builder()
+                    .reasoningEffort("high")
+                    .build();
+            ThinkingConfig thinking = requestConfig(model, perCall)
+                    .thinkingConfig()
+                    .orElseThrow();
+
+            assertAll(
+                    () -> assertEquals("high", thinking.thinkingLevel().orElseThrow().toString()),
+                    () -> assertEquals(222, thinking.thinkingBudget().orElseThrow()),
+                    () -> assertTrue(thinking.includeThoughts().orElseThrow()));
+        } finally {
+            close(model);
+        }
+    }
+
+    @Test
+    void perCallThinkingBudgetOverridesDefaultAndKeepsDefaultLevel() throws Exception {
+        Model model = Gemini.of("gemini-thinking-per-call-budget")
+                .apiKey("test-key")
+                .thinking(thinking -> thinking.level("minimal").budget(111))
+                .resolve(new AgentConfig());
+        try {
+            GenerateOptions perCall = GenerateOptions.builder()
+                    .thinkingBudget(777)
+                    .build();
+            ThinkingConfig thinking = requestConfig(model, perCall)
+                    .thinkingConfig()
+                    .orElseThrow();
+
+            assertAll(
+                    () -> assertEquals(
+                            "minimal", thinking.thinkingLevel().orElseThrow().toString()),
+                    () -> assertEquals(777, thinking.thinkingBudget().orElseThrow()));
+        } finally {
+            close(model);
+        }
+    }
+
+    @Test
+    void resolvedGeminiModelParticipatesInRuntimeOwnershipContract() throws Exception {
+        Model model = Gemini.of("gemini-owned")
+                .apiKey("test-key")
+                .resolve(new AgentConfig());
+        try {
+            assertInstanceOf(AutoCloseable.class, model);
+        } finally {
+            close(model);
+        }
+    }
 
     @Test
     void realBuilderReceivesResolvedIdentityMergedOptionsFormatterAndCustomizer()
@@ -32,11 +112,9 @@ class GeminiSpecTest {
         Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> formatter =
                 new GeminiChatFormatter();
         AtomicInteger customizerCalls = new AtomicInteger();
-        GeminiChatModel model = null;
+        Model model = null;
         try {
-            model = assertInstanceOf(
-                    GeminiChatModel.class,
-                    Gemini.of("gemini-constructor")
+            model = Gemini.of("gemini-constructor")
                             .apiKey("explicit-key")
                             .baseUrl("https://explicit.example")
                             .stream(false)
@@ -57,10 +135,13 @@ class GeminiSpecTest {
                                 customizerCalls.incrementAndGet();
                                 builder.modelName("customized-model");
                             })
-                            .resolve(geminiConfig("configured-key", "https://configured.example")));
+                            .resolve(geminiConfig("configured-key", "https://configured.example"));
 
-            GeminiChatModel builtModel = model;
+            GeminiChatModel builtModel = geminiDelegate(model);
             GenerateOptions options = defaultOptions(builtModel);
+            GeminiThinkingFormatter decoratedFormatter = assertInstanceOf(
+                    GeminiThinkingFormatter.class,
+                    field(builtModel, "formatter", Formatter.class));
             assertAll(
                     () -> assertEquals("customized-model", builtModel.getModelName()),
                     () -> assertEquals("explicit-key", field(builtModel, "apiKey", String.class)),
@@ -68,7 +149,7 @@ class GeminiSpecTest {
                             "https://explicit.example",
                             httpOptions(builtModel).baseUrl().orElseThrow()),
                     () -> assertFalse(field(builtModel, "streamEnabled", Boolean.class)),
-                    () -> assertSame(formatter, field(builtModel, "formatter", Formatter.class)),
+                    () -> assertSame(formatter, decoratedFormatter.delegate()),
                     () -> assertEquals(1, customizerCalls.get()),
                     () -> assertEquals(Boolean.FALSE, options.getStream()),
                     () -> assertEquals(0.25, options.getTemperature()),
@@ -101,11 +182,9 @@ class GeminiSpecTest {
                 .thinkingBudget(123)
                 .additionalHeader("native", "header")
                 .build();
-        GeminiChatModel model = null;
+        Model model = null;
         try {
-            model = assertInstanceOf(
-                    GeminiChatModel.class,
-                    Gemini.of("constructor-model")
+            model = Gemini.of("constructor-model")
                             .apiKey("explicit-key")
                             .baseUrl("https://explicit.example")
                             .stream(false)
@@ -114,9 +193,9 @@ class GeminiSpecTest {
                             .thinking(thinking -> thinking.level("provider-reasoning").budget(5))
                             .additionalHeader("common", "header")
                             .generateOptions(nativeOptions)
-                            .resolve(geminiConfig("configured-key", "https://configured.example")));
+                            .resolve(geminiConfig("configured-key", "https://configured.example"));
 
-            GeminiChatModel builtModel = model;
+            GeminiChatModel builtModel = geminiDelegate(model);
             GenerateOptions options = defaultOptions(builtModel);
             assertAll(
                     () -> assertEquals("constructor-model", builtModel.getModelName()),
@@ -140,15 +219,13 @@ class GeminiSpecTest {
 
     @Test
     void missingBaseUrlKeepsGeminiExtensionDefaultEndpoint() throws Exception {
-        GeminiChatModel model = null;
+        Model model = null;
         try {
-            model = assertInstanceOf(
-                    GeminiChatModel.class,
-                    Gemini.of("gemini-default-endpoint")
+            model = Gemini.of("gemini-default-endpoint")
                             .apiKey("explicit-key")
-                            .resolve(new AgentConfig()));
+                            .resolve(new AgentConfig());
 
-            assertNull(field(model, "httpOptions", HttpOptions.class));
+            assertNull(field(geminiDelegate(model), "httpOptions", HttpOptions.class));
         } finally {
             close(model);
         }
@@ -156,15 +233,13 @@ class GeminiSpecTest {
 
     @Test
     void configuredCredentialsSupplyGeminiConnectionIdentity() throws Exception {
-        GeminiChatModel model = null;
+        Model model = null;
         try {
-            model = assertInstanceOf(
-                    GeminiChatModel.class,
-                    Gemini.of("gemini-configured")
+            model = Gemini.of("gemini-configured")
                             .resolve(geminiConfig(
-                                    "configured-key", "https://configured.example")));
+                                    "configured-key", "https://configured.example"));
 
-            GeminiChatModel builtModel = model;
+            GeminiChatModel builtModel = geminiDelegate(model);
             assertAll(
                     () -> assertEquals("configured-key", field(builtModel, "apiKey", String.class)),
                     () -> assertEquals(
@@ -184,6 +259,23 @@ class GeminiSpecTest {
         return config;
     }
 
+    private static GenerateContentConfig requestConfig(Model model, GenerateOptions perCall)
+            throws Exception {
+        GeminiChatModel delegate = geminiDelegate(model);
+        Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> formatter =
+                field(delegate, "formatter", Formatter.class);
+        GenerateContentConfig.Builder builder = GenerateContentConfig.builder();
+        formatter.applyOptions(builder, perCall, defaultOptions(delegate));
+        return builder.build();
+    }
+
+    private static GeminiChatModel geminiDelegate(Model model) throws Exception {
+        if (model instanceof GeminiChatModel gemini) {
+            return gemini;
+        }
+        return field(model, "delegate", GeminiChatModel.class);
+    }
+
     private static GenerateOptions defaultOptions(GeminiChatModel model) throws Exception {
         return field(model, "defaultOptions", GenerateOptions.class);
     }
@@ -198,9 +290,11 @@ class GeminiSpecTest {
         return type.cast(field.get(target));
     }
 
-    private static void close(GeminiChatModel model) {
-        if (model != null) {
-            model.close();
+    private static void close(Model model) throws Exception {
+        if (model instanceof AutoCloseable closeable) {
+            closeable.close();
+        } else if (model instanceof GeminiChatModel gemini) {
+            gemini.close();
         }
     }
 }

@@ -10,6 +10,7 @@ import io.agentscope.core.formatter.Formatter;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.gemini.GeminiChatModel;
+import io.agentscope.extensions.model.gemini.formatter.GeminiChatFormatter;
 
 import java.util.function.Consumer;
 
@@ -58,9 +59,8 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {
-        GeminiChatModel.Builder builder = GeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName(modelName);
+        GeminiChatModel.Builder builder = new ThinkingAwareBuilder();
+        builder.apiKey(apiKey).modelName(modelName);
         if (baseUrl != null && !baseUrl.isBlank()) {
             builder.baseUrl(baseUrl);
         }
@@ -71,13 +71,11 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
                 builder.streamEnabled(options.getStream());
             }
         }
-        if (formatter != null) {
-            builder.formatter(formatter);
-        }
+        builder.formatter(formatter);
         if (builderCustomizer != null) {
             builderCustomizer.accept(builder);
         }
-        return builder.build();
+        return new OwnedGeminiModel(builder.build());
     }
 
     private GenerateOptions buildGenerateOptions() {
@@ -88,5 +86,20 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
         if (thinkingLevel != null)      b.reasoningEffort(thinkingLevel);
         if (thinkingBudget != null)     b.thinkingBudget(thinkingBudget);
         return b.build();
+    }
+
+    /** Keeps the final formatter decorated even when the last-running customizer replaces it. */
+    private static final class ThinkingAwareBuilder extends GeminiChatModel.Builder {
+        @Override
+        public GeminiChatModel.Builder formatter(
+                Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder>
+                        formatter) {
+            Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> effective =
+                    formatter == null ? new GeminiChatFormatter() : formatter;
+            if (effective instanceof GeminiThinkingFormatter) {
+                return super.formatter(effective);
+            }
+            return super.formatter(new GeminiThinkingFormatter(effective));
+        }
     }
 }
