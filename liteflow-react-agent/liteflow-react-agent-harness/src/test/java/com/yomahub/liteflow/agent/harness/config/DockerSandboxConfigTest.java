@@ -87,6 +87,45 @@ class DockerSandboxConfigTest {
     }
 
     @Test
+    void projectionRootsRejectPosixAbsolutePaths() {
+        for (String invalid : List.of("/etc", "//server/share")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void projectionRootsRejectWindowsDrivePrefixesOnEveryHost() {
+        for (String invalid : List.of("C:\\sensitive", "D:/sensitive", "C:sensitive")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void projectionRootsRejectUncAndRootedWindowsPathsOnEveryHost() {
+        for (String invalid : List.of("\\\\server\\share", "\\rooted")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void projectionRootsRejectBlankOrEmptyNormalizedPaths() {
+        for (String invalid : List.of("", ".", "./.", ".\\.")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void nestedRelativeProjectionRootsRemainAcceptedAndUnchanged() {
+        List<String> roots = List.of(
+                "AGENTS.md", ".skills-cache", "skills/foo", "skills/./bar", "skills\\.\\baz");
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setWorkspaceProjectionRoots(roots);
+
+        assertDoesNotThrow(config::validate);
+        assertEquals(roots, config.getWorkspaceProjectionRoots());
+    }
+
+    @Test
     void explicitDockerConfigurationPreservesEveryBoundField() {
         DockerSandboxConfig config = new DockerSandboxConfig();
         config.setImage("alpine:3.20");
@@ -120,5 +159,15 @@ class DockerSandboxConfigTest {
     private static void assertValidationMentions(DockerSandboxConfig config, String property) {
         IllegalStateException failure = assertThrows(IllegalStateException.class, config::validate);
         assertTrue(failure.getMessage().contains(property));
+    }
+
+    private static void assertProjectionRootRejected(String root) {
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setWorkspaceProjectionRoots(List.of(root));
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class, config::validate, root);
+
+        assertTrue(failure.getMessage().contains("workspace-projection-roots"), root);
     }
 }

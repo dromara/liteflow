@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.property.agent;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,14 +99,47 @@ public class DockerSandboxConfig {
 			throw invalid("workspace-projection-roots", "must not be null");
 		}
 		for (String root : workspaceProjectionRoots) {
-			requireText(root, "workspace-projection-roots");
-			for (String segment : root.split("[\\\\/]")) {
-				if ("..".equals(segment)) {
-					throw invalid(
-							"workspace-projection-roots", "must not contain '..' segments");
-				}
+			validateProjectionRoot(root);
+		}
+	}
+
+	private static void validateProjectionRoot(String root) {
+		requireText(root, "workspace-projection-roots");
+		if (root.startsWith("/") || root.startsWith("\\") || hasWindowsDrivePrefix(root)) {
+			throw invalid("workspace-projection-roots", "must contain only relative paths");
+		}
+
+		boolean hasMeaningfulSegment = false;
+		for (String segment : root.split("[\\\\/]+")) {
+			if ("..".equals(segment)) {
+				throw invalid(
+						"workspace-projection-roots", "must not contain '..' segments");
+			}
+			if (!segment.isEmpty() && !".".equals(segment)) {
+				hasMeaningfulSegment = true;
 			}
 		}
+		if (!hasMeaningfulSegment) {
+			throw invalid("workspace-projection-roots", "must not normalize to an empty path");
+		}
+
+		try {
+			Path normalized = Path.of(root).normalize();
+			if (normalized.isAbsolute() || normalized.toString().isEmpty()) {
+				throw invalid("workspace-projection-roots", "must contain only relative paths");
+			}
+		}
+		catch (InvalidPathException failure) {
+			throw invalid("workspace-projection-roots", "must contain valid paths");
+		}
+	}
+
+	private static boolean hasWindowsDrivePrefix(String root) {
+		if (root.length() < 2 || root.charAt(1) != ':') {
+			return false;
+		}
+		char drive = root.charAt(0);
+		return (drive >= 'A' && drive <= 'Z') || (drive >= 'a' && drive <= 'z');
 	}
 
 	private static void requireText(String value, String property) {
