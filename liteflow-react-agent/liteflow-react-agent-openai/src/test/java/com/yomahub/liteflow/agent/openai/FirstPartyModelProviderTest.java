@@ -9,6 +9,10 @@ import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ModelCreationContext;
 import io.agentscope.core.model.ModelRegistry;
+import io.agentscope.core.model.transport.HttpRequest;
+import io.agentscope.core.model.transport.HttpResponse;
+import io.agentscope.core.model.transport.HttpTransport;
+import io.agentscope.core.model.transport.ProxyConfig;
 import io.agentscope.extensions.model.openai.OpenAIChatModel;
 import io.agentscope.extensions.model.openai.compat.deepseek.DeepSeekFormatter;
 import io.agentscope.extensions.model.openai.compat.glm.GLMFormatter;
@@ -18,6 +22,7 @@ import io.agentscope.extensions.model.openai.dto.OpenAIMessage;
 import io.agentscope.extensions.model.openai.dto.OpenAIRequest;
 import io.agentscope.extensions.model.openai.dto.OpenAIResponse;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -39,6 +44,92 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FirstPartyModelProviderTest {
 
     private static final String COMPATIBLE_PATH = "liteflow.agent.openai-compatible";
+
+    @Test
+    void providerManagedProxyAndExplicitTransportOwnershipAreDeterministic()
+            throws Exception {
+        Model proxied = DeepSeek.of("deepseek-managed-proxy")
+                .apiKey("explicit-key")
+                .proxy(ProxyConfig.http("localhost", 8082))
+                .resolve(new AgentConfig());
+        AutoCloseable proxyOwner = assertInstanceOf(AutoCloseable.class, proxied);
+        proxyOwner.close();
+        proxyOwner.close();
+
+        CountingTransport owned = new CountingTransport(null);
+        Model ownedModel = GLM.of("glm-owned")
+                .apiKey("explicit-key")
+                .ownedHttpTransport(owned)
+                .resolve(new AgentConfig());
+        assertSame(owned, configuredTransport(openAIDelegate(ownedModel)));
+        AutoCloseable ownedOwner = assertInstanceOf(AutoCloseable.class, ownedModel);
+        ownedOwner.close();
+        ownedOwner.close();
+
+        CountingTransport borrowed = new CountingTransport(null);
+        Model borrowedModel = Kimi.of("kimi-borrowed")
+                .apiKey("explicit-key")
+                .borrowedHttpTransport(borrowed)
+                .resolve(new AgentConfig());
+        assertSame(borrowed, configuredTransport(openAIDelegate(borrowedModel)));
+        if (borrowedModel instanceof AutoCloseable closeable) {
+            closeable.close();
+        }
+
+        assertAll(
+                () -> assertEquals(1, owned.closeCount.get()),
+                () -> assertEquals(0, borrowed.closeCount.get()));
+    }
+
+    @Test
+    void providerOwnedTransportRollsBackAndSuppressesCloseFailure() {
+        IllegalStateException closeFailure = new IllegalStateException("provider close failed");
+        CountingTransport transport = new CountingTransport(closeFailure);
+        IllegalStateException buildFailure = new IllegalStateException("context failed");
+
+        IllegalStateException thrown = assertThrows(
+                IllegalStateException.class,
+                () -> Minimax.of("minimax-owned-rollback")
+                        .apiKey("explicit-key")
+                        .ownedHttpTransport(transport)
+                        .customizeContext(context -> {
+                            throw buildFailure;
+                        })
+                        .resolve(new AgentConfig()));
+
+        assertAll(
+                () -> assertSame(buildFailure, thrown),
+                () -> assertEquals(1, transport.closeCount.get()),
+                () -> assertEquals(1, thrown.getSuppressed().length),
+                () -> assertSame(closeFailure, thrown.getSuppressed()[0]));
+    }
+
+    @Test
+    void contextCustomizerCannotInjectAnAmbiguousTransport() {
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class,
+                () -> GLM.of("glm-transport-escape")
+                        .apiKey("explicit-key")
+                        .customizeContext(context -> context.component(
+                                HttpTransport.class, new CountingTransport(null)))
+                        .resolve(new AgentConfig()));
+
+        assertTrue(failure.getMessage().contains("borrowedHttpTransport"));
+    }
+
+    @Test
+    void contextCustomizerCannotCreateAnUnownedProxyTransport() {
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class,
+                () -> DeepSeek.of("deepseek-proxy-escape")
+                        .apiKey("explicit-key")
+                        .customizeContext(context -> context.component(
+                                ProxyConfig.class,
+                                ProxyConfig.http("localhost", 8282)))
+                        .resolve(new AgentConfig()));
+
+        assertTrue(failure.getMessage().contains("proxy"));
+    }
 
     @Test
     void registryDiscoversAllFirstPartyProvidersAndDoesNotCacheCredentialContexts() {
@@ -421,6 +512,18 @@ class FirstPartyModelProviderTest {
         return field(model, "configuredOptions", GenerateOptions.class);
     }
 
+    private static OpenAIChatModel openAIDelegate(Model model) throws Exception {
+        if (model instanceof OpenAIChatModel openAI) {
+            return openAI;
+        }
+        return field(model, "delegate", OpenAIChatModel.class);
+    }
+
+    private static HttpTransport configuredTransport(OpenAIChatModel model) throws Exception {
+        return field(model, "client", io.agentscope.extensions.model.openai.OpenAIClient.class)
+                .getTransport();
+    }
+
     @SuppressWarnings("unchecked")
     private static Formatter<OpenAIMessage, OpenAIResponse, OpenAIRequest> configuredFormatter(
             OpenAIChatModel model) throws Exception {
@@ -457,6 +560,33 @@ class FirstPartyModelProviderTest {
             this.modelId = modelId;
             this.context = context;
             return null;
+        }
+    }
+
+    private static final class CountingTransport implements HttpTransport {
+        private final RuntimeException closeFailure;
+        private final AtomicInteger closeCount = new AtomicInteger();
+
+        private CountingTransport(RuntimeException closeFailure) {
+            this.closeFailure = closeFailure;
+        }
+
+        @Override
+        public HttpResponse execute(HttpRequest request) {
+            throw new AssertionError("offline ownership test must not execute requests");
+        }
+
+        @Override
+        public Flux<String> stream(HttpRequest request) {
+            throw new AssertionError("offline ownership test must not stream requests");
+        }
+
+        @Override
+        public void close() {
+            closeCount.incrementAndGet();
+            if (closeFailure != null) {
+                throw closeFailure;
+            }
         }
     }
 }

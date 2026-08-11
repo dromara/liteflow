@@ -1,16 +1,23 @@
 package com.yomahub.liteflow.agent.dashscope;
 
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.CredentialResolver;
 import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.model.OwnedTransportModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.formatter.Formatter;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.model.transport.HttpTransport;
+import io.agentscope.core.model.transport.HttpTransportConfig;
+import io.agentscope.core.model.transport.OkHttpTransport;
+import io.agentscope.core.model.transport.ProxyConfig;
 import io.agentscope.extensions.model.dashscope.DashScopeChatModel;
 import io.agentscope.extensions.model.dashscope.dto.DashScopeMessage;
 import io.agentscope.extensions.model.dashscope.dto.DashScopeRequest;
 import io.agentscope.extensions.model.dashscope.dto.DashScopeResponse;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
@@ -21,6 +28,9 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
     private Formatter<DashScopeMessage, DashScopeResponse, DashScopeRequest> formatter;
     private Boolean nativeStructuredOutput;
     private Boolean nativeStructuredOutputWithTools;
+    private ProxyConfig proxyConfig;
+    private HttpTransport httpTransport;
+    private boolean ownsHttpTransport;
     private Consumer<DashScopeChatModel.Builder> builderCustomizer;
 
     public DashScopeSpec(String modelName) { this.modelName = modelName; }
@@ -49,6 +59,30 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
         return this;
     }
 
+    /** Configures a proxy transport that is created and closed by the resolved model. */
+    public DashScopeSpec proxy(ProxyConfig proxyConfig) {
+        this.proxyConfig = Objects.requireNonNull(proxyConfig, "proxyConfig");
+        return this;
+    }
+
+    /** Uses a caller-owned transport; LiteFlow never closes it. */
+    public DashScopeSpec borrowedHttpTransport(HttpTransport httpTransport) {
+        this.httpTransport = Objects.requireNonNull(httpTransport, "httpTransport");
+        this.ownsHttpTransport = false;
+        return this;
+    }
+
+    /** Transfers transport ownership to the resolved model and runtime. */
+    public DashScopeSpec ownedHttpTransport(HttpTransport httpTransport) {
+        this.httpTransport = Objects.requireNonNull(httpTransport, "httpTransport");
+        this.ownsHttpTransport = true;
+        return this;
+    }
+
+    /**
+     * Runs last for ordinary builder settings. Transport and proxy ownership must be declared
+     * through this spec's explicit ownership methods.
+     */
     public DashScopeSpec customizeBuilder(Consumer<DashScopeChatModel.Builder> customizer) {
         this.builderCustomizer = customizer;
         return this;
@@ -70,40 +104,53 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {
-        DashScopeChatModel.Builder builder = DashScopeChatModel.builder()
-                .apiKey(apiKey)
-                .modelName(modelName);
-        if (baseUrl != null && !baseUrl.isBlank()) {
-            builder.baseUrl(baseUrl);
-        }
-
-        GenerateOptions options = mergeGenerateOptions(buildGenerateOptions());
-        if (Boolean.FALSE.equals(thinkingEnabled) && options != null) {
-            options = withoutThinkingBudget(options);
-        }
-        Boolean enableThinking = effectiveThinking(options);
-        if (options != null) {
-            builder.defaultOptions(options);
-            if (options.getStream() != null) {
-                builder.stream(options.getStream());
+        ManagedDashScopeBuilder builder =
+                new ManagedDashScopeBuilder(httpTransport, proxyConfig);
+        HttpTransport ownedTransport = ownsHttpTransport ? httpTransport : null;
+        try {
+            builder.apiKey(apiKey).modelName(modelName);
+            if (baseUrl != null && !baseUrl.isBlank()) {
+                builder.baseUrl(baseUrl);
             }
+
+            GenerateOptions options = mergeGenerateOptions(buildGenerateOptions());
+            if (Boolean.FALSE.equals(thinkingEnabled) && options != null) {
+                options = withoutThinkingBudget(options);
+            }
+            Boolean enableThinking = effectiveThinking(options);
+            if (options != null) {
+                builder.defaultOptions(options);
+                if (options.getStream() != null) {
+                    builder.stream(options.getStream());
+                }
+            }
+            if (enableThinking != null) {
+                builder.enableThinking(enableThinking);
+            }
+            if (formatter != null) {
+                builder.formatter(formatter);
+            }
+            if (nativeStructuredOutput != null) {
+                builder.nativeStructuredOutput(nativeStructuredOutput);
+            }
+            if (nativeStructuredOutputWithTools != null) {
+                builder.nativeStructuredOutputWithTools(nativeStructuredOutputWithTools);
+            }
+            if (builderCustomizer != null) {
+                builderCustomizer.accept(builder);
+            }
+            HttpTransport managedProxyTransport = builder.prepareManagedProxyTransport();
+            if (managedProxyTransport != null) {
+                ownedTransport = managedProxyTransport;
+            }
+            Model model = builder.build();
+            return ownedTransport == null
+                    ? model
+                    : new OwnedTransportModel(model, ownedTransport);
+        } catch (RuntimeException | Error failure) {
+            OwnedTransportModel.closeAfterBuildFailure(ownedTransport, failure);
+            throw failure;
         }
-        if (enableThinking != null) {
-            builder.enableThinking(enableThinking);
-        }
-        if (formatter != null) {
-            builder.formatter(formatter);
-        }
-        if (nativeStructuredOutput != null) {
-            builder.nativeStructuredOutput(nativeStructuredOutput);
-        }
-        if (nativeStructuredOutputWithTools != null) {
-            builder.nativeStructuredOutputWithTools(nativeStructuredOutputWithTools);
-        }
-        if (builderCustomizer != null) {
-            builderCustomizer.accept(builder);
-        }
-        return builder.build();
     }
 
     private GenerateOptions buildGenerateOptions() {
@@ -149,5 +196,50 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
                 .additionalBodyParams(options.getAdditionalBodyParams())
                 .additionalQueryParams(options.getAdditionalQueryParams())
                 .build();
+    }
+
+    private static final class ManagedDashScopeBuilder extends DashScopeChatModel.Builder {
+        private final HttpTransport declaredTransport;
+        private final ProxyConfig declaredProxy;
+
+        private ManagedDashScopeBuilder(
+                HttpTransport declaredTransport, ProxyConfig declaredProxy) {
+            this.declaredTransport = declaredTransport;
+            this.declaredProxy = declaredProxy;
+            if (declaredTransport != null) {
+                super.httpTransport(declaredTransport);
+            }
+        }
+
+        @Override
+        public DashScopeChatModel.Builder httpTransport(HttpTransport transport) {
+            if (transport != declaredTransport) {
+                throw new AgentConfigException(
+                        "customizeBuilder cannot inject an ambiguous HTTP transport; "
+                                + "use borrowedHttpTransport(...) or ownedHttpTransport(...)");
+            }
+            return super.httpTransport(transport);
+        }
+
+        @Override
+        public DashScopeChatModel.Builder proxy(ProxyConfig proxy) {
+            if (!Objects.equals(proxy, declaredProxy)) {
+                throw new AgentConfigException(
+                        "customizeBuilder cannot create an unowned proxy transport; "
+                                + "use DashScopeSpec.proxy(...)");
+            }
+            return this;
+        }
+
+        private HttpTransport prepareManagedProxyTransport() {
+            if (declaredTransport != null || declaredProxy == null) {
+                return null;
+            }
+            HttpTransport managed = OkHttpTransport.builder()
+                    .config(HttpTransportConfig.builder().proxy(declaredProxy).build())
+                    .build();
+            super.httpTransport(managed);
+            return managed;
+        }
     }
 }
