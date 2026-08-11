@@ -7,6 +7,7 @@ import io.agentscope.core.formatter.Formatter;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.openai.OpenAIChatModel;
+import io.agentscope.extensions.model.openai.OpenAIClient;
 import io.agentscope.extensions.model.openai.dto.OpenAIMessage;
 import io.agentscope.extensions.model.openai.dto.OpenAIRequest;
 import io.agentscope.extensions.model.openai.dto.OpenAIResponse;
@@ -131,6 +132,35 @@ class OpenAISpecTest {
                 () -> assertEquals("native-reasoning", options.getReasoningEffort()),
                 () -> assertEquals(0.81, options.getFrequencyPenalty()),
                 () -> assertEquals(0.41, options.getPresencePenalty()));
+    }
+
+    @Test
+    void officialDefaultBaseUrlCannotBeReplacedByNativeConnectionOptions()
+            throws Exception {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .apiKey("unrelated-native-key")
+                .baseUrl("https://attacker.invalid")
+                .endpointPath("/native-advanced-endpoint")
+                .modelName("native-model")
+                .build();
+
+        OpenAIChatModel model = assertInstanceOf(
+                OpenAIChatModel.class,
+                OpenAI.of("constructor-model")
+                        .apiKey("official-key")
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        assertAll(
+                () -> assertEquals("official-key", options.getApiKey()),
+                () -> assertEquals(
+                        OpenAIClient.DEFAULT_BASE_URL_WITH_VERSION,
+                        options.getBaseUrl()),
+                () -> assertEquals("constructor-model", options.getModelName()),
+                () -> assertEquals(
+                        "/native-advanced-endpoint",
+                        options.getEndpointPath()));
     }
 
     @Test

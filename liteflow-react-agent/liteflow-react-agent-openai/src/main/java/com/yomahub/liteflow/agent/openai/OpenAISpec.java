@@ -7,6 +7,7 @@ import io.agentscope.core.formatter.Formatter;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.openai.OpenAIChatModel;
+import io.agentscope.extensions.model.openai.OpenAIClient;
 import io.agentscope.extensions.model.openai.dto.OpenAIMessage;
 import io.agentscope.extensions.model.openai.dto.OpenAIRequest;
 import io.agentscope.extensions.model.openai.dto.OpenAIResponse;
@@ -78,10 +79,10 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
     protected Model buildModel(String apiKey, String baseUrl) {
         OpenAIChatModel.Builder builder = OpenAIChatModel.builder()
                 .apiKey(apiKey)
+                .baseUrl(baseUrl != null && !baseUrl.isBlank()
+                        ? baseUrl
+                        : OpenAIClient.DEFAULT_BASE_URL_WITH_VERSION)
                 .modelName(modelName);
-        if (baseUrl != null && !baseUrl.isBlank()) {
-            builder.baseUrl(baseUrl);
-        }
         if (endpointPath != null && !endpointPath.isBlank()) {
             builder.endpointPath(endpointPath);
         }
