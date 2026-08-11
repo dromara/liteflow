@@ -108,10 +108,20 @@ class DockerSandboxConfigTest {
     }
 
     @Test
-    void projectionRootsRejectBlankOrEmptyNormalizedPaths() {
-        for (String invalid : List.of("", ".", "./.", ".\\.")) {
+    void projectionRootsRejectBlankPaths() {
+        for (String invalid : List.of("", "   ", "\t")) {
             assertProjectionRootRejected(invalid);
         }
+    }
+
+    @Test
+    void currentDirectoryProjectionRootsRemainAcceptedAndUnchanged() {
+        List<String> roots = List.of(".", "./.", ".\\.", "./skills/.");
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setWorkspaceProjectionRoots(roots);
+
+        assertDoesNotThrow(config::validate);
+        assertEquals(roots, config.getWorkspaceProjectionRoots());
     }
 
     @Test

@@ -109,7 +109,6 @@ public class DockerSandboxConfig {
 			throw invalid("workspace-projection-roots", "must contain only relative paths");
 		}
 
-		boolean hasMeaningfulSegment = false;
 		for (String segment : root.split("[\\\\/]+")) {
 			if ("..".equals(segment)) {
 				throw invalid(
@@ -126,17 +125,11 @@ public class DockerSandboxConfig {
 						"workspace-projection-roots",
 						"must not contain segments that Windows normalizes to empty or traversal paths");
 			}
-			if (!segment.isEmpty() && !".".equals(segment)) {
-				hasMeaningfulSegment = true;
-			}
-		}
-		if (!hasMeaningfulSegment) {
-			throw invalid("workspace-projection-roots", "must not normalize to an empty path");
 		}
 
 		try {
 			Path normalized = Path.of(root).normalize();
-			if (normalized.isAbsolute() || normalized.toString().isEmpty()) {
+			if (normalized.isAbsolute()) {
 				throw invalid("workspace-projection-roots", "must contain only relative paths");
 			}
 		}
