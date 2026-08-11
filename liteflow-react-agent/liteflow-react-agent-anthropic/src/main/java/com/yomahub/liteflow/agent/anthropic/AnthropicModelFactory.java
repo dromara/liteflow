@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.agent.anthropic;
 
-import io.agentscope.core.model.AnthropicChatModel;
+import io.agentscope.extensions.model.anthropic.AnthropicChatModel;
 
 public final class AnthropicModelFactory {
     private AnthropicModelFactory() {}

@@ -5,9 +5,21 @@ public final class AnthropicThinking {
     private Integer budget;
     private Boolean enabled;
 
-    public AnthropicThinking budget(int tokens) { this.budget = tokens; return this; }
-    public AnthropicThinking enabled(boolean v) { this.enabled = v;     return this; }
+    public AnthropicThinking budget(int tokens) {
+        this.budget = tokens;
+        return this;
+    }
 
-    public Integer getBudget() { return budget; }
-    public Boolean getEnabled() { return enabled; }
+    public AnthropicThinking enabled(boolean v) {
+        this.enabled = v;
+        return this;
+    }
+
+    public Integer getBudget() {
+        return budget;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
 }
