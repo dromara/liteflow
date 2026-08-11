@@ -19,9 +19,8 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.genai</groupId>
-            <artifactId>google-genai</artifactId>
-            <version>${google-genai.version}</version>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-model-gemini</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -20,5 +20,9 @@
             <artifactId>liteflow-react-agent-core</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-model-openai</artifactId>
+        </dependency>
     </dependencies>
 </project>

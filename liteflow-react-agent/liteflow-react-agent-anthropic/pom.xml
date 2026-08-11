@@ -21,9 +21,8 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.anthropic</groupId>
-            <artifactId>anthropic-java</artifactId>
-            <version>${anthropic-java.version}</version>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-model-anthropic</artifactId>
         </dependency>
     </dependencies>
 </project>
