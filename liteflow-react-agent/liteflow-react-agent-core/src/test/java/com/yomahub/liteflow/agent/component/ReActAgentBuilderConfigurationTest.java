@@ -6,6 +6,8 @@ import com.yomahub.liteflow.agent.middleware.ModelRoutingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
+import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
+import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.ReActAgent;
@@ -22,11 +24,14 @@ import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionMode;
+import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.state.InMemoryAgentStateStore;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -133,6 +138,38 @@ class ReActAgentBuilderConfigurationTest {
 
         assertSame(buildFailure, thrown);
         assertEquals(List.of("routing-2", "routing-1", "fallback", "default"), closeOrder);
+    }
+
+    @Test
+    void preparationPreservesRepositoryHookBeforeNamespacedStateStoreValidation() {
+        List<String> hooks = new ArrayList<>();
+        TestComponent component = new TestComponent(
+                new CloseableModel("default", new ArrayList<>()));
+        component.hookOrder = hooks;
+
+        assertThrows(IllegalArgumentException.class,
+                () -> component.runtime(config(), "unsafe-namespace"));
+
+        assertEquals(List.of("resolver", "repositories"), hooks);
+    }
+
+    @Test
+    void nullRoutingEntryStillCollectsAndRollsBackLaterOwnedModels() {
+        List<String> closeOrder = new ArrayList<>();
+        CloseableModel defaultModel = new CloseableModel("default", closeOrder);
+        CloseableModel routingOne = new CloseableModel("routing-1", closeOrder);
+        CloseableModel routingTwo = new CloseableModel("routing-2", closeOrder);
+        TestComponent component = new TestComponent(defaultModel);
+        component.routing = Arrays.asList(routingOne, null, routingTwo);
+
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class, () -> component.runtime(config()));
+
+        assertTrue(failure.getMessage().contains("routingModels"));
+        assertEquals(1, defaultModel.closeCount.get());
+        assertEquals(1, routingOne.closeCount.get());
+        assertEquals(1, routingTwo.closeCount.get());
+        assertEquals(List.of("routing-2", "routing-1", "default"), closeOrder);
     }
 
     @Test
@@ -317,14 +354,19 @@ class ReActAgentBuilderConfigurationTest {
         private List<MiddlewareBase> userMiddlewares = List.of(new UserMiddleware());
         private UnaryOperator<ReActAgent.Builder> customizer = UnaryOperator.identity();
         private final AtomicInteger customizerCalls = new AtomicInteger();
+        private List<String> hookOrder;
 
         private TestComponent(CloseableModel defaultModel) {
             this.defaultModel = defaultModel;
         }
 
         private ReActAgentRuntime runtime(AgentConfig config) {
+            return runtime(config, AGENT_NAMESPACE);
+        }
+
+        private ReActAgentRuntime runtime(AgentConfig config, String namespace) {
             return buildRuntime(new AgentRuntimeBuildContext(
-                    config, "builder-agent", "agent-key", AGENT_NAMESPACE));
+                    config, "builder-agent", "agent-key", namespace));
         }
 
         @Override
@@ -334,7 +376,29 @@ class ReActAgentBuilderConfigurationTest {
 
         @Override
         protected Model buildModel() {
+            if (hookOrder != null) {
+                hookOrder.add("model");
+            }
             return defaultModel;
+        }
+
+        @Override
+        protected AgentStateStoreResolver stateStoreResolver() {
+            if (hookOrder == null) {
+                return super.stateStoreResolver();
+            }
+            return ignored -> {
+                hookOrder.add("resolver");
+                return new ResolvedAgentStateStore(new InMemoryAgentStateStore(), false);
+            };
+        }
+
+        @Override
+        protected List<AgentSkillRepository> skillRepositories() {
+            if (hookOrder != null) {
+                hookOrder.add("repositories");
+            }
+            return List.of();
         }
 
         @Override

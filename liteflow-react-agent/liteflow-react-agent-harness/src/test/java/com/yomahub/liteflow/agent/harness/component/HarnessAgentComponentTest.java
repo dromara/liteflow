@@ -29,6 +29,8 @@ import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
 import io.agentscope.core.state.InMemoryAgentStateStore;
+import io.agentscope.core.tool.Tool;
+import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
@@ -40,10 +42,14 @@ import io.agentscope.harness.agent.filesystem.model.GrepResult;
 import io.agentscope.harness.agent.filesystem.model.LsResult;
 import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
+import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
 import io.agentscope.harness.agent.subagent.task.BackgroundTask;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.TaskRunSpec;
 import io.agentscope.harness.agent.subagent.task.TaskStatus;
+import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
+import io.agentscope.harness.agent.workspace.WorkspaceManager;
+import io.agentscope.harness.agent.workspace.WorkspaceIndex;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +59,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,6 +76,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -216,6 +224,164 @@ class HarnessAgentComponentTest {
 
         assertTrue(failure.getMessage().contains("filesystemConfigurer"));
         assertEquals(1, model.closeCount.get());
+    }
+
+    @Test
+    void customizerCannotReplaceConfiguredFilesystemOnTheSameBuilder() throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem configured =
+                new RecordingFilesystem("configured-filesystem", new ArrayList<>());
+        RecordingFilesystem replacement =
+                new RecordingFilesystem("replacement-filesystem", new ArrayList<>());
+        TestComponent component = component(
+                slot("filesystem-lock-session", "filesystem-lock-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                configured);
+        component.customizerFilesystem = replacement;
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("filesystem"));
+        assertEquals(0, replacement.closeCount.get());
+    }
+
+    @Test
+    void customizerCannotReplaceConfiguredWorkspaceOnTheSameBuilder() throws Exception {
+        configureCustomBackend();
+        TestComponent component = component(
+                slot("workspace-lock-session", "workspace-lock-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                new RecordingFilesystem("filesystem", new ArrayList<>()));
+        component.customizerWorkspace = tempDir.resolve("replacement-workspace");
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("workspace"));
+    }
+
+    @Test
+    void customizerCannotReplaceEmptyPreparedSerialToolkit() throws Exception {
+        configureCustomBackend();
+        TestComponent component = component(
+                slot("empty-toolkit-session", "empty-toolkit-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                new RecordingFilesystem("filesystem", new ArrayList<>()));
+        component.replaceToolkit = true;
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("Toolkit"));
+    }
+
+    @Test
+    void customizerCannotReplacePreparedSerialToolkitWithCopyContainingSameTools()
+            throws Exception {
+        configureCustomBackend();
+        TestComponent component = component(
+                slot("copied-toolkit-session", "copied-toolkit-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                new RecordingFilesystem("filesystem", new ArrayList<>()));
+        component.tools = List.of(new EchoTool());
+        component.copyToolkit = true;
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("Toolkit"));
+    }
+
+    @Test
+    void borrowedWorkspaceTaskRepositoryFailsBeforeHarnessCanAssumeShutdownOwnership()
+            throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                new WorkspaceManager(tempDir.resolve("borrowed-tasks"), filesystem),
+                "borrowed-agent",
+                taskExecutor);
+        TestComponent component = component(
+                slot("borrowed-tasks-session", "borrowed-tasks-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.subagentsEnabled = true;
+
+        try {
+            AgentConfigException failure =
+                    assertThrows(AgentConfigException.class, component::process);
+
+            assertTrue(failure.getMessage().contains("WorkspaceTaskRepository"));
+            assertEquals(0, tasks.shutdownCount.get());
+        }
+        finally {
+            tasks.shutdown();
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void ownedWorkspaceTaskRepositoryIsClosedExactlyOnceByHarness() throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                new WorkspaceManager(tempDir.resolve("owned-tasks"), filesystem),
+                "owned-agent",
+                taskExecutor);
+        TestComponent component = component(
+                slot("owned-tasks-session", "owned-tasks-request"),
+                new RecordingModel("reply", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.subagentsEnabled = true;
+
+        try {
+            component.process();
+            component.close();
+            component.close();
+
+            assertEquals(1, tasks.shutdownCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void missingRemoteStoreFailsBeforeWorkspaceIndexOrTaskSchedulerAllocation()
+            throws Exception {
+        configureCustomBackend();
+        RemoteFilesystemSpec remote = new RemoteFilesystemSpec();
+        TestComponent component = component(
+                slot("remote-preflight-session", "remote-preflight-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        component.explicitFilesystemConfigurer =
+                (builder, context) -> builder.filesystem(remote);
+        component.subagentsEnabled = true;
+        long schedulersBefore = workspaceTaskSchedulerCount();
+
+        try {
+            AgentConfigException failure =
+                    assertThrows(AgentConfigException.class, component::process);
+
+            assertTrue(failure.getMessage().contains("RemoteFilesystemSpec"));
+            assertNull(workspaceIndex(remote));
+            assertFalse(Files.exists(tempDir.resolve("workspace/.index/workspace.db")));
+            assertEquals(schedulersBefore, workspaceTaskSchedulerCount());
+        }
+        finally {
+            WorkspaceIndex leaked = workspaceIndex(remote);
+            if (leaked != null) {
+                leaked.close();
+            }
+        }
     }
 
     @Test
@@ -374,6 +540,19 @@ class HarnessAgentComponentTest {
                         .set("answer", MAPPER.createObjectNode().put("type", "string")));
     }
 
+    private static WorkspaceIndex workspaceIndex(RemoteFilesystemSpec spec) throws Exception {
+        Field field = RemoteFilesystemSpec.class.getDeclaredField("workspaceIndex");
+        assertTrue(field.trySetAccessible());
+        return (WorkspaceIndex) field.get(spec);
+    }
+
+    private static long workspaceTaskSchedulerCount() {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(Thread::isAlive)
+                .filter(thread -> thread.getName().startsWith("ws-task-maint-"))
+                .count();
+    }
+
     public static final class StructuredReply {
         public String answer;
     }
@@ -398,6 +577,13 @@ class HarnessAgentComponentTest {
         private RuntimeException customizeFailure;
         private boolean replaceStateStore;
         private boolean replaceBuilder;
+        private RecordingFilesystem customizerFilesystem;
+        private Path customizerWorkspace;
+        private List<Object> tools = List.of();
+        private boolean replaceToolkit;
+        private boolean copyToolkit;
+        private Toolkit preparedToolkit;
+        private boolean subagentsEnabled;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
         private HarnessAgentRuntime runtime;
 
@@ -465,6 +651,16 @@ class HarnessAgentComponentTest {
         }
 
         @Override
+        protected List<Object> tools() {
+            return tools;
+        }
+
+        @Override
+        protected void customizeToolkit(Toolkit toolkit) {
+            preparedToolkit = toolkit;
+        }
+
+        @Override
         protected boolean ownsSkillRepository(AgentSkillRepository repository) {
             return repository == ownedRepository;
         }
@@ -507,14 +703,32 @@ class HarnessAgentComponentTest {
             if (replaceBuilder) {
                 return HarnessAgent.builder();
             }
-            return builder
+            if (customizerFilesystem != null) {
+                builder.abstractFilesystem(customizerFilesystem);
+            }
+            if (customizerWorkspace != null) {
+                builder.workspace(customizerWorkspace);
+            }
+            if (replaceToolkit) {
+                builder.toolkit(new Toolkit());
+            }
+            if (copyToolkit) {
+                builder.toolkit(preparedToolkit.copy());
+            }
+            builder
                     .disableCompaction()
                     .disableToolResultEviction()
                     .disableMemoryTools()
                     .disableMemoryHooks()
                     .disableWorkspaceContext()
-                    .disableAtPathExpansion()
-                    .disableSubagents()
+                    .disableAtPathExpansion();
+            if (subagentsEnabled) {
+                builder.disableDynamicSubagents();
+            }
+            else {
+                builder.disableSubagents();
+            }
+            return builder
                     .disableDefaultWorkspaceSkills()
                     .disableDynamicSkills()
                     .disableToolsConfig()
@@ -551,6 +765,14 @@ class HarnessAgentComponentTest {
         protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             runtime = super.buildRuntime(buildContext);
             return runtime;
+        }
+    }
+
+    private static final class EchoTool {
+
+        @Tool
+        public String echo(String value) {
+            return value;
         }
     }
 
@@ -640,7 +862,7 @@ class HarnessAgentComponentTest {
         }
 
         @Override public LsResult ls(RuntimeContext context, String path) { throw unused(); }
-        @Override public ReadResult read(RuntimeContext context, String path, int offset, int limit) { throw unused(); }
+        @Override public ReadResult read(RuntimeContext context, String path, int offset, int limit) { return ReadResult.fail("not found"); }
         @Override public WriteResult write(RuntimeContext context, String path, String content) { throw unused(); }
         @Override public EditResult edit(RuntimeContext context, String path, String oldText, String newText, boolean all) { throw unused(); }
         @Override public GrepResult grep(RuntimeContext context, String pattern, String path, String glob) { throw unused(); }
@@ -762,6 +984,24 @@ class HarnessAgentComponentTest {
         public void close() {
             closeCount.incrementAndGet();
             closeOrder.add(name);
+        }
+    }
+
+    private static final class CountingWorkspaceTaskRepository
+            extends WorkspaceTaskRepository {
+        private final AtomicInteger shutdownCount = new AtomicInteger();
+
+        private CountingWorkspaceTaskRepository(
+                WorkspaceManager workspaceManager,
+                String agentId,
+                ExecutorService executor) {
+            super(workspaceManager, agentId, executor);
+        }
+
+        @Override
+        public void shutdown() {
+            shutdownCount.incrementAndGet();
+            super.shutdown();
         }
     }
 

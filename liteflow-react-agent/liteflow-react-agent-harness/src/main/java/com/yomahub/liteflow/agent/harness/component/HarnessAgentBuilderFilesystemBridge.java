@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.agent.harness.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import io.agentscope.core.tool.Toolkit;
+import io.agentscope.harness.agent.DistributedStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
@@ -9,11 +11,13 @@ import io.agentscope.harness.agent.filesystem.spec.SandboxFilesystemSpec;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
-/** Read-only, version-pinned inspection of Harness builder filesystem selection. */
+/** Read-only, version-pinned inspection of mandatory Harness builder invariants. */
 final class HarnessAgentBuilderFilesystemBridge {
 
     private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
@@ -23,38 +27,100 @@ final class HarnessAgentBuilderFilesystemBridge {
             new FieldContract("abstractFilesystem", AbstractFilesystem.class),
             new FieldContract("sandboxFilesystemSpec", SandboxFilesystemSpec.class),
             new FieldContract("remoteFilesystemSpec", RemoteFilesystemSpec.class),
-            new FieldContract("localFilesystemSpec", LocalFilesystemSpec.class));
-    private static volatile List<Field> filesystemFields;
+            new FieldContract("localFilesystemSpec", LocalFilesystemSpec.class),
+            new FieldContract("workspace", Path.class),
+            new FieldContract("toolkit", Toolkit.class),
+            new FieldContract("distributedStore", DistributedStore.class));
+    private static volatile List<Field> builderFields;
 
     private HarnessAgentBuilderFilesystemBridge() {
     }
 
     static void verifyContract() {
-        filesystemFields();
+        builderFields();
     }
 
     static void requireExactlyOne(HarnessAgent.Builder builder) {
+        snapshot(builder);
+    }
+
+    static FilesystemSnapshot snapshot(HarnessAgent.Builder builder) {
         if (builder == null) {
             throw incompatible("builder must not be null");
         }
-        int configured = 0;
         try {
-            for (Field field : filesystemFields()) {
-                if (field.get(builder) != null) {
-                    configured++;
+            String selectedField = null;
+            Object selectedValue = null;
+            List<Field> fields = builderFields();
+            for (int index = 0; index < 4; index++) {
+                Field field = fields.get(index);
+                Object value = field.get(builder);
+                if (value != null) {
+                    if (selectedField != null) {
+                        throw new AgentConfigException(
+                                "Harness filesystemConfigurer must select exactly one filesystem"
+                                        + " backend");
+                    }
+                    selectedField = field.getName();
+                    selectedValue = value;
                 }
             }
+            if (selectedField == null) {
+                throw new AgentConfigException(
+                        "Harness filesystemConfigurer must install an explicit filesystem backend");
+            }
+            return new FilesystemSnapshot(
+                    selectedField, selectedValue, (Path) fields.get(4).get(builder));
         }
         catch (IllegalAccessException failure) {
             throw incompatible("cannot inspect HarnessAgent.Builder filesystem fields", failure);
         }
-        if (configured == 0) {
-            throw new AgentConfigException(
-                    "Harness filesystemConfigurer must install an explicit filesystem backend");
+    }
+
+    static ToolkitSnapshot snapshotToolkit(HarnessAgent.Builder builder, Toolkit expected) {
+        if (builder == null) {
+            throw incompatible("builder must not be null");
         }
-        if (configured != 1) {
+        Objects.requireNonNull(expected, "expected");
+        try {
+            Toolkit actual = (Toolkit) builderFields().get(5).get(builder);
+            if (actual != expected) {
+                throw new AgentConfigException(
+                        "HarnessAgent.Builder must retain the prepared serial Toolkit identity");
+            }
+            return new ToolkitSnapshot(expected);
+        }
+        catch (IllegalAccessException failure) {
+            throw incompatible("cannot inspect HarnessAgent.Builder toolkit field", failure);
+        }
+    }
+
+    static void preflightKnownBuildFailures(
+            HarnessAgent.Builder builder, FilesystemSnapshot filesystem) {
+        Objects.requireNonNull(filesystem, "filesystem");
+        if (!(filesystem.selectedValue() instanceof RemoteFilesystemSpec remote)
+                || remote.hasStore()) {
+            return;
+        }
+        try {
+            DistributedStore distributedStore =
+                    (DistributedStore) builderFields().get(6).get(builder);
+            if (distributedStore == null || distributedStore.baseStore() == null) {
+                throw new AgentConfigException(
+                        "RemoteFilesystemSpec requires a BaseStore or DistributedStore"
+                                + " before Harness runtime build");
+            }
+        }
+        catch (IllegalAccessException failure) {
+            throw incompatible("cannot inspect HarnessAgent.Builder distributedStore field", failure);
+        }
+        catch (AgentConfigException failure) {
+            throw failure;
+        }
+        catch (RuntimeException failure) {
             throw new AgentConfigException(
-                    "Harness filesystemConfigurer must select exactly one filesystem backend");
+                    "cannot resolve DistributedStore BaseStore before Harness runtime build",
+                    failure);
         }
     }
 
@@ -86,17 +152,17 @@ final class HarnessAgentBuilderFilesystemBridge {
         }
     }
 
-    private static List<Field> filesystemFields() {
-        List<Field> resolved = filesystemFields;
+    private static List<Field> builderFields() {
+        List<Field> resolved = builderFields;
         if (resolved != null) {
             return resolved;
         }
         synchronized (HarnessAgentBuilderFilesystemBridge.class) {
-            if (filesystemFields == null) {
+            if (builderFields == null) {
                 requireHarnessVersion();
-                filesystemFields = validateShape(HarnessAgent.Builder.class);
+                builderFields = validateShape(HarnessAgent.Builder.class);
             }
-            return filesystemFields;
+            return builderFields;
         }
     }
 
@@ -132,5 +198,37 @@ final class HarnessAgentBuilderFilesystemBridge {
     }
 
     private record FieldContract(String name, Class<?> type) {
+    }
+
+    record FilesystemSnapshot(String selectedField, Object selectedValue, Path workspace) {
+
+        FilesystemSnapshot {
+            Objects.requireNonNull(selectedField, "selectedField");
+            Objects.requireNonNull(selectedValue, "selectedValue");
+        }
+
+        void requireUnchanged(HarnessAgent.Builder builder) {
+            FilesystemSnapshot actual = HarnessAgentBuilderFilesystemBridge.snapshot(builder);
+            if (!selectedField.equals(actual.selectedField)
+                    || selectedValue != actual.selectedValue) {
+                throw new AgentConfigException(
+                        "customizeHarness must retain the configured filesystem identity");
+            }
+            if (!Objects.equals(workspace, actual.workspace)) {
+                throw new AgentConfigException(
+                        "customizeHarness must retain the configured workspace");
+            }
+        }
+    }
+
+    record ToolkitSnapshot(Toolkit toolkit) {
+
+        ToolkitSnapshot {
+            Objects.requireNonNull(toolkit, "toolkit");
+        }
+
+        void requireUnchanged(HarnessAgent.Builder builder) {
+            HarnessAgentBuilderFilesystemBridge.snapshotToolkit(builder, toolkit);
+        }
     }
 }

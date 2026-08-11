@@ -194,9 +194,9 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         List<AgentSkillRepository> repositories = new ArrayList<>();
         List<AgentSkillRepository> ownedRepositories = new ArrayList<>();
         try {
+            collectSkillRepositories(repositories, ownedRepositories);
             namespaced = new GuardedNamespacedAgentStateStore(
                     resolved.store(), buildContext.agentNamespace());
-            collectSkillRepositories(repositories, ownedRepositories);
             Model defaultModel = requireModel(buildModel(), "buildModel must not return null");
             addIdentityDistinct(ownedModels, defaultModel);
             Model fallback = fallbackModel();
@@ -207,11 +207,17 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
             if (routing == null) {
                 throw new AgentConfigException("routingModels must not return null");
             }
+            boolean nullRoutingModel = false;
             for (Model candidate : routing) {
                 if (candidate == null) {
-                    throw new AgentConfigException("routingModels must not contain null");
+                    nullRoutingModel = true;
                 }
-                addIdentityDistinct(ownedModels, candidate);
+                else {
+                    addIdentityDistinct(ownedModels, candidate);
+                }
+            }
+            if (nullRoutingModel) {
+                throw new AgentConfigException("routingModels must not contain null");
             }
 
             StateStoreFailureMiddleware failureMiddleware = createStateStoreFailureMiddleware(

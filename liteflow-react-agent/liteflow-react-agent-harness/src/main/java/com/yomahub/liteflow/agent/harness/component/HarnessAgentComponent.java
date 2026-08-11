@@ -22,8 +22,10 @@ import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.memory.MemoryConfig;
 import io.agentscope.harness.agent.memory.compaction.CompactionConfig;
 import io.agentscope.harness.agent.memory.compaction.ToolResultEvictionConfig;
+import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
+import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.InvalidPathException;
@@ -87,10 +89,21 @@ public abstract class HarnessAgentComponent
         PreparedAgentResources prepared = prepareAgentResources(buildContext, false, true);
         HarnessAgent agent = null;
         List<AutoCloseable> ownedProviderResources = new ArrayList<>();
+        AutoCloseable workspaceTaskRollback = null;
         try {
             collectOwnedHarnessResources(ownedProviderResources);
             TaskRepository tasks = taskRepository();
-            if (tasks != null && ownsTaskRepository(tasks)) {
+            boolean ownsTasks = tasks != null && ownsTaskRepository(tasks);
+            if (tasks instanceof WorkspaceTaskRepository workspaceTasks) {
+                if (!ownsTasks) {
+                    throw new AgentConfigException(
+                            "borrowed WorkspaceTaskRepository is unsupported because "
+                                    + "HarnessAgent assumes shutdown ownership");
+                }
+                workspaceTaskRollback = workspaceTasks::shutdown;
+                addIdentityDistinct(ownedProviderResources, workspaceTaskRollback);
+            }
+            else if (ownsTasks) {
                 if (!(tasks instanceof AutoCloseable closeable)) {
                     throw new AgentConfigException(
                             "owned TaskRepository must implement AutoCloseable");
@@ -114,6 +127,11 @@ public abstract class HarnessAgentComponent
                     .stateStore(prepared.ownership().stateStore())
                     .workspace(filesystem.context().workspaceRoot());
             filesystem.configurer().configure(builder, filesystem.context());
+            HarnessAgentBuilderFilesystemBridge.FilesystemSnapshot filesystemSnapshot =
+                    HarnessAgentBuilderFilesystemBridge.snapshot(builder);
+            HarnessAgentBuilderFilesystemBridge.ToolkitSnapshot toolkitSnapshot =
+                    HarnessAgentBuilderFilesystemBridge.snapshotToolkit(
+                            builder, prepared.toolkit());
             builder.compaction(compactionConfig())
                     .memory(memoryConfig());
             for (var repository : prepared.skillRepositories()) {
@@ -144,8 +162,23 @@ public abstract class HarnessAgentComponent
                 throw new AgentConfigException(
                         "customizeHarness must mutate and return the provided builder");
             }
-            HarnessAgentBuilderFilesystemBridge.requireExactlyOne(customized);
+            filesystemSnapshot.requireUnchanged(customized);
+            toolkitSnapshot.requireUnchanged(customized);
+            HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
+                    customized, filesystemSnapshot);
             agent = customized.build();
+            if (workspaceTaskRollback != null) {
+                WorkspaceTaskRepository workspaceTasks = (WorkspaceTaskRepository) tasks;
+                boolean harnessWillShutdownTasks = agent.getDelegate().getMiddlewares().stream()
+                        .filter(SubagentsMiddleware.class::isInstance)
+                        .map(SubagentsMiddleware.class::cast)
+                        .anyMatch(middleware -> middleware.getTaskRepository() == workspaceTasks);
+                if (!harnessWillShutdownTasks) {
+                    throw new AgentConfigException(
+                            "owned WorkspaceTaskRepository requires enabled Harness subagents");
+                }
+                ownedProviderResources.remove(workspaceTaskRollback);
+            }
             validateCustomizedRuntime(
                     "customizeHarness",
                     agent.getStateStore(),
