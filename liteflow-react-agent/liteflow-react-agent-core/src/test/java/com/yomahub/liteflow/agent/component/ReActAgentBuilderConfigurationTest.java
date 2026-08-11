@@ -24,7 +24,9 @@ import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionMode;
+import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -151,6 +153,48 @@ class ReActAgentBuilderConfigurationTest {
                 () -> component.runtime(config(), "unsafe-namespace"));
 
         assertEquals(List.of("resolver", "repositories"), hooks);
+    }
+
+    @Test
+    void invalidNamespaceRollsBackAlreadyCollectedOwnedRepository() {
+        List<String> closeOrder = new ArrayList<>();
+        RuntimeException cleanupFailure = new RuntimeException("repository cleanup failed");
+        CloseableRepository repository =
+                new CloseableRepository("repository", closeOrder, cleanupFailure);
+        TestComponent component = new TestComponent(
+                new CloseableModel("must-not-build", new ArrayList<>()));
+        component.repositories = List.of(repository);
+        component.ownedRepository = repository;
+
+        IllegalArgumentException failure = assertThrows(
+                IllegalArgumentException.class,
+                () -> component.runtime(config(), "unsafe-namespace"));
+
+        assertEquals(1, repository.closeCount.get());
+        assertEquals(List.of("repository"), closeOrder);
+        assertEquals(1, failure.getSuppressed().length);
+        assertSame(cleanupFailure, failure.getSuppressed()[0]);
+    }
+
+    @Test
+    void repositoryCollectionFailureRollsBackAlreadyCollectedOwnedRepository() {
+        List<String> closeOrder = new ArrayList<>();
+        RuntimeException cleanupFailure = new RuntimeException("repository cleanup failed");
+        CloseableRepository repository =
+                new CloseableRepository("repository", closeOrder, cleanupFailure);
+        TestComponent component = new TestComponent(
+                new CloseableModel("must-not-build", new ArrayList<>()));
+        component.repositories = Arrays.asList(repository, null);
+        component.ownedRepository = repository;
+
+        AgentConfigException failure = assertThrows(
+                AgentConfigException.class, () -> component.runtime(config()));
+
+        assertTrue(failure.getMessage().contains("skillRepositories"));
+        assertEquals(1, repository.closeCount.get());
+        assertEquals(List.of("repository"), closeOrder);
+        assertEquals(1, failure.getSuppressed().length);
+        assertSame(cleanupFailure, failure.getSuppressed()[0]);
     }
 
     @Test
@@ -355,6 +399,8 @@ class ReActAgentBuilderConfigurationTest {
         private UnaryOperator<ReActAgent.Builder> customizer = UnaryOperator.identity();
         private final AtomicInteger customizerCalls = new AtomicInteger();
         private List<String> hookOrder;
+        private List<AgentSkillRepository> repositories = List.of();
+        private AgentSkillRepository ownedRepository;
 
         private TestComponent(CloseableModel defaultModel) {
             this.defaultModel = defaultModel;
@@ -398,7 +444,12 @@ class ReActAgentBuilderConfigurationTest {
             if (hookOrder != null) {
                 hookOrder.add("repositories");
             }
-            return List.of();
+            return repositories;
+        }
+
+        @Override
+        protected boolean ownsSkillRepository(AgentSkillRepository repository) {
+            return repository == ownedRepository;
         }
 
         @Override
@@ -467,6 +518,42 @@ class ReActAgentBuilderConfigurationTest {
         @Override
         public int order() {
             return -41;
+        }
+    }
+
+    private static final class CloseableRepository implements AgentSkillRepository {
+        private final String name;
+        private final List<String> closeOrder;
+        private final RuntimeException closeFailure;
+        private final AtomicInteger closeCount = new AtomicInteger();
+
+        private CloseableRepository(
+                String name, List<String> closeOrder, RuntimeException closeFailure) {
+            this.name = name;
+            this.closeOrder = closeOrder;
+            this.closeFailure = closeFailure;
+        }
+
+        @Override public AgentSkill getSkill(String name) { return null; }
+        @Override public List<String> getAllSkillNames() { return List.of(); }
+        @Override public List<AgentSkill> getAllSkills() { return List.of(); }
+        @Override public boolean save(List<AgentSkill> skills, boolean force) { return false; }
+        @Override public boolean delete(String skillName) { return false; }
+        @Override public boolean skillExists(String skillName) { return false; }
+        @Override public AgentSkillRepositoryInfo getRepositoryInfo() {
+            return new AgentSkillRepositoryInfo("test", name, false);
+        }
+        @Override public String getSource() { return name; }
+        @Override public void setWriteable(boolean writeable) { }
+        @Override public boolean isWriteable() { return false; }
+
+        @Override
+        public void close() {
+            closeCount.incrementAndGet();
+            closeOrder.add(name);
+            if (closeFailure != null) {
+                throw closeFailure;
+            }
         }
     }
 

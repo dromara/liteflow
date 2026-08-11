@@ -22,7 +22,6 @@ import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.memory.MemoryConfig;
 import io.agentscope.harness.agent.memory.compaction.CompactionConfig;
 import io.agentscope.harness.agent.memory.compaction.ToolResultEvictionConfig;
-import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
@@ -164,19 +163,13 @@ public abstract class HarnessAgentComponent
             }
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
+            HarnessAgentBuilderTaskOwnershipBridge.TaskOwnershipSnapshot taskOwnership =
+                    HarnessAgentBuilderTaskOwnershipBridge.snapshot(customized, tasks);
             HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
                     customized, filesystemSnapshot);
             agent = customized.build();
-            if (workspaceTaskRollback != null) {
-                WorkspaceTaskRepository workspaceTasks = (WorkspaceTaskRepository) tasks;
-                boolean harnessWillShutdownTasks = agent.getDelegate().getMiddlewares().stream()
-                        .filter(SubagentsMiddleware.class::isInstance)
-                        .map(SubagentsMiddleware.class::cast)
-                        .anyMatch(middleware -> middleware.getTaskRepository() == workspaceTasks);
-                if (!harnessWillShutdownTasks) {
-                    throw new AgentConfigException(
-                            "owned WorkspaceTaskRepository requires enabled Harness subagents");
-                }
+            if (workspaceTaskRollback != null
+                    && taskOwnership.harnessWillShutdownWorkspaceTasks()) {
                 ownedProviderResources.remove(workspaceTaskRollback);
             }
             validateCustomizedRuntime(

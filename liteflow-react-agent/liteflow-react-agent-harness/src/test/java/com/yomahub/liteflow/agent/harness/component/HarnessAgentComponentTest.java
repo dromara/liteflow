@@ -43,6 +43,7 @@ import io.agentscope.harness.agent.filesystem.model.LsResult;
 import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
+import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.subagent.task.BackgroundTask;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.TaskRunSpec;
@@ -321,7 +322,8 @@ class HarnessAgentComponentTest {
     }
 
     @Test
-    void ownedWorkspaceTaskRepositoryIsClosedExactlyOnceByHarness() throws Exception {
+    void ownedWorkspaceTaskRepositoryIsClosedExactlyOnceByStaticHarnessSubagents()
+            throws Exception {
         configureCustomBackend();
         RecordingFilesystem filesystem =
                 new RecordingFilesystem("filesystem", new ArrayList<>());
@@ -344,6 +346,146 @@ class HarnessAgentComponentTest {
             component.close();
 
             assertEquals(1, tasks.shutdownCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void ownedWorkspaceTaskRepositoryIsClosedExactlyOnceByDynamicHarnessSubagents()
+            throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                new WorkspaceManager(tempDir.resolve("dynamic-owned-tasks"), filesystem),
+                "dynamic-owned-agent",
+                taskExecutor);
+        TestComponent component = component(
+                slot("dynamic-owned-session", "dynamic-owned-request"),
+                new RecordingModel("reply", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.subagentsEnabled = true;
+        component.dynamicSubagentsEnabled = true;
+
+        try {
+            component.process();
+            component.close();
+            component.close();
+
+            assertEquals(1, tasks.shutdownCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void ownedWorkspaceTaskRepositoryIsClosedByLiteFlowWhenBuiltInsAreDisabled()
+            throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager =
+                new WorkspaceManager(tempDir.resolve("manual-owned-tasks"), filesystem);
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                workspaceManager, "manual-owned-agent", taskExecutor);
+        TestComponent component = component(
+                slot("manual-owned-session", "manual-owned-request"),
+                new RecordingModel("reply", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.manualSubagentsMiddleware =
+                new SubagentsMiddleware(List.of(), tasks, workspaceManager);
+
+        try {
+            component.process();
+            component.close();
+            component.close();
+
+            assertEquals(1, tasks.shutdownCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void ownedWorkspaceTaskRepositoryRollbackIsExactlyOnceWithOnlyManualSubagents()
+            throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager =
+                new WorkspaceManager(tempDir.resolve("manual-rollback-tasks"), filesystem);
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                workspaceManager, "manual-rollback-agent", taskExecutor);
+        TestComponent component = component(
+                slot("manual-rollback-session", "manual-rollback-request"),
+                new RecordingModel("reply", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.manualSubagentsMiddleware =
+                new SubagentsMiddleware(List.of(), tasks, workspaceManager);
+        component.replaceStateStore = true;
+
+        try {
+            assertThrows(AgentConfigException.class, component::process);
+
+            assertEquals(1, tasks.shutdownCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void customizerCannotReplaceConfiguredTaskRepositoryIdentity() throws Exception {
+        configureCustomBackend();
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("filesystem", new ArrayList<>());
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                new WorkspaceManager(tempDir.resolve("locked-tasks"), filesystem),
+                "locked-agent",
+                taskExecutor);
+        RecordingTaskRepository replacement =
+                new RecordingTaskRepository("replacement", new ArrayList<>());
+        TestComponent component = component(
+                slot("locked-tasks-session", "locked-tasks-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.customizerTaskRepository = replacement;
+
+        try {
+            AgentConfigException failure =
+                    assertThrows(AgentConfigException.class, component::process);
+
+            assertTrue(failure.getMessage().contains("TaskRepository identity"));
+            assertEquals(1, tasks.shutdownCount.get());
+            assertEquals(0, replacement.closeCount.get());
         }
         finally {
             if (tasks.shutdownCount.get() == 0) {
@@ -584,6 +726,9 @@ class HarnessAgentComponentTest {
         private boolean copyToolkit;
         private Toolkit preparedToolkit;
         private boolean subagentsEnabled;
+        private boolean dynamicSubagentsEnabled;
+        private SubagentsMiddleware manualSubagentsMiddleware;
+        private TaskRepository customizerTaskRepository;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
         private HarnessAgentRuntime runtime;
 
@@ -723,10 +868,18 @@ class HarnessAgentComponentTest {
                     .disableWorkspaceContext()
                     .disableAtPathExpansion();
             if (subagentsEnabled) {
-                builder.disableDynamicSubagents();
+                if (!dynamicSubagentsEnabled) {
+                    builder.disableDynamicSubagents();
+                }
             }
             else {
                 builder.disableSubagents();
+            }
+            if (manualSubagentsMiddleware != null) {
+                builder.middleware(manualSubagentsMiddleware);
+            }
+            if (customizerTaskRepository != null) {
+                builder.taskRepository(customizerTaskRepository);
             }
             return builder
                     .disableDefaultWorkspaceSkills()

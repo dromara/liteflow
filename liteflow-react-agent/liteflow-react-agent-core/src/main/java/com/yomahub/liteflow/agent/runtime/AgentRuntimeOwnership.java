@@ -47,9 +47,35 @@ public final class AgentRuntimeOwnership {
     /** Rolls back an owned resolved store when namespace wrapping itself could not be created. */
     public static void rollbackResolvedStateStore(
             Throwable buildFailure, ResolvedAgentStateStore resolvedStateStore) {
+        rollbackPreparation(
+                buildFailure,
+                null,
+                resolvedStateStore,
+                List.of(),
+                List.of(),
+                List.of());
+    }
+
+    /**
+     * Rolls back every resource known during preparation, before an ownership capsule exists.
+     */
+    public static void rollbackPreparation(
+            Throwable buildFailure,
+            GuardedNamespacedAgentStateStore stateStore,
+            ResolvedAgentStateStore resolvedStateStore,
+            List<McpClientRegistration> mcpClients,
+            List<? extends AgentSkillRepository> ownedSkillRepositories,
+            List<? extends Model> ownedModels) {
         Objects.requireNonNull(buildFailure, "buildFailure");
-        Objects.requireNonNull(resolvedStateStore, "resolvedStateStore");
-        closeResource(resolvedStateStore, buildFailure);
+        Set<Object> closedResources = Collections.newSetFromMap(new IdentityHashMap<>());
+        closeSharedResources(
+                buildFailure,
+                closedResources,
+                ownedMcpClients(mcpClients),
+                identityDistinct(ownedSkillRepositories, "ownedSkillRepositories"),
+                identityDistinct(ownedModels, "ownedModels"),
+                stateStore,
+                Objects.requireNonNull(resolvedStateStore, "resolvedStateStore"));
     }
 
     /**
@@ -98,6 +124,24 @@ public final class AgentRuntimeOwnership {
                     resources.get(index), "providerResources must not contain null");
             failure = closeDistinct(resource, closedResources, failure);
         }
+        return closeSharedResources(
+                failure,
+                closedResources,
+                ownedMcpClients,
+                ownedSkillRepositories,
+                ownedModels,
+                stateStore,
+                resolvedStateStore);
+    }
+
+    private static Throwable closeSharedResources(
+            Throwable failure,
+            Set<Object> closedResources,
+            List<McpClientWrapper> ownedMcpClients,
+            List<AgentSkillRepository> ownedSkillRepositories,
+            List<Model> ownedModels,
+            GuardedNamespacedAgentStateStore stateStore,
+            ResolvedAgentStateStore resolvedStateStore) {
         for (int index = ownedMcpClients.size() - 1; index >= 0; index--) {
             failure = closeDistinct(
                     ownedMcpClients.get(index), closedResources, failure);

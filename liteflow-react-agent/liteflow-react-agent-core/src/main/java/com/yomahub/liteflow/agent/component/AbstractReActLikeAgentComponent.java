@@ -287,18 +287,13 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
                     options.stopOnReject());
         }
         catch (RuntimeException | Error failure) {
-            if (namespaced == null) {
-                AgentRuntimeOwnership.rollbackResolvedStateStore(failure, resolved);
-            }
-            else {
-                new AgentRuntimeOwnership(
-                        namespaced,
-                        resolved,
-                        registeredMcpClients,
-                        ownedRepositories,
-                        ownedModels)
-                        .rollback(failure, null, List.of());
-            }
+            AgentRuntimeOwnership.rollbackPreparation(
+                    failure,
+                    namespaced,
+                    resolved,
+                    registeredMcpClients,
+                    ownedRepositories,
+                    ownedModels);
             throw failure;
         }
     }

@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.harness.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import io.agentscope.core.model.Model;
 import io.agentscope.harness.agent.DistributedStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -68,6 +70,33 @@ class HarnessAgentBuilderFilesystemBridgeTest {
         AgentConfigException drift = assertThrows(
                 AgentConfigException.class,
                 () -> HarnessAgentBuilderFilesystemBridge.validateShape(DriftedBuilder.class));
+        assertTrue(drift.getMessage().contains("2.0.2"));
+        assertNotNull(drift.getCause());
+    }
+
+    @Test
+    void taskOwnershipInspectionIsVersionPinnedAndMatchesUpstreamBuilderBranches() {
+        var dynamic = HarnessAgentBuilderTaskOwnershipBridge.snapshot(
+                HarnessAgent.builder().model(model()), null);
+        var staticSubagents = HarnessAgentBuilderTaskOwnershipBridge.snapshot(
+                HarnessAgent.builder().model(model()).disableDynamicSubagents(), null);
+        var disabled = HarnessAgentBuilderTaskOwnershipBridge.snapshot(
+                HarnessAgent.builder().model(model()).disableSubagents(), null);
+
+        assertEquals(
+                HarnessAgentBuilderTaskOwnershipBridge.BuiltInSubagents.DYNAMIC,
+                dynamic.builtInSubagents());
+        assertEquals(
+                HarnessAgentBuilderTaskOwnershipBridge.BuiltInSubagents.STATIC,
+                staticSubagents.builtInSubagents());
+        assertEquals(
+                HarnessAgentBuilderTaskOwnershipBridge.BuiltInSubagents.NONE,
+                disabled.builtInSubagents());
+
+        AgentConfigException drift = assertThrows(
+                AgentConfigException.class,
+                () -> HarnessAgentBuilderTaskOwnershipBridge.validateShape(
+                        DriftedBuilder.class));
         assertTrue(drift.getMessage().contains("2.0.2"));
         assertNotNull(drift.getCause());
     }
@@ -144,6 +173,15 @@ class HarnessAgentBuilderFilesystemBridgeTest {
                 new Class<?>[] {io.agentscope.core.state.AgentStateStore.class},
                 (proxy, method, arguments) -> {
                     throw new AssertionError("state store must not be invoked");
+                });
+    }
+
+    private static Model model() {
+        return (Model) Proxy.newProxyInstance(
+                Model.class.getClassLoader(),
+                new Class<?>[] {Model.class},
+                (proxy, method, arguments) -> {
+                    throw new AssertionError("model must not be invoked");
                 });
     }
 
