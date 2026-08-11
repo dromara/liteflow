@@ -17,8 +17,10 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.Part;
 import com.yomahub.liteflow.agent.anthropic.Anthropic;
+import com.yomahub.liteflow.agent.anthropic.AnthropicClientOwner;
 import com.yomahub.liteflow.agent.dashscope.DashScope;
 import com.yomahub.liteflow.agent.gemini.Gemini;
+import com.yomahub.liteflow.agent.gemini.OwnedGeminiModel;
 import com.yomahub.liteflow.agent.openai.DeepSeek;
 import com.yomahub.liteflow.agent.openai.GLM;
 import com.yomahub.liteflow.agent.openai.Kimi;
@@ -107,18 +109,16 @@ class ProviderClasspathContractTest {
                     () -> assertOpenAIModel(models.get(4), "contract-kimi", "fake-kimi-key", false, false),
                     () -> assertOpenAIModel(
                             models.get(5), "contract-minimax", "fake-minimax-key", false, false),
-                    () -> assertProviderModel(
+                    () -> assertAnthropicOwner(
                             models.get(6),
                             "contract-anthropic",
                             "fake-anthropic-key",
-                            AnthropicChatModel.class,
                             false,
                             false),
-                    () -> assertProviderModel(
+                    () -> assertGeminiOwner(
                             models.get(7),
                             "contract-gemini",
                             "fake-gemini-key",
-                            GeminiChatModel.class,
                             false,
                             false),
                     () -> assertProviderModel(
@@ -281,6 +281,40 @@ class ProviderClasspathContractTest {
                 () -> assertEquals(
                         structuredWithTools,
                         providerModel.supportsNativeStructuredOutputWithTools()));
+    }
+
+    private static void assertAnthropicOwner(
+            Model model,
+            String modelName,
+            String apiKey,
+            boolean structured,
+            boolean structuredWithTools) throws Exception {
+        AnthropicClientOwner owner = assertInstanceOf(AnthropicClientOwner.class, model);
+        assertInstanceOf(AutoCloseable.class, owner);
+        assertProviderModel(
+                owner.delegate(),
+                modelName,
+                apiKey,
+                AnthropicChatModel.class,
+                structured,
+                structuredWithTools);
+    }
+
+    private static void assertGeminiOwner(
+            Model model,
+            String modelName,
+            String apiKey,
+            boolean structured,
+            boolean structuredWithTools) throws Exception {
+        OwnedGeminiModel owner = assertInstanceOf(OwnedGeminiModel.class, model);
+        assertInstanceOf(AutoCloseable.class, owner);
+        assertProviderModel(
+                owner.delegate(),
+                modelName,
+                apiKey,
+                GeminiChatModel.class,
+                structured,
+                structuredWithTools);
     }
 
     private static String configuredApiKey(Model model) throws Exception {
