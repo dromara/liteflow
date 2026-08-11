@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.agent.openai;
 
-import io.agentscope.core.model.OpenAIChatModel;
+import io.agentscope.extensions.model.openai.OpenAIChatModel;
 
 public final class OpenAIModelFactory {
     private OpenAIModelFactory() {}

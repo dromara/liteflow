@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.agent.openai;
 
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.CredentialResolver;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.model.Model;
 
 /**
@@ -23,11 +23,25 @@ public class OpenAICompatibleSpec extends OpenAISpec {
 
     @Override
     public Model resolve(AgentConfig cfg) {
-        PlatformCredential cred = CredentialResolver.requireCompatible(
-                cfg.getOpenaiCompatible(), configKey, "liteflow.agent.openai-compatible");
-        String baseUrl = (cred.getBaseUrl() != null && !cred.getBaseUrl().isBlank())
-                ? cred.getBaseUrl()
-                : defaultBaseUrl;
-        return buildModel(cred.getApiKey(), baseUrl);
+        CredentialResolver.ResolvedCredential credential =
+                CredentialResolver.resolveCompatible(
+                        cfg.getOpenaiCompatible(),
+                        configKey,
+                        "liteflow.agent.openai-compatible",
+                        getApiKey(),
+                        getBaseUrl());
+        String effectiveBaseUrl = credential.baseUrl();
+        if ((effectiveBaseUrl == null || effectiveBaseUrl.isBlank())
+                && defaultBaseUrl != null && !defaultBaseUrl.isBlank()) {
+            effectiveBaseUrl = defaultBaseUrl;
+        }
+        if (effectiveBaseUrl == null || effectiveBaseUrl.isBlank()) {
+            throw new AgentConfigException(
+                    "Missing base URL: please configure "
+                            + "liteflow.agent.openai-compatible."
+                            + configKey
+                            + ".base-url");
+        }
+        return buildModel(credential.apiKey(), effectiveBaseUrl);
     }
 }
