@@ -345,6 +345,75 @@
       "defaultValue": false
     },
     {
+      "name": "liteflow.agent.harness.filesystem-backend",
+      "type": "com.yomahub.liteflow.property.agent.HarnessFilesystemBackend",
+      "description": "Filesystem policy used by the optional AgentScope Harness runtime.",
+      "sourceType": "com.yomahub.liteflow.property.agent.HarnessConfig",
+      "defaultValue": "GUARDED_LOCAL"
+    },
+    {
+      "name": "liteflow.agent.harness.trusted-local",
+      "type": "java.lang.Boolean",
+      "description": "Whether guarded local Harness filesystem access is explicitly trusted.",
+      "sourceType": "com.yomahub.liteflow.property.agent.HarnessConfig",
+      "defaultValue": false
+    },
+    {
+      "name": "liteflow.agent.harness.docker.image",
+      "type": "java.lang.String",
+      "description": "Docker image used for the Harness sandbox.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": "ubuntu:22.04"
+    },
+    {
+      "name": "liteflow.agent.harness.docker.workspace-root",
+      "type": "java.lang.String",
+      "description": "Workspace root inside the Docker sandbox.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": "/workspace"
+    },
+    {
+      "name": "liteflow.agent.harness.docker.memory-size-bytes",
+      "type": "java.lang.Long",
+      "description": "Positive Docker sandbox memory quota in bytes.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": 536870912
+    },
+    {
+      "name": "liteflow.agent.harness.docker.cpu-count",
+      "type": "java.lang.Long",
+      "description": "Positive Docker sandbox CPU quota.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": 1
+    },
+    {
+      "name": "liteflow.agent.harness.docker.network",
+      "type": "java.lang.String",
+      "description": "Docker network mode or explicitly configured network name.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": "none"
+    },
+    {
+      "name": "liteflow.agent.harness.docker.snapshot-root",
+      "type": "java.lang.String",
+      "description": "Optional local root used to persist Docker sandbox snapshots.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig"
+    },
+    {
+      "name": "liteflow.agent.harness.docker.workspace-projection-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether official Harness workspace roots are projected into the sandbox.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "liteflow.agent.harness.docker.workspace-projection-roots",
+      "type": "java.util.List",
+      "description": "Relative Harness workspace roots allowed for sandbox projection.",
+      "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
+      "defaultValue": ["AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"]
+    },
+    {
       "name": "liteflow.agent.workspace.backend",
       "type": "com.yomahub.liteflow.property.agent.WorkspaceBackend",
       "description": "Workspace backend used by guarded file tools.",

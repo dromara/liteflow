@@ -32,6 +32,9 @@ public class AgentConfig {
 	/** Human-in-the-loop confirmation settings. */
 	private AgentHitlConfig hitl = new AgentHitlConfig();
 
+	/** AgentScope Harness filesystem and sandbox settings. */
+	private HarnessConfig harness = new HarnessConfig();
+
     /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
     private WorkspaceConfig workspace = new WorkspaceConfig();
 
@@ -120,6 +123,14 @@ public class AgentConfig {
 
 	public void setHitl(AgentHitlConfig hitl) {
 		this.hitl = hitl;
+	}
+
+	public HarnessConfig getHarness() {
+		return harness;
+	}
+
+	public void setHarness(HarnessConfig harness) {
+		this.harness = harness;
 	}
 
 	/**

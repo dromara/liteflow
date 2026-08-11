@@ -3,6 +3,8 @@ package com.yomahub.liteflow.springboot4;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
+import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
@@ -19,11 +21,13 @@ import org.springframework.core.env.StandardEnvironment;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -63,6 +67,16 @@ class AgentPropertyBindingTest {
             PREFIX + "invocation-guard.strict-distributed",
             PREFIX + "hitl.confirmation-timeout",
             PREFIX + "hitl.fail-on-denied-tool",
+            PREFIX + "harness.filesystem-backend",
+            PREFIX + "harness.trusted-local",
+            PREFIX + "harness.docker.image",
+            PREFIX + "harness.docker.workspace-root",
+            PREFIX + "harness.docker.memory-size-bytes",
+            PREFIX + "harness.docker.cpu-count",
+            PREFIX + "harness.docker.network",
+            PREFIX + "harness.docker.snapshot-root",
+            PREFIX + "harness.docker.workspace-projection-enabled",
+            PREFIX + "harness.docker.workspace-projection-roots",
             PREFIX + "workspace.backend",
             PREFIX + "workspace.trusted-local",
             PREFIX + "workspace.root",
@@ -127,6 +141,20 @@ class AgentPropertyBindingTest {
                 entry("invocation-guard.strict-distributed", "false"),
                 entry("hitl.confirmation-timeout", "29s"),
                 entry("hitl.fail-on-denied-tool", "true"),
+                entry("harness.filesystem-backend", "DOCKER"),
+                entry("harness.trusted-local", "false"),
+                entry("harness.docker.image", "alpine:3.20"),
+                entry("harness.docker.workspace-root", "/workspace"),
+                entry("harness.docker.memory-size-bytes", "268435456"),
+                entry("harness.docker.cpu-count", "1"),
+                entry("harness.docker.network", "none"),
+                entry("harness.docker.snapshot-root", "./data/agent-snapshots"),
+                entry("harness.docker.workspace-projection-enabled", "true"),
+                entry("harness.docker.workspace-projection-roots[0]", "AGENTS.md"),
+                entry("harness.docker.workspace-projection-roots[1]", "skills"),
+                entry("harness.docker.workspace-projection-roots[2]", "subagents"),
+                entry("harness.docker.workspace-projection-roots[3]", "knowledge"),
+                entry("harness.docker.workspace-projection-roots[4]", ".skills-cache"),
                 entry("workspace.backend", "REMOTE_FILESYSTEM"),
                 entry("workspace.trusted-local", "true"),
                 entry("workspace.root", "/tmp/workspace"),
@@ -167,6 +195,20 @@ class AgentPropertyBindingTest {
         assertFalse(agent.getInvocationGuard().isStrictDistributed());
         assertEquals(Duration.ofSeconds(29), agent.getHitl().getConfirmationTimeout());
         assertTrue(agent.getHitl().isFailOnDeniedTool());
+        assertEquals(HarnessFilesystemBackend.DOCKER,
+                agent.getHarness().getFilesystemBackend());
+        assertFalse(agent.getHarness().isTrustedLocal());
+        DockerSandboxConfig docker = agent.getHarness().getDocker();
+        assertEquals("alpine:3.20", docker.getImage());
+        assertEquals("/workspace", docker.getWorkspaceRoot());
+        assertEquals(268435456L, docker.getMemorySizeBytes());
+        assertEquals(1L, docker.getCpuCount());
+        assertEquals("none", docker.getNetwork());
+        assertEquals("./data/agent-snapshots", docker.getSnapshotRoot());
+        assertTrue(docker.isWorkspaceProjectionEnabled());
+        assertEquals(List.of("AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"),
+                docker.getWorkspaceProjectionRoots());
+        assertDoesNotThrow(agent.getHarness()::validate);
         assertEquals(WorkspaceBackend.REMOTE_FILESYSTEM, agent.getWorkspace().getBackend());
         assertTrue(agent.getWorkspace().isTrustedLocal());
         assertEquals("/tmp/workspace", agent.getWorkspace().getRoot());
@@ -197,6 +239,18 @@ class AgentPropertyBindingTest {
                 IllegalStateException.class, agent::validateForExecution);
 
         assertTrue(failure.getMessage().contains("session.memory -> state-store"));
+    }
+
+    @Test
+    void boundGuardedLocalConfigurationFailsClosedWithoutExplicitTrust() {
+        AgentConfig agent = bind(Map.of(
+                PREFIX + "harness.filesystem-backend", "GUARDED_LOCAL",
+                PREFIX + "harness.trusted-local", "false")).getAgent();
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class, agent.getHarness()::validate);
+
+        assertTrue(failure.getMessage().contains("trusted-local"));
     }
 
     @Test
@@ -242,6 +296,22 @@ class AgentPropertyBindingTest {
                 DistributedCoordinationMode.class.getName(), "NONE");
         assertMetadata(agentProperties, "hitl.confirmation-timeout",
                 "java.time.Duration", "2m");
+        assertMetadata(agentProperties, "harness.filesystem-backend",
+                HarnessFilesystemBackend.class.getName(), "GUARDED_LOCAL");
+        assertMetadata(agentProperties, "harness.trusted-local",
+                "java.lang.Boolean", "false");
+        assertMetadata(agentProperties, "harness.docker.image",
+                "java.lang.String", "ubuntu:22.04");
+        assertMetadata(agentProperties, "harness.docker.workspace-root",
+                "java.lang.String", "/workspace");
+        assertMetadata(agentProperties, "harness.docker.memory-size-bytes",
+                "java.lang.Long", "536870912");
+        assertMetadata(agentProperties, "harness.docker.cpu-count",
+                "java.lang.Long", "1");
+        assertMetadata(agentProperties, "harness.docker.network",
+                "java.lang.String", "none");
+        assertMetadata(agentProperties, "harness.docker.workspace-projection-enabled",
+                "java.lang.Boolean", "true");
         assertMetadata(agentProperties, "workspace.backend",
                 WorkspaceBackend.class.getName(), "GUARDED_LOCAL");
         assertMetadata(agentProperties, "shell.mode",
