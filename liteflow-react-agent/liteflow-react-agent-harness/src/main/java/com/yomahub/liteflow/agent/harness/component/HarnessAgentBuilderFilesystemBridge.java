@@ -8,6 +8,8 @@ import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
 import io.agentscope.harness.agent.filesystem.spec.SandboxFilesystemSpec;
+import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.subagent.WorkspaceMode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -32,12 +34,14 @@ final class HarnessAgentBuilderFilesystemBridge {
             new FieldContract("toolkit", Toolkit.class),
             new FieldContract("distributedStore", DistributedStore.class));
     private static volatile List<Field> builderFields;
+    private static volatile List<Field> guardedSubagentFields;
 
     private HarnessAgentBuilderFilesystemBridge() {
     }
 
     static void verifyContract() {
         builderFields();
+        guardedSubagentFields();
     }
 
     static void requireExactlyOne(HarnessAgent.Builder builder) {
@@ -124,6 +128,37 @@ final class HarnessAgentBuilderFilesystemBridge {
         }
     }
 
+    static void requireGuardedLocalSubagentsSafe(HarnessAgent.Builder builder) {
+        Objects.requireNonNull(builder, "builder");
+        try {
+            List<Field> fields = guardedSubagentFields();
+            if (!fields.get(1).getBoolean(builder)) {
+                throw new AgentConfigException(
+                        "Harness GUARDED_LOCAL requires dynamic subagents to remain disabled");
+            }
+            Object configured = fields.get(0).get(builder);
+            if (!(configured instanceof List<?> declarations)) {
+                throw incompatible("HarnessAgent.Builder subagentDeclarations value changed");
+            }
+            for (Object candidate : declarations) {
+                if (!(candidate instanceof SubagentDeclaration declaration)) {
+                    throw incompatible("HarnessAgent.Builder subagent declaration type changed");
+                }
+                if (!declaration.isRemote()
+                        && declaration.getWorkspaceMode() != WorkspaceMode.SHARED) {
+                    throw new AgentConfigException(
+                            "Harness GUARDED_LOCAL rejects local ISOLATED subagent '"
+                                    + declaration.getName()
+                                    + "' because AgentScope 2.0.2 falls back to host local"
+                                    + " filesystem and shell; use SHARED or remote mode");
+                }
+            }
+        }
+        catch (IllegalAccessException failure) {
+            throw incompatible("cannot inspect HarnessAgent.Builder subagent fields", failure);
+        }
+    }
+
     static List<Field> validateShape(Class<?> builderType) {
         List<Field> fields = new ArrayList<>(FIELD_CONTRACTS.size());
         try {
@@ -163,6 +198,39 @@ final class HarnessAgentBuilderFilesystemBridge {
                 builderFields = validateShape(HarnessAgent.Builder.class);
             }
             return builderFields;
+        }
+    }
+
+    private static List<Field> guardedSubagentFields() {
+        List<Field> resolved = guardedSubagentFields;
+        if (resolved != null) {
+            return resolved;
+        }
+        synchronized (HarnessAgentBuilderFilesystemBridge.class) {
+            if (guardedSubagentFields == null) {
+                builderFields();
+                try {
+                    Field declarations =
+                            HarnessAgent.Builder.class.getDeclaredField("subagentDeclarations");
+                    Field dynamic = HarnessAgent.Builder.class
+                            .getDeclaredField("disableDynamicSubagents");
+                    if (declarations.getType() != List.class
+                            || !Modifier.isFinal(declarations.getModifiers())
+                            || Modifier.isStatic(declarations.getModifiers())
+                            || dynamic.getType() != boolean.class
+                            || Modifier.isStatic(dynamic.getModifiers())
+                            || Modifier.isFinal(dynamic.getModifiers())
+                            || !declarations.trySetAccessible()
+                            || !dynamic.trySetAccessible()) {
+                        throw incompatible("HarnessAgent.Builder subagent shape changed");
+                    }
+                    guardedSubagentFields = List.of(declarations, dynamic);
+                }
+                catch (NoSuchFieldException failure) {
+                    throw incompatible("HarnessAgent.Builder subagent shape changed", failure);
+                }
+            }
+            return guardedSubagentFields;
         }
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.agent.component.AbstractReActLikeAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
@@ -60,7 +61,7 @@ public abstract class HarnessAgentComponent
         return false;
     }
 
-    /** Task 4/5 replace the fail-closed built-in policies with concrete configurers. */
+    /** Explicit extension point used only by the CUSTOM filesystem backend. */
     protected HarnessFilesystemConfigurer filesystemConfigurer() {
         return null;
     }
@@ -126,6 +127,12 @@ public abstract class HarnessAgentComponent
                     .stateStore(prepared.ownership().stateStore())
                     .workspace(filesystem.context().workspaceRoot());
             filesystem.configurer().configure(builder, filesystem.context());
+            boolean guardedLocal = buildContext.agentConfig().getHarness().getFilesystemBackend()
+                    == HarnessFilesystemBackend.GUARDED_LOCAL;
+            if (guardedLocal) {
+                // 2.0.2 dynamic/isolated declarations can fall back to host local + shell.
+                builder.disableDynamicSubagents();
+            }
             HarnessAgentBuilderFilesystemBridge.FilesystemSnapshot filesystemSnapshot =
                     HarnessAgentBuilderFilesystemBridge.snapshot(builder);
             HarnessAgentBuilderFilesystemBridge.ToolkitSnapshot toolkitSnapshot =
@@ -163,6 +170,9 @@ public abstract class HarnessAgentComponent
             }
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
+            if (guardedLocal) {
+                HarnessAgentBuilderFilesystemBridge.requireGuardedLocalSubagentsSafe(customized);
+            }
             HarnessAgentBuilderTaskOwnershipBridge.TaskOwnershipSnapshot taskOwnership =
                     HarnessAgentBuilderTaskOwnershipBridge.snapshot(customized, tasks);
             HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
@@ -235,18 +245,20 @@ public abstract class HarnessAgentComponent
             throw new AgentConfigException(failure.getMessage(), failure);
         }
         HarnessFilesystemBackend backend = harness.getFilesystemBackend();
-        if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
-            throw new AgentConfigException(
-                    "Harness GUARDED_LOCAL filesystem is not implemented until Task 4");
-        }
+        HarnessFilesystemConfigurer configurer;
         if (backend == HarnessFilesystemBackend.DOCKER) {
             throw new AgentConfigException(
                     "Harness DOCKER filesystem is not implemented until Task 5");
         }
-        HarnessFilesystemConfigurer configurer = filesystemConfigurer();
-        if (configurer == null) {
-            throw new AgentConfigException(
-                    "Harness CUSTOM filesystem requires a non-null filesystemConfigurer");
+        if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
+            configurer = new GuardedLocalFilesystemConfigurer();
+        }
+        else {
+            configurer = filesystemConfigurer();
+            if (configurer == null) {
+                throw new AgentConfigException(
+                        "Harness CUSTOM filesystem requires a non-null filesystemConfigurer");
+            }
         }
         if (config.getWorkspace() == null) {
             throw new AgentConfigException("liteflow.agent.workspace must not be null");

@@ -44,6 +44,8 @@ import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
 import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
+import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.subagent.WorkspaceMode;
 import io.agentscope.harness.agent.subagent.task.BackgroundTask;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.TaskRunSpec;
@@ -75,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -188,29 +191,97 @@ class HarnessAgentComponentTest {
     }
 
     @Test
-    void unimplementedBackendsAndMissingCustomConfigurerFailClosedBeforeModelBuild()
+    void guardedLocalBuildsOnlyWithTrustAndOtherBackendsRemainFailClosed()
             throws Exception {
         AgentConfig config = configureAgent();
-        TestComponent component = component(
+        TestComponent untrustedComponent = component(
                 slot("backend-session", "backend-request"),
                 new RecordingModel("must not run", false, null, null, null),
                 null);
 
-        AgentConfigException untrusted = assertThrows(AgentConfigException.class, component::process);
+        AgentConfigException untrusted =
+                assertThrows(AgentConfigException.class, untrustedComponent::process);
         assertTrue(untrusted.getMessage().contains("trusted-local"));
+        assertEquals(0, untrustedComponent.modelBuildCount.get());
 
         config.getHarness().setTrustedLocal(true);
-        AgentConfigException guarded = assertThrows(AgentConfigException.class, component::process);
-        assertTrue(guarded.getMessage().contains("GUARDED_LOCAL"));
+        TestComponent guardedComponent = component(
+                slot("guarded-session", "guarded-request"),
+                new RecordingModel("guarded reply", false, null, null, null),
+                null);
+        assertDoesNotThrow(() -> {
+            guardedComponent.process();
+        });
+        assertEquals(1, guardedComponent.modelBuildCount.get());
 
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
-        AgentConfigException docker = assertThrows(AgentConfigException.class, component::process);
+        TestComponent dockerComponent = component(
+                slot("docker-session", "docker-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        AgentConfigException docker =
+                assertThrows(AgentConfigException.class, dockerComponent::process);
         assertTrue(docker.getMessage().contains("DOCKER"));
+        assertEquals(0, dockerComponent.modelBuildCount.get());
 
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.CUSTOM);
-        AgentConfigException custom = assertThrows(AgentConfigException.class, component::process);
+        TestComponent customComponent = component(
+                slot("custom-session", "custom-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        AgentConfigException custom =
+                assertThrows(AgentConfigException.class, customComponent::process);
         assertTrue(custom.getMessage().contains("filesystemConfigurer"));
-        assertEquals(0, component.modelBuildCount.get());
+        assertEquals(0, customComponent.modelBuildCount.get());
+    }
+
+    @Test
+    void guardedLocalRejectsIsolatedDeclarationsAddedBeforeOrDuringCustomization()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        SubagentDeclaration isolated = SubagentDeclaration.builder()
+                .name("unsafe-isolated")
+                .description("must not fall back to host local shell")
+                .inlineAgentsBody("isolated")
+                .build();
+
+        TestComponent declared = component(
+                slot("declared-session", "declared-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        declared.subagentsEnabled = true;
+        declared.subagentDeclarations = List.of(isolated);
+        AgentConfigException declaredFailure =
+                assertThrows(AgentConfigException.class, declared::process);
+        assertTrue(declaredFailure.getMessage().contains("GUARDED_LOCAL"));
+        assertTrue(declaredFailure.getMessage().contains("ISOLATED"));
+
+        TestComponent customized = component(
+                slot("customized-session", "customized-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        customized.subagentsEnabled = true;
+        customized.customizerSubagent = isolated;
+        AgentConfigException customizedFailure =
+                assertThrows(AgentConfigException.class, customized::process);
+        assertTrue(customizedFailure.getMessage().contains("GUARDED_LOCAL"));
+        assertTrue(customizedFailure.getMessage().contains("ISOLATED"));
+
+        TestComponent shared = component(
+                slot("shared-session", "shared-request"),
+                new RecordingModel("shared reply", false, null, null, null),
+                null);
+        shared.subagentsEnabled = true;
+        shared.subagentDeclarations = List.of(SubagentDeclaration.builder()
+                .name("safe-shared")
+                .description("inherits the guarded filesystem")
+                .workspaceMode(WorkspaceMode.SHARED)
+                .inlineAgentsBody("shared")
+                .build());
+        assertDoesNotThrow(() -> {
+            shared.process();
+        });
     }
 
     @Test
@@ -727,6 +798,8 @@ class HarnessAgentComponentTest {
         private Toolkit preparedToolkit;
         private boolean subagentsEnabled;
         private boolean dynamicSubagentsEnabled;
+        private List<SubagentDeclaration> subagentDeclarations = List.of();
+        private SubagentDeclaration customizerSubagent;
         private SubagentsMiddleware manualSubagentsMiddleware;
         private TaskRepository customizerTaskRepository;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
@@ -798,6 +871,11 @@ class HarnessAgentComponentTest {
         @Override
         protected List<Object> tools() {
             return tools;
+        }
+
+        @Override
+        protected List<SubagentDeclaration> subagents() {
+            return subagentDeclarations;
         }
 
         @Override
@@ -880,6 +958,9 @@ class HarnessAgentComponentTest {
             }
             if (customizerTaskRepository != null) {
                 builder.taskRepository(customizerTaskRepository);
+            }
+            if (customizerSubagent != null) {
+                builder.subagent(customizerSubagent);
             }
             return builder
                     .disableDefaultWorkspaceSkills()
