@@ -115,6 +115,40 @@ class DockerSandboxConfigTest {
     }
 
     @Test
+    void projectionRootsRejectSpecialSegmentsAfterWin32TrailingCharacterStripping() {
+        for (String invalid : List.of(".. ", "...", ". ", ".   ")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void nestedWin32StrippedTraversalIsRejectedAcrossSeparatorStyles() {
+        for (String invalid : List.of(
+                "skills\\.. \\secret", "skills/.. \\secret", "skills\\.. /secret")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void projectionRootsRejectSegmentsEntirelyStrippedByWin32() {
+        for (String invalid : List.of(
+                "skills/   /secret", "skills/. . /secret", "skills\\...   \\secret")) {
+            assertProjectionRootRejected(invalid);
+        }
+    }
+
+    @Test
+    void ordinaryRelativeSegmentsWithSpacesAndDotsRemainAcceptedAndUnchanged() {
+        List<String> roots = List.of(
+                "folder name/file.name", "release.v1/docs", "folder./child", "folder /child");
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setWorkspaceProjectionRoots(roots);
+
+        assertDoesNotThrow(config::validate);
+        assertEquals(roots, config.getWorkspaceProjectionRoots());
+    }
+
+    @Test
     void nestedRelativeProjectionRootsRemainAcceptedAndUnchanged() {
         List<String> roots = List.of(
                 "AGENTS.md", ".skills-cache", "skills/foo", "skills/./bar", "skills\\.\\baz");

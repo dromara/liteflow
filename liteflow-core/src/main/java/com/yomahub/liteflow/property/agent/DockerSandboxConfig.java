@@ -115,6 +115,17 @@ public class DockerSandboxConfig {
 				throw invalid(
 						"workspace-projection-roots", "must not contain '..' segments");
 			}
+			if (".".equals(segment)) {
+				continue;
+			}
+			String canonicalSegment = stripWindowsTrailingDotsAndSpaces(segment);
+			if (canonicalSegment.isEmpty()
+					|| ".".equals(canonicalSegment)
+					|| "..".equals(canonicalSegment)) {
+				throw invalid(
+						"workspace-projection-roots",
+						"must not contain segments that Windows normalizes to empty or traversal paths");
+			}
 			if (!segment.isEmpty() && !".".equals(segment)) {
 				hasMeaningfulSegment = true;
 			}
@@ -132,6 +143,18 @@ public class DockerSandboxConfig {
 		catch (InvalidPathException failure) {
 			throw invalid("workspace-projection-roots", "must contain valid paths");
 		}
+	}
+
+	private static String stripWindowsTrailingDotsAndSpaces(String segment) {
+		int end = segment.length();
+		while (end > 0) {
+			char trailing = segment.charAt(end - 1);
+			if (trailing != ' ' && trailing != '.') {
+				break;
+			}
+			end--;
+		}
+		return segment.substring(0, end);
 	}
 
 	private static boolean hasWindowsDrivePrefix(String root) {
