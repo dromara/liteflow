@@ -8,10 +8,21 @@ import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.BakedContextFilesystem;
 
 import java.util.Objects;
-import java.util.UUID;
 
 /** Installs the trusted-local guarded filesystem without enabling a host shell. */
 public final class GuardedLocalFilesystemConfigurer implements HarnessFilesystemConfigurer {
+
+    private static final String INTERNAL_SESSION_DOMAIN =
+            "liteflow-harness-internal-agent:";
+
+    private final String internalSessionId;
+
+    public GuardedLocalFilesystemConfigurer(String agentNamespace) {
+        if (agentNamespace == null || agentNamespace.isBlank()) {
+            throw new IllegalArgumentException("agentNamespace must not be blank");
+        }
+        this.internalSessionId = INTERNAL_SESSION_DOMAIN + agentNamespace;
+    }
 
     @Override
     public void configure(HarnessAgent.Builder builder, HarnessFilesystemContext context) {
@@ -23,7 +34,7 @@ public final class GuardedLocalFilesystemConfigurer implements HarnessFilesystem
         GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(
                 context.workspaceRoot(), context.maxFileBytes(), autoCreate);
         RuntimeContext internalContext = RuntimeContext.builder()
-                .sessionId("liteflow-harness-internal-" + UUID.randomUUID())
+                .sessionId(internalSessionId)
                 .build();
         AbstractFilesystem internalFilesystem =
                 new BakedContextFilesystem(filesystem, internalContext);

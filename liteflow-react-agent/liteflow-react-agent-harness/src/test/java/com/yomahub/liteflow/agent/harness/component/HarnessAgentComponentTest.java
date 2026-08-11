@@ -16,6 +16,7 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.agent.AgentBase;
+import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
@@ -44,8 +45,8 @@ import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
 import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
+import io.agentscope.harness.agent.middleware.SubagentEntry;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
-import io.agentscope.harness.agent.subagent.WorkspaceMode;
 import io.agentscope.harness.agent.subagent.task.BackgroundTask;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.TaskRunSpec;
@@ -53,6 +54,7 @@ import io.agentscope.harness.agent.subagent.task.TaskStatus;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
 import io.agentscope.harness.agent.workspace.WorkspaceManager;
 import io.agentscope.harness.agent.workspace.WorkspaceIndex;
+import io.agentscope.harness.agent.tool.ShellExecuteTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +77,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -236,52 +239,106 @@ class HarnessAgentComponentTest {
     }
 
     @Test
-    void guardedLocalRejectsIsolatedDeclarationsAddedBeforeOrDuringCustomization()
+    void guardedLocalDisablesWorkspaceDeclaredAndCustomizedSubagentsWithoutBreakingParent()
             throws Exception {
         AgentConfig config = configureAgent();
         config.getHarness().setTrustedLocal(true);
-        SubagentDeclaration isolated = SubagentDeclaration.builder()
-                .name("unsafe-isolated")
-                .description("must not fall back to host local shell")
-                .inlineAgentsBody("isolated")
-                .build();
-
-        TestComponent declared = component(
-                slot("declared-session", "declared-request"),
-                new RecordingModel("must not run", false, null, null, null),
-                null);
-        declared.subagentsEnabled = true;
-        declared.subagentDeclarations = List.of(isolated);
-        AgentConfigException declaredFailure =
-                assertThrows(AgentConfigException.class, declared::process);
-        assertTrue(declaredFailure.getMessage().contains("GUARDED_LOCAL"));
-        assertTrue(declaredFailure.getMessage().contains("ISOLATED"));
-
-        TestComponent customized = component(
-                slot("customized-session", "customized-request"),
-                new RecordingModel("must not run", false, null, null, null),
-                null);
-        customized.subagentsEnabled = true;
-        customized.customizerSubagent = isolated;
-        AgentConfigException customizedFailure =
-                assertThrows(AgentConfigException.class, customized::process);
-        assertTrue(customizedFailure.getMessage().contains("GUARDED_LOCAL"));
-        assertTrue(customizedFailure.getMessage().contains("ISOLATED"));
-
-        TestComponent shared = component(
-                slot("shared-session", "shared-request"),
-                new RecordingModel("shared reply", false, null, null, null),
-                null);
-        shared.subagentsEnabled = true;
-        shared.subagentDeclarations = List.of(SubagentDeclaration.builder()
-                .name("safe-shared")
-                .description("inherits the guarded filesystem")
-                .workspaceMode(WorkspaceMode.SHARED)
-                .inlineAgentsBody("shared")
+        Path workspace = Path.of(config.getWorkspace().getRoot());
+        Files.createDirectories(workspace.resolve("subagents"));
+        Files.writeString(
+                workspace.resolve("subagents/preloaded.md"),
+                "---\ndescription: preloaded host declaration\n---\npreloaded");
+        RecordingModel model =
+                new RecordingModel("guarded parent reply", false, null, null, null);
+        TestComponent component = component(
+                slot("guarded-subagent-session", "guarded-subagent-request"), model, null);
+        component.subagentsEnabled = true;
+        component.subagentDeclarations = List.of(SubagentDeclaration.builder()
+                .name("declared")
+                .description("builder declaration")
+                .inlineAgentsBody("declared")
                 .build());
-        assertDoesNotThrow(() -> {
-            shared.process();
-        });
+        component.customizerSubagent = SubagentDeclaration.builder()
+                .name("customized")
+                .description("customizer declaration")
+                .inlineAgentsBody("customized")
+                .build();
+        AtomicInteger customFactoryCalls = new AtomicInteger();
+        component.customizerSubagentFactory = ignored -> {
+            customFactoryCalls.incrementAndGet();
+            throw new AssertionError("guarded subagent factory must remain unreachable");
+        };
+
+        component.process();
+
+        HarnessAgent parent = component.runtime().agent();
+        assertEquals("guarded parent reply", component.getSlot().getResponseData());
+        assertNull(parent.getSubagentAgentManager());
+        assertFalse(parent.getToolkit().getToolSchemas().stream().anyMatch(schema ->
+                List.of(
+                                "agent_spawn",
+                                "agent_send",
+                                "agent_list",
+                                "task_output",
+                                "task_cancel",
+                                "task_list")
+                        .contains(schema.getName())
+                        || ShellExecuteTool.NAME.equals(schema.getName())));
+        assertEquals(0, customFactoryCalls.get());
+
+        RuntimeContext callContext = model.runtimeContexts.get(0);
+        WorkspaceManager workspaceManager =
+                (WorkspaceManager) harnessAgentField("workspaceManager").get(parent);
+        assertTrue(workspaceManager.getFilesystem().write(
+                callContext,
+                "subagents/runtime-added.md",
+                "---\ndescription: session declaration\n---\nruntime")
+                .isSuccess());
+
+        component.process();
+
+        assertEquals("guarded parent reply", component.getSlot().getResponseData());
+        assertNull(parent.getSubagentAgentManager());
+        assertEquals(0, customFactoryCalls.get());
+    }
+
+    @Test
+    void guardedLocalRejectsManualSubagentMiddlewareAndFinalFlagTampering() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        RecordingFilesystem manualFilesystem =
+                new RecordingFilesystem("manual-subagent-filesystem", new ArrayList<>());
+        WorkspaceManager manualWorkspace =
+                new WorkspaceManager(tempDir.resolve("manual-subagent-workspace"), manualFilesystem);
+        RecordingTaskRepository manualTasks =
+                new RecordingTaskRepository("manual-subagent-tasks", new ArrayList<>());
+        SubagentEntry dangerousEntry = new SubagentEntry(
+                "manual-danger",
+                "manual middleware bypass",
+                ignored -> {
+                    throw new AssertionError("manual subagent must remain unreachable");
+                },
+                null);
+        TestComponent manual = component(
+                slot("manual-guarded-session", "manual-guarded-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        manual.manualSubagentsMiddleware =
+                new SubagentsMiddleware(List.of(dangerousEntry), manualTasks, manualWorkspace);
+
+        AgentConfigException manualFailure =
+                assertThrows(AgentConfigException.class, manual::process);
+        assertTrue(manualFailure.getMessage().contains("SubagentsMiddleware"));
+
+        TestComponent tampered = component(
+                slot("tampered-guarded-session", "tampered-guarded-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        tampered.reenableSubagentsReflectively = true;
+
+        AgentConfigException tamperedFailure =
+                assertThrows(AgentConfigException.class, tampered::process);
+        assertTrue(tamperedFailure.getMessage().contains("subagents to remain disabled"));
     }
 
     @Test
@@ -759,6 +816,12 @@ class HarnessAgentComponentTest {
         return (WorkspaceIndex) field.get(spec);
     }
 
+    private static Field harnessAgentField(String name) throws Exception {
+        Field field = HarnessAgent.class.getDeclaredField(name);
+        assertTrue(field.trySetAccessible());
+        return field;
+    }
+
     private static long workspaceTaskSchedulerCount() {
         return Thread.getAllStackTraces().keySet().stream()
                 .filter(Thread::isAlive)
@@ -800,7 +863,9 @@ class HarnessAgentComponentTest {
         private boolean dynamicSubagentsEnabled;
         private List<SubagentDeclaration> subagentDeclarations = List.of();
         private SubagentDeclaration customizerSubagent;
+        private Function<String, Agent> customizerSubagentFactory;
         private SubagentsMiddleware manualSubagentsMiddleware;
+        private boolean reenableSubagentsReflectively;
         private TaskRepository customizerTaskRepository;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
         private HarnessAgentRuntime runtime;
@@ -961,6 +1026,21 @@ class HarnessAgentComponentTest {
             }
             if (customizerSubagent != null) {
                 builder.subagent(customizerSubagent);
+            }
+            if (customizerSubagentFactory != null) {
+                builder.subagentFactory("customized-factory", customizerSubagentFactory);
+            }
+            if (reenableSubagentsReflectively) {
+                try {
+                    Field disabled = HarnessAgent.Builder.class.getDeclaredField("disableSubagents");
+                    if (!disabled.trySetAccessible()) {
+                        throw new AssertionError("disableSubagents must be test-inspectable");
+                    }
+                    disabled.setBoolean(builder, false);
+                }
+                catch (ReflectiveOperationException failure) {
+                    throw new AssertionError(failure);
+                }
             }
             return builder
                     .disableDefaultWorkspaceSkills()

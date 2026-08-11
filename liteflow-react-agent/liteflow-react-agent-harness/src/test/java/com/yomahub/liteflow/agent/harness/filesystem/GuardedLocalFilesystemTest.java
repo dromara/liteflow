@@ -4,6 +4,9 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.model.Model;
 import io.agentscope.harness.agent.HarnessAgent;
+import io.agentscope.harness.agent.bus.AsyncToolRecord;
+import io.agentscope.harness.agent.bus.AsyncToolRegistry;
+import io.agentscope.harness.agent.bus.MessageBus;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.OverlayFilesystem;
 import io.agentscope.harness.agent.filesystem.local.LocalFilesystemWithShell;
@@ -26,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -272,7 +276,8 @@ class GuardedLocalFilesystemTest {
         HarnessFilesystemContext context =
                 new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);
         HarnessAgent.Builder builder = HarnessAgent.builder().model(model());
-        new GuardedLocalFilesystemConfigurer().configure(builder, context);
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
+                .configure(builder, context);
         builder.subagent(SubagentDeclaration.builder()
                 .name("unsafe-isolated")
                 .description("Pinned upstream fallback proof")
@@ -309,7 +314,8 @@ class GuardedLocalFilesystemTest {
                 new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);
         HarnessAgent.Builder builder = HarnessAgent.builder();
 
-        new GuardedLocalFilesystemConfigurer().configure(builder, context);
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
+                .configure(builder, context);
 
         Object configured = builderField("abstractFilesystem").get(builder);
         assertInstanceOf(GuardedLocalFilesystem.class, configured);
@@ -318,6 +324,62 @@ class GuardedLocalFilesystemTest {
         assertNull(builderField("sandboxFilesystemSpec").get(builder));
         assertNull(builderField("remoteFilesystemSpec").get(builder));
         assertTrue(Files.isDirectory(root));
+    }
+
+    @Test
+    void stableAgentScopedInternalSessionRecoversBusAndAsyncRecordsWithoutDirectoryGrowth()
+            throws Exception {
+        Path root = tempDir.resolve("stable-internal-workspace");
+        AgentConfig config = new AgentConfig();
+        config.getWorkspace().setRoot(root.toString());
+        HarnessFilesystemContext context =
+                new HarnessFilesystemContext(root, 4096, Duration.ofSeconds(2), config);
+        String firstAgent = "lf-" + "a".repeat(64);
+        String secondAgent = "lf-" + "b".repeat(64);
+
+        HarnessAgent.Builder firstBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(firstAgent).configure(firstBuilder, context);
+        MessageBus firstBus = (MessageBus) builderField("messageBus").get(firstBuilder);
+        AsyncToolRegistry firstRegistry =
+                (AsyncToolRegistry) builderField("asyncToolRegistry").get(firstBuilder);
+        firstBus.queuePush("recoverable", Map.of("value", "before-rebuild")).block();
+        AsyncToolRecord record = new AsyncToolRecord(
+                "async-1",
+                "conversation-1",
+                "slow-tool",
+                "tool-call-1",
+                AsyncToolRecord.RUNNING,
+                Instant.now().minusSeconds(10));
+        firstRegistry.register(record).block();
+        assertEquals(1, sessionRootCount(root));
+
+        HarnessAgent.Builder rebuiltBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(firstAgent).configure(rebuiltBuilder, context);
+        MessageBus rebuiltBus = (MessageBus) builderField("messageBus").get(rebuiltBuilder);
+        AsyncToolRegistry rebuiltRegistry =
+                (AsyncToolRegistry) builderField("asyncToolRegistry").get(rebuiltBuilder);
+
+        assertEquals(
+                "before-rebuild",
+                rebuiltBus.queueDrain("recoverable", 10).block().get(0).payload().get("value"));
+        assertEquals(
+                List.of(record),
+                rebuiltRegistry.findStale("conversation-1", Duration.ZERO).block());
+        assertEquals(1, sessionRootCount(root));
+
+        HarnessAgent.Builder otherBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(secondAgent).configure(otherBuilder, context);
+        MessageBus otherBus = (MessageBus) builderField("messageBus").get(otherBuilder);
+        assertFalse(otherBus.queuePeek("recoverable").block());
+        otherBus.queuePush("other", Map.of("value", "second-agent")).block();
+        assertEquals(2, sessionRootCount(root));
+
+        GuardedLocalFilesystem guarded = (GuardedLocalFilesystem)
+                builderField("abstractFilesystem").get(rebuiltBuilder);
+        RuntimeContext ordinaryConversation = context("lf-" + "c".repeat(64), "user-a");
+        assertFalse(guarded.exists(ordinaryConversation, ".agentscope/bus"));
+        assertTrue(guarded.write(ordinaryConversation, "ordinary.txt", "ordinary").isSuccess());
+        assertEquals(3, sessionRootCount(root));
     }
 
     @Test
@@ -331,7 +393,7 @@ class GuardedLocalFilesystemTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new GuardedLocalFilesystemConfigurer()
+                () -> new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
                         .configure(HarnessAgent.builder(), context));
         assertFalse(Files.exists(root));
     }
@@ -345,6 +407,12 @@ class GuardedLocalFilesystemTest {
             List<Path> paths = children.toList();
             assertEquals(1, paths.size());
             return paths.get(0);
+        }
+    }
+
+    private static long sessionRootCount(Path root) throws Exception {
+        try (Stream<Path> children = Files.list(root)) {
+            return children.filter(Files::isDirectory).count();
         }
     }
 

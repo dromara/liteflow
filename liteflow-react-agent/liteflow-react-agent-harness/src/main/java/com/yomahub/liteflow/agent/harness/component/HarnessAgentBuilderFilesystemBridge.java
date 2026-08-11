@@ -8,8 +8,8 @@ import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
 import io.agentscope.harness.agent.filesystem.spec.SandboxFilesystemSpec;
-import io.agentscope.harness.agent.subagent.SubagentDeclaration;
-import io.agentscope.harness.agent.subagent.WorkspaceMode;
+import io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware;
+import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -132,25 +132,21 @@ final class HarnessAgentBuilderFilesystemBridge {
         Objects.requireNonNull(builder, "builder");
         try {
             List<Field> fields = guardedSubagentFields();
-            if (!fields.get(1).getBoolean(builder)) {
+            if (!fields.get(0).getBoolean(builder)) {
                 throw new AgentConfigException(
-                        "Harness GUARDED_LOCAL requires dynamic subagents to remain disabled");
+                        "Harness GUARDED_LOCAL requires all Harness subagents to remain disabled");
             }
-            Object configured = fields.get(0).get(builder);
-            if (!(configured instanceof List<?> declarations)) {
-                throw incompatible("HarnessAgent.Builder subagentDeclarations value changed");
+            Object configured = fields.get(1).get(builder);
+            if (!(configured instanceof List<?> middlewares)) {
+                throw incompatible("HarnessAgent.Builder middlewares value changed");
             }
-            for (Object candidate : declarations) {
-                if (!(candidate instanceof SubagentDeclaration declaration)) {
-                    throw incompatible("HarnessAgent.Builder subagent declaration type changed");
-                }
-                if (!declaration.isRemote()
-                        && declaration.getWorkspaceMode() != WorkspaceMode.SHARED) {
+            for (Object middleware : middlewares) {
+                if (middleware instanceof SubagentsMiddleware
+                        || middleware instanceof DynamicSubagentsMiddleware) {
                     throw new AgentConfigException(
-                            "Harness GUARDED_LOCAL rejects local ISOLATED subagent '"
-                                    + declaration.getName()
-                                    + "' because AgentScope 2.0.2 falls back to host local"
-                                    + " filesystem and shell; use SHARED or remote mode");
+                            "Harness GUARDED_LOCAL rejects manually registered "
+                                    + middleware.getClass().getSimpleName()
+                                    + " because it bypasses disableSubagents");
                 }
             }
         }
@@ -210,21 +206,21 @@ final class HarnessAgentBuilderFilesystemBridge {
             if (guardedSubagentFields == null) {
                 builderFields();
                 try {
-                    Field declarations =
-                            HarnessAgent.Builder.class.getDeclaredField("subagentDeclarations");
-                    Field dynamic = HarnessAgent.Builder.class
-                            .getDeclaredField("disableDynamicSubagents");
-                    if (declarations.getType() != List.class
-                            || !Modifier.isFinal(declarations.getModifiers())
-                            || Modifier.isStatic(declarations.getModifiers())
-                            || dynamic.getType() != boolean.class
-                            || Modifier.isStatic(dynamic.getModifiers())
-                            || Modifier.isFinal(dynamic.getModifiers())
-                            || !declarations.trySetAccessible()
-                            || !dynamic.trySetAccessible()) {
+                    Field disabled =
+                            HarnessAgent.Builder.class.getDeclaredField("disableSubagents");
+                    Field middlewares =
+                            HarnessAgent.Builder.class.getDeclaredField("middlewares");
+                    if (disabled.getType() != boolean.class
+                            || Modifier.isStatic(disabled.getModifiers())
+                            || Modifier.isFinal(disabled.getModifiers())
+                            || middlewares.getType() != List.class
+                            || !Modifier.isFinal(middlewares.getModifiers())
+                            || Modifier.isStatic(middlewares.getModifiers())
+                            || !disabled.trySetAccessible()
+                            || !middlewares.trySetAccessible()) {
                         throw incompatible("HarnessAgent.Builder subagent shape changed");
                     }
-                    guardedSubagentFields = List.of(declarations, dynamic);
+                    guardedSubagentFields = List.of(disabled, middlewares);
                 }
                 catch (NoSuchFieldException failure) {
                     throw incompatible("HarnessAgent.Builder subagent shape changed", failure);

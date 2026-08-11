@@ -85,7 +85,8 @@ public abstract class HarnessAgentComponent
 
     @Override
     protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
-        FilesystemPreparation filesystem = validateAndPrepareFilesystem(buildContext.agentConfig());
+        FilesystemPreparation filesystem = validateAndPrepareFilesystem(
+                buildContext.agentConfig(), buildContext.agentNamespace());
         PreparedAgentResources prepared = prepareAgentResources(buildContext, false, true);
         HarnessAgent agent = null;
         List<AutoCloseable> ownedProviderResources = new ArrayList<>();
@@ -130,8 +131,8 @@ public abstract class HarnessAgentComponent
             boolean guardedLocal = buildContext.agentConfig().getHarness().getFilesystemBackend()
                     == HarnessFilesystemBackend.GUARDED_LOCAL;
             if (guardedLocal) {
-                // 2.0.2 dynamic/isolated declarations can fall back to host local + shell.
-                builder.disableDynamicSubagents();
+                // Task 9 may reopen subagents only with an explicitly guarded child factory.
+                builder.disableSubagents();
             }
             HarnessAgentBuilderFilesystemBridge.FilesystemSnapshot filesystemSnapshot =
                     HarnessAgentBuilderFilesystemBridge.snapshot(builder);
@@ -233,7 +234,8 @@ public abstract class HarnessAgentComponent
                 liteflowContext);
     }
 
-    private FilesystemPreparation validateAndPrepareFilesystem(AgentConfig config) {
+    private FilesystemPreparation validateAndPrepareFilesystem(
+            AgentConfig config, String agentNamespace) {
         HarnessConfig harness = config.getHarness();
         if (harness == null) {
             throw new AgentConfigException("liteflow.agent.harness must not be null");
@@ -251,7 +253,7 @@ public abstract class HarnessAgentComponent
                     "Harness DOCKER filesystem is not implemented until Task 5");
         }
         if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
-            configurer = new GuardedLocalFilesystemConfigurer();
+            configurer = new GuardedLocalFilesystemConfigurer(agentNamespace);
         }
         else {
             configurer = filesystemConfigurer();
