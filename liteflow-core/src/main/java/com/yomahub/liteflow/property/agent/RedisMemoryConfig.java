@@ -1,33 +1,28 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * 1.x Redis memory 配置的绑定兼容对象。
+ * 1.x Redis memory 配置的绑定兼容对象，仅用于旧配置迁移诊断。
  *
- * <p>AgentScope 2 运行时不再反射适配 Redis 客户端。请由应用提供实现
- * {@code AgentStateStore} 的 Bean，并配置
- * {@code liteflow.agent.state-store.type=BEAN} 与
- * {@code liteflow.agent.state-store.bean-name}。
+ * <p>setter 只记录用户显式绑定了旧键，使 {@link AgentConfig#validateForExecution()}
+ * 在运行前要求迁移；AgentScope 2 runtime 不读取这些字段。Redis 状态存储应由应用提供
+ * {@code AgentStateStore} Bean，并使用 {@code state-store.type=BEAN}。
  */
 public class RedisMemoryConfig {
 
 	private boolean explicitlyConfigured;
 
     /**
-     * 用于查找 Redis 客户端 Bean 的名称（必填）。
-     *
-     * <p>仅供旧配置迁移；2.0 运行时使用 {@code state-store.bean-name}。
+     * 旧 Redis 客户端 Bean 名，仅保留用于配置绑定和迁移诊断。
      */
     private String beanName;
 
     /**
-     * 旧 Redis 客户端类型。2.0 运行时不再按客户端类型做反射适配。
+     * 旧 Redis 客户端类型，仅保留用于配置绑定和迁移诊断；2.0 runtime 不读取。
      */
     private RedisClientType clientType = RedisClientType.REDISSON;
 
     /**
-     * Redis 中存放 agent 会话数据使用的 key 前缀。
-     *
-     * <p>多业务、多环境共用同一个 Redis 实例时可通过该前缀做隔离，避免冲突。
+     * 旧 Redis key 前缀，仅保留用于配置绑定和迁移诊断；2.0 runtime 不读取。
      */
     private String keyPrefix = "liteflow:agent:session";
 
@@ -63,17 +58,17 @@ public class RedisMemoryConfig {
 	}
 
     /**
-     * Redis 客户端类型枚举，每一项对应 AgentScope RedisSession 支持的一种客户端实现。
+     * 旧 Redis 客户端类型枚举，仅用于绑定历史配置值。
      */
     public enum RedisClientType {
 
-        /** Redisson 客户端。 */
+        /** 历史 Redisson 选项。 */
         REDISSON,
 
-        /** Jedis 客户端（{@code redis.clients.jedis.UnifiedJedis}）。 */
+        /** 历史 Jedis 选项。 */
         JEDIS,
 
-        /** Lettuce 客户端（{@code io.lettuce.core.RedisClient}）。 */
+        /** 历史 Lettuce 选项。 */
         LETTUCE
     }
 }

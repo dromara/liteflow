@@ -238,13 +238,13 @@ if (response.isSuccess()) {
 | `agent.reasoning` | 模型推理 / 回复过程 | 增量文本、最终 assistant 消息、工具调用请求 |
 | `agent.tool_result` | 工具执行结果 | 工具输出或工具执行中的增量片段 |
 | `agent.summary` | 达到最大迭代次数后的总结 | summary 生成过程或最终 summary |
-| `agent.result` | 本轮 Agent 最终结果 | 与最终 `handleReply(reply)` 使用的消息一致 |
+| `agent.result` | 本轮 Agent 最终结果 | 与最终 `handleReply(reply, context)` 使用的消息一致 |
 
 `FlowEvent` 会携带 `chainId`、`nodeId`、`requestId`、`conversationId`、`text`、`last`、`timestamp` 和原始 `data`。其中 `nodeId` 对多 Agent 链路很重要：`WHEN(agentA, agentB)` 并发执行时，多个 Agent 的流式事件可能交错到达，调用方应按 `nodeId`、`conversationId` 或业务自定义字段分组展示。
 
-没有注册 `eventListener` 时，`ReActAgentComponent` 会继续走原来的阻塞调用路径，不会产生额外事件开销；注册 listener 后，组件会使用 AgentScope 的 `agent.stream(...)` 执行，并在流结束后照常调用 `handleReply(reply)`、保存 memory、返回 `LiteflowResponse`。
+无论是否注册 `eventListener`，`ReActCallExecutor` 始终通过 `agent.call(...)`（结构化输出时使用对应重载）执行。AgentScope 的类型化事件由 `FlowEventBridgeMiddleware` 观察；当前 Slot 注册了 listener 时，middleware 才把事件映射为 `FlowEvent` 并投递。调用结束后组件执行 `handleReply(reply, context)`；AgentScope 与所配置 `AgentStateStore` 的状态读写路径不因 listener 是否存在而改变。
 
-`eventListener` 在 chain 执行线程中同步回调。生产环境转发到 SSE、WebSocket 或消息队列时，建议在 listener 中只做轻量入队或缓冲，不要执行耗时 I/O；listener 抛出的异常会向上传播，并可能导致本次链路失败。
+`eventListener` 在事件投递所在的执行线程中同步回调。生产环境转发到 SSE、WebSocket 或消息队列时，建议只做轻量入队或缓冲，不要执行耗时 I/O。`FlowEventBridgeMiddleware` 按 `liteflow.agent.event.listener-failure-mode` 处理 listener 异常：默认 `FAIL_FAST` 会让本次调用失败，`LOG_AND_CONTINUE` 记录警告并继续处理模型事件。
 
 ---
 
@@ -255,8 +255,9 @@ if (response.isSuccess()) {
 | 方法 | 是否必须 | 默认行为 | 说明 |
 | --- | --- | --- | --- |
 | `model()` | 是 | 无 | 返回 `ModelSpec<?>`，由框架从 `AgentConfig` 解析凭据并构造 agentscope `Model` |
-| `systemPrompt()` | 是 | 无 | 返回系统提示词，同一 `(conversationId, agentKey)` 首次构建 Agent 时调用 |
+| `systemPrompt()` | 是 | 无 | 返回组件共享 runtime 的基础系统提示词；每个组件实例仅在懒构建 runtime 时调用一次 |
 | `userPrompt(LiteFlowAgentContext)` | 是 | 无 | 返回本轮用户消息，每次 `process()` 都调用 |
+| `transformSystemPrompt(prompt, LiteFlowAgentContext)` | 否 | 原样返回基础提示词 | 按 invocation 动态转换系统提示词；在 AgentScope 2 Middleware 调用链中执行 |
 | `tools()` | 否 | 空列表 | 注册自定义 `@Tool` 对象 |
 | `skillRepositories()` | 否 | 空列表 | 返回 AgentScope 2 `AgentSkillRepository`；需要文件技能时显式创建 `FileSystemSkillRepository` |
 | `skillFilter()` | 否 | `SkillFilter.all()` | 以 skill ID 过滤 repository 中可见的技能 |
@@ -274,14 +275,14 @@ if (response.isSuccess()) {
 | 方法 | 说明 |
 | --- | --- |
 | `getSlot()` | 当前 LiteFlow `Slot` |
-| `getConversationId()` | 安全化后的 conversation ID，决定 workspace 子目录 |
-| `getAgentKey()` | 安全化后的 Agent key，默认来自 `nodeId` |
+| `getConversationId()` | 解析后的原始业务 conversation ID；安全 workspace ID 由 identity resolver 另行哈希生成 |
+| `getAgentKey()` | 组件的原始稳定 Agent key，默认来自 `nodeId`；安全 state namespace 另行哈希生成 |
 | `getRuntimeSessionId()` | 传给 AgentScope runtime 的安全 session ID |
 | `getAgentNamespace()` | 隔离组件 runtime StateStore 的安全 namespace |
 | `getUsedSkills()` | 本轮通过 load-skill 工具成功加载的 skill ID 列表 |
 | `getChatUsage()` | 本次 `process()` 截至当前已累计的 token 用量（agentscope `ChatUsage`，含 `getInputTokens()` / `getOutputTokens()` / `getTotalTokens()` / `getTime()`（秒））；模型未上报或本轮尚未发生过 reasoning step 时返回 `null` |
 
-注意：`systemPrompt()` 与其他 runtime 构建扩展点在组件首次执行时求值。动态输入应放在 `userPrompt(context)`、`routeModel(..., context)` 或 Middleware 回调中。
+注意：每个组件实例只懒建一个共享 runtime，`systemPrompt()` 只在该 runtime 构建时调用一次，不能读取构建期 `Slot` 来表达 invocation 动态信息。动态系统提示词应放在 `transformSystemPrompt(prompt, LiteFlowAgentContext)`，也可以由 per-call Middleware 根据回调中的 `RuntimeContext` 处理；动态用户输入与模型路由分别放在 `userPrompt(context)` 和 `routeModel(..., context)`。
 
 **框架统一系统提示词**：你在 `systemPrompt()` 中返回的内容不是最终系统提示词。框架在 `effectiveSystemPrompt()` 中会**始终在你的提示词前面拼接**一段内置的 `DEFAULT_SYSTEM_PROMPT`，最终下发给底层 ReActAgent 的是 `DEFAULT_SYSTEM_PROMPT + "\n\n" + 你的 systemPrompt()`。这段默认提示词的内容大致是：
 
@@ -513,23 +514,24 @@ protected Model buildModel() {
 
 ## 5. Conversation、agentKey 与 memory
 
-### 5.1 两层标识分别负责什么
+### 5.1 identity 各维度分别负责什么
 
-当前源码不是单一 `sessionId` 模型，而是把会话拆成两层：
+当前源码把 workspace/runtime session 维度与 Agent state 维度分开：
 
-- `conversationId`：业务 / 对话维度，整条 chain 内一致，决定 workspace 子目录；
-- `agentKey`：组件维度，默认是 `nodeId`，用于在同一段 conversation 中区分不同 Agent 的 `ReActAgent` 实例和记忆。
+- `namespace + userId + conversationId`：决定安全 `runtimeSessionId`、workspace 目录与 workspace lease；
+- `namespace + agentKey`：决定组件 runtime 的 `agentNamespace`；
+- `namespace + userId + conversationId + agentKey`：决定 Agent state 的 guard key 与最终 store session key。
 
 每个 Agent 组件实例在首次执行时懒构建一个 `ReActAgentRuntime`。同一组件实例后续调用会复用：
 
 - 同一个 `ReActAgent` 实例；
 - 同一组 Model、Middleware、Toolkit 与 skill repositories；
 - 同一个 namespaced `AgentStateStore`；
-- 由 invocation guard 按 namespace、user、conversation 与 agentKey 协调的调用租约。
+- 由 invocation guard 分别协调 workspace 与 Agent state 的调用租约。
 
-同一个 `conversationId` 下的不同 `agentKey` 使用不同的安全 runtime session ID 与 store key；同一组件的 Agent 实例仍由组件拥有。工具 workspace 也按 runtime session ID 隔离。
+`runtimeSessionId` 由 `namespace`、`userId` 与 `conversationId` 哈希生成，不含 `agentKey`。workspace 目录使用该 ID，workspace lease key 同样不含 `agentKey`，所以相同三元组下的不同 Agent 共享同一 workspace 和同一 workspace lease。`agentNamespace` 由 `namespace` 与 `agentKey` 生成；Agent state guard 还包含 `userId` 与 `conversationId`，因此不同 `agentKey` 的状态彼此隔离。
 
-因此，同一个 `(conversationId, agentKey)` 下的调用会串行执行，避免多线程同时修改同一份 memory。不同 `agentKey` 可以并行执行，但如果共享 workspace，需要由业务自行避免写同名文件造成冲突。
+因此，同一个 `(namespace, userId, conversationId, agentKey)` 的 state 调用会串行执行。不同 `agentKey` 且不使用本地工具的组件可以并行；当组件需要 workspace lease 时，相同 `(namespace, userId, conversationId)` 的调用还会由共享 workspace lease 串行化。`agentKey` 不能提供文件隔离，文件隔离必须改变 `namespace`、`userId` 或 `conversationId`。
 
 ### 5.2 conversationId 从哪里来
 
@@ -749,14 +751,13 @@ liteflow.agent.shell.mode=disabled
 ```properties
 liteflow.agent.skills.enabled=true
 liteflow.agent.skills.path=./skills
-liteflow.agent.skills.strict=true
 ```
 
-| 配置项 | 默认值 | 说明 |
+| `SkillsConfig` 字段 | 默认值 | 当前行为 |
 | --- | --- | --- |
-| `enabled` | `false` | 是否启用配置驱动的 skills 支持；关闭时不会注册 `load_skill_through_path` 工具 |
-| `path` | `./skills` | skills 根目录，目录下每个子目录表示一个 skill |
-| `strict` | `true` | 严格模式。目录缺失、声明的 skill 不存在、`tools` 类加载失败等问题会快速失败；设为 `false` 时记录 warn 并尽量继续 |
+| `enabled` | `false` | core 不会自动读取；上例的组件覆写自行读取它，决定是否返回 repository |
+| `path` | `./skills` | core 不会自动读取；上例把它传给 `FileSystemSkillRepository` 构造器 |
+| `strict` | `true` | 仅保留配置绑定兼容；`strict` 字段当前不会被 `ReActAgentComponent`、`FileSystemSkillRepository` 或 `SkillFilter` 读取，设为 `false` 不会启用 warn-and-continue 模式 |
 
 ```java
 @Override
@@ -774,7 +775,7 @@ protected boolean ownsSkillRepository(AgentSkillRepository repository) {
 }
 ```
 
-`skills.path` 的相对路径基于 JVM `user.dir`；生产环境建议使用只读绝对路径。repository 非空且 `dynamicSkillsEnabled()` 为 `true` 时，runtime 会注册 `load_skill_through_path`。
+`skills.path` 的相对路径基于 JVM `user.dir`；生产环境建议使用只读绝对路径。`FileSystemSkillRepository` 构造时若根路径不存在或不是目录，会立即抛出 `IllegalArgumentException`；枚举时会跳过没有 `SKILL.md` 的子目录，并对无法解析的单个 skill 记录 warning 后忽略。repository 非空且 `dynamicSkillsEnabled()` 为 `true` 时，LiteFlow 管理的动态技能 middleware 会注册 `load_skill_through_path`。
 
 ### 7.2 目录结构与 SKILL.md
 
@@ -825,6 +826,8 @@ protected SkillFilter skillFilter() {
 - `SkillFilter.only(ids...)` / `except(ids...)`：按 skill ID 选择；
 - invocation 可在 AgentScope `RuntimeContext` 中放入 overlay `SkillFilter`，进一步收窄本轮范围。
 
+`SkillFilter` 只按 skill ID 做允许/拒绝判断，不负责验证 ID 是否存在，也不会触发 class 或 tool 反射加载。`only("missing-id")` 的结果是没有 repository skill 可见，而不是读取 `SkillsConfig.strict` 决定降级策略。
+
 要彻底关闭动态技能，可不返回 repository，或覆写：
 
 ```java
@@ -842,7 +845,7 @@ LiteFlow 2.0 core 不反射实例化 `SKILL.md` 中声明的 Java 类。需要�
 
 ### 7.5 记录本轮使用的技能
 
-`LiteFlowAgentContext#getUsedSkills()` 返回当前 invocation 中已经成功加载过的 skill ID 列表。典型用法是在 `handleReply()` 中把回复和技能使用情况一起写到下游可读的位置：
+`LiteFlowAgentContext#getUsedSkills()` 返回当前 invocation 中已经成功加载过的 skill ID 列表。典型用法是在 `handleReply(reply, context)` 中把回复和技能使用情况一起写到下游可读的位置：
 
 ```java
 @Override
@@ -863,7 +866,7 @@ protected void handleReply(Msg reply, LiteFlowAgentContext context) {
 
 ### 7.6 当前边界
 
-当前实现保留 AgentScope 2 的 repository、filter 与受管 load-skill 工具，但显式设置 `dynamicSkillsEnabled(false)` 和 `skillCodeExecutionEnabled(false)` 交给底层 Agent builder；技能加载不会隐式开启代码执行。Shell 与 workspace 工具仍只能通过各自组件扩展点显式启用，并受 trusted-local 与 shell policy 约束。repository 路径仍应只读、受版本管理，避免提示词供应链被篡改。
+当前实现使用 LiteFlow 管理的 `DynamicSkillMiddleware`，并关闭 Agent builder 自带的第二套 dynamic-skill middleware；向 middleware 传入的代码执行开关以及 builder 的 `skillCodeExecutionEnabled` 均为 `false`，技能加载不会隐式开启代码执行。Shell 与 workspace 工具仍只能通过各自组件扩展点显式启用，并受 trusted-local 与 shell policy 约束。repository 路径仍应只读、受版本管理，避免提示词供应链被篡改。
 
 ---
 
@@ -963,14 +966,14 @@ Skill 文档不会触发 Java 类反射。Java 工具统一由组件 `tools()` �
 </chain>
 ```
 
-默认情况下，同一条 chain 内的多个 Agent 会共享同一个 `conversationId`，但默认 `agentKey()` 是各自的 `nodeId`，所以 `deepseekAgent` 与 `dashscopeAgent` 使用不同的 runtime session ID、StateStore key 与 invocation guard key，可以并行执行；内置工具 workspace 也按 runtime session ID 隔离。
+默认情况下，同一条 chain 内的多个 Agent 共享 `conversationId`；在相同 namespace 与 user 下，它们也共享同一个 `runtimeSessionId`、workspace 与 workspace lease。默认 `agentKey()` 是各自的 `nodeId`，所以 `deepseekAgent` 与 `dashscopeAgent` 的 `agentNamespace`、StateStore key 与 state guard key 不同。两者都不需要 workspace lease 时可以并行；启用本地 workspace/Shell 工具后，共享 workspace lease 会串行化相同会话的相关调用，文件不会因 `agentKey` 不同而隔离。
 
-如果多个 Agent 覆写为相同的 `agentKey()`，invocation guard 会让相同 identity 串行执行。要真正隔离并行，请确保 `(conversationId, agentKey)` 组合不同。
+如果多个组件覆写为相同的稳定 `agentKey()`，它们会竞争同一个 state guard key。每个组件实例只拥有一个 runtime，`agentKey()` 在首次 runtime 构建后必须保持稳定；把 request ID 等单次值拼入 `agentKey` 会在后续调用触发 identity-change 校验失败。文件是否隔离只由 `namespace + userId + conversationId` 决定。
 
 ```java
 @Override
 protected String agentKey() {
-    return getNodeId() + "-" + getSlot().getRequestId();
+    return "stable-deepseek-agent";
 }
 ```
 
@@ -1040,7 +1043,6 @@ liteflow.agent.defaults.max-iterations=50
 # Skills
 liteflow.agent.skills.enabled=false
 liteflow.agent.skills.path=./skills
-liteflow.agent.skills.strict=true
 
 # 平台凭据
 liteflow.agent.openai.api-key=${OPENAI_API_KEY}
@@ -1083,13 +1085,13 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 | BEAN StateStore 启动失败 | 未配置 Bean 名，或 Bean 未实现 `AgentStateStore` | 检查 `state-store.bean-name` 与容器中的 Bean 类型 |
 | Shell 返回 `command 'xxx' not allowed by whitelist` | 白名单模式下命令未放行 | 加入白名单，或继续保持禁用 |
 | `path escapes workspace` | 文件工具收到绝对路径或越界路径 | 使用相对路径，并限制在当前 workspace 内 |
-| `Skills root not found` | 开启 skills 后，`liteflow.agent.skills.path` 指向的目录不存在 | 创建 skills 根目录；或关闭 skills；或在开发环境把 `strict=false` 以记录 warn 后继续 |
+| `Base directory does not exist` | 组件把不存在的 `skills.path` 传给 `FileSystemSkillRepository` | 创建并保护 skills 根目录，或让组件不返回该 repository；构造器会直接失败，没有配置驱动的降级开关 |
 | 预期 skill 没有出现在 system prompt | repository 未返回该 skill，或 filter 使用了 name 而不是 skill ID | 检查 `AgentSkillRepository#getAllSkills()`，并把 `AgentSkill#getSkillId()` 传给 `SkillFilter` |
 | `context.getUsedSkills()` 为空 | 本轮 Agent 没有成功调用 `load_skill_through_path`，或读取时已离开 `process()` 生命周期 | 在 `handleReply(reply, context)` 或 Middleware 回调中读取；确认模型确实加载了对应 skill |
 | 没有收到流式事件 | 本次调用没有使用 `ExecuteOption.eventListener(...)`，或链路中没有 ReAct Agent 节点 | 注册 listener；确认事件类型是否为 `agent.reasoning`、`agent.tool_result`、`agent.summary` 或 `agent.result` |
 | invocation context 已失效或缺失 | 在构造器、Bean 初始化、异步线程或 `process()` 结束后保存/读取上下文 | 只使用 `userPrompt(context)`、工具 `RuntimeContext`、Middleware 回调与 `handleReply(reply, context)` 的当次参数 |
-| 注册 listener 后链路失败 | `eventListener` 回调中抛出了异常，或执行了阻塞 I/O 导致上游超时 | listener 内只做轻量处理并自行捕获异常；重型转发逻辑放到外部队列或线程池 |
-| `WHEN` 中多个 Agent 看起来没有并行 | 多个组件解析到了相同 `(conversationId, agentKey)`，共用了同一把锁；或下游等待最慢分支 | 确保需要并行的 Agent 使用不同 `agentKey()`；如还要隔离文件，则使用不同 conversation 或子目录 |
+| 注册 listener 后链路失败 | listener 抛异常且 `listener-failure-mode=FAIL_FAST`，或执行阻塞 I/O 导致上游超时 | listener 内只做轻量处理；需要容忍投递失败时评估并配置 `LOG_AND_CONTINUE` |
+| `WHEN` 中多个 Agent 看起来没有并行 | state guard key 相同、多个工具型 Agent 共享 workspace lease，或下游等待最慢分支 | 保持各组件 `agentKey` 稳定且不同；需要文件隔离时使用不同 `namespace`、`userId` 或 `conversationId`，仅改变 `agentKey` 无效 |
 | `context.getChatUsage()` 返回 `null` | 本轮还没发生 model call，或模型/网关未上报 `ChatUsage` | 改到 `handleReply(reply, context)` 再读；确认模型响应携带 usage |
 | `context.getChatUsage()` 的累计 token 比 SDK 单次响应大 | 同一次 `process()` 内 ReAct 触发了多次 model call，`ChatUsageMiddleware` 会逐次累加 | 这是预期行为；单步 usage 可在自定义 Middleware 的 model-call 事件中读取 |
 

@@ -1,44 +1,33 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * 1.x MySQL memory 配置的绑定兼容对象。
+ * 1.x MySQL memory 配置的绑定兼容对象，仅用于旧配置迁移诊断。
  *
- * <p>AgentScope 2 运行时不再创建数据库 session。请由应用提供实现
- * {@code AgentStateStore} 的 Bean，并配置
- * {@code liteflow.agent.state-store.type=BEAN} 与
- * {@code liteflow.agent.state-store.bean-name}。LiteFlow 不创建 JDBC 连接池。
+ * <p>setter 只记录用户显式绑定了旧键，使 {@link AgentConfig#validateForExecution()}
+ * 在运行前要求迁移；AgentScope 2 runtime 不读取这些字段。数据库状态存储应由应用提供
+ * {@code AgentStateStore} Bean，并使用 {@code state-store.type=BEAN}。
  */
 public class MysqlMemoryConfig {
 
 	private boolean explicitlyConfigured;
 
     /**
-     * 用于查找 {@link javax.sql.DataSource} 的 Bean 名称（必填）。
-     *
-     * <p>仅供旧配置迁移；2.0 运行时使用 {@code state-store.bean-name}。
+     * 旧 DataSource Bean 名，仅保留用于配置绑定和迁移诊断。
      */
     private String dataSourceBeanName;
 
     /**
-     * 传入 {@code MysqlSession} 的数据库名。
-     *
-     * <p>留空表示使用 AgentScope 的默认值 {@code agentscope}；
-     * 与 {@link #tableName} 至少有一项非空时，会走带自定义库表名的构造重载。
+     * 旧数据库名，仅保留用于配置绑定和迁移诊断；2.0 runtime 不读取。
      */
     private String databaseName;
 
     /**
-     * 传入 {@code MysqlSession} 的表名。
-     *
-     * <p>留空表示使用 AgentScope 的默认值 {@code agentscope_sessions}。
+     * 旧表名，仅保留用于配置绑定和迁移诊断；2.0 runtime 不读取。
      */
     private String tableName;
 
     /**
-     * 是否允许 AgentScope 自动建库建表。
-     *
-     * <p>默认为 false，避免在生产环境因权限不足或库表已被运维管控而出错；
-     * 当确实需要自动初始化（如本地开发、单测）时可显式打开。
+     * 旧自动建库建表开关，仅保留用于配置绑定和迁移诊断；2.0 runtime 不读取。
      */
     private boolean createIfNotExist = false;
 
