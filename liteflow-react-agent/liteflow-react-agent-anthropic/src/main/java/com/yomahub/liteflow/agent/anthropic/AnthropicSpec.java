@@ -9,7 +9,6 @@ import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.anthropic.AnthropicChatModel;
 import io.agentscope.extensions.model.anthropic.formatter.AnthropicBaseFormatter;
 
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -85,10 +84,8 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {
-        AnthropicChatModel.Builder builder = AnthropicChatModel.builder()
-                .apiKey(apiKey)
-                .baseUrl(baseUrl)
-                .modelName(modelName);
+        AnthropicChatModel.Builder builder = new ThinkingAwareBuilder();
+        builder.apiKey(apiKey).baseUrl(baseUrl).modelName(modelName);
         GenerateOptions options = normalizeThinkingOptions(
                 mergeGenerateOptions(buildGenerateOptions()));
         if (options != null) {
@@ -97,13 +94,12 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
                 builder.stream(options.getStream());
             }
         }
-        if (formatter != null) {
-            builder.formatter(formatter);
-        }
+        builder.formatter(formatter);
         if (builderCustomizer != null) {
             builderCustomizer.accept(builder);
         }
-        return builder.build();
+        AnthropicClientBridge.verifyContract();
+        return AnthropicClientOwner.own(builder.build());
     }
 
     private GenerateOptions buildGenerateOptions() {
@@ -129,87 +125,19 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
             bodyParams.remove("thinking");
             return copyWithThinking(options, null, bodyParams);
         }
-
-        GenerateOptions nativeOptions = getGenerateOptions();
-        if (nativeOptions != null
-                && nativeOptions.getAdditionalBodyParams().containsKey("thinking")) {
-            return normalizeExplicitThinkingBody(
-                    options,
-                    bodyParams,
-                    nativeOptions.getAdditionalBodyParams().get("thinking"));
+        if (!bodyParams.containsKey("thinking") && options.getThinkingBudget() != null) {
+            bodyParams.put("thinking", Map.of(
+                    "type", "enabled", "budget_tokens", options.getThinkingBudget()));
         }
-
-        Integer effectiveBudget = options.getThinkingBudget();
-        if (effectiveBudget != null) {
-            requirePositiveBudget(effectiveBudget);
-            bodyParams.put("thinking", enabledThinkingBody(effectiveBudget));
-            return copyWithThinking(options, effectiveBudget, bodyParams);
-        }
-        if (Boolean.TRUE.equals(thinkingEnabled)) {
+        GenerateOptions normalized = copyWithThinking(
+                options, options.getThinkingBudget(), bodyParams);
+        AnthropicThinkingFormatter.select(null, normalized);
+        if (Boolean.TRUE.equals(thinkingEnabled)
+                && normalized.getThinkingBudget() == null
+                && !normalized.getAdditionalBodyParams().containsKey("thinking")) {
             throw invalidThinkingBudget();
         }
-
-        if (bodyParams.containsKey("thinking")) {
-            return normalizeExplicitThinkingBody(
-                    options, bodyParams, bodyParams.get("thinking"));
-        }
-        return options;
-    }
-
-    private GenerateOptions normalizeExplicitThinkingBody(
-            GenerateOptions options,
-            Map<String, Object> bodyParams,
-            Object rawThinking) {
-        if (!(rawThinking instanceof Map<?, ?> thinkingBody)) {
-            if (options.getThinkingBudget() != null || thinkingEnabled != null) {
-                throw new AgentConfigException(
-                        "Anthropic raw thinking body conflicts with typed thinking configuration");
-            }
-            return options;
-        }
-
-        Object type = thinkingBody.get("type");
-        if ("enabled".equals(type)) {
-            int budget = positiveBodyBudget(thinkingBody.get("budget_tokens"));
-            Map<Object, Object> normalizedThinkingBody = new LinkedHashMap<>(thinkingBody);
-            normalizedThinkingBody.put("budget_tokens", budget);
-            bodyParams.put("thinking", normalizedThinkingBody);
-            return copyWithThinking(options, budget, bodyParams);
-        }
-        if ("disabled".equals(type)) {
-            return copyWithThinking(options, null, bodyParams);
-        }
-        if (options.getThinkingBudget() != null || thinkingEnabled != null) {
-            throw new AgentConfigException(
-                    "Anthropic raw thinking body conflicts with typed thinking configuration");
-        }
-        return options;
-    }
-
-    private int positiveBodyBudget(Object value) {
-        if (!(value instanceof Number number)) {
-            throw invalidThinkingBudget();
-        }
-        try {
-            int budget = new BigDecimal(number.toString()).intValueExact();
-            requirePositiveBudget(budget);
-            return budget;
-        } catch (ArithmeticException | NumberFormatException exception) {
-            throw invalidThinkingBudget();
-        }
-    }
-
-    private void requirePositiveBudget(int budget) {
-        if (budget <= 0) {
-            throw invalidThinkingBudget();
-        }
-    }
-
-    private static Map<String, Object> enabledThinkingBody(int budget) {
-        Map<String, Object> thinking = new LinkedHashMap<>();
-        thinking.put("type", "enabled");
-        thinking.put("budget_tokens", budget);
-        return thinking;
+        return normalized;
     }
 
     private static GenerateOptions copyWithThinking(
@@ -245,10 +173,21 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
 
     private static AgentConfigException invalidThinkingBudget() {
         return new AgentConfigException(
-                "Anthropic thinking requires a positive token budget when enabled");
+                "Anthropic thinking requires a budget when enabled");
     }
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    /** Keeps the request-boundary decorator when the last-running customizer replaces formatter. */
+    private static final class ThinkingAwareBuilder extends AnthropicChatModel.Builder {
+        @Override
+        public AnthropicChatModel.Builder formatter(AnthropicBaseFormatter formatter) {
+            if (formatter instanceof AnthropicThinkingFormatter) {
+                return super.formatter(formatter);
+            }
+            return super.formatter(new AnthropicThinkingFormatter(formatter));
+        }
     }
 }
