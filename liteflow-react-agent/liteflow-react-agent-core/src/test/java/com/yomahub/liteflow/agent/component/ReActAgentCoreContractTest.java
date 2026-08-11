@@ -43,10 +43,12 @@ import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
-import io.agentscope.core.state.AgentState;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.tool.Tool;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
@@ -83,16 +85,60 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ReActAgentCoreContractTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static Object originalLiteflowConfig;
+    private static Object originalContextAware;
+    private static LiteflowConfig liteflowConfigSentinel;
+    private static LocalContextAware contextAwareSentinel;
     private final List<ContractComponent> components = new ArrayList<>();
+    private Object previousLiteflowConfig;
+    private Object previousContextAware;
 
     @TempDir
     Path tempDir;
 
+    @BeforeAll
+    static void installGlobalSentinels() throws Exception {
+        Field configField = staticField(LiteflowConfigGetter.class, "liteflowConfig");
+        Field contextField = staticField(ContextAwareHolder.class, "contextAware");
+        originalLiteflowConfig = configField.get(null);
+        originalContextAware = contextField.get(null);
+        liteflowConfigSentinel = new LiteflowConfig();
+        contextAwareSentinel = new LocalContextAware();
+        configField.set(null, liteflowConfigSentinel);
+        contextField.set(null, contextAwareSentinel);
+    }
+
+    @AfterAll
+    static void verifyAndRestoreGlobalSentinels() throws Exception {
+        Field configField = staticField(LiteflowConfigGetter.class, "liteflowConfig");
+        Field contextField = staticField(ContextAwareHolder.class, "contextAware");
+        try {
+            assertSame(liteflowConfigSentinel, configField.get(null));
+            assertSame(contextAwareSentinel, contextField.get(null));
+        } finally {
+            configField.set(null, originalLiteflowConfig);
+            contextField.set(null, originalContextAware);
+        }
+    }
+
+    @BeforeEach
+    void preserveGlobals() throws Exception {
+        previousLiteflowConfig = staticField(
+                LiteflowConfigGetter.class, "liteflowConfig").get(null);
+        previousContextAware = staticField(
+                ContextAwareHolder.class, "contextAware").get(null);
+    }
+
     @AfterEach
-    void cleanUp() {
-        components.forEach(ContractComponent::close);
-        LiteflowConfigGetter.clean();
-        ContextAwareHolder.clean();
+    void cleanUp() throws Exception {
+        try {
+            components.forEach(ContractComponent::close);
+        } finally {
+            staticField(LiteflowConfigGetter.class, "liteflowConfig")
+                    .set(null, previousLiteflowConfig);
+            staticField(ContextAwareHolder.class, "contextAware")
+                    .set(null, previousContextAware);
+        }
     }
 
     @Test
@@ -110,15 +156,25 @@ class ReActAgentCoreContractTest {
         components.add(component);
 
         processAndAssertAttachments(component);
+        ReActAgentRuntime firstRuntime = component.runtime;
+        AgentBase firstAgent = component.runtime.agent();
         processAndAssertAttachments(component);
 
         assertEquals("deterministic reply", slot.getResponseData());
         assertEquals(2, model.calls.get());
         assertEquals(1, component.runtimeBuilds.get());
-        assertSame(component.runtime, component.runtimeSeenAtBuild);
-        assertEquals("contract-user", model.contexts.get(0).getUserId());
-        assertEquals(model.contexts.get(0).getSessionId(), model.contexts.get(1).getSessionId());
-        assertSame(slot, model.contexts.get(0).get(Slot.class));
+        assertSame(firstRuntime, component.runtime);
+        assertSame(firstAgent, component.runtime.agent());
+        RuntimeContext firstRuntimeContext = model.contexts.get(0);
+        RuntimeContext secondRuntimeContext = model.contexts.get(1);
+        assertNotSame(firstRuntimeContext, secondRuntimeContext);
+        LiteFlowAgentContext firstInvocation = firstRuntimeContext.get(LiteFlowAgentContext.class);
+        LiteFlowAgentContext secondInvocation = secondRuntimeContext.get(LiteFlowAgentContext.class);
+        assertNotSame(firstInvocation, secondInvocation);
+        assertFalse(firstInvocation.getAttachmentKey().equals(secondInvocation.getAttachmentKey()));
+        assertEquals("contract-user", firstRuntimeContext.getUserId());
+        assertEquals(firstRuntimeContext.getSessionId(), secondRuntimeContext.getSessionId());
+        assertSame(slot, firstRuntimeContext.get(Slot.class));
     }
 
     @Test
@@ -151,8 +207,10 @@ class ReActAgentCoreContractTest {
         LiteFlowAgentContext schemaContext = schemaComponent.model.contexts.get(0)
                 .get(LiteFlowAgentContext.class);
         assertEquals(schema, schemaContext.getOutputSpec().jsonSchema());
-        assertEquals("object", schemaComponent.model.options.get(0)
-                .getResponseFormat().getJsonSchema().getSchema().get("type"));
+        JsonNode responseFormatSchema = OBJECT_MAPPER.valueToTree(
+                schemaComponent.model.options.get(0)
+                        .getResponseFormat().getJsonSchema().getSchema());
+        assertEquals(schema, responseFormatSchema);
 
         ContractComponent beta = component("beta-conversation",
                 new RecordingModel("beta reply"));
@@ -168,8 +226,12 @@ class ReActAgentCoreContractTest {
         assertNotSame(text.model, beta.model);
         assertEquals(List.of("alpha_tool"), text.model.toolNames.get(0));
         assertEquals(List.of("beta_tool"), beta.model.toolNames.get(0));
-        assertTrue(systemPrompt(text.model.inputs.get(0)).contains("alpha system"));
-        assertTrue(systemPrompt(beta.model.inputs.get(0)).contains("beta system"));
+        String alphaSystemPrompt = systemPrompt(text.model.inputs.get(0));
+        String betaSystemPrompt = systemPrompt(beta.model.inputs.get(0));
+        assertTrue(alphaSystemPrompt.contains("alpha system"));
+        assertFalse(alphaSystemPrompt.contains("beta system"));
+        assertTrue(betaSystemPrompt.contains("beta system"));
+        assertFalse(betaSystemPrompt.contains("alpha system"));
         assertTrue(text.model.inputs.get(0).stream()
                 .noneMatch(message -> "beta question".equals(message.getTextContent())));
         assertTrue(beta.model.inputs.get(0).stream()
@@ -366,28 +428,9 @@ class ReActAgentCoreContractTest {
         processAndAssertAttachments(lenient);
         assertEquals("lenient reply", lenient.slot.getResponseData());
         assertEquals(1, lenient.model.calls.get());
+        assertEquals(1, lenient.warnings.size());
+        assertTrue(lenient.warnings.get(0).contains(loadFailure.getMessage()));
         assertNoLoadFailure(lenient, config);
-
-        AgentInvocationIdentity identity = new InvocationIdentityResolver(
-                config.getRuntime().getNamespace()).resolve(
-                "contract-user", "warning-conversation", "warning-agent");
-        GuardedNamespacedAgentStateStore warningStore =
-                new GuardedNamespacedAgentStateStore(
-                        new LoadFailingStore(loadFailure), identity.agentNamespace());
-        assertThrows(RuntimeException.class, () -> warningStore.get(
-                identity.userId(), identity.runtimeSessionId(), "agent_state", AgentState.class));
-        List<String> warnings = new ArrayList<>();
-        StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
-                warningStore, AgentStateStoreFailurePolicy.LOG_AND_CONTINUE, warnings::add);
-        RuntimeContext runtimeContext = RuntimeContext.builder()
-                .userId(identity.userId())
-                .sessionId(identity.runtimeSessionId())
-                .build();
-        assertEquals("prompt", middleware.onSystemPrompt(null, runtimeContext, "prompt")
-                .block(Duration.ofSeconds(1)));
-        assertEquals(1, warnings.size());
-        assertTrue(warningStore.takeLoadFailure(
-                identity.userId(), identity.runtimeSessionId()).isEmpty());
     }
 
     @Test
@@ -513,10 +556,15 @@ class ReActAgentCoreContractTest {
         AttemptGuard guard = new AttemptGuard();
         config.getInvocationGuard().setMode(AgentInvocationGuardMode.BEAN);
         config.getInvocationGuard().setBeanName("contract-guard");
-        Field field = ContextAwareHolder.class.getDeclaredField("contextAware");
-        field.setAccessible(true);
-        field.set(null, new GuardContextAware(guard));
+        staticField(ContextAwareHolder.class, "contextAware")
+                .set(null, new GuardContextAware(guard));
         return guard;
+    }
+
+    private static Field staticField(Class<?> owner, String name) throws Exception {
+        Field field = owner.getDeclaredField(name);
+        field.setAccessible(true);
+        return field;
     }
 
     private static void append(Path path, String value) throws Exception {
@@ -633,7 +681,6 @@ class ReActAgentCoreContractTest {
         private final RecordingModel model;
         private final AtomicInteger runtimeBuilds = new AtomicInteger();
         private ReActAgentRuntime runtime;
-        private ReActAgentRuntime runtimeSeenAtBuild;
         private String systemPrompt = "stable contract prompt";
         private String userPrompt = "contract question";
         private Class<?> outputType;
@@ -642,6 +689,7 @@ class ReActAgentCoreContractTest {
         private String agentKey;
         private boolean workspaceLease;
         private AgentStateStoreResolver stateStoreResolver;
+        private final List<String> warnings = new CopyOnWriteArrayList<>();
 
         private ContractComponent(Slot slot, RecordingModel model) {
             this.slot = slot;
@@ -667,7 +715,6 @@ class ReActAgentCoreContractTest {
         protected ReActAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             runtimeBuilds.incrementAndGet();
             runtime = super.buildRuntime(buildContext);
-            runtimeSeenAtBuild = runtime;
             return runtime;
         }
 
@@ -711,6 +758,14 @@ class ReActAgentCoreContractTest {
             return stateStoreResolver == null
                     ? super.stateStoreResolver()
                     : stateStoreResolver;
+        }
+
+        @Override
+        StateStoreFailureMiddleware createStateStoreFailureMiddleware(
+                GuardedNamespacedAgentStateStore stateStore,
+                AgentStateStoreFailurePolicy failurePolicy) {
+            return new StateStoreFailureMiddleware(
+                    stateStore, failurePolicy, warnings::add);
         }
     }
 

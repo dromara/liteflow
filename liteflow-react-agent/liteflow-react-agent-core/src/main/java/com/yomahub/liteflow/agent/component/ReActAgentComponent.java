@@ -26,6 +26,7 @@ import com.yomahub.liteflow.agent.tool.GuardedWorkspacePathResolver;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
 import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import io.agentscope.core.ReActAgent;
@@ -168,6 +169,12 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
         return new DefaultAgentStateStoreResolver();
     }
 
+    StateStoreFailureMiddleware createStateStoreFailureMiddleware(
+            GuardedNamespacedAgentStateStore stateStore,
+            AgentStateStoreFailurePolicy failurePolicy) {
+        return new StateStoreFailureMiddleware(stateStore, failurePolicy);
+    }
+
     @Override
     protected ReActAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
         BuildOptions options = buildOptions(buildContext);
@@ -212,7 +219,7 @@ public abstract class ReActAgentComponent extends AbstractAgentComponent<ReActAg
                 throw new AgentConfigException("routingModels must not contain null");
             }
 
-            StateStoreFailureMiddleware failureMiddleware = new StateStoreFailureMiddleware(
+            StateStoreFailureMiddleware failureMiddleware = createStateStoreFailureMiddleware(
                     namespaced,
                     buildContext.agentConfig().getStateStore().getFailurePolicy());
             List<Model> managedModels = List.copyOf(ownedModels);
