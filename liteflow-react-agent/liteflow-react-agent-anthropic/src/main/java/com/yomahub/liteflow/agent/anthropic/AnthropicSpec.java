@@ -1,14 +1,16 @@
 package com.yomahub.liteflow.agent.anthropic;
 
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.CredentialResolver;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.anthropic.AnthropicChatModel;
 import io.agentscope.extensions.model.anthropic.formatter.AnthropicBaseFormatter;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
@@ -86,7 +88,8 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
                 .apiKey(apiKey)
                 .baseUrl(baseUrl)
                 .modelName(modelName);
-        GenerateOptions options = mergeGenerateOptions(buildGenerateOptions());
+        GenerateOptions options = normalizeThinkingOptions(
+                mergeGenerateOptions(buildGenerateOptions()));
         if (options != null) {
             builder.defaultOptions(options);
             if (options.getStream() != null) {
@@ -103,27 +106,140 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
     }
 
     private GenerateOptions buildGenerateOptions() {
-        Integer effectiveThinkingBudget = effectiveThinkingBudget();
-        if (effectiveThinkingBudget == null) {
+        if (Boolean.FALSE.equals(thinkingEnabled) || thinkingBudget == null) {
             return null;
         }
-        GenerateOptions.Builder b = GenerateOptions.builder();
-        b.thinkingBudget(effectiveThinkingBudget);
-        return b.build();
+        return GenerateOptions.builder()
+                .thinkingBudget(thinkingBudget)
+                .build();
     }
 
-    private Integer effectiveThinkingBudget() {
-        if (Boolean.FALSE.equals(thinkingEnabled)) {
-            return null;
-        }
-        if (thinkingBudget == null || thinkingBudget <= 0) {
-            if (Boolean.TRUE.equals(thinkingEnabled) || thinkingBudget != null) {
-                throw new AgentConfigException(
-                        "Anthropic thinking requires a positive token budget when enabled");
+    private GenerateOptions normalizeThinkingOptions(GenerateOptions options) {
+        if (options == null) {
+            if (Boolean.TRUE.equals(thinkingEnabled)) {
+                throw invalidThinkingBudget();
             }
             return null;
         }
-        return thinkingBudget;
+
+        Map<String, Object> bodyParams =
+                new LinkedHashMap<>(options.getAdditionalBodyParams());
+        if (Boolean.FALSE.equals(thinkingEnabled)) {
+            bodyParams.remove("thinking");
+            return copyWithThinking(options, null, bodyParams);
+        }
+
+        GenerateOptions nativeOptions = getGenerateOptions();
+        if (nativeOptions != null
+                && nativeOptions.getAdditionalBodyParams().containsKey("thinking")) {
+            return normalizeExplicitThinkingBody(
+                    options,
+                    bodyParams,
+                    nativeOptions.getAdditionalBodyParams().get("thinking"));
+        }
+
+        Integer effectiveBudget = options.getThinkingBudget();
+        if (effectiveBudget != null) {
+            requirePositiveBudget(effectiveBudget);
+            bodyParams.put("thinking", enabledThinkingBody(effectiveBudget));
+            return copyWithThinking(options, effectiveBudget, bodyParams);
+        }
+        if (Boolean.TRUE.equals(thinkingEnabled)) {
+            throw invalidThinkingBudget();
+        }
+
+        if (bodyParams.containsKey("thinking")) {
+            return normalizeExplicitThinkingBody(
+                    options, bodyParams, bodyParams.get("thinking"));
+        }
+        return options;
+    }
+
+    private GenerateOptions normalizeExplicitThinkingBody(
+            GenerateOptions options,
+            Map<String, Object> bodyParams,
+            Object rawThinking) {
+        if (!(rawThinking instanceof Map<?, ?> thinkingBody)) {
+            if (options.getThinkingBudget() != null || thinkingEnabled != null) {
+                throw new AgentConfigException(
+                        "Anthropic raw thinking body conflicts with typed thinking configuration");
+            }
+            return options;
+        }
+
+        Object type = thinkingBody.get("type");
+        if ("enabled".equals(type)) {
+            int budget = positiveBodyBudget(thinkingBody.get("budget_tokens"));
+            return copyWithThinking(options, budget, bodyParams);
+        }
+        if ("disabled".equals(type)) {
+            return copyWithThinking(options, null, bodyParams);
+        }
+        if (options.getThinkingBudget() != null || thinkingEnabled != null) {
+            throw new AgentConfigException(
+                    "Anthropic raw thinking body conflicts with typed thinking configuration");
+        }
+        return options;
+    }
+
+    private int positiveBodyBudget(Object value) {
+        if (!(value instanceof Number number)) {
+            throw invalidThinkingBudget();
+        }
+        long budget = number.longValue();
+        if (budget <= 0 || budget > Integer.MAX_VALUE) {
+            throw invalidThinkingBudget();
+        }
+        return (int) budget;
+    }
+
+    private void requirePositiveBudget(int budget) {
+        if (budget <= 0) {
+            throw invalidThinkingBudget();
+        }
+    }
+
+    private static Map<String, Object> enabledThinkingBody(int budget) {
+        Map<String, Object> thinking = new LinkedHashMap<>();
+        thinking.put("type", "enabled");
+        thinking.put("budget_tokens", budget);
+        return thinking;
+    }
+
+    private static GenerateOptions copyWithThinking(
+            GenerateOptions options,
+            Integer thinkingBudget,
+            Map<String, Object> bodyParams) {
+        return GenerateOptions.builder()
+                .apiKey(options.getApiKey())
+                .baseUrl(options.getBaseUrl())
+                .endpointPath(options.getEndpointPath())
+                .modelName(options.getModelName())
+                .stream(options.getStream())
+                .temperature(options.getTemperature())
+                .topP(options.getTopP())
+                .maxTokens(options.getMaxTokens())
+                .maxCompletionTokens(options.getMaxCompletionTokens())
+                .frequencyPenalty(options.getFrequencyPenalty())
+                .presencePenalty(options.getPresencePenalty())
+                .thinkingBudget(thinkingBudget)
+                .reasoningEffort(options.getReasoningEffort())
+                .executionConfig(options.getExecutionConfig())
+                .toolChoice(options.getToolChoice())
+                .topK(options.getTopK())
+                .seed(options.getSeed())
+                .cacheControl(options.getCacheControl())
+                .parallelToolCalls(options.getParallelToolCalls())
+                .responseFormat(options.getResponseFormat())
+                .additionalHeaders(options.getAdditionalHeaders())
+                .additionalBodyParams(bodyParams)
+                .additionalQueryParams(options.getAdditionalQueryParams())
+                .build();
+    }
+
+    private static AgentConfigException invalidThinkingBudget() {
+        return new AgentConfigException(
+                "Anthropic thinking requires a positive token budget when enabled");
     }
 
     private static boolean isBlank(String value) {

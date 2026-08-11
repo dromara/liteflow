@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.anthropic;
 
+import com.anthropic.models.messages.MessageCreateParams;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,7 +69,12 @@ class AnthropicSpecTest {
                 () -> assertEquals(Boolean.TRUE, options.getParallelToolCalls()),
                 () -> assertEquals(256, options.getThinkingBudget()),
                 () -> assertEquals(Map.of("X-Test", "header-value"), options.getAdditionalHeaders()),
-                () -> assertEquals(Map.of("body-key", "body-value"), options.getAdditionalBodyParams()),
+                () -> assertEquals(Map.of(
+                                "body-key", "body-value",
+                                "thinking", Map.of(
+                                        "type", "enabled",
+                                        "budget_tokens", 256)),
+                        options.getAdditionalBodyParams()),
                 () -> assertEquals(Map.of("query-key", "query-value"), options.getAdditionalQueryParams()));
     }
 
@@ -105,6 +112,184 @@ class AnthropicSpecTest {
                 () -> assertEquals("unrelated-native-key", options.getApiKey()),
                 () -> assertEquals("https://unrelated-native.example", options.getBaseUrl()),
                 () -> assertEquals("native-model", options.getModelName()));
+    }
+
+    @Test
+    void disabledThinkingRemovesNativeBudgetAndBodyButPreservesUnrelatedOptions()
+            throws Exception {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .temperature(0.71)
+                .thinkingBudget(512)
+                .additionalBodyParam("thinking", Map.of(
+                        "type", "enabled",
+                        "budget_tokens", 512))
+                .additionalBodyParam("native-field", "native-value")
+                .build();
+
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-disabled-native")
+                        .apiKey("test-key")
+                        .stream(false)
+                        .topP(0.42)
+                        .additionalBodyParam("common-field", "common-value")
+                        .thinking(thinking -> thinking.enabled(false).budget(256))
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        MessageCreateParams request = anthropicRequest(options);
+        assertAll(
+                () -> assertNull(options.getThinkingBudget()),
+                () -> assertEquals(Boolean.FALSE, options.getStream()),
+                () -> assertEquals(0.71, options.getTemperature()),
+                () -> assertEquals(0.42, options.getTopP()),
+                () -> assertEquals("native-value",
+                        options.getAdditionalBodyParams().get("native-field")),
+                () -> assertEquals("common-value",
+                        options.getAdditionalBodyParams().get("common-field")),
+                () -> assertFalse(options.getAdditionalBodyParams().containsKey("thinking")),
+                () -> assertFalse(request._additionalBodyProperties().containsKey("thinking")));
+    }
+
+    @Test
+    void nativeNonPositiveThinkingBudgetsAreRejectedAfterMerge() {
+        for (int invalidBudget : new int[]{0, -1}) {
+            assertThrows(
+                    AgentConfigException.class,
+                    () -> Anthropic.of("claude-thinking-invalid-native")
+                            .apiKey("test-key")
+                            .generateOptions(GenerateOptions.builder()
+                                    .thinkingBudget(invalidBudget)
+                                    .build())
+                            .resolve(new AgentConfig()));
+        }
+    }
+
+    @Test
+    void enabledThinkingConsumesPositiveNativeBudgetAndPreservesOtherOptions()
+            throws Exception {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .stream(false)
+                .temperature(0.73)
+                .thinkingBudget(768)
+                .additionalHeader("X-Native", "header-value")
+                .build();
+
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-native")
+                        .apiKey("test-key")
+                        .topP(0.44)
+                        .thinking(thinking -> thinking.enabled(true))
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        Map<String, Object> thinkingBody = bodyObject(anthropicRequest(options), "thinking");
+        assertAll(
+                () -> assertEquals(768, options.getThinkingBudget()),
+                () -> assertEquals(Boolean.FALSE, options.getStream()),
+                () -> assertEquals(0.73, options.getTemperature()),
+                () -> assertEquals(0.44, options.getTopP()),
+                () -> assertEquals(Map.of("X-Native", "header-value"),
+                        options.getAdditionalHeaders()),
+                () -> assertEquals("enabled", thinkingBody.get("type")),
+                () -> assertEquals(768,
+                        ((Number) thinkingBody.get("budget_tokens")).intValue()));
+    }
+
+    @Test
+    void positiveThinkingBudgetReachesAnthropicRequestBody() throws Exception {
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-request")
+                        .apiKey("test-key")
+                        .thinking(thinking -> thinking.enabled(true).budget(2048))
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        MessageCreateParams request = anthropicRequest(options);
+        assertTrue(request._additionalBodyProperties().containsKey("thinking"));
+        Map<String, Object> thinkingBody = bodyObject(request, "thinking");
+        assertAll(
+                () -> assertEquals(2048, options.getThinkingBudget()),
+                () -> assertEquals("enabled", thinkingBody.get("type")),
+                () -> assertEquals(2048,
+                        ((Number) thinkingBody.get("budget_tokens")).intValue()));
+    }
+
+    @Test
+    void nativeThinkingBodyWinsTypedBudgetAndKeepsObservationConsistent()
+            throws Exception {
+        Map<String, Object> nativeThinking = Map.of(
+                "type", "enabled",
+                "budget_tokens", 3072,
+                "vendor-flag", "preserved");
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .thinkingBudget(1024)
+                .additionalBodyParam("thinking", nativeThinking)
+                .additionalBodyParam("native-extra", "preserved")
+                .build();
+
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-native-body")
+                        .apiKey("test-key")
+                        .thinking(thinking -> thinking.enabled(true).budget(512))
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        Map<String, Object> requestThinking = bodyObject(anthropicRequest(options), "thinking");
+        assertAll(
+                () -> assertEquals(3072, options.getThinkingBudget()),
+                () -> assertEquals("enabled", requestThinking.get("type")),
+                () -> assertEquals(3072,
+                        ((Number) requestThinking.get("budget_tokens")).intValue()),
+                () -> assertEquals("preserved", requestThinking.get("vendor-flag")),
+                () -> assertEquals("preserved",
+                        options.getAdditionalBodyParams().get("native-extra")));
+    }
+
+    @Test
+    void invalidNativeThinkingBodyBudgetIsRejected() {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .thinkingBudget(1024)
+                .additionalBodyParam("thinking", Map.of(
+                        "type", "enabled",
+                        "budget_tokens", 0))
+                .build();
+
+        assertThrows(
+                AgentConfigException.class,
+                () -> Anthropic.of("claude-thinking-invalid-body")
+                        .apiKey("test-key")
+                        .thinking(thinking -> thinking.enabled(true).budget(512))
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+    }
+
+    @Test
+    void nativeDisabledThinkingBodyWinsProviderEnablement() throws Exception {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .thinkingBudget(1024)
+                .additionalBodyParam("thinking", Map.of("type", "disabled"))
+                .build();
+
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-native-disabled")
+                        .apiKey("test-key")
+                        .thinking(thinking -> thinking.enabled(true).budget(512))
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        Map<String, Object> requestThinking = bodyObject(anthropicRequest(options), "thinking");
+        assertAll(
+                () -> assertNull(options.getThinkingBudget()),
+                () -> assertEquals("disabled", requestThinking.get("type")));
     }
 
     @Test
@@ -216,6 +401,22 @@ class AnthropicSpecTest {
 
     private static GenerateOptions configuredOptions(AnthropicChatModel model) throws Exception {
         return field(model, "defaultOptions", GenerateOptions.class);
+    }
+
+    private static MessageCreateParams anthropicRequest(GenerateOptions defaultOptions) {
+        MessageCreateParams.Builder builder = MessageCreateParams.builder()
+                .model("claude-test")
+                .maxTokens(4096)
+                .addUserMessage("offline fixture");
+        new AnthropicChatFormatter().applyOptions(builder, null, defaultOptions);
+        return builder.build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> bodyObject(
+            MessageCreateParams request, String propertyName) {
+        assertNotNull(request._additionalBodyProperties().get(propertyName));
+        return request._additionalBodyProperties().get(propertyName).convert(Map.class);
     }
 
     private static <T> T field(Object target, String name, Class<T> type) throws Exception {
