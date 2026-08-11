@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * 仅在 {@link MemoryStorageMode#MYSQL} 模式下生效的配置项，对应配置段
- * {@code liteflow.agent.session.memory.mysql.*}。
+ * 1.x MySQL memory 配置的绑定兼容对象。
  *
- * <p>{@link javax.sql.DataSource} 由用户在框架容器中预先注册，
- * 通过 {@link #dataSourceBeanName} 借助 ContextAware 查找；
- * LiteFlow 自身不会创建任何 JDBC 连接池。
+ * <p>AgentScope 2 运行时不再创建数据库 session。请由应用提供实现
+ * {@code AgentStateStore} 的 Bean，并配置
+ * {@code liteflow.agent.state-store.type=BEAN} 与
+ * {@code liteflow.agent.state-store.bean-name}。LiteFlow 不创建 JDBC 连接池。
  */
 public class MysqlMemoryConfig {
 
@@ -15,8 +15,7 @@ public class MysqlMemoryConfig {
     /**
      * 用于查找 {@link javax.sql.DataSource} 的 Bean 名称（必填）。
      *
-     * <p>{@code MysqlAgentSessionFactory} 启动时通过 ContextAware 拿到该 bean，
-     * 若为空或类型不匹配会抛出 {@code AgentConfigException}。
+     * <p>仅供旧配置迁移；2.0 运行时使用 {@code state-store.bean-name}。
      */
     private String dataSourceBeanName;
 

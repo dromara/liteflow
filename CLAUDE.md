@@ -177,7 +177,7 @@ ls liteflow-*/pom.xml
 
 #### ReAct Agent（`liteflow-react-agent/`，仅 JDK 17+）
 让一个 LLM ReAct agent（由 agentscope-java 驱动）作为普通 LiteFlow 节点编排进 EL 链路。这是一个聚合模块，包含一个 core 模块 + 每个模型供应商各一个模块：
-- **liteflow-react-agent-core**：`ReActAgentComponent`（一个 `process()` 为 `final` 的 `NodeComponent`，通过 `model()`、`systemPrompt()`、`userPrompt()`、`tools()`、`handleReply()` 等受保护钩子定制行为）、`ModelSpec` 凭据/模型抽象、conversation/agentKey **会话模型**（`AgentSessionManager`）、可插拔的 memory 持久化（通过 `AgentSessionFactory` SPI 支持 JVM/NONE/LOCAL_FILE/REDIS/MYSQL）、桥接为 LiteFlow `FlowEvent` 的流式事件、workspace 文件工具，以及受管 shell 工具。
+- **liteflow-react-agent-core**：`ReActAgentComponent`（一个 `process()` 为 `final` 的 `NodeComponent`，通过 `model()`、`systemPrompt()`、`userPrompt(LiteFlowAgentContext)`、`middlewares()`、`skillRepositories()`、`skillFilter()`、`tools()` 与 `handleReply()` 等受保护扩展点定制行为）、`ModelSpec` 凭据/模型抽象、组件拥有的 AgentScope 2 runtime、可插拔 `AgentStateStore`（MEMORY/JSON/BEAN）、桥接为 LiteFlow `FlowEvent` 的流式事件、workspace 文件工具，以及受管 shell 工具。
 - **liteflow-react-agent-openai / -anthropic / -gemini / -dashscope**：各供应商的入口类（如 `OpenAI`、`DeepSeek`、`Kimi`、`Anthropic`、`Gemini`、`DashScope`），返回对应供应商的 `ModelSpec` 子类型。业务应用通常只依赖其中一个供应商模块（每个都会传递依赖 `-core`）。
 
 两层标识：`conversationId`（业务/对话维度，决定 workspace 子目录，整条 chain 内一致）和 `agentKey`（组件维度，默认取 `nodeId`，隔离各 agent 的 memory）。**完整使用指南：`docs/liteflow-react-agent-guide.md`** —— 修改 agent 行为前请查阅它，不要在此处复制其配置表格。

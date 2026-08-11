@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.basicchain;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +9,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-
-import java.nio.file.Files;
 
 /**
  * 验证最基础的 THEN 链路集成：basicAgent → recordReply。
@@ -29,7 +26,6 @@ public class BasicChainTest extends BaseAgentLiveTest {
     @BeforeEach
     public void resetProbe() {
         BasicAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "BasicChainTest");
     }
 
     @Test
@@ -50,19 +46,16 @@ public class BasicChainTest extends BaseAgentLiveTest {
         Assertions.assertEquals(1, BasicAgentCmp.USER_PROMPT_COUNT.get());
         Assertions.assertEquals(1, BasicAgentCmp.HANDLE_REPLY_COUNT.get());
 
-        // ctx() 在 process() 内可用，能拿到非空 conversationId / agentKey / workspace。
+        // LiteFlowAgentContext 在 process() 内可用，能拿到非空 conversationId / agentKey。
         Assertions.assertNotNull(BasicAgentCmp.SEEN_CONVERSATION_ID.get());
         Assertions.assertEquals("basicAgent", BasicAgentCmp.SEEN_AGENT_KEY.get());
-        Assertions.assertNotNull(BasicAgentCmp.SEEN_WORKSPACE.get());
-        Assertions.assertTrue(Files.isDirectory(BasicAgentCmp.SEEN_WORKSPACE.get()),
-                "workspace dir must exist on disk");
 
         // LiteflowResponse 透出 chain 内解析到的 conversationId。
         Assertions.assertEquals(BasicAgentCmp.SEEN_CONVERSATION_ID.get(), response.getConversationId());
 
-        // AgentProbe 透露：reasoning 至少触发一次（真实模型已经回复）。
+        // AgentProbe 透露：reasoning 至少触发一次（确定性模型已经回复）。
         Assertions.assertTrue(BasicAgentCmp.PROBE.get().reasoningCount() > 0,
-                "real LLM should emit at least one reasoning event");
+                "deterministic model should emit at least one reasoning event");
         Assertions.assertNotNull(BasicAgentCmp.PROBE.get().observedAgentId());
         // 当组件关闭 shell/workspace 工具时，Toolkit 应该不包含这些内置工具。
         Assertions.assertFalse(BasicAgentCmp.PROBE.get().toolNames().contains("execute_shell_command"));

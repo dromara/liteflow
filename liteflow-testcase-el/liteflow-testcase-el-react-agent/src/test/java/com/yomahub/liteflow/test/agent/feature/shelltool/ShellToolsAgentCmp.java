@@ -2,9 +2,12 @@ package com.yomahub.liteflow.test.agent.feature.shelltool;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.tool.GuardedWorkspacePathResolver;
 import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.property.agent.ShellMode;
+import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.model.Model;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -31,7 +34,12 @@ public class ShellToolsAgentCmp extends ReActAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+        throw new AssertionError("deterministic buildModel override must bypass model spec");
+    }
+
+    @Override
+    protected Model buildModel() {
+        return new DeterministicHistoryModel("shell-tools-model", new java.util.ArrayList<>());
     }
 
     @Override
@@ -46,7 +54,7 @@ public class ShellToolsAgentCmp extends ReActAgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return true;
+        return agentConfig().getShell().getMode() != ShellMode.DISABLED;
     }
 
     @Override
@@ -63,7 +71,11 @@ public class ShellToolsAgentCmp extends ReActAgentComponent {
     @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         java.nio.file.Path root = java.nio.file.Path.of(agentConfig().getWorkspace().getRoot());
-        ManagedShellCommandTool tool = new ManagedShellCommandTool(root, agentConfig());
+        GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(
+                root,
+                agentConfig().getWorkspace().getMaxFileBytes(),
+                agentConfig().getWorkspace().isAutoCreate());
+        ManagedShellCommandTool tool = new ManagedShellCommandTool(resolver, agentConfig());
         io.agentscope.core.agent.RuntimeContext runtimeContext =
                 io.agentscope.core.agent.RuntimeContext.builder()
                         .userId(context.getRuntimeUserId())
@@ -71,7 +83,7 @@ public class ShellToolsAgentCmp extends ReActAgentComponent {
                         .put(com.yomahub.liteflow.agent.context.LiteFlowAgentContext.class, context)
                         .put(com.yomahub.liteflow.slot.Slot.class, context.getSlot())
                         .build();
-        WORKSPACE.set(root.resolve(context.getRuntimeSessionId()).toAbsolutePath().normalize().toString());
+        WORKSPACE.set(resolver.sessionRoot(context.getRuntimeSessionId()).toString());
         PWD_OUTPUT.set(tool.executeCommand(runtimeContext, "pwd"));
         BLOCKED_OUTPUT.set(tool.executeCommand(runtimeContext, "rm -rf /"));
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());

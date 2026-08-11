@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.workspacetools;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,6 @@ public class WorkspaceToolsFeatureTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         WorkspaceToolsAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "WorkspaceToolsFeatureTest");
         // 配置极小阈值以验证截断行为
         liteflowConfig.getAgent().getWorkspace().setMaxFileBytes(4);
         liteflowConfig.getAgent().getWorkspace().setMaxListSize(1);
@@ -56,9 +54,11 @@ public class WorkspaceToolsFeatureTest extends BaseAgentLiveTest {
 
         // 越界路径被拒绝。
         Assertions.assertNotNull(WorkspaceToolsAgentCmp.RELATIVE_ESCAPE.get());
-        Assertions.assertTrue(WorkspaceToolsAgentCmp.RELATIVE_ESCAPE.get().contains("path escapes workspace"));
+        Assertions.assertTrue(
+                WorkspaceToolsAgentCmp.RELATIVE_ESCAPE.get().contains("parent traversal is denied"));
         Assertions.assertNotNull(WorkspaceToolsAgentCmp.ABSOLUTE_ESCAPE.get());
-        Assertions.assertTrue(WorkspaceToolsAgentCmp.ABSOLUTE_ESCAPE.get().contains("absolute path denied"));
+        Assertions.assertTrue(
+                WorkspaceToolsAgentCmp.ABSOLUTE_ESCAPE.get().contains("absolute workspace path denied"));
 
         // 开启 workspace 文件工具时 4 个工具都应在 toolkit 中。
         Set<String> toolNames = WorkspaceToolsAgentCmp.PROBE.get().toolNames();

@@ -1,11 +1,12 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * 仅在 {@link MemoryStorageMode#REDIS} 模式下生效的配置项，对应配置段
- * {@code liteflow.agent.session.memory.redis.*}。
+ * 1.x Redis memory 配置的绑定兼容对象。
  *
- * <p>Redis 连接由用户自行创建并注册到框架容器中（Spring、Solon 等），
- * LiteFlow 通过 {@code ContextAware} 按 {@link #beanName} 查找。
+ * <p>AgentScope 2 运行时不再反射适配 Redis 客户端。请由应用提供实现
+ * {@code AgentStateStore} 的 Bean，并配置
+ * {@code liteflow.agent.state-store.type=BEAN} 与
+ * {@code liteflow.agent.state-store.bean-name}。
  */
 public class RedisMemoryConfig {
 
@@ -14,16 +15,12 @@ public class RedisMemoryConfig {
     /**
      * 用于查找 Redis 客户端 Bean 的名称（必填）。
      *
-     * <p>{@code RedisAgentSessionFactory} 启动时通过 ContextAware 拿到该 bean，
-     * 类型必须与 {@link #clientType} 匹配，否则会抛出 {@code AgentConfigException}。
+     * <p>仅供旧配置迁移；2.0 运行时使用 {@code state-store.bean-name}。
      */
     private String beanName;
 
     /**
-     * 已注册 Redis 客户端的类型，决定 AgentScope RedisSession 通过哪种方式适配。
-     *
-     * <p>{@code RedisAgentSessionFactory} 据此选择 {@code redissonClient} /
-     * {@code jedisClient} / {@code lettuceClient} 三种构造方法之一进行反射注入。
+     * 旧 Redis 客户端类型。2.0 运行时不再按客户端类型做反射适配。
      */
     private RedisClientType clientType = RedisClientType.REDISSON;
 

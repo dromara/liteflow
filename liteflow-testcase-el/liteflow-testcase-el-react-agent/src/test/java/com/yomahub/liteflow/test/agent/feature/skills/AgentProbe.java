@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-/** AgentScope 2 middleware probe used by the live integration tests. */
+/** AgentScope 2 middleware probe used by deterministic skill-filter tests. */
 public final class AgentProbe {
 
     private final AtomicInteger reasoningEventCount = new AtomicInteger();

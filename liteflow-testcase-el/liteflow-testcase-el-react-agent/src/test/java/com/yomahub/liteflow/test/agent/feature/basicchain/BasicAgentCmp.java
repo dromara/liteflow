@@ -2,12 +2,12 @@ package com.yomahub.liteflow.test.agent.feature.basicchain;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.model.Model;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,7 +22,6 @@ public class BasicAgentCmp extends ReActAgentComponent {
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
     public static final AtomicReference<String> SEEN_CONVERSATION_ID = new AtomicReference<>();
     public static final AtomicReference<String> SEEN_AGENT_KEY = new AtomicReference<>();
-    public static final AtomicReference<Path> SEEN_WORKSPACE = new AtomicReference<>();
     public static final AtomicReference<String> LAST_REPLY = new AtomicReference<>();
     public static final AtomicInteger SYSTEM_PROMPT_COUNT = new AtomicInteger();
     public static final AtomicInteger USER_PROMPT_COUNT = new AtomicInteger();
@@ -32,7 +31,6 @@ public class BasicAgentCmp extends ReActAgentComponent {
         PROBE.set(new AgentProbe());
         SEEN_CONVERSATION_ID.set(null);
         SEEN_AGENT_KEY.set(null);
-        SEEN_WORKSPACE.set(null);
         LAST_REPLY.set(null);
         SYSTEM_PROMPT_COUNT.set(0);
         USER_PROMPT_COUNT.set(0);
@@ -41,7 +39,12 @@ public class BasicAgentCmp extends ReActAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+        throw new AssertionError("deterministic buildModel override must bypass model spec");
+    }
+
+    @Override
+    protected Model buildModel() {
+        return new DeterministicHistoryModel("basic-chain-model", new java.util.ArrayList<>());
     }
 
     @Override
@@ -55,8 +58,6 @@ public class BasicAgentCmp extends ReActAgentComponent {
         USER_PROMPT_COUNT.incrementAndGet();
         SEEN_CONVERSATION_ID.set(context.getConversationId());
         SEEN_AGENT_KEY.set(context.getAgentKey());
-        SEEN_WORKSPACE.set(java.nio.file.Path.of(agentConfig().getWorkspace().getRoot())
-                .resolve(context.getRuntimeSessionId()));
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }

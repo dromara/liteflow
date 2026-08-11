@@ -2,9 +2,11 @@ package com.yomahub.liteflow.test.agent.feature.skills;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
+import com.yomahub.liteflow.test.agent.support.ForwardingProbeMiddleware;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.model.Model;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.FileSystemSkillRepository;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -22,17 +25,33 @@ public class SkillsAgentCmp extends ReActAgentComponent {
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
     public static final AtomicReference<List<String>> USED_SKILLS_SNAPSHOT = new AtomicReference<>();
+    private static final List<String> MODEL_INPUTS = new CopyOnWriteArrayList<>();
+    private static final MiddlewareBase FORWARDING_PROBE = new ForwardingProbeMiddleware(() -> {
+        AgentProbe probe = PROBE.get();
+        return probe == null ? null : probe.middleware();
+    });
     public static volatile List<String> allowedSkills = List.of();
 
     public static void reset() {
         PROBE.set(new AgentProbe());
         USED_SKILLS_SNAPSHOT.set(null);
+        MODEL_INPUTS.clear();
         allowedSkills = List.of();
+    }
+
+    public static List<String> modelInputs() {
+        return List.copyOf(MODEL_INPUTS);
     }
 
     @Override
     protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+        throw new AssertionError("deterministic buildModel override must bypass model spec");
+    }
+
+    @Override
+    protected Model buildModel() {
+        return new DeterministicHistoryModel(
+                "skills-model", new CopyOnWriteArrayList<>(), MODEL_INPUTS);
     }
 
     @Override
@@ -84,8 +103,7 @@ public class SkillsAgentCmp extends ReActAgentComponent {
 
     @Override
     protected List<MiddlewareBase> middlewares() {
-        AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.middleware());
+        return List.of(FORWARDING_PROBE);
     }
 
     @Override

@@ -2,11 +2,14 @@ package com.yomahub.liteflow.test.agent.feature.sessionreuse;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
+import com.yomahub.liteflow.test.agent.support.ForwardingProbeMiddleware;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.model.Model;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -20,13 +23,32 @@ public class MemoryAgentCmp extends ReActAgentComponent {
 
     public static final String FIXED_CONVERSATION_ID = "sessionreuse-conversation";
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
+    private static final List<Integer> MODEL_MESSAGE_COUNTS = new CopyOnWriteArrayList<>();
+    private static final MiddlewareBase FORWARDING_PROBE = new ForwardingProbeMiddleware(() -> {
+        AgentProbe probe = PROBE.get();
+        return probe == null ? null : probe.middleware();
+    });
+
     public static void reset() {
         PROBE.set(new AgentProbe());
     }
 
+    public static void resetModelObservations() {
+        MODEL_MESSAGE_COUNTS.clear();
+    }
+
+    public static List<Integer> modelMessageCounts() {
+        return List.copyOf(MODEL_MESSAGE_COUNTS);
+    }
+
     @Override
     protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+        throw new AssertionError("deterministic buildModel override must bypass model spec");
+    }
+
+    @Override
+    protected Model buildModel() {
+        return new DeterministicHistoryModel("session-reuse-model", MODEL_MESSAGE_COUNTS);
     }
 
     @Override
@@ -62,7 +84,6 @@ public class MemoryAgentCmp extends ReActAgentComponent {
 
     @Override
     protected List<MiddlewareBase> middlewares() {
-        AgentProbe probe = PROBE.get();
-        return probe == null ? List.of() : List.of(probe.middleware());
+        return List.of(FORWARDING_PROBE);
     }
 }

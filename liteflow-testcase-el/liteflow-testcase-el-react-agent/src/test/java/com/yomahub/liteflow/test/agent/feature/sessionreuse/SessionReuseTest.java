@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.sessionreuse;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ public class SessionReuseTest extends BaseAgentLiveTest {
     @BeforeEach
     public void reset() {
         MemoryAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "SessionReuseTest");
+        MemoryAgentCmp.resetModelObservations();
     }
 
     @Test
@@ -44,5 +43,12 @@ public class SessionReuseTest extends BaseAgentLiveTest {
         String secondAgentId = MemoryAgentCmp.PROBE.get().observedAgentId();
         Assertions.assertEquals(firstAgentId, secondAgentId,
                 "同一 (conversationId, agentKey) 多次调用应复用同一个 ReActAgent 实例");
+        Assertions.assertTrue(MemoryAgentCmp.PROBE.get().reasoningCount() > 0,
+                "runtime middleware must forward callbacks to the replacement probe");
+        Assertions.assertEquals(2, MemoryAgentCmp.modelMessageCounts().size());
+        Assertions.assertTrue(
+                MemoryAgentCmp.modelMessageCounts().get(1)
+                        > MemoryAgentCmp.modelMessageCounts().get(0),
+                "second model invocation must receive the persisted first-turn history");
     }
 }

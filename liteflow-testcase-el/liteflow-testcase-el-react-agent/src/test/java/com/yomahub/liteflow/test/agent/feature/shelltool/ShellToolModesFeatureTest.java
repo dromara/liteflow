@@ -3,13 +3,13 @@ package com.yomahub.liteflow.test.agent.feature.shelltool;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -17,23 +17,24 @@ import java.util.Set;
 
 /**
  * 覆盖 guide §6.4 受管 Shell 工具的三种模式：DISABLED / BLACKLIST / WHITELIST。
- * 每个测试都在同一条 THEN 链路中调用 Agent，但 BeforeEach 调整全局 shell.mode。
+ * 每个测试使用 fresh Spring context，在同一条 THEN 链路中验证独立的 shell.mode 配置。
  */
 @TestPropertySource("classpath:/feature/shelltool/application.properties")
 @SpringBootTest(classes = ShellToolModesFeatureTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.shelltool")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ShellToolModesFeatureTest extends BaseAgentLiveTest {
 
     @BeforeEach
     public void reset() {
         ShellToolsAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "ShellToolModesFeatureTest");
     }
 
     @Test
     public void testDisabledModeSkipsToolRegistrationAndDeniesExecution() {
         liteflowConfig.getAgent().getShell().setMode(ShellMode.DISABLED);
+        liteflowConfig.getAgent().getWorkspace().setTrustedLocal(false);
 
         LiteflowResponse response = flowExecutor.execute2Resp(
                 "shellToolsChain", "请用一句话作答。");
@@ -52,6 +53,7 @@ public class ShellToolModesFeatureTest extends BaseAgentLiveTest {
     @Test
     public void testBlacklistModeRegistersToolAndBlocksDangerousFirstToken() {
         liteflowConfig.getAgent().getShell().setMode(ShellMode.BLACKLIST);
+        liteflowConfig.getAgent().getWorkspace().setTrustedLocal(true);
 
         LiteflowResponse response = flowExecutor.execute2Resp(
                 "shellToolsChain", "请用一句话作答。");
@@ -76,6 +78,7 @@ public class ShellToolModesFeatureTest extends BaseAgentLiveTest {
     public void testWhitelistModeOnlyAllowsListedCommands() {
         liteflowConfig.getAgent().getShell().setMode(ShellMode.WHITELIST);
         liteflowConfig.getAgent().getShell().setWhitelist(List.of("pwd"));
+        liteflowConfig.getAgent().getWorkspace().setTrustedLocal(true);
 
         LiteflowResponse response = flowExecutor.execute2Resp(
                 "shellToolsChain", "请用一句话作答。");
