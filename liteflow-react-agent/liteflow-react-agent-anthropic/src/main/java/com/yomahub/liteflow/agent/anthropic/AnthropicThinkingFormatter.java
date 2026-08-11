@@ -23,8 +23,6 @@ import java.util.Map;
 /** Applies LiteFlow's Anthropic thinking contract at the final request boundary. */
 final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
 
-    private static final int DEFAULT_MAX_TOKENS = 4096;
-
     private final AnthropicBaseFormatter delegate;
 
     AnthropicThinkingFormatter(AnthropicBaseFormatter delegate) {
@@ -49,6 +47,7 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
         Selection selection = select(perCall, defaults);
         delegate.applyOptions(paramsBuilder, selection.options(), null);
         if (selection.thinking() != null) {
+            validateAgainstFinalRequest(paramsBuilder, selection.thinking());
             paramsBuilder.thinking(selection.thinking());
         }
     }
@@ -73,17 +72,16 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
                 ? null
                 : rawThinking(perCall, defaults);
         Integer typed = typedThinking(perCall, defaults, raw);
-        int maxTokens = merged.getMaxTokens() == null ? DEFAULT_MAX_TOKENS : merged.getMaxTokens();
         Map<String, Object> body = new LinkedHashMap<>(merged.getAdditionalBodyParams());
         body.remove("thinking");
 
         if (raw != null) {
-            return rawSelection(merged, body, raw, maxTokens);
+            return rawSelection(merged, body, raw);
         }
         if (typed == null) {
             return new Selection(copy(merged, null, body), null);
         }
-        requireEnabledBudget(typed, maxTokens);
+        requireMinimumBudget(typed);
         return new Selection(copy(merged, typed, body), ThinkingConfigParam.ofEnabled(
                 ThinkingConfigEnabled.builder().budgetTokens(typed.longValue()).build()));
     }
@@ -116,7 +114,7 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
     }
 
     private static Selection rawSelection(
-            GenerateOptions options, Map<String, Object> body, Object raw, int maxTokens) {
+            GenerateOptions options, Map<String, Object> body, Object raw) {
         if (!(raw instanceof Map<?, ?> source)) {
             body.put("thinking", raw);
             return new Selection(copy(options, null, body), null);
@@ -125,7 +123,7 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
         Object type = thinking.get("type");
         if ("enabled".equals(type)) {
             int budget = exactBudget(thinking.get("budget_tokens"));
-            requireEnabledBudget(budget, maxTokens);
+            requireMinimumBudget(budget);
             ThinkingConfigEnabled.Builder builder = ThinkingConfigEnabled.builder()
                     .budgetTokens((long) budget);
             additionalProperties(thinking, builder::putAdditionalProperty);
@@ -178,8 +176,24 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
         }
     }
 
-    private static void requireEnabledBudget(int budget, int maxTokens) {
-        if (budget < 1024 || budget >= maxTokens) {
+    private static void validateAgainstFinalRequest(
+            MessageCreateParams.Builder paramsBuilder, ThinkingConfigParam thinking) {
+        if (thinking.isEnabled()) {
+            requireEnabledBudget(
+                    thinking.asEnabled().budgetTokens(),
+                    paramsBuilder.build().maxTokens());
+        }
+    }
+
+    private static void requireEnabledBudget(long budget, long maxTokens) {
+        requireMinimumBudget(budget);
+        if (budget >= maxTokens) {
+            throw invalidBudget();
+        }
+    }
+
+    private static void requireMinimumBudget(long budget) {
+        if (budget < 1024) {
             throw invalidBudget();
         }
     }

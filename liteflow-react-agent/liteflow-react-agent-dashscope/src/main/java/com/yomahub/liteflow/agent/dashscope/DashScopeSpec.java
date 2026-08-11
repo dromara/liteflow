@@ -143,7 +143,7 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
             if (managedProxyTransport != null) {
                 ownedTransport = managedProxyTransport;
             }
-            Model model = builder.build();
+            Model model = builder.buildManaged();
             return ownedTransport == null
                     ? model
                     : new OwnedTransportModel(model, ownedTransport);
@@ -201,6 +201,7 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
     private static final class ManagedDashScopeBuilder extends DashScopeChatModel.Builder {
         private final HttpTransport declaredTransport;
         private final ProxyConfig declaredProxy;
+        private boolean built;
 
         private ManagedDashScopeBuilder(
                 HttpTransport declaredTransport, ProxyConfig declaredProxy) {
@@ -231,6 +232,19 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
             return this;
         }
 
+        @Override
+        public DashScopeChatModel build() {
+            throw escapedBuild();
+        }
+
+        private DashScopeChatModel buildManaged() {
+            if (built) {
+                throw escapedBuild();
+            }
+            built = true;
+            return super.build();
+        }
+
         private HttpTransport prepareManagedProxyTransport() {
             if (declaredTransport != null || declaredProxy == null) {
                 return null;
@@ -240,6 +254,12 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
                     .build();
             super.httpTransport(managed);
             return managed;
+        }
+
+        private static AgentConfigException escapedBuild() {
+            return new AgentConfigException(
+                    "customizeBuilder cannot call or retain builder.build(); "
+                            + "LiteFlow owns DashScope model construction");
         }
     }
 }

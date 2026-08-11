@@ -24,6 +24,7 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -76,6 +77,51 @@ class AnthropicRuntimeContractTest {
                     .asEnabled().budgetTokens());
         } finally {
             ((AutoCloseable) resolved).close();
+        }
+    }
+
+    @Test
+    void builderCustomizerCannotBuildAnUnownedAnthropicClient() throws Exception {
+        AtomicReference<AnthropicChatModel> escaped = new AtomicReference<>();
+        Model resolved = null;
+        try {
+            resolved = Anthropic.of("claude-builder-escape")
+                    .apiKey("test-key")
+                    .customizeBuilder(builder -> {
+                        AgentConfigException failure = assertThrows(
+                                AgentConfigException.class,
+                                () -> escaped.set(builder.build()));
+                        assertTrue(failure.getMessage().contains("customizeBuilder"));
+                    })
+                    .resolve(new AgentConfig());
+        } finally {
+            if (resolved instanceof AutoCloseable closeable) {
+                closeable.close();
+            }
+            if (escaped.get() != null) {
+                AnthropicClientBridge.close(escaped.get());
+            }
+        }
+    }
+
+    @Test
+    void retainedBuilderCannotBuildAnUnownedAnthropicClientAfterResolve() throws Exception {
+        AtomicReference<AnthropicChatModel.Builder> retained = new AtomicReference<>();
+        AtomicReference<AnthropicChatModel> escaped = new AtomicReference<>();
+        Model resolved = Anthropic.of("claude-retained-builder")
+                .apiKey("test-key")
+                .customizeBuilder(retained::set)
+                .resolve(new AgentConfig());
+        try {
+            AgentConfigException failure = assertThrows(
+                    AgentConfigException.class,
+                    () -> escaped.set(retained.get().build()));
+            assertTrue(failure.getMessage().contains("customizeBuilder"));
+        } finally {
+            ((AutoCloseable) resolved).close();
+            if (escaped.get() != null) {
+                AnthropicClientBridge.close(escaped.get());
+            }
         }
     }
 
@@ -147,6 +193,66 @@ class AnthropicRuntimeContractTest {
                     .thinkingBudget(3072)
                     .build());
             assertEquals(3072L, valid.thinking().orElseThrow().asEnabled().budgetTokens());
+        } finally {
+            ((AutoCloseable) resolved).close();
+        }
+    }
+
+    @Test
+    void enabledBudgetIsValidatedAgainstMaxTokensAfterCustomFormatter() throws Exception {
+        AnthropicBaseFormatter loweringFormatter =
+                new io.agentscope.extensions.model.anthropic.formatter
+                        .AnthropicChatFormatter() {
+                    @Override
+                    public void applyOptions(
+                            MessageCreateParams.Builder builder,
+                            GenerateOptions perCall,
+                            GenerateOptions defaults) {
+                        super.applyOptions(builder, perCall, defaults);
+                        builder.maxTokens(2048);
+                    }
+                };
+        Model resolved = Anthropic.of("claude-final-max")
+                .apiKey("test-key")
+                .maxTokens(4096)
+                .thinking(thinking -> thinking.enabled(true).budget(2048))
+                .formatter(loweringFormatter)
+                .resolve(new AgentConfig());
+        try {
+            AgentConfigException failure = assertThrows(
+                    AgentConfigException.class,
+                    () -> request(delegate(resolved), null));
+            assertTrue(failure.getMessage().contains("less than maxTokens"));
+        } finally {
+            ((AutoCloseable) resolved).close();
+        }
+    }
+
+    @Test
+    void finalMaxTokensFromCustomFormatterCanMakeEnabledBudgetValid() throws Exception {
+        AnthropicBaseFormatter raisingFormatter =
+                new io.agentscope.extensions.model.anthropic.formatter
+                        .AnthropicChatFormatter() {
+                    @Override
+                    public void applyOptions(
+                            MessageCreateParams.Builder builder,
+                            GenerateOptions perCall,
+                            GenerateOptions defaults) {
+                        super.applyOptions(builder, perCall, defaults);
+                        builder.maxTokens(4096);
+                    }
+                };
+        Model resolved = Anthropic.of("claude-final-raised-max")
+                .apiKey("test-key")
+                .maxTokens(2048)
+                .thinking(thinking -> thinking.enabled(true).budget(2048))
+                .formatter(raisingFormatter)
+                .resolve(new AgentConfig());
+        try {
+            MessageCreateParams request = request(delegate(resolved), null);
+            assertEquals(4096L, request.maxTokens());
+            assertEquals(2048L,
+                    request.thinking().orElseThrow().asEnabled().budgetTokens());
         } finally {
             ((AutoCloseable) resolved).close();
         }

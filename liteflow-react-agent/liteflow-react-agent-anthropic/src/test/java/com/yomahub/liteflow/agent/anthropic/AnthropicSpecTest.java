@@ -425,20 +425,13 @@ class AnthropicSpecTest {
     }
 
     @Test
-    void enabledThinkingBudgetMustMeetAnthropicMinimumAndFitFinalMaxTokens() {
+    void enabledThinkingBudgetMustMeetAnthropicMinimum() {
         assertThrows(
                 AgentConfigException.class,
                 () -> Anthropic.of("claude-thinking-too-small")
                         .apiKey("test-key")
                         .maxTokens(4096)
                         .thinking(thinking -> thinking.enabled(true).budget(1023))
-                        .resolve(new AgentConfig()));
-        assertThrows(
-                AgentConfigException.class,
-                () -> Anthropic.of("claude-thinking-too-large")
-                        .apiKey("test-key")
-                        .maxTokens(1024)
-                        .thinking(thinking -> thinking.enabled(true).budget(1024))
                         .resolve(new AgentConfig()));
     }
 

@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.dashscope;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.model.OwnedTransportModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.formatter.Formatter;
@@ -9,6 +10,7 @@ import io.agentscope.core.model.Model;
 import io.agentscope.core.model.transport.HttpRequest;
 import io.agentscope.core.model.transport.HttpResponse;
 import io.agentscope.core.model.transport.HttpTransport;
+import io.agentscope.core.model.transport.OkHttpTransport;
 import io.agentscope.core.model.transport.ProxyConfig;
 import io.agentscope.extensions.model.dashscope.DashScopeChatModel;
 import io.agentscope.extensions.model.dashscope.DashScopeHttpClient;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,13 +37,56 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DashScopeSpecTest {
 
     @Test
+    void builderCustomizerCannotBuildOrRetainAnUnownedDashScopeModel() throws Exception {
+        CountingTransport directTransport = new CountingTransport(null);
+        Model direct = null;
+        try {
+            direct = DashScope.of("qwen-builder-escape")
+                    .apiKey("fake-key")
+                    .ownedHttpTransport(directTransport)
+                    .customizeBuilder(builder -> {
+                        AgentConfigException failure = assertThrows(
+                                AgentConfigException.class, builder::build);
+                        assertTrue(failure.getMessage().contains("customizeBuilder"));
+                    })
+                    .resolve(new AgentConfig());
+        } finally {
+            close(direct);
+            if (direct == null && directTransport.closeCount.get() == 0) {
+                directTransport.close();
+            }
+        }
+
+        CountingTransport retainedTransport = new CountingTransport(null);
+        AtomicReference<DashScopeChatModel.Builder> retained = new AtomicReference<>();
+        Model resolved = DashScope.of("qwen-retained-builder")
+                .apiKey("fake-key")
+                .ownedHttpTransport(retainedTransport)
+                .customizeBuilder(retained::set)
+                .resolve(new AgentConfig());
+        try {
+            AgentConfigException failure = assertThrows(
+                    AgentConfigException.class, () -> retained.get().build());
+            assertTrue(failure.getMessage().contains("customizeBuilder"));
+        } finally {
+            close(resolved);
+        }
+        assertAll(
+                () -> assertEquals(1, directTransport.closeCount.get()),
+                () -> assertEquals(1, retainedTransport.closeCount.get()));
+    }
+
+    @Test
     void managedProxyCreatesAnOwnedTransportAndClosesWithoutARequest() throws Exception {
         Model model = DashScope.of("qwen-managed-proxy")
                 .apiKey("fake-key")
                 .proxy(ProxyConfig.http("localhost", 8083))
                 .resolve(new AgentConfig());
 
-        AutoCloseable owner = assertInstanceOf(AutoCloseable.class, model);
+        OwnedTransportModel owner = assertInstanceOf(OwnedTransportModel.class, model);
+        HttpTransport transport = configuredTransport(dashScopeDelegate(model));
+        assertInstanceOf(OkHttpTransport.class, transport);
+        assertSame(transport, field(owner, "ownedTransport", HttpTransport.class));
         owner.close();
         owner.close();
     }
@@ -295,6 +341,12 @@ class DashScopeSpecTest {
         Field field = target.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return type.cast(field.get(target));
+    }
+
+    private static void close(Model model) throws Exception {
+        if (model instanceof AutoCloseable closeable) {
+            closeable.close();
+        }
     }
 
     private record ClientIdentity(String apiKey, String baseUrl) {}

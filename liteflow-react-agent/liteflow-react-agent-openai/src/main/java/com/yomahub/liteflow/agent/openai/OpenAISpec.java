@@ -148,7 +148,7 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
             if (managedProxyTransport != null) {
                 ownedTransport = managedProxyTransport;
             }
-            Model model = builder.build();
+            Model model = builder.buildManaged();
             return ownedTransport == null
                     ? model
                     : new OwnedTransportModel(model, ownedTransport);
@@ -174,6 +174,7 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
     private static final class ManagedOpenAIBuilder extends OpenAIChatModel.Builder {
         private final HttpTransport declaredTransport;
         private final ProxyConfig declaredProxy;
+        private boolean built;
 
         private ManagedOpenAIBuilder(
                 HttpTransport declaredTransport, ProxyConfig declaredProxy) {
@@ -204,6 +205,19 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
             return this;
         }
 
+        @Override
+        public OpenAIChatModel build() {
+            throw escapedBuild();
+        }
+
+        private OpenAIChatModel buildManaged() {
+            if (built) {
+                throw escapedBuild();
+            }
+            built = true;
+            return super.build();
+        }
+
         private HttpTransport prepareManagedProxyTransport() {
             if (declaredTransport != null || declaredProxy == null) {
                 return null;
@@ -213,6 +227,12 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
                     .build();
             super.httpTransport(managed);
             return managed;
+        }
+
+        private static AgentConfigException escapedBuild() {
+            return new AgentConfigException(
+                    "customizeBuilder cannot call or retain builder.build(); "
+                            + "LiteFlow owns OpenAI model construction");
         }
     }
 }

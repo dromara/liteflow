@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.openai;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.model.OwnedTransportModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.formatter.Formatter;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,13 +48,68 @@ class FirstPartyModelProviderTest {
     private static final String COMPATIBLE_PATH = "liteflow.agent.openai-compatible";
 
     @Test
+    void registryCacheCannotCaptureManagedOrOwnedTransports() throws Exception {
+        CapturingOpenAIProviderSpec managedProxy =
+                new CapturingOpenAIProviderSpec(
+                        "deepseek", "deepseek", "deepseek-managed-cache");
+        managedProxy.apiKey("explicit-key")
+                .proxy(ProxyConfig.http("localhost", 8084))
+                .customizeContext(context -> context
+                        .cachePolicy(CachePolicy.ENABLED)
+                        .cacheId("managed-proxy-cache"));
+
+        AgentConfigException managedFailure = assertThrows(
+                AgentConfigException.class,
+                () -> managedProxy.resolve(new AgentConfig()));
+        assertTrue(managedFailure.getMessage().contains("registry cache"));
+        assertEquals(0, managedProxy.buildCount);
+
+        List<CountingTransport> transports =
+                List.of(new CountingTransport(null), new CountingTransport(null));
+        List<Model> unexpectedModels = new ArrayList<>();
+        List<AgentConfigException> failures = new ArrayList<>();
+        try {
+            for (CountingTransport transport : transports) {
+                try {
+                    unexpectedModels.add(GLM.of("glm-owned-cache")
+                            .apiKey("explicit-key")
+                            .ownedHttpTransport(transport)
+                            .customizeContext(context -> context
+                                    .cachePolicy(CachePolicy.ENABLED)
+                                    .cacheId("same-owned-cache-id"))
+                            .resolve(new AgentConfig()));
+                } catch (AgentConfigException failure) {
+                    failures.add(failure);
+                }
+            }
+        } finally {
+            for (Model model : unexpectedModels) {
+                if (model instanceof AutoCloseable closeable) {
+                    closeable.close();
+                }
+            }
+            ModelRegistry.reset();
+        }
+
+        assertAll(
+                () -> assertEquals(2, failures.size()),
+                () -> assertTrue(failures.stream()
+                        .allMatch(failure -> failure.getMessage().contains("registry cache"))),
+                () -> assertEquals(1, transports.get(0).closeCount.get()),
+                () -> assertEquals(1, transports.get(1).closeCount.get()));
+    }
+
+    @Test
     void providerManagedProxyAndExplicitTransportOwnershipAreDeterministic()
             throws Exception {
         Model proxied = DeepSeek.of("deepseek-managed-proxy")
                 .apiKey("explicit-key")
                 .proxy(ProxyConfig.http("localhost", 8082))
                 .resolve(new AgentConfig());
-        AutoCloseable proxyOwner = assertInstanceOf(AutoCloseable.class, proxied);
+        OwnedTransportModel proxyOwner = assertInstanceOf(OwnedTransportModel.class, proxied);
+        HttpTransport proxyTransport = configuredTransport(openAIDelegate(proxied));
+        assertSame(proxyTransport,
+                field(proxyOwner, "ownedTransport", HttpTransport.class));
         proxyOwner.close();
         proxyOwner.close();
 

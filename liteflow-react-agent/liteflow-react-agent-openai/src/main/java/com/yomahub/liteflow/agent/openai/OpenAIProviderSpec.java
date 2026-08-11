@@ -5,6 +5,7 @@ import com.yomahub.liteflow.agent.model.CredentialResolver;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.model.OwnedTransportModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import io.agentscope.core.model.CachePolicy;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ModelCreationContext;
@@ -114,6 +115,7 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
             }
             ModelCreationContext customized = context.build();
             validateOwnershipComponents(customized);
+            rejectCachedOwnedTransport(customized);
 
             HttpTransport finalTransport = customized.component(HttpTransport.class);
             ProxyConfig finalProxy = customized.component(ProxyConfig.class);
@@ -158,6 +160,20 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
             throw new AgentConfigException(
                     "customizeContext cannot create an unowned proxy transport; "
                             + "use OpenAIProviderSpec.proxy(...)");
+        }
+    }
+
+    private void rejectCachedOwnedTransport(ModelCreationContext customized) {
+        if (customized.getCachePolicy() != CachePolicy.ENABLED) {
+            return;
+        }
+        boolean hasOwnedTransport = ownsHttpTransport
+                || (httpTransport == null
+                        && customized.component(ProxyConfig.class) != null);
+        if (hasOwnedTransport) {
+            throw new AgentConfigException(
+                    "ModelRegistry cache cannot be enabled with a LiteFlow-owned HTTP transport; "
+                            + "disable registry cache or use borrowedHttpTransport(...)");
         }
     }
 

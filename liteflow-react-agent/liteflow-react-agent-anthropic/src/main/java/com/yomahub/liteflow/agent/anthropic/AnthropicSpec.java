@@ -84,7 +84,7 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {
-        AnthropicChatModel.Builder builder = new ThinkingAwareBuilder();
+        ThinkingAwareBuilder builder = new ThinkingAwareBuilder();
         builder.apiKey(apiKey).baseUrl(baseUrl).modelName(modelName);
         GenerateOptions options = normalizeThinkingOptions(
                 mergeGenerateOptions(buildGenerateOptions()));
@@ -99,7 +99,7 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
             builderCustomizer.accept(builder);
         }
         AnthropicClientBridge.verifyContract();
-        return AnthropicClientOwner.own(builder.build());
+        return AnthropicClientOwner.own(builder.buildManaged());
     }
 
     private GenerateOptions buildGenerateOptions() {
@@ -182,12 +182,33 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
 
     /** Keeps the request-boundary decorator when the last-running customizer replaces formatter. */
     private static final class ThinkingAwareBuilder extends AnthropicChatModel.Builder {
+        private boolean built;
+
         @Override
         public AnthropicChatModel.Builder formatter(AnthropicBaseFormatter formatter) {
             if (formatter instanceof AnthropicThinkingFormatter) {
                 return super.formatter(formatter);
             }
             return super.formatter(new AnthropicThinkingFormatter(formatter));
+        }
+
+        @Override
+        public AnthropicChatModel build() {
+            throw escapedBuild();
+        }
+
+        private AnthropicChatModel buildManaged() {
+            if (built) {
+                throw escapedBuild();
+            }
+            built = true;
+            return super.build();
+        }
+
+        private static AgentConfigException escapedBuild() {
+            return new AgentConfigException(
+                    "customizeBuilder cannot call or retain builder.build(); "
+                            + "LiteFlow owns Anthropic model construction");
         }
     }
 }

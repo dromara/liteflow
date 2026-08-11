@@ -73,7 +73,7 @@ public final class OwnedTransportModel implements Model, AutoCloseable {
         } catch (Throwable closeFailure) {
             if (failure == null) {
                 failure = closeFailure;
-            } else {
+            } else if (failure != closeFailure) {
                 failure.addSuppressed(closeFailure);
             }
         }
@@ -89,7 +89,9 @@ public final class OwnedTransportModel implements Model, AutoCloseable {
         try {
             ownedTransport.close();
         } catch (Throwable closeFailure) {
-            buildFailure.addSuppressed(closeFailure);
+            if (buildFailure != closeFailure) {
+                buildFailure.addSuppressed(closeFailure);
+            }
         }
     }
 

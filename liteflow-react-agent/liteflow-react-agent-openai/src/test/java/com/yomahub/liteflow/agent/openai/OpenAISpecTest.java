@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.openai;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.model.OwnedTransportModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.formatter.Formatter;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Flux;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +38,46 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OpenAISpecTest {
 
     @Test
+    void builderCustomizerCannotBuildOrRetainAnUnownedOpenAIModel() throws Exception {
+        CountingTransport directTransport = new CountingTransport(null);
+        Model direct = null;
+        try {
+            direct = OpenAI.of("gpt-builder-escape")
+                    .apiKey("explicit-key")
+                    .ownedHttpTransport(directTransport)
+                    .customizeBuilder(builder -> {
+                        AgentConfigException failure = assertThrows(
+                                AgentConfigException.class, builder::build);
+                        assertTrue(failure.getMessage().contains("customizeBuilder"));
+                    })
+                    .resolve(new AgentConfig());
+        } finally {
+            close(direct);
+            if (direct == null && directTransport.closeCount.get() == 0) {
+                directTransport.close();
+            }
+        }
+
+        CountingTransport retainedTransport = new CountingTransport(null);
+        AtomicReference<OpenAIChatModel.Builder> retained = new AtomicReference<>();
+        Model resolved = OpenAI.of("gpt-retained-builder")
+                .apiKey("explicit-key")
+                .ownedHttpTransport(retainedTransport)
+                .customizeBuilder(retained::set)
+                .resolve(new AgentConfig());
+        try {
+            AgentConfigException failure = assertThrows(
+                    AgentConfigException.class, () -> retained.get().build());
+            assertTrue(failure.getMessage().contains("customizeBuilder"));
+        } finally {
+            close(resolved);
+        }
+        assertAll(
+                () -> assertEquals(1, directTransport.closeCount.get()),
+                () -> assertEquals(1, retainedTransport.closeCount.get()));
+    }
+
+    @Test
     void managedProxyCreatesAnOwnedTransportClosedExactlyOnce() throws Exception {
         ProxyConfig proxy = ProxyConfig.http("localhost", 8081);
         Model model = OpenAI.of("gpt-managed-proxy")
@@ -43,10 +85,11 @@ class OpenAISpecTest {
                 .proxy(proxy)
                 .resolve(new AgentConfig());
 
-        AutoCloseable owner = assertInstanceOf(AutoCloseable.class, model);
+        OwnedTransportModel owner = assertInstanceOf(OwnedTransportModel.class, model);
         OpenAIChatModel delegate = openAIDelegate(model);
         HttpTransport transport = configuredTransport(delegate);
         assertInstanceOf(OkHttpTransport.class, transport);
+        assertSame(transport, field(owner, "ownedTransport", HttpTransport.class));
         assertEquals(proxy, field(transport, "config",
                 io.agentscope.core.model.transport.HttpTransportConfig.class).getProxyConfig());
 
@@ -452,6 +495,12 @@ class OpenAISpecTest {
         Field field = target.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return type.cast(field.get(target));
+    }
+
+    private static void close(Model model) throws Exception {
+        if (model instanceof AutoCloseable closeable) {
+            closeable.close();
+        }
     }
 
     private static final class CapturingOpenAISpec extends OpenAISpec {

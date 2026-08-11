@@ -5,6 +5,7 @@ import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.HttpOptions;
 import com.google.genai.types.ThinkingConfig;
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.PlatformCredential;
 import io.agentscope.core.formatter.Formatter;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,9 +26,53 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GeminiSpecTest {
+
+    @Test
+    void builderCustomizerCannotBuildAnUnownedGeminiClient() throws Exception {
+        AtomicReference<GeminiChatModel> escaped = new AtomicReference<>();
+        Model resolved = null;
+        try {
+            resolved = Gemini.of("gemini-builder-escape")
+                    .apiKey("test-key")
+                    .customizeBuilder(builder -> {
+                        AgentConfigException failure = assertThrows(
+                                AgentConfigException.class,
+                                () -> escaped.set(builder.build()));
+                        assertTrue(failure.getMessage().contains("customizeBuilder"));
+                    })
+                    .resolve(new AgentConfig());
+        } finally {
+            close(resolved);
+            if (escaped.get() != null) {
+                escaped.get().close();
+            }
+        }
+    }
+
+    @Test
+    void retainedBuilderCannotBuildAnUnownedGeminiClientAfterResolve() throws Exception {
+        AtomicReference<GeminiChatModel.Builder> retained = new AtomicReference<>();
+        AtomicReference<GeminiChatModel> escaped = new AtomicReference<>();
+        Model resolved = Gemini.of("gemini-retained-builder")
+                .apiKey("test-key")
+                .customizeBuilder(retained::set)
+                .resolve(new AgentConfig());
+        try {
+            AgentConfigException failure = assertThrows(
+                    AgentConfigException.class,
+                    () -> escaped.set(retained.get().build()));
+            assertTrue(failure.getMessage().contains("customizeBuilder"));
+        } finally {
+            close(resolved);
+            if (escaped.get() != null) {
+                escaped.get().close();
+            }
+        }
+    }
 
     @Test
     void modelFactoryReturnsAnOwningAutoCloseableModel() throws Exception {

@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.gemini;
 
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.CredentialResolver;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.property.agent.AgentConfig;
@@ -59,7 +60,7 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {
-        GeminiChatModel.Builder builder = new ThinkingAwareBuilder();
+        ThinkingAwareBuilder builder = new ThinkingAwareBuilder();
         builder.apiKey(apiKey).modelName(modelName);
         if (baseUrl != null && !baseUrl.isBlank()) {
             builder.baseUrl(baseUrl);
@@ -75,7 +76,7 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
         if (builderCustomizer != null) {
             builderCustomizer.accept(builder);
         }
-        return new OwnedGeminiModel(builder.build());
+        return new OwnedGeminiModel(builder.buildManaged());
     }
 
     private GenerateOptions buildGenerateOptions() {
@@ -90,6 +91,8 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
 
     /** Keeps the final formatter decorated even when the last-running customizer replaces it. */
     private static final class ThinkingAwareBuilder extends GeminiChatModel.Builder {
+        private boolean built;
+
         @Override
         public GeminiChatModel.Builder formatter(
                 Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder>
@@ -100,6 +103,25 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
                 return super.formatter(effective);
             }
             return super.formatter(new GeminiThinkingFormatter(effective));
+        }
+
+        @Override
+        public GeminiChatModel build() {
+            throw escapedBuild();
+        }
+
+        private GeminiChatModel buildManaged() {
+            if (built) {
+                throw escapedBuild();
+            }
+            built = true;
+            return super.build();
+        }
+
+        private static AgentConfigException escapedBuild() {
+            return new AgentConfigException(
+                    "customizeBuilder cannot call or retain builder.build(); "
+                            + "LiteFlow owns Gemini model construction");
         }
     }
 }
