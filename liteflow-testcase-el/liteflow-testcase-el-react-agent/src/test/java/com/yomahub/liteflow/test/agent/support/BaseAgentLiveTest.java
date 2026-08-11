@@ -4,6 +4,7 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import javax.annotation.Resource;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
 /**
  * 各场景测试公共基类（共享插管之一）。
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
  * 自己的 application.properties 声明；凭据由各测试在 @BeforeEach 中调用
  * {@link LiveTestSupport} 的 applyXxxOrSkip 装入（缺失即 skip）。
  */
+@Tag("agentscope-live-smoke")
 public abstract class BaseAgentLiveTest {
 
     @Resource
