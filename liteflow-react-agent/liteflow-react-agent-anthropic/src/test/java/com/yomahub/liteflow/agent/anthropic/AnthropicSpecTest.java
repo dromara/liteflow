@@ -11,6 +11,9 @@ import io.agentscope.extensions.model.anthropic.formatter.AnthropicChatFormatter
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -268,6 +271,97 @@ class AnthropicSpecTest {
                         .thinking(thinking -> thinking.enabled(true).budget(512))
                         .generateOptions(nativeOptions)
                         .resolve(new AgentConfig()));
+    }
+
+    @Test
+    void fractionalNativeThinkingBodyBudgetIsRejected() {
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .additionalBodyParam("thinking", Map.of(
+                        "type", "enabled",
+                        "budget_tokens", 1.5))
+                .build();
+
+        assertThrows(
+                AgentConfigException.class,
+                () -> Anthropic.of("claude-thinking-fractional-body")
+                        .apiKey("test-key")
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+    }
+
+    @Test
+    void integerThinkingBodyBudgetsOutsidePositiveIntRangeAreRejected() {
+        Number[] invalidBudgets = {
+                (long) Integer.MAX_VALUE + 1,
+                new BigInteger("18446744073709551617")
+        };
+
+        for (Number invalidBudget : invalidBudgets) {
+            GenerateOptions nativeOptions = GenerateOptions.builder()
+                    .additionalBodyParam("thinking", Map.of(
+                            "type", "enabled",
+                            "budget_tokens", invalidBudget))
+                    .build();
+
+            assertThrows(
+                    AgentConfigException.class,
+                    () -> Anthropic.of("claude-thinking-overflow-body")
+                            .apiKey("test-key")
+                            .generateOptions(nativeOptions)
+                            .resolve(new AgentConfig()));
+        }
+    }
+
+    @Test
+    void nonFiniteNativeThinkingBodyBudgetsAreRejected() {
+        for (double invalidBudget : new double[]{
+                Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+            GenerateOptions nativeOptions = GenerateOptions.builder()
+                    .additionalBodyParam("thinking", Map.of(
+                            "type", "enabled",
+                            "budget_tokens", invalidBudget))
+                    .build();
+
+            assertThrows(
+                    AgentConfigException.class,
+                    () -> Anthropic.of("claude-thinking-non-finite-body")
+                            .apiKey("test-key")
+                            .generateOptions(nativeOptions)
+                            .resolve(new AgentConfig()));
+        }
+    }
+
+    @Test
+    void exactDecimalThinkingBudgetIsCanonicalizedWithoutMutatingUserMap()
+            throws Exception {
+        BigDecimal userBudget = new BigDecimal("3072.000");
+        Map<String, Object> nativeThinking = new LinkedHashMap<>();
+        nativeThinking.put("type", "enabled");
+        nativeThinking.put("budget_tokens", userBudget);
+        nativeThinking.put("vendor-flag", "preserved");
+        GenerateOptions nativeOptions = GenerateOptions.builder()
+                .additionalBodyParam("thinking", nativeThinking)
+                .build();
+
+        AnthropicChatModel model = assertInstanceOf(
+                AnthropicChatModel.class,
+                Anthropic.of("claude-thinking-decimal-body")
+                        .apiKey("test-key")
+                        .generateOptions(nativeOptions)
+                        .resolve(new AgentConfig()));
+
+        GenerateOptions options = configuredOptions(model);
+        Map<?, ?> normalizedBody = assertInstanceOf(
+                Map.class, options.getAdditionalBodyParams().get("thinking"));
+        Map<String, Object> requestBody = bodyObject(anthropicRequest(options), "thinking");
+        assertAll(
+                () -> assertEquals(3072, options.getThinkingBudget()),
+                () -> assertInstanceOf(Integer.class, normalizedBody.get("budget_tokens")),
+                () -> assertEquals(3072, normalizedBody.get("budget_tokens")),
+                () -> assertInstanceOf(Integer.class, requestBody.get("budget_tokens")),
+                () -> assertEquals(3072, requestBody.get("budget_tokens")),
+                () -> assertEquals("preserved", requestBody.get("vendor-flag")),
+                () -> assertEquals(userBudget, nativeThinking.get("budget_tokens")));
     }
 
     @Test

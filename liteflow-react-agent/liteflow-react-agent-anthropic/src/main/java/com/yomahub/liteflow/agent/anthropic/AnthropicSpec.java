@@ -9,6 +9,7 @@ import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.anthropic.AnthropicChatModel;
 import io.agentscope.extensions.model.anthropic.formatter.AnthropicBaseFormatter;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -170,6 +171,9 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
         Object type = thinkingBody.get("type");
         if ("enabled".equals(type)) {
             int budget = positiveBodyBudget(thinkingBody.get("budget_tokens"));
+            Map<Object, Object> normalizedThinkingBody = new LinkedHashMap<>(thinkingBody);
+            normalizedThinkingBody.put("budget_tokens", budget);
+            bodyParams.put("thinking", normalizedThinkingBody);
             return copyWithThinking(options, budget, bodyParams);
         }
         if ("disabled".equals(type)) {
@@ -186,11 +190,13 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
         if (!(value instanceof Number number)) {
             throw invalidThinkingBudget();
         }
-        long budget = number.longValue();
-        if (budget <= 0 || budget > Integer.MAX_VALUE) {
+        try {
+            int budget = new BigDecimal(number.toString()).intValueExact();
+            requirePositiveBudget(budget);
+            return budget;
+        } catch (ArithmeticException | NumberFormatException exception) {
             throw invalidThinkingBudget();
         }
-        return (int) budget;
     }
 
     private void requirePositiveBudget(int budget) {
