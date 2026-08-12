@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -270,18 +271,98 @@ class GuardedLocalFilesystemTest {
     }
 
     @Test
-    void internalAndNonLiteFlowContextsKeepTheExistingSessionMemoryLayout() {
-        GuardedLocalFilesystem filesystem =
-                new GuardedLocalFilesystem(tempDir.resolve("internal-memory-workspace"), 4096);
+    void internalMemoryListingsRoundTripThroughWorkspaceManagerAndSearch() {
+        Path root = tempDir.resolve("internal-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
         RuntimeContext internal = context("internal-session", "internal-user");
         RuntimeContext sameSession = context("internal-session", "other-user");
 
-        assertTrue(filesystem.write(internal, "MEMORY.md", "internal").isSuccess());
-        assertTrue(filesystem.write(internal, "memory/2030-01-01.md", "daily").isSuccess());
-        assertEquals("internal", filesystem.read(sameSession, "MEMORY.md", 0, 0)
-                .fileData().content());
-        assertEquals("daily", filesystem.read(sameSession, "memory/2030-01-01.md", 0, 0)
-                .fileData().content());
+        assertTrue(filesystem.write(internal, "MEMORY.md", "internal needle").isSuccess());
+        assertTrue(filesystem.write(
+                internal, "memory/2030-01-01.md", "daily needle").isSuccess());
+        try (WorkspaceManager workspace = new WorkspaceManager(root, filesystem)) {
+            assertAll(
+                    () -> assertEquals(List.of("memory/2030-01-01.md"),
+                            filesystem.ls(internal, "memory").entries().stream()
+                                    .map(entry -> entry.path()).toList()),
+                    () -> assertEquals(List.of("memory/2030-01-01.md"),
+                            filesystem.glob(internal, "*.md", "memory").matches().stream()
+                                    .map(match -> match.path()).toList()),
+                    () -> assertEquals(List.of("MEMORY.md", "memory/2030-01-01.md"),
+                            workspace.listMemoryFilePaths(internal)),
+                    () -> assertEquals("internal needle",
+                            workspace.readManagedWorkspaceFileUtf8(internal, "MEMORY.md")),
+                    () -> assertEquals("daily needle",
+                            workspace.readManagedWorkspaceFileUtf8(
+                                    internal, "memory/2030-01-01.md")),
+                    () -> {
+                        String matches = new MemorySearchTool(workspace)
+                                .memorySearch(internal, "needle");
+                        assertTrue(matches.contains(
+                                "Source: MEMORY.md#1: internal needle"), matches);
+                        assertTrue(matches.contains(
+                                "Source: memory/2030-01-01.md#1: daily needle"), matches);
+                    },
+                    () -> assertEquals("internal needle",
+                            filesystem.read(sameSession, "MEMORY.md", 0, 0)
+                                    .fileData().content()),
+                    () -> assertEquals("daily needle",
+                            filesystem.read(sameSession, "memory/2030-01-01.md", 0, 0)
+                                    .fileData().content()));
+        }
+    }
+
+    @Test
+    void mismatchedLiteFlowSessionMemoryListingsUseSessionOnlyFallback() {
+        Path root = tempDir.resolve("mismatched-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        LiteFlowAgentContext attachment = liteFlowContext("conversation", "agent-a");
+        String runtimeSessionId = attachment.getRuntimeSessionId() + "-internal";
+        RuntimeContext mismatch = RuntimeContext.builder()
+                .userId(attachment.getRuntimeUserId())
+                .sessionId(runtimeSessionId)
+                .put(LiteFlowAgentContext.class, attachment)
+                .build();
+        RuntimeContext sessionOnly = context(runtimeSessionId, "internal-user");
+
+        assertTrue(filesystem.write(mismatch, "MEMORY.md", "mismatch needle").isSuccess());
+        assertTrue(filesystem.write(
+                mismatch, "memory/2030-01-02.md", "fallback needle").isSuccess());
+        try (WorkspaceManager workspace = new WorkspaceManager(root, filesystem)) {
+            assertAll(
+                    () -> assertEquals(List.of("memory/2030-01-02.md"),
+                            filesystem.ls(mismatch, "memory").entries().stream()
+                                    .map(entry -> entry.path()).toList()),
+                    () -> assertEquals(List.of("memory/2030-01-02.md"),
+                            filesystem.glob(mismatch, "*.md", "memory").matches().stream()
+                                    .map(match -> match.path()).toList()),
+                    () -> assertEquals(List.of("MEMORY.md", "memory/2030-01-02.md"),
+                            workspace.listMemoryFilePaths(mismatch)),
+                    () -> assertEquals(List.of("mismatch needle", "fallback needle"),
+                            workspace.listMemoryFilePaths(mismatch).stream()
+                                    .map(path -> workspace.readManagedWorkspaceFileUtf8(
+                                            mismatch, path))
+                                    .toList()),
+                    () -> {
+                        String matches = new MemorySearchTool(workspace)
+                                .memorySearch(mismatch, "needle");
+                        assertTrue(matches.contains(
+                                "Source: MEMORY.md#1: mismatch needle"), matches);
+                        assertTrue(matches.contains(
+                                "Source: memory/2030-01-02.md#1: fallback needle"), matches);
+                    },
+                    () -> {
+                        ReadResult curated = filesystem.read(sessionOnly, "MEMORY.md", 0, 0);
+                        assertTrue(curated.isSuccess(), curated.error());
+                        assertEquals("mismatch needle", curated.fileData().content());
+                    },
+                    () -> {
+                        ReadResult daily = filesystem.read(
+                                sessionOnly, "memory/2030-01-02.md", 0, 0);
+                        assertTrue(daily.isSuccess(), daily.error());
+                        assertEquals("fallback needle", daily.fileData().content());
+                    });
+        }
     }
 
     @Test

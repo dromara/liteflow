@@ -102,7 +102,10 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     @Override
     public LsResult ls(RuntimeContext runtimeContext, String path) {
         LsResult result = super.ls(runtimeContext, path);
-        if (!result.isSuccess() || result.entries() == null || !isAgentMemoryPath(path)) {
+        if (!result.isSuccess()
+                || result.entries() == null
+                || !isAgentMemoryPath(path)
+                || !usesAgentMemoryRoot(runtimeContext)) {
             return result;
         }
         return LsResult.success(result.entries().stream()
@@ -113,7 +116,10 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     @Override
     public GlobResult glob(RuntimeContext runtimeContext, String pattern, String path) {
         GlobResult result = super.glob(runtimeContext, pattern, path);
-        if (!result.isSuccess() || result.matches() == null || !isAgentMemoryPath(path)) {
+        if (!result.isSuccess()
+                || result.matches() == null
+                || !isAgentMemoryPath(path)
+                || !usesAgentMemoryRoot(runtimeContext)) {
             return result;
         }
         return GlobResult.success(result.matches().stream()
@@ -125,7 +131,10 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     public GrepResult grep(
             RuntimeContext runtimeContext, String pattern, String path, String glob) {
         GrepResult result = super.grep(runtimeContext, pattern, path, glob);
-        if (!result.isSuccess() || result.matches() == null || !isAgentMemoryPath(path)) {
+        if (!result.isSuccess()
+                || result.matches() == null
+                || !isAgentMemoryPath(path)
+                || !usesAgentMemoryRoot(runtimeContext)) {
             return result;
         }
         return GrepResult.success(result.matches().stream()
@@ -220,12 +229,9 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
             throw new IllegalArgumentException("runtimeSessionId must not be blank");
         }
         Path namespaceRoot = root;
-        LiteFlowAgentContext liteFlow = runtimeContext != null
-                ? runtimeContext.get(LiteFlowAgentContext.class)
-                : null;
         if (isAgentMemoryPath(relativePath)
-                && liteFlow != null
-                && Objects.equals(liteFlow.getRuntimeSessionId(), runtimeContext.getSessionId())) {
+                && usesAgentMemoryRoot(runtimeContext)) {
+            LiteFlowAgentContext liteFlow = runtimeContext.get(LiteFlowAgentContext.class);
             namespaceRoot = root.resolve("agent-" + sha256(liteFlow.getAgentNamespace())).normalize();
         }
         Path session = namespaceRoot.resolve(namespace.get(0)).normalize();
@@ -319,6 +325,14 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         return "MEMORY.md".equals(normalized)
                 || "memory".equals(normalized)
                 || normalized.startsWith("memory/");
+    }
+
+    private static boolean usesAgentMemoryRoot(RuntimeContext runtimeContext) {
+        LiteFlowAgentContext liteFlow = runtimeContext != null
+                ? runtimeContext.get(LiteFlowAgentContext.class)
+                : null;
+        return liteFlow != null
+                && Objects.equals(liteFlow.getRuntimeSessionId(), runtimeContext.getSessionId());
     }
 
     private void requireStableRoot() throws IOException {
