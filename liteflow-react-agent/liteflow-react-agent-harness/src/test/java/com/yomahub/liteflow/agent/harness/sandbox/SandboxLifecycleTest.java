@@ -38,6 +38,7 @@ import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.spec.SandboxFilesystemSpec;
 import io.agentscope.harness.agent.sandbox.SandboxIsolationKey;
 import io.agentscope.harness.agent.sandbox.SandboxClient;
+import io.agentscope.harness.agent.sandbox.WorkspaceSpec;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,6 +77,22 @@ class SandboxLifecycleTest {
 
     @TempDir
     Path tempDir;
+
+    @Test
+    void fakeClientsNeverReuseFreshSandboxSessionIds() {
+        FakeSandboxClient firstClient = new FakeSandboxClient(new CopyOnWriteArrayList<>());
+        FakeSandboxClient secondClient = new FakeSandboxClient(new CopyOnWriteArrayList<>());
+        WorkspaceSpec workspace = new WorkspaceSpec();
+        DockerSandboxClientOptions options = new DockerSandboxClientOptions();
+
+        String firstId = firstClient.create(workspace, null, options)
+                .getState().getSessionId();
+        String secondId = secondClient.create(workspace, null, options)
+                .getState().getSessionId();
+
+        assertNotEquals(firstId, secondId,
+                "a rebuilt client must not make a fresh create look like a resumed sandbox");
+    }
 
     @Test
     void successUsesTheRealHarnessLifecycleInUpstreamOrder() throws Exception {
@@ -217,9 +236,17 @@ class SandboxLifecycleTest {
         first.call(List.of(new UserMessage("write")), context("snapshot"))
                 .block(Duration.ofSeconds(5));
         first.close();
+        String persistedSessionId = firstClient.latestSandbox().getState().getSessionId();
+        FakeSandboxClient.StateSnapshotIdentity persistedIdentity =
+                new FakeSandboxClient.StateSnapshotIdentity(
+                        persistedSessionId, persistedSessionId);
 
         assertNull(firstClient.latestSandbox().file("durable.txt"),
                 "shutdown must destroy the old runtime workspace");
+        assertEquals(1, firstClient.createdStates().size());
+        assertEquals(List.of(persistedIdentity), firstClient.createdStates());
+        assertEquals(0, firstClient.resumedStates().size());
+        assertEquals(0, firstClient.deserializedWithSnapshotStates().size());
 
         FakeSandboxClient secondClient = new FakeSandboxClient(events);
         ReadThenReplyModel reader = new ReadThenReplyModel("read durable.txt");
@@ -232,10 +259,20 @@ class SandboxLifecycleTest {
             assertTrue(reader.toolOutput.get().contains("from-snapshot"), events.toString());
             assertNull(secondClient.latestSandbox().file("durable.txt"),
                     "the rebuilt runtime must also be destroyed after its public call");
-            assertTrue(events.stream().anyMatch(event -> event.startsWith("snapshot-restore:")));
-            assertEquals(
-                    firstClient.latestSandbox().getState().getSessionId(),
+            assertEquals(0, secondClient.createdStates().size(),
+                    "a rebuild must not fall through to fresh sandbox creation");
+            assertEquals(1, secondClient.deserializedWithSnapshotStates().size());
+            assertEquals(List.of(persistedIdentity),
+                    secondClient.deserializedWithSnapshotStates());
+            assertEquals(1, secondClient.resumedStates().size());
+            assertEquals(List.of(persistedIdentity), secondClient.resumedStates());
+            assertEquals(persistedSessionId,
                     secondClient.latestSandbox().getState().getSessionId());
+            assertNotSame(firstClient.latestSandbox(), secondClient.latestSandbox(),
+                    "the rebuilt runtime must start with a distinct empty fake workspace");
+            assertEquals(1, events.stream()
+                    .filter(("snapshot-restore:" + persistedSessionId)::equals)
+                    .count(), "file content must cross the runtime boundary through snapshot restore");
         }
         finally {
             rebuilt.close();

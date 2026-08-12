@@ -19,10 +19,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOptions> {
 
     private static final String FIELD_SEPARATOR = "\n";
+    private static final AtomicInteger NEXT_ID = new AtomicInteger();
 
     private final List<String> events;
-    private final AtomicInteger ids = new AtomicInteger();
     private final List<FakeSandbox> sandboxes = new CopyOnWriteArrayList<>();
+    private final List<StateSnapshotIdentity> createdStates = new CopyOnWriteArrayList<>();
+    private final List<StateSnapshotIdentity> resumedStates = new CopyOnWriteArrayList<>();
+    private final List<StateSnapshotIdentity> deserializedWithSnapshotStates =
+            new CopyOnWriteArrayList<>();
 
     FakeSandboxClient(List<String> events) {
         this.events = Objects.requireNonNull(events, "events");
@@ -33,7 +37,7 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
             WorkspaceSpec workspaceSpec,
             SandboxSnapshotSpec snapshotSpec,
             DockerSandboxClientOptions options) {
-        String sessionId = "fake-" + ids.incrementAndGet();
+        String sessionId = "fake-" + NEXT_ID.incrementAndGet();
         DockerSandboxState state = new DockerSandboxState();
         state.setSessionId(sessionId);
         state.setWorkspaceSpec(workspaceSpec);
@@ -43,6 +47,7 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
         if (snapshotSpec != null) {
             state.setSnapshot(snapshotSpec.build(sessionId));
         }
+        createdStates.add(identity(state));
         events.add("acquire:" + sessionId);
         return add(state);
     }
@@ -50,6 +55,7 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
     @Override
     public Sandbox resume(SandboxState state) {
         DockerSandboxState dockerState = (DockerSandboxState) state;
+        resumedStates.add(identity(dockerState));
         events.add("acquire:" + dockerState.getSessionId());
         return add(dockerState);
     }
@@ -74,11 +80,18 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
 
     @Override
     public SandboxState deserializeState(String json) {
-        return deserializeState(json, null);
+        return decodeState(json, null);
     }
 
     @Override
     public SandboxState deserializeState(
+            String json, SandboxSnapshotSpec snapshotSpec) {
+        SandboxState state = decodeState(json, snapshotSpec);
+        deserializedWithSnapshotStates.add(identity(state));
+        return state;
+    }
+
+    private SandboxState decodeState(
             String json, SandboxSnapshotSpec snapshotSpec) {
         String[] fields = json.split(FIELD_SEPARATOR, -1);
         DockerSandboxState state = new DockerSandboxState();
@@ -98,6 +111,18 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
         return state;
     }
 
+    List<StateSnapshotIdentity> createdStates() {
+        return List.copyOf(createdStates);
+    }
+
+    List<StateSnapshotIdentity> resumedStates() {
+        return List.copyOf(resumedStates);
+    }
+
+    List<StateSnapshotIdentity> deserializedWithSnapshotStates() {
+        return List.copyOf(deserializedWithSnapshotStates);
+    }
+
     List<FakeSandbox> sandboxes() {
         return List.copyOf(sandboxes);
     }
@@ -110,5 +135,14 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
         FakeSandbox sandbox = new FakeSandbox(state, events);
         sandboxes.add(sandbox);
         return sandbox;
+    }
+
+    private static StateSnapshotIdentity identity(SandboxState state) {
+        return new StateSnapshotIdentity(
+                state.getSessionId(),
+                state.getSnapshot() == null ? null : state.getSnapshot().getId());
+    }
+
+    record StateSnapshotIdentity(String stateId, String snapshotId) {
     }
 }
