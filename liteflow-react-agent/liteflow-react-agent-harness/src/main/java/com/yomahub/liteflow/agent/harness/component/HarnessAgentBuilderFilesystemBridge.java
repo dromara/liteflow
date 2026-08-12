@@ -1,6 +1,8 @@
 package com.yomahub.liteflow.agent.harness.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
+import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.harness.agent.DistributedStore;
 import io.agentscope.harness.agent.HarnessAgent;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 /** Read-only, version-pinned inspection of mandatory Harness builder invariants. */
 final class HarnessAgentBuilderFilesystemBridge {
@@ -25,6 +28,14 @@ final class HarnessAgentBuilderFilesystemBridge {
     private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
     private static final String VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
+    private static final Set<String> GUARDED_LOCAL_SUBAGENT_TOOLS = Set.of(
+            "agent_spawn",
+            "agent_send",
+            "agent_list",
+            "agent_generate",
+            "task_output",
+            "task_cancel",
+            "task_list");
     private static final List<FieldContract> FIELD_CONTRACTS = List.of(
             new FieldContract("abstractFilesystem", AbstractFilesystem.class),
             new FieldContract("sandboxFilesystemSpec", SandboxFilesystemSpec.class),
@@ -128,8 +139,10 @@ final class HarnessAgentBuilderFilesystemBridge {
         }
     }
 
-    static void requireGuardedLocalSubagentsSafe(HarnessAgent.Builder builder) {
+    static void requireGuardedLocalSubagentsSafe(
+            HarnessAgent.Builder builder, Toolkit toolkit) {
         Objects.requireNonNull(builder, "builder");
+        Objects.requireNonNull(toolkit, "toolkit");
         try {
             List<Field> fields = guardedSubagentFields();
             if (!fields.get(0).getBoolean(builder)) {
@@ -141,12 +154,25 @@ final class HarnessAgentBuilderFilesystemBridge {
                 throw incompatible("HarnessAgent.Builder middlewares value changed");
             }
             for (Object middleware : middlewares) {
-                if (middleware instanceof SubagentsMiddleware
-                        || middleware instanceof DynamicSubagentsMiddleware) {
+                if (!(middleware instanceof MiddlewareBase typed)) {
+                    throw incompatible("HarnessAgent.Builder middleware element changed");
+                }
+                for (MiddlewareBase layer : AgentMiddlewareOrder.inspect(typed)) {
+                    if (layer instanceof SubagentsMiddleware
+                            || layer instanceof DynamicSubagentsMiddleware) {
+                        throw new AgentConfigException(
+                                "Harness GUARDED_LOCAL rejects manually registered "
+                                        + layer.getClass().getSimpleName()
+                                        + " because it bypasses disableSubagents");
+                    }
+                }
+            }
+            for (String toolName : toolkit.getToolNames()) {
+                if (GUARDED_LOCAL_SUBAGENT_TOOLS.contains(toolName)) {
                     throw new AgentConfigException(
-                            "Harness GUARDED_LOCAL rejects manually registered "
-                                    + middleware.getClass().getSimpleName()
-                                    + " because it bypasses disableSubagents");
+                            "Harness GUARDED_LOCAL rejects AgentScope subagent tool '"
+                                    + toolName
+                                    + "' because it bypasses disableSubagents");
                 }
             }
         }

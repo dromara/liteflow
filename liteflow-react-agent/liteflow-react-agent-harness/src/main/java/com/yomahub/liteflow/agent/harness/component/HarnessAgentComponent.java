@@ -172,7 +172,8 @@ public abstract class HarnessAgentComponent
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
             if (guardedLocal) {
-                HarnessAgentBuilderFilesystemBridge.requireGuardedLocalSubagentsSafe(customized);
+                HarnessAgentBuilderFilesystemBridge.requireGuardedLocalSubagentsSafe(
+                        customized, prepared.toolkit());
             }
             HarnessAgentBuilderTaskOwnershipBridge.TaskOwnershipSnapshot taskOwnership =
                     HarnessAgentBuilderTaskOwnershipBridge.snapshot(customized, tasks);

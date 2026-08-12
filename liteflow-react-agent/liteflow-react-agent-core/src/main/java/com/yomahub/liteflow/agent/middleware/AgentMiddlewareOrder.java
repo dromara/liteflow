@@ -11,6 +11,8 @@ import io.agentscope.core.middleware.ReasoningInput;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -31,6 +33,22 @@ public final class AgentMiddlewareOrder {
      */
     public static MiddlewareBase user(MiddlewareBase middleware) {
         return new OrderedUserMiddleware(Objects.requireNonNull(middleware, "middleware"));
+    }
+
+    /**
+     * Returns the supplied middleware and every LiteFlow user-wrapper delegate, outermost first.
+     * Unknown provider middleware remains an opaque leaf.
+     */
+    public static List<MiddlewareBase> inspect(MiddlewareBase middleware) {
+        MiddlewareBase current = Objects.requireNonNull(middleware, "middleware");
+        List<MiddlewareBase> layers = new ArrayList<>();
+        while (true) {
+            layers.add(current);
+            if (!(current instanceof OrderedUserMiddleware ordered)) {
+                return List.copyOf(layers);
+            }
+            current = ordered.delegate;
+        }
     }
 
     private static final class OrderedUserMiddleware implements MiddlewareBase {

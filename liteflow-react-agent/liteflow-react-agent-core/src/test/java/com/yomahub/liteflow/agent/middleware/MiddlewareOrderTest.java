@@ -77,6 +77,22 @@ class MiddlewareOrderTest {
     }
 
     @Test
+    void publicInspectionRecursivelyExposesUserWrapperLayersAsReadOnly() {
+        MiddlewareBase delegate = new CountingMiddleware();
+        MiddlewareBase inner = AgentMiddlewareOrder.user(delegate);
+        MiddlewareBase outer = AgentMiddlewareOrder.user(inner);
+
+        List<MiddlewareBase> layers = AgentMiddlewareOrder.inspect(outer);
+
+        assertEquals(List.of(outer, inner, delegate), layers);
+        assertThrows(UnsupportedOperationException.class,
+                () -> layers.add(new CountingMiddleware()));
+        assertEquals(AgentMiddlewareOrder.USER, outer.order());
+        assertEquals(AgentMiddlewareOrder.USER, inner.order());
+        assertEquals(37, delegate.order());
+    }
+
+    @Test
     void publicSystemPromptMiddlewareUsesOnlyTheCurrentRuntimeContext() {
         LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
         AtomicInteger calls = new AtomicInteger();

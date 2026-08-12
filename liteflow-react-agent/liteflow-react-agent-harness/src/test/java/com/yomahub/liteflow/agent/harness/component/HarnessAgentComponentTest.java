@@ -6,6 +6,7 @@ import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
+import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
@@ -25,16 +26,21 @@ import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
 import io.agentscope.core.state.InMemoryAgentStateStore;
+import io.agentscope.core.state.AgentState;
+import io.agentscope.core.state.ToolContextState;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
+import io.agentscope.harness.agent.filesystem.OverlayFilesystem;
+import io.agentscope.harness.agent.filesystem.local.LocalFilesystemWithShell;
 import io.agentscope.harness.agent.filesystem.model.EditResult;
 import io.agentscope.harness.agent.filesystem.model.FileDownloadResponse;
 import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
@@ -44,9 +50,13 @@ import io.agentscope.harness.agent.filesystem.model.LsResult;
 import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.filesystem.spec.RemoteFilesystemSpec;
+import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
+import io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentEntry;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.subagent.DefaultAgentManager;
+import io.agentscope.harness.agent.subagent.SubagentSpecGenerator;
 import io.agentscope.harness.agent.subagent.task.BackgroundTask;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.TaskRunSpec;
@@ -54,7 +64,10 @@ import io.agentscope.harness.agent.subagent.task.TaskStatus;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
 import io.agentscope.harness.agent.workspace.WorkspaceManager;
 import io.agentscope.harness.agent.workspace.WorkspaceIndex;
+import io.agentscope.harness.agent.tool.AgentSpawnTool;
+import io.agentscope.harness.agent.tool.AgentGenerateTool;
 import io.agentscope.harness.agent.tool.ShellExecuteTool;
+import io.agentscope.harness.agent.tool.TaskTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -339,6 +352,226 @@ class HarnessAgentComponentTest {
         AgentConfigException tamperedFailure =
                 assertThrows(AgentConfigException.class, tampered::process);
         assertTrue(tamperedFailure.getMessage().contains("subagents to remain disabled"));
+    }
+
+    @Test
+    void guardedLocalRejectsWrappedOfficialSubagentMiddlewareWithoutTools() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        List<MiddlewareCase> cases = List.of(
+                new MiddlewareCase("direct-static", false, 0),
+                new MiddlewareCase("direct-dynamic", true, 0),
+                new MiddlewareCase("wrapped-static", false, 1),
+                new MiddlewareCase("wrapped-dynamic", true, 1),
+                new MiddlewareCase("nested-static", false, 2),
+                new MiddlewareCase("nested-dynamic", true, 2));
+        List<String> unblocked = new ArrayList<>();
+
+        for (MiddlewareCase testCase : cases) {
+            Path caseWorkspace = tempDir.resolve(testCase.name());
+            Files.createDirectories(caseWorkspace);
+            RecordingFilesystem filesystem =
+                    new RecordingFilesystem(testCase.name() + "-filesystem", new ArrayList<>());
+            WorkspaceManager workspaceManager = new WorkspaceManager(caseWorkspace, filesystem);
+            RecordingTaskRepository tasks =
+                    new RecordingTaskRepository(testCase.name() + "-tasks", new ArrayList<>());
+            SubagentEntry dangerousEntry = new SubagentEntry(
+                    "wrapped-danger",
+                    "official manager reaches a host-local child",
+                    ignored -> unsafeHostLocalChild(caseWorkspace.resolve("child")),
+                    null);
+            MiddlewareBase official = testCase.dynamic()
+                    ? dynamicSubagentsMiddleware(
+                            dangerousEntry, filesystem, caseWorkspace, workspaceManager, tasks)
+                    : new SubagentsMiddleware(List.of(dangerousEntry), tasks, workspaceManager);
+            MiddlewareBase configured = official;
+            for (int wrapper = 0; wrapper < testCase.explicitWrapperDepth(); wrapper++) {
+                configured = AgentMiddlewareOrder.user(configured);
+            }
+
+            RecordingModel model =
+                    new RecordingModel("must not run", false, null, null, null);
+            TestComponent component = component(
+                    slot(testCase.name() + "-session", testCase.name() + "-request"),
+                    model,
+                    null);
+            component.userMiddlewares = List.of(configured);
+
+            try {
+                component.process();
+            }
+            catch (AgentConfigException expected) {
+                if (expected.getMessage().contains(official.getClass().getSimpleName())) {
+                    continue;
+                }
+                unblocked.add(testCase.name());
+                continue;
+            }
+
+            Agent child = officialSubagentManager(official)
+                    .createAgent("wrapped-danger", model.runtimeContexts.get(0));
+            HarnessAgent dangerousChild = assertInstanceOf(HarnessAgent.class, child);
+            try {
+                WorkspaceManager childWorkspace = (WorkspaceManager)
+                        harnessAgentField("workspaceManager").get(dangerousChild);
+                OverlayFilesystem overlay = assertInstanceOf(
+                        OverlayFilesystem.class, childWorkspace.getFilesystem());
+                assertInstanceOf(LocalFilesystemWithShell.class, overlay.getUpper());
+                assertTrue(dangerousChild.getToolkit().getToolSchemas().stream()
+                        .anyMatch(schema -> ShellExecuteTool.NAME.equals(schema.getName())));
+            }
+            finally {
+                dangerousChild.close();
+            }
+            unblocked.add(testCase.name());
+        }
+
+        assertEquals(List.of(), unblocked,
+                "GUARDED_LOCAL must reject every wrapped official subagent path before build");
+    }
+
+    @Test
+    void guardedLocalRejectsOfficialSubagentToolsWithoutMiddleware() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        Path workspace = tempDir.resolve("tool-only-subagent");
+        Files.createDirectories(workspace);
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("tool-only-filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager = new WorkspaceManager(workspace, filesystem);
+        RecordingTaskRepository tasks =
+                new RecordingTaskRepository("tool-only-tasks", new ArrayList<>());
+        SubagentEntry dangerousEntry = new SubagentEntry(
+                "tool-only-danger",
+                "official tool reaches a host-local child",
+                ignored -> unsafeHostLocalChild(workspace.resolve("child")),
+                null);
+        SubagentsMiddleware official =
+                new SubagentsMiddleware(List.of(dangerousEntry), tasks, workspaceManager);
+        RecordingModel model = new RecordingModel("must not run", false, null, null, null);
+        TestComponent component = component(
+                slot("tool-only-session", "tool-only-request"), model, null);
+        component.tools = official.getTools();
+        assertTrue(component.tools.stream().anyMatch(AgentSpawnTool.class::isInstance));
+        assertTrue(component.tools.stream().anyMatch(TaskTool.class::isInstance));
+
+        try {
+            component.process();
+        }
+        catch (AgentConfigException expected) {
+            assertTrue(expected.getMessage().contains("subagent tool"));
+            return;
+        }
+
+        assertTrue(model.toolNames.get(0).containsAll(List.of(
+                "agent_spawn",
+                "agent_send",
+                "agent_list",
+                "task_output",
+                "task_cancel",
+                "task_list")));
+        Agent child = official.getAgentManager()
+                .createAgent("tool-only-danger", model.runtimeContexts.get(0));
+        HarnessAgent dangerousChild = assertInstanceOf(HarnessAgent.class, child);
+        try {
+            WorkspaceManager childWorkspace =
+                    (WorkspaceManager) harnessAgentField("workspaceManager").get(dangerousChild);
+            OverlayFilesystem overlay = assertInstanceOf(
+                    OverlayFilesystem.class, childWorkspace.getFilesystem());
+            assertInstanceOf(LocalFilesystemWithShell.class, overlay.getUpper());
+            assertTrue(dangerousChild.getToolkit().getToolSchemas().stream()
+                    .anyMatch(schema -> ShellExecuteTool.NAME.equals(schema.getName())));
+        }
+        finally {
+            dangerousChild.close();
+        }
+        throw new AssertionError(
+                "GUARDED_LOCAL must reject official subagent tools before build");
+    }
+
+    @Test
+    void guardedLocalAuditsOfficialSubagentToolsInInactiveGroupsBeforeStateRestore()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        Path workspace = tempDir.resolve("inactive-subagent-group");
+        Files.createDirectories(workspace);
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("inactive-group-filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager = new WorkspaceManager(workspace, filesystem);
+        RecordingTaskRepository tasks =
+                new RecordingTaskRepository("inactive-group-tasks", new ArrayList<>());
+        SubagentEntry dangerousEntry = new SubagentEntry(
+                "inactive-danger",
+                "inactive official group reaches a host-local child",
+                ignored -> unsafeHostLocalChild(workspace.resolve("child")),
+                null);
+        SubagentsMiddleware official =
+                new SubagentsMiddleware(List.of(dangerousEntry), tasks, workspaceManager);
+        InMemoryAgentStateStore delegate = new InMemoryAgentStateStore();
+        RecordingModel model = new RecordingModel("must not run", false, null, null, null);
+        TestComponent component = component(
+                slot("inactive-session", "inactive-request"), model, null);
+        component.inactiveGroupName = "restored-subagents";
+        component.groupedTools = official.getTools();
+        component.stateStoreResolver = ignored -> new ResolvedAgentStateStore(delegate, false);
+        var identity = new com.yomahub.liteflow.agent.context.InvocationIdentityResolver(
+                        config.getRuntime().getNamespace())
+                .resolve("test-user", "inactive-session", "harness-agent");
+        String runtimeSessionId = identity.runtimeSessionId();
+        AgentState restored = AgentState.builder()
+                .userId("test-user")
+                .sessionId(runtimeSessionId)
+                .toolContext(ToolContextState.builder()
+                        .addActivatedGroup(component.inactiveGroupName)
+                        .build())
+                .build();
+        delegate.save(
+                "test-user",
+                identity.storeSessionId(),
+                "agent_state",
+                restored);
+
+        try {
+            component.process();
+        }
+        catch (AgentConfigException expected) {
+            assertTrue(expected.getMessage().contains("subagent tool"));
+            return;
+        }
+
+        assertTrue(model.toolNames.get(0).containsAll(List.of(
+                "agent_spawn",
+                "agent_send",
+                "agent_list",
+                "task_output",
+                "task_cancel",
+                "task_list")));
+        throw new AssertionError(
+                "GUARDED_LOCAL must audit inactive registered subagent tools before build");
+    }
+
+    @Test
+    void guardedLocalRejectsOfficialAgentGenerateTool() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        Path workspace = tempDir.resolve("agent-generate-tool");
+        Files.createDirectories(workspace);
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("agent-generate-filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager = new WorkspaceManager(workspace, filesystem);
+        DefaultAgentManager manager = new DefaultAgentManager(List.of(), workspaceManager);
+        RecordingModel model = new RecordingModel("must not run", false, null, null, null);
+        TestComponent component = component(
+                slot("agent-generate-session", "agent-generate-request"), model, null);
+        component.tools = List.of(new AgentGenerateTool(
+                new SubagentSpecGenerator(model), manager, filesystem));
+
+        AgentConfigException failure =
+                assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("agent_generate"));
+        assertEquals(0, model.callCount.get());
     }
 
     @Test
@@ -822,6 +1055,42 @@ class HarnessAgentComponentTest {
         return field;
     }
 
+    private static DynamicSubagentsMiddleware dynamicSubagentsMiddleware(
+            SubagentEntry entry,
+            AbstractFilesystem filesystem,
+            Path workspace,
+            WorkspaceManager workspaceManager,
+            TaskRepository tasks) {
+        DefaultAgentManager manager =
+                new DefaultAgentManager(List.of(entry), workspaceManager);
+        return new DynamicSubagentsMiddleware(
+                List.of(entry),
+                filesystem,
+                workspace,
+                ignored -> entry.factory(),
+                manager,
+                null,
+                tasks);
+    }
+
+    private static DefaultAgentManager officialSubagentManager(MiddlewareBase middleware) {
+        if (middleware instanceof SubagentsMiddleware staticMiddleware) {
+            return staticMiddleware.getAgentManager();
+        }
+        return assertInstanceOf(DynamicSubagentsMiddleware.class, middleware).getAgentManager();
+    }
+
+    private static HarnessAgent unsafeHostLocalChild(Path workspace) {
+        return HarnessAgent.builder()
+                .name("unsafe-host-local-child")
+                .model(new RecordingModel("unsafe child reply", false, null, null, null))
+                .workspace(workspace)
+                .filesystem(new LocalFilesystemSpec())
+                .stateStore(new InMemoryAgentStateStore())
+                .disableSubagents()
+                .build();
+    }
+
     private static long workspaceTaskSchedulerCount() {
         return Thread.getAllStackTraces().keySet().stream()
                 .filter(Thread::isAlive)
@@ -831,6 +1100,9 @@ class HarnessAgentComponentTest {
 
     public static final class StructuredReply {
         public String answer;
+    }
+
+    private record MiddlewareCase(String name, boolean dynamic, int explicitWrapperDepth) {
     }
 
     private static final class TestComponent extends HarnessAgentComponent {
@@ -856,6 +1128,9 @@ class HarnessAgentComponentTest {
         private RecordingFilesystem customizerFilesystem;
         private Path customizerWorkspace;
         private List<Object> tools = List.of();
+        private List<Object> groupedTools = List.of();
+        private String inactiveGroupName;
+        private List<MiddlewareBase> userMiddlewares = List.of();
         private boolean replaceToolkit;
         private boolean copyToolkit;
         private Toolkit preparedToolkit;
@@ -939,6 +1214,11 @@ class HarnessAgentComponentTest {
         }
 
         @Override
+        protected List<MiddlewareBase> middlewares() {
+            return userMiddlewares;
+        }
+
+        @Override
         protected List<SubagentDeclaration> subagents() {
             return subagentDeclarations;
         }
@@ -946,6 +1226,15 @@ class HarnessAgentComponentTest {
         @Override
         protected void customizeToolkit(Toolkit toolkit) {
             preparedToolkit = toolkit;
+            if (inactiveGroupName != null) {
+                toolkit.createToolGroup(inactiveGroupName, "inactive test group", false);
+                for (Object tool : groupedTools) {
+                    toolkit.registration()
+                            .tool(tool)
+                            .group(inactiveGroupName)
+                            .apply();
+                }
+            }
         }
 
         @Override
@@ -1099,6 +1388,7 @@ class HarnessAgentComponentTest {
         private final AtomicInteger callCount = new AtomicInteger();
         private final AtomicInteger closeCount = new AtomicInteger();
         private final List<RuntimeContext> runtimeContexts = new CopyOnWriteArrayList<>();
+        private final List<List<String>> toolNames = new CopyOnWriteArrayList<>();
         private RuntimeException closeFailure;
 
         private RecordingModel(
@@ -1118,6 +1408,7 @@ class HarnessAgentComponentTest {
         public Flux<ChatResponse> stream(
                 List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
             callCount.incrementAndGet();
+            toolNames.add(tools.stream().map(ToolSchema::getName).toList());
             return Flux.deferContextual(context -> {
                 runtimeContexts.add(context.get(AgentBase.RUNTIME_CONTEXT_KEY));
                 if (entered != null) {
