@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.harness.filesystem;
 
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.harness.agent.IsolationScope;
 import io.agentscope.harness.agent.filesystem.local.LocalFilesystem;
@@ -29,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Trusted-local Harness filesystem with per-session path confinement.
+ * Trusted-local Harness filesystem with per-session path confinement and agent-scoped memory.
  *
  * <p>This guard rejects lexical escapes and symlinks observable at operation time. It is not a
  * multi-tenant sandbox: a concurrent privileged host process can still race the validation and
@@ -66,7 +67,7 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     @Override
     protected Path resolvePath(RuntimeContext runtimeContext, String path) {
         validateRelativePath(path);
-        Path sessionRoot = sessionRoot(runtimeContext);
+        Path sessionRoot = sessionRoot(runtimeContext, path);
         final Path relative;
         try {
             relative = Path.of(path.replace('\\', '/'));
@@ -180,17 +181,27 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         return super.move(runtimeContext, fromPath, toPath);
     }
 
-    private Path sessionRoot(RuntimeContext runtimeContext) {
+    private Path sessionRoot(RuntimeContext runtimeContext, String path) {
         List<String> namespace = getNamespaceFactory().getNamespace(runtimeContext);
         if (namespace == null || namespace.size() != 1 || namespace.get(0).isBlank()) {
             throw new IllegalArgumentException("runtimeSessionId must not be blank");
         }
-        Path session = root.resolve(namespace.get(0)).normalize();
+        Path namespaceRoot = root;
+        LiteFlowAgentContext liteFlow = runtimeContext != null
+                ? runtimeContext.get(LiteFlowAgentContext.class)
+                : null;
+        if (isAgentMemoryPath(path)
+                && liteFlow != null
+                && Objects.equals(liteFlow.getRuntimeSessionId(), runtimeContext.getSessionId())) {
+            namespaceRoot = root.resolve("agent-" + sha256(liteFlow.getAgentNamespace())).normalize();
+        }
+        Path session = namespaceRoot.resolve(namespace.get(0)).normalize();
         if (!session.startsWith(root)) {
             throw new SecurityException("session workspace escapes guarded local root");
         }
         try {
             requireStableRoot();
+            ensureRealDirectory(root, namespaceRoot);
             if (!Files.exists(session, LinkOption.NOFOLLOW_LINKS)) {
                 try {
                     Files.createDirectory(session);
@@ -212,6 +223,35 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         catch (IOException failure) {
             throw new IllegalStateException("unable to initialize guarded local session", failure);
         }
+    }
+
+    private static void ensureRealDirectory(Path base, Path directory) throws IOException {
+        if (base.equals(directory)) {
+            return;
+        }
+        if (!directory.getParent().equals(base)) {
+            throw new SecurityException("guarded local namespace must be directly below root");
+        }
+        if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
+            try {
+                Files.createDirectory(directory);
+            }
+            catch (FileAlreadyExistsException concurrentCreate) {
+                // Another call created the same agent namespace; validate below.
+            }
+        }
+        if (Files.isSymbolicLink(directory)
+                || !Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS)
+                || !directory.toRealPath().startsWith(base)) {
+            throw new SecurityException("guarded local agent namespace must be a real directory");
+        }
+    }
+
+    private static boolean isAgentMemoryPath(String path) {
+        String normalized = path.replace('\\', '/');
+        return "MEMORY.md".equals(normalized)
+                || "memory".equals(normalized)
+                || normalized.startsWith("memory/");
     }
 
     private void requireStableRoot() throws IOException {

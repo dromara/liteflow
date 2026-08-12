@@ -1,6 +1,11 @@
 package com.yomahub.liteflow.agent.harness.filesystem;
 
+import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
+import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
+import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.model.Model;
 import io.agentscope.harness.agent.HarnessAgent;
@@ -169,6 +174,52 @@ class GuardedLocalFilesystemTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> filesystem.glob(RuntimeContext.empty(), "**/*", "/"));
+    }
+
+    @Test
+    void agentMemoryIsPhysicalAgentSessionStateWhileConversationFilesStayShared()
+            throws Exception {
+        Path root = tempDir.resolve("agent-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        LiteFlowAgentContext firstLiteFlow = liteFlowContext("conversation", "agent-a");
+        LiteFlowAgentContext secondLiteFlow = liteFlowContext("conversation", "agent-b");
+        RuntimeContext first = runtimeContext(firstLiteFlow);
+        RuntimeContext second = runtimeContext(secondLiteFlow);
+
+        assertTrue(filesystem.write(first, "MEMORY.md", "curated-a").isSuccess());
+        assertTrue(filesystem.write(first, "memory/2030-01-01.md", "daily-a").isSuccess());
+        assertFalse(filesystem.read(second, "MEMORY.md", 0, 0).isSuccess());
+        assertFalse(filesystem.read(second, "memory/2030-01-01.md", 0, 0).isSuccess());
+        assertTrue(filesystem.write(second, "MEMORY.md", "curated-b").isSuccess());
+        assertTrue(filesystem.write(second, "memory/2030-01-01.md", "daily-b").isSuccess());
+
+        assertEquals("curated-a", filesystem.read(first, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily-a", filesystem.read(first, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
+        assertEquals("curated-b", filesystem.read(second, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily-b", filesystem.read(second, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
+
+        assertTrue(filesystem.write(first, "shared.txt", "conversation").isSuccess());
+        assertEquals("conversation", filesystem.read(second, "shared.txt", 0, 0)
+                .fileData().content());
+    }
+
+    @Test
+    void internalAndNonLiteFlowContextsKeepTheExistingSessionMemoryLayout() {
+        GuardedLocalFilesystem filesystem =
+                new GuardedLocalFilesystem(tempDir.resolve("internal-memory-workspace"), 4096);
+        RuntimeContext internal = context("internal-session", "internal-user");
+        RuntimeContext sameSession = context("internal-session", "other-user");
+
+        assertTrue(filesystem.write(internal, "MEMORY.md", "internal").isSuccess());
+        assertTrue(filesystem.write(internal, "memory/2030-01-01.md", "daily").isSuccess());
+        assertEquals("internal", filesystem.read(sameSession, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily", filesystem.read(sameSession, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
     }
 
     @Test
@@ -400,6 +451,33 @@ class GuardedLocalFilesystemTest {
 
     private static RuntimeContext context(String sessionId, String userId) {
         return RuntimeContext.builder().sessionId(sessionId).userId(userId).build();
+    }
+
+    private static LiteFlowAgentContext liteFlowContext(String conversationId, String agentKey) {
+        AgentInvocationIdentity identity = new InvocationIdentityResolver("namespace")
+                .resolve("user", conversationId, agentKey);
+        Slot slot = new Slot();
+        slot.setChainId("chain");
+        slot.setConversationId(conversationId);
+        slot.putRequestId("request");
+        return new LiteFlowAgentContext(
+                identity,
+                slot,
+                "chain",
+                agentKey,
+                "request",
+                "trace",
+                Instant.parse("2030-01-01T00:00:00Z"),
+                AgentOutputSpec.text(),
+                LiteFlowAgentContext.SLOT_ATTACHMENT_PREFIX + agentKey);
+    }
+
+    private static RuntimeContext runtimeContext(LiteFlowAgentContext context) {
+        return RuntimeContext.builder()
+                .userId(context.getRuntimeUserId())
+                .sessionId(context.getRuntimeSessionId())
+                .put(LiteFlowAgentContext.class, context)
+                .build();
     }
 
     private static Path onlySessionRoot(Path root) throws Exception {

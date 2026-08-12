@@ -5,6 +5,7 @@ import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
+import io.agentscope.core.middleware.AgentInput;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.permission.PermissionContextState;
@@ -13,6 +14,7 @@ import io.agentscope.harness.agent.middleware.SubagentEntry;
 import io.agentscope.harness.agent.subagent.DefaultAgentManager;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.SubagentFactory;
+import io.agentscope.harness.agent.tool.AgentSpawnTool;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -42,6 +44,13 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         Objects.requireNonNull(parent, "parent");
         Objects.requireNonNull(parentPermissions, "parentPermissions");
         DefaultAgentManager manager = parent.getSubagentAgentManager();
+        inheritDeclaredLocalPermissions(parent, parentPermissions, manager);
+    }
+
+    private static void inheritDeclaredLocalPermissions(
+            HarnessAgent parent,
+            PermissionContextState parentPermissions,
+            DefaultAgentManager manager) {
         if (manager == null) {
             return;
         }
@@ -214,6 +223,22 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         @Override
         public int order() {
             return Integer.MIN_VALUE + 1;
+        }
+
+        @Override
+        public Flux<AgentEvent> onAgent(
+                Agent agent,
+                RuntimeContext context,
+                AgentInput input,
+                Function<AgentInput, Flux<AgentEvent>> next) {
+            HarnessAgent harness = parent.get();
+            DefaultAgentManager scoped = context != null
+                    ? context.get(AgentSpawnTool.CTX_AGENT_MANAGER, DefaultAgentManager.class)
+                    : null;
+            if (harness != null && scoped != null) {
+                inheritDeclaredLocalPermissions(harness, parentPermissions, scoped);
+            }
+            return next.apply(input);
         }
 
         @Override

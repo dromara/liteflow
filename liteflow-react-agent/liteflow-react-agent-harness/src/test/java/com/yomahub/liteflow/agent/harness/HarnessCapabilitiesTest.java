@@ -23,6 +23,8 @@ import io.agentscope.core.message.ToolCallState;
 import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.message.ToolResultState;
 import io.agentscope.core.message.ToolUseBlock;
+import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
@@ -35,6 +37,7 @@ import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
+import io.agentscope.core.state.AgentState;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
@@ -72,20 +75,22 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -212,43 +217,60 @@ class HarnessCapabilitiesTest {
     }
 
     @Test
-    void memoryFlushWritesThroughEachTask7AgentNamespaceWithoutCrossAgentLeakage()
+    void memoryFlushUsesPhysicalRuntimeSessionRootsAcrossAgentsAndConversations()
             throws Exception {
-        configureCustom("real-memory");
-        RecordingFilesystem filesystem = new RecordingFilesystem(Map.of());
+        String namespace = "real-memory";
+        configureGuarded(namespace);
         String daily = "memory/" + LocalDate.now() + ".md";
-        filesystem.expectUploads(daily, 2);
-        RecordingModel memoryModel = new RecordingModel("- DURABLE-MEMORY");
-        TestComponent first = component(new RecordingModel(), filesystem);
-        first.memory = MemoryConfig.builder()
-                .model(memoryModel)
-                .flushTrigger(MemoryConfig.FlushTrigger.always())
-                .build();
-        first.memoryHooks = true;
-        TestComponent second = component(new RecordingModel(), filesystem);
-        second.setNodeId("capabilities-agent-b");
-        second.memory = MemoryConfig.builder()
-                .model(memoryModel)
-                .flushTrigger(MemoryConfig.FlushTrigger.always())
-                .build();
-        second.memoryHooks = true;
+        List<String> markers = List.of("A-ONE", "A-TWO", "B-ONE", "B-TWO");
+        List<TestComponent> matrix = List.of(
+                memoryComponent(null, "capabilities-agent-a", "conversation-one", markers.get(0)),
+                memoryComponent(null, "capabilities-agent-a", "conversation-two", markers.get(1)),
+                memoryComponent(null, "capabilities-agent-b", "conversation-one", markers.get(2)),
+                memoryComponent(null, "capabilities-agent-b", "conversation-two", markers.get(3)));
 
-        first.process();
-        second.process();
+        for (TestComponent component : matrix) {
+            component.process();
+        }
 
-        assertTrue(filesystem.awaitUploads(daily, 5, TimeUnit.SECONDS));
-        List<RecordingFilesystem.Upload> memoryWrites = filesystem.uploads.stream()
-                .filter(upload -> daily.equals(upload.path()))
+        Path workspace = tempDir.resolve(namespace);
+        List<Path> physicalMemoryFiles = matrix.stream()
+                .map(component -> workspace
+                        .resolve("agent-" + sha256(component.lastContext.getAgentNamespace()))
+                        .resolve("session-" + sha256(component.lastContext.getRuntimeSessionId()))
+                        .resolve(daily))
                 .toList();
-        assertEquals(2, memoryWrites.size());
-        assertTrue(memoryWrites.stream().allMatch(upload ->
-                upload.content().contains("DURABLE-MEMORY")));
-        assertEquals(Set.of(first.lastContext.getAgentKey(), second.lastContext.getAgentKey()),
-                memoryWrites.stream().map(RecordingFilesystem.Upload::agentKey)
-                        .collect(java.util.stream.Collectors.toSet()));
-        assertEquals(Set.of(first.lastContext.getAgentNamespace(), second.lastContext.getAgentNamespace()),
-                memoryWrites.stream().map(RecordingFilesystem.Upload::agentNamespace)
-                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(4, Set.copyOf(physicalMemoryFiles).size());
+        for (int index = 0; index < physicalMemoryFiles.size(); index++) {
+            String content = Files.readString(physicalMemoryFiles.get(index));
+            assertTrue(content.contains(markers.get(index)), content);
+            for (int other = 0; other < markers.size(); other++) {
+                if (other != index) {
+                    assertFalse(content.contains(markers.get(other)), content);
+                }
+            }
+        }
+        AbstractFilesystem guarded = matrix.get(0).configuredFilesystem;
+        List<RuntimeContext> contexts = new ArrayList<>();
+        for (int index = 0; index < matrix.size(); index++) {
+            TestComponent component = matrix.get(index);
+            RuntimeContext context = RuntimeContext.builder()
+                    .userId(component.lastContext.getRuntimeUserId())
+                    .sessionId(component.lastContext.getRuntimeSessionId())
+                    .put(LiteFlowAgentContext.class, component.lastContext)
+                    .build();
+            contexts.add(context);
+            String visible = guarded.read(context, daily, 0, 0).fileData().content();
+            assertTrue(visible.contains(markers.get(index)), visible);
+            assertEquals(1, markers.stream().filter(visible::contains).count(), visible);
+        }
+        assertTrue(guarded.write(contexts.get(0), "workspace-shared.txt", "shared").isSuccess());
+        assertEquals("shared", guarded.read(contexts.get(2), "workspace-shared.txt", 0, 0)
+                .fileData().content());
+        assertFalse(guarded.read(contexts.get(1), "workspace-shared.txt", 0, 0).isSuccess());
+        assertFalse(Files.exists(workspace.resolve(daily)));
+        assertFalse(Files.exists(workspace.resolve("conversation-one").resolve(daily)));
+        assertFalse(Files.exists(workspace.resolve("conversation-two").resolve(daily)));
     }
 
     @Test
@@ -378,11 +400,67 @@ class HarnessCapabilitiesTest {
         return Stream.of(HarnessFilesystemBackend.CUSTOM, HarnessFilesystemBackend.DOCKER);
     }
 
+    @ParameterizedTest(name = "{0}, dynamic={1}")
+    @MethodSource("subagentSpawnModes")
+    void realAgentSpawnInheritsCurrentParentSessionPermissionsFromItsSelectedManager(
+            HarnessFilesystemBackend backend, boolean dynamicSubagents) throws Exception {
+        configure("real-spawn-" + backend + "-" + dynamicSubagents, backend);
+        RecordingModel model = new RecordingModel();
+        PermissionProbeMiddleware probe = new PermissionProbeMiddleware("permission-child");
+        TestComponent component = component(model, new RecordingFilesystem(Map.of()));
+        if (backend == HarnessFilesystemBackend.DOCKER) {
+            component.dockerClient = new FakeSandboxClient(new CopyOnWriteArrayList<>());
+        }
+        component.middlewares = List.of(probe);
+        component.disableDynamicSubagents = !dynamicSubagents;
+        component.permission = allow("agent_spawn");
+        component.subagents = List.of(SubagentDeclaration.builder()
+                .name("permission-child")
+                .description("permission child")
+                .inlineAgentsBody("child")
+                .workspaceMode(WorkspaceMode.SHARED)
+                .inheritParentPermissions(true)
+                .build());
+        component.process();
+        PermissionContextState currentSessionPermissions = fullParentPermissions();
+        component.runtime.agent().getDelegate().replacePermissionContext(
+                component.lastContext.getRuntimeUserId(),
+                component.lastContext.getRuntimeSessionId(),
+                currentSessionPermissions);
+
+        model.armTool(
+                "agent_spawn",
+                Map.of(
+                        "agent_id", "permission-child",
+                        "task", "inspect permissions",
+                        "timeout_seconds", 5),
+                "{\"agent_id\":\"permission-child\",\"task\":\"inspect permissions\","
+                        + "\"timeout_seconds\":5}");
+        component.process();
+
+        assertEquals(1, probe.permissions.size(), probe.permissions.toString());
+        assertSame(currentSessionPermissions, probe.permissions.get(0));
+        assertEquals(PermissionMode.DONT_ASK, probe.permissions.get(0).getMode());
+        assertTrue(probe.permissions.get(0).getAllowRules().containsKey("agent_spawn"));
+        assertTrue(probe.permissions.get(0).getAskRules().containsKey("sensitive-operation"));
+        assertTrue(probe.permissions.get(0).getDenyRules().containsKey("blocked-operation"));
+    }
+
+    static Stream<Arguments> subagentSpawnModes() {
+        return Stream.of(HarnessFilesystemBackend.CUSTOM, HarnessFilesystemBackend.DOCKER)
+                .flatMap(backend -> Stream.of(true, false)
+                        .map(dynamic -> Arguments.of(backend, dynamic)));
+    }
+
     @Test
-    void declaredSubagentOptOutStaysIndependentAndRemoteDeclarationStaysRemote() throws Exception {
+    void realStaticAgentSpawnKeepsOptOutIndependentAndRemoteDeclarationRemote() throws Exception {
         configureCustom("subagent-permission-opt-out");
-        TestComponent component = component(new RecordingModel(), new RecordingFilesystem(Map.of()));
-        component.permission = ask("execute");
+        RecordingModel model = new RecordingModel();
+        PermissionProbeMiddleware probe = new PermissionProbeMiddleware("independent-child");
+        TestComponent component = component(model, new RecordingFilesystem(Map.of()));
+        component.middlewares = List.of(probe);
+        component.disableDynamicSubagents = true;
+        component.permission = allow("agent_spawn");
         component.subagents = List.of(
                 SubagentDeclaration.builder()
                         .name("independent-child")
@@ -398,19 +476,34 @@ class HarnessCapabilitiesTest {
                         .inheritParentPermissions(true)
                         .build());
         component.process();
-        RuntimeContext parent = RuntimeContext.builder()
-                .userId(component.lastContext.getRuntimeUserId())
-                .sessionId(component.lastContext.getRuntimeSessionId())
-                .build();
+        PermissionContextState currentSessionPermissions = fullParentPermissions();
+        component.runtime.agent().getDelegate().replacePermissionContext(
+                component.lastContext.getRuntimeUserId(),
+                component.lastContext.getRuntimeSessionId(),
+                currentSessionPermissions);
 
-        try (HarnessAgent independent = (HarnessAgent) component.runtime.agent()
-                .getSubagentAgentManager().createAgent("independent-child", parent)) {
-            assertFalse(independent.getDelegate().getPermissionContext()
-                    .getAskRules().containsKey("execute"));
-        }
-        Agent remote = component.runtime.agent().getSubagentAgentManager()
-                .createAgent("remote-child", parent);
-        assertFalse(remote instanceof HarnessAgent);
+        model.armTool(
+                "agent_spawn",
+                Map.of(
+                        "agent_id", "independent-child",
+                        "task", "inspect permissions",
+                        "timeout_seconds", 5),
+                "{\"agent_id\":\"independent-child\",\"task\":\"inspect permissions\","
+                        + "\"timeout_seconds\":5}");
+        component.process();
+        assertEquals(1, probe.permissions.size());
+        assertFalse(probe.permissions.get(0).getAskRules().containsKey("sensitive-operation"));
+        assertEquals(PermissionMode.DEFAULT, probe.permissions.get(0).getMode());
+
+        model.armTool(
+                "agent_spawn",
+                Map.of("agent_id", "remote-child"),
+                "{\"agent_id\":\"remote-child\"}");
+        component.process();
+        assertEquals(1, probe.permissions.size(), "remote child must not run the local probe");
+        assertTrue(model.toolResultText("agent_spawn").stream()
+                .anyMatch(output -> output.contains("agent_id: remote-child")),
+                model.toolResultText("agent_spawn").toString());
     }
 
     @Test
@@ -656,15 +749,60 @@ class HarnessCapabilitiesTest {
         return PermissionContextState.builder().addAskRule(toolName, rule).build();
     }
 
-    private TestComponent component(RecordingModel model, RecordingFilesystem filesystem) {
+    private static PermissionContextState fullParentPermissions() {
+        return PermissionContextState.builder()
+                .mode(PermissionMode.DONT_ASK)
+                .addAllowRule("agent_spawn", new PermissionRule(
+                        "agent_spawn", null, PermissionBehavior.ALLOW, "spawn child"))
+                .addAskRule("sensitive-operation", new PermissionRule(
+                        "sensitive-operation", null, PermissionBehavior.ASK, "ask parent"))
+                .addDenyRule("blocked-operation", new PermissionRule(
+                        "blocked-operation", null, PermissionBehavior.DENY, "deny parent"))
+                .build();
+    }
+
+    private TestComponent component(RecordingModel model, AbstractFilesystem filesystem) {
+        return component(model, filesystem, "capabilities-agent", "conversation");
+    }
+
+    private TestComponent component(
+            RecordingModel model,
+            AbstractFilesystem filesystem,
+            String nodeId,
+            String conversationId) {
         Slot slot = new Slot();
         slot.setChainId("capabilities-chain");
-        slot.setConversationId("conversation");
+        slot.setConversationId(conversationId);
         slot.putRequestId("request");
         TestComponent component = new TestComponent(slot, model, filesystem);
-        component.setNodeId("capabilities-agent");
+        component.setNodeId(nodeId);
         components.add(component);
         return component;
+    }
+
+    private TestComponent memoryComponent(
+            AbstractFilesystem filesystem,
+            String nodeId,
+            String conversationId,
+            String marker) {
+        TestComponent component = component(
+                new RecordingModel(), filesystem, nodeId, conversationId);
+        component.memory = MemoryConfig.builder()
+                .model(new RecordingModel("- " + marker))
+                .flushTrigger(MemoryConfig.FlushTrigger.always())
+                .build();
+        component.memoryHooks = true;
+        return component;
+    }
+
+    private static String sha256(String value) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+        }
+        catch (NoSuchAlgorithmException impossible) {
+            throw new AssertionError(impossible);
+        }
     }
 
     private void configureCustom(String namespace) throws Exception {
@@ -718,7 +856,7 @@ class HarnessCapabilitiesTest {
     private static final class TestComponent extends HarnessAgentComponent {
         private final Slot slot;
         private final RecordingModel model;
-        private final RecordingFilesystem filesystem;
+        private final AbstractFilesystem filesystem;
         private List<String> additionalContextFiles = List.of();
         private CompactionConfig compaction;
         private MemoryConfig memory;
@@ -738,8 +876,11 @@ class HarnessCapabilitiesTest {
         private LiteFlowAgentContext lastContext;
         private SandboxClient<DockerSandboxClientOptions> dockerClient;
         private List<Object> tools = List.of();
+        private List<MiddlewareBase> middlewares = List.of();
+        private boolean disableDynamicSubagents;
+        private AbstractFilesystem configuredFilesystem;
 
-        private TestComponent(Slot slot, RecordingModel model, RecordingFilesystem filesystem) {
+        private TestComponent(Slot slot, RecordingModel model, AbstractFilesystem filesystem) {
             this.slot = slot;
             this.model = model;
             this.filesystem = filesystem;
@@ -764,6 +905,7 @@ class HarnessCapabilitiesTest {
             return permission;
         }
         @Override protected List<Object> tools() { return tools; }
+        @Override protected List<MiddlewareBase> middlewares() { return middlewares; }
         @Override protected HarnessFilesystemConfigurer filesystemConfigurer() {
             return filesystem == null ? null : (builder, context) -> builder.abstractFilesystem(filesystem);
         }
@@ -774,10 +916,17 @@ class HarnessCapabilitiesTest {
             return ignored -> new NoopSnapshotSpec();
         }
         @Override protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
+            Object configured = field(builder, "abstractFilesystem");
+            if (configured instanceof AbstractFilesystem abstractFilesystem) {
+                configuredFilesystem = abstractFilesystem;
+            }
             inspectBuilder.accept(builder);
             mutateBuilder.accept(builder);
             if (!dynamicSkills) {
                 builder.disableDynamicSkills();
+            }
+            if (disableDynamicSubagents) {
+                builder.disableDynamicSubagents();
             }
             builder.disableDefaultWorkspaceSkills().disableToolsConfig()
                     .disableFilesystemTools().disableShellTool().disableMemoryTools()
@@ -796,8 +945,31 @@ class HarnessCapabilitiesTest {
         }
     }
 
+    private static final class PermissionProbeMiddleware implements MiddlewareBase {
+        private final String childName;
+        private final List<PermissionContextState> permissions = new CopyOnWriteArrayList<>();
+
+        private PermissionProbeMiddleware(String childName) {
+            this.childName = childName;
+        }
+
+        @Override
+        public Flux<io.agentscope.core.event.AgentEvent> onReasoning(
+                Agent agent,
+                RuntimeContext context,
+                ReasoningInput input,
+                Function<ReasoningInput, Flux<io.agentscope.core.event.AgentEvent>> next) {
+            if (childName.equals(agent.getName())) {
+                AgentState state = RuntimeContext.resolveAgentState(context, agent);
+                permissions.add(state.getPermissionContext());
+            }
+            return next.apply(input);
+        }
+    }
+
     private static final class RecordingModel implements Model {
         private final AtomicInteger calls = new AtomicInteger();
+        private final AtomicInteger toolCalls = new AtomicInteger();
         private final List<List<Msg>> messages = new ArrayList<>();
         private final AgentSkill skillToLoad;
         private final String responseText;
@@ -836,7 +1008,7 @@ class HarnessCapabilitiesTest {
                 String rawInput = armedRawInput;
                 armedTool = null;
                 ToolUseBlock use = new ToolUseBlock(
-                        "armed-tool",
+                        "armed-tool-" + toolCalls.incrementAndGet(),
                         toolName,
                         toolInput,
                         rawInput,
@@ -903,17 +1075,8 @@ class HarnessCapabilitiesTest {
 
     private static final class RecordingFilesystem implements AbstractFilesystem {
         private final Map<String, String> files;
-        private final List<Upload> uploads = new CopyOnWriteArrayList<>();
-        private final Map<String, CountDownLatch> uploadLatches = new ConcurrentHashMap<>();
         private RecordingFilesystem(Map<String, String> files) {
             this.files = new ConcurrentHashMap<>(files);
-        }
-        private void expectUploads(String path, int count) {
-            uploadLatches.put(path, new CountDownLatch(count));
-        }
-        private boolean awaitUploads(String path, long timeout, TimeUnit unit)
-                throws InterruptedException {
-            return uploadLatches.get(path).await(timeout, unit);
         }
         @Override public LsResult ls(RuntimeContext context, String path) { throw unused(); }
         @Override public ReadResult read(RuntimeContext context, String path, int offset, int limit) {
@@ -922,7 +1085,6 @@ class HarnessCapabilitiesTest {
         }
         @Override public WriteResult write(RuntimeContext context, String path, String content) {
             files.put(path, content);
-            record(context, path, content);
             return WriteResult.ok(path);
         }
         @Override public EditResult edit(RuntimeContext context, String path, String oldText, String newText, boolean all) { throw unused(); }
@@ -936,7 +1098,6 @@ class HarnessCapabilitiesTest {
             for (Map.Entry<String, byte[]> entry : entries) {
                 String content = new String(entry.getValue(), StandardCharsets.UTF_8);
                 files.put(entry.getKey(), content);
-                record(context, entry.getKey(), content);
                 result.add(FileUploadResponse.success(entry.getKey()));
             }
             return result;
@@ -945,20 +1106,7 @@ class HarnessCapabilitiesTest {
         @Override public WriteResult delete(RuntimeContext context, String path) { throw unused(); }
         @Override public WriteResult move(RuntimeContext context, String from, String to) { throw unused(); }
         @Override public boolean exists(RuntimeContext context, String path) { return files.containsKey(path); }
-        private void record(RuntimeContext context, String path, String content) {
-            LiteFlowAgentContext liteFlow = context.get(LiteFlowAgentContext.class);
-            uploads.add(new Upload(
-                    path,
-                    content,
-                    liteFlow == null ? null : liteFlow.getAgentKey(),
-                    liteFlow == null ? null : liteFlow.getAgentNamespace()));
-            CountDownLatch latch = uploadLatches.get(path);
-            if (latch != null) {
-                latch.countDown();
-            }
-        }
         private UnsupportedOperationException unused() { return new UnsupportedOperationException(); }
-        private record Upload(String path, String content, String agentKey, String agentNamespace) { }
     }
 
     private static final class RecordingRepository implements AgentSkillRepository {
