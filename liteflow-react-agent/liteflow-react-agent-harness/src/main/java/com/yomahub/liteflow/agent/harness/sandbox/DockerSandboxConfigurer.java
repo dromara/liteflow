@@ -67,8 +67,6 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
         SandboxSnapshotSpec snapshot = resolveSnapshot(config, context);
 
         DockerFilesystemSpec spec = new DockerFilesystemSpec()
-                .client(new ProjectionValidatingSandboxClient<>(
-                        sandboxClient, workspaceProjectionPreflight(context)))
                 .image(config.getImage())
                 .workspaceRoot(config.getWorkspaceRoot())
                 .memorySizeBytes(config.getMemorySizeBytes())
@@ -76,6 +74,10 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
                 .network(config.getNetwork())
                 .additionalRunArgs(REQUIRED_RUN_ARGS)
                 .snapshotSpec(snapshot);
+        if (config.isWorkspaceProjectionEnabled()) {
+            spec.client(new ProjectionValidatingSandboxClient<>(
+                    sandboxClient, workspaceProjectionPreflight(context)));
+        }
         spec.isolationScope(IsolationScope.SESSION);
         spec.workspaceProjectionEnabled(config.isWorkspaceProjectionEnabled());
         spec.workspaceProjectionRoots(config.getWorkspaceProjectionRoots());

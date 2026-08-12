@@ -27,9 +27,10 @@ import io.agentscope.harness.agent.sandbox.SandboxState;
 import io.agentscope.harness.agent.sandbox.WorkspaceProjectionApplier;
 import io.agentscope.harness.agent.sandbox.WorkspaceSpec;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandbox;
-import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClient;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxState;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
 import io.agentscope.harness.agent.sandbox.layout.BindMountEntry;
 import io.agentscope.harness.agent.sandbox.layout.WorkspaceProjectionEntry;
 import io.agentscope.harness.agent.sandbox.snapshot.LocalSnapshotSpec;
@@ -130,6 +131,17 @@ class DockerSandboxConfigurerTest {
                 .toSandboxContext(workspace);
 
         assertTrue(sandbox.getWorkspaceSpec().getEntries().isEmpty());
+    }
+
+    @Test
+    void disabledProjectionUsesTheUpstreamDefaultDockerClient() throws Exception {
+        AgentConfig agent = agentConfig();
+        agent.getHarness().getDocker().setWorkspaceProjectionEnabled(false);
+
+        SandboxContext sandbox = configuredSpec(new DockerSandboxConfigurer(), context(agent))
+                .toSandboxContext(workspace);
+
+        assertInstanceOf(DockerSandboxClient.class, sandbox.getClient());
     }
 
     @Test
