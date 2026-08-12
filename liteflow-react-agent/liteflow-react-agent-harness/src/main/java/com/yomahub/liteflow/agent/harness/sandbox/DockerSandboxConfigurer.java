@@ -33,14 +33,21 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
     }
 
     public DockerSandboxConfigurer(SandboxSnapshotProvider snapshotProvider) {
-        this(snapshotProvider, new DockerSandboxClient());
+        this(snapshotProvider, null);
     }
 
-    DockerSandboxConfigurer(
+    /**
+     * Creates a configurer with a trusted Java sandbox backend.
+     *
+     * <p>This narrow extension seam is intended for custom backends and deterministic tests. The
+     * supplied client still passes through LiteFlow's projection preflight wrapper and cannot
+     * replace the policy-bound Docker options or filesystem spec.
+     */
+    public DockerSandboxConfigurer(
             SandboxSnapshotProvider snapshotProvider,
             SandboxClient<DockerSandboxClientOptions> sandboxClient) {
         this.snapshotProvider = snapshotProvider;
-        this.sandboxClient = Objects.requireNonNull(sandboxClient, "sandboxClient");
+        this.sandboxClient = sandboxClient;
     }
 
     /** Creates the per-call host workspace projection safety check. */
@@ -75,8 +82,14 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
                 .additionalRunArgs(REQUIRED_RUN_ARGS)
                 .snapshotSpec(snapshot);
         if (config.isWorkspaceProjectionEnabled()) {
+            SandboxClient<DockerSandboxClientOptions> effectiveClient = sandboxClient != null
+                    ? sandboxClient
+                    : new DockerSandboxClient();
             spec.client(new ProjectionValidatingSandboxClient<>(
-                    sandboxClient, workspaceProjectionPreflight(context)));
+                    effectiveClient, workspaceProjectionPreflight(context)));
+        }
+        else if (sandboxClient != null) {
+            spec.client(sandboxClient);
         }
         spec.isolationScope(IsolationScope.SESSION);
         spec.workspaceProjectionEnabled(config.isWorkspaceProjectionEnabled());

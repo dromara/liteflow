@@ -25,6 +25,12 @@
             <groupId>io.agentscope</groupId>
             <artifactId>agentscope-harness</artifactId>
         </dependency>
+        <!-- agentscope-harness 2.0.2 uses commons-compress 1.27.1, which requires this API. -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.16.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>

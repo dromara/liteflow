@@ -8,6 +8,7 @@ import com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystemConfi
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.SandboxCallGate;
 import com.yomahub.liteflow.agent.harness.sandbox.DockerSandboxConfigurer;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.hitl.AgentCallTarget;
@@ -30,6 +31,8 @@ import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
 import io.agentscope.harness.agent.sandbox.SandboxContext;
+import io.agentscope.harness.agent.sandbox.SandboxClient;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import io.agentscope.harness.agent.workspace.WorkspaceManager;
 import io.agentscope.harness.agent.workspace.WorkspacePathNormalizer;
 import reactor.core.publisher.Mono;
@@ -76,6 +79,14 @@ public abstract class HarnessAgentComponent
     }
 
     protected SandboxSnapshotProvider sandboxSnapshotProvider() {
+        return null;
+    }
+
+    /**
+     * Trusted Java custom-backend seam for Docker sandboxes; {@code null} uses the default client.
+     * LiteFlow still owns the filesystem spec, Docker options, projection policy, and identity.
+     */
+    protected SandboxClient<DockerSandboxClientOptions> dockerSandboxClient() {
         return null;
     }
 
@@ -211,7 +222,11 @@ public abstract class HarnessAgentComponent
                     prepared);
             prepared.routingMiddleware().finalizeDefaultModel(agent.getModel());
             filesystemBeforeCall = filesystem.beforeCall();
-            return new HarnessAgentRuntime(agent, prepared.ownership(), ownedProviderResources);
+            SandboxCallGate sandboxCallGate = filesystem.dockerBackend()
+                    ? new SandboxCallGate()
+                    : null;
+            return new HarnessAgentRuntime(
+                    agent, prepared.ownership(), ownedProviderResources, sandboxCallGate);
         }
         catch (RuntimeException | Error failure) {
             prepared.ownership().rollback(failure, agent, ownedProviderResources);
@@ -227,7 +242,7 @@ public abstract class HarnessAgentComponent
             RuntimeContext runtimeContext,
             LiteFlowAgentContext liteflowContext) {
         HarnessAgent agent = runtime.agent();
-        return invokeCallTarget(
+        return runtime.executeSandboxCall(() -> invokeCallTarget(
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
@@ -253,7 +268,7 @@ public abstract class HarnessAgentComponent
                 input,
                 output,
                 runtimeContext,
-                liteflowContext);
+                liteflowContext));
     }
 
     private Mono<Msg> invokeHarnessPublicCall(
@@ -280,7 +295,8 @@ public abstract class HarnessAgentComponent
         HarnessFilesystemBackend backend = harness.getFilesystemBackend();
         HarnessFilesystemConfigurer configurer;
         if (backend == HarnessFilesystemBackend.DOCKER) {
-            configurer = new DockerSandboxConfigurer(sandboxSnapshotProvider());
+            configurer = new DockerSandboxConfigurer(
+                    sandboxSnapshotProvider(), dockerSandboxClient());
         }
         else if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
             configurer = new GuardedLocalFilesystemConfigurer(agentNamespace);
@@ -318,7 +334,11 @@ public abstract class HarnessAgentComponent
             Runnable beforeCall = backend == HarnessFilesystemBackend.DOCKER
                     ? DockerSandboxConfigurer.workspaceProjectionPreflight(context)
                     : () -> { };
-            return new FilesystemPreparation(configurer, context, beforeCall);
+            return new FilesystemPreparation(
+                    configurer,
+                    context,
+                    beforeCall,
+                    backend == HarnessFilesystemBackend.DOCKER);
         }
         catch (InvalidPathException failure) {
             throw new AgentConfigException("invalid Harness workspace.root", failure);
@@ -402,6 +422,7 @@ public abstract class HarnessAgentComponent
     private record FilesystemPreparation(
             HarnessFilesystemConfigurer configurer,
             HarnessFilesystemContext context,
-            Runnable beforeCall) {
+            Runnable beforeCall,
+            boolean dockerBackend) {
     }
 }
