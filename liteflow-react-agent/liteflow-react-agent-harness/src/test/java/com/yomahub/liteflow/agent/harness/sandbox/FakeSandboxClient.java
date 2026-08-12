@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Test-only Docker-client substitute; it never invokes Docker, a process, or the network. */
 public final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOptions> {
@@ -22,6 +23,8 @@ public final class FakeSandboxClient implements SandboxClient<DockerSandboxClien
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
 
     private final List<String> events;
+    private final AtomicInteger createAttempts = new AtomicInteger();
+    private final AtomicReference<RuntimeException> createFailure;
     private final List<FakeSandbox> sandboxes = new CopyOnWriteArrayList<>();
     private final List<StateSnapshotIdentity> createdStates = new CopyOnWriteArrayList<>();
     private final List<StateSnapshotIdentity> resumedStates = new CopyOnWriteArrayList<>();
@@ -29,7 +32,12 @@ public final class FakeSandboxClient implements SandboxClient<DockerSandboxClien
             new CopyOnWriteArrayList<>();
 
     public FakeSandboxClient(List<String> events) {
+        this(events, null);
+    }
+
+    public FakeSandboxClient(List<String> events, RuntimeException createFailure) {
         this.events = Objects.requireNonNull(events, "events");
+        this.createFailure = new AtomicReference<>(createFailure);
     }
 
     @Override
@@ -37,6 +45,11 @@ public final class FakeSandboxClient implements SandboxClient<DockerSandboxClien
             WorkspaceSpec workspaceSpec,
             SandboxSnapshotSpec snapshotSpec,
             DockerSandboxClientOptions options) {
+        createAttempts.incrementAndGet();
+        RuntimeException failure = createFailure.getAndSet(null);
+        if (failure != null) {
+            throw failure;
+        }
         String sessionId = "fake-" + NEXT_ID.incrementAndGet();
         DockerSandboxState state = new DockerSandboxState();
         state.setSessionId(sessionId);
@@ -121,6 +134,10 @@ public final class FakeSandboxClient implements SandboxClient<DockerSandboxClien
 
     public List<StateSnapshotIdentity> deserializedWithSnapshotStates() {
         return List.copyOf(deserializedWithSnapshotStates);
+    }
+
+    public int createAttempts() {
+        return createAttempts.get();
     }
 
     List<FakeSandbox> sandboxes() {

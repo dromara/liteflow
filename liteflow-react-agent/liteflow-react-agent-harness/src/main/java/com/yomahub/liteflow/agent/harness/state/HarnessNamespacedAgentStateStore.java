@@ -4,6 +4,11 @@ import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,8 +27,10 @@ public final class HarnessNamespacedAgentStateStore
             "agent_state", "memory_messages", "toolkit_activeGroups");
     private static final String SANDBOX_KEY = "_sandbox_state";
     private static final String WORKSPACE_PREFIX = "harness-workspace.";
+    private static final String AGENT_SESSION_VERSION = ".h1.";
     private static final Pattern SANDBOX_SESSION = Pattern.compile(
             "sandbox/session/(lf-[0-9a-f]{64})");
+    private static final Pattern BASE64_URL = Pattern.compile("[a-zA-Z0-9_-]+");
 
     private final String agentPrefix;
     private final ConcurrentMap<LoadFailureKey, Throwable> loadFailures =
@@ -32,7 +39,7 @@ public final class HarnessNamespacedAgentStateStore
     public HarnessNamespacedAgentStateStore(
             AgentStateStore delegate, String agentNamespace) {
         super(delegate, agentNamespace);
-        this.agentPrefix = agentNamespace() + ".";
+        this.agentPrefix = agentNamespace() + AGENT_SESSION_VERSION;
     }
 
     @Override
@@ -108,7 +115,7 @@ public final class HarnessNamespacedAgentStateStore
         return physical.stream()
                 .filter(Objects::nonNull)
                 .filter(session -> session.startsWith(agentPrefix))
-                .map(session -> session.substring(agentPrefix.length()))
+                .map(this::decodeAgentSession)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -161,12 +168,55 @@ public final class HarnessNamespacedAgentStateStore
     }
 
     private Route agentRoute(String userId, String sessionId) {
+        String logical = requireAgentLogicalSession(sessionId);
+        return new Route(userId, agentPrefix + encodeAgentSession(logical), logical);
+    }
+
+    private static String requireAgentLogicalSession(String sessionId) {
         String logical = requireLogicalSession(sessionId);
         if (logical.startsWith("sandbox/")) {
             throw new IllegalArgumentException(
                     "Agent state keys must not use a sandbox/* logical session");
         }
-        return new Route(userId, agentPrefix + logical, logical);
+        return logical;
+    }
+
+    private static String encodeAgentSession(String logicalSessionId) {
+        byte[] utf8 = logicalSessionId.getBytes(StandardCharsets.UTF_8);
+        if (!logicalSessionId.equals(new String(utf8, StandardCharsets.UTF_8))) {
+            throw new IllegalArgumentException("sessionId must be valid UTF-8 text");
+        }
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(utf8);
+    }
+
+    private String decodeAgentSession(String physicalSessionId) {
+        String encoded = physicalSessionId.substring(agentPrefix.length());
+        if (!BASE64_URL.matcher(encoded).matches()) {
+            throw malformedPhysicalSession();
+        }
+        try {
+            String logical = StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(Base64.getUrlDecoder().decode(encoded)))
+                    .toString();
+            requireAgentLogicalSession(logical);
+            if (!encoded.equals(encodeAgentSession(logical))) {
+                throw malformedPhysicalSession();
+            }
+            return logical;
+        }
+        catch (IllegalArgumentException | CharacterCodingException failure) {
+            throw malformedPhysicalSession(failure);
+        }
+    }
+
+    private static IllegalStateException malformedPhysicalSession() {
+        return new IllegalStateException("Malformed Harness agent physical session");
+    }
+
+    private static IllegalStateException malformedPhysicalSession(Throwable cause) {
+        return new IllegalStateException("Malformed Harness agent physical session", cause);
     }
 
     private static void requireKey(String key) {

@@ -7,10 +7,12 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
+import com.yomahub.liteflow.agent.harness.state.HarnessNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
+import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
@@ -37,6 +39,7 @@ import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.state.AgentState;
 import io.agentscope.core.state.ToolContextState;
+import io.agentscope.core.state.State;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
@@ -84,6 +87,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -94,6 +98,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -118,6 +123,8 @@ class HarnessAgentComponentTest {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String AGENT_NAMESPACE =
             "lf-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    private static final String RUNTIME_SESSION =
+            "lf-1111111111111111111111111111111111111111111111111111111111111111";
 
     @TempDir
     Path tempDir;
@@ -148,6 +155,70 @@ class HarnessAgentComponentTest {
                 com.yomahub.liteflow.agent.component.AbstractAgentComponent.class,
                 HarnessAgentComponent.class.getMethod("process").getDeclaringClass());
         assertSame(filesystem, component.runtime().agent().getWorkspaceManager().getFilesystem());
+    }
+
+    @Test
+    void terminalCleanupClearsBothStateRoutesOnCancelAndTimeout() {
+        for (boolean timeout : List.of(false, true)) {
+            RuntimeException loadFailure = new RuntimeException("load failed");
+            HarnessNamespacedAgentStateStore store = new HarnessNamespacedAgentStateStore(
+                    new AlwaysFailingLoadStore(loadFailure), AGENT_NAMESPACE);
+            RuntimeContext context = RuntimeContext.builder()
+                    .userId("user")
+                    .sessionId(RUNTIME_SESSION)
+                    .build();
+            assertSame(loadFailure, assertThrows(RuntimeException.class,
+                    () -> store.get(
+                            "user", RUNTIME_SESSION, "agent_state", AgentState.class)));
+            assertSame(loadFailure, assertThrows(RuntimeException.class,
+                    () -> store.get(
+                            null,
+                            "sandbox/session/" + RUNTIME_SESSION,
+                            "_sandbox_state",
+                            AgentState.class)));
+
+            Mono<String> invocation = HarnessAgentComponent.clearStateLoadFailureOnTermination(
+                    Mono.never(), store, context);
+            if (timeout) {
+                StepVerifier.withVirtualTime(
+                                () -> invocation.timeout(Duration.ofSeconds(1)))
+                        .thenAwait(Duration.ofSeconds(1))
+                        .expectError(java.util.concurrent.TimeoutException.class)
+                        .verify();
+            }
+            else {
+                StepVerifier.create(invocation).thenCancel().verify();
+            }
+
+            assertTrue(store.takeLoadFailure("user", RUNTIME_SESSION).isEmpty());
+            assertTrue(store.takeLoadFailure("user", RUNTIME_SESSION).isEmpty());
+        }
+    }
+
+    @Test
+    void terminalCleanupPrecedesDownstreamLeaseRelease() {
+        List<String> events = new ArrayList<>();
+        GuardedNamespacedAgentStateStore store =
+                new CleanupRecordingStateStore(events);
+        RuntimeContext context = RuntimeContext.builder()
+                .userId("user")
+                .sessionId(RUNTIME_SESSION)
+                .build();
+        RuntimeException failure = new RuntimeException("pre-delegate failure");
+
+        Mono<String> invocation = HarnessAgentComponent.clearStateLoadFailureOnTermination(
+                        Mono.<String>error(failure), store, context)
+                .doOnError(ignored -> {
+                    events.add("close:STATE");
+                    events.add("close:WORKSPACE");
+                });
+
+        StepVerifier.create(invocation)
+                .expectErrorMatches(error -> error == failure)
+                .verify();
+        assertEquals(
+                List.of("clear", "close:STATE", "close:WORKSPACE"),
+                events);
     }
 
     @Test
@@ -1931,6 +2002,36 @@ class HarnessAgentComponentTest {
             if (closeFailure != null) {
                 throw closeFailure;
             }
+        }
+    }
+
+    private static final class AlwaysFailingLoadStore extends InMemoryAgentStateStore {
+        private final RuntimeException failure;
+
+        private AlwaysFailingLoadStore(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public <T extends State> Optional<T> get(
+                String userId, String sessionId, String key, Class<T> type) {
+            throw failure;
+        }
+    }
+
+    private static final class CleanupRecordingStateStore
+            extends GuardedNamespacedAgentStateStore {
+        private final List<String> events;
+
+        private CleanupRecordingStateStore(List<String> events) {
+            super(new InMemoryAgentStateStore(), AGENT_NAMESPACE);
+            this.events = events;
+        }
+
+        @Override
+        public void clearLoadFailure(String userId, String runtimeSessionId) {
+            events.add("clear");
+            super.clearLoadFailure(userId, runtimeSessionId);
         }
     }
 

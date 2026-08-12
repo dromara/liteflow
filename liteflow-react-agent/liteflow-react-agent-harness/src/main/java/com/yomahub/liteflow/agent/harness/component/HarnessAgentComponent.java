@@ -17,6 +17,7 @@ import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.PreparedAgentResources;
+import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.HarnessConfig;
 import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
@@ -255,7 +256,7 @@ public abstract class HarnessAgentComponent
             RuntimeContext runtimeContext,
             LiteFlowAgentContext liteflowContext) {
         HarnessAgent agent = runtime.agent();
-        return runtime.executeSandboxCall(() -> invokeCallTarget(
+        Mono<Msg> invocation = runtime.executeSandboxCall(() -> invokeCallTarget(
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
@@ -282,6 +283,20 @@ public abstract class HarnessAgentComponent
                 output,
                 runtimeContext,
                 liteflowContext));
+        return clearStateLoadFailureOnTermination(
+                invocation, runtime.stateStore(), runtimeContext);
+    }
+
+    static <T> Mono<T> clearStateLoadFailureOnTermination(
+            Mono<T> invocation,
+            GuardedNamespacedAgentStateStore stateStore,
+            RuntimeContext runtimeContext) {
+        return Mono.using(
+                () -> stateStore,
+                ignored -> invocation,
+                ignored -> stateStore.clearLoadFailure(
+                        runtimeContext.getUserId(), runtimeContext.getSessionId()),
+                true);
     }
 
     private Mono<Msg> invokeHarnessPublicCall(

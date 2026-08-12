@@ -40,6 +40,7 @@ import io.agentscope.core.permission.PermissionRule;
 import io.agentscope.core.event.ConfirmResult;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.state.AgentStateStore;
+import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.state.JsonFileAgentStateStore;
 import io.agentscope.core.state.State;
 import io.agentscope.core.tool.Tool;
@@ -207,6 +208,52 @@ class CrossAgentWorkspaceGuardTest {
     }
 
     @Test
+    void realStoresRoundTripEverySupportedLogicalAgentSession() {
+        String declared = "declared@parent#user";
+        String unicodeAndLong = "子代理@父#用户-" + "x".repeat(96);
+        Set<String> logicalSessions = Set.of(SESSION_A, declared, unicodeAndLong);
+        List<AgentStateStore> delegates = List.of(
+                new InMemoryAgentStateStore(),
+                new JsonFileAgentStateStore(tempDir.resolve("json-dynamic-state")));
+
+        for (AgentStateStore delegate : delegates) {
+            HarnessNamespacedAgentStateStore store = store(delegate, AGENT_A);
+
+            for (String logicalSession : logicalSessions) {
+                store.save("user", logicalSession, "agent_state", new TestState(logicalSession));
+            }
+
+            assertEquals(logicalSessions, store.listSessionIds("user"));
+            for (String logicalSession : logicalSessions) {
+                assertTrue(store.exists("user", logicalSession));
+                assertEquals(logicalSession,
+                        store.get("user", logicalSession, "agent_state", TestState.class)
+                                .orElseThrow().value());
+            }
+
+            store.delete("user", declared, "agent_state");
+            assertTrue(store.get("user", declared, "agent_state", TestState.class).isEmpty());
+            store.delete("user", unicodeAndLong);
+            assertFalse(store.exists("user", unicodeAndLong));
+            assertEquals(Set.of(SESSION_A, declared), store.listSessionIds("user"));
+        }
+    }
+
+    @Test
+    void realStoreListingRejectsMalformedReservedPhysicalSessionsWithoutLeakingThem() {
+        List<AgentStateStore> delegates = List.of(
+                new InMemoryAgentStateStore(),
+                new JsonFileAgentStateStore(tempDir.resolve("json-malformed-state")));
+        for (AgentStateStore delegate : delegates) {
+            HarnessNamespacedAgentStateStore store = store(delegate, AGENT_A);
+            delegate.save(
+                    "user", AGENT_A + ".h1.A", "agent_state", new TestState("malformed"));
+
+            assertThrows(IllegalStateException.class, () -> store.listSessionIds("user"));
+        }
+    }
+
+    @Test
     void onlyInventoriedAgentKeysAndTheExactSessionSandboxPairAreAccepted() {
         HarnessNamespacedAgentStateStore store = store(new RecordingStore(), AGENT_A);
         TestState state = new TestState("value");
@@ -278,7 +325,8 @@ class CrossAgentWorkspaceGuardTest {
         ProcessComponent first = component("agent-a", slot("shared-conversation", "request-a"), model);
         ProcessComponent second = component("agent-b", slot("shared-conversation", "request-b"), model);
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
             Future<?> firstCall = executor.submit(first::processUnchecked);
             assertTrue(firstEntered.await(5, TimeUnit.SECONDS));
             Future<?> secondCall = executor.submit(second::processUnchecked);
@@ -288,6 +336,9 @@ class CrossAgentWorkspaceGuardTest {
             firstRelease.countDown();
             firstCall.get(5, TimeUnit.SECONDS);
             secondCall.get(5, TimeUnit.SECONDS);
+        }
+        finally {
+            executor.shutdownNow();
         }
 
         assertEquals(2, model.calls.get());
@@ -307,7 +358,8 @@ class CrossAgentWorkspaceGuardTest {
         ProcessComponent first = component("agent-a", slot("conversation-a", "request-a"), model);
         ProcessComponent second = component("agent-b", slot("conversation-b", "request-b"), model);
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
             Future<?> firstCall = executor.submit(first::processUnchecked);
             Future<?> secondCall = executor.submit(second::processUnchecked);
             assertTrue(bothEntered.await(5, TimeUnit.SECONDS));
@@ -315,6 +367,9 @@ class CrossAgentWorkspaceGuardTest {
             release.countDown();
             firstCall.get(5, TimeUnit.SECONDS);
             secondCall.get(5, TimeUnit.SECONDS);
+        }
+        finally {
+            executor.shutdownNow();
         }
     }
 
@@ -339,7 +394,8 @@ class CrossAgentWorkspaceGuardTest {
         second.confirmationHandler = handler;
         second.permissionContext = ask;
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
             Future<?> firstCall = executor.submit(first::processUnchecked);
             assertTrue(handlerEntered.await(5, TimeUnit.SECONDS));
             Future<?> secondCall = executor.submit(second::processUnchecked);
@@ -355,6 +411,7 @@ class CrossAgentWorkspaceGuardTest {
             secondCall.get(5, TimeUnit.SECONDS);
         }
         finally {
+            executor.shutdownNow();
             confirmation.tryEmitEmpty();
         }
 
@@ -428,6 +485,44 @@ class CrossAgentWorkspaceGuardTest {
     }
 
     @Test
+    void preDelegateCreateFailureCannotLeaveSwallowedWorkspaceLoadFailureStale()
+            throws Exception {
+        LifecycleRecordingGuard guard = configureGuardedDockerHarness("failure-cleanup");
+        RuntimeException loadFailure = new RuntimeException("sandbox load failed");
+        RuntimeException createFailure = new RuntimeException("sandbox create failed");
+        FailFirstSandboxLoadStore delegate = new FailFirstSandboxLoadStore(loadFailure);
+        List<String> sandboxEvents = new CopyOnWriteArrayList<>();
+        FakeSandboxClient client = new FakeSandboxClient(sandboxEvents, createFailure);
+        CountingReplyModel model = new CountingReplyModel();
+        Slot slot = slot("failure-conversation", "failure-request");
+        ProcessComponent component = dockerComponent(
+                "agent-a",
+                slot,
+                model,
+                delegate,
+                new InMemorySandboxSnapshot(sandboxEvents),
+                client);
+
+        RuntimeException first = assertThrows(RuntimeException.class, component::processUnchecked);
+
+        assertTrue(hasCause(first, createFailure));
+        assertEquals(1, client.createAttempts());
+        assertEquals(0, model.calls.get());
+        assertFalse(slot.hasAttachment(component.lastContext.get().getAttachmentKey()));
+
+        component.processUnchecked();
+
+        assertEquals(2, client.createAttempts());
+        assertEquals(1, model.calls.get());
+        assertEquals(2, delegate.sandboxLoadAttempts.get());
+        assertFalse(slot.hasAttachment(component.lastContext.get().getAttachmentKey()));
+        assertEquals(List.of(
+                "acquire:WORKSPACE", "acquire:STATE", "close:STATE", "close:WORKSPACE",
+                "acquire:WORKSPACE", "acquire:STATE", "close:STATE", "close:WORKSPACE"),
+                guard.events);
+    }
+
+    @Test
     void publicProcessAcquiresWorkspaceBeforeStateAndRollsWorkspaceBackOnStateFailure()
             throws Exception {
         configureHarness("lease-rollback");
@@ -481,6 +576,29 @@ class CrossAgentWorkspaceGuardTest {
         LiteflowConfigGetter.setLiteflowConfig(config);
     }
 
+    private LifecycleRecordingGuard configureGuardedDockerHarness(String namespace)
+            throws Exception {
+        Files.createDirectories(tempDir.resolve("docker-workspace"));
+        AgentConfig agent = new AgentConfig();
+        agent.getRuntime().setNamespace(namespace);
+        agent.getRuntime().setDefaultUserId("user");
+        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
+        agent.getWorkspace().setRoot(tempDir.resolve("docker-workspace").toString());
+        agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        agent.getStateStore().setFailurePolicy(AgentStateStoreFailurePolicy.FAIL_FAST);
+        agent.getInvocationGuard().setMode(AgentInvocationGuardMode.BEAN);
+        agent.getInvocationGuard().setBeanName("recording-guard");
+        LiteflowConfig config = new LiteflowConfig();
+        config.setAgent(agent);
+        LiteflowConfigGetter.setLiteflowConfig(config);
+
+        LifecycleRecordingGuard guard = new LifecycleRecordingGuard();
+        Field contextAware = contextAwareField();
+        originalContextAware = contextAware.get(null);
+        contextAware.set(null, new GuardContextAware(guard));
+        return guard;
+    }
+
     private ProcessComponent component(String nodeId, Slot slot, Model model) {
         ProcessComponent component = new ProcessComponent(slot, model);
         component.setNodeId(nodeId);
@@ -522,6 +640,15 @@ class CrossAgentWorkspaceGuardTest {
         return ChatResponse.builder().content(List.of(block)).finishReason("stop").build();
     }
 
+    private static boolean hasCause(Throwable thrown, Throwable expected) {
+        for (Throwable current = thrown; current != null; current = current.getCause()) {
+            if (current == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static HarnessNamespacedAgentStateStore store(
             AgentStateStore delegate, String agentNamespace) {
         return new HarnessNamespacedAgentStateStore(delegate, agentNamespace);
@@ -536,6 +663,7 @@ class CrossAgentWorkspaceGuardTest {
         private AgentStateStoreResolver stateStoreResolver;
         private SandboxSnapshotProvider snapshots;
         private SandboxClient<DockerSandboxClientOptions> sandboxClient;
+        private final AtomicReference<LiteFlowAgentContext> lastContext = new AtomicReference<>();
         private boolean docker;
 
         private ProcessComponent(Slot slot, Model model) {
@@ -587,6 +715,12 @@ class CrossAgentWorkspaceGuardTest {
             return permissionContext == null
                     ? PermissionContextState.builder().build()
                     : permissionContext;
+        }
+
+        @Override
+        protected void customizeRuntimeContext(
+                RuntimeContext.Builder builder, LiteFlowAgentContext context) {
+            lastContext.set(context);
         }
 
         @Override
@@ -923,6 +1057,29 @@ class CrossAgentWorkspaceGuardTest {
         }
     }
 
+    private static final class LifecycleRecordingGuard implements AgentInvocationGuard {
+        private final AgentInvocationGuard delegate = new LocalAgentInvocationGuard();
+        private final List<String> events = new CopyOnWriteArrayList<>();
+
+        @Override
+        public AgentInvocationLease acquire(AgentInvocationKey key, Duration timeout) {
+            events.add("acquire:" + key.scope());
+            AgentInvocationLease lease = delegate.acquire(key, timeout);
+            return new AgentInvocationLease() {
+                @Override
+                public AgentInvocationKey key() {
+                    return key;
+                }
+
+                @Override
+                public void close() {
+                    lease.close();
+                    events.add("close:" + key.scope());
+                }
+            };
+        }
+    }
+
     private static final class GuardContextAware extends LocalContextAware {
         private final AgentInvocationGuard guard;
 
@@ -1071,6 +1228,25 @@ class CrossAgentWorkspaceGuardTest {
                 throw workspaceFailure;
             }
             throw agentFailure;
+        }
+    }
+
+    private static final class FailFirstSandboxLoadStore extends RecordingStore {
+        private final RuntimeException failure;
+        private final AtomicInteger sandboxLoadAttempts = new AtomicInteger();
+
+        private FailFirstSandboxLoadStore(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public synchronized <T extends State> Optional<T> get(
+                String userId, String sessionId, String key, Class<T> type) {
+            if ("_sandbox_state".equals(key)
+                    && sandboxLoadAttempts.incrementAndGet() == 1) {
+                throw failure;
+            }
+            return super.get(userId, sessionId, key, type);
         }
     }
 }
