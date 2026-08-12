@@ -74,6 +74,36 @@ class DockerSandboxConfigTest {
     }
 
     @Test
+    void imageMustRemainOneNonOptionDockerArgument() {
+        for (String invalid : List.of(
+                "--help",
+                " --network=host",
+                "ubuntu latest",
+                "ubuntu\tlatest",
+                "ubuntu\nlatest",
+                "ubuntu\u0000latest",
+                "ubuntu\u001flatest")) {
+            DockerSandboxConfig config = new DockerSandboxConfig();
+            config.setImage(invalid);
+
+            IllegalStateException failure = assertThrows(
+                    IllegalStateException.class, config::validate, invalid);
+
+            assertTrue(
+                    failure.getMessage().contains("liteflow.agent.harness.docker.image"),
+                    invalid);
+        }
+    }
+
+    @Test
+    void imageValidationDoesNotAttemptToReimplementDockerReferenceParsing() {
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setImage("registry.example.com:5000/team/image:1.2@sha256:abcdef");
+
+        assertDoesNotThrow(config::validate);
+    }
+
+    @Test
     void projectionRootsRejectParentTraversalSegments() {
         for (String invalid : List.of("..", "skills/../secret", "skills\\..\\secret")) {
             DockerSandboxConfig config = new DockerSandboxConfig();

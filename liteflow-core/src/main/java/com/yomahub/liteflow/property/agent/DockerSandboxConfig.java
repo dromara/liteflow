@@ -87,6 +87,7 @@ public class DockerSandboxConfig {
 	/** Validates resource limits and paths before Docker options are constructed. */
 	public void validate() {
 		requireText(image, "image");
+		validateImageArgument(image);
 		requireText(workspaceRoot, "workspace-root");
 		if (memorySizeBytes == null || memorySizeBytes <= 0) {
 			throw invalid("memory-size-bytes", "must be positive");
@@ -100,6 +101,23 @@ public class DockerSandboxConfig {
 		}
 		for (String root : workspaceProjectionRoots) {
 			validateProjectionRoot(root);
+		}
+	}
+
+	private static void validateImageArgument(String image) {
+		String trimmed = image.trim();
+		if (trimmed.startsWith("-")) {
+			throw invalid("image", "must not start with '-' after trimming");
+		}
+		for (int index = 0; index < image.length(); index++) {
+			char character = image.charAt(index);
+			if (character <= 0x1f
+					|| character == 0x7f
+					|| Character.isWhitespace(character)) {
+				throw invalid(
+						"image",
+						"must be one Docker image argument without whitespace or control characters");
+			}
 		}
 	}
 

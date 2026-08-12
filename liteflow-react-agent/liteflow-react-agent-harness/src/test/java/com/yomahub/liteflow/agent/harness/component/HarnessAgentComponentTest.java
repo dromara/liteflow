@@ -57,6 +57,10 @@ import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
 import io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentEntry;
+import io.agentscope.harness.agent.sandbox.ExecResult;
+import io.agentscope.harness.agent.sandbox.Sandbox;
+import io.agentscope.harness.agent.sandbox.SandboxContext;
+import io.agentscope.harness.agent.sandbox.SandboxState;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
 import io.agentscope.harness.agent.sandbox.snapshot.NoopSnapshotSpec;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
@@ -69,6 +73,7 @@ import io.agentscope.harness.agent.subagent.task.TaskStatus;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
 import io.agentscope.harness.agent.workspace.WorkspaceManager;
 import io.agentscope.harness.agent.workspace.WorkspaceIndex;
+import io.agentscope.harness.agent.workspace.WorkspacePathNormalizer;
 import io.agentscope.harness.agent.tool.AgentSpawnTool;
 import io.agentscope.harness.agent.tool.AgentGenerateTool;
 import io.agentscope.harness.agent.tool.ShellExecuteTool;
@@ -80,9 +85,10 @@ import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,6 +101,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -141,6 +148,88 @@ class HarnessAgentComponentTest {
                 com.yomahub.liteflow.agent.component.AbstractAgentComponent.class,
                 HarnessAgentComponent.class.getMethod("process").getDeclaringClass());
         assertSame(filesystem, component.runtime().agent().getWorkspaceManager().getFilesystem());
+    }
+
+    @Test
+    void allHarnessBackendsRejectCallerOwnedFilesystemRuntimeKeys() throws Exception {
+        for (HarnessFilesystemBackend backend : HarnessFilesystemBackend.values()) {
+            for (ReservedRuntimeValue reserved : reservedRuntimeValues()) {
+                AgentConfig config = configureAgent();
+                config.getHarness().setFilesystemBackend(backend);
+                if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
+                    config.getHarness().setTrustedLocal(true);
+                }
+                RecordingModel model =
+                        new RecordingModel("must not run", false, null, null, null);
+                RecordingFilesystem customFilesystem = backend == HarnessFilesystemBackend.CUSTOM
+                        ? new RecordingFilesystem("custom-filesystem", new ArrayList<>())
+                        : null;
+                TestComponent component = component(
+                        slot("reserved-session", "reserved-request"), model, customFilesystem);
+                component.runtimeContextCustomizer = builder -> {
+                    reserved.customizer().accept(builder);
+                    builder.put(
+                            SandboxContext.class,
+                            SandboxContext.builder().externalSandbox(new NoopSandbox()).build());
+                };
+
+                AgentConfigException failure = assertThrows(
+                        AgentConfigException.class,
+                        component::process,
+                        backend + ": " + reserved.name());
+
+                assertTrue(failure.getMessage().contains(reserved.type().getSimpleName()));
+                assertEquals(0, model.callCount.get());
+                component.close();
+                components.remove(component);
+            }
+        }
+    }
+
+    @Test
+    void ordinaryCustomizedRuntimeValuesStillReachTheHarnessModel() throws Exception {
+        configureCustomBackend();
+        RecordingModel model = new RecordingModel("plain reply", false, null, null, null);
+        TestComponent component = component(
+                slot("ordinary-context-session", "ordinary-context-request"),
+                model,
+                new RecordingFilesystem("filesystem", new ArrayList<>()));
+        CustomRuntimeValue expected = new CustomRuntimeValue("allowed");
+        component.runtimeContextCustomizer = builder ->
+                builder.put(CustomRuntimeValue.class, expected).put("custom-text", "preserved");
+
+        component.process();
+
+        RuntimeContext actual = model.runtimeContexts.get(0);
+        assertSame(expected, actual.get(CustomRuntimeValue.class));
+        assertEquals("preserved", actual.getExtra().get("custom-text"));
+    }
+
+    @Test
+    void dockerProjectionRechecksWorkspaceAfterRuntimeBuildAndBeforePublicCall()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        Path workspace = Path.of(config.getWorkspace().getRoot());
+        Path external = tempDir.resolve("late-projection-source.txt");
+        Files.writeString(external, "external");
+        RecordingModel model = new RecordingModel("must not run", false, null, null, null);
+        TestComponent component = component(
+                slot("late-projection-session", "late-projection-request"), model, null);
+        component.runtimeContextCustomizer = ignored -> {
+            try {
+                Files.createSymbolicLink(workspace.resolve("AGENTS.md"), external);
+            }
+            catch (Exception failure) {
+                throw new RuntimeException(failure);
+            }
+        };
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("symbolic link"));
+        assertEquals(0, model.callCount.get());
+        assertEquals(1, component.modelBuildCount.get());
     }
 
     @Test
@@ -1265,6 +1354,33 @@ class HarnessAgentComponentTest {
         return (WorkspaceIndex) field.get(spec);
     }
 
+    private List<ReservedRuntimeValue> reservedRuntimeValues() throws Exception {
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("reserved-filesystem", new ArrayList<>());
+        WorkspaceManager manager = new WorkspaceManager(
+                tempDir.resolve("reserved-workspace"), filesystem);
+        return List.of(
+                new ReservedRuntimeValue(
+                        "sandbox",
+                        SandboxContext.class,
+                        builder -> builder.put(
+                                SandboxContext.class, SandboxContext.builder().build())),
+                new ReservedRuntimeValue(
+                        "filesystem",
+                        AbstractFilesystem.class,
+                        builder -> builder.put(AbstractFilesystem.class, filesystem)),
+                new ReservedRuntimeValue(
+                        "workspace manager",
+                        WorkspaceManager.class,
+                        builder -> builder.put(WorkspaceManager.class, manager)),
+                new ReservedRuntimeValue(
+                        "path normalizer",
+                        WorkspacePathNormalizer.class,
+                        builder -> builder.put(
+                                WorkspacePathNormalizer.class,
+                                WorkspacePathNormalizer.of("/caller-workspace"))));
+    }
+
     private static Field harnessAgentField(String name) throws Exception {
         Field field = HarnessAgent.class.getDeclaredField(name);
         assertTrue(field.trySetAccessible());
@@ -1342,6 +1458,34 @@ class HarnessAgentComponentTest {
     private record MiddlewareCase(String name, boolean dynamic, int explicitWrapperDepth) {
     }
 
+    private record CustomRuntimeValue(String value) {
+    }
+
+    private record ReservedRuntimeValue(
+            String name,
+            Class<?> type,
+            Consumer<RuntimeContext.Builder> customizer) {
+    }
+
+    private static final class NoopSandbox implements Sandbox {
+        @Override public void start() { }
+        @Override public void stop() { }
+        @Override public void shutdown() { }
+        @Override public void close() { }
+        @Override public boolean isRunning() { return true; }
+        @Override public SandboxState getState() { return null; }
+        @Override public ExecResult exec(
+                RuntimeContext context, String command, Integer timeoutSeconds) {
+            throw new AssertionError("sandbox execution is not expected");
+        }
+        @Override public InputStream persistWorkspace() {
+            throw new AssertionError("sandbox persistence is not expected");
+        }
+        @Override public void hydrateWorkspace(InputStream archive) {
+            throw new AssertionError("sandbox hydration is not expected");
+        }
+    }
+
     private static final class TestComponent extends HarnessAgentComponent {
         private final Slot defaultSlot;
         private final ThreadLocal<Slot> invocationSlot = new ThreadLocal<>();
@@ -1383,6 +1527,7 @@ class HarnessAgentComponentTest {
         private Hook customizerHook;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
         private SandboxSnapshotProvider snapshotProvider;
+        private Consumer<RuntimeContext.Builder> runtimeContextCustomizer;
         private HarnessAgentRuntime runtime;
 
         private TestComponent(
@@ -1511,6 +1656,14 @@ class HarnessAgentComponentTest {
         @Override
         protected SandboxSnapshotProvider sandboxSnapshotProvider() {
             return snapshotProvider;
+        }
+
+        @Override
+        protected void customizeRuntimeContext(
+                RuntimeContext.Builder builder, LiteFlowAgentContext context) {
+            if (runtimeContextCustomizer != null) {
+                runtimeContextCustomizer.accept(builder);
+            }
         }
 
         @Override

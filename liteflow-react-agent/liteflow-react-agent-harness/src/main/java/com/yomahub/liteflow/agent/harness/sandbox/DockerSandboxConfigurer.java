@@ -32,6 +32,19 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
         this.snapshotProvider = snapshotProvider;
     }
 
+    /** Creates the per-call host workspace projection safety check. */
+    public static Runnable workspaceProjectionPreflight(HarnessFilesystemContext context) {
+        Objects.requireNonNull(context, "context");
+        DockerSandboxConfig config = Objects.requireNonNull(
+                context.agentConfig().getHarness().getDocker(),
+                "liteflow.agent.harness.docker must not be null");
+        config.validate();
+        return new DockerWorkspaceProjectionPreflight(
+                context.workspaceRoot(),
+                config.isWorkspaceProjectionEnabled(),
+                config.getWorkspaceProjectionRoots());
+    }
+
     @Override
     public void configure(HarnessAgent.Builder builder, HarnessFilesystemContext context) {
         Objects.requireNonNull(builder, "builder");

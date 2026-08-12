@@ -22,12 +22,16 @@ import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.harness.agent.HarnessAgent;
+import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.memory.MemoryConfig;
 import io.agentscope.harness.agent.memory.compaction.CompactionConfig;
 import io.agentscope.harness.agent.memory.compaction.ToolResultEvictionConfig;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.task.TaskRepository;
 import io.agentscope.harness.agent.subagent.task.WorkspaceTaskRepository;
+import io.agentscope.harness.agent.sandbox.SandboxContext;
+import io.agentscope.harness.agent.workspace.WorkspaceManager;
+import io.agentscope.harness.agent.workspace.WorkspacePathNormalizer;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.InvalidPathException;
@@ -38,10 +42,13 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /** AgentScope Harness specialization using the shared LiteFlow component lifecycle. */
 public abstract class HarnessAgentComponent
         extends AbstractReActLikeAgentComponent<HarnessAgentRuntime> {
+
+    private volatile Runnable filesystemBeforeCall = () -> { };
 
     protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
         return builder;
@@ -203,6 +210,7 @@ public abstract class HarnessAgentComponent
                     agent.getDelegate().getToolkit(),
                     prepared);
             prepared.routingMiddleware().finalizeDefaultModel(agent.getModel());
+            filesystemBeforeCall = filesystem.beforeCall();
             return new HarnessAgentRuntime(agent, prepared.ownership(), ownedProviderResources);
         }
         catch (RuntimeException | Error failure) {
@@ -223,19 +231,22 @@ public abstract class HarnessAgentComponent
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
-                        return agent.call(messages, context);
+                        return invokeHarnessPublicCall(
+                                context, () -> agent.call(messages, context));
                     }
 
                     @Override
                     public Mono<Msg> call(
                             List<Msg> messages, Class<?> type, RuntimeContext context) {
-                        return agent.call(messages, type, context);
+                        return invokeHarnessPublicCall(
+                                context, () -> agent.call(messages, type, context));
                     }
 
                     @Override
                     public Mono<Msg> call(
                             List<Msg> messages, JsonNode schema, RuntimeContext context) {
-                        return agent.call(messages, schema, context);
+                        return invokeHarnessPublicCall(
+                                context, () -> agent.call(messages, schema, context));
                     }
                 },
                 runtime.stateStore(),
@@ -243,6 +254,15 @@ public abstract class HarnessAgentComponent
                 output,
                 runtimeContext,
                 liteflowContext);
+    }
+
+    private Mono<Msg> invokeHarnessPublicCall(
+            RuntimeContext context, Supplier<Mono<Msg>> invocation) {
+        return Mono.defer(() -> {
+            requireNoReservedRuntimeValues(context);
+            filesystemBeforeCall.run();
+            return invocation.get();
+        });
     }
 
     private FilesystemPreparation validateAndPrepareFilesystem(
@@ -295,7 +315,10 @@ public abstract class HarnessAgentComponent
                     config.getWorkspace().getMaxFileBytes(),
                     commandTimeout,
                     config);
-            return new FilesystemPreparation(configurer, context);
+            Runnable beforeCall = backend == HarnessFilesystemBackend.DOCKER
+                    ? DockerSandboxConfigurer.workspaceProjectionPreflight(context)
+                    : () -> { };
+            return new FilesystemPreparation(configurer, context, beforeCall);
         }
         catch (InvalidPathException failure) {
             throw new AgentConfigException("invalid Harness workspace.root", failure);
@@ -312,6 +335,26 @@ public abstract class HarnessAgentComponent
                 throw new AgentConfigException("ownedHarnessResources must not contain null");
             }
             addIdentityDistinct(resources, resource);
+        }
+    }
+
+    private static void requireNoReservedRuntimeValues(RuntimeContext context) {
+        List<String> supplied = new ArrayList<>();
+        addIfPresent(context, SandboxContext.class, supplied);
+        addIfPresent(context, AbstractFilesystem.class, supplied);
+        addIfPresent(context, WorkspaceManager.class, supplied);
+        addIfPresent(context, WorkspacePathNormalizer.class, supplied);
+        if (!supplied.isEmpty()) {
+            throw new AgentConfigException(
+                    "customizeRuntimeContext must not supply Harness-reserved values: "
+                            + String.join(", ", supplied));
+        }
+    }
+
+    private static <T> void addIfPresent(
+            RuntimeContext context, Class<T> type, List<String> supplied) {
+        if (context.get(type) != null) {
+            supplied.add(type.getSimpleName());
         }
     }
 
@@ -358,6 +401,7 @@ public abstract class HarnessAgentComponent
 
     private record FilesystemPreparation(
             HarnessFilesystemConfigurer configurer,
-            HarnessFilesystemContext context) {
+            HarnessFilesystemContext context,
+            Runnable beforeCall) {
     }
 }
