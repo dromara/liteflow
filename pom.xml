@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.16.1.1</revision>
+		<revision>2.16.1.2</revision>
 		<micrometer.version>1.8.5</micrometer.version>
 		<skipTests>true</skipTests>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -437,6 +437,16 @@
 
 	<build>
 		<plugins>
+			<!-- 编译时保留方法参数名（-parameters），供 Spring Framework 6.1+ 的 actuator endpoint 反射解析参数名 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<parameters>true</parameters>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
