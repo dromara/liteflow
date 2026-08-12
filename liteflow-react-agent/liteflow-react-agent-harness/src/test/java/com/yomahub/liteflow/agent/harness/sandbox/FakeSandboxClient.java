@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Test-only Docker-client substitute; it never invokes Docker, a process, or the network. */
-final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOptions> {
+public final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOptions> {
 
     private static final String FIELD_SEPARATOR = "\n";
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
@@ -28,7 +28,7 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
     private final List<StateSnapshotIdentity> deserializedWithSnapshotStates =
             new CopyOnWriteArrayList<>();
 
-    FakeSandboxClient(List<String> events) {
+    public FakeSandboxClient(List<String> events) {
         this.events = Objects.requireNonNull(events, "events");
     }
 
@@ -111,15 +111,15 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
         return state;
     }
 
-    List<StateSnapshotIdentity> createdStates() {
+    public List<StateSnapshotIdentity> createdStates() {
         return List.copyOf(createdStates);
     }
 
-    List<StateSnapshotIdentity> resumedStates() {
+    public List<StateSnapshotIdentity> resumedStates() {
         return List.copyOf(resumedStates);
     }
 
-    List<StateSnapshotIdentity> deserializedWithSnapshotStates() {
+    public List<StateSnapshotIdentity> deserializedWithSnapshotStates() {
         return List.copyOf(deserializedWithSnapshotStates);
     }
 
@@ -143,6 +143,6 @@ final class FakeSandboxClient implements SandboxClient<DockerSandboxClientOption
                 state.getSnapshot() == null ? null : state.getSnapshot().getId());
     }
 
-    record StateSnapshotIdentity(String stateId, String snapshotId) {
+    public record StateSnapshotIdentity(String stateId, String snapshotId) {
     }
 }

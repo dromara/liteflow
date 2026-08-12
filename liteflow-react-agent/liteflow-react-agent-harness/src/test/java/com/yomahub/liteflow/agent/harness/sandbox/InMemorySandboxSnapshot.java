@@ -12,13 +12,13 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Test-only snapshot store that exercises the real AgentScope snapshot contracts. */
-final class InMemorySandboxSnapshot implements SandboxSnapshotSpec, SandboxSnapshot {
+public final class InMemorySandboxSnapshot implements SandboxSnapshotSpec, SandboxSnapshot {
 
     private final Map<String, byte[]> archives;
     private final List<String> events;
     private final String id;
 
-    InMemorySandboxSnapshot(List<String> events) {
+    public InMemorySandboxSnapshot(List<String> events) {
         this(new ConcurrentHashMap<>(), events, null);
     }
 
@@ -70,7 +70,7 @@ final class InMemorySandboxSnapshot implements SandboxSnapshotSpec, SandboxSnaps
         return "memory";
     }
 
-    int snapshotCount() {
+    public int snapshotCount() {
         return archives.size();
     }
 

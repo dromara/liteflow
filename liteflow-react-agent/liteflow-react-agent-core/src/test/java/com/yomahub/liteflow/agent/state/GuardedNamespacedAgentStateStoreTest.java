@@ -87,6 +87,17 @@ class GuardedNamespacedAgentStateStoreTest {
     }
 
     @Test
+    void providerSubclassCanRouteThroughTheBorrowedDelegateSeam() {
+        CloseTrackingStore delegate = new CloseTrackingStore();
+        ProviderNamespacedStore store = new ProviderNamespacedStore(delegate, NAMESPACE);
+
+        assertSame(delegate, store.borrowedDelegate());
+
+        store.close();
+        assertEquals(0, delegate.closeCount.get());
+    }
+
+    @Test
     void recordsEachConcurrentLogicalLoadFailureAndConsumesItOnce() throws Exception {
         RuntimeException failureA = new RuntimeException("load-a");
         RuntimeException failureC = new RuntimeException("load-c");
@@ -248,6 +259,18 @@ class GuardedNamespacedAgentStateStoreTest {
         @Override
         public void close() {
             closeCount.incrementAndGet();
+        }
+    }
+
+    private static final class ProviderNamespacedStore
+            extends GuardedNamespacedAgentStateStore {
+
+        private ProviderNamespacedStore(AgentStateStore delegate, String agentNamespace) {
+            super(delegate, agentNamespace);
+        }
+
+        private AgentStateStore borrowedDelegate() {
+            return delegate();
         }
     }
 

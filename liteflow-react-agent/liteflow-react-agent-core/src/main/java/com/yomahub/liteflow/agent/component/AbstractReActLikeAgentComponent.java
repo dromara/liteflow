@@ -167,6 +167,12 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         return new DefaultAgentStateStoreResolver();
     }
 
+    /** Provider-neutral seam for state stores that route additional, explicitly known keys. */
+    protected GuardedNamespacedAgentStateStore createNamespacedStateStore(
+            AgentStateStore delegate, String agentNamespace) {
+        return new GuardedNamespacedAgentStateStore(delegate, agentNamespace);
+    }
+
     StateStoreFailureMiddleware createStateStoreFailureMiddleware(
             GuardedNamespacedAgentStateStore stateStore,
             AgentStateStoreFailurePolicy failurePolicy) {
@@ -195,8 +201,11 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         List<AgentSkillRepository> ownedRepositories = new ArrayList<>();
         try {
             collectSkillRepositories(repositories, ownedRepositories);
-            namespaced = new GuardedNamespacedAgentStateStore(
+            namespaced = createNamespacedStateStore(
                     resolved.store(), buildContext.agentNamespace());
+            if (namespaced == null) {
+                throw new AgentConfigException("createNamespacedStateStore must not return null");
+            }
             Model defaultModel = requireModel(buildModel(), "buildModel must not return null");
             addIdentityDistinct(ownedModels, defaultModel);
             Model fallback = fallbackModel();

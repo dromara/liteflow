@@ -11,6 +11,7 @@ import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.runtime.SandboxCallGate;
 import com.yomahub.liteflow.agent.harness.sandbox.DockerSandboxConfigurer;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
+import com.yomahub.liteflow.agent.harness.state.HarnessNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.hitl.AgentCallTarget;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
@@ -22,6 +23,7 @@ import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.memory.MemoryConfig;
@@ -105,6 +107,17 @@ public abstract class HarnessAgentComponent
     /** Additional provider resources owned by this component, in build order. */
     protected List<? extends AutoCloseable> ownedHarnessResources() {
         return List.of();
+    }
+
+    @Override
+    protected final boolean requiresWorkspaceLease() {
+        return true;
+    }
+
+    @Override
+    protected final HarnessNamespacedAgentStateStore createNamespacedStateStore(
+            AgentStateStore delegate, String agentNamespace) {
+        return new HarnessNamespacedAgentStateStore(delegate, agentNamespace);
     }
 
     @Override

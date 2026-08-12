@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /** Non-owning state-store decorator that isolates one Agent runtime by its safe namespace. */
-public final class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCloseable {
+public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCloseable {
 
     private static final Pattern SAFE_HASH_ID = Pattern.compile("lf-[0-9a-f]{64}");
 
@@ -32,6 +32,11 @@ public final class GuardedNamespacedAgentStateStore implements AgentStateStore, 
 
     public String agentNamespace() {
         return agentNamespace;
+    }
+
+    /** Provider extension seam for routing explicit state classes without owning the delegate. */
+    protected final AgentStateStore delegate() {
+        return delegate;
     }
 
     @Override
