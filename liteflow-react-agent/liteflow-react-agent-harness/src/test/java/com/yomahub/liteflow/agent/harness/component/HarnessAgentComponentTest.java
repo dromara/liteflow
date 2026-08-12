@@ -19,6 +19,8 @@ import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.agent.AgentBase;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
+import io.agentscope.core.hook.Hook;
+import io.agentscope.core.hook.HookEvent;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
@@ -575,6 +577,178 @@ class HarnessAgentComponentTest {
     }
 
     @Test
+    void guardedLocalRejectsOfficialSubagentToolsRegisteredOnlyByHookAfterBuild()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        Path workspace = tempDir.resolve("hook-only-subagent");
+        Files.createDirectories(workspace);
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("hook-only-filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager = new WorkspaceManager(workspace, filesystem);
+        RecordingTaskRepository tasks =
+                new RecordingTaskRepository("hook-only-tasks", new ArrayList<>());
+        SubagentEntry dangerousEntry = new SubagentEntry(
+                "hook-only-danger",
+                "official hook tool reaches a host-local child",
+                ignored -> unsafeHostLocalChild(workspace.resolve("child")),
+                null);
+        SubagentsMiddleware official =
+                new SubagentsMiddleware(List.of(dangerousEntry), tasks, workspaceManager);
+        HarnessAgent reachableChild = assertInstanceOf(
+                HarnessAgent.class,
+                official.getAgentManager().createAgent(
+                        "hook-only-danger",
+                        RuntimeContext.builder()
+                                .userId("test-user")
+                                .sessionId("hook-proof-session")
+                                .build()));
+        try {
+            WorkspaceManager childWorkspace = (WorkspaceManager)
+                    harnessAgentField("workspaceManager").get(reachableChild);
+            OverlayFilesystem overlay = assertInstanceOf(
+                    OverlayFilesystem.class, childWorkspace.getFilesystem());
+            assertInstanceOf(LocalFilesystemWithShell.class, overlay.getUpper());
+            assertTrue(reachableChild.getToolkit().getToolNames().contains(ShellExecuteTool.NAME));
+        }
+        finally {
+            reachableChild.close();
+        }
+        RecordingModel model = new RecordingModel("must not run", false, null, null, null);
+        TestComponent component = component(
+                slot("hook-only-session", "hook-only-request"), model, null);
+        component.customizerHook = new ToolProvidingHook(official.getTools());
+
+        try {
+            component.process();
+        }
+        catch (AgentConfigException expected) {
+            assertTrue(expected.getMessage().contains("subagent tool"));
+            assertTrue(component.preparedToolkit.getToolNames().stream()
+                    .noneMatch(HarnessAgentComponentTest::isOfficialSubagentTool));
+            assertEquals(0, model.callCount.get());
+            return;
+        }
+
+        HarnessAgent parent = component.runtime().agent();
+        assertTrue(component.preparedToolkit.getToolNames().stream()
+                .noneMatch(HarnessAgentComponentTest::isOfficialSubagentTool));
+        assertTrue(parent.getDelegate().getMiddlewares().stream()
+                .noneMatch(middleware -> middleware instanceof SubagentsMiddleware
+                        || middleware instanceof DynamicSubagentsMiddleware));
+        assertTrue(parent.getToolkit().getToolNames().containsAll(List.of(
+                "agent_spawn",
+                "agent_send",
+                "agent_list",
+                "task_output",
+                "task_cancel",
+                "task_list")));
+        throw new AssertionError(
+                "GUARDED_LOCAL must validate the final toolkit after hook registration");
+    }
+
+    @Test
+    void finalGuardedToolkitFailureRollsBackBuiltAgentAndPreparedOwnership() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        List<String> closeOrder = new CopyOnWriteArrayList<>();
+        RecordingStore store = new RecordingStore("store", closeOrder, null);
+        RecordingModel model = new RecordingModel("must not run", false, null, null, closeOrder);
+        model.closeFailure = new RuntimeException("model close failed");
+        RecordingFilesystem filesystem = new RecordingFilesystem("filesystem", closeOrder);
+        filesystem.closeFailure = new RuntimeException("filesystem close failed");
+        RecordingRepository repository =
+                new RecordingRepository("repository", closeOrder, null);
+        WorkspaceManager workspaceManager =
+                new WorkspaceManager(tempDir.resolve("hook-rollback"), filesystem);
+        ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
+        long schedulersBefore = workspaceTaskSchedulerCount();
+        CountingWorkspaceTaskRepository tasks = new CountingWorkspaceTaskRepository(
+                workspaceManager, "hook-rollback-agent", taskExecutor);
+        SubagentsMiddleware official = new SubagentsMiddleware(
+                List.of(new SubagentEntry(
+                        "rollback-danger",
+                        "must be rejected after build",
+                        ignored -> unsafeHostLocalChild(tempDir.resolve("rollback-child")),
+                        null)),
+                tasks,
+                workspaceManager);
+        TestComponent component = component(
+                slot("hook-rollback-session", "hook-rollback-request"), model, null);
+        component.stateStoreResolver = ignored -> new ResolvedAgentStateStore(store, true);
+        component.repositories = List.of(repository);
+        component.ownedRepository = repository;
+        component.ownedHarnessResources = List.of(filesystem);
+        component.taskRepository = tasks;
+        component.ownsTaskRepository = true;
+        component.customizerHook = new ToolProvidingHook(official.getTools());
+        int stateSaversBefore = shutdownStateSaverCount();
+
+        try {
+            AgentConfigException failure =
+                    assertThrows(AgentConfigException.class, component::process);
+
+            assertTrue(failure.getMessage().contains("subagent tool"));
+            assertEquals(stateSaversBefore, shutdownStateSaverCount());
+            assertEquals(List.of("filesystem", "repository", "model", "store"), closeOrder);
+            assertEquals(2, failure.getSuppressed().length);
+            assertEquals(1, tasks.shutdownCount.get());
+            assertEquals(schedulersBefore, workspaceTaskSchedulerCount());
+            assertEquals(1, model.closeCount.get());
+            assertEquals(1, filesystem.closeCount.get());
+        }
+        finally {
+            if (tasks.shutdownCount.get() == 0) {
+                tasks.shutdown();
+            }
+            taskExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    void guardedLocalAllowsOrdinaryHookTools() throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setTrustedLocal(true);
+        RecordingModel model = new RecordingModel("reply", false, null, null, null);
+        TestComponent component = component(
+                slot("ordinary-hook-session", "ordinary-hook-request"), model, null);
+        component.customizerHook = new ToolProvidingHook(List.of(new EchoTool()));
+
+        component.process();
+
+        assertTrue(component.runtime().agent().getToolkit().getToolNames().contains("echo"));
+        assertTrue(model.toolNames.get(0).contains("echo"));
+    }
+
+    @Test
+    void customBackendDoesNotApplyGuardedLocalFinalToolkitPolicy() throws Exception {
+        configureCustomBackend();
+        RecordingModel model = new RecordingModel("reply", false, null, null, null);
+        RecordingFilesystem filesystem =
+                new RecordingFilesystem("custom-hook-filesystem", new ArrayList<>());
+        WorkspaceManager workspaceManager =
+                new WorkspaceManager(tempDir.resolve("custom-hook-workspace"), filesystem);
+        SubagentsMiddleware official = new SubagentsMiddleware(
+                List.of(new SubagentEntry(
+                        "custom-hook-child",
+                        "CUSTOM retains its configured subagent policy",
+                        ignored -> unsafeHostLocalChild(tempDir.resolve("custom-hook-child")),
+                        null)),
+                new RecordingTaskRepository("custom-hook-tasks", new ArrayList<>()),
+                workspaceManager);
+        TestComponent component = component(
+                slot("custom-hook-session", "custom-hook-request"), model, filesystem);
+        component.customizerHook = new ToolProvidingHook(official.getTools());
+
+        component.process();
+
+        assertTrue(component.runtime().agent().getToolkit().getToolNames()
+                        .contains("agent_spawn"),
+                component.runtime().agent().getToolkit().getToolNames().toString());
+        assertTrue(model.toolNames.get(0).contains("agent_spawn"));
+    }
+
+    @Test
     void customConfigurerCannotFallBackToHarnessHostLocalFilesystem() throws Exception {
         configureCustomBackend();
         RecordingModel model = new RecordingModel("must not run", false, null, null, null);
@@ -1091,6 +1265,27 @@ class HarnessAgentComponentTest {
                 .build();
     }
 
+    private static boolean isOfficialSubagentTool(String name) {
+        return List.of(
+                        "agent_spawn",
+                        "agent_send",
+                        "agent_list",
+                        "agent_generate",
+                        "task_output",
+                        "task_cancel",
+                        "task_list")
+                .contains(name);
+    }
+
+    private static int shutdownStateSaverCount() throws Exception {
+        Class<?> managerType = Class.forName(
+                "io.agentscope.core.shutdown.GracefulShutdownManager");
+        Object manager = managerType.getMethod("getInstance").invoke(null);
+        Field stateSavers = managerType.getDeclaredField("stateSavers");
+        assertTrue(stateSavers.trySetAccessible());
+        return ((Map<?, ?>) stateSavers.get(manager)).size();
+    }
+
     private static long workspaceTaskSchedulerCount() {
         return Thread.getAllStackTraces().keySet().stream()
                 .filter(Thread::isAlive)
@@ -1142,6 +1337,7 @@ class HarnessAgentComponentTest {
         private SubagentsMiddleware manualSubagentsMiddleware;
         private boolean reenableSubagentsReflectively;
         private TaskRepository customizerTaskRepository;
+        private Hook customizerHook;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
         private HarnessAgentRuntime runtime;
 
@@ -1313,6 +1509,9 @@ class HarnessAgentComponentTest {
             if (customizerTaskRepository != null) {
                 builder.taskRepository(customizerTaskRepository);
             }
+            if (customizerHook != null) {
+                builder.hook(customizerHook);
+            }
             if (customizerSubagent != null) {
                 builder.subagent(customizerSubagent);
             }
@@ -1376,6 +1575,24 @@ class HarnessAgentComponentTest {
         @Tool
         public String echo(String value) {
             return value;
+        }
+    }
+
+    private static final class ToolProvidingHook implements Hook {
+        private final List<Object> tools;
+
+        private ToolProvidingHook(List<Object> tools) {
+            this.tools = List.copyOf(tools);
+        }
+
+        @Override
+        public <T extends HookEvent> Mono<T> onEvent(T event) {
+            return Mono.just(event);
+        }
+
+        @Override
+        public List<Object> tools() {
+            return tools;
         }
     }
 

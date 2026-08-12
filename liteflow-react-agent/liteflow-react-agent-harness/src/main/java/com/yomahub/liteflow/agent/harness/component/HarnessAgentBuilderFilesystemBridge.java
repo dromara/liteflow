@@ -167,17 +167,22 @@ final class HarnessAgentBuilderFilesystemBridge {
                     }
                 }
             }
-            for (String toolName : toolkit.getToolNames()) {
-                if (GUARDED_LOCAL_SUBAGENT_TOOLS.contains(toolName)) {
-                    throw new AgentConfigException(
-                            "Harness GUARDED_LOCAL rejects AgentScope subagent tool '"
-                                    + toolName
-                                    + "' because it bypasses disableSubagents");
-                }
-            }
+            requireGuardedLocalToolkitSafe(toolkit);
         }
         catch (IllegalAccessException failure) {
             throw incompatible("cannot inspect HarnessAgent.Builder subagent fields", failure);
+        }
+    }
+
+    static void requireGuardedLocalToolkitSafe(Toolkit toolkit) {
+        Objects.requireNonNull(toolkit, "toolkit");
+        for (String toolName : toolkit.getToolNames()) {
+            if (GUARDED_LOCAL_SUBAGENT_TOOLS.contains(toolName)) {
+                throw new AgentConfigException(
+                        "Harness GUARDED_LOCAL rejects AgentScope subagent tool '"
+                                + toolName
+                                + "' because it bypasses disableSubagents");
+            }
         }
     }
 

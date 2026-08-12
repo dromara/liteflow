@@ -180,6 +180,10 @@ public abstract class HarnessAgentComponent
             HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
                     customized, filesystemSnapshot);
             agent = customized.build();
+            if (guardedLocal) {
+                HarnessAgentBuilderFilesystemBridge.requireGuardedLocalToolkitSafe(
+                        agent.getToolkit());
+            }
             if (workspaceTaskRollback != null
                     && taskOwnership.harnessWillShutdownWorkspaceTasks()) {
                 ownedProviderResources.remove(workspaceTaskRollback);
