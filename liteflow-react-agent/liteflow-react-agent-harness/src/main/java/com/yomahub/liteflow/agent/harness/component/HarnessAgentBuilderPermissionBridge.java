@@ -2,6 +2,7 @@ package com.yomahub.liteflow.agent.harness.component;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import io.agentscope.core.ReActAgent;
+import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionBehavior;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionMode;
@@ -72,6 +73,43 @@ final class HarnessAgentBuilderPermissionBridge {
         }
     }
 
+    static MiddlewareSnapshot installInnermostGuard(
+            HarnessAgent.Builder builder, MiddlewareBase guard) {
+        Objects.requireNonNull(builder, "builder");
+        Objects.requireNonNull(guard, "guard");
+        if (guard.order() != Integer.MIN_VALUE) {
+            throw incompatible("mandatory middleware must use the innermost order");
+        }
+        try {
+            Fields resolved = fields();
+            @SuppressWarnings("unchecked")
+            List<MiddlewareBase> middlewares =
+                    (List<MiddlewareBase>) resolved.middlewares().get(builder);
+            if (identityCount(middlewares, guard) != 0) {
+                throw incompatible("mandatory middleware was registered before final assembly");
+            }
+            builder.middleware(guard);
+            requireLastIdentity(middlewares, guard);
+            return new MiddlewareSnapshot(middlewares, guard);
+        }
+        catch (IllegalAccessException failure) {
+            throw incompatible("cannot install mandatory middleware", failure);
+        }
+    }
+
+    private static long identityCount(List<MiddlewareBase> middlewares, MiddlewareBase expected) {
+        return middlewares.stream().filter(middleware -> middleware == expected).count();
+    }
+
+    private static void requireLastIdentity(
+            List<MiddlewareBase> middlewares, MiddlewareBase expected) {
+        if (identityCount(middlewares, expected) != 1
+                || middlewares.isEmpty()
+                || middlewares.get(middlewares.size() - 1) != expected) {
+            throw incompatible("mandatory middleware is not the unique final registration");
+        }
+    }
+
     private static void requireExpected(
             PermissionContextState actual, PermissionContextState expected) {
         if (actual != expected) {
@@ -119,7 +157,18 @@ final class HarnessAgentBuilderPermissionBridge {
                     || !permission.trySetAccessible()) {
                 throw incompatible("ReActAgent.Builder.permissionContext signature changed");
             }
-            return new Fields(inner, permission);
+            Field middlewares = HarnessAgent.Builder.class.getDeclaredField("middlewares");
+            int middlewareModifiers = middlewares.getModifiers();
+            if (Modifier.isPrivate(middlewareModifiers)
+                    || Modifier.isProtected(middlewareModifiers)
+                    || Modifier.isPublic(middlewareModifiers)
+                    || !Modifier.isFinal(middlewareModifiers)
+                    || Modifier.isStatic(middlewareModifiers)
+                    || middlewares.getType() != List.class
+                    || !middlewares.trySetAccessible()) {
+                throw incompatible("HarnessAgent.Builder.middlewares signature changed");
+            }
+            return new Fields(inner, permission, middlewares);
         }
         catch (NoSuchFieldException failure) {
             throw incompatible("AgentScope permission builder shape changed", failure);
@@ -156,7 +205,7 @@ final class HarnessAgentBuilderPermissionBridge {
                 "Harness permission guard requires AgentScope 2.0.2: " + detail, cause);
     }
 
-    private record Fields(Field inner, Field permissionContext) {
+    private record Fields(Field inner, Field permissionContext, Field middlewares) {
     }
 
     record PermissionSnapshot(Object inner, PermissionContextState permissionContext) {
@@ -182,6 +231,31 @@ final class HarnessAgentBuilderPermissionBridge {
             catch (IllegalAccessException failure) {
                 throw incompatible("cannot re-inspect final permission context", failure);
             }
+        }
+    }
+
+    record MiddlewareSnapshot(List<MiddlewareBase> builderMiddlewares, MiddlewareBase guard) {
+
+        MiddlewareSnapshot {
+            Objects.requireNonNull(builderMiddlewares, "builderMiddlewares");
+            Objects.requireNonNull(guard, "guard");
+        }
+
+        void requireUnchanged(HarnessAgent.Builder builder) {
+            try {
+                Object actual = fields().middlewares().get(builder);
+                if (actual != builderMiddlewares) {
+                    throw incompatible("mandatory middleware builder list identity changed");
+                }
+                requireLastIdentity(builderMiddlewares, guard);
+            }
+            catch (IllegalAccessException failure) {
+                throw incompatible("cannot re-inspect mandatory middleware", failure);
+            }
+        }
+
+        void requireFinal(HarnessAgent agent) {
+            requireLastIdentity(agent.getDelegate().getMiddlewares(), guard);
         }
     }
 }

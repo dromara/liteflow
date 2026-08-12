@@ -200,7 +200,6 @@ public abstract class HarnessAgentComponent
                     .permissionContext(permissionContext)
                     .toolResultEviction(toolResultEvictionConfig());
             addLiteFlowMiddlewares(builder, prepared);
-            builder.middleware(HarnessRuntimeContextContinuation.captureMiddleware());
             HarnessAgentBuilderPermissionBridge.PermissionSnapshot permissionSnapshot =
                     HarnessAgentBuilderPermissionBridge.snapshot(builder, permissionContext);
 
@@ -215,6 +214,11 @@ public abstract class HarnessAgentComponent
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
             permissionSnapshot.requireUnchanged(customized);
+            HarnessAgentBuilderPermissionBridge.MiddlewareSnapshot permissionMiddleware =
+                    HarnessAgentBuilderPermissionBridge.installInnermostGuard(
+                            customized,
+                            HarnessRuntimeContextContinuation.captureMiddleware(permissionContext));
+            permissionMiddleware.requireUnchanged(customized);
             if (guardedLocal) {
                 HarnessAgentBuilderFilesystemBridge.requireGuardedLocalSubagentsSafe(
                         customized, prepared.toolkit());
@@ -224,6 +228,7 @@ public abstract class HarnessAgentComponent
             HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
                     customized, filesystemSnapshot);
             agent = customized.build();
+            permissionMiddleware.requireFinal(agent);
             if (guardedLocal) {
                 HarnessAgentBuilderFilesystemBridge.requireGuardedLocalToolkitSafe(
                         agent.getToolkit());

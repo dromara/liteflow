@@ -19,6 +19,7 @@ import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
 import io.agentscope.core.event.ConfirmResult;
+import io.agentscope.core.event.RequireUserConfirmEvent;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
@@ -39,6 +40,8 @@ import io.agentscope.harness.agent.HarnessAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,6 +53,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -183,6 +191,95 @@ class HarnessPermissionHitlTest {
         assertClean(component);
     }
 
+    @ParameterizedTest
+    @EnumSource(HandlerFailure.class)
+    void nullEmptyAndTimedOutHandlerResultsFailClosedAfterDenialCleanup(
+            HandlerFailure kind) throws Exception {
+        configure("handler-" + kind.name().toLowerCase(), Duration.ofMillis(40),
+                Duration.ofSeconds(4));
+        TestComponent component = component(new ScriptedModel("invalid-handler-tool"));
+        component.permission = rule(PermissionBehavior.ASK);
+        component.handler = switch (kind) {
+            case NULL -> (event, context) -> null;
+            case EMPTY -> (event, context) -> Mono.empty();
+            case TIMEOUT -> (event, context) -> Mono.never();
+        };
+
+        AgentInvocationException failure =
+                assertThrows(AgentInvocationException.class, component::process);
+
+        assertEquals(kind == HandlerFailure.TIMEOUT
+                        ? AgentInvocationErrorType.TIMEOUT
+                        : AgentInvocationErrorType.PERMISSION,
+                failure.getErrorType());
+        assertEquals(0, component.tool.executions.get());
+        assertEquals(1, component.middleware.resumeCalls.get());
+        assertClean(component);
+    }
+
+    @ParameterizedTest
+    @EnumSource(InvalidConfirmation.class)
+    void malformedConfirmationResultsFailClosedWithoutExecutingTools(
+            InvalidConfirmation kind) throws Exception {
+        configure("invalid-confirmation-" + kind.name().toLowerCase());
+        TestComponent component = component(new ScriptedModel("pending-tool"));
+        component.permission = rule(PermissionBehavior.ASK);
+        component.handler = (event, context) -> {
+            ToolUseBlock pending = event.getToolCalls().get(0);
+            return Mono.just(switch (kind) {
+                case EMPTY -> List.of();
+                case DUPLICATE -> List.of(
+                        new ConfirmResult(true, pending),
+                        new ConfirmResult(false, pending));
+                case UNKNOWN_ID -> List.of(new ConfirmResult(true,
+                        toolUse("unknown", pending.getName(), pending.getInput())));
+                case FIELD_MISMATCH -> List.of(new ConfirmResult(true,
+                        toolUse(pending.getId(), "renamed", pending.getInput())));
+            });
+        };
+
+        AgentInvocationException failure =
+                assertThrows(AgentInvocationException.class, component::process);
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, failure.getErrorType());
+        assertEquals(0, component.tool.executions.get());
+        assertEquals(1, component.middleware.resumeCalls.get());
+        assertClean(component);
+    }
+
+    @Test
+    void mismatchedConfirmationReplyIdFailsClosedAcrossPublicHarnessCall() throws Exception {
+        configure("reply-id-mismatch");
+        TestComponent component = component(new ScriptedModel("reply-id-tool"));
+        component.permission = rule(PermissionBehavior.ASK);
+        component.handler = (event, context) -> Mono.just(List.of(
+                new ConfirmResult(true, event.getToolCalls().get(0))));
+        component.beforeRecordingMiddleware = new MiddlewareBase() {
+            @Override
+            public Flux<AgentEvent> onAgent(
+                    Agent agent,
+                    RuntimeContext context,
+                    AgentInput input,
+                    Function<AgentInput, Flux<AgentEvent>> next) {
+                return next.apply(input).doOnNext(event -> {
+                    if (event instanceof RequireUserConfirmEvent confirmation) {
+                        context.get(LiteFlowAgentContext.class).recordConfirmationEvent(
+                                new RequireUserConfirmEvent(
+                                        "wrong-reply-id", confirmation.getToolCalls()));
+                    }
+                });
+            }
+        };
+
+        AgentInvocationException failure =
+                assertThrows(AgentInvocationException.class, component::process);
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, failure.getErrorType());
+        assertEquals(0, component.tool.executions.get());
+        assertEquals(1, component.middleware.resumeCalls.get());
+        assertClean(component);
+    }
+
     @Test
     void multiRoundAskUsesOneFiniteContinuationTransaction() throws Exception {
         configure("multi-round");
@@ -203,6 +300,68 @@ class HarnessPermissionHitlTest {
         assertEquals(1, component.middleware.agents.stream().distinct().count());
         assertTrue(component.middleware.contexts.stream()
                 .allMatch(context -> context == component.middleware.contexts.get(0)));
+        assertClean(component);
+    }
+
+    @Test
+    void denialCleanupCanBeFollowedByAnotherAskInTheSameTransaction() throws Exception {
+        configure("deny-then-ask");
+        TestComponent component = component(new ScriptedModel("denied-first", "approved-second"));
+        component.permission = rule(PermissionBehavior.ASK);
+        AtomicInteger decisions = new AtomicInteger();
+        component.handler = (event, context) -> Mono.just(List.of(new ConfirmResult(
+                decisions.getAndIncrement() != 0, event.getToolCalls().get(0))));
+
+        component.process();
+
+        assertEquals(2, decisions.get());
+        assertEquals(1, component.tool.executions.get());
+        assertEquals(2, component.middleware.resumeCalls.get());
+        assertClean(component);
+    }
+
+    @Test
+    void runtimeTimeoutCancelsHarnessCallAndCleansInvocationAttachment() throws Exception {
+        configure("runtime-timeout", Duration.ofSeconds(2), Duration.ofMillis(40));
+        ScriptedModel model = ScriptedModel.never();
+        TestComponent component = component(model);
+        component.permission = rule(PermissionBehavior.ALLOW);
+
+        AgentInvocationException failure =
+                assertThrows(AgentInvocationException.class, component::process);
+
+        assertEquals(AgentInvocationErrorType.TIMEOUT, failure.getErrorType());
+        assertTrue(model.cancelled.await(1, TimeUnit.SECONDS));
+        assertEquals(0, component.tool.executions.get());
+        assertClean(component);
+    }
+
+    @Test
+    void callerCancellationCleansHarnessInvocationAttachment() throws Exception {
+        configure("caller-cancel");
+        ScriptedModel model = ScriptedModel.never();
+        TestComponent component = component(model);
+        component.permission = rule(PermissionBehavior.ALLOW);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Future<?> invocation = executor.submit(() -> {
+                try {
+                    component.process();
+                }
+                catch (Exception failure) {
+                    throw new RuntimeException(failure);
+                }
+            });
+            assertTrue(model.subscribed.await(1, TimeUnit.SECONDS));
+
+            assertTrue(invocation.cancel(true));
+
+            assertTrue(model.cancelled.await(1, TimeUnit.SECONDS));
+        }
+        finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(1, TimeUnit.SECONDS));
+        }
         assertClean(component);
     }
 
@@ -284,6 +443,52 @@ class HarnessPermissionHitlTest {
         assertClean(component);
     }
 
+    @Test
+    void customizerMiddlewareCannotSwitchPermissionToBypassInsideMandatoryGuard() throws Exception {
+        configure("customizer-middleware-bypass");
+        ScriptedModel model = new ScriptedModel("customizer-middleware-bypass-tool");
+        TestComponent component = component(model);
+        component.permission = rule(PermissionBehavior.ASK);
+        component.customizer = builder -> builder.middleware(new MiddlewareBase() {
+            @Override
+            public int order() {
+                return Integer.MIN_VALUE;
+            }
+
+            @Override
+            public Flux<AgentEvent> onAgent(
+                    Agent agent,
+                    RuntimeContext context,
+                    AgentInput input,
+                    Function<AgentInput, Flux<AgentEvent>> next) {
+                ((ReActAgent) agent).setPermissionMode(context, PermissionMode.BYPASS);
+                return next.apply(input);
+            }
+        });
+
+        AgentInvocationException failure =
+                assertThrows(AgentInvocationException.class, component::process);
+
+        assertEquals(AgentInvocationErrorType.PERMISSION, failure.getErrorType());
+        assertTrue(failure.getMessage().contains("BYPASS"), failure.getMessage());
+        assertEquals(0, model.calls.get());
+        assertEquals(0, component.tool.executions.get());
+        assertEquals(PermissionMode.DEFAULT,
+                component.runtime.agent().getDelegate()
+                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getPermissionContext().getMode());
+
+        AgentInvocationException secondFailure =
+                assertThrows(AgentInvocationException.class, component::process);
+        assertEquals(AgentInvocationErrorType.PERMISSION, secondFailure.getErrorType());
+        assertEquals(0, model.calls.get());
+        assertEquals(PermissionMode.DEFAULT,
+                component.runtime.agent().getDelegate()
+                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getPermissionContext().getMode());
+        assertClean(component);
+    }
+
     private TestComponent component(ScriptedModel model) {
         Slot slot = new Slot();
         slot.setChainId("permission-chain");
@@ -296,13 +501,19 @@ class HarnessPermissionHitlTest {
     }
 
     private void configure(String namespace) throws Exception {
+        configure(namespace, Duration.ofSeconds(2), Duration.ofSeconds(4));
+    }
+
+    private void configure(
+            String namespace, Duration confirmationTimeout, Duration runtimeTimeout)
+            throws Exception {
         Path workspace = tempDir.resolve(namespace);
         Files.createDirectories(workspace);
         AgentConfig agent = new AgentConfig();
         agent.getRuntime().setNamespace(namespace);
         agent.getRuntime().setDefaultUserId("user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(4));
-        agent.getHitl().setConfirmationTimeout(Duration.ofSeconds(2));
+        agent.getRuntime().setTimeout(runtimeTimeout);
+        agent.getHitl().setConfirmationTimeout(confirmationTimeout);
         agent.getWorkspace().setRoot(workspace.toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.GUARDED_LOCAL);
         agent.getHarness().setTrustedLocal(true);
@@ -321,6 +532,23 @@ class HarnessPermissionHitlTest {
             default -> throw new IllegalArgumentException("unsupported behavior " + behavior);
         }
         return builder.build();
+    }
+
+    private static ToolUseBlock toolUse(String id, String name, Map<String, Object> input) {
+        return new ToolUseBlock(id, name, input, null, Map.of(), ToolCallState.ASKING);
+    }
+
+    private enum HandlerFailure {
+        NULL,
+        EMPTY,
+        TIMEOUT
+    }
+
+    private enum InvalidConfirmation {
+        EMPTY,
+        DUPLICATE,
+        UNKNOWN_ID,
+        FIELD_MISMATCH
     }
 
     private static void assertClean(TestComponent component) {
@@ -474,15 +702,33 @@ class HarnessPermissionHitlTest {
     private static final class ScriptedModel implements Model {
         private final List<String> toolIds;
         private final AtomicInteger calls = new AtomicInteger();
+        private final boolean never;
+        private final CountDownLatch subscribed = new CountDownLatch(1);
+        private final CountDownLatch cancelled = new CountDownLatch(1);
 
         private ScriptedModel(String... toolIds) {
             this.toolIds = List.of(toolIds);
+            this.never = false;
+        }
+
+        private ScriptedModel(boolean never) {
+            this.toolIds = List.of();
+            this.never = never;
+        }
+
+        private static ScriptedModel never() {
+            return new ScriptedModel(true);
         }
 
         @Override
         public Flux<ChatResponse> stream(
                 List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
             int call = calls.getAndIncrement();
+            if (never) {
+                return Flux.<ChatResponse>never()
+                        .doOnSubscribe(ignored -> subscribed.countDown())
+                        .doOnCancel(cancelled::countDown);
+            }
             if (call < toolIds.size()) {
                 assertTrue(tools.stream().anyMatch(schema -> "execute".equals(schema.getName())));
                 String id = toolIds.get(call);
