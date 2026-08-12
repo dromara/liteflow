@@ -8,6 +8,8 @@ import com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystemConfi
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
+import com.yomahub.liteflow.agent.harness.sandbox.DockerSandboxConfigurer;
+import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.hitl.AgentCallTarget;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
@@ -63,6 +65,10 @@ public abstract class HarnessAgentComponent
 
     /** Explicit extension point used only by the CUSTOM filesystem backend. */
     protected HarnessFilesystemConfigurer filesystemConfigurer() {
+        return null;
+    }
+
+    protected SandboxSnapshotProvider sandboxSnapshotProvider() {
         return null;
     }
 
@@ -254,10 +260,9 @@ public abstract class HarnessAgentComponent
         HarnessFilesystemBackend backend = harness.getFilesystemBackend();
         HarnessFilesystemConfigurer configurer;
         if (backend == HarnessFilesystemBackend.DOCKER) {
-            throw new AgentConfigException(
-                    "Harness DOCKER filesystem is not implemented until Task 5");
+            configurer = new DockerSandboxConfigurer(sandboxSnapshotProvider());
         }
-        if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
+        else if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
             configurer = new GuardedLocalFilesystemConfigurer(agentNamespace);
         }
         else {

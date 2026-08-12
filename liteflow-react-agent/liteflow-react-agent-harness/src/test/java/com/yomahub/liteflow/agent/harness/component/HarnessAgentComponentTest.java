@@ -6,6 +6,7 @@ import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
+import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
@@ -56,6 +57,8 @@ import io.agentscope.harness.agent.filesystem.spec.LocalFilesystemSpec;
 import io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentEntry;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
+import io.agentscope.harness.agent.sandbox.snapshot.NoopSnapshotSpec;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
 import io.agentscope.harness.agent.subagent.DefaultAgentManager;
 import io.agentscope.harness.agent.subagent.SubagentSpecGenerator;
@@ -209,7 +212,7 @@ class HarnessAgentComponentTest {
     }
 
     @Test
-    void guardedLocalBuildsOnlyWithTrustAndOtherBackendsRemainFailClosed()
+    void guardedLocalBuildsOnlyWithTrustAndCustomOrInvalidDockerRemainFailClosed()
             throws Exception {
         AgentConfig config = configureAgent();
         TestComponent untrustedComponent = component(
@@ -233,13 +236,14 @@ class HarnessAgentComponentTest {
         assertEquals(1, guardedComponent.modelBuildCount.get());
 
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        config.getHarness().getDocker().setCpuCount(0L);
         TestComponent dockerComponent = component(
                 slot("docker-session", "docker-request"),
                 new RecordingModel("must not run", false, null, null, null),
                 null);
         AgentConfigException docker =
                 assertThrows(AgentConfigException.class, dockerComponent::process);
-        assertTrue(docker.getMessage().contains("DOCKER"));
+        assertTrue(docker.getMessage().contains("cpu-count"));
         assertEquals(0, dockerComponent.modelBuildCount.get());
 
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.CUSTOM);
@@ -251,6 +255,44 @@ class HarnessAgentComponentTest {
                 assertThrows(AgentConfigException.class, customComponent::process);
         assertTrue(custom.getMessage().contains("filesystemConfigurer"));
         assertEquals(0, customComponent.modelBuildCount.get());
+    }
+
+    @Test
+    void dockerBackendUsesTheSnapshotProviderBeforeAnySandboxLifecycleStarts()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        AtomicInteger providerCalls = new AtomicInteger();
+        TestComponent component = component(
+                slot("docker-provider-session", "docker-provider-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        component.snapshotProvider = context -> {
+            providerCalls.incrementAndGet();
+            return new NoopSnapshotSpec();
+        };
+        component.customizeFailure = new AgentConfigException("offline build stop");
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertEquals("offline build stop", failure.getMessage());
+        assertEquals(1, providerCalls.get());
+    }
+
+    @Test
+    void dockerFilesystemStillCannotBeReplacedByTheSameBuilderCustomizer()
+            throws Exception {
+        AgentConfig config = configureAgent();
+        config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        TestComponent component = component(
+                slot("docker-replacement-session", "docker-replacement-request"),
+                new RecordingModel("must not run", false, null, null, null),
+                null);
+        component.customizerDockerFilesystem = new DockerFilesystemSpec();
+
+        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+
+        assertTrue(failure.getMessage().contains("filesystem identity"));
     }
 
     @Test
@@ -1321,6 +1363,7 @@ class HarnessAgentComponentTest {
         private boolean replaceStateStore;
         private boolean replaceBuilder;
         private RecordingFilesystem customizerFilesystem;
+        private DockerFilesystemSpec customizerDockerFilesystem;
         private Path customizerWorkspace;
         private List<Object> tools = List.of();
         private List<Object> groupedTools = List.of();
@@ -1339,6 +1382,7 @@ class HarnessAgentComponentTest {
         private TaskRepository customizerTaskRepository;
         private Hook customizerHook;
         private HarnessFilesystemConfigurer explicitFilesystemConfigurer;
+        private SandboxSnapshotProvider snapshotProvider;
         private HarnessAgentRuntime runtime;
 
         private TestComponent(
@@ -1465,6 +1509,11 @@ class HarnessAgentComponentTest {
         }
 
         @Override
+        protected SandboxSnapshotProvider sandboxSnapshotProvider() {
+            return snapshotProvider;
+        }
+
+        @Override
         protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
             customizeCount.incrementAndGet();
             if (customizeFailure != null) {
@@ -1478,6 +1527,9 @@ class HarnessAgentComponentTest {
             }
             if (customizerFilesystem != null) {
                 builder.abstractFilesystem(customizerFilesystem);
+            }
+            if (customizerDockerFilesystem != null) {
+                builder.filesystem(customizerDockerFilesystem);
             }
             if (customizerWorkspace != null) {
                 builder.workspace(customizerWorkspace);
