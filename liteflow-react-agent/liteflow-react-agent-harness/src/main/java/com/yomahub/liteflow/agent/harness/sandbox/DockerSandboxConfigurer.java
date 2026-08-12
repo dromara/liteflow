@@ -5,6 +5,9 @@ import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.IsolationScope;
+import io.agentscope.harness.agent.sandbox.SandboxClient;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClient;
+import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
 import io.agentscope.harness.agent.sandbox.snapshot.LocalSnapshotSpec;
 import io.agentscope.harness.agent.sandbox.snapshot.NoopSnapshotSpec;
@@ -23,13 +26,21 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
             "--pids-limit=64");
 
     private final SandboxSnapshotProvider snapshotProvider;
+    private final SandboxClient<DockerSandboxClientOptions> sandboxClient;
 
     public DockerSandboxConfigurer() {
         this(null);
     }
 
     public DockerSandboxConfigurer(SandboxSnapshotProvider snapshotProvider) {
+        this(snapshotProvider, new DockerSandboxClient());
+    }
+
+    DockerSandboxConfigurer(
+            SandboxSnapshotProvider snapshotProvider,
+            SandboxClient<DockerSandboxClientOptions> sandboxClient) {
         this.snapshotProvider = snapshotProvider;
+        this.sandboxClient = Objects.requireNonNull(sandboxClient, "sandboxClient");
     }
 
     /** Creates the per-call host workspace projection safety check. */
@@ -56,6 +67,8 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
         SandboxSnapshotSpec snapshot = resolveSnapshot(config, context);
 
         DockerFilesystemSpec spec = new DockerFilesystemSpec()
+                .client(new ProjectionValidatingSandboxClient<>(
+                        sandboxClient, workspaceProjectionPreflight(context)))
                 .image(config.getImage())
                 .workspaceRoot(config.getWorkspaceRoot())
                 .memorySizeBytes(config.getMemorySizeBytes())

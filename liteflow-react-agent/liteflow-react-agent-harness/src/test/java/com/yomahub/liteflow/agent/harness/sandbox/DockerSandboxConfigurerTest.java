@@ -4,9 +4,26 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
+import io.agentscope.core.agent.RuntimeContext;
+import io.agentscope.core.message.ContentBlock;
+import io.agentscope.core.message.Msg;
+import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.message.UserMessage;
+import io.agentscope.core.model.ChatResponse;
+import io.agentscope.core.model.GenerateOptions;
+import io.agentscope.core.model.Model;
+import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.skill.AgentSkill;
+import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
+import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.IsolationScope;
+import io.agentscope.harness.agent.sandbox.ExecResult;
+import io.agentscope.harness.agent.sandbox.Sandbox;
+import io.agentscope.harness.agent.sandbox.SandboxClient;
 import io.agentscope.harness.agent.sandbox.SandboxContext;
+import io.agentscope.harness.agent.sandbox.SandboxState;
 import io.agentscope.harness.agent.sandbox.WorkspaceProjectionApplier;
 import io.agentscope.harness.agent.sandbox.WorkspaceSpec;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandbox;
@@ -20,10 +37,13 @@ import io.agentscope.harness.agent.sandbox.snapshot.NoopSnapshotSpec;
 import io.agentscope.harness.agent.sandbox.snapshot.SandboxSnapshotSpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import reactor.core.publisher.Flux;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -355,6 +375,72 @@ class DockerSandboxConfigurerTest {
         preflight.run();
     }
 
+    @Test
+    void projectionIsValidatedAfterSkillRepositoryBeforeStartCallbacks() throws Exception {
+        Path source = Files.createDirectories(workspace.resolve("callback-source"));
+        Path external = workspace.resolve("callback-external.txt");
+        String secret = "callback-created-external-content";
+        Files.writeString(external, secret);
+        AgentConfig agentConfig = agentConfig();
+        agentConfig.getWorkspace().setRoot(source.toString());
+        agentConfig.getHarness().getDocker().setWorkspaceProjectionRoots(
+                List.of(".skills-cache"));
+        HarnessFilesystemContext filesystemContext = new HarnessFilesystemContext(
+                source, 1024L, Duration.ofSeconds(5), agentConfig);
+        RecordingProjectionSandboxClient client = new RecordingProjectionSandboxClient();
+        DockerSandboxConfigurer configurer = new DockerSandboxConfigurer(null, client);
+        HarnessAgent.Builder builder = HarnessAgent.builder()
+                .name("callback-agent")
+                .agentId("callback-agent")
+                .model(new StaticModel())
+                .stateStore(new InMemoryAgentStateStore())
+                .workspace(source)
+                .skillRepository(new LinkingSkillRepository(source, external))
+                .disableDefaultWorkspaceSkills()
+                .disableSubagents()
+                .disableCompaction()
+                .disableToolResultEviction()
+                .disableMemoryTools()
+                .disableMemoryHooks()
+                .disableWorkspaceContext()
+                .disableAtPathExpansion()
+                .disableToolsConfig()
+                .disableFilesystemTools()
+                .disableShellTool();
+        configurer.configure(builder, filesystemContext);
+        HarnessAgent agent = builder.build();
+
+        try {
+            for (int call = 0; call < 2; call++) {
+                configurer.workspaceProjectionPreflight(filesystemContext).run();
+                RuntimeException failure = null;
+                try {
+                    agent.call(
+                                    List.of(new UserMessage("question")),
+                                    RuntimeContext.builder()
+                                            .userId("user")
+                                            .sessionId("session-" + call)
+                                            .build())
+                            .block();
+                }
+                catch (RuntimeException expected) {
+                    failure = expected;
+                }
+                assertTrue(hasCause(failure, AgentConfigException.class));
+                assertFalse(
+                        client.projectionRead,
+                        "callback ran after call preflight and projection read: "
+                                + client.projectedContent);
+                Files.delete(source.resolve(".skills-cache/repository/external.txt"));
+            }
+        }
+        finally {
+            agent.close();
+        }
+
+        assertEquals(2, client.createdSandboxes);
+    }
+
     private AgentConfig agentConfig() {
         AgentConfig agent = new AgentConfig();
         agent.getWorkspace().setRoot(workspace.toString());
@@ -422,6 +508,205 @@ class DockerSandboxConfigurerTest {
 
         AgentConfigException failure = assertThrows(AgentConfigException.class, preflight::run);
         assertTrue(failure.getMessage().contains("symbolic link"));
+    }
+
+    private static boolean hasCause(Throwable failure, Class<? extends Throwable> type) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (type.isInstance(current)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final class LinkingSkillRepository implements AgentSkillRepository {
+        private final Path workspace;
+        private final Path external;
+
+        private LinkingSkillRepository(Path workspace, Path external) {
+            this.workspace = workspace;
+            this.external = external;
+        }
+
+        @Override
+        public List<AgentSkill> getAllSkills() {
+            try {
+                Path cache = Files.createDirectories(workspace.resolve(".skills-cache/repository"));
+                Path link = cache.resolve("external.txt");
+                if (!Files.exists(link, LinkOption.NOFOLLOW_LINKS)) {
+                    Files.createSymbolicLink(link, external);
+                }
+                return List.of();
+            }
+            catch (Exception failure) {
+                throw new IllegalStateException(failure);
+            }
+        }
+
+        @Override
+        public AgentSkill getSkill(String name) {
+            return null;
+        }
+
+        @Override
+        public List<String> getAllSkillNames() {
+            return List.of();
+        }
+
+        @Override
+        public boolean save(List<AgentSkill> skills, boolean force) {
+            return false;
+        }
+
+        @Override
+        public boolean delete(String skillName) {
+            return false;
+        }
+
+        @Override
+        public boolean skillExists(String skillName) {
+            return false;
+        }
+
+        @Override
+        public AgentSkillRepositoryInfo getRepositoryInfo() {
+            return new AgentSkillRepositoryInfo("test", "linking", false);
+        }
+
+        @Override
+        public String getSource() {
+            return "linking";
+        }
+
+        @Override
+        public void setWriteable(boolean writeable) {
+        }
+
+        @Override
+        public boolean isWriteable() {
+            return false;
+        }
+    }
+
+    private static final class RecordingProjectionSandboxClient
+            implements SandboxClient<DockerSandboxClientOptions> {
+        private int createdSandboxes;
+        private boolean projectionRead;
+        private String projectedContent;
+
+        @Override
+        public Sandbox create(
+                WorkspaceSpec workspaceSpec,
+                SandboxSnapshotSpec snapshotSpec,
+                DockerSandboxClientOptions options) {
+            createdSandboxes++;
+            return new RecordingProjectionSandbox(this, workspaceSpec);
+        }
+
+        @Override
+        public Sandbox resume(SandboxState state) {
+            return new RecordingProjectionSandbox(this, state.getWorkspaceSpec());
+        }
+
+        @Override
+        public void delete(Sandbox sandbox) {
+        }
+
+        @Override
+        public String serializeState(SandboxState state) {
+            return "{}";
+        }
+
+        @Override
+        public SandboxState deserializeState(String json) {
+            throw new AssertionError("state restore is not expected");
+        }
+    }
+
+    private static final class RecordingProjectionSandbox implements Sandbox {
+        private final RecordingProjectionSandboxClient client;
+        private final SandboxState state = new TestSandboxState();
+
+        private RecordingProjectionSandbox(
+                RecordingProjectionSandboxClient client, WorkspaceSpec workspaceSpec) {
+            this.client = client;
+            state.setWorkspaceSpec(workspaceSpec);
+            state.setSessionId("recording-session");
+        }
+
+        @Override
+        public void start() throws Exception {
+            WorkspaceProjectionEntry projection = assertInstanceOf(
+                    WorkspaceProjectionEntry.class,
+                    state.getWorkspaceSpec().getEntries().get("__workspace_projection__"));
+            Method collector = WorkspaceProjectionApplier.class.getDeclaredMethod(
+                    "collectProjectedFiles", List.class);
+            assertTrue(collector.trySetAccessible());
+            @SuppressWarnings("unchecked")
+            Map<String, Path> projected = (Map<String, Path>) collector.invoke(
+                    null, List.of(projection));
+            Path first = projected.values().stream().findFirst().orElseThrow();
+            client.projectedContent = Files.readString(first);
+            client.projectionRead = true;
+        }
+
+        @Override
+        public void stop() {
+        }
+
+        @Override
+        public void shutdown() {
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public boolean isRunning() {
+            return true;
+        }
+
+        @Override
+        public SandboxState getState() {
+            return state;
+        }
+
+        @Override
+        public ExecResult exec(
+                RuntimeContext context, String command, Integer timeoutSeconds) {
+            throw new AssertionError("sandbox exec is not expected");
+        }
+
+        @Override
+        public InputStream persistWorkspace() {
+            throw new AssertionError("sandbox persistence is not expected");
+        }
+
+        @Override
+        public void hydrateWorkspace(InputStream archive) {
+            throw new AssertionError("sandbox hydration is not expected");
+        }
+    }
+
+    private static final class TestSandboxState extends SandboxState {
+    }
+
+    private static final class StaticModel implements Model {
+        @Override
+        public Flux<ChatResponse> stream(
+                List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+            ContentBlock content = TextBlock.builder().text("reply").build();
+            return Flux.just(ChatResponse.builder()
+                    .content(List.of(content))
+                    .finishReason("stop")
+                    .build());
+        }
+
+        @Override
+        public String getModelName() {
+            return "static";
+        }
     }
 
     @FunctionalInterface
