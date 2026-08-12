@@ -7,9 +7,9 @@ import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
 import io.agentscope.core.middleware.AgentInput;
 import io.agentscope.core.middleware.MiddlewareBase;
-import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.harness.agent.HarnessAgent;
+import io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware;
 import io.agentscope.harness.agent.middleware.SubagentEntry;
 import io.agentscope.harness.agent.subagent.DefaultAgentManager;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
@@ -17,6 +17,7 @@ import io.agentscope.harness.agent.subagent.SubagentFactory;
 import io.agentscope.harness.agent.tool.AgentSpawnTool;
 
 import java.io.InputStream;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,7 +35,11 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
     private static final String AGENTSCOPE_CORE_VERSION = "2.0.2";
     private static final String CORE_VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-core/pom.properties";
+    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
+    private static final String HARNESS_VERSION_RESOURCE =
+            "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static volatile Field initialPermissionContextField;
+    private static volatile List<Field> dynamicMiddlewareFields;
 
     private HarnessAgentBuilderSubagentPermissionBridge() {
     }
@@ -43,6 +48,7 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
             HarnessAgent parent, PermissionContextState parentPermissions) {
         Objects.requireNonNull(parent, "parent");
         Objects.requireNonNull(parentPermissions, "parentPermissions");
+        sealDynamicFactories(parent, parentPermissions);
         DefaultAgentManager manager = parent.getSubagentAgentManager();
         inheritDeclaredLocalPermissions(parent, parentPermissions, manager);
     }
@@ -61,13 +67,10 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
             String name = entry.getKey();
             SubagentFactory factory = entry.getValue();
             SubagentDeclaration declaration = manager.getDeclaration(name).orElse(null);
-            if (declaration != null
-                    && declaration.isInheritParentPermissions()
-                    && !declaration.isRemote()
-                    && !(factory instanceof InheritingFactory inheriting
-                            && inheriting.parent == parent
-                            && inheriting.parentPermissions == parentPermissions)) {
-                factory = new InheritingFactory(factory, parent, parentPermissions);
+            SubagentFactory decorated = inheritingFactory(
+                    factory, declaration, parent, parentPermissions);
+            if (decorated != factory) {
+                factory = decorated;
                 changed = true;
             }
             replacements.add(new SubagentEntry(
@@ -79,6 +82,23 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         if (changed) {
             manager.replaceAgents(replacements);
         }
+    }
+
+    private static SubagentFactory inheritingFactory(
+            SubagentFactory factory,
+            SubagentDeclaration declaration,
+            HarnessAgent parent,
+            PermissionContextState parentPermissions) {
+        if (factory == null
+                || declaration == null
+                || !declaration.isInheritParentPermissions()
+                || declaration.isRemote()
+                || (factory instanceof InheritingFactory inheriting
+                        && inheriting.parent == parent
+                        && inheriting.parentPermissions == parentPermissions)) {
+            return factory;
+        }
+        return new InheritingFactory(factory, parent, parentPermissions);
     }
 
     static DynamicRefreshGuard dynamicRefreshGuard(PermissionContextState parentPermissions) {
@@ -155,6 +175,133 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         }
     }
 
+    private static void sealDynamicFactories(
+            HarnessAgent parent, PermissionContextState parentPermissions) {
+        for (MiddlewareBase middleware : parent.getDelegate().getMiddlewares()) {
+            if (middleware instanceof DynamicSubagentsMiddleware dynamic) {
+                sealDynamicFactories(dynamic, parent, parentPermissions);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void sealDynamicFactories(
+            DynamicSubagentsMiddleware dynamic,
+            HarnessAgent parent,
+            PermissionContextState parentPermissions) {
+        try {
+            List<Field> fields = dynamicMiddlewareFields();
+            List<SubagentEntry> staticEntries = (List<SubagentEntry>) fields.get(0).get(dynamic);
+            Function<SubagentDeclaration, SubagentFactory> factoryBuilder =
+                    (Function<SubagentDeclaration, SubagentFactory>) fields.get(1).get(dynamic);
+            if (factoryBuilder instanceof InheritingFactoryBuilder inheriting
+                    && inheriting.parent == parent
+                    && inheriting.parentPermissions == parentPermissions) {
+                return;
+            }
+            List<SubagentEntry> decoratedEntries = staticEntries.stream()
+                    .map(entry -> new SubagentEntry(
+                            entry.name(),
+                            entry.description(),
+                            inheritingFactory(
+                                    entry.factory(),
+                                    entry.declaration(),
+                                    parent,
+                                    parentPermissions),
+                            entry.declaration()))
+                    .toList();
+            Function<SubagentDeclaration, SubagentFactory> decoratedBuilder =
+                    new InheritingFactoryBuilder(factoryBuilder, parent, parentPermissions);
+            fields.get(0).set(dynamic, decoratedEntries);
+            fields.get(1).set(dynamic, decoratedBuilder);
+            // Both final references are replaced during build, before HarnessAgentRuntime is
+            // published. Complete the reflective initialization before any call thread can run.
+            VarHandle.fullFence();
+            if (fields.get(0).get(dynamic) != decoratedEntries
+                    || fields.get(1).get(dynamic) != decoratedBuilder) {
+                throw incompatibleHarness(
+                        "dynamic subagent final fields rejected the permission decorator");
+            }
+        }
+        catch (IllegalAccessException failure) {
+            throw incompatibleHarness(
+                    "cannot install dynamic subagent permission decorator", failure);
+        }
+    }
+
+    private static List<Field> dynamicMiddlewareFields() {
+        List<Field> resolved = dynamicMiddlewareFields;
+        if (resolved != null) {
+            return resolved;
+        }
+        synchronized (HarnessAgentBuilderSubagentPermissionBridge.class) {
+            if (dynamicMiddlewareFields == null) {
+                requireHarnessVersion();
+                dynamicMiddlewareFields = validateDynamicMiddlewareShape(
+                        DynamicSubagentsMiddleware.class);
+            }
+            return dynamicMiddlewareFields;
+        }
+    }
+
+    static List<Field> validateDynamicMiddlewareShape(Class<?> middlewareType) {
+        try {
+            Field staticEntries = requirePrivateFinalField(
+                    middlewareType, "staticEntries", List.class);
+            Field factoryBuilder = requirePrivateFinalField(
+                    middlewareType, "factoryBuilder", Function.class);
+            return List.of(staticEntries, factoryBuilder);
+        }
+        catch (NoSuchFieldException failure) {
+            throw incompatibleHarness("dynamic subagent middleware shape changed", failure);
+        }
+    }
+
+    private static Field requirePrivateFinalField(
+            Class<?> owner, String name, Class<?> expectedType) throws NoSuchFieldException {
+        Field field = owner.getDeclaredField(name);
+        int modifiers = field.getModifiers();
+        if (field.getType() != expectedType
+                || !Modifier.isPrivate(modifiers)
+                || !Modifier.isFinal(modifiers)
+                || Modifier.isStatic(modifiers)
+                || !field.trySetAccessible()) {
+            throw incompatibleHarness(owner.getSimpleName() + "." + name + " shape changed");
+        }
+        return field;
+    }
+
+    private static void requireHarnessVersion() {
+        Properties properties = new Properties();
+        try (InputStream input = HarnessAgent.class.getClassLoader()
+                .getResourceAsStream(HARNESS_VERSION_RESOURCE)) {
+            if (input == null) {
+                throw incompatibleHarness("version metadata is unavailable");
+            }
+            properties.load(input);
+        }
+        catch (Exception failure) {
+            if (failure instanceof AgentConfigException configFailure) {
+                throw configFailure;
+            }
+            throw incompatibleHarness("cannot read version metadata", failure);
+        }
+        if (!AGENTSCOPE_HARNESS_VERSION.equals(properties.getProperty("version"))) {
+            throw incompatibleHarness("unexpected AgentScope Harness version");
+        }
+    }
+
+    private static AgentConfigException incompatibleHarness(String detail) {
+        return incompatibleHarness(detail, null);
+    }
+
+    private static AgentConfigException incompatibleHarness(String detail, Throwable cause) {
+        return new AgentConfigException(
+                "Harness subagent permission bridge requires agentscope-harness 2.0.2: "
+                        + detail,
+                cause);
+    }
+
     private static void setInitialPermissionContext(
             ReActAgent child, PermissionContextState parentPermissions) {
         try {
@@ -205,6 +352,32 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         }
     }
 
+    private static final class InheritingFactoryBuilder
+            implements Function<SubagentDeclaration, SubagentFactory> {
+        private final Function<SubagentDeclaration, SubagentFactory> delegate;
+        private final HarnessAgent parent;
+        private final PermissionContextState parentPermissions;
+
+        private InheritingFactoryBuilder(
+                Function<SubagentDeclaration, SubagentFactory> delegate,
+                HarnessAgent parent,
+                PermissionContextState parentPermissions) {
+            this.delegate = delegate;
+            this.parent = Objects.requireNonNull(parent, "parent");
+            this.parentPermissions = Objects.requireNonNull(
+                    parentPermissions, "parentPermissions");
+        }
+
+        @Override
+        public SubagentFactory apply(SubagentDeclaration declaration) {
+            if (delegate == null) {
+                return null;
+            }
+            return inheritingFactory(
+                    delegate.apply(declaration), declaration, parent, parentPermissions);
+        }
+    }
+
     /** Runs inside Harness dynamic-subagent refresh and re-wraps its newly materialized factories. */
     static final class DynamicRefreshGuard implements MiddlewareBase {
         private final PermissionContextState parentPermissions;
@@ -215,9 +388,11 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         }
 
         void bind(HarnessAgent parentAgent) {
-            if (!parent.compareAndSet(null, Objects.requireNonNull(parentAgent, "parentAgent"))) {
+            HarnessAgent bound = Objects.requireNonNull(parentAgent, "parentAgent");
+            if (!parent.compareAndSet(null, bound)) {
                 throw new AgentConfigException("subagent permission guard was already bound");
             }
+            sealDynamicFactories(bound, parentPermissions);
         }
 
         @Override
@@ -241,17 +416,5 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
             return next.apply(input);
         }
 
-        @Override
-        public Flux<AgentEvent> onReasoning(
-                Agent agent,
-                RuntimeContext context,
-                ReasoningInput input,
-                Function<ReasoningInput, Flux<AgentEvent>> next) {
-            HarnessAgent harness = parent.get();
-            if (harness != null) {
-                inheritDeclaredLocalPermissions(harness, parentPermissions);
-            }
-            return next.apply(input);
-        }
     }
 }

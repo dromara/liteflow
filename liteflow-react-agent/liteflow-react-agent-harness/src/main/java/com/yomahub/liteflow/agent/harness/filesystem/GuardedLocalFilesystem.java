@@ -5,7 +5,12 @@ import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.harness.agent.IsolationScope;
 import io.agentscope.harness.agent.filesystem.local.LocalFilesystem;
 import io.agentscope.harness.agent.filesystem.model.EditResult;
+import io.agentscope.harness.agent.filesystem.model.FileInfo;
 import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
+import io.agentscope.harness.agent.filesystem.model.GlobResult;
+import io.agentscope.harness.agent.filesystem.model.GrepMatch;
+import io.agentscope.harness.agent.filesystem.model.GrepResult;
+import io.agentscope.harness.agent.filesystem.model.LsResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.filesystem.remote.store.NamespaceFactory;
 import io.agentscope.harness.agent.filesystem.util.FilesystemUtils;
@@ -67,17 +72,8 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     @Override
     protected Path resolvePath(RuntimeContext runtimeContext, String path) {
         validateRelativePath(path);
-        Path sessionRoot = sessionRoot(runtimeContext, path);
-        final Path relative;
-        try {
-            relative = Path.of(path.replace('\\', '/'));
-        }
-        catch (InvalidPathException failure) {
-            throw new SecurityException("invalid guarded local workspace path", failure);
-        }
-        if (relative.isAbsolute()) {
-            throw new SecurityException("absolute guarded local workspace path denied");
-        }
+        Path relative = canonicalRelativePath(path);
+        Path sessionRoot = sessionRoot(runtimeContext, relative);
 
         Path candidate = sessionRoot.resolve(relative).normalize();
         if (!candidate.startsWith(sessionRoot)) {
@@ -101,6 +97,43 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         catch (IOException failure) {
             throw new SecurityException("unable to validate guarded local workspace path", failure);
         }
+    }
+
+    @Override
+    public LsResult ls(RuntimeContext runtimeContext, String path) {
+        LsResult result = super.ls(runtimeContext, path);
+        if (!result.isSuccess() || result.entries() == null || !isAgentMemoryPath(path)) {
+            return result;
+        }
+        return LsResult.success(result.entries().stream()
+                .map(entry -> virtualMemoryEntry(runtimeContext, entry))
+                .toList());
+    }
+
+    @Override
+    public GlobResult glob(RuntimeContext runtimeContext, String pattern, String path) {
+        GlobResult result = super.glob(runtimeContext, pattern, path);
+        if (!result.isSuccess() || result.matches() == null || !isAgentMemoryPath(path)) {
+            return result;
+        }
+        return GlobResult.success(result.matches().stream()
+                .map(entry -> virtualMemoryEntry(runtimeContext, entry))
+                .toList());
+    }
+
+    @Override
+    public GrepResult grep(
+            RuntimeContext runtimeContext, String pattern, String path, String glob) {
+        GrepResult result = super.grep(runtimeContext, pattern, path, glob);
+        if (!result.isSuccess() || result.matches() == null || !isAgentMemoryPath(path)) {
+            return result;
+        }
+        return GrepResult.success(result.matches().stream()
+                .map(match -> new GrepMatch(
+                        virtualMemoryPath(runtimeContext, match.path()),
+                        match.line(),
+                        match.text()))
+                .toList());
     }
 
     @Override
@@ -181,7 +214,7 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         return super.move(runtimeContext, fromPath, toPath);
     }
 
-    private Path sessionRoot(RuntimeContext runtimeContext, String path) {
+    private Path sessionRoot(RuntimeContext runtimeContext, Path relativePath) {
         List<String> namespace = getNamespaceFactory().getNamespace(runtimeContext);
         if (namespace == null || namespace.size() != 1 || namespace.get(0).isBlank()) {
             throw new IllegalArgumentException("runtimeSessionId must not be blank");
@@ -190,7 +223,7 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         LiteFlowAgentContext liteFlow = runtimeContext != null
                 ? runtimeContext.get(LiteFlowAgentContext.class)
                 : null;
-        if (isAgentMemoryPath(path)
+        if (isAgentMemoryPath(relativePath)
                 && liteFlow != null
                 && Objects.equals(liteFlow.getRuntimeSessionId(), runtimeContext.getSessionId())) {
             namespaceRoot = root.resolve("agent-" + sha256(liteFlow.getAgentNamespace())).normalize();
@@ -225,6 +258,22 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         }
     }
 
+    private FileInfo virtualMemoryEntry(RuntimeContext runtimeContext, FileInfo entry) {
+        String path = virtualMemoryPath(runtimeContext, entry.path());
+        return entry.isDirectory()
+                ? FileInfo.ofDir(path, entry.modifiedAt())
+                : FileInfo.ofFile(path, entry.size(), entry.modifiedAt());
+    }
+
+    private String virtualMemoryPath(RuntimeContext runtimeContext, String physicalPath) {
+        Path memorySession = sessionRoot(runtimeContext, Path.of("memory"));
+        Path physical = root.resolve(physicalPath.replace('\\', '/')).normalize();
+        if (!physical.startsWith(memorySession)) {
+            throw new SecurityException("guarded local memory listing escaped its agent session");
+        }
+        return memorySession.relativize(physical).toString().replace('\\', '/');
+    }
+
     private static void ensureRealDirectory(Path base, Path directory) throws IOException {
         if (base.equals(directory)) {
             return;
@@ -247,8 +296,26 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         }
     }
 
+    private static Path canonicalRelativePath(String path) {
+        final Path relative;
+        try {
+            relative = Path.of(path.replace('\\', '/')).normalize();
+        }
+        catch (InvalidPathException failure) {
+            throw new SecurityException("invalid guarded local workspace path", failure);
+        }
+        if (relative.isAbsolute()) {
+            throw new SecurityException("absolute guarded local workspace path denied");
+        }
+        return relative;
+    }
+
     private static boolean isAgentMemoryPath(String path) {
-        String normalized = path.replace('\\', '/');
+        return path != null && isAgentMemoryPath(canonicalRelativePath(path));
+    }
+
+    private static boolean isAgentMemoryPath(Path relativePath) {
+        String normalized = relativePath.toString().replace('\\', '/');
         return "MEMORY.md".equals(normalized)
                 || "memory".equals(normalized)
                 || normalized.startsWith("memory/");

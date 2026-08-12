@@ -17,6 +17,8 @@ import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -99,6 +101,27 @@ class HarnessAgentBuilderFilesystemBridgeTest {
                         DriftedBuilder.class));
         assertTrue(drift.getMessage().contains("2.0.2"));
         assertNotNull(drift.getCause());
+    }
+
+    @Test
+    void dynamicSubagentPermissionDecoratorPinsPrivateFinalHarnessFields() {
+        List<Field> fields = HarnessAgentBuilderSubagentPermissionBridge
+                .validateDynamicMiddlewareShape(
+                        io.agentscope.harness.agent.middleware.DynamicSubagentsMiddleware.class);
+
+        assertEquals(List.of("staticEntries", "factoryBuilder"),
+                fields.stream().map(Field::getName).toList());
+        assertEquals(List.of(List.class, Function.class),
+                fields.stream().map(Field::getType).toList());
+        assertTrue(fields.stream().allMatch(field ->
+                java.lang.reflect.Modifier.isPrivate(field.getModifiers())
+                        && java.lang.reflect.Modifier.isFinal(field.getModifiers())));
+
+        AgentConfigException drift = assertThrows(
+                AgentConfigException.class,
+                () -> HarnessAgentBuilderSubagentPermissionBridge
+                        .validateDynamicMiddlewareShape(DriftedDynamicMiddleware.class));
+        assertTrue(drift.getMessage().contains("agentscope-harness 2.0.2"));
     }
 
     @Test
@@ -207,5 +230,10 @@ class HarnessAgentBuilderFilesystemBridgeTest {
     }
 
     private static final class DriftedBuilder {
+    }
+
+    private static final class DriftedDynamicMiddleware {
+        @SuppressWarnings("unused")
+        private final List<Object> staticEntries = List.of();
     }
 }

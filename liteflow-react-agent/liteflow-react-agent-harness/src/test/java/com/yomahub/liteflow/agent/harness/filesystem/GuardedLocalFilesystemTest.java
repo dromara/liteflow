@@ -18,11 +18,13 @@ import io.agentscope.harness.agent.filesystem.local.LocalFilesystemWithShell;
 import io.agentscope.harness.agent.filesystem.model.EditResult;
 import io.agentscope.harness.agent.filesystem.model.FileDownloadResponse;
 import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
+import io.agentscope.harness.agent.filesystem.model.GlobResult;
 import io.agentscope.harness.agent.filesystem.model.LsResult;
 import io.agentscope.harness.agent.filesystem.model.ReadResult;
 import io.agentscope.harness.agent.filesystem.model.WriteResult;
 import io.agentscope.harness.agent.middleware.SubagentEntry;
 import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.tool.MemorySearchTool;
 import io.agentscope.harness.agent.tool.ShellExecuteTool;
 import io.agentscope.harness.agent.workspace.WorkspaceManager;
 import org.junit.jupiter.api.Test;
@@ -193,10 +195,12 @@ class GuardedLocalFilesystemTest {
         assertTrue(filesystem.write(second, "MEMORY.md", "curated-b").isSuccess());
         assertTrue(filesystem.write(second, "memory/2030-01-01.md", "daily-b").isSuccess());
 
-        assertEquals("curated-a", filesystem.read(first, "MEMORY.md", 0, 0)
-                .fileData().content());
-        assertEquals("daily-a", filesystem.read(first, "memory/2030-01-01.md", 0, 0)
-                .fileData().content());
+        ReadResult curated = filesystem.read(first, "MEMORY.md", 0, 0);
+        ReadResult daily = filesystem.read(first, "memory/2030-01-01.md", 0, 0);
+        assertTrue(curated.isSuccess(), curated.error());
+        assertTrue(daily.isSuccess(), daily.error());
+        assertEquals("curated-a", curated.fileData().content());
+        assertEquals("daily-a", daily.fileData().content());
         assertEquals("curated-b", filesystem.read(second, "MEMORY.md", 0, 0)
                 .fileData().content());
         assertEquals("daily-b", filesystem.read(second, "memory/2030-01-01.md", 0, 0)
@@ -205,6 +209,64 @@ class GuardedLocalFilesystemTest {
         assertTrue(filesystem.write(first, "shared.txt", "conversation").isSuccess());
         assertEquals("conversation", filesystem.read(second, "shared.txt", 0, 0)
                 .fileData().content());
+    }
+
+    @Test
+    void dotAliasedMemoryPathsUseTheSameAgentSessionRootAsCanonicalMemoryPaths() {
+        GuardedLocalFilesystem filesystem =
+                new GuardedLocalFilesystem(tempDir.resolve("aliased-memory-workspace"), 4096);
+        RuntimeContext first = runtimeContext(liteFlowContext("conversation", "agent-a"));
+        RuntimeContext second = runtimeContext(liteFlowContext("conversation", "agent-b"));
+
+        assertTrue(filesystem.write(first, "./MEMORY.md", "curated-a").isSuccess());
+        assertTrue(filesystem.write(first, "./memory/2030-01-01.md", "daily-a").isSuccess());
+
+        assertEquals("curated-a", filesystem.read(first, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily-a", filesystem.read(first, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
+        assertFalse(filesystem.read(second, "./MEMORY.md", 0, 0).isSuccess());
+        assertFalse(filesystem.read(second, "./memory/2030-01-01.md", 0, 0).isSuccess());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.glob(first, "*.md", "./memory").matches().stream()
+                        .map(match -> match.path()).toList());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.ls(first, "./memory").entries().stream()
+                        .map(entry -> entry.path()).toList());
+    }
+
+    @Test
+    void memoryListingsAndSearchExposeOnlyVirtualPathsAndReadThosePathsSuccessfully() {
+        Path root = tempDir.resolve("virtual-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        RuntimeContext context = runtimeContext(liteFlowContext("conversation", "agent-a"));
+        assertTrue(filesystem.write(context, "MEMORY.md", "curated needle").isSuccess());
+        assertTrue(filesystem.write(
+                context, "memory/2030-01-01.md", "daily needle").isSuccess());
+
+        GlobResult glob = filesystem.glob(context, "*.md", "memory");
+        assertEquals(List.of("memory/2030-01-01.md"),
+                glob.matches().stream().map(match -> match.path()).toList());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.ls(context, "memory").entries().stream()
+                        .map(entry -> entry.path()).toList());
+
+        WorkspaceManager workspace = new WorkspaceManager(root, filesystem);
+        assertEquals(List.of("MEMORY.md", "memory/2030-01-01.md"),
+                workspace.listMemoryFilePaths(context));
+        String matches = new MemorySearchTool(workspace).memorySearch(context, "needle");
+        assertTrue(matches.contains("Source: MEMORY.md#1: curated needle"), matches);
+        assertTrue(matches.contains("Source: memory/2030-01-01.md#1: daily needle"), matches);
+        assertFalse(matches.contains("agent-"), matches);
+        assertFalse(matches.contains("session-"), matches);
+
+        assertTrue(filesystem.write(context, "ordinary/file.txt", "ordinary").isSuccess());
+        assertEquals(List.of("ordinary/file.txt"),
+                filesystem.glob(context, "*.txt", "ordinary").matches().stream()
+                        .map(match -> match.path()).toList());
+        assertEquals(List.of("ordinary/file.txt"),
+                filesystem.ls(context, "ordinary").entries().stream()
+                        .map(entry -> entry.path()).toList());
     }
 
     @Test

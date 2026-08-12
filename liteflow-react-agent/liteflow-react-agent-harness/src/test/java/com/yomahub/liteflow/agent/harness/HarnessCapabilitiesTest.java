@@ -24,6 +24,7 @@ import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.message.ToolResultState;
 import io.agentscope.core.message.ToolUseBlock;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.middleware.ModelCallInput;
 import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
@@ -44,6 +45,7 @@ import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
 import io.agentscope.harness.agent.filesystem.model.EditResult;
 import io.agentscope.harness.agent.filesystem.model.FileData;
 import io.agentscope.harness.agent.filesystem.model.FileDownloadResponse;
+import io.agentscope.harness.agent.filesystem.model.FileInfo;
 import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
 import io.agentscope.harness.agent.filesystem.model.GlobResult;
 import io.agentscope.harness.agent.filesystem.model.GrepResult;
@@ -69,6 +71,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Field;
@@ -87,10 +90,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -453,13 +459,104 @@ class HarnessCapabilitiesTest {
     }
 
     @Test
-    void realStaticAgentSpawnKeepsOptOutIndependentAndRemoteDeclarationRemote() throws Exception {
+    void concurrentDynamicRefreshNeverPublishesARawInheritingFactory() throws Exception {
+        configureCustom("concurrent-dynamic-spawn");
+        DynamicRefreshRace race = new DynamicRefreshRace();
+        ConcurrentSpawnModel model = new ConcurrentSpawnModel();
+        PermissionProbeMiddleware probe = new PermissionProbeMiddleware("permission-child");
+        TestComponent component = component(model, new RecordingFilesystem(Map.of(
+                "subagents/permission-child.md",
+                "---\ndescription: permission child\nworkspace:\n  mode: shared\n---\nchild")));
+        component.middlewares = List.of(probe);
+        // Install this test-only middleware directly so its order=0 hook observes the exact
+        // DynamicSubagentsMiddleware(order=1) -> permission bridge(order=MIN+1) window.
+        component.mutateBuilder = builder -> builder.middleware(race);
+        component.permission = allow("agent_spawn");
+        component.process();
+        List<MiddlewareBase> installed = component.runtime.agent().getDelegate().getMiddlewares();
+        int dynamicIndex = middlewareIndex(installed, "DynamicSubagentsMiddleware");
+        int raceIndex = installed.indexOf(race);
+        int bridgeIndex = middlewareIndex(installed, "DynamicRefreshGuard");
+        assertTrue(dynamicIndex >= 0 && raceIndex > dynamicIndex && bridgeIndex > raceIndex,
+                () -> installed.stream()
+                        .map(middleware -> middleware.getClass().getSimpleName()
+                                + ":" + middleware.order())
+                        .toList().toString());
+        race.manager = component.runtime.agent().getSubagentAgentManager();
+
+        PermissionContextState firstPermissions = fullParentPermissions();
+        PermissionContextState secondPermissions = ask("other-sensitive-operation");
+        HarnessAgent parent = component.runtime.agent();
+        parent.getDelegate().replacePermissionContext("race-user", "race-a", firstPermissions);
+        parent.getDelegate().replacePermissionContext("race-user", "race-b", secondPermissions);
+        RuntimeContext first = RuntimeContext.builder()
+                .userId("race-user")
+                .sessionId("race-a")
+                .put(LiteFlowAgentContext.class, component.lastContext)
+                .build();
+        RuntimeContext second = RuntimeContext.builder()
+                .userId("race-user")
+                .sessionId("race-b")
+                .put(LiteFlowAgentContext.class, component.lastContext)
+                .build();
+
+        CompletableFuture<Msg> firstCall = CompletableFuture.supplyAsync(
+                () -> parent.call("spawn-a", first).block());
+        if (!race.firstModelEntered.await(5, TimeUnit.SECONDS)) {
+            firstCall.get(1, TimeUnit.SECONDS);
+            throw new AssertionError("first model barrier was not reached");
+        }
+        CompletableFuture<Msg> secondCall = CompletableFuture.supplyAsync(
+                () -> parent.call("hold-b", second).block());
+        PermissionContextState publishedPermissions;
+        try {
+            assertTrue(race.secondRefreshPublished.await(5, TimeUnit.SECONDS));
+            publishedPermissions = inheritedPermissions(
+                    race.publishedFactory.create(first), first);
+            race.allowFirstModel.countDown();
+            firstCall.get(10, TimeUnit.SECONDS);
+        }
+        finally {
+            race.allowFirstModel.countDown();
+            race.allowSecondReasoning.countDown();
+        }
+        secondCall.get(10, TimeUnit.SECONDS);
+
+        String spawnResult = model.toolResultText("agent_spawn");
+        assertFalse(spawnResult.contains("status: error"), spawnResult);
+        assertEquals(1, probe.permissions.size(), probe.seenAgents + " " + model.describe());
+        assertSame(firstPermissions, probe.permissions.get(0));
+        assertSame(firstPermissions, publishedPermissions);
+    }
+
+    private static int middlewareIndex(List<MiddlewareBase> middlewares, String simpleName) {
+        for (int index = 0; index < middlewares.size(); index++) {
+            if (simpleName.equals(middlewares.get(index).getClass().getSimpleName())) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static PermissionContextState inheritedPermissions(
+            Agent child, RuntimeContext parentContext) throws Exception {
+        try (HarnessAgent harness = (HarnessAgent) child) {
+            return harness.getDelegate()
+                    .getAgentState(parentContext.getUserId(), "race-child")
+                    .getPermissionContext();
+        }
+    }
+
+    @ParameterizedTest(name = "dynamic={0}")
+    @ValueSource(booleans = {true, false})
+    void realAgentSpawnKeepsOptOutIndependentAndRemoteDeclarationRemote(boolean dynamicSubagents)
+            throws Exception {
         configureCustom("subagent-permission-opt-out");
         RecordingModel model = new RecordingModel();
         PermissionProbeMiddleware probe = new PermissionProbeMiddleware("independent-child");
         TestComponent component = component(model, new RecordingFilesystem(Map.of()));
         component.middlewares = List.of(probe);
-        component.disableDynamicSubagents = true;
+        component.disableDynamicSubagents = !dynamicSubagents;
         component.permission = allow("agent_spawn");
         component.subagents = List.of(
                 SubagentDeclaration.builder()
@@ -527,7 +624,8 @@ class HarnessCapabilitiesTest {
     @Test
     void planModePersistsPerSessionAndPermissionNeverDefaultsToBypass() throws Exception {
         configureCustom("real-plan");
-        TestComponent component = component(new RecordingModel(), new RecordingFilesystem(Map.of()));
+        RecordingModel model = new RecordingModel();
+        TestComponent component = component(model, new RecordingFilesystem(Map.of()));
         component.planMode = true;
         ExecuteTool execute = new ExecuteTool();
         component.tools = List.of(execute);
@@ -544,13 +642,13 @@ class HarnessCapabilitiesTest {
 
         agent.enterPlanMode(first);
         agent.clearStateCache(first);
-        component.model.armTool("execute", Map.of("command", "must-not-run"));
+        model.armTool("execute", Map.of("command", "must-not-run"));
         component.process();
 
         assertTrue(agent.isPlanModeActive(first));
         assertFalse(agent.isPlanModeActive(second));
         assertEquals(0, execute.executions.get());
-        assertTrue(component.model.messages.stream()
+        assertTrue(model.messages.stream()
                 .flatMap(Collection::stream)
                 .flatMap(msg -> msg.getContent().stream())
                 .filter(ToolResultBlock.class::isInstance)
@@ -761,12 +859,12 @@ class HarnessCapabilitiesTest {
                 .build();
     }
 
-    private TestComponent component(RecordingModel model, AbstractFilesystem filesystem) {
+    private TestComponent component(Model model, AbstractFilesystem filesystem) {
         return component(model, filesystem, "capabilities-agent", "conversation");
     }
 
     private TestComponent component(
-            RecordingModel model,
+            Model model,
             AbstractFilesystem filesystem,
             String nodeId,
             String conversationId) {
@@ -855,7 +953,7 @@ class HarnessCapabilitiesTest {
 
     private static final class TestComponent extends HarnessAgentComponent {
         private final Slot slot;
-        private final RecordingModel model;
+        private final Model model;
         private final AbstractFilesystem filesystem;
         private List<String> additionalContextFiles = List.of();
         private CompactionConfig compaction;
@@ -880,7 +978,7 @@ class HarnessCapabilitiesTest {
         private boolean disableDynamicSubagents;
         private AbstractFilesystem configuredFilesystem;
 
-        private TestComponent(Slot slot, RecordingModel model, AbstractFilesystem filesystem) {
+        private TestComponent(Slot slot, Model model, AbstractFilesystem filesystem) {
             this.slot = slot;
             this.model = model;
             this.filesystem = filesystem;
@@ -948,6 +1046,7 @@ class HarnessCapabilitiesTest {
     private static final class PermissionProbeMiddleware implements MiddlewareBase {
         private final String childName;
         private final List<PermissionContextState> permissions = new CopyOnWriteArrayList<>();
+        private final List<String> seenAgents = new CopyOnWriteArrayList<>();
 
         private PermissionProbeMiddleware(String childName) {
             this.childName = childName;
@@ -959,11 +1058,127 @@ class HarnessCapabilitiesTest {
                 RuntimeContext context,
                 ReasoningInput input,
                 Function<ReasoningInput, Flux<io.agentscope.core.event.AgentEvent>> next) {
+            seenAgents.add(agent.getName());
             if (childName.equals(agent.getName())) {
                 AgentState state = RuntimeContext.resolveAgentState(context, agent);
                 permissions.add(state.getPermissionContext());
             }
             return next.apply(input);
+        }
+    }
+
+    private static final class DynamicRefreshRace implements MiddlewareBase {
+        private final CountDownLatch firstModelEntered = new CountDownLatch(1);
+        private final CountDownLatch secondRefreshPublished = new CountDownLatch(1);
+        private final CountDownLatch allowFirstModel = new CountDownLatch(1);
+        private final CountDownLatch allowSecondReasoning = new CountDownLatch(1);
+        private volatile io.agentscope.harness.agent.subagent.DefaultAgentManager manager;
+        private volatile io.agentscope.harness.agent.subagent.SubagentFactory publishedFactory;
+
+        @Override public int order() { return 0; }
+
+        @Override
+        public Flux<io.agentscope.core.event.AgentEvent> onReasoning(
+                Agent agent,
+                RuntimeContext context,
+                ReasoningInput input,
+                Function<ReasoningInput, Flux<io.agentscope.core.event.AgentEvent>> next) {
+            if ("race-b".equals(context.getSessionId())) {
+                publishedFactory = manager.getAgentFactories().get("permission-child");
+                secondRefreshPublished.countDown();
+                await(allowSecondReasoning);
+            }
+            return next.apply(input);
+        }
+
+        @Override
+        public Flux<io.agentscope.core.event.AgentEvent> onModelCall(
+                Agent agent,
+                RuntimeContext context,
+                ModelCallInput input,
+                Function<ModelCallInput, Flux<io.agentscope.core.event.AgentEvent>> next) {
+            if ("race-a".equals(context.getSessionId())) {
+                firstModelEntered.countDown();
+                await(allowFirstModel);
+            }
+            return next.apply(input);
+        }
+
+        private static void await(CountDownLatch latch) {
+            try {
+                if (!latch.await(10, TimeUnit.SECONDS)) {
+                    throw new AssertionError("concurrent refresh barrier timed out");
+                }
+            }
+            catch (InterruptedException failure) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(failure);
+            }
+        }
+    }
+
+    private static final class ConcurrentSpawnModel implements Model {
+        private final List<List<Msg>> calls = new CopyOnWriteArrayList<>();
+
+        @Override
+        public Flux<ChatResponse> stream(
+                List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+            calls.add(List.copyOf(messages));
+            String input = messages.stream()
+                    .filter(message -> message.getRole() == io.agentscope.core.message.MsgRole.USER)
+                    .map(Msg::getTextContent)
+                    .reduce((left, right) -> right)
+                    .orElse("");
+            boolean alreadySpawned = messages.stream()
+                    .flatMap(message -> message.getContent().stream())
+                    .filter(ToolResultBlock.class::isInstance)
+                    .map(ToolResultBlock.class::cast)
+                    .anyMatch(result -> "agent_spawn".equals(result.getName()));
+            if ("spawn-a".equals(input) && !alreadySpawned) {
+                ToolUseBlock use = new ToolUseBlock(
+                        "concurrent-spawn",
+                        "agent_spawn",
+                        Map.of(
+                                "agent_id", "permission-child",
+                                "task", "inspect permissions",
+                                "timeout_seconds", 5),
+                        "{\"agent_id\":\"permission-child\","
+                                + "\"task\":\"inspect permissions\",\"timeout_seconds\":5}",
+                        Map.of(),
+                        ToolCallState.PENDING);
+                return Flux.just(ChatResponse.builder()
+                        .content(List.<ContentBlock>of(use))
+                        .finishReason("tool_calls")
+                        .build());
+            }
+            return Flux.just(ChatResponse.builder()
+                    .content(List.of(TextBlock.builder().text("done").build()))
+                    .finishReason("stop")
+                    .build());
+        }
+
+        @Override public String getModelName() { return "concurrent-spawn-model"; }
+
+        private String describe() {
+            return calls.stream().flatMap(Collection::stream)
+                    .flatMap(message -> message.getContent().stream())
+                    .map(content -> content instanceof ToolResultBlock result
+                            ? "ToolResultBlock:" + result.getName() + ":" + result.getOutput()
+                            : content.getClass().getSimpleName() + ":" + content)
+                    .toList().toString();
+        }
+
+        private String toolResultText(String toolName) {
+            return calls.stream().flatMap(Collection::stream)
+                    .flatMap(message -> message.getContent().stream())
+                    .filter(ToolResultBlock.class::isInstance)
+                    .map(ToolResultBlock.class::cast)
+                    .filter(result -> toolName.equals(result.getName()))
+                    .flatMap(result -> result.getOutput().stream())
+                    .filter(TextBlock.class::isInstance)
+                    .map(TextBlock.class::cast)
+                    .map(TextBlock::getText)
+                    .collect(Collectors.joining("\n"));
         }
     }
 
@@ -1090,6 +1305,12 @@ class HarnessCapabilitiesTest {
         @Override public EditResult edit(RuntimeContext context, String path, String oldText, String newText, boolean all) { throw unused(); }
         @Override public GrepResult grep(RuntimeContext context, String pattern, String path, String glob) { throw unused(); }
         @Override public GlobResult glob(RuntimeContext context, String pattern, String path) {
+            if ("subagents".equals(path) && "*.md".equals(pattern)) {
+                return GlobResult.success(files.keySet().stream()
+                        .filter(file -> file.startsWith("subagents/") && file.endsWith(".md"))
+                        .map(file -> FileInfo.ofFile(file, files.get(file).length(), ""))
+                        .toList());
+            }
             return GlobResult.success(List.of());
         }
         @Override public List<FileUploadResponse> uploadFiles(
