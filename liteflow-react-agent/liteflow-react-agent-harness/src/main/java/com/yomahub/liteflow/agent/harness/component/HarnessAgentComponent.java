@@ -46,6 +46,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -66,6 +67,11 @@ public abstract class HarnessAgentComponent
 
     protected MemoryConfig memoryConfig() {
         return null;
+    }
+
+    /** Additional workspace-relative files loaded into the Harness system context, in order. */
+    protected List<String> additionalContextFiles() {
+        return List.of();
     }
 
     protected List<SubagentDeclaration> subagents() {
@@ -177,8 +183,17 @@ public abstract class HarnessAgentComponent
             HarnessAgentBuilderFilesystemBridge.ToolkitSnapshot toolkitSnapshot =
                     HarnessAgentBuilderFilesystemBridge.snapshotToolkit(
                             builder, prepared.toolkit());
-            builder.compaction(compactionConfig())
-                    .memory(memoryConfig());
+            CompactionConfig compaction = compactionConfig();
+            if (compaction != null) {
+                builder.compaction(compaction);
+            }
+            MemoryConfig memory = memoryConfig();
+            if (memory != null) {
+                builder.memory(memory);
+            }
+            for (String contextFile : requireAdditionalContextFiles()) {
+                builder.additionalContextFile(contextFile);
+            }
             for (var repository : prepared.skillRepositories()) {
                 builder.skillRepository(repository);
             }
@@ -195,11 +210,17 @@ public abstract class HarnessAgentComponent
             }
             var permissionContext =
                     HarnessAgentBuilderPermissionBridge.failClosed(prepared.permissionContext());
+            boolean planMode = enablePlanMode();
             builder.enableTaskList()
-                    .enablePlanMode(enablePlanMode())
-                    .permissionContext(permissionContext)
-                    .toolResultEviction(toolResultEvictionConfig());
+                    .enablePlanMode(planMode)
+                    .permissionContext(permissionContext);
+            ToolResultEvictionConfig eviction = toolResultEvictionConfig();
+            if (eviction != null) {
+                builder.toolResultEviction(eviction);
+            }
             addLiteFlowMiddlewares(builder, prepared);
+            HarnessAgentBuilderCapabilitiesBridge.CapabilitiesSnapshot capabilitySnapshot =
+                    HarnessAgentBuilderCapabilitiesBridge.snapshot(builder);
             HarnessAgentBuilderPermissionBridge.PermissionSnapshot permissionSnapshot =
                     HarnessAgentBuilderPermissionBridge.snapshot(builder, permissionContext);
 
@@ -214,6 +235,12 @@ public abstract class HarnessAgentComponent
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
             permissionSnapshot.requireUnchanged(customized);
+            capabilitySnapshot.requireUnchanged(
+                    customized,
+                    compaction != null,
+                    memory != null,
+                    eviction != null,
+                    planMode);
             HarnessAgentBuilderPermissionBridge.MiddlewareSnapshot permissionMiddleware =
                     HarnessAgentBuilderPermissionBridge.installInnermostGuard(
                             customized,
@@ -441,6 +468,23 @@ public abstract class HarnessAgentComponent
             }
         }
         return List.copyOf(declarations);
+    }
+
+    private List<String> requireAdditionalContextFiles() {
+        List<String> configured = additionalContextFiles();
+        if (configured == null) {
+            throw new AgentConfigException("additional context files must not return null");
+        }
+        Set<String> seen = new LinkedHashSet<>();
+        for (String file : configured) {
+            if (file == null || file.isBlank()) {
+                throw new AgentConfigException("additional context files must not contain blank values");
+            }
+            if (!seen.add(file)) {
+                throw new AgentConfigException("additional context files must not contain duplicates: " + file);
+            }
+        }
+        return List.copyOf(seen);
     }
 
     private static void addLiteFlowMiddlewares(
