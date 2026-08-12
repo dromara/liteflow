@@ -193,11 +193,16 @@ public abstract class HarnessAgentComponent
             if (tasks != null) {
                 builder.taskRepository(tasks);
             }
+            var permissionContext =
+                    HarnessAgentBuilderPermissionBridge.failClosed(prepared.permissionContext());
             builder.enableTaskList()
                     .enablePlanMode(enablePlanMode())
-                    .permissionContext(prepared.permissionContext())
+                    .permissionContext(permissionContext)
                     .toolResultEviction(toolResultEvictionConfig());
             addLiteFlowMiddlewares(builder, prepared);
+            builder.middleware(HarnessRuntimeContextContinuation.captureMiddleware());
+            HarnessAgentBuilderPermissionBridge.PermissionSnapshot permissionSnapshot =
+                    HarnessAgentBuilderPermissionBridge.snapshot(builder, permissionContext);
 
             HarnessAgent.Builder customized = customizeHarness(builder);
             if (customized == null) {
@@ -209,6 +214,7 @@ public abstract class HarnessAgentComponent
             }
             filesystemSnapshot.requireUnchanged(customized);
             toolkitSnapshot.requireUnchanged(customized);
+            permissionSnapshot.requireUnchanged(customized);
             if (guardedLocal) {
                 HarnessAgentBuilderFilesystemBridge.requireGuardedLocalSubagentsSafe(
                         customized, prepared.toolkit());
@@ -256,26 +262,32 @@ public abstract class HarnessAgentComponent
             RuntimeContext runtimeContext,
             LiteFlowAgentContext liteflowContext) {
         HarnessAgent agent = runtime.agent();
+        requireNoReservedRuntimeValues(runtimeContext);
+        HarnessRuntimeContextContinuation continuation =
+                HarnessRuntimeContextContinuation.create();
+        runtimeContext.put(HarnessRuntimeContextContinuation.class, continuation);
         Mono<Msg> invocation = runtime.executeSandboxCall(() -> invokeCallTarget(
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
                         return invokeHarnessPublicCall(
-                                context, () -> agent.call(messages, context));
+                                () -> agent.call(messages, continuation.effectiveOr(context)));
                     }
 
                     @Override
                     public Mono<Msg> call(
                             List<Msg> messages, Class<?> type, RuntimeContext context) {
                         return invokeHarnessPublicCall(
-                                context, () -> agent.call(messages, type, context));
+                                () -> agent.call(
+                                        messages, type, continuation.effectiveOr(context)));
                     }
 
                     @Override
                     public Mono<Msg> call(
                             List<Msg> messages, JsonNode schema, RuntimeContext context) {
                         return invokeHarnessPublicCall(
-                                context, () -> agent.call(messages, schema, context));
+                                () -> agent.call(
+                                        messages, schema, continuation.effectiveOr(context)));
                     }
                 },
                 runtime.stateStore(),
@@ -283,8 +295,12 @@ public abstract class HarnessAgentComponent
                 output,
                 runtimeContext,
                 liteflowContext));
-        return clearStateLoadFailureOnTermination(
-                invocation, runtime.stateStore(), runtimeContext);
+        return Mono.using(
+                () -> continuation,
+                ignored -> clearStateLoadFailureOnTermination(
+                        invocation, runtime.stateStore(), runtimeContext),
+                ignored -> runtimeContext.put(HarnessRuntimeContextContinuation.class, null),
+                true);
     }
 
     static <T> Mono<T> clearStateLoadFailureOnTermination(
@@ -299,10 +315,8 @@ public abstract class HarnessAgentComponent
                 true);
     }
 
-    private Mono<Msg> invokeHarnessPublicCall(
-            RuntimeContext context, Supplier<Mono<Msg>> invocation) {
+    private Mono<Msg> invokeHarnessPublicCall(Supplier<Mono<Msg>> invocation) {
         return Mono.defer(() -> {
-            requireNoReservedRuntimeValues(context);
             filesystemBeforeCall.run();
             return invocation.get();
         });

@@ -422,6 +422,10 @@ class CrossAgentWorkspaceGuardTest {
     @Test
     void task6SnapshotIsLoadedDeserializedAndResumedAcrossDifferentAgents() throws Exception {
         configureDockerHarness("snapshot-components");
+        PermissionContextState allowExecute = PermissionContextState.builder()
+                .addAllowRule("execute", new PermissionRule(
+                        "execute", null, PermissionBehavior.ALLOW, "snapshot-test"))
+                .build();
         List<String> events = new CopyOnWriteArrayList<>();
         RecordingStore delegate = new RecordingStore();
         InMemorySandboxSnapshot snapshots = new InMemorySandboxSnapshot(events);
@@ -433,6 +437,7 @@ class CrossAgentWorkspaceGuardTest {
                 delegate,
                 snapshots,
                 firstClient);
+        writer.permissionContext = allowExecute;
         writer.processUnchecked();
         writer.close();
 
@@ -449,6 +454,7 @@ class CrossAgentWorkspaceGuardTest {
                 delegate,
                 snapshots,
                 secondClient);
+        rebuilt.permissionContext = allowExecute;
         rebuilt.processUnchecked();
         rebuilt.close();
 
