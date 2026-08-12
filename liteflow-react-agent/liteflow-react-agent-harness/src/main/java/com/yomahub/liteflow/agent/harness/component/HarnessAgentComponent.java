@@ -241,6 +241,10 @@ public abstract class HarnessAgentComponent
                     memory != null,
                     eviction != null,
                     planMode);
+            HarnessAgentBuilderSubagentPermissionBridge.DynamicRefreshGuard subagentPermissions =
+                    HarnessAgentBuilderSubagentPermissionBridge.dynamicRefreshGuard(
+                            permissionContext);
+            customized.middleware(subagentPermissions);
             HarnessAgentBuilderPermissionBridge.MiddlewareSnapshot permissionMiddleware =
                     HarnessAgentBuilderPermissionBridge.installInnermostGuard(
                             customized,
@@ -256,6 +260,9 @@ public abstract class HarnessAgentComponent
                     customized, filesystemSnapshot);
             agent = customized.build();
             permissionMiddleware.requireFinal(agent);
+            subagentPermissions.bind(agent);
+            HarnessAgentBuilderSubagentPermissionBridge.inheritDeclaredLocalPermissions(
+                    agent, permissionContext);
             if (guardedLocal) {
                 HarnessAgentBuilderFilesystemBridge.requireGuardedLocalToolkitSafe(
                         agent.getToolkit());
