@@ -208,7 +208,7 @@ liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroun
 1. 结构契约测试通过；
 2. `find liteflow-react-agent -path '*/src/test/*' -type f` 无输出；
 3. 对应 testcase 子模块定向测试覆盖原 63 个测试源码与夹具所承载的全部测试契约；
-4. testcase 默认离线完整测试通过，零失败、错误或跳过；
+4. testcase 默认离线完整测试零失败、错误；迁入契约定向测试零跳过；升级基线前已有的平台条件 skip 必须逐项归因且不得因本次迁移增加；
 5. Zulu JDK 17 下全部受影响生产模块与 testcase 子模块的 `package` 成功；
 6. Surefire 汇总测试数不低于迁移前的 554 项；
 7. dependency tree 中 AgentScope 全部为 2.0.2，无 `io.agentscope:agentscope` aggregate 或 1.x；

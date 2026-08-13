@@ -18,7 +18,7 @@
 - 默认测试必须离线；不得调用真实 Provider、Docker daemon、网络或真实 A2A transport。
 - `agent-live` 与 `agent-docker-it` 的显式发现边界保持不变；不得新增 skip、assumption 或测试排除来制造通过。
 - AgentScope 依赖全部保持 2.0.2；不得引入 `io.agentscope:agentscope` aggregate、1.x、Provider→Core 反向依赖或 Core→Harness／A2A 污染。
-- 使用 Zulu JDK 17 执行最终验证；迁移后 Surefire 汇总不得低于 554 tests，且 failures／errors／skips 均为 0。
+- 使用 Zulu JDK 17 执行最终验证；迁入契约的定向 Surefire 汇总不得低于 554 tests，且 failures／errors／skips 均为 0。受影响 testcase 模块的完整套件允许保留与本次迁移无关、可追溯到升级基线之前的平台条件 skip，但必须逐项记录来源。
 - 与本次升级无关的历史测试只做只读审计；未获用户确认不得迁移。
 
 ---
@@ -697,7 +697,7 @@ mvn clean package \
   -am -DskipTests=false -DskipITs
 ```
 
-Expected: BUILD SUCCESS；所有已发现测试 failures／errors／skips 为 0；默认流程不执行 Docker IT、live Provider 或真实 A2A transport。
+Expected: BUILD SUCCESS；所有已发现测试 failures／errors 为 0；迁入契约的定向测试 skips 为 0。完整框架套件若保留升级基线前已有的平台条件 skip，必须在报告中逐项归因；默认流程不执行 Docker IT、live Provider 或真实 A2A transport。
 
 - [ ] **Step 3: 汇总新鲜 Surefire 结果**
 
@@ -719,7 +719,7 @@ find liteflow-core liteflow-react-agent liteflow-testcase-el \
   | sort
 ```
 
-Expected: `tests` 不低于 554；`failures 0`、`errors 0`、`skipped 0`。
+Expected: 完整受影响套件 `tests` 不低于 554、`failures 0`、`errors 0`；迁入契约的定向汇总 `skipped 0`。完整框架套件中的升级前平台条件 skip 单独列出，不把它们误报为本次迁移 skip。
 
 - [ ] **Step 4: 验证依赖边界**
 
@@ -765,7 +765,8 @@ Expected: 生产 Agent 模块扫描无输出；迁入测试没有新增 skip／a
 - Task 1 结构契约 RED 的 63 项清单摘要；
 - 每批 focused 测试 classes／tests、failures、errors、skips；
 - JDK 17 clean package 的 reactor 结果；
-- 新鲜 Surefire 总数与 0 failures／errors／skips；
+- 新鲜完整 Surefire 总数、0 failures／errors，以及升级前平台条件 skip 的逐项来源；
+- 迁入契约定向 Surefire 的 0 failures／errors／skips；
 - AgentScope 2.0.2 dependency tree 结论；
 - Docker、live Provider、真实 A2A transport 未执行的授权／环境边界；
 - 独立审查 verdict。
