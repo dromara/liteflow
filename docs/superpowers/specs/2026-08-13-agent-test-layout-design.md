@@ -4,14 +4,17 @@
 
 AgentScope 2 升级基线为提交 `2655a16b13d7fd95c48575c979cb5b3f45b84b7b`。该基线中，
 `liteflow-react-agent-*` 生产模块下没有测试源码。当前分支在这些模块下共有 59 个 Java
-测试源码与夹具，它们全部由本次 AgentScope 2 升级新增，因此全部属于本轮规范性迁移范围。
+测试源码与夹具；本次升级还在 `liteflow-core`、Spring Boot 3 Starter、Spring Boot 4
+Starter 与 Solon Plugin 各新增 1 个测试。上述 63 个文件全部由本次 AgentScope 2 升级
+新增，因此全部属于本轮规范性迁移范围。
 
 LiteFlow 的测试约定是把测试用例统一放在 `liteflow-testcase-el` 大模块中。当前布局把
 AgentScope 2 的单元测试、契约测试、生命周期测试和测试夹具放进生产模块，违反该约定。
 
 ## 目标
 
-把本次 AgentScope 2 升级新增的全部测试源码和测试夹具迁移到：
+把本次 AgentScope 2 升级新增的全部测试源码和测试夹具迁移到 `liteflow-testcase-el` 大模块。
+其中 Agent 运行时、Provider、Harness、A2A 和基础 Agent 配置测试迁移到：
 
 ```text
 liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
@@ -20,11 +23,12 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
 迁移后应满足：
 
 1. `liteflow-react-agent-*` 生产模块中不存在任何 `src/test` 文件；
-2. 现有测试语义、覆盖范围、默认离线边界和显式 profile 行为保持不变；
-3. 测试类保留原 Java package，以继续验证 package-private 契约；
-4. 不为迁移测试而扩大生产 API；
-5. JDK 17 下相关全量测试与 package 成功；
-6. AgentScope 依赖继续全部收敛到 2.0.2，无 aggregate、1.x 或 core 污染。
+2. 另外 4 个 AgentScope 2 测试不再位于各自生产模块；
+3. 现有测试语义、覆盖范围、默认离线边界和显式 profile 行为保持不变；
+4. 测试类保留原 Java package，以继续验证 package-private 契约；
+5. 不为迁移测试而扩大生产 API；
+6. JDK 17 下相关全量测试与 package 成功；
+7. AgentScope 依赖继续全部收敛到 2.0.2，无 aggregate、1.x 或 core 污染。
 
 ## 范围
 
@@ -41,8 +45,12 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
 | `liteflow-react-agent-dashscope` | 1 | DashScope spec 契约 |
 | `liteflow-react-agent-harness` | 15 | 配置、component、filesystem、permission、sandbox、state、capability 与测试夹具 |
 | `liteflow-react-agent-a2a` | 6 | client、component、public API、protocol adapter 与 server lifecycle 契约 |
+| `liteflow-core` | 1 | `AgentConfigV2Test` 的 AgentScope 2 默认值与迁移诊断契约 |
+| `liteflow-spring-boot-starter` | 1 | Spring Boot 3 Agent 配置绑定与 metadata 契约 |
+| `liteflow-spring-boot4-starter` | 1 | Spring Boot 4 Agent 配置绑定与 metadata 契约 |
+| `liteflow-solon-plugin` | 1 | AgentScope 2 引入 Solon 依赖后的 ServiceLoader 隔离契约 |
 
-合计 59 个 Java 文件。当前这些生产模块没有非 Java 测试资源需要迁移。
+合计 63 个 Java 文件。当前这些生产模块没有非 Java 测试资源需要迁移。
 
 ### 本轮不处理
 
@@ -59,7 +67,7 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
 
 ### 文件系统布局
 
-所有迁入文件位于：
+原 `liteflow-react-agent-*` 的 59 个文件与 `AgentConfigV2Test` 位于：
 
 ```text
 liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/<原 package 路径>
@@ -81,6 +89,17 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/
 
 文件物理位置改变，但 `package com.yomahub.liteflow.agent.component;` 保持不变。
 
+三个框架集成测试分别迁入与其依赖版本一致的 testcase 子模块，并继续保留原 package：
+
+| 来源测试 | 目标 testcase 模块 |
+|---|---|
+| Spring Boot 3 `AgentPropertyBindingTest` | `liteflow-testcase-el-springboot` |
+| Spring Boot 4 `AgentPropertyBindingTest` | `liteflow-testcase-el-springboot4` |
+| `SolonCmpAroundAspectTest` | `liteflow-testcase-el-solon` |
+
+不得把这三个测试合并进 `liteflow-testcase-el-react-agent`，否则会混合 Spring Boot 3、
+Spring Boot 4 与 Solon 的独立 classpath 边界。
+
 ### package-private 契约
 
 保留原 package 是本设计的关键约束。Core、Provider、Harness 与 A2A 的部分测试会访问
@@ -98,13 +117,19 @@ package-private builder bridge、factory seam 或测试辅助类型。迁移不�
 
 ### testcase 模块
 
-`liteflow-testcase-el-react-agent` 继续作为全部 AgentScope 2 测试的唯一执行模块。其测试
+`liteflow-testcase-el-react-agent` 作为 Agent 运行时、基础配置、Provider、Harness 与 A2A
+测试的集中执行模块。其测试
 classpath 应显式依赖以下 LiteFlow 模块：
 
 - `liteflow-react-agent-core`；
 - 四个 Provider 模块；
 - `liteflow-react-agent-harness`；
 - `liteflow-react-agent-a2a`。
+
+此外，`liteflow-testcase-el-react-agent` 已通过现有 Starter 依赖获得 `liteflow-core`，并在
+相同 package 下承载 `AgentConfigV2Test`。Spring Boot 3、Spring Boot 4 与 Solon 的三个
+集成测试由对应 testcase 子模块执行；如测试 classpath 尚未包含其生产模块，只能增加精确
+模块依赖，不得引入框架 aggregate 或混用不同 Spring Boot 版本。
 
 只在测试编译或测试执行中需要的第三方依赖，应以 `test` scope 放入 testcase POM。不得
 通过引入 AgentScope aggregate artifact 简化 classpath。
@@ -119,12 +144,13 @@ classpath 应显式依赖以下 LiteFlow 模块：
 
 ## 测试迁移顺序
 
-迁移按依赖从低到高分四批完成，每批都必须有独立的 RED／GREEN 证据：
+迁移按依赖从低到高分五批完成，每批都必须有独立的 RED／GREEN 证据：
 
-1. **Core 批次**：迁移 27 个测试类及 3 个测试夹具；
+1. **基础配置与 Core 批次**：迁移 `AgentConfigV2Test`、27 个 Agent Core 测试类及 3 个测试夹具；
 2. **Provider 批次**：迁移 OpenAI、Anthropic、Gemini、DashScope 的 8 个测试源码；
 3. **Harness 批次**：迁移 15 个测试源码与 fake sandbox／snapshot 夹具；
-4. **A2A 批次**：迁移 6 个 client／server 测试源码。
+4. **A2A 批次**：迁移 6 个 client／server 测试源码；
+5. **框架集成批次**：分别迁移 Spring Boot 3、Spring Boot 4 与 Solon 的 3 个测试。
 
 每批迁移后，应在 testcase 模块中运行对应测试类，并确认生产模块的原文件已经删除。
 
@@ -138,6 +164,15 @@ liteflow-react-agent/liteflow-react-agent-*/src/test/**
 
 不得存在文件。该测试在迁移前必须因现有 59 个文件而失败，迁移后转为通过。契约测试不得
 依赖当前工作目录的偶然值，应从 Maven module base directory 或稳定的仓库根定位路径。
+
+结构契约还必须显式检查本次升级新增的以下 4 个生产模块测试路径不存在：
+
+```text
+liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
+liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java
+liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java
+liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
+```
 
 同时保留 shell 静态扫描作为构建验收门禁，防止仅因契约测试定位错误而出现假绿。
 
@@ -158,9 +193,9 @@ liteflow-react-agent/liteflow-react-agent-*/src/test/**
 
 1. 结构契约测试通过；
 2. `find liteflow-react-agent -path '*/src/test/*' -type f` 无输出；
-3. testcase 模块定向测试覆盖原 59 个测试源码与夹具所承载的全部测试契约；
+3. 对应 testcase 子模块定向测试覆盖原 63 个测试源码与夹具所承载的全部测试契约；
 4. testcase 默认离线完整测试通过，零失败、错误或跳过；
-5. Zulu JDK 17 下相关 16 模块 `package` 成功；
+5. Zulu JDK 17 下全部受影响生产模块与 testcase 子模块的 `package` 成功；
 6. Surefire 汇总测试数不低于迁移前的 554 项；
 7. dependency tree 中 AgentScope 全部为 2.0.2，无 `io.agentscope:agentscope` aggregate 或 1.x；
 8. core 不传递 Provider、Harness 或 A2A 依赖；
