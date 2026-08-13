@@ -26,23 +26,34 @@
 
         <dependency>
             <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-core</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-gemini</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-openai</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-anthropic</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-dashscope</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -60,6 +71,17 @@
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-react-agent-a2a</artifactId>
             <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-extensions-a2a-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <version>3.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
