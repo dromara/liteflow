@@ -139,10 +139,11 @@ package-private builder bridge、factory seam 或测试辅助类型。迁移不�
 - `liteflow-react-agent-harness`；
 - `liteflow-react-agent-a2a`。
 
-此外，`liteflow-testcase-el-react-agent` 已通过现有 Starter 依赖获得 `liteflow-core`，并在
-相同 package 下承载 `AgentConfigV2Test`。Spring Boot 3、Spring Boot 4 与 Solon 的三个
-集成测试由对应 testcase 子模块执行；如测试 classpath 尚未包含其生产模块，只能增加精确
-模块依赖，不得引入框架 aggregate 或混用不同 Spring Boot 版本。
+`liteflow-testcase-el-react-agent-core` 通过 Agent Core 依赖获得 `liteflow-core`，并在相同
+package 下承载 `AgentConfigV2Test`；它还以 test scope 精确依赖 `liteflow-solon-plugin`，
+执行要求 Solon 容器未启动的 ServiceLoader 隔离测试。Spring Boot 3／4 的绑定测试由对应
+testcase 子模块执行；如测试 classpath 尚未包含其生产模块，只能增加精确模块依赖，不得
+引入框架 aggregate 或混用不同 Spring Boot 版本。
 
 只在测试编译或测试执行中需要的第三方依赖，应以 `test` scope 放入 testcase POM。不得
 通过引入 AgentScope aggregate artifact 简化 classpath。

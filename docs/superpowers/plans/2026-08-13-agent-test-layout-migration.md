@@ -519,13 +519,13 @@ Run:
 ```bash
 mkdir -p liteflow-testcase-el/liteflow-testcase-el-springboot/src/test/java/com/yomahub/liteflow/springboot
 mkdir -p liteflow-testcase-el/liteflow-testcase-el-springboot4/src/test/java/com/yomahub/liteflow/springboot4
-mkdir -p liteflow-testcase-el/liteflow-testcase-el-solon/src/test/java/com/yomahub/liteflow/spi/solon
+mkdir -p liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/spi/solon
 git mv liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java \
   liteflow-testcase-el/liteflow-testcase-el-springboot/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java
 git mv liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java \
   liteflow-testcase-el/liteflow-testcase-el-springboot4/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java
 git mv liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java \
-  liteflow-testcase-el/liteflow-testcase-el-solon/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
+  liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
 ```
 
 - [ ] **Step 2: 清理本次升级新增的生产测试依赖**
@@ -552,7 +552,7 @@ mvn test -pl liteflow-testcase-el/liteflow-testcase-el-springboot -am \
 mvn test -pl liteflow-testcase-el/liteflow-testcase-el-springboot4 -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=com.yomahub.liteflow.springboot4.AgentPropertyBindingTest
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-solon -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent-core -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=com.yomahub.liteflow.spi.solon.SolonCmpAroundAspectTest
 ```
@@ -693,7 +693,7 @@ Run:
 
 ```bash
 mvn clean package \
-  -pl liteflow-react-agent,liteflow-testcase-el/liteflow-testcase-el-react-agent,liteflow-testcase-el/liteflow-testcase-el-springboot,liteflow-testcase-el/liteflow-testcase-el-springboot4,liteflow-testcase-el/liteflow-testcase-el-solon \
+  -pl liteflow-react-agent,liteflow-testcase-el/liteflow-testcase-el-react-agent-core,liteflow-testcase-el/liteflow-testcase-el-react-agent-harness,liteflow-testcase-el/liteflow-testcase-el-react-agent,liteflow-testcase-el/liteflow-testcase-el-springboot,liteflow-testcase-el/liteflow-testcase-el-springboot4,liteflow-testcase-el/liteflow-testcase-el-solon \
   -am -DskipTests=false -DskipITs
 ```
 
