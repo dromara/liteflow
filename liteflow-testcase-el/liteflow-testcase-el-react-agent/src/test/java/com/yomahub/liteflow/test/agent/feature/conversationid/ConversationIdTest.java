@@ -4,7 +4,6 @@ import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,6 @@ public class ConversationIdTest extends BaseAgentLiveTest {
     public void reset() {
         CidCaptureAgentCmp.reset();
         ResolveCidAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "ConversationIdTest");
     }
 
     @Test
@@ -94,11 +92,10 @@ public class ConversationIdTest extends BaseAgentLiveTest {
                 ExecuteOption.of().conversationId(raw));
 
         Assertions.assertTrue(response.isSuccess());
-        // LiteflowResponse 暴露原始 cid，但 ctx() 拿到的应是 safeId 处理后的目录安全形式。
+        // 业务 cid 原样保留；只有物理 Runtime session 使用安全哈希。
         Assertions.assertEquals(raw, response.getConversationId());
-        Assertions.assertNotEquals(raw, CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get(),
-                "含特殊字符的 cid 在 ctx 中应被 safeId 处理为目录安全格式");
-        Assertions.assertFalse(CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get().contains("/"));
-        Assertions.assertFalse(CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get().contains(" "));
+        Assertions.assertEquals(raw, CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get());
+        Assertions.assertTrue(CidCaptureAgentCmp.SEEN_RUNTIME_SESSION.get()
+                .matches("lf-[0-9a-f]{64}"));
     }
 }

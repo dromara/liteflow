@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.ifrouting;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,6 @@ public class IfRoutingAgentTest extends BaseAgentLiveTest {
     public void resetCounts() {
         MathBranchAgentCmp.reset();
         DefaultBranchAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "IfRoutingAgentTest");
     }
 
     @Test

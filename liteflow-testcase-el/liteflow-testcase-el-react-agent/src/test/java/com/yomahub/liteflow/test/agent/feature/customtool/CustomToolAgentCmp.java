@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.customtool;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;
@@ -15,17 +13,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * 自定义工具 Agent。验证 {@link #tools()} 注册的工具能出现在 ReActAgent 的 toolkit 中。
  */
 @Component("customToolAgent")
-public class CustomToolAgentCmp extends ReActAgentComponent {
+public class CustomToolAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
 
     public static void reset() {
         PROBE.set(new AgentProbe());
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

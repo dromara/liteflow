@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.multiagent;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.message.Msg;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 读取共享 workspace 中的标记文件以确认 workspace 同 conversation 共享。
  */
 @Component("multiAgentB")
-public class MultiAgentBCmp extends ReActAgentComponent {
+public class MultiAgentBCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<String> SEEN_CONVERSATION_ID = new AtomicReference<>();
     public static final AtomicReference<String> SEEN_AGENT_KEY = new AtomicReference<>();
@@ -29,11 +27,6 @@ public class MultiAgentBCmp extends ReActAgentComponent {
         SEEN_AGENT_KEY.set(null);
         SEEN_WORKSPACE.set(null);
         READ_MARKER.set(null);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

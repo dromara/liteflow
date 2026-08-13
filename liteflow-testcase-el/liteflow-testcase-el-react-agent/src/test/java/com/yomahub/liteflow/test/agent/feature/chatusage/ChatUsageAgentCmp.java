@@ -1,10 +1,10 @@
 package com.yomahub.liteflow.test.agent.feature.chatusage;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
+import com.yomahub.liteflow.test.agent.support.ScriptedChatModel;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.ChatUsage;
+import io.agentscope.core.model.Model;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 在 handleReply（本轮 reasoning 结束后）可读。
  */
 @Component("chatUsageAgent")
-public class ChatUsageAgentCmp extends ReActAgentComponent {
+public class ChatUsageAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<ChatUsage> CAPTURED = new AtomicReference<>();
     public static final AtomicBoolean GET_USAGE_CALLED = new AtomicBoolean();
@@ -26,8 +26,11 @@ public class ChatUsageAgentCmp extends ReActAgentComponent {
     }
 
     @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+    protected Model buildModel() {
+        ChatUsage usage = ChatUsage.builder().inputTokens(7).outputTokens(3).build();
+        return ScriptedChatModel.builder()
+                .reply("deterministic offline reply", usage)
+                .build();
     }
 
     @Override

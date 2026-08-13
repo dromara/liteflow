@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.whenparallel;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.message.Msg;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 这样才能真正并发执行而不互相串行。
  */
 @Component("parallelAgentA")
-public class ParallelAgentACmp extends ReActAgentComponent {
+public class ParallelAgentACmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<String> SEEN_AGENT_KEY = new AtomicReference<>();
     public static final AtomicReference<String> SEEN_REPLY = new AtomicReference<>();
@@ -21,11 +19,6 @@ public class ParallelAgentACmp extends ReActAgentComponent {
     public static void reset() {
         SEEN_AGENT_KEY.set(null);
         SEEN_REPLY.set(null);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

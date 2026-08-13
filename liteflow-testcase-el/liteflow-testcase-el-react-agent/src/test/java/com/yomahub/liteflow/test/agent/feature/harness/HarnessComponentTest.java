@@ -3,13 +3,16 @@ package com.yomahub.liteflow.test.agent.feature.harness;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.flow.LiteflowResponse;
+import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
@@ -21,11 +24,18 @@ import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.middleware.ReasoningInput;
 import io.agentscope.core.permission.PermissionBehavior;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionRule;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.state.State;
+import io.agentscope.core.state.AgentState;
+import io.agentscope.core.skill.AgentSkill;
+import io.agentscope.core.skill.SkillFilter;
+import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.sandbox.ExecResult;
 import io.agentscope.harness.agent.sandbox.Sandbox;
@@ -36,6 +46,8 @@ import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOption
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxState;
 import io.agentscope.harness.agent.sandbox.snapshot.SandboxSnapshot;
 import io.agentscope.harness.agent.sandbox.snapshot.SandboxSnapshotSpec;
+import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.subagent.WorkspaceMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -52,6 +64,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +73,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -182,6 +197,22 @@ public class HarnessComponentTest {
                 () -> "unexpected cause chain: " + causeMessages(response.getCause()));
     }
 
+    @Test
+    void workspaceSkillPlanSubagentAndPermissionShareOneLiteFlowContext() {
+        LiteflowResponse response = flowExecutor.execute2Resp(
+                "harnessContext",
+                "inspect unified context",
+                ExecuteOption.of().conversationId("conversation-harness-context"));
+
+        assertTrue(response.isSuccess(), () -> "chain failed: " + causeMessages(response.getCause()));
+        assertEquals("context-ok", response.getSlot().getOutput("harnessContext"));
+        assertEquals(5, OfflineHarnessFixtures.CONTEXTS.capabilityNames().size());
+        assertEquals(Set.of("workspace", "skill", "plan", "subagent", "permission"),
+                OfflineHarnessFixtures.CONTEXTS.capabilityNames());
+        assertEquals(1, OfflineHarnessFixtures.CONTEXTS.contextIdentities().size(),
+                "all Harness capability state must originate from one LiteFlowAgentContext");
+    }
+
     private static String causeMessages(Throwable failure) {
         List<String> messages = new ArrayList<>();
         for (Throwable current = failure; current != null; current = current.getCause()) {
@@ -202,6 +233,7 @@ final class OfflineHarnessFixtures {
     static final RecordingStateStore STATE_STORE = new RecordingStateStore();
     static final OfflineSnapshotSpec SNAPSHOTS = new OfflineSnapshotSpec();
     static final OfflineSandboxClient SANDBOX_CLIENT = new OfflineSandboxClient();
+    static final HarnessContextRecorder CONTEXTS = new HarnessContextRecorder();
 
     private OfflineHarnessFixtures() {
     }
@@ -210,6 +242,7 @@ final class OfflineHarnessFixtures {
         STATE_STORE.resetObservations();
         SNAPSHOTS.reset();
         SANDBOX_CLIENT.reset();
+        CONTEXTS.reset();
     }
 }
 
@@ -251,7 +284,7 @@ abstract class OfflineHarnessComponent extends HarnessAgentComponent {
     }
 
     @Override
-    protected final PermissionContextState permissionContext() {
+    protected PermissionContextState permissionContext() {
         return PermissionContextState.builder()
                 .addAllowRule("execute", new PermissionRule(
                         "execute", null, PermissionBehavior.ALLOW, "offline-test"))
@@ -259,7 +292,7 @@ abstract class OfflineHarnessComponent extends HarnessAgentComponent {
     }
 
     @Override
-    protected final HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
+    protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
         return builder
                 .disableSubagents()
                 .disableCompaction()
@@ -286,7 +319,7 @@ abstract class OfflineHarnessComponent extends HarnessAgentComponent {
     }
 
     @Override
-    protected final void handleReply(Msg reply, LiteFlowAgentContext context) {
+    protected void handleReply(Msg reply, LiteFlowAgentContext context) {
         context.getSlot().setOutput(getNodeId(), reply.getTextContent());
     }
 }
@@ -333,6 +366,231 @@ final class HarnessFailureComponent extends OfflineHarnessComponent {
     HarnessFailureComponent() {
         super(new FailureModel());
     }
+}
+
+@Component("harnessContext")
+final class HarnessContextComponent extends OfflineHarnessComponent {
+
+    private final AtomicReference<HarnessAgentRuntime> runtime = new AtomicReference<>();
+    private final ContextCapabilityProbe probe = new ContextCapabilityProbe(runtime);
+    private AgentSkillRepository ownedRepository;
+    private AgentSkill allowedSkill;
+
+    HarnessContextComponent() {
+        super(new UnifiedContextModel());
+    }
+
+    @Override
+    protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
+        return builder
+                .disableCompaction()
+                .disableToolResultEviction()
+                .disableMemoryTools()
+                .disableMemoryHooks()
+                .disableWorkspaceContext()
+                .disableAtPathExpansion()
+                .disableDefaultWorkspaceSkills()
+                .disableDynamicSubagents()
+                .disableToolsConfig()
+                .disableFilesystemTools();
+    }
+
+    @Override
+    protected List<AgentSkillRepository> skillRepositories() {
+        FileSystemSkillRepository repository = new FileSystemSkillRepository(
+                Path.of("src/test/resources/feature/harness/skills"), false);
+        ownedRepository = repository;
+        allowedSkill = repository.getAllSkills().stream()
+                .filter(skill -> "context-demo".equals(skill.getName()))
+                .findFirst()
+                .orElseThrow();
+        UnifiedContextModel.setSkill(allowedSkill);
+        return List.of(repository);
+    }
+
+    @Override
+    protected boolean ownsSkillRepository(AgentSkillRepository repository) {
+        return repository == ownedRepository;
+    }
+
+    @Override
+    protected SkillFilter skillFilter() {
+        return SkillFilter.only("context-demo");
+    }
+
+    @Override
+    protected boolean enablePlanMode() {
+        return true;
+    }
+
+    @Override
+    protected List<SubagentDeclaration> subagents() {
+        return List.of(SubagentDeclaration.builder()
+                .name("context-child")
+                .description("deterministic context probe child")
+                .inlineAgentsBody("Reply deterministically.")
+                .workspaceMode(WorkspaceMode.SHARED)
+                .inheritParentPermissions(true)
+                .build());
+    }
+
+    @Override
+    protected PermissionContextState permissionContext() {
+        PermissionContextState.Builder builder = PermissionContextState.builder();
+        for (String tool : List.of(
+                "execute", "load_skill_through_path", "plan_enter", "plan_exit", "agent_spawn")) {
+            builder.addAllowRule(tool, new PermissionRule(
+                    tool, null, PermissionBehavior.ALLOW, "unified context test"));
+        }
+        return builder.build();
+    }
+
+    @Override
+    protected List<MiddlewareBase> middlewares() {
+        return List.of(probe);
+    }
+
+    @Override
+    protected int maxIterations() {
+        return 8;
+    }
+
+    @Override
+    protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext context) {
+        HarnessAgentRuntime built = super.buildRuntime(context);
+        runtime.set(built);
+        return built;
+    }
+
+    @Override
+    protected void handleReply(Msg reply, LiteFlowAgentContext context) {
+        if (allowedSkill != null && context.getUsedSkills().contains(allowedSkill.getSkillId())) {
+            OfflineHarnessFixtures.CONTEXTS.record("skill", context);
+        }
+        super.handleReply(reply, context);
+    }
+}
+
+final class UnifiedContextModel implements Model {
+
+    private static final AtomicReference<AgentSkill> SKILL = new AtomicReference<>();
+    private final AtomicInteger calls = new AtomicInteger();
+
+    static void setSkill(AgentSkill skill) {
+        SKILL.set(skill);
+    }
+
+    @Override
+    public Flux<ChatResponse> stream(
+            List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+        int call = calls.getAndIncrement();
+        if (call == 0) {
+            return tool(tools, "context-workspace", "execute",
+                    Map.of("command", "write context.txt unified-context"),
+                    "{\"command\":\"write context.txt unified-context\"}");
+        }
+        if (call == 1) {
+            AgentSkill skill = SKILL.get();
+            if (skill == null) {
+                return Flux.error(new AssertionError("context skill is missing"));
+            }
+            return tool(tools, "context-skill", "load_skill_through_path",
+                    Map.of("skillId", skill.getSkillId(), "path", "SKILL.md"),
+                    "{\"skillId\":\"" + skill.getSkillId() + "\",\"path\":\"SKILL.md\"}");
+        }
+        if (call == 2) {
+            return tool(tools, "context-plan-enter", "plan_enter", Map.of(), "{}");
+        }
+        if (call == 3) {
+            return tool(tools, "context-plan-exit", "plan_exit", Map.of(), "{}");
+        }
+        if (call == 4) {
+            return tool(tools, "context-spawn", "agent_spawn",
+                    Map.of("agent_id", "context-child", "task", "inspect context", "timeout_seconds", 5),
+                    "{\"agent_id\":\"context-child\",\"task\":\"inspect context\",\"timeout_seconds\":5}");
+        }
+        String reply = call == 5 ? "child-context-ok" : "context-ok";
+        return Flux.just(response(TextBlock.builder().text(reply).build(), "stop"));
+    }
+
+    @Override
+    public String getModelName() {
+        return "unified-context-model";
+    }
+
+    private static Flux<ChatResponse> tool(
+            List<ToolSchema> tools,
+            String id,
+            String name,
+            Map<String, Object> input,
+            String rawInput) {
+        if (tools.stream().noneMatch(tool -> name.equals(tool.getName()))) {
+            return Flux.error(new AssertionError("missing Harness tool " + name));
+        }
+        ToolUseBlock use = new ToolUseBlock(
+                id, name, input, rawInput, Map.of(), ToolCallState.PENDING);
+        return Flux.just(response(use, "tool_calls"));
+    }
+
+    private static ChatResponse response(ContentBlock content, String finishReason) {
+        return ChatResponse.builder()
+                .content(List.of(content))
+                .finishReason(finishReason)
+                .build();
+    }
+}
+
+final class ContextCapabilityProbe implements MiddlewareBase {
+
+    private final AtomicReference<HarnessAgentRuntime> runtime;
+
+    ContextCapabilityProbe(AtomicReference<HarnessAgentRuntime> runtime) {
+        this.runtime = runtime;
+    }
+
+    @Override
+    public Flux<io.agentscope.core.event.AgentEvent> onReasoning(
+            Agent agent,
+            RuntimeContext context,
+            ReasoningInput input,
+            Function<ReasoningInput, Flux<io.agentscope.core.event.AgentEvent>> next) {
+        LiteFlowAgentContext liteflow = context.get(LiteFlowAgentContext.class);
+        if (liteflow == null) {
+            return Flux.error(new AssertionError("Harness reasoning lost LiteFlowAgentContext"));
+        }
+        if ("context-child".equals(agent.getName())) {
+            OfflineHarnessFixtures.CONTEXTS.record("subagent", liteflow);
+        }
+        else {
+            AgentState state = RuntimeContext.resolveAgentState(context, agent);
+            if (state != null
+                    && state.getPermissionContext().getAllowRules().containsKey("execute")) {
+                OfflineHarnessFixtures.CONTEXTS.record("permission", liteflow);
+            }
+            HarnessAgentRuntime active = runtime.get();
+            if (active != null && active.agent().isPlanModeActive(context)) {
+                OfflineHarnessFixtures.CONTEXTS.record("plan", liteflow);
+            }
+        }
+        return next.apply(input);
+    }
+}
+
+final class HarnessContextRecorder {
+    private final Map<String, LiteFlowAgentContext> contexts = new ConcurrentHashMap<>();
+
+    void record(String capability, LiteFlowAgentContext context) {
+        if (context == null) {
+            throw new AssertionError("LiteFlowAgentContext is missing for " + capability);
+        }
+        contexts.put(capability, context);
+    }
+
+    Set<String> capabilityNames() { return Set.copyOf(contexts.keySet()); }
+    Set<Integer> contextIdentities() {
+        return contexts.values().stream().map(System::identityHashCode).collect(Collectors.toSet());
+    }
+    void reset() { contexts.clear(); }
 }
 
 final class CommandModel implements Model {
@@ -574,6 +832,11 @@ final class OfflineSandbox implements Sandbox {
     @Override
     public ExecResult exec(RuntimeContext context, String command, Integer timeoutSeconds) {
         if (command.startsWith("write ")) {
+            LiteFlowAgentContext liteflow = context.get(LiteFlowAgentContext.class);
+            if (liteflow == null) {
+                throw new AssertionError("Harness workspace lost LiteFlowAgentContext");
+            }
+            OfflineHarnessFixtures.CONTEXTS.record("workspace", liteflow);
             String[] parts = command.split(" ", 3);
             files.put(parts[1], parts[2].getBytes(StandardCharsets.UTF_8));
             return new ExecResult(0, "written", "", false);

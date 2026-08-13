@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.springbeantool;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +38,6 @@ public class SpringBeanToolInjectionTest extends BaseAgentLiveTest {
         // 而单例在容器启动时就构造完毕（早于 @BeforeEach）。若在此清零，
         // 单例不会被重新构造，instance() 会一直为 null、constructCount() 一直为 0，
         // 反而把要断言的「容器构造证据」擦掉。
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "SpringBeanToolInjectionTest");
         liteflowConfig.getAgent().getSkills().setEnabled(true);
         liteflowConfig.getAgent().getSkills().setPath(resolveSkillsPath());
         liteflowConfig.getAgent().getSkills().setStrict(true);

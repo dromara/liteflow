@@ -8,21 +8,20 @@ import com.yomahub.liteflow.property.agent.PlatformCredential;
 import org.junit.jupiter.api.Assumptions;
 
 /**
- * 整个模块唯一共享的凭据与条件跳过支持。
+ * 显式 {@code agent-live} profile 的 Provider 凭据与条件跳过支持。
  *
- * <p>按用户约定：不同 package 之间只共享这一层（凭据解析、无 key 即 skip）；
- * 其余 agent 组件、辅助节点、探针、flow xml、application.properties 一律每个 package 各自冗余。
+ * <p>默认 feature 测试不得调用此类；它们统一使用进程内确定性模型。
  *
  * <p>提供：
  * <ul>
- *   <li>{@link #compatibleCustomModel()}：功能测试统一用的 OpenAI 兼容自定义模型描述符；</li>
+ *   <li>{@link #compatibleCustomModel()}：OpenAI 兼容 Provider live test 的模型描述符；</li>
  *   <li>各平台的「装凭据或 skip」方法：把真实 apikey/baseUrl 从环境变量装入 AgentConfig，
  *       缺失即 {@code Assumptions.assumeTrue} 跳过当前测试。</li>
  * </ul>
  */
 public final class LiveTestSupport {
 
-    /** 功能测试统一使用的 OpenAI 兼容配置 key（自定义 baseUrl + apiKey）。 */
+    /** Live Provider 测试使用的 OpenAI 兼容配置 key（自定义 baseUrl + apiKey）。 */
     public static final String COMPATIBLE_CONFIG_KEY = "compatible-custom";
 
     /** Anthropic 兼容网关固定 configKey。 */
@@ -41,18 +40,6 @@ public final class LiveTestSupport {
         return OpenAICompatible.custom(COMPATIBLE_CONFIG_KEY, model)
                 .temperature(0.1)
                 .maxTokens(128);
-    }
-
-    /**
-     * 与 {@link #compatibleCustomModel()} 相同，但额外开启底层模型 stream 模式，
-     * 供流式事件场景使用。
-     */
-    public static ModelSpec<?> compatibleCustomStreamingModel() {
-        String model = LiveTestEnv.resolveOrDefault(LiveTestEnv.COMPATIBLE_MODEL, "gpt-4o-mini");
-        return OpenAICompatible.custom(COMPATIBLE_CONFIG_KEY, model)
-                .temperature(0.1)
-                .maxTokens(128)
-                .stream(true);
     }
 
     private static AgentConfig agent(LiteflowConfig cfg) {

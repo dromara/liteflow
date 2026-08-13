@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.handlereply;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +22,7 @@ import org.springframework.test.context.TestPropertySource;
 public class HandleReplyOverrideTest extends BaseAgentLiveTest {
 
     @BeforeEach
-    public void ensureCredential() {
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "HandleReplyOverrideTest");
+    public void reset() {
     }
 
     @Test

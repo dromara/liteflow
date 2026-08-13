@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.springbeantool;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 并在 {@link #tools()} 中返回该 bean 实例，验证组件层工具注册走容器路径。
  */
 @Component("componentToolAgent")
-public class ComponentToolAgentCmp extends ReActAgentComponent {
+public class ComponentToolAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
     public static final AtomicReference<Object> CAPTURED_TOOL_INSTANCE = new AtomicReference<>();
@@ -26,11 +24,6 @@ public class ComponentToolAgentCmp extends ReActAgentComponent {
     public static void reset() {
         PROBE.set(new AgentProbe());
         CAPTURED_TOOL_INSTANCE.set(null);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

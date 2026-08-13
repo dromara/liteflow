@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.conversationid;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -13,17 +11,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * 演示 guide §5.2 中"按业务请求对象多轮对话"。
  */
 @Component("resolveCidAgent")
-public class ResolveCidAgentCmp extends ReActAgentComponent {
+public class ResolveCidAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<String> SEEN_CID = new AtomicReference<>();
 
     public static void reset() {
         SEEN_CID.set(null);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

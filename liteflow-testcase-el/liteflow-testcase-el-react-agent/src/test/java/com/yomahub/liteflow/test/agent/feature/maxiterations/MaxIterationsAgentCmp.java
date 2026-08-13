@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.maxiterations;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.middleware.MiddlewareBase;
 import org.springframework.stereotype.Component;
 
@@ -14,18 +12,13 @@ import java.util.concurrent.atomic.AtomicReference;
  * ReActAgent.getMaxIters() 来断言组件覆写值已被框架使用。
  */
 @Component("maxIterationsAgent")
-public class MaxIterationsAgentCmp extends ReActAgentComponent {
+public class MaxIterationsAgentCmp extends OfflineReActAgentComponent {
 
     public static final int OVERRIDDEN_MAX_ITERS = 7;
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
 
     public static void reset() {
         PROBE.set(new AgentProbe());
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

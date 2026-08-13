@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.handlereply;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.message.Msg;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +9,9 @@ import org.springframework.stereotype.Component;
  * 不写 slot.responseData，而是用 nodeId 作为 key 写到 slot.output。
  */
 @Component("customHandleReplyAgent")
-public class CustomHandleReplyAgentCmp extends ReActAgentComponent {
+public class CustomHandleReplyAgentCmp extends OfflineReActAgentComponent {
 
     public static final String OUTPUT_KEY = "customHandleReplyAgent";
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
-    }
 
     @Override
     protected String systemPrompt() {

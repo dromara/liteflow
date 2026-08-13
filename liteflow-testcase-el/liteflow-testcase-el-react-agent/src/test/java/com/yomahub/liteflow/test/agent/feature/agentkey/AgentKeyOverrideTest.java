@@ -3,13 +3,13 @@ package com.yomahub.liteflow.test.agent.feature.agentkey;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -20,12 +20,12 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = AgentKeyOverrideTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.agentkey")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AgentKeyOverrideTest extends BaseAgentLiveTest {
 
     @BeforeEach
     public void reset() {
         CustomAgentKeyAgentCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "AgentKeyOverrideTest");
     }
 
     @Test
@@ -52,10 +52,10 @@ public class AgentKeyOverrideTest extends BaseAgentLiveTest {
 
         Assertions.assertTrue(response.isSuccess());
         String seen = CustomAgentKeyAgentCmp.SEEN_AGENT_KEY.get();
-        Assertions.assertNotEquals("team/dev session#1", seen,
-                "含特殊字符的 agentKey 应被 safeId 处理为目录安全格式");
-        Assertions.assertFalse(seen.contains("/"));
-        Assertions.assertFalse(seen.contains(" "));
-        Assertions.assertFalse(seen.contains("#"));
+        Assertions.assertEquals("team/dev session#1", seen,
+                "业务 agentKey 应原样保留在 LiteFlowAgentContext");
+        Assertions.assertTrue(CustomAgentKeyAgentCmp.SEEN_RUNTIME_SESSION.get()
+                        .matches("lf-[0-9a-f]{64}"),
+                "物理 Runtime session 应使用不可逆安全哈希");
     }
 }

@@ -2,7 +2,6 @@ package com.yomahub.liteflow.test.agent.feature.whenparallel;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ public class WhenParallelAgentTest extends BaseAgentLiveTest {
     public void resetProbes() {
         ParallelAgentACmp.reset();
         ParallelAgentBCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "WhenParallelAgentTest");
     }
 
     @Test

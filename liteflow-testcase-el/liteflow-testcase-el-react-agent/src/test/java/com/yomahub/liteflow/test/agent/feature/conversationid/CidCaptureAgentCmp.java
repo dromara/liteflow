@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.conversationid;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -11,17 +9,14 @@ import java.util.concurrent.atomic.AtomicReference;
  * 在 userPrompt 中捕获 context.getConversationId()，用于验证 conversationId 的多条解析路径。
  */
 @Component("cidCaptureAgent")
-public class CidCaptureAgentCmp extends ReActAgentComponent {
+public class CidCaptureAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicReference<String> SEEN_CONVERSATION_ID = new AtomicReference<>();
+    public static final AtomicReference<String> SEEN_RUNTIME_SESSION = new AtomicReference<>();
 
     public static void reset() {
         SEEN_CONVERSATION_ID.set(null);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
+        SEEN_RUNTIME_SESSION.set(null);
     }
 
     @Override
@@ -32,6 +27,7 @@ public class CidCaptureAgentCmp extends ReActAgentComponent {
     @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         SEEN_CONVERSATION_ID.set(context.getConversationId());
+        SEEN_RUNTIME_SESSION.set(context.getRuntimeSessionId());
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }

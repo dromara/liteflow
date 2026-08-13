@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.ifrouting;
 
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
-import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
+import com.yomahub.liteflow.test.agent.support.OfflineReActAgentComponent;
 import io.agentscope.core.message.Msg;
 import org.springframework.stereotype.Component;
 
@@ -13,17 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * IF 数学分支 Agent，回复以 nodeId 为 key 写入 slot.output。
  */
 @Component("mathBranchAgent")
-public class MathBranchAgentCmp extends ReActAgentComponent {
+public class MathBranchAgentCmp extends OfflineReActAgentComponent {
 
     public static final AtomicInteger INVOCATION_COUNT = new AtomicInteger();
 
     public static void reset() {
         INVOCATION_COUNT.set(0);
-    }
-
-    @Override
-    protected ModelSpec<?> model() {
-        return LiveTestSupport.compatibleCustomModel();
     }
 
     @Override

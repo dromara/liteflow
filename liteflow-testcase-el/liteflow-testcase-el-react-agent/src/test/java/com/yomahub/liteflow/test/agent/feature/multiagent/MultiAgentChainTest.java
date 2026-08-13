@@ -3,7 +3,6 @@ package com.yomahub.liteflow.test.agent.feature.multiagent;
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
-import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,6 @@ public class MultiAgentChainTest extends BaseAgentLiveTest {
     public void resetProbes() {
         MultiAgentACmp.reset();
         MultiAgentBCmp.reset();
-        LiveTestSupport.applyCompatibleCustomOrSkip(liteflowConfig, "MultiAgentChainTest");
     }
 
     @Test
