@@ -10,6 +10,12 @@
             WHEN(harnessReaderA, harnessReaderB).maxWaitSeconds(10)
         );
     </chain>
+    <chain name="harnessWhenThen">
+        THEN(
+            WHEN(harnessReaderA, harnessReaderB).maxWaitSeconds(10),
+            harnessWriter
+        );
+    </chain>
     <chain name="harnessFailure">
         THEN(harnessFailure);
     </chain>

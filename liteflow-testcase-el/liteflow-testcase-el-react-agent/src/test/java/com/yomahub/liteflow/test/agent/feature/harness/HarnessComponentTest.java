@@ -101,30 +101,72 @@ public class HarnessComponentTest {
     }
 
     @Test
-    void whenRoutesSharedConversationSandboxAndSeparateAgentState() {
-        LiteflowResponse response = flowExecutor.execute2Resp(
+    void whenRoutesWorkspaceAndAgentStateAcrossTwoConversations() {
+        LiteflowResponse first = flowExecutor.execute2Resp(
                 "harnessThenWhen",
                 "offline request",
-                ExecuteOption.of().conversationId("conversation-harness-when"));
+                ExecuteOption.of().conversationId("conversation-harness-when-a"));
 
-        assertTrue(response.isSuccess(), () -> "chain failed: " + causeMessages(response.getCause()));
-        assertEquals("conversation-harness-when", response.getConversationId());
-        assertEquals("written", response.getSlot().getOutput("harnessWriter"));
-        assertEquals("shared-through-snapshot", response.getSlot().getOutput("harnessReaderA"));
-        assertEquals("shared-through-snapshot", response.getSlot().getOutput("harnessReaderB"));
+        assertTrue(first.isSuccess(), () -> "chain failed: " + causeMessages(first.getCause()));
+        assertEquals("conversation-harness-when-a", first.getConversationId());
+        assertEquals("written", first.getSlot().getOutput("harnessWriter"));
+        assertEquals("shared-through-snapshot", first.getSlot().getOutput("harnessReaderA"));
+        assertEquals("shared-through-snapshot", first.getSlot().getOutput("harnessReaderB"));
 
         assertEquals(1, OfflineHarnessFixtures.SANDBOX_CLIENT.createCount());
         assertEquals(2, OfflineHarnessFixtures.SANDBOX_CLIENT.resumeCount());
         assertEquals(2, OfflineHarnessFixtures.SNAPSHOTS.restoreCount());
 
-        Set<String> sandboxSessions = OfflineHarnessFixtures.STATE_STORE.sessionsFor("_sandbox_state");
-        Set<String> agentSessions = OfflineHarnessFixtures.STATE_STORE.sessionsFor("agent_state");
-        assertEquals(1, sandboxSessions.size(),
-                "one conversation must use one physical sandbox-state route across agents");
-        assertEquals(3, agentSessions.size(),
-                "THEN/WHEN Harness nodes must keep physical AgentState sessions separate");
-        assertFalse(agentSessions.containsAll(sandboxSessions),
-                "agent state and conversation sandbox state must use different namespaces");
+        Set<String> firstSandboxRoutes =
+                OfflineHarnessFixtures.STATE_STORE.sessionsFor("_sandbox_state");
+        Set<String> firstAgentRoutes =
+                OfflineHarnessFixtures.STATE_STORE.sessionsFor("agent_state");
+        assertEquals(1, firstSandboxRoutes.size());
+        assertEquals(3, firstAgentRoutes.size());
+        OfflineHarnessFixtures.STATE_STORE.resetObservations();
+
+        LiteflowResponse second = flowExecutor.execute2Resp(
+                "harnessWhenThen",
+                "offline request",
+                ExecuteOption.of().conversationId("conversation-harness-when-b"));
+
+        assertTrue(second.isSuccess(), () -> "chain failed: " + causeMessages(second.getCause()));
+        assertEquals("conversation-harness-when-b", second.getConversationId());
+        assertEquals("not found", second.getSlot().getOutput("harnessReaderA"),
+                "a new conversation must not read the first conversation snapshot");
+        assertEquals("not found", second.getSlot().getOutput("harnessReaderB"),
+                "a new conversation must not read the first conversation snapshot");
+        assertEquals("written", second.getSlot().getOutput("harnessWriter"));
+
+        Set<String> secondSandboxRoutes =
+                OfflineHarnessFixtures.STATE_STORE.sessionsFor("_sandbox_state");
+        Set<String> secondAgentRoutes =
+                OfflineHarnessFixtures.STATE_STORE.sessionsFor("agent_state");
+        assertEquals(1, secondSandboxRoutes.size());
+        assertTrue(firstSandboxRoutes.stream().noneMatch(secondSandboxRoutes::contains),
+                "the two conversations must have disjoint physical sandbox-state routes");
+
+        assertEquals(3, secondAgentRoutes.size());
+        assertTrue(firstAgentRoutes.stream().noneMatch(secondAgentRoutes::contains),
+                "each Harness agent must add a new physical route for the second conversation");
+        assertEquals(
+                firstAgentRoutes.stream()
+                        .map(HarnessComponentTest::agentNamespacePrefix)
+                        .collect(Collectors.toSet()),
+                secondAgentRoutes.stream()
+                        .map(HarnessComponentTest::agentNamespacePrefix)
+                        .collect(Collectors.toSet()),
+                "the same three isolated agent namespaces must exist in both conversations");
+        assertEquals(3, secondAgentRoutes.stream()
+                .map(HarnessComponentTest::agentNamespacePrefix)
+                .distinct()
+                .count());
+        assertTrue(firstAgentRoutes.stream().noneMatch(firstSandboxRoutes::contains));
+        assertTrue(secondAgentRoutes.stream().noneMatch(secondSandboxRoutes::contains));
+
+        assertEquals(2, OfflineHarnessFixtures.SANDBOX_CLIENT.createCount());
+        assertEquals(4, OfflineHarnessFixtures.SANDBOX_CLIENT.resumeCount());
+        assertEquals(4, OfflineHarnessFixtures.SNAPSHOTS.restoreCount());
     }
 
     @Test
@@ -146,6 +188,12 @@ public class HarnessComponentTest {
             messages.add(current.getClass().getSimpleName() + ":" + current.getMessage());
         }
         return String.join(" -> ", messages);
+    }
+
+    private static String agentNamespacePrefix(String physicalSession) {
+        int version = physicalSession.indexOf(".h1.");
+        assertTrue(version > 0, () -> "unexpected agent physical session: " + physicalSession);
+        return physicalSession.substring(0, version);
     }
 }
 
@@ -326,6 +374,9 @@ final class CommandModel implements Model {
                 .map(TextBlock.class::cast)
                 .map(TextBlock::getText)
                 .collect(Collectors.joining());
+        if (command.startsWith("read ") && toolText.contains("not found")) {
+            return Flux.just(response(TextBlock.builder().text("not found").build(), "stop"));
+        }
         if (expectedToolText != null && !toolText.contains(expectedToolText)) {
             return Flux.error(new AssertionError(
                     "unexpected offline tool result: " + toolText));

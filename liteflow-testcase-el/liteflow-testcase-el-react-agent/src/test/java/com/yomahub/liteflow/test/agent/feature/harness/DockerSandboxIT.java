@@ -16,14 +16,11 @@ import io.agentscope.harness.agent.sandbox.snapshot.SandboxSnapshotSpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +40,7 @@ public class DockerSandboxIT {
     private static final String WORKSPACE = "/workspace";
     private static final long MEMORY_BYTES = 64L * 1024 * 1024;
     private static final long CPU_COUNT = 1L;
+    private static final DockerProcessRunner PROCESS_RUNNER = DockerProcessRunner.standard();
     private static final List<String> SECURITY_ARGS = List.of(
             "--cap-drop=ALL",
             "--security-opt=no-new-privileges:true",
@@ -147,14 +145,14 @@ public class DockerSandboxIT {
     }
 
     private JsonNode inspectHostConfig(String containerId) throws Exception {
-        CommandResult result = docker(
+        DockerCommandResult result = docker(
                 "inspect", "--format", "{{json .HostConfig}}", containerId);
         assertEquals(0, result.exitCode(), result.stderr());
         return objectMapper.readTree(result.stdout());
     }
 
     private static void assertContainerRemoved(String containerId) throws Exception {
-        CommandResult result = docker("inspect", containerId);
+        DockerCommandResult result = docker("inspect", containerId);
         assertFalse(result.exitCode() == 0,
                 () -> "container was not removed: " + containerId + "\n" + result.stdout());
         assertTrue(
@@ -163,60 +161,11 @@ public class DockerSandboxIT {
                 () -> "Docker inspect failed for an unexpected reason: " + result.stderr());
     }
 
-    private static CommandResult docker(String... arguments) throws Exception {
-        String[] command = new String[arguments.length + 1];
-        command[0] = "docker";
-        System.arraycopy(arguments, 0, command, 1, arguments.length);
-        Process process = new ProcessBuilder(command).start();
-        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-        AtomicReference<Throwable> outputFailure = new AtomicReference<>();
-        Thread stdoutReader = drain(
-                process.getInputStream(), stdout, "docker-it-stdout", outputFailure);
-        Thread stderrReader = drain(
-                process.getErrorStream(), stderr, "docker-it-stderr", outputFailure);
-        if (!process.waitFor(15, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-            if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                throw new IllegalStateException(
-                        "could not terminate timed-out Docker IT helper: "
-                                + String.join(" ", command));
-            }
-            stdoutReader.join(5_000);
-            stderrReader.join(5_000);
-            throw new IllegalStateException("Docker IT helper timed out: " + String.join(" ", command));
-        }
-        stdoutReader.join();
-        stderrReader.join();
-        if (outputFailure.get() != null) {
-            throw new IllegalStateException(
-                    "failed to read Docker IT process output", outputFailure.get());
-        }
-        return new CommandResult(
-                process.exitValue(),
-                stdout.toString(StandardCharsets.UTF_8),
-                stderr.toString(StandardCharsets.UTF_8));
-    }
-
-    private static Thread drain(
-            InputStream input,
-            ByteArrayOutputStream output,
-            String name,
-            AtomicReference<Throwable> failure) {
-        Thread reader = new Thread(() -> {
-            try (input; output) {
-                input.transferTo(output);
-            }
-            catch (Exception readFailure) {
-                failure.compareAndSet(null, readFailure);
-            }
-        }, name);
-        reader.setDaemon(true);
-        reader.start();
-        return reader;
-    }
-
-    private record CommandResult(int exitCode, String stdout, String stderr) {
+    private static DockerCommandResult docker(String... arguments) throws Exception {
+        List<String> command = new ArrayList<>(arguments.length + 1);
+        command.add("docker");
+        command.addAll(List.of(arguments));
+        return PROCESS_RUNNER.run(values -> new ProcessBuilder(values).start(), command);
     }
 
     private record DockerSetup(
