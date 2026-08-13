@@ -115,7 +115,7 @@ public final class HarnessNamespacedAgentStateStore
         return physical.stream()
                 .filter(Objects::nonNull)
                 .filter(session -> session.startsWith(agentPrefix))
-                .map(this::decodeAgentSession)
+                .map(this::decodeRuntimeSession)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -169,7 +169,7 @@ public final class HarnessNamespacedAgentStateStore
 
     private Route agentRoute(String userId, String sessionId) {
         String logical = requireAgentLogicalSession(sessionId);
-        return new Route(userId, agentPrefix + encodeAgentSession(logical), logical);
+        return new Route(userId, agentPrefix + encodeRuntimeSession(logical), logical);
     }
 
     private static String requireAgentLogicalSession(String sessionId) {
@@ -181,7 +181,7 @@ public final class HarnessNamespacedAgentStateStore
         return logical;
     }
 
-    private static String encodeAgentSession(String logicalSessionId) {
+    private static String encodeRuntimeSession(String logicalSessionId) {
         byte[] utf8 = logicalSessionId.getBytes(StandardCharsets.UTF_8);
         if (!logicalSessionId.equals(new String(utf8, StandardCharsets.UTF_8))) {
             throw new IllegalArgumentException("sessionId must be valid UTF-8 text");
@@ -189,7 +189,7 @@ public final class HarnessNamespacedAgentStateStore
         return Base64.getUrlEncoder().withoutPadding().encodeToString(utf8);
     }
 
-    private String decodeAgentSession(String physicalSessionId) {
+    private String decodeRuntimeSession(String physicalSessionId) {
         String encoded = physicalSessionId.substring(agentPrefix.length());
         if (!BASE64_URL.matcher(encoded).matches()) {
             throw malformedPhysicalSession();
@@ -201,7 +201,7 @@ public final class HarnessNamespacedAgentStateStore
                     .decode(ByteBuffer.wrap(Base64.getUrlDecoder().decode(encoded)))
                     .toString();
             requireAgentLogicalSession(logical);
-            if (!encoded.equals(encodeAgentSession(logical))) {
+            if (!encoded.equals(encodeRuntimeSession(logical))) {
                 throw malformedPhysicalSession();
             }
             return logical;

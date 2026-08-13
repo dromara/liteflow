@@ -176,7 +176,9 @@ public final class AgentRuntimeOwnership {
             if (existingFailure == null) {
                 return closeFailure;
             }
-            existingFailure.addSuppressed(closeFailure);
+            if (existingFailure != closeFailure) {
+                existingFailure.addSuppressed(closeFailure);
+            }
         }
         return existingFailure;
     }

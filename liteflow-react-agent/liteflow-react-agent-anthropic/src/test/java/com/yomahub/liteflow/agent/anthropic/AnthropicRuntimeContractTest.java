@@ -2,9 +2,8 @@ package com.yomahub.liteflow.agent.anthropic;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.models.messages.MessageCreateParams;
-import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
-import com.yomahub.liteflow.agent.runtime.McpClientRegistration;
+import com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
@@ -13,13 +12,11 @@ import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.state.InMemoryAgentStateStore;
-import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.extensions.model.anthropic.AnthropicChatModel;
 import io.agentscope.extensions.model.anthropic.formatter.AnthropicBaseFormatter;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
@@ -292,18 +289,14 @@ class AnthropicRuntimeContractTest {
         Model owned = AnthropicClientOwner.own(delegate);
         IllegalArgumentException buildFailure = new IllegalArgumentException("build failure");
 
-        Method rollback = ReActAgentComponent.class.getDeclaredMethod(
-                "closeAfterBuildFailure",
-                Throwable.class,
-                ReActAgent.class,
-                List.class,
-                List.class,
-                List.class,
-                GuardedNamespacedAgentStateStore.class,
-                ResolvedAgentStateStore.class);
-        rollback.setAccessible(true);
-        rollback.invoke(null, buildFailure, null, List.<McpClientRegistration>of(),
-                List.<AgentSkillRepository>of(), List.of(owned), null, null);
+        InMemoryAgentStateStore store = new InMemoryAgentStateStore();
+        AgentRuntimeOwnership ownership = new AgentRuntimeOwnership(
+                new GuardedNamespacedAgentStateStore(store, AGENT_NAMESPACE),
+                new ResolvedAgentStateStore(store, false),
+                List.of(),
+                List.of(),
+                List.of(owned));
+        ownership.rollback(buildFailure, null, List.of());
 
         assertEquals(1, closes.get());
         assertEquals(1, buildFailure.getSuppressed().length);

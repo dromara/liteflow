@@ -143,6 +143,24 @@ class ReActAgentBuilderConfigurationTest {
     }
 
     @Test
+    void buildFailureRemainsPrimaryWhenOwnedModelThrowsTheSameInstanceDuringRollback() {
+        RuntimeException buildFailure = new RuntimeException("build and close failure");
+        CloseableModel model = new CloseableModel(
+                "default", new ArrayList<>(), buildFailure);
+        TestComponent component = new TestComponent(model);
+        component.customizer = builder -> {
+            throw buildFailure;
+        };
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class, () -> component.runtime(config()));
+
+        assertSame(buildFailure, thrown);
+        assertEquals(0, buildFailure.getSuppressed().length);
+        assertEquals(1, model.closeCount.get());
+    }
+
+    @Test
     void preparationPreservesRepositoryHookBeforeNamespacedStateStoreValidation() {
         List<String> hooks = new ArrayList<>();
         TestComponent component = new TestComponent(
@@ -560,11 +578,18 @@ class ReActAgentBuilderConfigurationTest {
     private static final class CloseableModel implements Model, AutoCloseable {
         private final String name;
         private final List<String> closeOrder;
+        private final RuntimeException closeFailure;
         private final AtomicInteger closeCount = new AtomicInteger();
 
         private CloseableModel(String name, List<String> closeOrder) {
+            this(name, closeOrder, null);
+        }
+
+        private CloseableModel(
+                String name, List<String> closeOrder, RuntimeException closeFailure) {
             this.name = name;
             this.closeOrder = closeOrder;
+            this.closeFailure = closeFailure;
         }
 
         @Override
@@ -586,6 +611,9 @@ class ReActAgentBuilderConfigurationTest {
         public void close() {
             if (closeCount.incrementAndGet() == 1) {
                 closeOrder.add(name);
+            }
+            if (closeFailure != null) {
+                throw closeFailure;
             }
         }
     }
