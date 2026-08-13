@@ -155,7 +155,7 @@ class A2aAgentComponentTest {
         Slot slot = slot("default-runtime-timeout");
         TestComponent component = new TestComponent(
                 slot,
-                A2aClientRuntimeFactory.defaultFactory(agents));
+                A2aClientRuntimeFactories.perCall(agents));
 
         AgentInvocationException failure = assertThrows(
                 AgentInvocationException.class, component::process);

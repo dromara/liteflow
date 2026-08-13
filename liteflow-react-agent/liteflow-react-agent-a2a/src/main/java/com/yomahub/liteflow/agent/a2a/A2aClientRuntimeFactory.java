@@ -18,7 +18,7 @@ public interface A2aClientRuntimeFactory {
     A2aClientRuntime create(AgentCardResolver resolver, A2aAgentConfig config);
 
     static A2aClientRuntimeFactory defaultFactory() {
-        return defaultFactory(request -> {
+        return A2aClientRuntimeFactories.perCall(request -> {
             A2aAgent agent = A2aAgent.builder()
                     .name(request.remoteAgentName())
                     .agentCardResolver(request.resolver())
@@ -37,8 +37,15 @@ public interface A2aClientRuntimeFactory {
             };
         });
     }
+}
 
-    static A2aClientRuntimeFactory defaultFactory(A2aAgentFactory agentFactory) {
+/** Internal injectable construction path used by package-local contract tests. */
+final class A2aClientRuntimeFactories {
+
+    private A2aClientRuntimeFactories() {
+    }
+
+    static A2aClientRuntimeFactory perCall(A2aAgentFactory agentFactory) {
         Objects.requireNonNull(agentFactory, "agentFactory");
         return (resolver, config) -> {
             Objects.requireNonNull(resolver, "resolver");

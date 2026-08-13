@@ -49,7 +49,7 @@ class A2aClientRuntimeTest {
         RecordingAgentFactory agents = new RecordingAgentFactory();
         AgentCardResolver ownedResolver = name -> null;
         A2aAgentConfig ownedConfig = A2aAgentConfig.builder().build();
-        A2aClientRuntime runtime = A2aClientRuntimeFactory.defaultFactory(agents)
+        A2aClientRuntime runtime = A2aClientRuntimeFactories.perCall(agents)
                 .create(ownedResolver, ownedConfig);
         RuntimeBinding binding = new RuntimeBinding(ownedResolver, ownedConfig, runtime);
         A2aClientRequest supplied = request("conversation-7", binding);
@@ -65,7 +65,7 @@ class A2aClientRuntimeTest {
         RecordingAgentFactory agents = new RecordingAgentFactory();
         AgentCardResolver ownedResolver = name -> null;
         A2aAgentConfig ownedConfig = A2aAgentConfig.builder().build();
-        A2aClientRuntime runtime = A2aClientRuntimeFactory.defaultFactory(agents)
+        A2aClientRuntime runtime = A2aClientRuntimeFactories.perCall(agents)
                 .create(ownedResolver, ownedConfig);
 
         IllegalArgumentException failure = assertThrows(
@@ -195,7 +195,7 @@ class A2aClientRuntimeTest {
     private static RuntimeBinding binding(A2aAgentFactory factory) {
         AgentCardResolver resolver = name -> null;
         A2aAgentConfig config = A2aAgentConfig.builder().build();
-        A2aClientRuntime runtime = A2aClientRuntimeFactory.defaultFactory(factory)
+        A2aClientRuntime runtime = A2aClientRuntimeFactories.perCall(factory)
                 .create(resolver, config);
         return new RuntimeBinding(resolver, config, runtime);
     }

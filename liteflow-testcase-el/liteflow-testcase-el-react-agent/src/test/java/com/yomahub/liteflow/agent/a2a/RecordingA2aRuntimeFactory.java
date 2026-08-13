@@ -21,7 +21,7 @@ public final class RecordingA2aRuntimeFactory {
     }
 
     public static A2aClientRuntimeFactory create() {
-        return A2aClientRuntimeFactory.defaultFactory(request -> {
+        return A2aClientRuntimeFactories.perCall(request -> {
             RecordingHandle handle = new RecordingHandle(NEXT_ID.incrementAndGet());
             CREATED_HANDLES.add(handle);
             return handle;
