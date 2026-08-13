@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="harnessThenWorkspace">
+        THEN(harnessWriter, harnessReaderA);
+    </chain>
+    <chain name="harnessThenWhen">
+        THEN(
+            harnessWriter,
+            WHEN(harnessReaderA, harnessReaderB).maxWaitSeconds(10)
+        );
+    </chain>
+    <chain name="harnessFailure">
+        THEN(harnessFailure);
+    </chain>
+</flow>
