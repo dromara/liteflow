@@ -32,16 +32,5 @@
             <version>2.16.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <version>3.8.2</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
