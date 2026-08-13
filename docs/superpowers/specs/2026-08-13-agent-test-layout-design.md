@@ -14,11 +14,18 @@ AgentScope 2 的单元测试、契约测试、生命周期测试和测试夹具�
 ## 目标
 
 把本次 AgentScope 2 升级新增的全部测试源码和测试夹具迁移到 `liteflow-testcase-el` 大模块。
-其中 Agent 运行时、Provider、Harness、A2A 和基础 Agent 配置测试迁移到：
+迁移时以容器隔离边界拆为三个 Agent testcase 子模块：
 
 ```text
+liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test
+liteflow-testcase-el/liteflow-testcase-el-react-agent-harness/src/test
 liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
 ```
+
+Core／基础配置和 Solon ServiceLoader 隔离契约进入无容器 Core 子模块；Harness 进入带
+`commons-io 2.16.1` 的无容器 Harness 子模块；Provider、A2A 和 Spring 纵切保留在现有
+Spring Agent testcase 子模块。该拆分避免 Spring／Solon `ContextAware` ServiceLoader 和
+Harness 压缩依赖污染另一批测试，同时仍全部归属于 `liteflow-testcase-el` 大模块。
 
 迁移后应满足：
 
@@ -67,10 +74,10 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test
 
 ### 文件系统布局
 
-原 `liteflow-react-agent-*` 的 59 个文件与 `AgentConfigV2Test` 位于：
+原 `liteflow-react-agent-core` 的 30 个文件与 `AgentConfigV2Test` 位于：
 
 ```text
-liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/<原 package 路径>
+liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/<原 package 路径>
 ```
 
 例如：
@@ -83,7 +90,7 @@ liteflow-react-agent/liteflow-react-agent-core/src/test/java/
 迁移为：
 
 ```text
-liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/
+liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/
   com/yomahub/liteflow/agent/component/AbstractAgentComponentTest.java
 ```
 
@@ -95,7 +102,7 @@ liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/
 |---|---|
 | Spring Boot 3 `AgentPropertyBindingTest` | `liteflow-testcase-el-springboot` |
 | Spring Boot 4 `AgentPropertyBindingTest` | `liteflow-testcase-el-springboot4` |
-| `SolonCmpAroundAspectTest` | `liteflow-testcase-el-solon` |
+| `SolonCmpAroundAspectTest` | `liteflow-testcase-el-react-agent-core`（无容器，保留 `Solon.context() == null` 前提） |
 
 不得把这三个测试合并进 `liteflow-testcase-el-react-agent`，否则会混合 Spring Boot 3、
 Spring Boot 4 与 Solon 的独立 classpath 边界。
@@ -117,9 +124,15 @@ package-private builder bridge、factory seam 或测试辅助类型。迁移不�
 
 ### testcase 模块
 
-`liteflow-testcase-el-react-agent` 作为 Agent 运行时、基础配置、Provider、Harness 与 A2A
-测试的集中执行模块。其测试
-classpath 应显式依赖以下 LiteFlow 模块：
+三个 Agent testcase 子模块共同承载集中测试：
+
+- `liteflow-testcase-el-react-agent-core`：基础配置、Agent Core 和 Solon ServiceLoader
+  无容器契约；
+- `liteflow-testcase-el-react-agent-harness`：Harness 无容器契约与固定
+  `commons-io 2.16.1` 测试 classpath；
+- `liteflow-testcase-el-react-agent`：Provider、A2A 和 Spring Agent 纵切。
+
+它们的测试 classpath 应显式依赖以下 LiteFlow 模块：
 
 - `liteflow-react-agent-core`；
 - 四个 Provider 模块；
@@ -146,11 +159,12 @@ classpath 应显式依赖以下 LiteFlow 模块：
 
 迁移按依赖从低到高分五批完成，每批都必须有独立的 RED／GREEN 证据：
 
-1. **基础配置与 Core 批次**：迁移 `AgentConfigV2Test`、27 个 Agent Core 测试类及 3 个测试夹具；
+1. **基础配置与 Core 批次**：迁移 `AgentConfigV2Test`、27 个 Agent Core 测试类及 3 个测试夹具到无容器 Core 子模块；
 2. **Provider 批次**：迁移 OpenAI、Anthropic、Gemini、DashScope 的 8 个测试源码；
-3. **Harness 批次**：迁移 15 个测试源码与 fake sandbox／snapshot 夹具；
+3. **Harness 批次**：迁移 15 个测试源码与 fake sandbox／snapshot 夹具到无容器 Harness 子模块；
 4. **A2A 批次**：迁移 6 个 client／server 测试源码；
-5. **框架集成批次**：分别迁移 Spring Boot 3、Spring Boot 4 与 Solon 的 3 个测试。
+5. **框架集成批次**：分别迁移 Spring Boot 3、Spring Boot 4 的绑定测试，并把要求 Solon
+   容器未启动的 ServiceLoader 契约迁入无容器 Core 子模块。
 
 每批迁移后，应在 testcase 模块中运行对应测试类，并确认生产模块的原文件已经删除。
 

@@ -4,15 +4,15 @@
 
 **Goal:** 把 AgentScope 2 升级新增的 63 个测试源码与夹具全部迁入 `liteflow-testcase-el` 大模块，同时保持原 package、测试语义、离线边界和依赖隔离。
 
-**Architecture:** `liteflow-testcase-el-react-agent` 集中承载基础 Agent 配置、Core、Provider、Harness 与 A2A 测试；Spring Boot 3、Spring Boot 4、Solon 的集成测试进入各自 testcase 子模块。迁移只改变测试物理位置和测试 classpath，不扩大生产 API，也不改变生产依赖；最终用永久结构契约阻止测试重新进入生产模块。
+**Architecture:** `liteflow-testcase-el-react-agent-core` 集中承载无容器的基础配置、Core 与 Solon ServiceLoader 隔离测试；`liteflow-testcase-el-react-agent-harness` 集中承载无容器 Harness 测试；现有 `liteflow-testcase-el-react-agent` 承载 Provider、A2A 与 Spring 纵切。Spring Boot 3、Spring Boot 4 的绑定测试进入各自 testcase 子模块。迁移只改变测试物理位置和测试 classpath，不扩大生产 API，也不改变生产依赖；最终用永久结构契约阻止测试重新进入生产模块。
 
 **Tech Stack:** Java 17、JUnit 5、Maven Surefire／Failsafe、Spring Boot 3／4、Solon、Reactor Test、Mockito、AgentScope 2.0.2。
 
 ## Global Constraints
 
 - 本轮只迁移提交 `2655a16b13d7fd95c48575c979cb5b3f45b84b7b` 之后由 AgentScope 2 升级新增的 63 个测试源码与夹具。
-- 原 `liteflow-react-agent-*` 的 59 个文件与 `AgentConfigV2Test` 进入 `liteflow-testcase-el-react-agent`。
-- Spring Boot 3、Spring Boot 4、Solon 的三个集成测试分别进入 `liteflow-testcase-el-springboot`、`liteflow-testcase-el-springboot4`、`liteflow-testcase-el-solon`。
+- 原 Agent Core 的 30 个文件与 `AgentConfigV2Test` 进入无容器 `liteflow-testcase-el-react-agent-core`；Harness 的 15 个文件进入无容器 `liteflow-testcase-el-react-agent-harness`；Provider 与 A2A 的 14 个文件进入现有 `liteflow-testcase-el-react-agent`。
+- Spring Boot 3、Spring Boot 4 的绑定测试分别进入 `liteflow-testcase-el-springboot`、`liteflow-testcase-el-springboot4`；要求 `Solon.context() == null` 的 ServiceLoader 隔离测试进入无容器 Core testcase 子模块。
 - 所有迁移文件保留原 Java package；不得为测试增加 public API。
 - 生产模块迁移后不得保留 `src/test` 文件；只删除确认仅服务于迁出测试的测试依赖。
 - 默认测试必须离线；不得调用真实 Provider、Docker daemon、网络或真实 A2A transport。
@@ -33,7 +33,9 @@
 
 ### Maven 修改
 
-- `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`：集中测试依赖；Provider 改为 test scope；显式增加 Agent Core、A2A Server 与 Reactor Test。
+- `liteflow-testcase-el/liteflow-testcase-el-react-agent-core/pom.xml`：无容器 Core、基础配置和 Solon ServiceLoader 隔离测试依赖。
+- `liteflow-testcase-el/liteflow-testcase-el-react-agent-harness/pom.xml`：无容器 Harness 测试依赖与 `commons-io 2.16.1` 兼容边界。
+- `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`：Provider、A2A 与 Spring 纵切测试依赖；Provider 改为 test scope；显式增加 Agent Core、A2A Server 与 Reactor Test。
 - `liteflow-testcase-el/liteflow-testcase-el-springboot/pom.xml`：为迁入的 Spring Boot 3 Agent 绑定测试增加 test-scope Agent Core。
 - `liteflow-react-agent/liteflow-react-agent-{core,openai,anthropic,gemini,dashscope,harness,a2a}/pom.xml`：删除迁出测试专用依赖；Agent Core 在升级基线前已有的 JUnit 依赖保持不变。
 - `liteflow-core/pom.xml`：删除本次升级为 `AgentConfigV2Test` 新增的 JUnit 依赖。
@@ -43,12 +45,12 @@
 
 ### 迁移目录
 
-- `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**` → `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/**`。
+- `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**` → `liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**`。
 - Provider 的 `com/yomahub/liteflow/agent/{openai,anthropic,gemini,dashscope}/**` → 集中模块相同 package 路径。
-- Harness 的 `com/yomahub/liteflow/agent/harness/**` → 集中模块相同 package 路径。
+- Harness 的 `com/yomahub/liteflow/agent/harness/**` → `liteflow-testcase-el-react-agent-harness` 相同 package 路径。
 - A2A 的 `com/yomahub/liteflow/agent/a2a/**` → 集中模块现有 `com/yomahub/liteflow/agent/a2a/**` 路径。
-- `liteflow-core/.../AgentConfigV2Test.java` → 集中模块 `com/yomahub/liteflow/property/agent/AgentConfigV2Test.java`。
-- 三个框架测试 → 各自 testcase 子模块的原 package 路径。
+- `liteflow-core/.../AgentConfigV2Test.java` → Core testcase 子模块 `com/yomahub/liteflow/property/agent/AgentConfigV2Test.java`。
+- Spring Boot 3／4 测试 → 各自 testcase 子模块的原 package 路径；Solon ServiceLoader 测试 → 无容器 Core testcase 子模块的原 package 路径。
 
 ---
 
