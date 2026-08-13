@@ -65,7 +65,7 @@ Looking forward to your use！
 
 Starting from v2.16.0, LiteFlow ships its own AI Agent module, `liteflow-react-agent`.
 
-It is not a simple "LLM component". Instead, it wraps a full **ReAct (Reasoning + Acting) Agent** into a standard LiteFlow component — **one component is one Agent**. You only declare a component and implement a few simple methods; talking to LLM providers, multi-turn conversation memory, and the Skills system are all handled for you by the module.
+It is not a simple "LLM component". The lightweight core wraps a full **ReAct (Reasoning + Acting) Agent** into a standard LiteFlow component — **one component is one Agent**. Optional modules add AgentScope Harness context engineering and policy-bound local, remote, or Docker filesystem backends.
 
 Once an Agent becomes a LiteFlow component, it automatically inherits the full orchestration power of LiteFlow. You write rules exactly the way you always have — except one of the nodes is now a thinking AI:
 
@@ -85,9 +85,9 @@ THEN(prepare, WHEN(analyzerAgent, riskAgent), summaryAgent, notify);
 
 None of `THEN`, `WHEN`, `IF`, `SWITCH` or `FOR` here is newly invented for AI — they are the same orchestration operators LiteFlow has used for years. **If you can orchestrate LiteFlow, you can orchestrate AI.**
 
-The module connects to mainstream LLM platforms — OpenAI, Claude, Gemini, DeepSeek, Qwen (DashScope), Kimi, GLM and more — and provides multi-turn conversation memory, the Skills system, workspace file tools, streaming output, and so on. Switching models is basically a one-line change to `model()`.
+The module connects to mainstream LLM platforms — OpenAI, Claude, Gemini, DeepSeek, Qwen (DashScope), Kimi, GLM and more — and provides namespaced AgentScope state, typed event observation, structured output, HITL, skills, and optional Harness/sandbox support. Switching models is basically a one-line change to `model()`.
 
-> Note: The AI Agent module is built on agentscope-java and requires JDK 21+ at runtime. See the [official documentation](https://liteflow.cc/) for the full usage guide.
+> Note: The AI Agent modules are compiled and verified on JDK 17 with AgentScope Java 2.0.2. Guarded local filesystem access is path protection inside the host JVM, not a security sandbox; use a properly hardened Docker or remote backend for untrusted execution. See the [official documentation](https://liteflow.cc/) for the full usage guide.
 
 **DISCORD LINK**
 

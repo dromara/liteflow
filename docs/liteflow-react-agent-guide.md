@@ -1,6 +1,6 @@
 # LiteFlow ReAct Agent 使用指南
 
-本文介绍如何在 LiteFlow 中使用 `liteflow-react-agent`，把 agentscope-java 的 `ReActAgent` 当作普通 LiteFlow 节点编排到 EL 链路中。
+本文介绍如何在 LiteFlow 中使用基于 AgentScope Java 2.0.2 的 Agent 模块：用轻量 `ReActAgentComponent` 编排常规 Agent，用可选 `HarnessAgentComponent` 获得上下文工程与受控文件系统能力，并通过可选 A2A 模块调用或暴露远端 Agent。
 
 读完本文后，你应该能够：
 
@@ -8,35 +8,39 @@
 - 编写一个继承 `ReActAgentComponent` 的 Agent 组件；
 - 在 EL 中组合 Agent、普通节点、条件路由和并行节点；
 - 通过 `ExecuteOption.eventListener(...)` 接收 Agent 执行中的流式事件；
-- 正确理解 runtime identity、StateStore、workspace、内置文件工具、Shell 工具和 Skills 的边界。
+- 正确理解 runtime identity、StateStore、workspace、Harness sandbox、A2A 与资源生命周期边界。
 
 > 当前仓库根版本：`2.16.1.1`。
 >
-> 当前源码中 `liteflow-react-agent` 聚合模块的 `maven.compiler.source` / `target` 为 `17`，根 `compile-17+` profile 会在 JDK 17 及以上激活该模块。实际运行时还需要满足 agentscope-java 及具体模型 SDK 的运行要求。
+> Agent 模块以 JDK 17 编译并在 JDK 17 验证。根项目的其它模块仍可保持各自的 Java 基线；使用 Agent 模块的应用必须运行在 JDK 17 或更高版本。
+>
+> 从 1.x 升级时，请同时阅读[《AgentScope 1.x 到 2.0.2 迁移指南》](liteflow-react-agent-agentscope-2-migration.md)。
 
 ---
 
 ## 1. 模块说明
 
-`liteflow-react-agent` 是一个聚合模块，核心能力在 `liteflow-react-agent-core`，不同模型供应商由独立子模块提供便捷入口。
+`liteflow-react-agent` 是聚合父模块。业务项目应按需选择细粒度模块，不要直接引入 AgentScope 聚合包。
 
 | 模块 | 作用 |
 | --- | --- |
-| `liteflow-react-agent-core` | `ReActAgentComponent`、`ModelSpec`、runtime identity/guard、StateStore、Middleware、流式事件桥接、workspace 文件工具与受管 Shell 工具 |
+| `liteflow-react-agent-core` | `AbstractAgentComponent`、`ReActAgentComponent`、runtime identity/guard、StateStore、Middleware、结构化输出、HITL、workspace 文件工具与受管 Shell 工具 |
 | `liteflow-react-agent-openai` | OpenAI 官方 API + OpenAI 兼容协议，内置 DeepSeek、Kimi、GLM、Minimax 便捷入口 |
 | `liteflow-react-agent-anthropic` | Anthropic Claude 模型入口 |
 | `liteflow-react-agent-gemini` | Google Gemini 模型入口 |
 | `liteflow-react-agent-dashscope` | 阿里云 DashScope / Qwen 模型入口 |
+| `liteflow-react-agent-harness` | 可选 AgentScope Harness：compaction、memory、skills、子 Agent、task／plan 和 guarded local／Docker／custom filesystem |
+| `liteflow-react-agent-a2a` | 可选 A2A 客户端组件与不绑定 Web 框架的服务端协议适配器 |
 
-业务项目通常只需要引入一个平台模块。平台模块会传递依赖 `liteflow-react-agent-core`。
+业务项目通常只需要一个 Provider 模块；Provider、Harness 与 A2A 模块都会按需传递 core。`liteflow-react-agent-a2a` 的 server artifact 是 optional：只调用远端 Agent 的应用不会被迫传递服务端依赖。
 
 ---
 
 ## 2. 快速开始
 
-### 2.1 引入依赖
+### 2.1 JDK、BOM 与依赖选择
 
-以 DeepSeek 这类 OpenAI 兼容平台为例：
+仅使用 LiteFlow Provider 时，使用同一 `${liteflow.version}` 即可：
 
 ```xml
 <dependency>
@@ -46,7 +50,49 @@
 </dependency>
 ```
 
-业务应用仍需引入 LiteFlow 对应的运行集成，例如 `liteflow-spring-boot-starter`、`liteflow-spring-boot4-starter` 或其他已有 LiteFlow starter；模型平台模块只提供 ReAct Agent 能力和平台 SDK 入口。如果一个应用里要同时使用多个模型平台，可以同时引入多个平台模块。
+业务应用仍需引入对应的 LiteFlow 集成，例如 `liteflow-spring-boot-starter`、`liteflow-spring-boot4-starter` 或 Solon plugin。模型模块只提供 Agent 与 Provider 能力。
+
+应用若直接声明 AgentScope 工件，例如使用 A2A 服务端类型，应显式导入与 LiteFlow 对齐的 BOM：
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-bom</artifactId>
+            <version>2.0.2</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+按能力追加模块：
+
+```xml
+<!-- Harness：上下文工程与 filesystem／sandbox。 -->
+<dependency>
+    <groupId>com.yomahub</groupId>
+    <artifactId>liteflow-react-agent-harness</artifactId>
+    <version>${liteflow.version}</version>
+</dependency>
+
+<!-- A2A 客户端；服务端 API 在本模块中是 optional。 -->
+<dependency>
+    <groupId>com.yomahub</groupId>
+    <artifactId>liteflow-react-agent-a2a</artifactId>
+    <version>${liteflow.version}</version>
+</dependency>
+
+<!-- 只有暴露 A2A server 时才直接声明。版本由 AgentScope BOM 管理。 -->
+<dependency>
+    <groupId>io.agentscope</groupId>
+    <artifactId>agentscope-extensions-a2a-server</artifactId>
+</dependency>
+```
+
+本仓库当前组合为 LiteFlow `2.16.1.1`、AgentScope `2.0.2`、JDK 17。不要同时加入 `io.agentscope:agentscope` 聚合包，也不要把不同版本的 core、Provider extension、Harness 或 A2A extension 混在同一个运行时。
 
 ### 2.2 配置 LiteFlow 与 Agent
 
@@ -59,7 +105,7 @@ liteflow.agent.runtime.namespace=my-service
 liteflow.agent.shell.mode=disabled
 
 liteflow.agent.openai-compatible.deepseek.api-key=${DEEPSEEK_API_KEY}
-# DeepSeek.of(...) 已内置默认 baseUrl；如需覆盖再配置下一行。
+# DeepSeek.of(...) 使用 AgentScope first-party provider 默认端点；如需覆盖再配置下一行。
 liteflow.agent.openai-compatible.deepseek.base-url=https://api.deepseek.com/v1
 ```
 
@@ -85,6 +131,7 @@ AgentScope 2 执行上下文通过 `LiteFlowAgentContext` 参数与 AgentScope `
 package demo.agent;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.openai.DeepSeek;
 import org.springframework.stereotype.Component;
@@ -231,18 +278,23 @@ if (response.isSuccess()) {
 }
 ```
 
-当前 ReAct Agent 会把 AgentScope 的流事件转换成 LiteFlow 通用 `FlowEvent`：
+当前 ReAct Agent 会把 AgentScope 类型化事件转换成 LiteFlow 通用 `FlowEvent`：
 
-| `FlowEvent#getType()` | 含义 | 典型内容 |
-| --- | --- | --- |
-| `agent.reasoning` | 模型推理 / 回复过程 | 增量文本、最终 assistant 消息、工具调用请求 |
-| `agent.tool_result` | 工具执行结果 | 工具输出或工具执行中的增量片段 |
-| `agent.summary` | 达到最大迭代次数后的总结 | summary 生成过程或最终 summary |
-| `agent.result` | 本轮 Agent 最终结果 | 与最终 `handleReply(reply, context)` 使用的消息一致 |
+| `FlowEvent#getType()` | 含义 |
+| --- | --- |
+| `agent.start`／`agent.end` | 一次 Agent 执行的类型化起止边界 |
+| `agent.text.delta`／`agent.thinking.delta` | 文本与 thinking 增量 |
+| `agent.tool.call.start`／`delta`／`end` | 工具调用生成过程 |
+| `agent.tool.result.start`／`delta`／`end` | 工具结果过程 |
+| `agent.confirm.required`／`agent.confirm.result` | HITL 请求与确认结果 |
+| `agent.result`／`agent.error` | 最终消息或终态错误；`last=true` |
+| `agent.reasoning`／`agent.tool_result`／`agent.summary` | 兼容消费方的聚合事件；分别对应文本、工具结果与 hint summary |
 
-`FlowEvent` 会携带 `chainId`、`nodeId`、`requestId`、`conversationId`、`text`、`last`、`timestamp` 和原始 `data`。其中 `nodeId` 对多 Agent 链路很重要：`WHEN(agentA, agentB)` 并发执行时，多个 Agent 的流式事件可能交错到达，调用方应按 `nodeId`、`conversationId` 或业务自定义字段分组展示。
+`FlowEvent` 会携带 `chainId`、`nodeId`、`requestId`、`conversationId`、`text`、`last`、`timestamp` 和 `AgentFlowEventData`。后者包含原始类型化 `AgentEvent`、user／conversation／agent／trace、taskId 与 replyId correlation。`nodeId` 对多 Agent 链路很重要：`WHEN(agentA, agentB)` 并发执行时，多个 Agent 的流式事件可能交错到达，调用方应按 `nodeId`、`conversationId`、taskId 或 replyId 分组展示。
 
 无论是否注册 `eventListener`，`ReActCallExecutor` 始终通过 `agent.call(...)`（结构化输出时使用对应重载）执行。AgentScope 的类型化事件由 `FlowEventBridgeMiddleware` 观察；当前 Slot 注册了 listener 时，middleware 才把事件映射为 `FlowEvent` 并投递。调用结束后组件执行 `handleReply(reply, context)`；AgentScope 与所配置 `AgentStateStore` 的状态读写路径不因 listener 是否存在而改变。
+
+内部观察对象是 AgentScope 2 的类型化 `AgentEvent`，包括 reasoning／acting 的前后事件、`TextBlockDeltaEvent`、`AgentResultEvent` 与 `RequireUserConfirmEvent`。`ChatUsageMiddleware` 从类型化 model-call 结果累计 usage，`SkillTrackingMiddleware` 只记录真实成功的 skill load。业务 listener 看到的是兼容 LiteFlow 全链路的 `FlowEvent`；不要把它误认为 AgentScope 旧 coarse `Event` API。
 
 `eventListener` 在事件投递所在的执行线程中同步回调。生产环境转发到 SSE、WebSocket 或消息队列时，建议只做轻量入队或缓冲，不要执行耗时 I/O。`FlowEventBridgeMiddleware` 按 `liteflow.agent.event.listener-failure-mode` 处理 listener 异常：默认 `FAIL_FAST` 会让本次调用失败，`LOG_AND_CONTINUE` 记录警告并继续处理模型事件。
 
@@ -250,7 +302,18 @@ if (response.isSuccess()) {
 
 ## 3. ReActAgentComponent 扩展点
 
-`ReActAgentComponent#process()` 是 `final`。框架在其中统一完成配置读取、identity 解析、invocation guard、组件 runtime 懒构建、StateStore 恢复/保存、调用与回复处理。业务侧通过覆写受保护方法定制行为。
+`AbstractAgentComponent<R>` 是所有 Agent 节点的生命周期模板，`ReActAgentComponent`、`HarnessAgentComponent` 与 `A2aAgentComponent` 都沿用它。它的 `process()` 是 `final`，统一完成配置校验、identity 解析、invocation guard、组件 runtime 懒构建、每调用上下文、deadline、Slot 清理和回复处理。`ReActAgentComponent` 再添加模型、Toolkit、StateStore、Middleware、HITL 与 AgentScope 2 调用。
+
+扩展点分成两类，不能混用：
+
+构建期扩展点不得读取 Slot；调用期扩展点必须使用框架传入的当次上下文。
+
+| 阶段 | 代表方法 | 数据边界 |
+| --- | --- | --- |
+| 构建期 | `model()`、`systemPrompt()`、`tools()`、`mcpClients()`、`skillRepositories()`、`middlewares()`、`customizeAgent()` | 每个组件实例懒执行一次；不得读取 `Slot` 或保存请求数据 |
+| 调用期 | `resolveUserId(Slot)`、`resolveConversationId(Slot)`、`userPrompt(context)`、`transformSystemPrompt(..., context)`、`routeModel(..., context)`、`customizeRuntimeContext(..., context)`、`handleReply(..., context)` | 每次 `process()` 都执行；通过显式 `LiteFlowAgentContext`／`RuntimeContext` 访问当次数据 |
+
+框架不会提供隐式当前上下文。`LiteFlowAgentContext` 是每调用新建的窄作用域对象，并通过 AgentScope `RuntimeContext` 显式传递。不要在 Model、工具、Middleware、repository 或组件字段中缓存它；`process()` 结束后其 Slot 引用不再可用。
 
 | 方法 | 是否必须 | 默认行为 | 说明 |
 | --- | --- | --- | --- |
@@ -269,6 +332,10 @@ if (response.isSuccess()) {
 | `enableWorkspaceFileTools()` | 否 | `false` | 是否注册内置 workspace 文件工具；启用时要求 guarded-local trusted workspace |
 | `handleReply(reply, context)` | 否 | 按 output spec 写入 Slot | 自定义回复处理逻辑 |
 | `buildModel()` | 否 | 委派 `model().resolve(agentConfig())` | 逃生舱：完全自行构造 agentscope `Model` |
+| `customizeRuntimeContext(builder, context)` | 否 | 不添加额外值 | 把业务类型化数据放进本次 AgentScope `RuntimeContext` |
+| `maxRetries()`／`fallbackModel()` | 否 | AgentScope 默认重试／无 fallback | 模型失败的重试次数与受管 fallback 模型 |
+| `mcpClients()`／`ownsMcpClient(client)` | 否 | 空／借用 | 注册 MCP client，并明确组件是否拥有关闭责任 |
+| `customizeToolkit(toolkit)` | 否 | 不修改 | 在已创建的 Toolkit 上显式追加配置；不要替换受管 Toolkit |
 
 `LiteFlowAgentContext` 作为 invocation 参数提供以下执行上下文：
 
@@ -300,7 +367,9 @@ if (response.isSuccess()) {
 
 `getChatUsage()` 的累计口径：底层 agentscope 每次 model call 的 usage 由 `ChatUsageMiddleware` 写入当前 `LiteFlowAgentContext`，相同 event ID 会去重。因此 `context.getChatUsage()` 给出整次 `process()` 的累计值，而 `Msg#getChatUsage()` 只代表消息自身携带的 usage。
 
-`tools()`、`middlewares()`、`skillRepositories()`、`skillFilter()` 与 `buildModel()` 都属于组件 runtime 构建期声明。不要让这些方法依赖单次请求数据；测试不同声明时应使用新的组件实例或 fresh application context。
+`tools()`、`middlewares()`、`skillRepositories()`、`skillFilter()`、`mcpClients()` 与 `buildModel()` 都属于组件 runtime 构建期声明。不要让这些方法依赖单次请求数据；测试不同声明时应使用新的组件实例或 fresh application context。
+
+AgentScope 2 按 `MiddlewareBase.order()` 降序构造洋葱链。LiteFlow 固定层次为 StateStore failure `10000`、日志 `9000`、类型化事件桥 `8000`、usage／skills tracking `7000`、业务 Middleware `1000`；业务 Middleware 的原对象被包装到 user layer，不能把框架清理与状态检查挤到外面。回调必须返回并串接 `next.apply(input)` 的 publisher，不要自行 `subscribe()`。
 
 **组件方法与 application 配置的优先级**
 
@@ -345,10 +414,10 @@ if (response.isSuccess()) {
 | 模块 | 入口类 | Spec 子类 | 个性参数 |
 | --- | --- | --- | --- |
 | `liteflow-react-agent-openai` | `OpenAI` | `OpenAISpec` | `reasoningEffort`, `frequencyPenalty`, `presencePenalty` |
-| `liteflow-react-agent-openai` | `DeepSeek` | `OpenAICompatibleSpec` | 继承 `OpenAISpec` 全部参数，内置默认 `baseUrl` |
-| `liteflow-react-agent-openai` | `Kimi` | `OpenAICompatibleSpec` | 同上 |
-| `liteflow-react-agent-openai` | `GLM` | `OpenAICompatibleSpec` | 同上 |
-| `liteflow-react-agent-openai` | `Minimax` | `OpenAICompatibleSpec` | 同上 |
+| `liteflow-react-agent-openai` | `DeepSeek` | `OpenAIProviderSpec` | AgentScope first-party provider `deepseek:<model>` |
+| `liteflow-react-agent-openai` | `Kimi` | `OpenAIProviderSpec` | AgentScope first-party provider `kimi:<model>` |
+| `liteflow-react-agent-openai` | `GLM` | `OpenAIProviderSpec` | AgentScope first-party provider `glm:<model>` |
+| `liteflow-react-agent-openai` | `Minimax` | `OpenAIProviderSpec` | AgentScope first-party provider `minimax:<model>` |
 | `liteflow-react-agent-openai` | `OpenAICompatible` | `OpenAICompatibleSpec` | 自定义 `configKey`，用于任意 OpenAI 兼容厂商；无默认 `baseUrl` |
 | `liteflow-react-agent-anthropic` | `Anthropic` | `AnthropicSpec` | `thinking(t -> t.budget(...).enabled(...))`；当前内置解析下发 `budget` |
 | `liteflow-react-agent-anthropic` | `AnthropicCompatible` | `AnthropicSpec` | 自定义 `configKey`，用于 Anthropic 兼容网关 |
@@ -381,7 +450,7 @@ protected ModelSpec<?> model() {
 }
 ```
 
-凭据来源：`liteflow.agent.openai-compatible.deepseek.api-key`，`base-url` 可选；未配置时使用 `DeepSeek` 入口内置的默认地址。
+凭据来源：`liteflow.agent.openai-compatible.deepseek.api-key`，`base-url` 可选；端点默认值由 AgentScope first-party provider 提供，LiteFlow 不复制厂商 URL。
 
 **自定义 OpenAI 兼容厂商：**
 
@@ -588,7 +657,7 @@ protected String resolveConversationId(Slot slot) {
 }
 ```
 
-`conversationId` 与 `agentKey` 只允许直接使用 `[a-zA-Z0-9_-]+`。其他字符会被 URL 编码，并把 `%` 替换为 `_`，从而安全地用作目录名或缓存 key。空值会变成 `_`。
+`conversationId`、`userId` 与 `agentKey` 必须是非空白业务标识，但不会直接成为目录名或 StateStore session。`InvocationIdentityResolver` 使用长度分隔的 UTF-8 输入与 SHA-256 生成固定 `lf-<64 hex>` 标识，避免分隔符碰撞和原始身份泄漏。不要因为最终会哈希就接受未经认证的调用方随意选择 tenant／user identity。
 
 ### 5.3 agentKey 从哪里来
 
@@ -601,9 +670,9 @@ protected String agentKey() {
 }
 ```
 
-这意味着同一段 conversation 中，`mathAgent` 和 `summaryAgent` 默认有各自独立的 Agent 记忆；但它们共享 `workspace.root/<conversationId>/` 目录。
+这意味着同一段 conversation 中，`mathAgent` 和 `summaryAgent` 默认有各自独立的 Agent 状态；但它们共享 `workspace.root/session-<runtimeSessionId>/` 目录与 workspace lease。
 
-如果确实希望多个节点共享同一个 Agent 记忆，可以让它们返回同一个 `agentKey()`；如果希望同一个节点的不同执行完全隔离，可以把 `requestId` 或业务标识拼入 `agentKey()`。
+如果确实希望多个节点共享同一个 Agent 状态，可以让它们返回同一个稳定 `agentKey()`。一个组件实例的 `agentKey()` 在 runtime 建成后不得变化；若要让不同执行完全隔离，应使用不同 `conversationId`，或声明不同的组件实例／稳定 Agent key，而不是拼入一次性的 request ID。
 
 ### 5.4 组件 runtime 生命周期
 
@@ -625,7 +694,9 @@ liteflow.agent.state-store.json-root=./data/agent-state
 liteflow.agent.state-store.failure-policy=FAIL_FAST
 ```
 
-`failure-policy` 可选 `FAIL_FAST` 与 `WARN_AND_CONTINUE`。StateStore 会被 `GuardedNamespacedAgentStateStore` 包装，所有 runtime session key 都绑定到当前 Agent namespace；`BEAN` 类型的 store 由应用拥有，LiteFlow 不关闭它。
+`failure-policy` 可选 `FAIL_FAST` 与 `LOG_AND_CONTINUE`。StateStore 会被 `GuardedNamespacedAgentStateStore` 包装，所有 runtime session key 都绑定到当前 Agent namespace；`BEAN` 类型的 store 由应用拥有，LiteFlow 不关闭它。
+
+JSON Store 适合本地开发和单机持久化，不是多副本协调协议。多副本部署若共享一个 `BEAN` Store，必须同时选择下列一种策略：按 identity 做稳定路由并设置 `coordination-mode=STICKY_ROUTING`；或者提供跨进程的 `AgentInvocationGuard` Bean，并设置 `mode=BEAN`、`coordination-mode=DISTRIBUTED_GUARD`。默认 `LOCAL` guard 只在当前 JVM 内串行化；`strict-distributed=true` 会拒绝“共享 Store 但未声明协调方式”的配置。
 
 ### 5.6 自定义 StateStore
 
@@ -1007,7 +1078,198 @@ protected String resolveConversationId(Slot slot) {
 
 ---
 
-## 9. 完整配置速查
+## 9. 结构化输出、重试、fallback 与 MCP
+
+### 9.1 结构化输出
+
+组件通过覆写一个输出声明选择 Java 类型或 JSON Schema；两者互斥。框架会调用对应的 AgentScope `agent.call` 重载，并让 `AgentReplyHandler` 把结果写回 Slot。
+
+```java
+public record Answer(String text, int confidence) {}
+
+@Override
+protected Class<?> structuredOutputType() {
+    return Answer.class;
+}
+```
+
+需要动态 Schema 时覆写 `structuredOutputSchema()` 并返回完整 `JsonNode`。不要同时返回 Java 类型和 Schema。远端 A2A 客户端当前只支持 TEXT，不接受这两个声明。
+
+### 9.2 重试与 fallback
+
+```java
+@Override
+protected int maxRetries() {
+    return 2;
+}
+
+@Override
+protected Model fallbackModel() {
+    return backupModel;
+}
+```
+
+`maxRetries()` 与 `fallbackModel()` 是组件构建期声明。主模型、fallback 与 `routingModels()` 都由组件 runtime 统一管理；如果它们实现可关闭资源，ownership 与构建回滚由框架处理。`routeModel(defaultModel, context)` 是调用期扩展点，只能返回默认模型或已登记的 routing model，不能临时创建一个未受管模型。
+
+### 9.3 MCP 与串行 Toolkit
+
+覆写 `mcpClients()` 返回已经配置的 AgentScope `McpClientWrapper`；覆写 `ownsMcpClient(client)` 明确 client 是由组件拥有还是由容器借用。组件拥有的 client 在初始化失败、runtime 构建失败和组件关闭时按逆序关闭，借用 client 不会被 LiteFlow 关闭。
+
+`liteflow.agent.toolkit.parallel=false` 是 core 默认值，工具显式串行执行，避免多个工具同时修改同一 workspace 或业务资源。只有确认工具本身线程安全、彼此无顺序依赖并且下游也能承受并发时，才考虑打开并行。Harness 无论该开关如何都使用受管的串行 Toolkit，以维持 filesystem、permission、task 与 snapshot 的事务边界。
+
+## 10. HITL：一次 LiteFlow 调用内的两次 Agent 调用
+
+AgentScope permission 规则返回 ASK 时，LiteFlow 不会自动批准。一个完整 HITL 事务在同一个 `process()`、同一个 invocation lease、同一个 Agent 和同一个 `RuntimeContext` 内完成：
+
+1. 第一次 `agent.call(...)` 返回带 ASKING tool blocks 的 reply，同时类型化 `RequireUserConfirmEvent` 被记录。
+2. `AgentConfirmationHandler` 接收 event 与当前 `LiteFlowAgentContext`，异步返回每个 pending tool 的 `ConfirmResult`。
+3. 框架校验 reply id、tool id／name／input 与结果集合完全匹配。
+4. 第二次 `agent.call(...)` 只发送一个 metadata-only `UserMessage`；metadata 中只有 AgentScope 标准 `Msg.METADATA_CONFIRM_RESULTS`，用于恢复同一轮执行。
+5. 若第二次仍返回 ASK，框架继续有限状态循环；不会递归 `subscribe()`，也不会释放中间 lease。
+
+下面的 handler 批准本轮全部工具。生产系统应在这里连接工单、审批台或用户交互，不要把“全部批准”作为默认策略：
+
+```java
+import com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler;
+import io.agentscope.core.event.ConfirmResult;
+import reactor.core.publisher.Mono;
+
+@Override
+protected AgentConfirmationHandler confirmationHandler() {
+    return (event, context) -> Mono.just(event.getToolCalls().stream()
+            .map(tool -> new ConfirmResult(true, tool))
+            .toList());
+}
+```
+
+拒绝策略和超时必须显式选择：
+
+- `liteflow.agent.hitl.confirmation-timeout` 限制等待人类决策的时间，默认 `2m`；整个 invocation 还受 `runtime.timeout` 的绝对 deadline 限制。
+- `fail-on-denied-tool=false` 时，拒绝结果仍发回 Agent，让它生成不执行该工具的后续回答；设为 `true` 时，调用以 `PERMISSION` 类型失败。
+- handler 缺失、返回 null／empty、返回重复／未知／不匹配结果、抛错或超时，都先以 all-denied continuation 做清理，再保留预期的 `PERMISSION`／`TIMEOUT` 主错误；清理失败只作为 suppressed error。
+- 调用取消会设置 `LiteFlowAgentContext.cancelled` 并清理 Slot attachment、状态故障记录和租约。
+
+Spring／Solon 容器中可以注册恰好一个 `AgentConfirmationHandler` Bean；组件覆写返回的显式 handler 优先。存在多个候选 Bean 会 fail-fast，避免审批路由不确定。
+
+## 11. 可选 Harness：上下文工程与 filesystem
+
+`HarnessAgentComponent` 复用 core 的模型、StateStore、Middleware、HITL 和调用生命周期，并增加 Harness 的上下文工程能力。最小组件与 `ReActAgentComponent` 使用相同的三个核心声明：
+
+```java
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
+import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.openai.DeepSeek;
+
+public final class ResearchHarnessCmp extends HarnessAgentComponent {
+    @Override protected ModelSpec<?> model() { return DeepSeek.of("deepseek-chat"); }
+    @Override protected String systemPrompt() { return "Research in the workspace."; }
+    @Override protected String userPrompt(LiteFlowAgentContext context) { return "summarize"; }
+}
+```
+
+Harness 专用构建期扩展点：
+
+| 扩展点 | 用途与边界 |
+| --- | --- |
+| `additionalContextFiles()` | 按顺序加载 workspace 相对路径；null、空白和重复值 fail-fast |
+| `compactionConfig()` | 上下文压缩；返回 null 时保留 AgentScope Harness 2.0.2 默认值 |
+| `memoryConfig()` | `MEMORY.md` 与 `memory/**` 记忆；guarded local 下按 Agent namespace 和 session 做物理隔离 |
+| `skillRepositories()`／`skillFilter()` | Harness skills；加载结果继续进入 `LiteFlowAgentContext.getUsedSkills()` |
+| `subagents()` | 返回强类型 `List<SubagentDeclaration>`；不要用无类型 Map 描述子 Agent |
+| `taskRepository()`／`ownsTaskRepository()` | task 持久化及 ownership；owned `WorkspaceTaskRepository` 由 Harness 恰好关闭一次 |
+| `enablePlanMode()` | 打开 task／plan 工具，但不会打开 plan shell |
+| `toolResultEvictionConfig()` | 工具结果淘汰；返回 null 保留上游默认值 |
+| `customizeHarness(builder)` | 最后执行；不能替换 LiteFlow 已锁定的 filesystem、workspace、Toolkit、StateStore 或受管 capability |
+
+Harness 总是取得 conversation workspace lease。相同 namespace／user／conversation 的多个 Harness Agent 共享普通 workspace，但各自 AgentState 按 `agentKey` 隔离。Docker runtime 还使用组件级异步单通道 gate，因为 AgentScope Harness 2.0.2 的 sandbox lifecycle middleware 保存单个当前 acquire 状态，不支持同一 runtime 多会话并行。
+
+### 11.1 filesystem 后端
+
+```properties
+# 默认 fail-closed；只有明确接受宿主机文件风险后才能设为 true。
+liteflow.agent.harness.filesystem-backend=guarded-local
+liteflow.agent.harness.trusted-local=true
+```
+
+| 后端 | 隔离强度 | 适用场景 | 必须理解的边界 |
+| --- | --- | --- | --- |
+| `GUARDED_LOCAL` | 路径级防护，不是强沙箱 | 可信本地开发、受控单机任务 | 文件操作仍在宿主 JVM 权限内；路径、符号链接、大小和 namespace guard 不能替代 OS／容器隔离；guarded local 禁用本地子 Agent |
+| `CUSTOM` remote filesystem | 取决于远端服务 | 已有隔离文件服务或企业 sandbox | LiteFlow 只约束配置入口；认证、租户隔离、网络、执行权限、审计与远端生命周期由业务实现负责 |
+| `DOCKER` | 独立容器边界，强于本地路径 guard | 执行不可信命令或需要快照恢复 | 仍依赖 Docker daemon、镜像和宿主配置；不是形式化安全边界；workspace projection 仍需保护宿主源树 |
+
+“guarded local”只表示 fail-closed 路径策略：相对路径规范化、越界／绝对路径／危险 Windows alias 拒绝、符号链接与 real-root 校验、文件大小限制和 Agent memory namespace。它不会拦截应用自己注册的任意 Java 工具，也不会阻止这些工具访问网络或宿主机其它 API。
+
+Docker 默认 image 为 `ubuntu:22.04`、workspace 为 `/workspace`、内存 512 MiB、CPU 1、network `none`，并固定追加 `--cap-drop=ALL`、`--security-opt=no-new-privileges:true`、`--pids-limit=64`。投影根默认只有 `AGENTS.md`、`skills`、`subagents`、`knowledge`、`.skills-cache`；配置只接受安全相对路径。生产应固定镜像 digest、限制 daemon 权限并审计 snapshot 目录。
+
+```properties
+liteflow.agent.harness.filesystem-backend=docker
+liteflow.agent.harness.docker.image=ubuntu:22.04
+liteflow.agent.harness.docker.workspace-root=/workspace
+liteflow.agent.harness.docker.memory-size-bytes=536870912
+liteflow.agent.harness.docker.cpu-count=1
+liteflow.agent.harness.docker.network=none
+liteflow.agent.harness.docker.snapshot-root=./data/agent-snapshots
+liteflow.agent.harness.docker.workspace-projection-enabled=true
+```
+
+仓库包含显式 `agent-docker-it` profile 的真实 Docker IT，但默认测试不会发现或执行它。本次 2.0.2 迁移没有运行 Docker daemon、容器或真实 Docker IT；不能把离线 fake-sandbox 测试理解为真实 Docker 环境已验收。
+
+## 12. 可选 A2A 客户端与服务端
+
+### 12.1 客户端：每调用一个远端 Agent 实例
+
+`A2aAgentComponent` 仍走 core 的 final `process()`、identity、deadline 和 lease，但只支持 TEXT 输出。组件 runtime 只缓存 immutable `AgentCardResolver`／`A2aAgentConfig` binding；每次 subscription 都新建一个 upstream `A2aAgent`，因为 AgentScope 2.0.2 A2A client 在实例字段中保存 current request 和 event context，不能跨并发任务复用。
+
+```java
+import com.yomahub.liteflow.agent.a2a.A2aAgentComponent;
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
+import io.agentscope.core.a2a.agent.card.AgentCardResolver;
+
+public final class RemotePlannerCmp extends A2aAgentComponent {
+    private final AgentCardResolver resolver;
+
+    public RemotePlannerCmp(AgentCardResolver resolver) { this.resolver = resolver; }
+    @Override protected String remoteAgentName() { return "planner"; }
+    @Override protected AgentCardResolver agentCardResolver() { return resolver; }
+    @Override protected String userPrompt(LiteFlowAgentContext context) { return "create a plan"; }
+}
+```
+
+发出的 metadata 恰好包含字符串 `liteflow.userId`、`liteflow.conversationId`、`liteflow.agentKey` 与 `liteflow.traceId`。timeout 或 caller cancellation 只 interrupt 对应实例一次；成功或远端 error 不额外 interrupt。
+
+### 12.2 服务端：协议对象，不是 Web server
+
+服务端装配顺序如下：
+
+```java
+A2aServerAgentFactory factory = A2aServerAgentFactory.forReActAgent(
+        "planner", "Planning agent", options -> createOwnedReActAgent(options));
+LiteFlowA2aAgentRunner runner = new LiteFlowA2aAgentRunner(
+        factory, "my-service", "public-planner", "anonymous");
+AgentScopeA2aServer server = new LiteFlowA2aServerFactory().create(
+        runner, agentCard, transportProperties);
+```
+
+`A2aServerAgentFactory` 必须为每个 active task 打开一个独立且 owned 的 runtime。runner 把远端 session 映射成安全 runtime session，原子拒绝重复 active task，`stop(taskId)` 只 interrupt／close 对应任务；complete、error、cancel 和 stop 都只关闭一次。传入 runtime 的远端 metadata allowlist 只有字符串 `liteflow.traceId` 与 `liteflow.tenantId`。
+
+`LiteFlowA2aServerFactory.create(...)` 只构造 `AgentScopeA2aServer` 协议对象，不创建 Controller、不监听端口，也不调用 `postEndpointReady()`。HTTP／WebSocket endpoint、认证、TLS、限流、业务容器启动与 endpoint-ready 时机必须由应用框架提供。
+
+AgentScope 2.0.2 的 `AgentRunner` 仍返回旧 coarse `Event`。LiteFlow 内部执行已经使用 `streamEvents(..., RuntimeContext)` 与类型化 `AgentEvent`；旧 `Event`／`EventType` 只允许出现在 `A2aProtocolEventAdapter` wire 边界，并带有上游 API 升级后的删除条件。A2A server 当前没有远端 HITL 确认协议，收到 `RequireUserConfirmEvent` 会清晰失败，不会自动批准。
+
+真实 A2A transport、endpoint 互操作与远端 interrupt 延迟未在默认离线套件中执行；需要业务在显式集成环境验证。
+
+## 13. 组件关闭与容器生命周期
+
+每个组件实例拥有一个懒构建 runtime，并实现 `java.io.Closeable`。`close()` 获取写锁，等待当前 invocation 结束，随后幂等关闭 runtime；从正在执行的同一组件调用栈里调用 `close()` 会被拒绝，关闭后也不能重新构建。
+
+- Spring Bean 销毁阶段会按容器生命周期关闭组件；不要额外注册 JVM shutdown hook。
+- Solon Bean stop 路径识别 `Closeable` 并关闭组件；无活动 Solon context 时 SPI 构造不会注册伪生命周期。
+- 非容器场景必须由应用显式 `component.close()`，推荐 try-with-resources 或统一服务 shutdown 阶段。
+- 组件只关闭自己拥有的 Model、MCP client、skill／task repository、filesystem、StateStore 等资源；容器 Bean 与显式 borrowed 资源由提供方关闭。
+- 构建失败会逆序回滚已拥有资源，保留原失败并把清理失败作为 suppressed error。AgentScope Harness 2.0.2 任意未知的 builder late failure 仍有上游非事务边界，升级上游时应重新验证。
+
+## 14. 完整配置速查
 
 ```properties
 # LiteFlow 规则
@@ -1028,6 +1290,18 @@ liteflow.agent.runtime.timeout=2m
 liteflow.agent.state-store.type=memory
 liteflow.agent.state-store.json-root=./data/agent-state
 liteflow.agent.state-store.failure-policy=fail-fast
+liteflow.agent.toolkit.parallel=false
+liteflow.agent.event.listener-failure-mode=fail-fast
+
+# 单 JVM 默认 guard；共享 BEAN Store 时必须声明 sticky routing 或 distributed guard。
+liteflow.agent.invocation-guard.mode=local
+liteflow.agent.invocation-guard.acquire-timeout=2m
+liteflow.agent.invocation-guard.coordination-mode=none
+liteflow.agent.invocation-guard.strict-distributed=true
+
+# Human-in-the-loop
+liteflow.agent.hitl.confirmation-timeout=2m
+liteflow.agent.hitl.fail-on-denied-tool=false
 
 # Shell 工具
 liteflow.agent.shell.mode=disabled
@@ -1044,6 +1318,10 @@ liteflow.agent.defaults.max-iterations=50
 liteflow.agent.skills.enabled=false
 liteflow.agent.skills.path=./skills
 
+# 可选 Harness，默认 guarded-local 且 trusted-local=false，因此不显式信任就 fail-closed。
+liteflow.agent.harness.filesystem-backend=guarded-local
+liteflow.agent.harness.trusted-local=false
+
 # 平台凭据
 liteflow.agent.openai.api-key=${OPENAI_API_KEY}
 liteflow.agent.anthropic.api-key=${ANTHROPIC_API_KEY}
@@ -1057,7 +1335,7 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 
 ---
 
-## 10. 安全建议
+## 15. 安全建议
 
 1. 生产环境默认关闭 Shell：`liteflow.agent.shell.mode=disabled`。
 2. `workspace.root` 使用专门目录，不要和业务源码、日志、密钥目录混放。
@@ -1066,12 +1344,15 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 5. 根据业务体量设置 `max-file-bytes`、`max-output-bytes` 与 runtime/tool timeout，避免 Agent 调用消耗不可控。
 6. 使用 `state-store.type=BEAN` 时，后端 Bean 由业务应用提供，权限、网络访问和生命周期也应由业务应用控制。
 7. 本地文件与 Shell 工具只有在受信部署中才设置 `workspace.trusted-local=true`；该路径保护不是容器沙箱。
-8. 开启 Skills 时，`skills.path` 建议使用只读、受版本管理或受发布流程控制的目录；不要让普通用户直接写入 `SKILL.md` 或其中声明的 Java 工具类。
+8. 开启 Skills 时，`skills.path` 建议使用只读、受版本管理或受发布流程控制的目录；不要让普通用户直接写入 `SKILL.md`。Java 工具只从组件显式注册，不由 skill 文档反射创建。
 9. Core 明确关闭 AgentScope skill code execution；不要在自定义 Agent builder 中重新启用。Skill repository 仍应使用只读、可信内容源。
+10. Harness guarded local 不是安全沙箱；处理不可信命令优先使用受限 Docker 或经过审计的远端 sandbox，并同时约束应用自定义工具。
+11. Docker 的 `network=none`、cap drop 和 no-new-privileges 是默认减权措施，不代表镜像、daemon、host projection 或内核风险已经消失。
+12. A2A server factory 不提供认证、TLS、限流或 endpoint；这些必须由承载它的业务 Web 框架实现。不要把 authorization 或 API key 放进可转发 metadata。
 
 ---
 
-## 11. 故障排查
+## 16. 故障排查
 
 | 现象 | 常见原因 | 处理方式 |
 | --- | --- | --- |
@@ -1097,13 +1378,15 @@ liteflow.agent.anthropic-compatible.gateway.base-url=https://anthropic-gateway.e
 
 ---
 
-## 12. 参考位置
+## 17. 参考位置
 
 - Core 模块：`liteflow-react-agent/liteflow-react-agent-core/`
 - OpenAI 模块：`liteflow-react-agent/liteflow-react-agent-openai/`
 - Anthropic 模块：`liteflow-react-agent/liteflow-react-agent-anthropic/`
 - Gemini 模块：`liteflow-react-agent/liteflow-react-agent-gemini/`
 - DashScope 模块：`liteflow-react-agent/liteflow-react-agent-dashscope/`
+- Harness 模块：`liteflow-react-agent/liteflow-react-agent-harness/`
+- A2A 模块：`liteflow-react-agent/liteflow-react-agent-a2a/`
 - Skill 入口：`liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/`
 - Skill 配置：`liteflow-core/src/main/java/com/yomahub/liteflow/property/agent/SkillsConfig.java`
 - 示例测试：`liteflow-testcase-el/liteflow-testcase-el-react-agent/`

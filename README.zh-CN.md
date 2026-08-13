@@ -65,7 +65,7 @@ LiteFlow期待你的了解！
 
 从 v2.16.0 起，LiteFlow 拥有了自己的 AI Agent 模块 `liteflow-react-agent`。
 
-它做的不是简单的"大模型组件"，而是把一个完整的 **ReAct（Reasoning + Acting）Agent** 封装成标准的 LiteFlow 组件——**一个组件，就是一个 Agent**。你只需声明一个组件、实现几个简单的方法，对接大模型、多轮会话记忆、Skills 技能体系这些能力，模块都替你包揽好了。
+它做的不是简单的“大模型组件”。轻量 core 把完整的 **ReAct（Reasoning + Acting）Agent** 封装成标准 LiteFlow 组件——**一个组件，就是一个 Agent**；可选模块再提供 AgentScope Harness 上下文工程，以及受策略约束的本地、远端或 Docker filesystem。
 
 而一旦 Agent 变成了 LiteFlow 组件，它就自动继承了 LiteFlow 的全套编排能力。你原来怎么写规则，现在还怎么写，只不过其中某个节点，是一个会思考的 AI：
 
@@ -85,9 +85,9 @@ THEN(prepare, WHEN(analyzerAgent, riskAgent), summaryAgent, notify);
 
 这里的 `THEN`、`WHEN`、`IF`、`SWITCH`、`FOR` 没有一个是为 AI 新造的，全是 LiteFlow 用了多年的编排算子。**你会编排 LiteFlow，你就会编排 AI。**
 
-该模块对接了主流大模型平台：OpenAI、Claude、Gemini、DeepSeek、通义千问（DashScope）、Kimi、GLM 等，并提供多轮会话记忆、Skills 技能体系、工作空间文件工具、流式输出等能力，换模型基本就是换一行 `model()` 的事。
+该模块对接了主流大模型平台：OpenAI、Claude、Gemini、DeepSeek、通义千问（DashScope）、Kimi、GLM 等，并提供 namespaced AgentScope state、类型化事件、结构化输出、HITL、skills，以及可选 Harness／sandbox。换模型基本就是换一行 `model()` 的事。
 
-> 提示：AI Agent 模块基于 agentscope-java，运行时需要 JDK 21+。完整使用方式请查阅[官方文档](https://liteflow.cc/)。
+> 提示：AI Agent 模块基于 AgentScope Java 2.0.2，并在 JDK 17 编译和验证。Guarded local 只是宿主 JVM 内的路径防护，不是安全沙箱；执行不可信任务时应使用经过加固的 Docker 或远端后端。完整使用方式请查阅[官方文档](https://liteflow.cc/)。
 
 ## 👑LF CLUB社区
 
