@@ -64,6 +64,7 @@
                 <jdk>[17,)</jdk>
             </activation>
             <modules>
+                <module>liteflow-testcase-el-react-agent-core</module>
                 <module>liteflow-testcase-el-react-agent</module>
                 <module>liteflow-testcase-el-springboot4</module>
 				<module>liteflow-testcase-el-rule-db-sql-springboot4</module>
