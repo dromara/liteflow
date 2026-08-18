@@ -24,6 +24,7 @@ class HarnessConfigTest {
     @Test
     void guardedLocalDefaultsFailClosedUntilTrustIsExplicit() {
         AgentConfig agentConfig = new AgentConfig();
+        agentConfig.getStateStore().setJsonRoot("target/agent-state");
 
         assertEquals(HarnessFilesystemBackend.GUARDED_LOCAL,
                 agentConfig.getHarness().getFilesystemBackend());

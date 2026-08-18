@@ -160,6 +160,7 @@ class AgentComponentLifecycleTest {
 
     private static void configureAgent() {
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getRuntime().setNamespace("lifecycle-test");
         agent.getRuntime().setTimeout(Duration.ofSeconds(10));
         LiteflowConfig config = new LiteflowConfig();

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="realBasicChain">
+        THEN(realChatAgent);
+    </chain>
+
+    <chain name="realParamsChain">
+        THEN(realParamsAgent);
+    </chain>
+
+    <chain name="realExplicitChain">
+        THEN(realExplicitCredentialAgent);
+    </chain>
+
+    <chain name="realBuildModelChain">
+        THEN(realBuildModelAgent);
+    </chain>
+</flow>

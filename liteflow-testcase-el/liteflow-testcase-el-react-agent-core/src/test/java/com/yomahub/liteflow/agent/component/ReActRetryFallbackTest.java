@@ -144,6 +144,7 @@ class ReActRetryFallbackTest {
 
     private AgentConfig configure() {
         AgentConfig agentConfig = new AgentConfig();
+        agentConfig.getStateStore().setJsonRoot("target/agent-state");
         agentConfig.getRuntime().setNamespace("retry-test");
         agentConfig.getRuntime().setDefaultUserId("user-1");
         agentConfig.getRuntime().setTimeout(Duration.ofSeconds(1));

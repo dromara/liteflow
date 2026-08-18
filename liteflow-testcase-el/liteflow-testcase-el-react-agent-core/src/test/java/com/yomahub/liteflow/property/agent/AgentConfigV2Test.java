@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -20,9 +19,11 @@ class AgentConfigV2Test {
 		assertNull(config.getRuntime().getNamespace());
 		assertEquals("anonymous", config.getRuntime().getDefaultUserId());
 		assertEquals(Duration.ofMinutes(2), config.getRuntime().getTimeout());
-		assertEquals(AgentStateStoreType.MEMORY, config.getStateStore().getType());
+		assertEquals(AgentStateStoreType.JSON, config.getStateStore().getType());
 		assertEquals("./data/agent-state", config.getStateStore().getJsonRoot());
 		assertEquals(AgentStateStoreFailurePolicy.FAIL_FAST, config.getStateStore().getFailurePolicy());
+		assertNull(config.getStateStore().getRedis().getUri());
+		assertNull(config.getStateStore().getMysql().getJdbcUrl());
 		assertFalse(config.getToolkit().isParallel());
 		assertEquals(AgentListenerFailureMode.FAIL_FAST, config.getEvent().getListenerFailureMode());
 		assertEquals(AgentInvocationGuardMode.LOCAL, config.getInvocationGuard().getMode());
@@ -46,61 +47,10 @@ class AgentConfigV2Test {
 	}
 
 	@Test
-	void acceptsUntouchedLegacyMemoryDefaultsAfterNamespaceIsConfigured() {
-		AgentConfig config = configuredConfig();
-
-		assertDoesNotThrow(config::validateForExecution);
-	}
-
-	@Test
-	void rejectsExplicitLegacyMemoryConfigurationWithMigrationHint() {
-		AgentConfig config = configuredConfig();
-		config.getSession().getMemory().setMode(MemoryStorageMode.NONE);
-
-		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
-
-		assertTrue(error.getMessage().contains("session.memory -> state-store"));
-	}
-
-	@Test
-	void rejectsLegacyMemoryBeforeBlankRuntimeNamespace() {
-		AgentConfig config = new AgentConfig();
-		config.getSession().getMemory().setMode(MemoryStorageMode.NONE);
-
-		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
-
-		assertTrue(error.getMessage().contains("session.memory -> state-store"));
-	}
-
-	@Test
-	void rejectsExplicitLegacyNestedMemoryConfigurationWithMigrationHint() {
-		AgentConfig config = configuredConfig();
-		config.getSession().getMemory().getRedis().setBeanName("legacyRedis");
-
-		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
-
-		assertTrue(error.getMessage().contains("session.memory -> state-store"));
-	}
-
-	@Test
-	void rejectsNullLegacyNestedStoresWithMigrationHint() {
-		AgentConfig redisConfig = configuredConfig();
-		redisConfig.getSession().getMemory().setRedis(null);
-		assertMigrationError(redisConfig);
-
-		AgentConfig mysqlConfig = configuredConfig();
-		mysqlConfig.getSession().getMemory().setMysql(null);
-		assertMigrationError(mysqlConfig);
-	}
-
-	private AgentConfig configuredConfig() {
+	void acceptsConfiguredNamespaceBeforeExecution() {
 		AgentConfig config = new AgentConfig();
 		config.getRuntime().setNamespace("orders");
-		return config;
-	}
 
-	private void assertMigrationError(AgentConfig config) {
-		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
-		assertTrue(error.getMessage().contains("session.memory -> state-store"));
+		org.junit.jupiter.api.Assertions.assertDoesNotThrow(config::validateForExecution);
 	}
 }

@@ -23,9 +23,6 @@ import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
-import com.yomahub.liteflow.agent.tool.GuardedWorkspacePathResolver;
-import com.yomahub.liteflow.agent.tool.ManagedShellCommandTool;
-import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.ShellMode;
@@ -44,9 +41,13 @@ import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.ToolkitConfig;
+import io.agentscope.core.tool.coding.ShellCommandTool;
+import io.agentscope.core.tool.file.ReadFileTool;
+import io.agentscope.core.tool.file.WriteFileTool;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
 import reactor.core.publisher.Mono;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -467,9 +468,10 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
             toolkit.registerTool(tool);
         }
         if (enableWorkspaceFileTools() || enableShellTool()) {
-            GuardedWorkspacePathResolver workspace = guardedWorkspace(config);
+            Path baseDir = workspaceBaseDir(config);
             if (enableWorkspaceFileTools()) {
-                toolkit.registerTool(new WorkspaceFileTools(workspace, config));
+                toolkit.registerTool(new ReadFileTool(baseDir.toString()));
+                toolkit.registerTool(new WriteFileTool(baseDir.toString()));
             }
             if (enableShellTool()) {
                 if (config.getShell() == null
@@ -478,7 +480,17 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
                     throw new AgentConfigException(
                             "enableShellTool requires liteflow.agent.shell.mode != DISABLED");
                 }
-                toolkit.registerTool(new ManagedShellCommandTool(workspace, config));
+                List<String> whitelist = config.getShell().getWhitelist();
+                if (whitelist == null || whitelist.isEmpty()) {
+                    throw new AgentConfigException(
+                            "enableShellTool requires a non-empty liteflow.agent.shell.whitelist");
+                }
+                if (whitelist.stream().anyMatch(command -> command == null || command.isBlank())) {
+                    throw new AgentConfigException(
+                            "enableShellTool requires non-blank liteflow.agent.shell.whitelist entries");
+                }
+                toolkit.registerTool(new ShellCommandTool(
+                        baseDir.toString(), Set.copyOf(whitelist), null));
             }
         }
         customizeToolkit(toolkit);
@@ -504,7 +516,7 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         return toolkit;
     }
 
-    private GuardedWorkspacePathResolver guardedWorkspace(AgentConfig config) {
+    private Path workspaceBaseDir(AgentConfig config) {
         if (config.getWorkspace() == null) {
             throw new AgentConfigException("liteflow.agent.workspace must not be null");
         }
@@ -521,19 +533,12 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
             throw new AgentConfigException(
                     "built-in workspace tools require a valid workspace.root");
         }
-        if (config.getWorkspace().getMaxFileBytes() <= 0) {
-            throw new AgentConfigException("workspace.maxFileBytes must be positive");
-        }
-        if (config.getWorkspace().getMaxListSize() <= 0) {
-            throw new AgentConfigException("workspace.maxListSize must be positive");
-        }
         try {
-            return new GuardedWorkspacePathResolver(
-                    Path.of(root),
-                    config.getWorkspace().getMaxFileBytes(),
-                    config.getWorkspace().isAutoCreate());
+            Path baseDir = Path.of(root).toAbsolutePath().normalize();
+            Files.createDirectories(baseDir);
+            return baseDir;
         }
-        catch (IllegalArgumentException failure) {
+        catch (IllegalArgumentException | java.io.IOException failure) {
             throw new AgentConfigException("invalid guarded local workspace.root", failure);
         }
     }

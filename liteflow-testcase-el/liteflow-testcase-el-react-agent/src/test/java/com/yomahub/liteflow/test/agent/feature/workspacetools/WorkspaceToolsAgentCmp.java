@@ -2,38 +2,41 @@ package com.yomahub.liteflow.test.agent.feature.workspacetools;
 
 import com.yomahub.liteflow.agent.component.ReActAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.agent.tool.GuardedWorkspacePathResolver;
-import com.yomahub.liteflow.agent.tool.WorkspaceFileTools;
 import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
+import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.tool.file.ReadFileTool;
+import io.agentscope.core.tool.file.WriteFileTool;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 开启 workspace 文件工具的 Agent，并在 userPrompt 中直接调用 {@link WorkspaceFileTools}
- * 验证其行为（read/write/list/delete/path-escape），使断言不依赖模型是否真的调用工具。
+ * 开启 AgentScope 内置文件工具的 Agent，并在 userPrompt 中直接调用内置
+ * {@code ReadFileTool}/{@code WriteFileTool} 验证读写、列目录与路径越界拒绝，
+ * 使断言不依赖模型是否真的调用工具。
  */
 @Component("workspaceToolsAgent")
 public class WorkspaceToolsAgentCmp extends ReActAgentComponent {
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
 
-    public static final AtomicReference<String> TRUNCATED_READ = new AtomicReference<>();
-    public static final AtomicReference<List<String>> LIST_RESULT = new AtomicReference<>();
+    public static final AtomicReference<String> READ_RESULT = new AtomicReference<>();
+    public static final AtomicReference<String> LIST_RESULT = new AtomicReference<>();
     public static final AtomicReference<String> RELATIVE_ESCAPE = new AtomicReference<>();
     public static final AtomicReference<String> ABSOLUTE_ESCAPE = new AtomicReference<>();
-    public static final AtomicReference<Boolean> DELETED = new AtomicReference<>();
+    public static final AtomicReference<Boolean> FILE_EXISTS = new AtomicReference<>();
 
     public static void reset() {
         PROBE.set(new AgentProbe());
-        TRUNCATED_READ.set(null);
+        READ_RESULT.set(null);
         LIST_RESULT.set(null);
         RELATIVE_ESCAPE.set(null);
         ABSOLUTE_ESCAPE.set(null);
-        DELETED.set(null);
+        FILE_EXISTS.set(null);
     }
 
     @Override
@@ -74,43 +77,41 @@ public class WorkspaceToolsAgentCmp extends ReActAgentComponent {
 
     @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
-        java.nio.file.Path root = java.nio.file.Path.of(agentConfig().getWorkspace().getRoot());
-        GuardedWorkspacePathResolver resolver = new GuardedWorkspacePathResolver(
-                root,
-                agentConfig().getWorkspace().getMaxFileBytes(),
-                agentConfig().getWorkspace().isAutoCreate());
-        WorkspaceFileTools tools = new WorkspaceFileTools(resolver, agentConfig());
-        io.agentscope.core.agent.RuntimeContext runtimeContext =
-                io.agentscope.core.agent.RuntimeContext.builder()
-                        .userId(context.getRuntimeUserId())
-                        .sessionId(context.getRuntimeSessionId())
-                        .put(com.yomahub.liteflow.agent.context.LiteFlowAgentContext.class, context)
-                        .put(com.yomahub.liteflow.slot.Slot.class, context.getSlot())
-                        .build();
-        tools.writeFile(runtimeContext, "notes/a.txt", "abcd");
-        tools.writeFile(runtimeContext, "notes/b.txt", "ghij");
-        try {
-            java.nio.file.Files.writeString(
-                    resolver.resolve(context.getRuntimeSessionId(), "notes/a.txt"), "abcdef");
-        } catch (java.io.IOException failure) {
-            throw new IllegalStateException("unable to prepare oversized read fixture", failure);
-        }
-        TRUNCATED_READ.set(tools.readFile(runtimeContext, "notes/a.txt"));
-        LIST_RESULT.set(tools.listFiles(runtimeContext, "notes"));
-        tools.deleteFile(runtimeContext, "notes/b.txt");
-        DELETED.set(!java.nio.file.Files.exists(
-                resolver.resolve(context.getRuntimeSessionId(), "notes/b.txt")));
-        try {
-            tools.readFile(runtimeContext, "../escape.txt");
-        } catch (SecurityException e) {
-            RELATIVE_ESCAPE.set(e.getMessage());
-        }
-        try {
-            tools.readFile(runtimeContext, "/tmp/escape.txt");
-        } catch (SecurityException e) {
-            ABSOLUTE_ESCAPE.set(e.getMessage());
-        }
+        String root = agentConfig().getWorkspace().getRoot();
+        WriteFileTool writeFileTool = new WriteFileTool(root);
+        ReadFileTool readFileTool = new ReadFileTool(root);
+
+        writeFileTool.writeTextFile("notes/a.txt", "abcdef", null).block();
+        FILE_EXISTS.set(java.nio.file.Files.exists(Path.of(root, "notes", "a.txt")));
+
+        ToolResultBlock readResult = readFileTool.viewTextFile("notes/a.txt", null).block();
+        READ_RESULT.set(render(readResult));
+
+        ToolResultBlock listResult = readFileTool.listDirectory("notes").block();
+        LIST_RESULT.set(render(listResult));
+
+        ToolResultBlock relativeEscape = readFileTool.viewTextFile("../escape.txt", null).block();
+        RELATIVE_ESCAPE.set(render(relativeEscape));
+
+        ToolResultBlock absoluteEscape = readFileTool.viewTextFile("/tmp/escape.txt", null).block();
+        ABSOLUTE_ESCAPE.set(render(absoluteEscape));
+
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
+    }
+
+    private static String render(ToolResultBlock result) {
+        if (result == null || result.getOutput() == null) {
+            return null;
+        }
+        StringBuilder rendered = new StringBuilder();
+        for (io.agentscope.core.message.ContentBlock block : result.getOutput()) {
+            if (block instanceof io.agentscope.core.message.TextBlock textBlock) {
+                rendered.append(textBlock.getText());
+            } else {
+                rendered.append(block);
+            }
+        }
+        return rendered.toString();
     }
 }

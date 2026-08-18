@@ -33,6 +33,7 @@ class SolonAgentLifecycleTest {
     @Test
     void stoppingFreshAppContextClosesTheRegisteredAgentRuntimeExactlyOnce() throws Exception {
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getRuntime().setNamespace("solon-lifecycle-test");
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setAgent(agent);

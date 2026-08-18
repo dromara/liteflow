@@ -142,35 +142,35 @@
       "name": "liteflow.monitor.enable-log",
       "type": "java.lang.Boolean",
       "description": "Enable monitor log.",
-      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": false
     },
     {
       "name": "liteflow.monitor.queue-limit",
       "type": "java.lang.Integer",
       "description": "Set monitor queue size.",
-      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": 200
     },
     {
       "name": "liteflow.monitor.delay",
       "type": "java.lang.Long",
       "description": "Set delay time to print monitor log.",
-      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": 300000
     },
     {
       "name": "liteflow.monitor.period",
       "type": "java.lang.Long",
       "description": "Set period time to print monitor log.",
-      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": 300000
     },
     {
       "name": "liteflow.enable-monitor-file",
       "type": "java.lang.Boolean",
       "description": "Set file change monitoring.",
-      "sourceType": "com.yomahub.liteflow.springboot4.LiteflowMonitorProperty",
+      "sourceType": "com.yomahub.liteflow.springboot.LiteflowMonitorProperty",
       "defaultValue": false
     },
     {
@@ -251,20 +251,14 @@
     {
       "name": "liteflow.agent.state-store.type",
       "type": "com.yomahub.liteflow.property.agent.AgentStateStoreType",
-      "description": "AgentScope state store backend type.",
+      "description": "AgentScope state store backend type. REDIS and MYSQL require the liteflow-react-agent-redis / liteflow-react-agent-mysql module.",
       "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreConfig",
-      "defaultValue": "MEMORY"
-    },
-    {
-      "name": "liteflow.agent.state-store.bean-name",
-      "type": "java.lang.String",
-      "description": "Container bean name used by the BEAN state store backend.",
-      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreConfig"
+      "defaultValue": "JSON"
     },
     {
       "name": "liteflow.agent.state-store.json-root",
       "type": "java.lang.String",
-      "description": "Root directory used by the JSON_FILE state store backend.",
+      "description": "Root directory used by the JSON state store backend.",
       "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreConfig",
       "defaultValue": "./data/agent-state"
     },
@@ -274,6 +268,67 @@
       "description": "Policy applied when state store operations fail.",
       "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreConfig",
       "defaultValue": "FAIL_FAST"
+    },
+    {
+      "name": "liteflow.agent.state-store.redis.uri",
+      "type": "java.lang.String",
+      "description": "Redis URI such as redis://localhost:6379; when set LiteFlow builds and owns a Lettuce client.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreRedisConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.redis.client-bean-name",
+      "type": "java.lang.String",
+      "description": "Name of a container-managed Jedis/Lettuce/Redisson client bean; mutually exclusive with uri.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreRedisConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.redis.key-prefix",
+      "type": "java.lang.String",
+      "description": "Key prefix inside Redis; defaults to the agentscope extension prefix when blank.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreRedisConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.data-source-bean-name",
+      "type": "java.lang.String",
+      "description": "Name of a container-managed DataSource bean; mutually exclusive with jdbc-url.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.jdbc-url",
+      "type": "java.lang.String",
+      "description": "JDBC url such as jdbc:mysql://localhost:3306; when set LiteFlow builds and owns the DataSource.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.username",
+      "type": "java.lang.String",
+      "description": "JDBC user used together with jdbc-url.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.password",
+      "type": "java.lang.String",
+      "description": "JDBC password used together with jdbc-url.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.database-name",
+      "type": "java.lang.String",
+      "description": "Database holding the state table; defaults to the agentscope extension default.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.table-name",
+      "type": "java.lang.String",
+      "description": "State table name; defaults to the agentscope extension default.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig"
+    },
+    {
+      "name": "liteflow.agent.state-store.mysql.create-if-not-exist",
+      "type": "java.lang.Boolean",
+      "description": "Whether the database and state table may be created automatically when missing.",
+      "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreMysqlConfig",
+      "defaultValue": false
     },
     {
       "name": "liteflow.agent.toolkit.parallel",
@@ -436,70 +491,36 @@
     {
       "name": "liteflow.agent.workspace.auto-create",
       "type": "java.lang.Boolean",
-      "description": "Auto create workspace directory.",
+      "description": "Auto create workspace directory (consumed by the harness guarded-local filesystem).",
       "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
       "defaultValue": true
-    },
-    {
-      "name": "liteflow.agent.workspace.cleanup-on-session-expire",
-      "type": "java.lang.Boolean",
-      "description": "Cleanup workspace files when session expires.",
-      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
-      "defaultValue": true
-    },
-    {
-      "name": "liteflow.agent.workspace.cleanup-on-jvm-shutdown",
-      "type": "java.lang.Boolean",
-      "description": "Cleanup workspace files on JVM shutdown.",
-      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
-      "defaultValue": false
     },
     {
       "name": "liteflow.agent.workspace.max-file-bytes",
       "type": "java.lang.Long",
-      "description": "Max file size in bytes for workspace files.",
+      "description": "Max file size in bytes for workspace files (consumed by the harness guarded-local filesystem).",
       "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
       "defaultValue": 10485760
     },
     {
-      "name": "liteflow.agent.workspace.max-list-size",
-      "type": "java.lang.Integer",
-      "description": "Max list size for workspace operations.",
-      "sourceType": "com.yomahub.liteflow.property.agent.WorkspaceConfig",
-      "defaultValue": 1000
-    },
-    {
       "name": "liteflow.agent.shell.mode",
       "type": "com.yomahub.liteflow.property.agent.ShellMode",
-      "description": "Shell command filter mode (WHITELIST, BLACKLIST, DISABLED).",
+      "description": "Shell command filter mode (WHITELIST, DISABLED).",
       "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
       "defaultValue": "DISABLED"
     },
     {
       "name": "liteflow.agent.shell.whitelist",
       "type": "java.util.List",
-      "description": "Shell command whitelist.",
-      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig"
-    },
-    {
-      "name": "liteflow.agent.shell.blacklist",
-      "type": "java.util.List",
-      "description": "Shell command blacklist.",
+      "description": "Shell command whitelist; empty means every command is allowed, keep it non-empty.",
       "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig"
     },
     {
       "name": "liteflow.agent.shell.timeout",
       "type": "java.time.Duration",
-      "description": "Shell command execution timeout.",
+      "description": "Shell command execution timeout (consumed by the harness shell tools).",
       "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
       "defaultValue": "30s"
-    },
-    {
-      "name": "liteflow.agent.shell.max-output-bytes",
-      "type": "java.lang.Long",
-      "description": "Max output bytes for shell command.",
-      "sourceType": "com.yomahub.liteflow.property.agent.ShellConfig",
-      "defaultValue": 1048576
     },
     {
       "name": "liteflow.agent.defaults.max-iterations",
@@ -619,134 +640,6 @@
       "type": "java.util.Map<java.lang.String,com.yomahub.liteflow.property.agent.PlatformCredential>",
       "description": "Credentials for Anthropic-compatible platforms, keyed by user-defined platform name.",
       "sourceType": "com.yomahub.liteflow.property.agent.AgentConfig"
-    },
-    {
-      "name": "liteflow.agent.session.memory.mode",
-      "type": "com.yomahub.liteflow.property.agent.MemoryStorageMode",
-      "description": "Agent session memory storage mode.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
-      "defaultValue": "JVM",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.load-on-first-use",
-      "type": "java.lang.Boolean",
-      "description": "Load session memory on first use.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
-      "defaultValue": true,
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.save-after-call",
-      "type": "java.lang.Boolean",
-      "description": "Save session memory after each tool call.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
-      "defaultValue": true,
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.save-on-error",
-      "type": "java.lang.Boolean",
-      "description": "Save session memory on error.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MemoryStorageConfig",
-      "defaultValue": true,
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.redis.bean-name",
-      "type": "java.lang.String",
-      "description": "Redis client bean name for session memory storage.",
-      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.redis.client-type",
-      "type": "com.yomahub.liteflow.property.agent.RedisMemoryConfig$RedisClientType",
-      "description": "Redis client type (REDISSON, JEDIS, LETTUCE).",
-      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig",
-      "defaultValue": "REDISSON",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.redis.key-prefix",
-      "type": "java.lang.String",
-      "description": "Redis key prefix for session memory storage.",
-      "sourceType": "com.yomahub.liteflow.property.agent.RedisMemoryConfig",
-      "defaultValue": "liteflow:agent:session",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.mysql.data-source-bean-name",
-      "type": "java.lang.String",
-      "description": "MySQL data source bean name for session memory storage.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.mysql.database-name",
-      "type": "java.lang.String",
-      "description": "MySQL database name for session memory storage.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.mysql.table-name",
-      "type": "java.lang.String",
-      "description": "MySQL table name for session memory storage.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig",
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
-    },
-    {
-      "name": "liteflow.agent.session.memory.mysql.create-if-not-exist",
-      "type": "java.lang.Boolean",
-      "description": "Create MySQL table if not exist.",
-      "sourceType": "com.yomahub.liteflow.property.agent.MysqlMemoryConfig",
-      "defaultValue": false,
-      "deprecation": {
-        "level": "warning",
-        "reason": "AgentScope 1 session memory configuration is no longer used. Configure liteflow.agent.state-store instead.",
-        "replacement": "liteflow.agent.state-store"
-      }
     },
     {
       "name": "liteflow.rule-db.enabled",
@@ -1166,7 +1059,7 @@
       "name": "liteflow.metrics.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether to enable liteflow metrics collection (chain/node timers, counters and registry gauges). Requires a MeterRegistry on the classpath and in the context. Defaults to true.",
-      "sourceType": "com.yomahub.liteflow.springboot4.metrics.LiteflowMetricsAutoConfiguration",
+      "sourceType": "com.yomahub.liteflow.springboot.metrics.LiteflowMetricsAutoConfiguration",
       "defaultValue": true
     }
   ]

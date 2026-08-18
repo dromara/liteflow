@@ -90,3 +90,5 @@ atlassian-ide-plugin.xml
 *.factorypath
 /.worktrees/
 .node_instance_id
+# AgentScope default JSON state-store root (./data/agent-state)
+data/

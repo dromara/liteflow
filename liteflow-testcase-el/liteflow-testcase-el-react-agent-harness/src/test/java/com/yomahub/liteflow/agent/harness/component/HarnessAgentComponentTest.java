@@ -1394,6 +1394,7 @@ class HarnessAgentComponentTest {
         Path workspace = tempDir.resolve("workspace");
         Files.createDirectories(workspace);
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getRuntime().setNamespace("harness-test");
         agent.getRuntime().setDefaultUserId("test-user");
         agent.getRuntime().setTimeout(Duration.ofSeconds(5));

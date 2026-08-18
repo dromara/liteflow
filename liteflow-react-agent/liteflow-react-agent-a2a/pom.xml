@@ -25,11 +25,5 @@
             <groupId>io.agentscope</groupId>
             <artifactId>agentscope-extensions-a2a-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.agentscope</groupId>
-            <artifactId>agentscope-extensions-a2a-server</artifactId>
-            <optional>true</optional>
-        </dependency>
-
     </dependencies>
 </project>

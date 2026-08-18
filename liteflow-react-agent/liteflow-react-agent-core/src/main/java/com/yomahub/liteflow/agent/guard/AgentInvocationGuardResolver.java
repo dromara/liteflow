@@ -57,7 +57,8 @@ public final class AgentInvocationGuardResolver {
                 || guardConfig.getCoordinationMode() != DistributedCoordinationMode.NONE) {
             return;
         }
-        String message = "StateStore type BEAN may be distributed, but invocationGuard.coordinationMode=NONE";
+        String message = "StateStore type " + config.getStateStore().getType()
+                + " may be distributed, but invocationGuard.coordinationMode=NONE";
         if (guardConfig.isStrictDistributed()) {
             throw new AgentConfigException(message + "; configure sticky routing or a distributed guard");
         }
@@ -65,6 +66,7 @@ public final class AgentInvocationGuardResolver {
     }
 
     private static boolean usesPotentiallyDistributedStore(AgentConfig config) {
-        return config.getStateStore() != null && config.getStateStore().getType() == AgentStateStoreType.BEAN;
+        AgentStateStoreType type = config.getStateStore() == null ? null : config.getStateStore().getType();
+        return type == AgentStateStoreType.REDIS || type == AgentStateStoreType.MYSQL;
     }
 }

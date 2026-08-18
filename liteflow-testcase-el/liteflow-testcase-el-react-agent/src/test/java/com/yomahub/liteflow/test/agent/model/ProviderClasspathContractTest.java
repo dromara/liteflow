@@ -61,6 +61,7 @@ class ProviderClasspathContractTest {
     @Test
     void resolvesEveryProviderToItsRealAgentScopeModelWithoutCallingIt() throws Exception {
         AgentConfig emptyConfig = new AgentConfig();
+        emptyConfig.getStateStore().setJsonRoot("target/agent-state");
         List<Model> models = new ArrayList<>();
 
         try {

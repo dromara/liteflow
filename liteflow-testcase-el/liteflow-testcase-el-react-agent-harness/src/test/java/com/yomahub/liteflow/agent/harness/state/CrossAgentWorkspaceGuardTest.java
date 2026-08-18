@@ -703,7 +703,9 @@ class CrossAgentWorkspaceGuardTest {
 
         @Override
         protected AgentStateStoreResolver stateStoreResolver() {
-            return stateStoreResolver == null ? super.stateStoreResolver() : stateStoreResolver;
+            // 断言依赖状态实例同一性，未显式指定时用进程内状态存储。
+            return stateStoreResolver != null ? stateStoreResolver
+                    : config -> new ResolvedAgentStateStore(new InMemoryAgentStateStore(), true);
         }
 
         @Override

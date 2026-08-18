@@ -58,6 +58,13 @@ public final class HitlAgentCmp extends ReActAgentComponent {
         return AGENT_INPUTS.get(1);
     }
 
+    // 本场景断言固定 conversationId 的续轮事务，用进程内状态存储避免跨运行持久化干扰。
+    @Override
+    protected com.yomahub.liteflow.agent.state.AgentStateStoreResolver stateStoreResolver() {
+        return config -> new com.yomahub.liteflow.agent.state.ResolvedAgentStateStore(
+                new io.agentscope.core.state.InMemoryAgentStateStore(), true);
+    }
+
     @Override protected ModelSpec<?> model() {
         throw new AssertionError("offline buildModel override must be used");
     }

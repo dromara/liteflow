@@ -74,8 +74,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.agentscope</groupId>
-            <artifactId>agentscope-extensions-a2a-server</artifactId>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-redis</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-react-agent-mysql</artifactId>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -146,6 +153,12 @@
                             <excludes>
                                 <exclude>**/*IT.java</exclude>
                             </excludes>
+                            <!-- LiteFlow FlowBus 是 JVM 级静态注册表：多个 Spring 上下文
+                                 共享同一 surefire fork 时，前一个上下文注册的链会残留在
+                                 FlowBus 中并导致后续上下文的规则校验失败。每个测试类
+                                 使用独立 JVM 以隔离。 -->
+                            <reuseForks>false</reuseForks>
+                            <forkCount>1</forkCount>
                         </configuration>
                     </plugin>
                 </plugins>

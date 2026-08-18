@@ -335,6 +335,7 @@ class AgentSkillRepositoryIntegrationTest {
 
     private static AgentConfig config() {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         config.getRuntime().setNamespace("skill-test");
         config.getRuntime().setTimeout(Duration.ofSeconds(2));
         return config;

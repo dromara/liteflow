@@ -176,6 +176,7 @@ class ReActAgentStructuredOutputTest {
 
     private AgentConfig configureAgent() {
         AgentConfig agentConfig = new AgentConfig();
+        agentConfig.getStateStore().setJsonRoot("target/agent-state");
         agentConfig.getRuntime().setNamespace("structured-test");
         agentConfig.getRuntime().setDefaultUserId("test-user");
         agentConfig.getRuntime().setTimeout(Duration.ofSeconds(2));

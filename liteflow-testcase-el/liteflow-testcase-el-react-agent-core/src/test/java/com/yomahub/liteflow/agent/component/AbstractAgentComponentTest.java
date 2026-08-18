@@ -324,6 +324,7 @@ class AbstractAgentComponentTest {
 
     private AgentConfig configureAgent() {
         AgentConfig agentConfig = new AgentConfig();
+        agentConfig.getStateStore().setJsonRoot("target/agent-state");
         agentConfig.getRuntime().setNamespace("abstract-test");
         agentConfig.getRuntime().setDefaultUserId("test-user");
         agentConfig.getRuntime().setTimeout(Duration.ofSeconds(1));

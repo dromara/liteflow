@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="realTypedOutputChain">
+        THEN(realTypedOutputAgent);
+    </chain>
+
+    <chain name="realSchemaOutputChain">
+        THEN(realSchemaOutputAgent);
+    </chain>
+
+    <chain name="realConflictingOutputChain">
+        THEN(realConflictingOutputAgent);
+    </chain>
+</flow>

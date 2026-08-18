@@ -9,8 +9,7 @@ import java.util.Map;
  * <p>对应 Spring Boot 配置段 {@code liteflow.agent.*}，作为 LiteFlow 中所有
  * agent 子配置的聚合入口；其内部字段会在 AgentScope 2 运行时组件、
  * 各 ProviderSpec（OpenAI / Anthropic / Gemini /
- * DashScope 等）以及工具类（{@code ManagedShellCommandTool}、
- * {@code WorkspaceFileTools}）中分别被读取使用。
+ * DashScope 等）以及内置工具装配（文件 / Shell 工具）中分别被读取使用。
  */
 public class AgentConfig {
 
@@ -38,10 +37,7 @@ public class AgentConfig {
     /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
     private WorkspaceConfig workspace = new WorkspaceConfig();
 
-    /** 仅用于绑定并诊断 1.x {@code session.memory.*} 配置的迁移兼容对象。 */
-    private SessionConfig session = new SessionConfig();
-
-    /** Shell 工具配置，决定 agent 调用 shell 工具时的命令过滤模式、超时与输出截断。 */
+    /** Shell 工具配置，决定 agent 调用内置 Shell 工具时的命令过滤模式与白名单。 */
     private ShellConfig shell = new ShellConfig();
 
     /** 默认值配置，例如 ReAct 流程在组件未指定 maxIterations 时使用的全局默认迭代次数。 */
@@ -135,15 +131,8 @@ public class AgentConfig {
 
 	/**
 	 * Validates configuration needed by the AgentScope 2 runtime immediately before use.
-	 *
-	 * <p>{@code SessionConfig} remains temporarily for 1.x source compatibility. A legacy
-	 * memory setting is detected only when a {@link MemoryStorageConfig} setter was called;
-	 * the untouched default instance is not treated as an explicit legacy configuration.</p>
 	 */
 	public void validateForExecution() {
-		if (session != null && session.getMemory() != null && session.getMemory().isExplicitlyConfigured()) {
-			throw new IllegalStateException("liteflow.agent.session.memory -> state-store migration is required");
-		}
 		if (runtime == null || isBlank(runtime.getNamespace())) {
 			throw new IllegalStateException("liteflow.agent.runtime.namespace is required before execution");
 		}
@@ -159,14 +148,6 @@ public class AgentConfig {
 
     public void setWorkspace(WorkspaceConfig v) {
         this.workspace = v;
-    }
-
-    public SessionConfig getSession() {
-        return session;
-    }
-
-    public void setSession(SessionConfig v) {
-        this.session = v;
     }
 
     public ShellConfig getShell() {

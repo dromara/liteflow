@@ -466,6 +466,7 @@ class GuardedLocalFilesystemTest {
             throws Exception {
         Path root = tempDir.resolve("workspace");
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         config.getWorkspace().setRoot(root.toString());
         HarnessFilesystemContext context =
                 new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);

@@ -459,6 +459,7 @@ class OpenAISpecTest {
 
     private static AgentConfig openAIConfig(String apiKey, String baseUrl) {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         PlatformCredential credential = new PlatformCredential();
         credential.setApiKey(apiKey);
         credential.setBaseUrl(baseUrl);

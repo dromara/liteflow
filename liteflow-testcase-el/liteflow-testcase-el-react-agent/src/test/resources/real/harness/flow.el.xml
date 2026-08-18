@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="realHarnessFileChain">
+        THEN(realHarnessFileAgent);
+    </chain>
+
+    <chain name="realHarnessMinimalChain">
+        THEN(realHarnessMinimalAgent);
+    </chain>
+
+    <chain name="realCompactionChain">
+        THEN(realCompactionAgent);
+    </chain>
+
+    <chain name="realMemoryChain">
+        THEN(realMemoryAgent);
+    </chain>
+
+    <chain name="realEvictionChain">
+        THEN(realEvictionAgent);
+    </chain>
+
+    <chain name="realSubagentPlanChain">
+        THEN(realSubagentPlanAgent);
+    </chain>
+</flow>

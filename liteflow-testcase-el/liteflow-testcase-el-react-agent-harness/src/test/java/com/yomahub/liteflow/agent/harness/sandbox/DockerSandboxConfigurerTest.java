@@ -455,6 +455,7 @@ class DockerSandboxConfigurerTest {
 
     private AgentConfig agentConfig() {
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getWorkspace().setRoot(workspace.toString());
         return agent;
     }

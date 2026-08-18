@@ -9,6 +9,8 @@ import com.yomahub.liteflow.agent.harness.sandbox.FakeSandboxClient;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
+import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
@@ -39,6 +41,7 @@ import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
 import io.agentscope.core.state.AgentState;
+import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.tool.Tool;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
@@ -986,6 +989,11 @@ class HarnessCapabilitiesTest {
 
         @Override public Slot getSlot() { return slot; }
         @Override protected ModelSpec<?> model() { throw new AssertionError("buildModel used"); }
+
+        // PermissionState 断言依赖同一实例引用，测试内用进程内状态存储保持实例同一性。
+        @Override protected AgentStateStoreResolver stateStoreResolver() {
+            return config -> new ResolvedAgentStateStore(new InMemoryAgentStateStore(), true);
+        }
         @Override protected Model buildModel() { return model; }
         protected List<String> additionalContextFiles() { return additionalContextFiles; }
         @Override protected CompactionConfig compactionConfig() { return compaction; }

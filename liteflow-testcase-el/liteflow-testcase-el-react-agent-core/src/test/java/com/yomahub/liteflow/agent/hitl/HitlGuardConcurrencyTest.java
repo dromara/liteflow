@@ -285,6 +285,7 @@ class HitlGuardConcurrencyTest {
 
     private static AgentConfig configure(Duration runtime, Duration confirmation) {
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getRuntime().setNamespace("hitl-test");
         agent.getRuntime().setDefaultUserId("user-1");
         agent.getRuntime().setTimeout(runtime);

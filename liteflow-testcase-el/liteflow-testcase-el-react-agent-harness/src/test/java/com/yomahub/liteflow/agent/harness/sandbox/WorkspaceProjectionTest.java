@@ -144,6 +144,7 @@ class WorkspaceProjectionTest {
 
     private static AgentConfig config(Path workspace) {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         config.getWorkspace().setRoot(workspace.toString());
         return config;
     }

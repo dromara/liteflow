@@ -374,6 +374,7 @@ class ReActAgentBuilderConfigurationTest {
 
     private static AgentConfig config() {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         config.getRuntime().setNamespace("builder-test");
         return config;
     }

@@ -229,16 +229,16 @@ class LocalAgentInvocationGuardTest {
     }
 
     @Test
-    void resolverRejectsPotentiallyDistributedBeanStoreWithoutCoordinationInStrictMode() {
-        AgentConfig config = distributedBeanStoreConfig();
+    void resolverRejectsPotentiallyDistributedStoreWithoutCoordinationInStrictMode() {
+        AgentConfig config = distributedStoreConfig();
 
         assertThrows(com.yomahub.liteflow.agent.exception.AgentConfigException.class,
                 () -> new AgentInvocationGuardResolver().validate(config));
     }
 
     @Test
-    void resolverWarnsAndAllowsLocalCoordinationForNonStrictBeanStore() {
-        AgentConfig config = distributedBeanStoreConfig();
+    void resolverWarnsAndAllowsLocalCoordinationForNonStrictDistributedStore() {
+        AgentConfig config = distributedStoreConfig();
         config.getInvocationGuard().setStrictDistributed(false);
         List<String> warnings = new ArrayList<>();
 
@@ -252,6 +252,7 @@ class LocalAgentInvocationGuardTest {
     @Test
     void localGuardIsSharedAcrossResolversForTheSameKey() throws Exception {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         AgentInvocationGuard firstGuard = new AgentInvocationGuardResolver().resolve(config);
         AgentInvocationGuard secondGuard = new AgentInvocationGuardResolver().resolve(config);
         AgentInvocationKey key = key("agent-a");
@@ -328,9 +329,9 @@ class LocalAgentInvocationGuardTest {
         return AgentInvocationKey.state(identity);
     }
 
-    private static AgentConfig distributedBeanStoreConfig() {
+    private static AgentConfig distributedStoreConfig() {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setType(AgentStateStoreType.BEAN);
+        config.getStateStore().setType(AgentStateStoreType.REDIS);
         return config;
     }
 

@@ -57,6 +57,7 @@ class A2aAgentComponentTest {
 
         guard = new RecordingGuard();
         AgentConfig agent = new AgentConfig();
+        agent.getStateStore().setJsonRoot("target/agent-state");
         agent.getRuntime().setNamespace("a2a-component-test");
         agent.getRuntime().setDefaultUserId("user-3");
         agent.getRuntime().setTimeout(Duration.ofSeconds(2));

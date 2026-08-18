@@ -144,16 +144,8 @@ class GuardedNamespacedAgentStateStoreTest {
     }
 
     @Test
-    void resolverCreatesOwnedBuiltInsAndBorrowsNamedBeans(@TempDir Path tempDir) {
-        CloseTrackingStore beanStore = new CloseTrackingStore();
-        DefaultAgentStateStoreResolver resolver = new DefaultAgentStateStoreResolver(
-                name -> "sharedStore".equals(name) ? beanStore : null);
-
-        AgentStateStoreConfig memoryConfig = new AgentStateStoreConfig();
-        memoryConfig.setType(AgentStateStoreType.MEMORY);
-        ResolvedAgentStateStore memory = resolver.resolve(memoryConfig);
-        assertTrue(memory.owned());
-        assertInstanceOf(InMemoryAgentStateStore.class, memory.store());
+    void resolverCreatesOwnedJsonStore(@TempDir Path tempDir) {
+        DefaultAgentStateStoreResolver resolver = new DefaultAgentStateStoreResolver(List.of());
 
         AgentStateStoreConfig jsonConfig = new AgentStateStoreConfig();
         jsonConfig.setType(AgentStateStoreType.JSON);
@@ -162,66 +154,74 @@ class GuardedNamespacedAgentStateStoreTest {
         assertTrue(json.owned());
         assertEquals(tempDir, ((JsonFileAgentStateStore) json.store()).getRootDirectory());
 
-        AgentStateStoreConfig beanConfig = new AgentStateStoreConfig();
-        beanConfig.setType(AgentStateStoreType.BEAN);
-        beanConfig.setBeanName("sharedStore");
-        ResolvedAgentStateStore bean = resolver.resolve(beanConfig);
-        assertFalse(bean.owned());
-        assertSame(beanStore, bean.store());
-        bean.close();
-        assertEquals(0, beanStore.closeCount.get());
-
-        memory.close();
         json.close();
     }
 
     @Test
-    void resolverRejectsNullBlankMissingAndWrongStoreConfiguration() {
-        DefaultAgentStateStoreResolver resolver = new DefaultAgentStateStoreResolver(name -> {
-            if ("wrong".equals(name)) {
-                return "not-a-store";
-            }
-            return null;
-        });
+    void resolverRejectsNullBlankAndMissingProviderConfiguration() {
+        DefaultAgentStateStoreResolver emptyResolver = new DefaultAgentStateStoreResolver(List.of());
 
-        assertThrows(RuntimeException.class, () -> resolver.resolve(null));
+        assertThrows(RuntimeException.class, () -> emptyResolver.resolve(null));
 
         AgentStateStoreConfig nullType = new AgentStateStoreConfig();
         nullType.setType(null);
-        assertThrows(RuntimeException.class, () -> resolver.resolve(nullType));
+        assertThrows(RuntimeException.class, () -> emptyResolver.resolve(nullType));
 
         AgentStateStoreConfig blankJson = new AgentStateStoreConfig();
         blankJson.setType(AgentStateStoreType.JSON);
         blankJson.setJsonRoot(" ");
-        assertThrows(RuntimeException.class, () -> resolver.resolve(blankJson));
+        assertThrows(RuntimeException.class, () -> emptyResolver.resolve(blankJson));
 
-        AgentStateStoreConfig blankBean = new AgentStateStoreConfig();
-        blankBean.setType(AgentStateStoreType.BEAN);
-        blankBean.setBeanName(" ");
-        assertThrows(RuntimeException.class, () -> resolver.resolve(blankBean));
+        AgentStateStoreConfig redisConfig = new AgentStateStoreConfig();
+        redisConfig.setType(AgentStateStoreType.REDIS);
+        AgentConfigException redisFailure = assertThrows(AgentConfigException.class,
+                () -> emptyResolver.resolve(redisConfig));
+        assertTrue(redisFailure.getMessage().contains("liteflow-react-agent-redis"));
 
-        AgentStateStoreConfig missingBean = new AgentStateStoreConfig();
-        missingBean.setType(AgentStateStoreType.BEAN);
-        missingBean.setBeanName("missing");
-        assertThrows(RuntimeException.class, () -> resolver.resolve(missingBean));
+        AgentStateStoreConfig mysqlConfig = new AgentStateStoreConfig();
+        mysqlConfig.setType(AgentStateStoreType.MYSQL);
+        AgentConfigException mysqlFailure = assertThrows(AgentConfigException.class,
+                () -> emptyResolver.resolve(mysqlConfig));
+        assertTrue(mysqlFailure.getMessage().contains("liteflow-react-agent-mysql"));
+    }
 
-        AgentStateStoreConfig wrongBean = new AgentStateStoreConfig();
-        wrongBean.setType(AgentStateStoreType.BEAN);
-        wrongBean.setBeanName("wrong");
-        assertThrows(RuntimeException.class, () -> resolver.resolve(wrongBean));
+    @Test
+    void resolverDelegatesToDiscoveredProvidersAndValidatesTheirResult() {
+        CloseTrackingStore providerStore = new CloseTrackingStore();
+        AgentStateStoreProvider redisProvider = new AgentStateStoreProvider() {
+            @Override
+            public AgentStateStoreType type() {
+                return AgentStateStoreType.REDIS;
+            }
 
-        RuntimeException lookupFailure = new RuntimeException("missing bean");
-        DefaultAgentStateStoreResolver throwingResolver =
-                new DefaultAgentStateStoreResolver(name -> { throw lookupFailure; });
-        AgentConfigException thrown = assertThrows(AgentConfigException.class,
-                () -> throwingResolver.resolve(missingBean));
-        assertSame(lookupFailure, thrown.getCause());
+            @Override
+            public ResolvedAgentStateStore resolve(AgentStateStoreConfig config) {
+                return "fail".equals(config.getRedis().getUri())
+                        ? null
+                        : new ResolvedAgentStateStore(providerStore, false);
+            }
+        };
+        DefaultAgentStateStoreResolver resolver =
+                new DefaultAgentStateStoreResolver(List.of(redisProvider));
+
+        AgentStateStoreConfig redisConfig = new AgentStateStoreConfig();
+        redisConfig.setType(AgentStateStoreType.REDIS);
+        ResolvedAgentStateStore redis = resolver.resolve(redisConfig);
+        assertFalse(redis.owned());
+        assertSame(providerStore, redis.store());
+        redis.close();
+        assertEquals(0, providerStore.closeCount.get());
+
+        AgentStateStoreConfig failingConfig = new AgentStateStoreConfig();
+        failingConfig.setType(AgentStateStoreType.REDIS);
+        failingConfig.getRedis().setUri("fail");
+        assertThrows(AgentConfigException.class, () -> resolver.resolve(failingConfig));
     }
 
     @Test
     void resolverWrapsMalformedJsonRootAsConfigurationFailure() {
         DefaultAgentStateStoreResolver resolver =
-                new DefaultAgentStateStoreResolver(name -> null);
+                new DefaultAgentStateStoreResolver(List.of());
         AgentStateStoreConfig malformedJson = new AgentStateStoreConfig();
         malformedJson.setType(AgentStateStoreType.JSON);
         malformedJson.setJsonRoot("invalid\0root");

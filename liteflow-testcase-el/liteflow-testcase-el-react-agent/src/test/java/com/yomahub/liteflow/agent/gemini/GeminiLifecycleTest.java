@@ -67,6 +67,7 @@ class GeminiLifecycleTest {
 
         private ReActAgentRuntime runtime() {
             AgentConfig config = new AgentConfig();
+            config.getStateStore().setJsonRoot("target/agent-state");
             config.getRuntime().setNamespace("gemini-lifecycle-test");
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "gemini-agent", "gemini-key", AGENT_NAMESPACE));

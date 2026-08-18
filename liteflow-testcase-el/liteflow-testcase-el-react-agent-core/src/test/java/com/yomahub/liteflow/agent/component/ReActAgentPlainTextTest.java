@@ -209,6 +209,7 @@ class ReActAgentPlainTextTest {
 
     private AgentConfig configureAgent(String namespace, String defaultUserId) {
         AgentConfig agentConfig = new AgentConfig();
+        agentConfig.getStateStore().setJsonRoot("target/agent-state");
         agentConfig.getRuntime().setNamespace(namespace);
         agentConfig.getRuntime().setDefaultUserId(defaultUserId);
         LiteflowConfig config = new LiteflowConfig();

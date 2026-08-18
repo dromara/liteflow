@@ -49,27 +49,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AgentPropertyBindingTest {
 
     private static final String PREFIX = "liteflow.agent.";
-    private static final Set<String> LEGACY_MEMORY_KEYS = Set.of(
-            PREFIX + "session.memory.mode",
-            PREFIX + "session.memory.load-on-first-use",
-            PREFIX + "session.memory.save-after-call",
-            PREFIX + "session.memory.save-on-error",
-            PREFIX + "session.memory.redis.bean-name",
-            PREFIX + "session.memory.redis.client-type",
-            PREFIX + "session.memory.redis.key-prefix",
-            PREFIX + "session.memory.mysql.data-source-bean-name",
-            PREFIX + "session.memory.mysql.database-name",
-            PREFIX + "session.memory.mysql.table-name",
-            PREFIX + "session.memory.mysql.create-if-not-exist");
 
     private static final Set<String> EXPECTED_AGENT_KEYS = Set.of(
             PREFIX + "runtime.namespace",
             PREFIX + "runtime.default-user-id",
             PREFIX + "runtime.timeout",
             PREFIX + "state-store.type",
-            PREFIX + "state-store.bean-name",
             PREFIX + "state-store.json-root",
             PREFIX + "state-store.failure-policy",
+            PREFIX + "state-store.redis.uri",
+            PREFIX + "state-store.redis.client-bean-name",
+            PREFIX + "state-store.redis.key-prefix",
+            PREFIX + "state-store.mysql.data-source-bean-name",
+            PREFIX + "state-store.mysql.jdbc-url",
+            PREFIX + "state-store.mysql.username",
+            PREFIX + "state-store.mysql.password",
+            PREFIX + "state-store.mysql.database-name",
+            PREFIX + "state-store.mysql.table-name",
+            PREFIX + "state-store.mysql.create-if-not-exist",
             PREFIX + "toolkit.parallel",
             PREFIX + "event.listener-failure-mode",
             PREFIX + "invocation-guard.mode",
@@ -94,15 +91,10 @@ class AgentPropertyBindingTest {
             PREFIX + "workspace.trusted-local",
             PREFIX + "workspace.root",
             PREFIX + "workspace.auto-create",
-            PREFIX + "workspace.cleanup-on-session-expire",
-            PREFIX + "workspace.cleanup-on-jvm-shutdown",
             PREFIX + "workspace.max-file-bytes",
-            PREFIX + "workspace.max-list-size",
             PREFIX + "shell.mode",
             PREFIX + "shell.whitelist",
-            PREFIX + "shell.blacklist",
             PREFIX + "shell.timeout",
-            PREFIX + "shell.max-output-bytes",
             PREFIX + "defaults.max-iterations",
             PREFIX + "logging.react-enabled",
             PREFIX + "skills.enabled",
@@ -121,18 +113,7 @@ class AgentPropertyBindingTest {
             PREFIX + "dashscope.base-url",
             PREFIX + "dashscope.extra",
             PREFIX + "openai-compatible",
-            PREFIX + "anthropic-compatible",
-            PREFIX + "session.memory.mode",
-            PREFIX + "session.memory.load-on-first-use",
-            PREFIX + "session.memory.save-after-call",
-            PREFIX + "session.memory.save-on-error",
-            PREFIX + "session.memory.redis.bean-name",
-            PREFIX + "session.memory.redis.client-type",
-            PREFIX + "session.memory.redis.key-prefix",
-            PREFIX + "session.memory.mysql.data-source-bean-name",
-            PREFIX + "session.memory.mysql.database-name",
-            PREFIX + "session.memory.mysql.table-name",
-            PREFIX + "session.memory.mysql.create-if-not-exist");
+            PREFIX + "anthropic-compatible");
 
     @Test
     void bindsEveryAgentScope2PropertyUsingExactKebabCasePaths() {
@@ -140,10 +121,18 @@ class AgentPropertyBindingTest {
                 entry("runtime.namespace", "binding-test"),
                 entry("runtime.default-user-id", "user-7"),
                 entry("runtime.timeout", "17s"),
-                entry("state-store.type", "BEAN"),
-                entry("state-store.bean-name", "stateStoreBean"),
+                entry("state-store.type", "REDIS"),
                 entry("state-store.json-root", "/tmp/agent-state"),
                 entry("state-store.failure-policy", "LOG_AND_CONTINUE"),
+                entry("state-store.redis.uri", "redis://localhost:6379"),
+                entry("state-store.redis.client-bean-name", ""),
+                entry("state-store.redis.key-prefix", "liteflow:agent:state:"),
+                entry("state-store.mysql.jdbc-url", "jdbc:mysql://localhost:3306/liteflow"),
+                entry("state-store.mysql.username", "lf"),
+                entry("state-store.mysql.password", "secret"),
+                entry("state-store.mysql.database-name", "liteflow"),
+                entry("state-store.mysql.table-name", "agent_state"),
+                entry("state-store.mysql.create-if-not-exist", "true"),
                 entry("toolkit.parallel", "true"),
                 entry("event.listener-failure-mode", "LOG_AND_CONTINUE"),
                 entry("invocation-guard.mode", "BEAN"),
@@ -172,15 +161,10 @@ class AgentPropertyBindingTest {
                 entry("workspace.trusted-local", "true"),
                 entry("workspace.root", "/tmp/workspace"),
                 entry("workspace.auto-create", "false"),
-                entry("workspace.cleanup-on-session-expire", "false"),
-                entry("workspace.cleanup-on-jvm-shutdown", "true"),
                 entry("workspace.max-file-bytes", "12345"),
-                entry("workspace.max-list-size", "321"),
-                entry("shell.mode", "BLACKLIST"),
+                entry("shell.mode", "WHITELIST"),
                 entry("shell.whitelist[0]", "printf"),
-                entry("shell.blacklist[0]", "shutdown"),
                 entry("shell.timeout", "31s"),
-                entry("shell.max-output-bytes", "54321"),
                 entry("defaults.max-iterations", "27"),
                 entry("logging.react-enabled", "false"),
                 entry("skills.enabled", "true"),
@@ -191,11 +175,19 @@ class AgentPropertyBindingTest {
         assertEquals("binding-test", agent.getRuntime().getNamespace());
         assertEquals("user-7", agent.getRuntime().getDefaultUserId());
         assertEquals(Duration.ofSeconds(17), agent.getRuntime().getTimeout());
-        assertEquals(AgentStateStoreType.BEAN, agent.getStateStore().getType());
-        assertEquals("stateStoreBean", agent.getStateStore().getBeanName());
+        assertEquals(AgentStateStoreType.REDIS, agent.getStateStore().getType());
         assertEquals("/tmp/agent-state", agent.getStateStore().getJsonRoot());
         assertEquals(AgentStateStoreFailurePolicy.LOG_AND_CONTINUE,
                 agent.getStateStore().getFailurePolicy());
+        assertEquals("redis://localhost:6379", agent.getStateStore().getRedis().getUri());
+        assertEquals("liteflow:agent:state:", agent.getStateStore().getRedis().getKeyPrefix());
+        assertEquals("jdbc:mysql://localhost:3306/liteflow",
+                agent.getStateStore().getMysql().getJdbcUrl());
+        assertEquals("lf", agent.getStateStore().getMysql().getUsername());
+        assertEquals("secret", agent.getStateStore().getMysql().getPassword());
+        assertEquals("liteflow", agent.getStateStore().getMysql().getDatabaseName());
+        assertEquals("agent_state", agent.getStateStore().getMysql().getTableName());
+        assertTrue(agent.getStateStore().getMysql().isCreateIfNotExist());
         assertTrue(agent.getToolkit().isParallel());
         assertEquals(AgentListenerFailureMode.LOG_AND_CONTINUE,
                 agent.getEvent().getListenerFailureMode());
@@ -226,32 +218,15 @@ class AgentPropertyBindingTest {
         assertTrue(agent.getWorkspace().isTrustedLocal());
         assertEquals("/tmp/workspace", agent.getWorkspace().getRoot());
         assertFalse(agent.getWorkspace().isAutoCreate());
-        assertFalse(agent.getWorkspace().isCleanupOnSessionExpire());
-        assertTrue(agent.getWorkspace().isCleanupOnJvmShutdown());
         assertEquals(12345L, agent.getWorkspace().getMaxFileBytes());
-        assertEquals(321, agent.getWorkspace().getMaxListSize());
-        assertEquals(ShellMode.BLACKLIST, agent.getShell().getMode());
+        assertEquals(ShellMode.WHITELIST, agent.getShell().getMode());
         assertEquals(Set.of("printf"), Set.copyOf(agent.getShell().getWhitelist()));
-        assertEquals(Set.of("shutdown"), Set.copyOf(agent.getShell().getBlacklist()));
         assertEquals(Duration.ofSeconds(31), agent.getShell().getTimeout());
-        assertEquals(54321L, agent.getShell().getMaxOutputBytes());
         assertEquals(27, agent.getDefaults().getMaxIterations());
         assertFalse(agent.getLogging().isReactEnabled());
         assertTrue(agent.getSkills().isEnabled());
         assertEquals("/tmp/skills", agent.getSkills().getPath());
         assertFalse(agent.getSkills().isStrict());
-    }
-
-    @Test
-    void legacySessionMemoryBindingFailsWithTheExplicitMigrationDiagnostic() {
-        AgentConfig agent = bind(Map.of(
-                PREFIX + "runtime.namespace", "legacy-test",
-                PREFIX + "session.memory.mode", "JVM")).getAgent();
-
-        IllegalStateException failure = assertThrows(
-                IllegalStateException.class, agent::validateForExecution);
-
-        assertTrue(failure.getMessage().contains("session.memory -> state-store"));
     }
 
     @Test
@@ -287,17 +262,11 @@ class AgentPropertyBindingTest {
                 .filter(entry -> entry.getValue().has("deprecation"))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
-        assertEquals(LEGACY_MEMORY_KEYS, deprecated);
-        for (String key : LEGACY_MEMORY_KEYS) {
-            JsonNode deprecation = agentProperties.get(key).path("deprecation");
-            assertEquals("liteflow.agent.state-store",
-                    deprecation.path("replacement").asText());
-            assertEquals("warning", deprecation.path("level").asText());
-        }
+        assertEquals(Set.of(), deprecated, "no liteflow.agent.* key should be deprecated");
 
         assertMetadata(agentProperties, "runtime.timeout", "java.time.Duration", "2m");
         assertMetadata(agentProperties, "state-store.type",
-                AgentStateStoreType.class.getName(), "MEMORY");
+                AgentStateStoreType.class.getName(), "JSON");
         assertMetadata(agentProperties, "state-store.failure-policy",
                 AgentStateStoreFailurePolicy.class.getName(), "FAIL_FAST");
         assertMetadata(agentProperties, "toolkit.parallel", "java.lang.Boolean", "false");

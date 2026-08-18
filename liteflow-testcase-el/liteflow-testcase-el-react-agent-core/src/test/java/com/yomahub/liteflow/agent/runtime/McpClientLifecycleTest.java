@@ -136,6 +136,7 @@ class McpClientLifecycleTest {
 
     private static AgentConfig config(Duration timeout) {
         AgentConfig config = new AgentConfig();
+        config.getStateStore().setJsonRoot("target/agent-state");
         config.getRuntime().setNamespace("mcp-test");
         config.getRuntime().setTimeout(timeout);
         return config;

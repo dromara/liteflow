@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="realA2aChain">
+        THEN(realA2aAgent);
+    </chain>
+</flow>

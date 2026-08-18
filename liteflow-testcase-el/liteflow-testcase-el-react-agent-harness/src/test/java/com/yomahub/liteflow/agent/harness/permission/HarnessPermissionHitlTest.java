@@ -559,6 +559,12 @@ class HarnessPermissionHitlTest {
     }
 
     private static final class TestComponent extends HarnessAgentComponent {
+
+        // 断言依赖状态实例同一性，测试内用进程内状态存储。
+        @Override protected com.yomahub.liteflow.agent.state.AgentStateStoreResolver stateStoreResolver() {
+            return config -> new com.yomahub.liteflow.agent.state.ResolvedAgentStateStore(
+                    new io.agentscope.core.state.InMemoryAgentStateStore(), true);
+        }
         private final Slot slot;
         private final ScriptedModel model;
         private final ExecuteTool tool = new ExecuteTool();

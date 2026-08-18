@@ -1,12 +1,19 @@
 package com.yomahub.liteflow.property.agent;
 
-/** State store selection and failure behavior for AgentScope 2 execution. */
+/**
+ * State store selection and failure behavior for AgentScope 2 execution.
+ *
+ * <p>Every backend is persistent. JSON keeps state in local files, while REDIS and
+ * MYSQL delegate to the matching agentscope extension module and require the
+ * corresponding liteflow-react-agent-{redis,mysql} dependency on the classpath.
+ */
 public class AgentStateStoreConfig {
 
-	private AgentStateStoreType type = AgentStateStoreType.MEMORY;
-	private String beanName;
+	private AgentStateStoreType type = AgentStateStoreType.JSON;
 	private String jsonRoot = "./data/agent-state";
 	private AgentStateStoreFailurePolicy failurePolicy = AgentStateStoreFailurePolicy.FAIL_FAST;
+	private final AgentStateStoreRedisConfig redis = new AgentStateStoreRedisConfig();
+	private final AgentStateStoreMysqlConfig mysql = new AgentStateStoreMysqlConfig();
 
 	public AgentStateStoreType getType() {
 		return type;
@@ -14,14 +21,6 @@ public class AgentStateStoreConfig {
 
 	public void setType(AgentStateStoreType type) {
 		this.type = type;
-	}
-
-	public String getBeanName() {
-		return beanName;
-	}
-
-	public void setBeanName(String beanName) {
-		this.beanName = beanName;
 	}
 
 	public String getJsonRoot() {
@@ -38,5 +37,13 @@ public class AgentStateStoreConfig {
 
 	public void setFailurePolicy(AgentStateStoreFailurePolicy failurePolicy) {
 		this.failurePolicy = failurePolicy;
+	}
+
+	public AgentStateStoreRedisConfig getRedis() {
+		return redis;
+	}
+
+	public AgentStateStoreMysqlConfig getMysql() {
+		return mysql;
 	}
 }
