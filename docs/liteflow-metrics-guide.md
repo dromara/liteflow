@@ -200,7 +200,7 @@ new LiteflowMeterBinder(config).bindTo(registry);
 liteflow.metrics.enabled=true
 ```
 
-装配守护条件是：类路径存在 `io.micrometer.core.instrument.MeterRegistry` + 容器中存在 `MeterRegistry` Bean + `liteflow.metrics.enabled` 非 false。三者同时满足时，`ChainMetricsLifeCycle`、`NodeMetricsLifeCycle`、`LiteflowMeterBinder` 才会被装配。换句话说，**没有引入任何 registry 就不会有任何指标行为**。
+装配守护条件是：类路径存在 `io.micrometer.core.instrument.MeterRegistry` + 容器中存在 `MeterRegistry` Bean + `liteflow.metrics.enabled` 非 false + liteflow 核心处于启用状态（`liteflow.enable` 非 false，即容器中存在 `FlowExecutor`）。四者同时满足时，`ChainMetricsLifeCycle`、`NodeMetricsLifeCycle`、`LiteflowMeterBinder` 才会被装配。换句话说，**没有引入任何 registry 就不会有任何指标行为**；同理，**`liteflow.enable=false` 关闭核心时指标装配会整体退出**，不会再触发 LiteFlow 内部任何初始化，无需再手动联动 `liteflow.metrics.enabled`。
 
 ### 暴露 Actuator 端点
 

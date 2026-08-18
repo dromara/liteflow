@@ -1,10 +1,12 @@
 package com.yomahub.liteflow.springboot.metrics;
 
+import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.metrics.ChainMetricsLifeCycle;
 import com.yomahub.liteflow.metrics.LiteflowMetaView;
 import com.yomahub.liteflow.metrics.LiteflowMeterBinder;
 import com.yomahub.liteflow.metrics.NodeMetricsLifeCycle;
 import com.yomahub.liteflow.property.LiteflowConfig;
+import com.yomahub.liteflow.springboot.config.LiteflowMainAutoConfiguration;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
@@ -26,7 +28,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(MeterRegistry.class)
 @ConditionalOnProperty(prefix = "liteflow.metrics", name = "enabled", havingValue = "true", matchIfMissing = true)
-@AutoConfigureAfter({ MetricsAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class })
+// liteflow核心未启用（无FlowExecutor）时不装配任何指标bean，否则LiteflowMeterBinder会在SpringAware上下文建立前触发FlowBus静态块导致NPE
+@ConditionalOnBean(FlowExecutor.class)
+@AutoConfigureAfter({ MetricsAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class,
+        LiteflowMainAutoConfiguration.class })
 public class LiteflowMetricsAutoConfiguration {
 
     @Bean
