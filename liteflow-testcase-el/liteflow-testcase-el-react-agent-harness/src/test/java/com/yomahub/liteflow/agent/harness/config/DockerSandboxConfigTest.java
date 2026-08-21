@@ -1,10 +1,12 @@
 package com.yomahub.liteflow.agent.harness.config;
 
+import com.yomahub.liteflow.property.agent.DockerNetworkMode;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -25,7 +27,8 @@ class DockerSandboxConfigTest {
         assertEquals(536870912L, config.getMemorySizeBytes());
         assertEquals(1L, config.getCpuCount());
         assertEquals(Long.class, getterType("getCpuCount"));
-        assertEquals("none", config.getNetwork());
+        assertEquals(DockerNetworkMode.NONE, config.getNetwork());
+        assertEquals(DockerNetworkMode.class, getterType("getNetwork"));
         assertNull(config.getSnapshotRoot());
         assertTrue(config.isWorkspaceProjectionEnabled());
         assertEquals(OFFICIAL_PROJECTION_ROOTS, config.getWorkspaceProjectionRoots());
@@ -59,7 +62,7 @@ class DockerSandboxConfigTest {
     }
 
     @Test
-    void blankImageWorkspaceRootOrNetworkFailsFast() {
+    void blankImageWorkspaceRootOrMissingNetworkFailsFast() {
         DockerSandboxConfig blankImage = new DockerSandboxConfig();
         blankImage.setImage("  ");
         assertValidationMentions(blankImage, "image");
@@ -68,9 +71,23 @@ class DockerSandboxConfigTest {
         blankWorkspace.setWorkspaceRoot("");
         assertValidationMentions(blankWorkspace, "workspace-root");
 
-        DockerSandboxConfig blankNetwork = new DockerSandboxConfig();
-        blankNetwork.setNetwork("\t");
-        assertValidationMentions(blankNetwork, "network");
+        DockerSandboxConfig missingNetwork = new DockerSandboxConfig();
+        missingNetwork.setNetwork(null);
+        assertValidationMentions(missingNetwork, "network");
+    }
+
+    @Test
+    void networkModeContractContainsOnlyTheSupportedModes() {
+        assertArrayEquals(
+                new DockerNetworkMode[] {
+                    DockerNetworkMode.NONE,
+                    DockerNetworkMode.BRIDGE,
+                    DockerNetworkMode.HOST
+                },
+                DockerNetworkMode.values());
+        assertEquals("none", DockerNetworkMode.NONE.getDockerValue());
+        assertEquals("bridge", DockerNetworkMode.BRIDGE.getDockerValue());
+        assertEquals("host", DockerNetworkMode.HOST.getDockerValue());
     }
 
     @Test
@@ -206,7 +223,7 @@ class DockerSandboxConfigTest {
         config.setWorkspaceRoot("/workspace");
         config.setMemorySizeBytes(268435456L);
         config.setCpuCount(1L);
-        config.setNetwork("none");
+        config.setNetwork(DockerNetworkMode.HOST);
         config.setSnapshotRoot("./data/agent-snapshots");
         config.setWorkspaceProjectionEnabled(true);
         config.setWorkspaceProjectionRoots(OFFICIAL_PROJECTION_ROOTS);
@@ -216,7 +233,7 @@ class DockerSandboxConfigTest {
         assertEquals("/workspace", config.getWorkspaceRoot());
         assertEquals(268435456L, config.getMemorySizeBytes());
         assertEquals(1L, config.getCpuCount());
-        assertEquals("none", config.getNetwork());
+        assertEquals(DockerNetworkMode.HOST, config.getNetwork());
         assertEquals("./data/agent-snapshots", config.getSnapshotRoot());
         assertTrue(config.isWorkspaceProjectionEnabled());
         assertEquals(OFFICIAL_PROJECTION_ROOTS, config.getWorkspaceProjectionRoots());

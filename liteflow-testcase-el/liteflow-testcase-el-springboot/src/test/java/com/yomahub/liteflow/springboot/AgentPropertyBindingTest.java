@@ -15,6 +15,7 @@ import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.DockerNetworkMode;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import com.yomahub.liteflow.slot.Slot;
@@ -23,6 +24,7 @@ import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.Msg;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -200,7 +202,7 @@ class AgentPropertyBindingTest {
         assertEquals("/workspace", docker.getWorkspaceRoot());
         assertEquals(268435456L, docker.getMemorySizeBytes());
         assertEquals(1L, docker.getCpuCount());
-        assertEquals("none", docker.getNetwork());
+        assertEquals(DockerNetworkMode.NONE, docker.getNetwork());
         assertEquals("./data/agent-snapshots", docker.getSnapshotRoot());
         assertTrue(docker.isWorkspaceProjectionEnabled());
         assertEquals(List.of("AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"),
@@ -222,6 +224,19 @@ class AgentPropertyBindingTest {
     }
 
     @Test
+    void dockerNetworkAcceptsOnlySupportedModes() {
+        assertEquals(DockerNetworkMode.BRIDGE,
+                bind(Map.of(PREFIX + "harness.docker.network", "bridge"))
+                        .getAgent().getHarness().getDocker().getNetwork());
+        assertEquals(DockerNetworkMode.HOST,
+                bind(Map.of(PREFIX + "harness.docker.network", "host"))
+                        .getAgent().getHarness().getDocker().getNetwork());
+
+        assertThrows(BindException.class,
+                () -> bind(Map.of(PREFIX + "harness.docker.network", "custom-network")));
+    }
+
+    @Test
     void boundGuardedLocalConfigurationFailsClosedWithoutExplicitTrust() {
         AgentConfig agent = bind(Map.of(
                 PREFIX + "harness.filesystem-backend", "GUARDED_LOCAL",
@@ -240,6 +255,14 @@ class AgentPropertyBindingTest {
                 "/META-INF/additional-spring-configuration-metadata.json")) {
             root = new ObjectMapper().readTree(stream);
         }
+        Set<String> rawMapProperties = StreamSupport
+                .stream(root.path("properties").spliterator(), false)
+                .filter(node -> "java.util.Map".equals(node.path("type").asText()))
+                .map(node -> node.path("name").asText())
+                .collect(Collectors.toSet());
+        assertEquals(Set.of(), rawMapProperties,
+                "metadata Map types must declare key and value types");
+
         Map<String, JsonNode> agentProperties = StreamSupport
                 .stream(root.path("properties").spliterator(), false)
                 .filter(node -> node.path("name").asText().startsWith(PREFIX))
@@ -281,7 +304,7 @@ class AgentPropertyBindingTest {
         assertMetadata(agentProperties, "harness.docker.cpu-count",
                 "java.lang.Long", "1");
         assertMetadata(agentProperties, "harness.docker.network",
-                "java.lang.String", "none");
+                DockerNetworkMode.class.getName(), "NONE");
         assertMetadata(agentProperties, "harness.docker.workspace-projection-enabled",
                 "java.lang.Boolean", "true");
         assertMetadata(agentProperties, "workspace.backend",

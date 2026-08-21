@@ -78,7 +78,7 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
                 .workspaceRoot(config.getWorkspaceRoot())
                 .memorySizeBytes(config.getMemorySizeBytes())
                 .cpuCount(config.getCpuCount())
-                .network(config.getNetwork())
+                .network(config.getNetwork().getDockerValue())
                 .additionalRunArgs(REQUIRED_RUN_ARGS)
                 .snapshotSpec(snapshot);
         if (config.isWorkspaceProjectionEnabled()) {

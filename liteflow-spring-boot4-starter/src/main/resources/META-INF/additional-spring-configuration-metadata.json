@@ -8,7 +8,7 @@
     },
     {
       "name": "liteflow.rule-source-ext-data-map",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "rule source extended data map.",
       "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty"
     },
@@ -196,7 +196,7 @@
     },
     {
       "name": "liteflow.script-setting",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Script special settings.",
       "sourceType": "com.yomahub.liteflow.springboot4.LiteflowProperty"
     },
@@ -429,10 +429,10 @@
     },
     {
       "name": "liteflow.agent.harness.docker.network",
-      "type": "java.lang.String",
-      "description": "Docker network mode or explicitly configured network name.",
+      "type": "com.yomahub.liteflow.property.agent.DockerNetworkMode",
+      "description": "Docker network isolation mode: NONE, BRIDGE, or HOST.",
       "sourceType": "com.yomahub.liteflow.property.agent.DockerSandboxConfig",
-      "defaultValue": "none"
+      "defaultValue": "NONE"
     },
     {
       "name": "liteflow.agent.harness.docker.snapshot-root",
@@ -557,7 +557,7 @@
     },
     {
       "name": "liteflow.agent.openai.extra",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Extra parameters for OpenAI.",
       "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
     },
@@ -575,7 +575,7 @@
     },
     {
       "name": "liteflow.agent.anthropic.extra",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Extra parameters for Anthropic.",
       "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
     },
@@ -593,7 +593,7 @@
     },
     {
       "name": "liteflow.agent.gemini.extra",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Extra parameters for Gemini.",
       "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
     },
@@ -611,7 +611,7 @@
     },
     {
       "name": "liteflow.agent.dashscope.extra",
-      "type": "java.util.Map",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Extra parameters for DashScope.",
       "sourceType": "com.yomahub.liteflow.property.agent.PlatformCredential"
     },

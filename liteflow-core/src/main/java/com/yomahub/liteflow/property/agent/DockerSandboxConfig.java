@@ -12,7 +12,7 @@ public class DockerSandboxConfig {
 	private String workspaceRoot = "/workspace";
 	private Long memorySizeBytes = 512L * 1024 * 1024;
 	private Long cpuCount = 1L;
-	private String network = "none";
+	private DockerNetworkMode network = DockerNetworkMode.NONE;
 	private String snapshotRoot;
 	private boolean workspaceProjectionEnabled = true;
 	private List<String> workspaceProjectionRoots = new ArrayList<>(List.of(
@@ -50,11 +50,11 @@ public class DockerSandboxConfig {
 		this.cpuCount = cpuCount;
 	}
 
-	public String getNetwork() {
+	public DockerNetworkMode getNetwork() {
 		return network;
 	}
 
-	public void setNetwork(String network) {
+	public void setNetwork(DockerNetworkMode network) {
 		this.network = network;
 	}
 
@@ -95,7 +95,9 @@ public class DockerSandboxConfig {
 		if (cpuCount == null || cpuCount <= 0) {
 			throw invalid("cpu-count", "must be positive");
 		}
-		requireText(network, "network");
+		if (network == null) {
+			throw invalid("network", "must not be null");
+		}
 		if (workspaceProjectionRoots == null) {
 			throw invalid("workspace-projection-roots", "must not be null");
 		}

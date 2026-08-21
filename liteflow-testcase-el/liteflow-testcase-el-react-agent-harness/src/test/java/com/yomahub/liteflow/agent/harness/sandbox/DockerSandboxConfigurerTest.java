@@ -3,6 +3,7 @@ package com.yomahub.liteflow.agent.harness.sandbox;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.DockerNetworkMode;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.ContentBlock;
@@ -78,7 +79,7 @@ class DockerSandboxConfigurerTest {
         docker.setWorkspaceRoot("/agent-workspace");
         docker.setMemorySizeBytes(268435456L);
         docker.setCpuCount(2L);
-        docker.setNetwork("none");
+        docker.setNetwork(DockerNetworkMode.NONE);
         docker.setSnapshotRoot(null);
         docker.setWorkspaceProjectionRoots(List.of("AGENTS.md", "skills/runtime"));
 
@@ -109,17 +110,19 @@ class DockerSandboxConfigurerTest {
     }
 
     @Test
-    void mapsOnlyAnExplicitNonDefaultNetworkValue() throws Exception {
+    void mapsEverySupportedNetworkMode() throws Exception {
         AgentConfig defaultAgent = agentConfig();
         DockerSandboxClientOptions defaultOptions = options(configuredSpec(
                 new DockerSandboxConfigurer(), context(defaultAgent)));
         assertEquals("none", defaultOptions.getNetwork());
 
-        AgentConfig explicitAgent = agentConfig();
-        explicitAgent.getHarness().getDocker().setNetwork("sandbox-network");
-        DockerSandboxClientOptions explicitOptions = options(configuredSpec(
-                new DockerSandboxConfigurer(), context(explicitAgent)));
-        assertEquals("sandbox-network", explicitOptions.getNetwork());
+        for (DockerNetworkMode mode : List.of(DockerNetworkMode.BRIDGE, DockerNetworkMode.HOST)) {
+            AgentConfig explicitAgent = agentConfig();
+            explicitAgent.getHarness().getDocker().setNetwork(mode);
+            DockerSandboxClientOptions explicitOptions = options(configuredSpec(
+                    new DockerSandboxConfigurer(), context(explicitAgent)));
+            assertEquals(mode.getDockerValue(), explicitOptions.getNetwork());
+        }
     }
 
     @Test
@@ -238,7 +241,7 @@ class DockerSandboxConfigurerTest {
         assertConfigurerRejects(workspaceAgent, "workspace-root");
 
         AgentConfig networkAgent = agentConfig();
-        networkAgent.getHarness().getDocker().setNetwork("");
+        networkAgent.getHarness().getDocker().setNetwork(null);
         assertConfigurerRejects(networkAgent, "network");
     }
 
