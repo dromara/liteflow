@@ -2,13 +2,13 @@ package com.yomahub.liteflow.test.agent.real.skills;
 
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.permission.PermissionBehavior;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionRule;
 import io.agentscope.core.skill.SkillFilter;
-import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import org.springframework.stereotype.Component;
 
@@ -33,23 +33,16 @@ final class RealSkillsAgentCmp {
     @Component("realSkillsAgent")
     static class SkillsAgentCmp extends HarnessAgentComponent {
 
-        private AgentSkillRepository ownedRepository;
-
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {
             return RealAgentTestBase.realModel();
         }
 
         @Override
-        protected List<AgentSkillRepository> skillRepositories() {
-            ownedRepository = new FileSystemSkillRepository(
-                    Path.of("src/test/resources/real/skills/skills"), false);
-            return List.of(ownedRepository);
-        }
-
-        @Override
-        protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-            return repository == ownedRepository;
+        protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+            return List.of(SkillRepositoryRegistration.owned(
+                    new FileSystemSkillRepository(
+                            Path.of("src/test/resources/real/skills/skills"), false)));
         }
 
         @Override

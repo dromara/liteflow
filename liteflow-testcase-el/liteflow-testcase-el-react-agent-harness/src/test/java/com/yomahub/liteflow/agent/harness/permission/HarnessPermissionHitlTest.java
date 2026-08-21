@@ -366,16 +366,15 @@ class HarnessPermissionHitlTest {
     }
 
     @Test
-    void defaultHarnessPolicyAsksBeforeAnUnruledWriteLikeTool() throws Exception {
+    void defaultHarnessPolicyBypassesConfirmation() throws Exception {
         configure("default-policy");
         TestComponent component = component(new ScriptedModel("default-tool"));
 
-        AgentInvocationException failure =
-                assertThrows(AgentInvocationException.class, component::process);
+        component.process();
 
-        assertEquals(AgentInvocationErrorType.PERMISSION, failure.getErrorType());
-        assertEquals(0, component.tool.executions.get());
-        assertEquals(PermissionMode.DEFAULT,
+        assertEquals(1, component.tool.executions.get());
+        assertEquals(0, component.middleware.resumeCalls.get());
+        assertEquals(PermissionMode.BYPASS,
                 component.runtime.agent().getDelegate()
                         .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
                         .getPermissionContext().getMode());
@@ -399,7 +398,7 @@ class HarnessPermissionHitlTest {
     }
 
     @Test
-    void configuredBypassPolicyIsRejectedBeforeModelOrToolExecution() throws Exception {
+    void configuredBypassPolicyExecutesWithoutConfirmation() throws Exception {
         configure("configured-bypass");
         ScriptedModel model = new ScriptedModel("configured-bypass-tool");
         TestComponent component = component(model);
@@ -407,11 +406,34 @@ class HarnessPermissionHitlTest {
                 .mode(PermissionMode.BYPASS)
                 .build();
 
-        AgentConfigException failure = assertThrows(AgentConfigException.class, component::process);
+        component.process();
 
-        assertTrue(failure.getMessage().contains("BYPASS"), failure.getMessage());
-        assertEquals(0, model.calls.get());
-        assertEquals(0, component.tool.executions.get());
+        assertEquals(2, model.calls.get());
+        assertEquals(1, component.tool.executions.get());
+        assertEquals(0, component.middleware.resumeCalls.get());
+        assertClean(component);
+    }
+
+    @Test
+    void defaultBypassReplacesAPersistedLegacyPermissionContext() throws Exception {
+        configure("legacy-permission");
+        ScriptedModel model = new ScriptedModel();
+        TestComponent component = component(model);
+
+        component.process();
+        component.runtime.agent().getDelegate().replacePermissionContext(
+                "user", component.lastContext.get().getRuntimeSessionId(),
+                rule(PermissionBehavior.ASK));
+        model.script("legacy-tool");
+
+        component.process();
+
+        assertEquals(1, component.tool.executions.get());
+        assertEquals(0, component.middleware.resumeCalls.get());
+        assertEquals(PermissionMode.BYPASS,
+                component.runtime.agent().getDelegate()
+                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getPermissionContext().getMode());
         assertClean(component);
     }
 
@@ -706,7 +728,7 @@ class HarnessPermissionHitlTest {
     }
 
     private static final class ScriptedModel implements Model {
-        private final List<String> toolIds;
+        private List<String> toolIds;
         private final AtomicInteger calls = new AtomicInteger();
         private final boolean never;
         private final CountDownLatch subscribed = new CountDownLatch(1);
@@ -724,6 +746,11 @@ class HarnessPermissionHitlTest {
 
         private static ScriptedModel never() {
             return new ScriptedModel(true);
+        }
+
+        private void script(String... toolIds) {
+            this.toolIds = List.of(toolIds);
+            calls.set(0);
         }
 
         @Override

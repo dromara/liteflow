@@ -372,20 +372,6 @@
       "defaultValue": "2m"
     },
     {
-      "name": "liteflow.agent.invocation-guard.coordination-mode",
-      "type": "com.yomahub.liteflow.property.agent.DistributedCoordinationMode",
-      "description": "Coordination policy for distributed invocation guards.",
-      "sourceType": "com.yomahub.liteflow.property.agent.AgentInvocationGuardConfig",
-      "defaultValue": "NONE"
-    },
-    {
-      "name": "liteflow.agent.invocation-guard.strict-distributed",
-      "type": "java.lang.Boolean",
-      "description": "Whether distributed coordination must fail closed when unavailable.",
-      "sourceType": "com.yomahub.liteflow.property.agent.AgentInvocationGuardConfig",
-      "defaultValue": true
-    },
-    {
       "name": "liteflow.agent.hitl.confirmation-timeout",
       "type": "java.time.Duration",
       "description": "Maximum duration to wait for a human confirmation decision.",
@@ -539,21 +525,21 @@
     {
       "name": "liteflow.agent.skills.enabled",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable configuration-driven agent skills.",
+      "description": "Whether LiteFlow should create and manage a skill repository from the configured path.",
       "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
       "defaultValue": false
     },
     {
       "name": "liteflow.agent.skills.path",
       "type": "java.lang.String",
-      "description": "Skills directory path used to discover SKILL.md repositories.",
+      "description": "Skills directory. Use a classpath: prefix for classpath resources; other values are file-system paths.",
       "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
       "defaultValue": "./skills"
     },
     {
       "name": "liteflow.agent.skills.strict",
       "type": "java.lang.Boolean",
-      "description": "Fail fast when an illegal skill configuration is detected.",
+      "description": "Reserved compatibility flag; currently does not change repository validation.",
       "sourceType": "com.yomahub.liteflow.property.agent.SkillsConfig",
       "defaultValue": true
     },

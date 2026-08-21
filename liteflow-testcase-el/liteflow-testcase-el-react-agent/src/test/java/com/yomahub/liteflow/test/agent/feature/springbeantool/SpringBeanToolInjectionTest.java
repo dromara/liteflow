@@ -11,8 +11,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Resource;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Set;
 
 /**
@@ -38,20 +36,6 @@ public class SpringBeanToolInjectionTest extends BaseAgentLiveTest {
         // 而单例在容器启动时就构造完毕（早于 @BeforeEach）。若在此清零，
         // 单例不会被重新构造，instance() 会一直为 null、constructCount() 一直为 0，
         // 反而把要断言的「容器构造证据」擦掉。
-        liteflowConfig.getAgent().getSkills().setEnabled(true);
-        liteflowConfig.getAgent().getSkills().setPath(resolveSkillsPath());
-        liteflowConfig.getAgent().getSkills().setStrict(true);
-    }
-
-    private static String resolveSkillsPath() {
-        Path moduleRelative = Path.of("src/test/resources/feature/springbeantool/skills");
-        if (Files.isDirectory(moduleRelative)) {
-            return moduleRelative.toAbsolutePath().normalize().toString();
-        }
-        return Path.of("liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/springbeantool/skills")
-                .toAbsolutePath()
-                .normalize()
-                .toString();
     }
 
     // ===== 测试1：组件层 tools() 注入 Spring bean =====

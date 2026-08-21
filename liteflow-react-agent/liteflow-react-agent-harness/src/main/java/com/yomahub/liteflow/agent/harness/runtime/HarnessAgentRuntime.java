@@ -2,6 +2,7 @@ package com.yomahub.liteflow.agent.harness.runtime;
 
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
+import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.harness.agent.HarnessAgent;
 import reactor.core.publisher.Mono;
 
@@ -16,12 +17,13 @@ public final class HarnessAgentRuntime implements AutoCloseable {
     private final AgentRuntimeOwnership ownership;
     private final List<? extends AutoCloseable> ownedHarnessResources;
     private final SandboxCallGate sandboxCallGate;
+    private final PermissionContextState permissionContext;
 
     public HarnessAgentRuntime(
             HarnessAgent agent,
             AgentRuntimeOwnership ownership,
             List<? extends AutoCloseable> ownedHarnessResources) {
-        this(agent, ownership, ownedHarnessResources, null);
+        this(agent, ownership, ownedHarnessResources, null, null);
     }
 
     public HarnessAgentRuntime(
@@ -29,11 +31,21 @@ public final class HarnessAgentRuntime implements AutoCloseable {
             AgentRuntimeOwnership ownership,
             List<? extends AutoCloseable> ownedHarnessResources,
             SandboxCallGate sandboxCallGate) {
+        this(agent, ownership, ownedHarnessResources, sandboxCallGate, null);
+    }
+
+    public HarnessAgentRuntime(
+            HarnessAgent agent,
+            AgentRuntimeOwnership ownership,
+            List<? extends AutoCloseable> ownedHarnessResources,
+            SandboxCallGate sandboxCallGate,
+            PermissionContextState permissionContext) {
         this.agent = Objects.requireNonNull(agent, "agent");
         this.ownership = Objects.requireNonNull(ownership, "ownership");
         this.ownedHarnessResources = List.copyOf(Objects.requireNonNull(
                 ownedHarnessResources, "ownedHarnessResources"));
         this.sandboxCallGate = sandboxCallGate;
+        this.permissionContext = permissionContext;
     }
 
     public HarnessAgent agent() {
@@ -42,6 +54,10 @@ public final class HarnessAgentRuntime implements AutoCloseable {
 
     public GuardedNamespacedAgentStateStore stateStore() {
         return ownership.stateStore();
+    }
+
+    public PermissionContextState permissionContext() {
+        return permissionContext;
     }
 
     /** Runs one full logical invocation under the Docker middleware gate, when configured. */

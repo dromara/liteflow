@@ -67,21 +67,23 @@ final class HarnessRuntimeContextContinuation {
                 if (continuation != null) {
                     continuation.capture(context);
                 }
-                AgentState state = RuntimeContext.resolveAgentState(context, agent);
-                boolean stateBypass = state != null
-                        && state.getPermissionContext().getMode() == PermissionMode.BYPASS;
-                boolean sessionBypass = agent instanceof ReActAgent reactAgent
-                        && reactAgent.getPermissionMode(
-                                context.getUserId(), context.getSessionId())
-                                == PermissionMode.BYPASS;
-                if (stateBypass || sessionBypass) {
-                    if (agent instanceof ReActAgent reactAgent) {
-                        reactAgent.replacePermissionContext(
-                                context.getUserId(), context.getSessionId(), permissionContext);
+                if (permissionContext.getMode() != PermissionMode.BYPASS) {
+                    AgentState state = RuntimeContext.resolveAgentState(context, agent);
+                    boolean stateBypass = state != null
+                            && state.getPermissionContext().getMode() == PermissionMode.BYPASS;
+                    boolean sessionBypass = agent instanceof ReActAgent reactAgent
+                            && reactAgent.getPermissionMode(
+                                    context.getUserId(), context.getSessionId())
+                                    == PermissionMode.BYPASS;
+                    if (stateBypass || sessionBypass) {
+                        if (agent instanceof ReActAgent reactAgent) {
+                            reactAgent.replacePermissionContext(
+                                    context.getUserId(), context.getSessionId(), permissionContext);
+                        }
+                        return Flux.error(new AgentInvocationException(
+                                AgentInvocationErrorType.PERMISSION,
+                                "Harness permission mode BYPASS conflicts with the configured policy"));
                     }
-                    return Flux.error(new AgentInvocationException(
-                            AgentInvocationErrorType.PERMISSION,
-                            "Harness permission mode BYPASS is prohibited during invocation"));
                 }
                 return next.apply(input);
             });

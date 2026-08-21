@@ -6,7 +6,9 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.middleware.SkillTrackingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.runtime.PreparedAgentResources;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
@@ -22,6 +24,7 @@ import io.agentscope.core.skill.DynamicSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
+import io.agentscope.core.skill.repository.ClasspathSkillRepository;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
@@ -203,6 +206,28 @@ class AgentSkillRepositoryIntegrationTest {
     }
 
     @Test
+    void configurationCreatesAndOwnsClasspathRepositoryWithoutComponentHooks() {
+        AgentConfig config = config();
+        config.getSkills().setEnabled(true);
+        config.getSkills().setPath("classpath:/configured-skills");
+        TestComponent component = new TestComponent(List.of(), List.of());
+
+        PreparedAgentResources prepared = component.resources(config);
+        AgentSkillRepository repository = prepared.skillRepositories().get(0);
+        try {
+            assertTrue(repository instanceof ClasspathSkillRepository);
+            assertEquals(List.of("configured"), repository.getAllSkillNames());
+            assertEquals("CONFIGURED-CLASSPATH-SKILL",
+                    repository.getSkill("configured").getDescription());
+        }
+        finally {
+            prepared.ownership().close("prepared test resources", null, List.of());
+        }
+
+        assertThrows(IllegalStateException.class, repository::getAllSkillNames);
+    }
+
+    @Test
     void customizedAgentMustRetainNativeDynamicSkillMiddlewareAndBuildFailureClosesOwnedRepo() {
         InMemoryRepository owned = new InMemoryRepository(
                 "owned", List.of(skill("owned-skill", "owned-description", null)));
@@ -360,6 +385,14 @@ class AgentSkillRepositoryIntegrationTest {
                     config, "skill-agent", "agent-key", AGENT_NAMESPACE));
         }
 
+        private PreparedAgentResources resources(AgentConfig config) {
+            return prepareAgentResources(
+                    new AgentRuntimeBuildContext(
+                            config, "skill-agent", "agent-key", AGENT_NAMESPACE),
+                    true,
+                    false);
+        }
+
         @Override
         protected ModelSpec<?> model() {
             throw new AssertionError("buildModel override must be used");
@@ -381,13 +414,12 @@ class AgentSkillRepositoryIntegrationTest {
         }
 
         @Override
-        protected List<AgentSkillRepository> skillRepositories() {
-            return repositories;
-        }
-
-        @Override
-        protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-            return owned.stream().anyMatch(candidate -> candidate == repository);
+        protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+            return repositories.stream()
+                    .map(repository -> new SkillRepositoryRegistration(
+                            repository,
+                            owned.stream().anyMatch(candidate -> candidate == repository)))
+                    .toList();
         }
 
         @Override

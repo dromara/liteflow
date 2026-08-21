@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * guide §5.3 REDIS 状态存储（真实 Docker Redis）：
- * 多轮记忆 + key 落库 + strict-distributed 守卫校验。
+ * 多轮记忆 + key 落库。
  */
 @TestPropertySource("classpath:/real/statestore-redis/application.properties")
 @SpringBootTest(classes = RedisStateStoreLiveTest.class)
@@ -66,23 +66,6 @@ public class RedisStateStoreLiveTest extends RealAgentTestBase {
                     "an :agent_state key must exist, keys=" + keys);
         } finally {
             client.shutdown();
-        }
-    }
-
-    /** §14.4 / §18：REDIS 共享存储 + 默认严格模式 + 本地守卫 → 构建期 fail-fast。 */
-    @Test
-    public void strictDistributedGuardRejectsLocalCoordinationForRedis() {
-        boolean original = liteflowConfig.getAgent().getInvocationGuard().isStrictDistributed();
-        liteflowConfig.getAgent().getInvocationGuard().setStrictDistributed(true);
-        try {
-            LiteflowResponse response = flowExecutor.execute2Resp("realRedisChain",
-                    "你好", ExecuteOption.of().conversationId("real-redis-guard"));
-            Assertions.assertFalse(response.isSuccess(), "strict guard must fail the chain");
-            Assertions.assertTrue(cause(response).contains(
-                            "may be distributed, but invocationGuard.coordinationMode=NONE"),
-                    "unexpected cause: " + cause(response));
-        } finally {
-            liteflowConfig.getAgent().getInvocationGuard().setStrictDistributed(original);
         }
     }
 

@@ -3,24 +3,24 @@ package com.yomahub.liteflow.property.agent;
 /**
  * Agent 技能配置绑定对象，对应配置段 {@code liteflow.agent.skills.*}。
  *
- * <p>{@code ReActAgentComponent} 不会自动读取此对象。应用可在覆写
- * {@code skillRepositories()} 时自行读取 {@code enabled} 与 {@code path}，
- * 创建 AgentScope 2 {@code AgentSkillRepository}；{@code strict} 当前仅为配置兼容保留。
+ * <p>启用后，ReAct 类组件会根据 {@code path} 自动创建并托管 AgentScope 2
+ * {@code AgentSkillRepository}。{@code classpath:} 前缀表示 classpath 资源目录，
+ * 其他值表示文件系统目录；{@code strict} 当前仅为配置兼容保留。
  */
 public class SkillsConfig {
 
     /**
-     * 应用侧是否启用配置驱动的技能支持。
+     * 是否启用配置驱动的技能支持。
      *
-     * <p>默认关闭；只有组件覆写主动读取该字段时才产生行为。
+     * <p>默认关闭；启用后由 LiteFlow 创建并管理对应的技能仓库。
      */
     private boolean enabled = false;
 
     /**
      * 技能目录路径。
      *
-     * <p>默认值为当前工作目录下的 {@code ./skills}。只有应用把该值传给
-     * {@code FileSystemSkillRepository} 等 repository 时才会读取该目录。
+     * <p>默认值为当前工作目录下的 {@code ./skills}。使用 {@code classpath:agent/skills}
+     * 这类值可从 classpath 资源目录加载技能。
      */
     private String path = "./skills";
 

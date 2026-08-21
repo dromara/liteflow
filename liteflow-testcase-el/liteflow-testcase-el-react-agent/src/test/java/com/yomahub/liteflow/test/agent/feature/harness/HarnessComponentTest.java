@@ -7,6 +7,7 @@ import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.core.ExecuteOption;
@@ -34,7 +35,6 @@ import io.agentscope.core.state.State;
 import io.agentscope.core.state.AgentState;
 import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.SkillFilter;
-import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.sandbox.ExecResult;
@@ -373,7 +373,6 @@ final class HarnessContextComponent extends OfflineHarnessComponent {
 
     private final AtomicReference<HarnessAgentRuntime> runtime = new AtomicReference<>();
     private final ContextCapabilityProbe probe = new ContextCapabilityProbe(runtime);
-    private AgentSkillRepository ownedRepository;
     private AgentSkill allowedSkill;
 
     HarnessContextComponent() {
@@ -396,21 +395,15 @@ final class HarnessContextComponent extends OfflineHarnessComponent {
     }
 
     @Override
-    protected List<AgentSkillRepository> skillRepositories() {
+    protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
         FileSystemSkillRepository repository = new FileSystemSkillRepository(
                 Path.of("src/test/resources/feature/harness/skills"), false);
-        ownedRepository = repository;
         allowedSkill = repository.getAllSkills().stream()
                 .filter(skill -> "context-demo".equals(skill.getName()))
                 .findFirst()
                 .orElseThrow();
         UnifiedContextModel.setSkill(allowedSkill);
-        return List.of(repository);
-    }
-
-    @Override
-    protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-        return repository == ownedRepository;
+        return List.of(SkillRepositoryRegistration.owned(repository));
     }
 
     @Override

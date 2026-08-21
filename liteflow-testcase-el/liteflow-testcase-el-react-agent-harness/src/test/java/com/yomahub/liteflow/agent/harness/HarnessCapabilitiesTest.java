@@ -9,6 +9,7 @@ import com.yomahub.liteflow.agent.harness.sandbox.FakeSandboxClient;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -625,7 +626,7 @@ class HarnessCapabilitiesTest {
     }
 
     @Test
-    void planModePersistsPerSessionAndPermissionNeverDefaultsToBypass() throws Exception {
+    void planModePersistsPerSessionAndStillRestrictsShellUnderDefaultBypass() throws Exception {
         configureCustom("real-plan");
         RecordingModel model = new RecordingModel();
         TestComponent component = component(model, new RecordingFilesystem(Map.of()));
@@ -658,7 +659,7 @@ class HarnessCapabilitiesTest {
                 .map(ToolResultBlock.class::cast)
                 .anyMatch(result -> "execute".equals(result.getName())
                         && result.getState() == ToolResultState.DENIED));
-        assertEquals(PermissionMode.DEFAULT,
+        assertEquals(PermissionMode.BYPASS,
                 agent.getPermissionMode(first.getUserId(), first.getSessionId()));
         agent.exitPlanMode(first);
         agent.clearStateCache(first);
@@ -999,7 +1000,11 @@ class HarnessCapabilitiesTest {
         @Override protected CompactionConfig compactionConfig() { return compaction; }
         @Override protected MemoryConfig memoryConfig() { return memory; }
         @Override protected ToolResultEvictionConfig toolResultEvictionConfig() { return eviction; }
-        @Override protected List<AgentSkillRepository> skillRepositories() { return repositories; }
+        @Override protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+            return repositories.stream()
+                    .map(SkillRepositoryRegistration::borrowed)
+                    .toList();
+        }
         @Override protected SkillFilter skillFilter() { return skillFilter; }
         @Override protected List<SubagentDeclaration> subagents() { return subagents; }
         @Override protected TaskRepository taskRepository() { return tasks; }

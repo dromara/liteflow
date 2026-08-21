@@ -28,8 +28,6 @@ class AgentConfigV2Test {
 		assertEquals(AgentListenerFailureMode.FAIL_FAST, config.getEvent().getListenerFailureMode());
 		assertEquals(AgentInvocationGuardMode.LOCAL, config.getInvocationGuard().getMode());
 		assertEquals(Duration.ofMinutes(2), config.getInvocationGuard().getAcquireTimeout());
-		assertEquals(DistributedCoordinationMode.NONE, config.getInvocationGuard().getCoordinationMode());
-		assertTrue(config.getInvocationGuard().isStrictDistributed());
 		assertEquals(WorkspaceBackend.GUARDED_LOCAL, config.getWorkspace().getBackend());
 		assertFalse(config.getWorkspace().isTrustedLocal());
 		assertEquals(Duration.ofMinutes(2), config.getHitl().getConfirmationTimeout());

@@ -31,32 +31,6 @@ final class RealHarnessAgentsCmp {
         }
 
         @Override
-        protected io.agentscope.core.permission.PermissionContextState permissionContext() {
-            // harness 文件系统 / 子代理 / 计划等工具默认 ASK 且本组用例未配置确认处理器；
-            // 聚焦上下文工程能力验证，显式放行相关工具（BYPASS 模式被框架禁止）。
-            io.agentscope.core.permission.PermissionContextState.Builder builder =
-                    io.agentscope.core.permission.PermissionContextState.builder();
-            for (String tool : List.of(
-                    "execute", "write_file", "edit_file", "read_file", "list_directory",
-                    "agent_spawn", "load_skill_through_path", "plan_enter", "plan_exit",
-                    "write_plan", "memory_get", "memory_search")) {
-                builder.addAllowRule(tool, new io.agentscope.core.permission.PermissionRule(
-                        tool, null, io.agentscope.core.permission.PermissionBehavior.ALLOW,
-                        "real harness test"));
-            }
-            return builder.build();
-        }
-
-        @Override
-        protected com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler confirmationHandler() {
-            // 兜底：未知工具名的 ASK 请求自动批准，避免上下文工程用例被 HITL 打断。
-            return (event, context) -> reactor.core.publisher.Mono.just(
-                    event.getToolCalls().stream()
-                            .map(tool -> new io.agentscope.core.event.ConfirmResult(true, tool))
-                            .toList());
-        }
-
-        @Override
         protected String systemPrompt() {
             return "你是 Harness 测试助手，请严格按用户指令行动并用简短中文汇报。";
         }

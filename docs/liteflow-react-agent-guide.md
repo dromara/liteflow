@@ -427,8 +427,6 @@ liteflow.agent.state-store.mysql.table-name=agent_state
 liteflow.agent.state-store.mysql.create-if-not-exist=true
 ```
 
-注意：REDIS / MYSQL 是共享存储，多实例部署时请同时配置第 14.4 节的分布式并发守卫（`invocation-guard.coordination-mode`）。
-
 #### 自定义存储
 
 需要其他后端（如 MongoDB）时，覆写组件的 `stateStoreResolver()` 返回自定义 `AgentStateStore` 装配：
@@ -650,6 +648,8 @@ protected void handleReply(Msg reply, LiteFlowAgentContext context) {
 
 对于高危工具（如下单、删除、发消息），可以要求模型调用前先经人工确认。两步：
 
+本节适用于 `ReActAgentComponent`，也适用于显式启用 HITL 的 `HarnessAgentComponent`。`HarnessAgentComponent` 未提供权限策略时默认使用 `PermissionMode.BYPASS`，不需要实现 `confirmationHandler()`；详见 [§12.1](#121-默认权限策略)。
+
 第一步，用权限规则把工具标记为「需确认」（`ASK`）：
 
 ```java
@@ -702,15 +702,22 @@ description: 演示技能，说明何时使用它
 
 ```properties
 liteflow.agent.skills.enabled=true
+# 普通路径表示文件系统目录
 liteflow.agent.skills.path=./skills
+# 打包在应用资源中的技能可配置为：
+# liteflow.agent.skills.path=classpath:agent/skills
 ```
 
+LiteFlow 会根据路径自动创建 Repository，并在 Agent 运行时关闭或构建失败回滚时自动释放；组件不需要覆写任何 Repository 或 ownership 方法。
+
+只有需要远程、共享或自定义 Repository 时才使用高级扩展点：
+
 ```java
-// 组件中声明技能仓库（目录下每个子目录是一个技能）
 @Override
-protected List<AgentSkillRepository> skillRepositories() {
-    return List.of(new FileSystemSkillRepository(
-            Path.of("./skills"), false));
+protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+    return List.of(
+            SkillRepositoryRegistration.owned(customRepository),
+            SkillRepositoryRegistration.borrowed(sharedRepository));
 }
 
 // 可选：只暴露部分技能
@@ -738,9 +745,19 @@ protected SkillFilter skillFilter() {
 @Component("harnessAgent")
 public class MyHarnessAgentCmp extends HarnessAgentComponent {
     // model() / systemPrompt() / userPrompt() 与 ReActAgentComponent 完全相同，
-    // 工具、中间件、HITL 等能力也一致；Harness 特有的覆写点见下文小节。
+    // 工具、中间件、HITL API 等能力也一致；默认权限策略与 Harness 特有覆写点见下文。
 }
 ```
+
+### 12.1 默认权限策略
+
+`HarnessAgentComponent` 未覆写 `permissionContext()`，或返回空的权限上下文时，LiteFlow 默认使用 `PermissionMode.BYPASS`。模型调用 Harness 工具时会直接执行，不触发人工确认，因此使用方不需要添加任何权限相关代码，也不需要实现 `confirmationHandler()`。
+
+`BYPASS` 只跳过权限确认，不会关闭 Harness 的文件系统或 Docker 沙箱边界。路径限制、workspace 隔离、Docker 网络、CPU 与内存限制仍按配置生效。
+
+如果状态存储中已有旧会话，且组件仍使用默认权限策略，LiteFlow 会在调用开始前把该会话中持久化的旧权限上下文同步为 `BYPASS`，避免升级后继续触发 `ASK`。
+
+需要人工确认时，显式覆写 `permissionContext()` 并添加 `ASK` 规则，再按 [§10](#10-人工确认hitl) 实现 `confirmationHandler()`。显式提供的 `ALLOW`、`ASK`、`DENY` 等非空权限策略优先于 Harness 默认值，不会被改写成 `BYPASS`。
 
 文件系统后端通过配置选择：
 
@@ -758,7 +775,7 @@ liteflow.agent.harness.docker.cpu-count=1
 liteflow.agent.harness.docker.network=none
 ```
 
-### 12.1 上下文压缩（Compaction）
+### 12.2 上下文压缩（Compaction）
 
 长对话超过阈值时自动把早期消息摘要成总结、保留最近消息，防止上下文超限：
 
@@ -776,7 +793,7 @@ protected CompactionConfig compactionConfig() {
 
 摘要默认用主模型生成，可用 `.model(...)` 指定更便宜的模型执行。
 
-### 12.2 长期记忆（Memory）
+### 12.3 长期记忆（Memory）
 
 把对话中的关键信息抽取为长期记忆，供后续会话使用：
 
@@ -791,7 +808,7 @@ protected MemoryConfig memoryConfig() {
 
 抽取时机、抽取提示词（flushPrompt）与记忆合并策略可通过 builder 继续调整。
 
-### 12.3 工具结果淘汰（Tool Result Eviction）
+### 12.4 工具结果淘汰（Tool Result Eviction）
 
 过大的工具返回不会一直占用上下文，而是落盘到 workspace、只在上下文保留预览：
 
@@ -805,7 +822,7 @@ protected ToolResultEvictionConfig toolResultEvictionConfig() {
 }
 ```
 
-### 12.4 子代理、任务与计划模式
+### 12.5 子代理、任务与计划模式
 
 子代理（subagent）是主 Agent 可以派生的下级 Agent，各自有独立的提示词与模型：
 
@@ -955,7 +972,7 @@ protected Model buildModel() {
 | `shell.timeout` | `30s` | 单条命令超时（harness shell 工具消费） |
 | `logging.react-enabled` | `true` | ReAct 推理/行动/错误过程日志 |
 | `skills.enabled` | `false` | 是否启用技能 |
-| `skills.path` | `./skills` | 技能仓库目录 |
+| `skills.path` | `./skills` | 技能仓库目录；`classpath:` 前缀表示 classpath 资源，其他值表示文件系统路径 |
 | `openai.api-key` / `openai.base-url` | 无 | OpenAI 凭据 |
 | `anthropic.api-key` / `anthropic.base-url` | 无 | Anthropic 凭据 |
 | `gemini.api-key` / `gemini.base-url` | 无 | Gemini 凭据 |
@@ -997,8 +1014,8 @@ protected Model buildModel() {
 | `handleReply(Msg, LiteFlowAgentContext)` | 自定义最终答复的去向（也是读取 `getChatUsage()` 的时机，见 6.2） |
 | `resolveUserId(Slot)` / `resolveConversationId(Slot)` / `agentKey()` | 会话身份解析 |
 | `stateStoreResolver()` | 自定义状态存储解析 |
-| `permissionContext()` / `confirmationHandler()` / `stopOnReject()` | HITL 权限与确认 |
-| `skillRepositories()` / `skillFilter()` | 技能仓库与过滤 |
+| `permissionContext()` / `confirmationHandler()` / `stopOnReject()` | HITL 权限与确认；Harness 默认 `BYPASS`，仅权限策略产生 `ASK` 时需要确认处理器 |
+| `skillRepositoryRegistrations()` / `skillFilter()` | 高级技能仓库注册、ownership 与过滤；普通目录优先使用 `skills.*` 配置 |
 | `transformSystemPrompt(...)` | 动态改写系统提示词 |
 | `modelExecutionConfig()` / `toolExecutionConfig()` | 模型 / 工具执行配置 |
 | `customizeAgent(ReActAgent.Builder)` | 底层定制（不可替换框架托管的模型、工具、存储与中间件） |
@@ -1018,8 +1035,8 @@ protected Model buildModel() {
 | `enableShellTool requires a non-empty / non-blank liteflow.agent.shell.whitelist` | 白名单为空或含空白条目（留空等价于放行全部，框架拒绝） | 提供非空且无空白项的白名单 |
 | `built-in workspace tools require workspace.trustedLocal=true`（或 `...a valid workspace.root`、`...GUARDED_LOCAL`） | 文件工具前置条件不满足 | 配置 `workspace.root` 并显式 `trusted-local=true`，见 [§4.3](#43-内置工具agentscope-文件工具与-shell-工具) |
 | `structuredOutputType and structuredOutputSchema are mutually exclusive` | 两种结构化输出覆写同时存在 | 只保留其一，见 [§7](#7-结构化输出) |
-| `StateStore type REDIS may be distributed, but invocationGuard.coordinationMode=NONE` | 共享存储＋多实例部署，但并发守卫仍是进程内实现 | 配置分布式守卫（`invocation-guard.*`），或确认单实例后设 `strict-distributed=false`，见 [§14.4](#144-并发守卫) |
 | `Harness workspace.root must not be blank` / `Harness shell.timeout must be positive` | Harness 文件系统配置缺失/非法 | 补 `workspace.root`、检查 `shell.timeout`，见 [§12](#12-harness-模块上下文工程与沙箱) |
+| `No AgentConfirmationHandler is configured` | 显式配置了 `ASK`，但没有提供确认处理器 | 实现 `confirmationHandler()`；若使用 Harness 默认 `BYPASS`，则无需配置 `ASK`，见 [§10](#10-人工确认hitl) 与 [§12.1](#121-默认权限策略) |
 | `A2A client requires exactly one UserMessage` / `A2A client supports TEXT output only` | A2A 客户端输入/输出形态不符合协议约束 | 输入改为单条用户消息；结构化需求在远端完成后以文本返回，见 [§13](#13-a2a调用远程-agent) |
 
 调用期的 `AgentInvocationException`（TIMEOUT / INTERRUPTED / ACQUISITION_FAILED / PERMISSION / STRUCTURED_OUTPUT）见 [§14.5](#145-异常类型)。

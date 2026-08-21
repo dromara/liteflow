@@ -3,10 +3,8 @@ package com.yomahub.liteflow.agent.harness.component;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.middleware.MiddlewareBase;
-import io.agentscope.core.permission.PermissionBehavior;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionMode;
-import io.agentscope.core.permission.PermissionRule;
 import io.agentscope.harness.agent.HarnessAgent;
 
 import java.lang.reflect.Field;
@@ -15,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-/** Version-pinned fail-closed policy and inspection of the final Harness permission context. */
+/** Version-pinned default policy and inspection of the final Harness permission context. */
 final class HarnessAgentBuilderPermissionBridge {
 
     private static final String AGENTSCOPE_VERSION = "2.0.2";
@@ -23,37 +21,17 @@ final class HarnessAgentBuilderPermissionBridge {
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static final String CORE_VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-core/pom.properties";
-    private static final List<String> DANGEROUS_HARNESS_TOOLS =
-            List.of("execute", "write_file", "edit_file");
     private static volatile Fields fields;
 
     private HarnessAgentBuilderPermissionBridge() {
     }
 
-    /**
-     * Makes the upstream 2.0.2 {@code DEFAULT} contract explicit without changing filesystem
-     * boundaries: its documented fallback is ASK, but a completely empty state selects a legacy
-     * lightweight path. Exact ASK rules for Harness' execute/write tools engage the full engine.
-     */
-    static PermissionContextState failClosed(PermissionContextState configured) {
-        if (configured != null && configured.getMode() == PermissionMode.BYPASS) {
-            throw new AgentConfigException("Harness permission mode BYPASS is prohibited");
-        }
+    /** Uses BYPASS when the component does not provide an explicit permission policy. */
+    static PermissionContextState defaultBypass(PermissionContextState configured) {
         if (configured != null && !configured.isTrivial()) {
             return configured;
         }
-        PermissionContextState.Builder builder =
-                PermissionContextState.builder().mode(PermissionMode.DEFAULT);
-        for (String toolName : DANGEROUS_HARNESS_TOOLS) {
-            builder.addAskRule(
-                    toolName,
-                    new PermissionRule(
-                            toolName,
-                            null,
-                            PermissionBehavior.ASK,
-                            "liteflowHarnessDefault"));
-        }
-        return builder.build();
+        return PermissionContextState.builder().mode(PermissionMode.BYPASS).build();
     }
 
     static PermissionSnapshot snapshot(
@@ -115,9 +93,6 @@ final class HarnessAgentBuilderPermissionBridge {
         if (actual != expected) {
             throw new AgentConfigException(
                     "customizeHarness must retain the final permission context identity");
-        }
-        if (actual.getMode() == PermissionMode.BYPASS) {
-            throw new AgentConfigException("Harness permission mode BYPASS is prohibited");
         }
     }
 

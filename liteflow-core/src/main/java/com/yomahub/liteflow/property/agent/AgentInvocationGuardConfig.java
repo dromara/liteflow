@@ -9,8 +9,6 @@ public class AgentInvocationGuardConfig {
 	private String beanName;
 	private Duration acquireTimeout = Duration.ofMinutes(2);
 	private Duration leaseDuration = Duration.ofMinutes(2);
-	private DistributedCoordinationMode coordinationMode = DistributedCoordinationMode.NONE;
-	private boolean strictDistributed = true;
 
 	public AgentInvocationGuardMode getMode() {
 		return mode;
@@ -42,21 +40,5 @@ public class AgentInvocationGuardConfig {
 
 	public void setLeaseDuration(Duration leaseDuration) {
 		this.leaseDuration = leaseDuration;
-	}
-
-	public DistributedCoordinationMode getCoordinationMode() {
-		return coordinationMode;
-	}
-
-	public void setCoordinationMode(DistributedCoordinationMode coordinationMode) {
-		this.coordinationMode = coordinationMode;
-	}
-
-	public boolean isStrictDistributed() {
-		return strictDistributed;
-	}
-
-	public void setStrictDistributed(boolean strictDistributed) {
-		this.strictDistributed = strictDistributed;
 	}
 }

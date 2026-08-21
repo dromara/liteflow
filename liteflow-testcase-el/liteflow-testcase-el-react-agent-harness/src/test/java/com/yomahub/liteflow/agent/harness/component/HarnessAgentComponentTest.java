@@ -11,6 +11,7 @@ import com.yomahub.liteflow.agent.harness.state.HarnessNamespacedAgentStateStore
 import com.yomahub.liteflow.agent.middleware.AgentMiddlewareOrder;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
@@ -1661,8 +1662,12 @@ class HarnessAgentComponentTest {
         }
 
         @Override
-        protected List<AgentSkillRepository> skillRepositories() {
-            return repositories;
+        protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+            return repositories.stream()
+                    .map(repository -> repository == ownedRepository
+                            ? SkillRepositoryRegistration.owned(repository)
+                            : SkillRepositoryRegistration.borrowed(repository))
+                    .toList();
         }
 
         @Override
@@ -1692,11 +1697,6 @@ class HarnessAgentComponentTest {
                             .apply();
                 }
             }
-        }
-
-        @Override
-        protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-            return repository == ownedRepository;
         }
 
         @Override

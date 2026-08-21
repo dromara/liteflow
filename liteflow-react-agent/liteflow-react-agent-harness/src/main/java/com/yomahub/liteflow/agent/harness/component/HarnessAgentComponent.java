@@ -24,6 +24,7 @@ import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.middleware.MiddlewareBase;
+import io.agentscope.core.permission.PermissionMode;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
@@ -209,7 +210,8 @@ public abstract class HarnessAgentComponent
                 builder.taskRepository(tasks);
             }
             var permissionContext =
-                    HarnessAgentBuilderPermissionBridge.failClosed(prepared.permissionContext());
+                    HarnessAgentBuilderPermissionBridge.defaultBypass(
+                            prepared.permissionContext());
             boolean planMode = enablePlanMode();
             builder.enableTaskList()
                     .enablePlanMode(planMode)
@@ -285,7 +287,11 @@ public abstract class HarnessAgentComponent
                     ? new SandboxCallGate()
                     : null;
             return new HarnessAgentRuntime(
-                    agent, prepared.ownership(), ownedProviderResources, sandboxCallGate);
+                    agent,
+                    prepared.ownership(),
+                    ownedProviderResources,
+                    sandboxCallGate,
+                    permissionContext);
         }
         catch (RuntimeException | Error failure) {
             prepared.ownership().rollback(failure, agent, ownedProviderResources);
@@ -302,6 +308,11 @@ public abstract class HarnessAgentComponent
             LiteFlowAgentContext liteflowContext) {
         HarnessAgent agent = runtime.agent();
         requireNoReservedRuntimeValues(runtimeContext);
+        var permissionContext = runtime.permissionContext();
+        if (permissionContext != null && permissionContext.getMode() == PermissionMode.BYPASS) {
+            agent.getDelegate().replacePermissionContext(
+                    runtimeContext.getUserId(), runtimeContext.getSessionId(), permissionContext);
+        }
         HarnessRuntimeContextContinuation continuation =
                 HarnessRuntimeContextContinuation.create();
         runtimeContext.put(HarnessRuntimeContextContinuation.class, continuation);

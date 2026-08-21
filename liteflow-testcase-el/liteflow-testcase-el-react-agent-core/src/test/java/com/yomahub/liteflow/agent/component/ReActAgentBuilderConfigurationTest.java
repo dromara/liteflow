@@ -6,6 +6,7 @@ import com.yomahub.liteflow.agent.middleware.ModelRoutingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.ReActAgentRuntime;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
@@ -181,8 +182,8 @@ class ReActAgentBuilderConfigurationTest {
                 new CloseableRepository("repository", closeOrder, cleanupFailure);
         TestComponent component = new TestComponent(
                 new CloseableModel("must-not-build", new ArrayList<>()));
-        component.repositories = List.of(repository);
-        component.ownedRepository = repository;
+        component.repositoryRegistrations =
+                List.of(SkillRepositoryRegistration.owned(repository));
 
         IllegalArgumentException failure = assertThrows(
                 IllegalArgumentException.class,
@@ -202,13 +203,13 @@ class ReActAgentBuilderConfigurationTest {
                 new CloseableRepository("repository", closeOrder, cleanupFailure);
         TestComponent component = new TestComponent(
                 new CloseableModel("must-not-build", new ArrayList<>()));
-        component.repositories = Arrays.asList(repository, null);
-        component.ownedRepository = repository;
+        component.repositoryRegistrations = Arrays.asList(
+                SkillRepositoryRegistration.owned(repository), null);
 
         AgentConfigException failure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(config()));
 
-        assertTrue(failure.getMessage().contains("skillRepositories"));
+        assertTrue(failure.getMessage().contains("skillRepositoryRegistrations"));
         assertEquals(1, repository.closeCount.get());
         assertEquals(List.of("repository"), closeOrder);
         assertEquals(1, failure.getSuppressed().length);
@@ -418,8 +419,7 @@ class ReActAgentBuilderConfigurationTest {
         private UnaryOperator<ReActAgent.Builder> customizer = UnaryOperator.identity();
         private final AtomicInteger customizerCalls = new AtomicInteger();
         private List<String> hookOrder;
-        private List<AgentSkillRepository> repositories = List.of();
-        private AgentSkillRepository ownedRepository;
+        private List<SkillRepositoryRegistration> repositoryRegistrations = List.of();
 
         private TestComponent(CloseableModel defaultModel) {
             this.defaultModel = defaultModel;
@@ -459,16 +459,11 @@ class ReActAgentBuilderConfigurationTest {
         }
 
         @Override
-        protected List<AgentSkillRepository> skillRepositories() {
+        protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
             if (hookOrder != null) {
                 hookOrder.add("repositories");
             }
-            return repositories;
-        }
-
-        @Override
-        protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-            return repository == ownedRepository;
+            return repositoryRegistrations;
         }
 
         @Override

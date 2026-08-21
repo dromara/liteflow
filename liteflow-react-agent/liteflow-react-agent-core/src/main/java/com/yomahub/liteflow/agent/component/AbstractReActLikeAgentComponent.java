@@ -19,6 +19,7 @@ import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership;
 import com.yomahub.liteflow.agent.runtime.McpClientRegistration;
 import com.yomahub.liteflow.agent.runtime.PreparedAgentResources;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
@@ -26,6 +27,7 @@ import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.ShellMode;
+import com.yomahub.liteflow.property.agent.SkillsConfig;
 import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
@@ -37,6 +39,8 @@ import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.skill.DynamicSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
+import io.agentscope.core.skill.repository.ClasspathSkillRepository;
+import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.Toolkit;
@@ -47,6 +51,7 @@ import io.agentscope.core.tool.file.WriteFileTool;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -136,12 +141,8 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         return false;
     }
 
-    protected List<AgentSkillRepository> skillRepositories() {
+    protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
         return List.of();
-    }
-
-    protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-        return false;
     }
 
     protected SkillFilter skillFilter() {
@@ -201,7 +202,8 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
         List<AgentSkillRepository> repositories = new ArrayList<>();
         List<AgentSkillRepository> ownedRepositories = new ArrayList<>();
         try {
-            collectSkillRepositories(repositories, ownedRepositories);
+            collectSkillRepositories(
+                    buildContext.agentConfig(), repositories, ownedRepositories);
             namespaced = createNamespacedStateStore(
                     resolved.store(), buildContext.agentNamespace());
             if (namespaced == null) {
@@ -544,24 +546,67 @@ public abstract class AbstractReActLikeAgentComponent<R extends AutoCloseable>
     }
 
     private void collectSkillRepositories(
+            AgentConfig config,
             List<AgentSkillRepository> repositories,
             List<AgentSkillRepository> ownedRepositories) {
-        List<AgentSkillRepository> configured = skillRepositories();
-        if (configured == null) {
-            throw new AgentConfigException("skillRepositories must not return null");
+        AgentSkillRepository configured = configuredSkillRepository(config);
+        if (configured != null) {
+            repositories.add(configured);
+            ownedRepositories.add(configured);
         }
         Set<AgentSkillRepository> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (AgentSkillRepository repository : configured) {
-            if (repository == null) {
-                throw new AgentConfigException("skillRepositories must not contain null");
+        List<SkillRepositoryRegistration> registrations = skillRepositoryRegistrations();
+        if (registrations == null) {
+            throw new AgentConfigException(
+                    "skillRepositoryRegistrations must not return null");
+        }
+        for (SkillRepositoryRegistration registration : registrations) {
+            if (registration == null) {
+                throw new AgentConfigException(
+                        "skillRepositoryRegistrations must not contain null");
             }
+            AgentSkillRepository repository = registration.repository();
             if (!seen.add(repository)) {
                 continue;
             }
             repositories.add(repository);
-            if (ownsSkillRepository(repository)) {
+            if (registration.owned()) {
                 ownedRepositories.add(repository);
             }
+        }
+    }
+
+    private AgentSkillRepository configuredSkillRepository(AgentConfig config) {
+        SkillsConfig skills = config.getSkills();
+        if (skills == null) {
+            throw new AgentConfigException("liteflow.agent.skills must not be null");
+        }
+        if (!skills.isEnabled()) {
+            return null;
+        }
+        String path = skills.getPath();
+        if (path == null || path.isBlank()) {
+            throw new AgentConfigException(
+                    "liteflow.agent.skills.path must not be blank when skills are enabled");
+        }
+        try {
+            if (path.startsWith("classpath:")) {
+                String resourcePath = path.substring("classpath:".length());
+                while (resourcePath.startsWith("/")) {
+                    resourcePath = resourcePath.substring(1);
+                }
+                if (resourcePath.isBlank()) {
+                    throw new AgentConfigException(
+                            "liteflow.agent.skills.path must name a classpath directory");
+                }
+                return new ClasspathSkillRepository(resourcePath);
+            }
+            return new FileSystemSkillRepository(Path.of(path), false);
+        }
+        catch (IOException | IllegalArgumentException failure) {
+            throw new AgentConfigException(
+                    "cannot create skill repository from liteflow.agent.skills.path " + path,
+                    failure);
         }
     }
 

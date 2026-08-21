@@ -9,7 +9,6 @@ import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
 import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.AgentStateStoreType;
-import com.yomahub.liteflow.property.agent.DistributedCoordinationMode;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import org.junit.jupiter.api.Test;
@@ -60,8 +59,6 @@ class AgentPropertyBindingTest {
             PREFIX + "invocation-guard.bean-name",
             PREFIX + "invocation-guard.acquire-timeout",
             PREFIX + "invocation-guard.lease-duration",
-            PREFIX + "invocation-guard.coordination-mode",
-            PREFIX + "invocation-guard.strict-distributed",
             PREFIX + "hitl.confirmation-timeout",
             PREFIX + "hitl.fail-on-denied-tool",
             PREFIX + "harness.filesystem-backend",
@@ -126,8 +123,6 @@ class AgentPropertyBindingTest {
                 entry("invocation-guard.bean-name", "guardBean"),
                 entry("invocation-guard.acquire-timeout", "19s"),
                 entry("invocation-guard.lease-duration", "23s"),
-                entry("invocation-guard.coordination-mode", "DISTRIBUTED_GUARD"),
-                entry("invocation-guard.strict-distributed", "false"),
                 entry("hitl.confirmation-timeout", "29s"),
                 entry("hitl.fail-on-denied-tool", "true"),
                 entry("harness.filesystem-backend", "DOCKER"),
@@ -182,9 +177,6 @@ class AgentPropertyBindingTest {
         assertEquals("guardBean", agent.getInvocationGuard().getBeanName());
         assertEquals(Duration.ofSeconds(19), agent.getInvocationGuard().getAcquireTimeout());
         assertEquals(Duration.ofSeconds(23), agent.getInvocationGuard().getLeaseDuration());
-        assertEquals(DistributedCoordinationMode.DISTRIBUTED_GUARD,
-                agent.getInvocationGuard().getCoordinationMode());
-        assertFalse(agent.getInvocationGuard().isStrictDistributed());
         assertEquals(Duration.ofSeconds(29), agent.getHitl().getConfirmationTimeout());
         assertTrue(agent.getHitl().isFailOnDeniedTool());
         assertEquals(HarnessFilesystemBackend.DOCKER,
@@ -261,8 +253,6 @@ class AgentPropertyBindingTest {
                 AgentListenerFailureMode.class.getName(), "FAIL_FAST");
         assertMetadata(agentProperties, "invocation-guard.mode",
                 AgentInvocationGuardMode.class.getName(), "LOCAL");
-        assertMetadata(agentProperties, "invocation-guard.coordination-mode",
-                DistributedCoordinationMode.class.getName(), "NONE");
         assertMetadata(agentProperties, "hitl.confirmation-timeout",
                 "java.time.Duration", "2m");
         assertMetadata(agentProperties, "harness.filesystem-backend",

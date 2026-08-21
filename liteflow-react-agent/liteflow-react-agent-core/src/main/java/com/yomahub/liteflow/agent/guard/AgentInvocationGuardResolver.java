@@ -4,27 +4,14 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardConfig;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
-import com.yomahub.liteflow.property.agent.DistributedCoordinationMode;
-import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
-/** Resolves the configured guard and validates distributed coordination declarations. */
+/** Resolves the configured guard. */
 public final class AgentInvocationGuardResolver {
 
     private static final AgentInvocationGuard PROCESS_GUARD = new LocalAgentInvocationGuard();
-    private final Consumer<String> warningSink;
-
-    public AgentInvocationGuardResolver() {
-        this(message -> LFLoggerManager.getLogger(AgentInvocationGuardResolver.class).warn(message));
-    }
-
-    public AgentInvocationGuardResolver(Consumer<String> warningSink) {
-        this.warningSink = Objects.requireNonNull(warningSink, "warningSink");
-    }
 
     public AgentInvocationGuard resolve(AgentConfig config) {
         validate(config);
@@ -49,24 +36,8 @@ public final class AgentInvocationGuardResolver {
 
     public void validate(AgentConfig config) {
         Objects.requireNonNull(config, "config");
-        AgentInvocationGuardConfig guardConfig = config.getInvocationGuard();
-        if (guardConfig == null) {
+        if (config.getInvocationGuard() == null) {
             throw new AgentConfigException("liteflow.agent.invocation-guard must not be null");
         }
-        if (!usesPotentiallyDistributedStore(config)
-                || guardConfig.getCoordinationMode() != DistributedCoordinationMode.NONE) {
-            return;
-        }
-        String message = "StateStore type " + config.getStateStore().getType()
-                + " may be distributed, but invocationGuard.coordinationMode=NONE";
-        if (guardConfig.isStrictDistributed()) {
-            throw new AgentConfigException(message + "; configure sticky routing or a distributed guard");
-        }
-        warningSink.accept(message + "; proceeding with local coordination because strictDistributed=false");
-    }
-
-    private static boolean usesPotentiallyDistributedStore(AgentConfig config) {
-        AgentStateStoreType type = config.getStateStore() == null ? null : config.getStateStore().getType();
-        return type == AgentStateStoreType.REDIS || type == AgentStateStoreType.MYSQL;
     }
 }

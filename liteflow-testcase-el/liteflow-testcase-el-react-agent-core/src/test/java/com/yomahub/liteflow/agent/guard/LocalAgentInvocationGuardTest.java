@@ -5,7 +5,6 @@ import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -229,27 +228,6 @@ class LocalAgentInvocationGuardTest {
     }
 
     @Test
-    void resolverRejectsPotentiallyDistributedStoreWithoutCoordinationInStrictMode() {
-        AgentConfig config = distributedStoreConfig();
-
-        assertThrows(com.yomahub.liteflow.agent.exception.AgentConfigException.class,
-                () -> new AgentInvocationGuardResolver().validate(config));
-    }
-
-    @Test
-    void resolverWarnsAndAllowsLocalCoordinationForNonStrictDistributedStore() {
-        AgentConfig config = distributedStoreConfig();
-        config.getInvocationGuard().setStrictDistributed(false);
-        List<String> warnings = new ArrayList<>();
-
-        AgentInvocationGuard resolved = new AgentInvocationGuardResolver(warnings::add).resolve(config);
-
-        assertTrue(resolved instanceof LocalAgentInvocationGuard);
-        assertEquals(1, warnings.size());
-        assertTrue(warnings.get(0).contains("strictDistributed=false"));
-    }
-
-    @Test
     void localGuardIsSharedAcrossResolversForTheSameKey() throws Exception {
         AgentConfig config = new AgentConfig();
         config.getStateStore().setJsonRoot("target/agent-state");
@@ -327,12 +305,6 @@ class LocalAgentInvocationGuardTest {
         AgentInvocationIdentity identity = new InvocationIdentityResolver("tenant")
                 .resolve("user", "conversation", agentKey);
         return AgentInvocationKey.state(identity);
-    }
-
-    private static AgentConfig distributedStoreConfig() {
-        AgentConfig config = new AgentConfig();
-        config.getStateStore().setType(AgentStateStoreType.REDIS);
-        return config;
     }
 
     private static final class RecordingLease implements AgentInvocationLease {

@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.agent.feature.harnessskills;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.TextBlock;
@@ -19,7 +20,6 @@ import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionRule;
 import io.agentscope.core.skill.AgentSkill;
 import io.agentscope.core.skill.SkillFilter;
-import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -38,8 +38,6 @@ public class HarnessSkillsAgentCmp extends HarnessAgentComponent {
     private static final AtomicReference<String> ALLOWED_SKILL_ID = new AtomicReference<>();
     private static final AtomicReference<List<String>> USED_SKILLS = new AtomicReference<>(List.of());
     private static final AtomicReference<SkillLoadingModel> MODEL = new AtomicReference<>();
-    private AgentSkillRepository ownedRepository;
-
     static void reset() {
         ALLOWED_SKILL_ID.set(null);
         USED_SKILLS.set(List.of());
@@ -79,14 +77,9 @@ public class HarnessSkillsAgentCmp extends HarnessAgentComponent {
     }
 
     @Override
-    protected List<AgentSkillRepository> skillRepositories() {
-        ownedRepository = new FileSystemSkillRepository(skillsRoot(), false);
-        return List.of(ownedRepository);
-    }
-
-    @Override
-    protected boolean ownsSkillRepository(AgentSkillRepository repository) {
-        return repository == ownedRepository;
+    protected List<SkillRepositoryRegistration> skillRepositoryRegistrations() {
+        return List.of(SkillRepositoryRegistration.owned(
+                new FileSystemSkillRepository(skillsRoot(), false)));
     }
 
     @Override
