@@ -1,14 +1,14 @@
-# liteflow-react-agent 升级 AgentScope 2.0.2 设计
+# liteflow-agent 升级 AgentScope 2.0.2 设计
 
 - **日期**：2026-08-10
 - **状态**：已批准
 - **目标版本**：AgentScope Java 2.0.2
-- **作用范围**：`liteflow-react-agent`、`liteflow-core` 中的 Agent 配置、`liteflow-testcase-el-react-agent`、相关集成与文档
+- **作用范围**：`liteflow-agent`、`liteflow-core` 中的 Agent 配置、`liteflow-testcase-el-agent`、相关集成与文档
 - **迁移类型**：允许破坏式升级
 
 ## 1. 背景
 
-`liteflow-react-agent` 当前依赖 AgentScope 1.0.12，并围绕 1.x 的有状态 `ReActAgent`、`Memory`、`SessionManager`、`Hook`、`SkillBox` 和粗粒度 `Event` 构建了自己的会话与运行时体系。
+`liteflow-agent` 当前依赖 AgentScope 1.0.12，并围绕 1.x 的有状态 `ReActAgent`、`Memory`、`SessionManager`、`Hook`、`SkillBox` 和粗粒度 `Event` 构建了自己的会话与运行时体系。
 
 AgentScope 2.0 已将核心模型改为：
 
@@ -38,7 +38,7 @@ AgentScope 2.0 已将核心模型改为：
 3. 保留轻量 `ReActAgent` 集成，同时新增可选的完整 `HarnessAgent` 集成。
 4. 使用类型化消息、Middleware 和 AgentEvent，不在新增代码中继续依赖 2.x 中已标记待移除的兼容 API。
 5. 充分开放 AgentScope 2.0 的结构化输出、重试与降级、MCP、权限与 HITL、技能、子 Agent、计划模式、上下文压缩和长期任务工作区能力。
-6. 保持 LiteFlow 作为确定性流程控制面；AgentScope 负责自然语言理解、受控决策和工具选择，不用 ReAct 循环替代 Chain／EL 图。
+6. 保持 LiteFlow 作为确定性流程控制面；AgentScope 负责自然语言理解、受控决策和工具选择，不用 Agent 循环替代 Chain／EL 图。
 7. 为核心行为建立无网络、无真实密钥的确定性测试基线。
 8. 明确 JDK 17、依赖版本、线程安全、生命周期和安全边界。
 
@@ -83,13 +83,13 @@ AgentScope 2.0 已将核心模型改为：
 
 | LiteFlow 模块 | AgentScope 依赖 |
 |---|---|
-| `liteflow-react-agent-core` | `agentscope-core` |
-| `liteflow-react-agent-harness` | `agentscope-harness` |
-| `liteflow-react-agent-a2a` | `agentscope-extensions-a2a-client`，服务端能力按需依赖 `agentscope-extensions-a2a-server` |
-| `liteflow-react-agent-openai` | `agentscope-extensions-model-openai`，包含其 first-party compatible ModelProvider |
-| `liteflow-react-agent-anthropic` | `agentscope-extensions-model-anthropic` |
-| `liteflow-react-agent-gemini` | `agentscope-extensions-model-gemini` |
-| `liteflow-react-agent-dashscope` | `agentscope-extensions-model-dashscope` |
+| `liteflow-agent-core` | `agentscope-core` |
+| `liteflow-agent-harness` | `agentscope-harness` |
+| `liteflow-agent-a2a` | `agentscope-extensions-a2a-client`，服务端能力按需依赖 `agentscope-extensions-a2a-server` |
+| `liteflow-agent-openai` | `agentscope-extensions-model-openai`，包含其 first-party compatible ModelProvider |
+| `liteflow-agent-anthropic` | `agentscope-extensions-model-anthropic` |
+| `liteflow-agent-gemini` | `agentscope-extensions-model-gemini` |
+| `liteflow-agent-dashscope` | `agentscope-extensions-model-dashscope` |
 
 不得同时依赖 shaded 聚合包 `io.agentscope:agentscope` 与细粒度模块，避免重复类和不完整的传递依赖。
 
@@ -122,7 +122,7 @@ AbstractAgentComponent.process() 〔final〕
         │     └── AgentStateStore 路由信息
         │
         ├── AgentRuntimeHandle 〔组件实例拥有〕
-        │     ├── ReActAgentRuntime
+        │     ├── AgentRuntime
         │     ├── HarnessAgentRuntime
         │     └── A2aAgentRuntime〔可选〕
         │
@@ -151,31 +151,31 @@ AbstractAgentComponent.process() 〔final〕
 升级后的模块结构为：
 
 ```text
-liteflow-react-agent/
-├── liteflow-react-agent-core
-├── liteflow-react-agent-harness        # 新增，可选
-├── liteflow-react-agent-a2a            # 新增，可选
-├── liteflow-react-agent-openai
-├── liteflow-react-agent-anthropic
-├── liteflow-react-agent-gemini
-└── liteflow-react-agent-dashscope
+liteflow-agent/
+├── liteflow-agent-core
+├── liteflow-agent-harness        # 新增，可选
+├── liteflow-agent-a2a            # 新增，可选
+├── liteflow-agent-openai
+├── liteflow-agent-anthropic
+├── liteflow-agent-gemini
+└── liteflow-agent-dashscope
 ```
 
-### 6.1 `liteflow-react-agent-core`
+### 6.1 `liteflow-agent-core`
 
 负责：
 
-- `AbstractAgentComponent` 与 `ReActAgentComponent`；
+- `AbstractAgentComponent` 与 `AgentComponent`；
 - LiteFlow Slot 与 RuntimeContext 桥接；
 - AgentStateStore namespace／故障通道与资源所有权；
 - AgentInvocationGuard 与 HITL 外层事务边界；
 - Toolkit、Middleware、消息、事件和异常抽象；
 - 模型公共接口和 Provider Spec 契约；
-- 轻量 ReAct Agent 能力。
+- 轻量 Agent 能力。
 
 core 只依赖 `agentscope-core`，不传递 Harness 的完整依赖面。
 
-### 6.2 `liteflow-react-agent-harness`
+### 6.2 `liteflow-agent-harness`
 
 负责：
 
@@ -197,7 +197,7 @@ Provider 模块保持薄适配：
 - 不在 core 中引入厂商 SDK；
 - DeepSeek、GLM、Kimi、MiniMax 优先使用 AgentScope OpenAI extension 内置的 first-party `ModelProvider`，LiteFlow 不再自行重复维护固定 baseUrl preset；通用 OpenAI Compatible builder 仅作为自定义端点的后备。
 
-### 6.4 `liteflow-react-agent-a2a`
+### 6.4 `liteflow-agent-a2a`
 
 A2A 是独立的跨服务 Agent 协议，不等同于本地 subagent 或 Agent Protocol。可选模块负责：
 
@@ -274,7 +274,7 @@ protected void handleReply(Msg reply, LiteFlowAgentContext context);
 
 `systemPrompt()` 的返回值是构建期基础提示词，不能读取 Slot。需要按调用动态追加租户、会话或业务信息时，使用由 Middleware 驱动的 `transformSystemPrompt(...)`。
 
-### 7.2 `ReActAgentComponent`
+### 7.2 `AgentComponent`
 
 保留现有类名作为主要轻量入口，并继续支持：
 
@@ -287,7 +287,7 @@ protected void handleReply(Msg reply, LiteFlowAgentContext context);
 - `agentKey()`；
 - `handleReply(Msg, LiteFlowAgentContext)`。
 
-旧 `ReActAgentContext` 重命名为 `LiteFlowAgentContext`。隐式 `ctx()`、`usedSkills()` 和 chat usage 访问器不再作为主要接口；调用期数据从显式传入的 context 读取。这是为了避免异步 Middleware／Tool 依赖 ThreadLocal 或误读池化后的 Slot。
+旧 `AgentContext` 重命名为 `LiteFlowAgentContext`。隐式 `ctx()`、`usedSkills()` 和 chat usage 访问器不再作为主要接口；调用期数据从显式传入的 context 读取。这是为了避免异步 Middleware／Tool 依赖 ThreadLocal 或误读池化后的 Slot。
 
 新增原生 2.0 扩展点：
 
@@ -315,7 +315,7 @@ protected Model routeModel(
 
 ### 7.3 `HarnessAgentComponent`
 
-新增 `HarnessAgentComponent`，提供与 ReAct 组件一致的基本体验，并增加：
+新增 `HarnessAgentComponent`，提供与 Agent 组件一致的基本体验，并增加：
 
 ```java
 protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder);
@@ -355,7 +355,7 @@ AgentScope 2.0 的 `ReActAgent` 与 `HarnessAgent` 均按无状态方式使用�
 
 - 按组件实例而非组件 Class 构建 runtime；
 - 不使用捕获首个 `AgentConfig` 的静态 holder；
-- `ReActAgentComponent`／`HarnessAgentComponent` 实现 `AutoCloseable`；
+- `AgentComponent`／`HarnessAgentComponent` 实现 `AutoCloseable`；
 - Spring／Solon 组件销毁时调用 `close()`，并用集成测试验证；
 - 非容器场景由创建并注册组件的调用方显式调用 `close()`；
 - runtime handle 关闭自身创建的 Agent、MCP Client、Harness 资源和本地 Store；
@@ -379,7 +379,7 @@ guard 支持两种 key：
 - 状态租约：`STATE＋namespace＋userId＋conversationId＋agentKey`；
 - 工作区租约：`WORKSPACE＋namespace＋userId＋conversationId`。
 
-ReAct 且不使用共享工作区时只获取状态租约。Harness 或启用共享文件工具时，必须先获取 conversation 级工作区租约，再获取 Agent 状态租约；所有代码遵循这个固定顺序，释放时反序，避免不同 Agent 之间形成死锁。租约在以下完整事务结束前一直持有：
+Agent 且不使用共享工作区时只获取状态租约。Harness 或启用共享文件工具时，必须先获取 conversation 级工作区租约，再获取 Agent 状态租约；所有代码遵循这个固定顺序，释放时反序，避免不同 Agent 之间形成死锁。租约在以下完整事务结束前一直持有：
 
 ```text
 首次 Agent call
@@ -628,7 +628,7 @@ agent.call(messages, schema, runtimeContext)
    - 记录加载和实际使用的 skill；
    - 返回去重且保持顺序的列表。
 
-7. `ReActLoggingMiddleware`
+7. `AgentLoggingMiddleware`
    - 输出 userId、conversationId、agentKey、chainId、nodeId；
    - 不记录 apiKey 和未经脱敏的敏感工具参数。
 
@@ -722,7 +722,7 @@ new Toolkit(ToolkitConfig.builder().parallel(false).build())
 
 ### 15.3 MCP
 
-`ReActAgentComponent` 和 `HarnessAgentComponent` 都支持注册 `McpClientWrapper`：
+`AgentComponent` 和 `HarnessAgentComponent` 都支持注册 `McpClientWrapper`：
 
 - MCP Client 按所有权由组件的 runtime handle 或容器关闭；
 - 注册失败在 Agent 构建阶段显式报错；
@@ -731,9 +731,9 @@ new Toolkit(ToolkitConfig.builder().parallel(false).build())
 
 ## 16. Workspace、文件系统与 Shell
 
-### 16.1 ReAct 组件
+### 16.1 Agent 组件
 
-轻量 ReAct 默认不自动提供宿主机 Shell。若启用文件或命令工具：
+轻量 Agent 默认不自动提供宿主机 Shell。若启用文件或命令工具：
 
 - 优先使用 AgentScope 官方 filesystem／sandbox 能力；
 - 无法使用 Harness 时，自定义工具必须改进真实路径、符号链接、文件大小、进程树和输出消费安全；
@@ -803,7 +803,7 @@ Agent Protocol、Channel、远程 subagent 和分布式 task repository 通过 c
 - Agent Protocol／Channel：AgentScope Harness 的任务与事件协议；
 - A2A：跨服务、可发现的标准 Agent-to-Agent 协议。
 
-三者不能互相混称。`liteflow-react-agent-a2a` 首批提供：
+三者不能互相混称。`liteflow-agent-a2a` 首批提供：
 
 1. `A2aAgentComponent`，把远程 `A2aAgent` 作为 LiteFlow 节点调用；
 2. RuntimeContext 中 tenant、trace、task 元数据的显式 allowlist 透传；
@@ -1049,7 +1049,7 @@ org.xerial:sqlite-jdbc
 
 ### 25.1 尽量保留
 
-- `ReActAgentComponent` 类名；
+- `AgentComponent` 类名；
 - `liteflow.agent.*` 配置前缀；
 - `model()`、`buildModel()`、`systemPrompt()`、`userPrompt()` 等核心使用习惯；
 - `conversationId＋agentKey` 的业务语义；
@@ -1073,7 +1073,7 @@ org.xerial:sqlite-jdbc
 
 - 1.0.12 → 2.0.2 API 对照；
 - 配置项对照；
-- ReAct 示例；
+- Agent 示例；
 - Harness 示例；
 - A2A 远程 Agent 示例；
 - 结构化输出示例；
@@ -1087,7 +1087,7 @@ org.xerial:sqlite-jdbc
 
 1. 所有 AgentScope 模块精确使用 `2.0.2`。
 2. 生产代码不再依赖旧 `SessionManager`、`Memory`、粗粒度 `Event`、旧 stream API 和模块自有 Hook 实现。
-3. `ReActAgentComponent` 使用无状态 Agent＋RuntimeContext＋AgentStateStore。
+3. `AgentComponent` 使用无状态 Agent＋RuntimeContext＋AgentStateStore。
 4. 新增可用的 `HarnessAgentComponent`，至少覆盖 workspace、compaction、skills、plan mode、subagent 和权限配置。
 5. Toolkit 默认串行，显式并发行为有测试。
 6. 普通文本、结构化输出、流式事件和 HITL 有确定性测试。
@@ -1095,7 +1095,7 @@ org.xerial:sqlite-jdbc
 8. 不存在静态捕获首个 AgentConfig 的 runtime holder。
 9. 所有 Agent／Store／MCP／Harness 资源可关闭且生命周期测试通过。
 10. Provider 模块使用 2.0 extension 包且无网络契约测试通过。
-11. `liteflow-testcase-el-react-agent` 核心测试不依赖真实密钥；live 测试单独启用。
+11. `liteflow-testcase-el-agent` 核心测试不依赖真实密钥；live 测试单独启用。
 12. 完成 Maven dependency tree 审计与 JDK 17 验证。
 13. 更新用户文档和迁移指南。
 14. 同一逻辑状态槽和 conversation workspace 由外层 AgentInvocationGuard 分层保护；HITL 两次 call 之间不能插入其他请求，不同 Agent 不能并发覆盖共享文件。

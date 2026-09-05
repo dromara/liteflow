@@ -333,7 +333,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 - [ ] **Step 1: 写 docs/liteflow-rule-db-guide.md**
 
-结构与既有 `docs/liteflow-metrics-guide.md`、`docs/liteflow-react-agent-guide.md` 对齐（上手篇 + 参考篇）。至少覆盖：
+结构与既有 `docs/liteflow-metrics-guide.md`、`docs/liteflow-agent-guide.md` 对齐（上手篇 + 参考篇）。至少覆盖：
 
 1. **它解决什么**：与传统 6 个规则插件的本质区别（存储为权威源 vs 启动拼 XML）；两个收益（多节点最终一致、JVM 内存与规则总量解耦）。
 2. **快速上手（SQL）**：引入 `liteflow-rule-db-sql` 依赖 → 三行 url/username/password（或零配置复用容器 DataSource）→ `auto-init-table=true` → 用 `SqlRulePublisher.publishChain(...)` 发布第一条规则 → 执行。

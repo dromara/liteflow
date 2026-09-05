@@ -5,7 +5,7 @@ package com.yomahub.liteflow.property.agent;
  *
  * <p>Every backend is persistent. JSON keeps state in local files, while REDIS and
  * MYSQL delegate to the matching agentscope extension module and require the
- * corresponding liteflow-react-agent-{redis,mysql} dependency on the classpath.
+ * corresponding liteflow-agent-{redis,mysql} dependency on the classpath.
  */
 public class AgentStateStoreConfig {
 

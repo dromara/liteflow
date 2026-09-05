@@ -499,7 +499,7 @@ public class Slot {
 	/**
 	 * 设置当前 chain 执行的会话标识。
 	 *
-	 * <p>用于 ReAct Agent 等需要在多个组件之间共享同一会话上下文的场景：
+	 * <p>用于 Agent 等需要在多个组件之间共享同一会话上下文的场景：
 	 * 同 chain 内首个 agent 解析后写回 slot，后续 agent 直接复用，从而保证
 	 * 整条链路属于同一段对话（共享 workspace、各 agent 的记忆按 nodeId 分桶）。
 	 */

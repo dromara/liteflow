@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * ReAct Agent 模块的根配置对象。
+ * Agent 模块的根配置对象。
  *
  * <p>对应 Spring Boot 配置段 {@code liteflow.agent.*}，作为 LiteFlow 中所有
  * agent 子配置的聚合入口；其内部字段会在 AgentScope 2 运行时组件、
@@ -18,6 +18,17 @@ public class AgentConfig {
 
 	/** Agent state persistence settings. */
 	private AgentStateStoreConfig stateStore = new AgentStateStoreConfig();
+
+	/** Opt in to durable, display-oriented conversation history and Agent participation tracking. */
+	private boolean conversationHistoryEnabled;
+
+	public boolean isConversationHistoryEnabled() {
+		return conversationHistoryEnabled;
+	}
+
+	public void setConversationHistoryEnabled(boolean conversationHistoryEnabled) {
+		this.conversationHistoryEnabled = conversationHistoryEnabled;
+	}
 
 	/** Toolkit execution settings. */
 	private AgentToolkitConfig toolkit = new AgentToolkitConfig();
@@ -40,10 +51,10 @@ public class AgentConfig {
     /** Shell 工具配置，决定 agent 调用内置 Shell 工具时的命令过滤模式与白名单。 */
     private ShellConfig shell = new ShellConfig();
 
-    /** 默认值配置，例如 ReAct 流程在组件未指定 maxIterations 时使用的全局默认迭代次数。 */
+    /** 默认值配置，例如 Agent 流程在组件未指定 maxIterations 时使用的全局默认迭代次数。 */
     private DefaultsConfig defaults = new DefaultsConfig();
 
-    /** 日志开关配置，控制 ReAct 内部 reason / act / error 等事件日志是否输出。 */
+    /** 日志开关配置，控制 Agent 内部 reason / act / error 等事件日志是否输出。 */
     private LoggingConfig logging = new LoggingConfig();
 
     /** Skills configuration for loading AgentSkillRepository entries from SKILL.md repositories. */

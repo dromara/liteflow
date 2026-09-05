@@ -60,11 +60,11 @@ Model model = ModelRegistry.resolve(providerId + ":" + modelName, context);
 **Files:**
 
 - Modify: `pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-gemini/pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-dashscope/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/ProviderExtensionClasspathTest.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/pom.xml`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/pom.xml`
+- Modify: `liteflow-agent/liteflow-agent-gemini/pom.xml`
+- Modify: `liteflow-agent/liteflow-agent-dashscope/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/ProviderExtensionClasspathTest.java`
 
 - [ ] **Step 1: 写 extension classpath 失败测试**
 
@@ -75,7 +75,7 @@ Model model = ModelRegistry.resolve(providerId + ":" + modelName, context);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=ProviderExtensionClasspathTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -92,11 +92,11 @@ Expected: FAIL，Provider POM 仍只依赖旧 aggregate 的传递类。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=ProviderExtensionClasspathTest \
   -Dsurefire.failIfNoSpecifiedTests=false
-mvn dependency:tree -pl liteflow-react-agent -am \
+mvn dependency:tree -pl liteflow-agent -am \
   -Dincludes=io.agentscope:*,com.anthropic:anthropic-java,com.google.genai:google-genai,com.alibaba:dashscope-sdk-java \
   -Dverbose
 ```
@@ -106,8 +106,8 @@ Expected: 测试 PASS；四个 extension 均为 2.0.2；无 aggregate；厂商 S
 - [ ] **Step 5: 提交依赖切换**
 
 ```bash
-git add pom.xml liteflow-react-agent/liteflow-react-agent-*/pom.xml \
-  liteflow-react-agent/liteflow-react-agent-openai/src/test
+git add pom.xml liteflow-agent/liteflow-agent-*/pom.xml \
+  liteflow-agent/liteflow-agent-openai/src/test
 git commit -m "build(agent): adopt AgentScope 2 model extensions"
 ```
 
@@ -117,10 +117,10 @@ git commit -m "build(agent): adopt AgentScope 2 model extensions"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/model/ModelSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/model/CredentialResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/model/ModelSpecTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/model/CredentialResolverTest.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/model/ModelSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/model/CredentialResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/model/ModelSpecTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/model/CredentialResolverTest.java`
 
 - [ ] **Step 1: 写 common options 和 credential 优先级失败测试**
 
@@ -131,7 +131,7 @@ git commit -m "build(agent): adopt AgentScope 2 model extensions"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=ModelSpecTest,CredentialResolverTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -157,7 +157,7 @@ protected final GenerateOptions mergeGenerateOptions(
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=ModelSpecTest,CredentialResolverTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -166,7 +166,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src
+git add liteflow-agent/liteflow-agent-core/src
 git commit -m "refactor(agent): centralize model generate options"
 ```
 
@@ -176,13 +176,13 @@ git commit -m "refactor(agent): centralize model generate options"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAI.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAISpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatible.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatibleSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAIModelFactory.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/OpenAISpecTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/OpenAICompatibleSpecTest.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAI.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAISpec.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatible.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatibleSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAIModelFactory.java`
+- Create: `liteflow-agent/liteflow-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/OpenAISpecTest.java`
+- Create: `liteflow-agent/liteflow-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/OpenAICompatibleSpecTest.java`
 
 - [ ] **Step 1: 写 builder 参数失败测试**
 
@@ -193,7 +193,7 @@ git commit -m "refactor(agent): centralize model generate options"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=OpenAISpecTest,OpenAICompatibleSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -222,7 +222,7 @@ protected Model buildModel(String apiKey, String baseUrl);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=OpenAISpecTest,OpenAICompatibleSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -231,7 +231,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-openai
+git add liteflow-agent/liteflow-agent-openai
 git commit -m "feat(agent): migrate OpenAI adapter to AgentScope 2"
 ```
 
@@ -241,13 +241,13 @@ git commit -m "feat(agent): migrate OpenAI adapter to AgentScope 2"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAIProviderSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/DeepSeek.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/GLM.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/Kimi.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/Minimax.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatiblePresets.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/FirstPartyModelProviderTest.java`
+- Create: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAIProviderSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/DeepSeek.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/GLM.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/Kimi.java`
+- Modify: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/Minimax.java`
+- Delete: `liteflow-agent/liteflow-agent-openai/src/main/java/com/yomahub/liteflow/agent/openai/OpenAICompatiblePresets.java`
+- Create: `liteflow-agent/liteflow-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai/FirstPartyModelProviderTest.java`
 
 - [ ] **Step 1: 写 registry 和地址契约失败测试**
 
@@ -258,7 +258,7 @@ git commit -m "feat(agent): migrate OpenAI adapter to AgentScope 2"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=FirstPartyModelProviderTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -284,7 +284,7 @@ protected Model buildModel(String modelId, ModelCreationContext context);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
+mvn test -pl liteflow-agent/liteflow-agent-openai -am \
   -DskipTests=false -DskipITs \
   -Dtest=FirstPartyModelProviderTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -293,7 +293,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-openai -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-openai
+git add liteflow-agent/liteflow-agent-openai
 git commit -m "feat(agent): use first-party compatible model providers"
 ```
 
@@ -303,12 +303,12 @@ git commit -m "feat(agent): use first-party compatible model providers"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/Anthropic.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicCompatible.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicModelFactory.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicThinking.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-anthropic/src/test/java/com/yomahub/liteflow/agent/anthropic/AnthropicSpecTest.java`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/Anthropic.java`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicCompatible.java`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicModelFactory.java`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-anthropic/src/main/java/com/yomahub/liteflow/agent/anthropic/AnthropicThinking.java`
+- Create: `liteflow-agent/liteflow-agent-anthropic/src/test/java/com/yomahub/liteflow/agent/anthropic/AnthropicSpecTest.java`
 
 - [ ] **Step 1: 写 thinking、baseUrl 和 customizer 失败测试**
 
@@ -319,7 +319,7 @@ git commit -m "feat(agent): use first-party compatible model providers"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-anthropic -am \
+mvn test -pl liteflow-agent/liteflow-agent-anthropic -am \
   -DskipTests=false -DskipITs \
   -Dtest=AnthropicSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -343,7 +343,7 @@ protected Model buildModel(String apiKey, String baseUrl);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-anthropic -am \
+mvn test -pl liteflow-agent/liteflow-agent-anthropic -am \
   -DskipTests=false -DskipITs \
   -Dtest=AnthropicSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -352,7 +352,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-anthropic -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-anthropic
+git add liteflow-agent/liteflow-agent-anthropic
 git commit -m "feat(agent): migrate Anthropic adapter to AgentScope 2"
 ```
 
@@ -362,11 +362,11 @@ git commit -m "feat(agent): migrate Anthropic adapter to AgentScope 2"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/Gemini.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiModelFactory.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiThinking.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-gemini/src/test/java/com/yomahub/liteflow/agent/gemini/GeminiSpecTest.java`
+- Modify: `liteflow-agent/liteflow-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/Gemini.java`
+- Modify: `liteflow-agent/liteflow-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiModelFactory.java`
+- Modify: `liteflow-agent/liteflow-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-gemini/src/main/java/com/yomahub/liteflow/agent/gemini/GeminiThinking.java`
+- Create: `liteflow-agent/liteflow-agent-gemini/src/test/java/com/yomahub/liteflow/agent/gemini/GeminiSpecTest.java`
 
 - [ ] **Step 1: 写 baseUrl、stream 和 thinking 失败测试**
 
@@ -377,7 +377,7 @@ git commit -m "feat(agent): migrate Anthropic adapter to AgentScope 2"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-gemini -am \
+mvn test -pl liteflow-agent/liteflow-agent-gemini -am \
   -DskipTests=false -DskipITs \
   -Dtest=GeminiSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -403,7 +403,7 @@ protected Model buildModel(String apiKey, String baseUrl);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-gemini -am \
+mvn test -pl liteflow-agent/liteflow-agent-gemini -am \
   -DskipTests=false -DskipITs \
   -Dtest=GeminiSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -412,7 +412,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-gemini -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-gemini
+git add liteflow-agent/liteflow-agent-gemini
 git commit -m "feat(agent): migrate Gemini adapter to AgentScope 2"
 ```
 
@@ -422,11 +422,11 @@ git commit -m "feat(agent): migrate Gemini adapter to AgentScope 2"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScope.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeModelFactory.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeThinking.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-dashscope/src/test/java/com/yomahub/liteflow/agent/dashscope/DashScopeSpecTest.java`
+- Modify: `liteflow-agent/liteflow-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScope.java`
+- Modify: `liteflow-agent/liteflow-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeModelFactory.java`
+- Modify: `liteflow-agent/liteflow-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-dashscope/src/main/java/com/yomahub/liteflow/agent/dashscope/DashScopeThinking.java`
+- Create: `liteflow-agent/liteflow-agent-dashscope/src/test/java/com/yomahub/liteflow/agent/dashscope/DashScopeSpecTest.java`
 
 - [ ] **Step 1: 写 baseUrl、thinking、structured output 失败测试**
 
@@ -437,7 +437,7 @@ git commit -m "feat(agent): migrate Gemini adapter to AgentScope 2"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-dashscope -am \
+mvn test -pl liteflow-agent/liteflow-agent-dashscope -am \
   -DskipTests=false -DskipITs \
   -Dtest=DashScopeSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -464,7 +464,7 @@ protected Model buildModel(String apiKey, String baseUrl);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-dashscope -am \
+mvn test -pl liteflow-agent/liteflow-agent-dashscope -am \
   -DskipTests=false -DskipITs \
   -Dtest=DashScopeSpecTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -473,7 +473,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-dashscope -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-dashscope
+git add liteflow-agent/liteflow-agent-dashscope
 git commit -m "feat(agent): migrate DashScope adapter to AgentScope 2"
 ```
 
@@ -485,9 +485,9 @@ Tasks 5、6、7 在 Task 2 完成后可并行执行，但每个任务只修改�
 
 **Files:**
 
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/support/BaseAgentLiveTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/support/BaseAgentLiveTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java`
 
 - [ ] **Step 1: 写无网络 classpath 契约测试**
 
@@ -502,7 +502,7 @@ Tasks 5、6、7 在 Task 2 完成后可并行执行，但每个任务只修改�
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs
 ```
 
@@ -513,7 +513,7 @@ Expected: PASS，不访问网络，不因缺少 credential 跳过 Provider class
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -Pagent-live
 ```
 
@@ -522,7 +522,7 @@ Expected: 有配置的 Provider 通过；未配置的 Provider 以现有 `LiveTe
 - [ ] **Step 5: 提交测试分层**
 
 ```bash
-git add liteflow-testcase-el/liteflow-testcase-el-react-agent
+git add liteflow-testcase-el/liteflow-testcase-el-agent
 git commit -m "test(agent): separate provider contracts from live smoke"
 ```
 
@@ -532,8 +532,8 @@ git commit -m "test(agent): separate provider contracts from live smoke"
 
 **Files:**
 
-- Modify if linkage test proves it necessary: `liteflow-react-agent/pom.xml`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java`
+- Modify if linkage test proves it necessary: `liteflow-agent/pom.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java`
 
 - [ ] **Step 1: 扩充运行时链接测试**
 
@@ -544,7 +544,7 @@ git commit -m "test(agent): separate provider contracts from live smoke"
 Run:
 
 ```bash
-mvn dependency:tree -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn dependency:tree -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -Dincludes=io.agentscope:*,io.projectreactor:reactor-core,com.fasterxml.jackson.core:*,org.slf4j:slf4j-api,com.squareup.okhttp3:*,com.anthropic:anthropic-java,com.google.genai:google-genai,com.alibaba:dashscope-sdk-java \
   -Dverbose
 ```
@@ -553,7 +553,7 @@ AgentScope 2.0.2 发布图的参考版本是 Reactor 3.8.2、Jackson Databind 2.
 
 - [ ] **Step 3: 按测试证据处理版本冲突**
 
-先保留 LiteFlow 根工程已有的跨模块约束并运行链接测试；不得为了数字一致直接全局升级 JDK 8／Spring Boot 2 模块。若链接测试出现 AgentScope 依赖缺失的方法或类，在 `liteflow-react-agent/pom.xml` 的局部 `dependencyManagement` 对对应库使用 AgentScope 2.0.2 BOM 的上述精确版本，再重新执行全部 Provider 和 Spring Boot testcase。不得用排除测试或捕获 `LinkageError` 绕过。
+先保留 LiteFlow 根工程已有的跨模块约束并运行链接测试；不得为了数字一致直接全局升级 JDK 8／Spring Boot 2 模块。若链接测试出现 AgentScope 依赖缺失的方法或类，在 `liteflow-agent/pom.xml` 的局部 `dependencyManagement` 对对应库使用 AgentScope 2.0.2 BOM 的上述精确版本，再重新执行全部 Provider 和 Spring Boot testcase。不得用排除测试或捕获 `LinkageError` 绕过。
 
 - [ ] **Step 4: 运行全部 Provider 测试和打包**
 
@@ -561,13 +561,13 @@ Run:
 
 ```bash
 mvn test -pl \
-liteflow-react-agent/liteflow-react-agent-core,\
-liteflow-react-agent/liteflow-react-agent-openai,\
-liteflow-react-agent/liteflow-react-agent-anthropic,\
-liteflow-react-agent/liteflow-react-agent-gemini,\
-liteflow-react-agent/liteflow-react-agent-dashscope \
+liteflow-agent/liteflow-agent-core,\
+liteflow-agent/liteflow-agent-openai,\
+liteflow-agent/liteflow-agent-anthropic,\
+liteflow-agent/liteflow-agent-gemini,\
+liteflow-agent/liteflow-agent-dashscope \
   -am -DskipTests=false -DskipITs
-mvn package -pl liteflow-react-agent -am -DskipTests
+mvn package -pl liteflow-agent -am -DskipTests
 ```
 
 Expected: PASS，无网络测试全部执行；四个 Provider 模块可打包。
@@ -577,8 +577,8 @@ Expected: PASS，无网络测试全部执行；四个 Provider 模块可打包�
 若产生修改：
 
 ```bash
-git add liteflow-react-agent/pom.xml \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java
+git add liteflow-agent/pom.xml \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/model/ProviderClasspathContractTest.java
 git commit -m "fix(agent): align AgentScope provider runtime dependencies"
 ```
 

@@ -3,7 +3,7 @@ package com.yomahub.liteflow.property.agent;
 /**
  * Agent 技能配置绑定对象，对应配置段 {@code liteflow.agent.skills.*}。
  *
- * <p>启用后，ReAct 类组件会根据 {@code path} 自动创建并托管 AgentScope 2
+ * <p>启用后，Agent 类组件会根据 {@code path} 自动创建并托管 AgentScope 2
  * {@code AgentSkillRepository}。{@code classpath:} 前缀表示 classpath 资源目录，
  * 其他值表示文件系统目录；{@code strict} 当前仅为配置兼容保留。
  */
@@ -27,7 +27,7 @@ public class SkillsConfig {
     /**
      * 旧的严格解析配置占位。
      *
-     * <p>当前 {@code ReActAgentComponent}、AgentScope 2 repository 与
+     * <p>当前 {@code AgentComponent}、AgentScope 2 repository 与
      * {@code SkillFilter} 均不读取该字段；设置为 {@code false} 不会改变错误处理策略。
      */
     private boolean strict = true;

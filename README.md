@@ -34,7 +34,7 @@ You can find out how to join the community on the official website!
 * **Full Spring Boot support:** Supports Spring Boot 2.X, 3.X, and now the latest Spring Boot 4.X.
 * **Scripting language support:** You can define script language nodes that support Groovy, Java, Kotlin, JavaScript, QLExpress, Python, Lua and Aviator. More script languages will be supported in the future.
 * **Scripts fully connected with Java:** All scripting languages can call Java methods, reference any instance, and even make RPC calls inside scripts.
-* **AI Agent orchestration:** Wraps a full ReAct Agent into a standard LiteFlow component, so AI can be orchestrated directly into your business rules.
+* **AI Agent orchestration:** Wraps a full Agent into a standard LiteFlow component, so AI can be orchestrated directly into your business rules.
 * **Rule nesting support:** You can use simple expressions to create multiple nested complex logic layouts if you want.
 * **Component retry support:** Components can support retry, and each component can customize the retry configuration and specify exceptions.
 * **Context isolation mechanism:** Reliable context isolation mechanism, you do not have to worry about high concurrency data flow.
@@ -63,9 +63,9 @@ Looking forward to your use！
 
 ## AI Agent Orchestration (New in v2.16.0)
 
-Starting from v2.16.0, LiteFlow ships its own AI Agent module, `liteflow-react-agent`.
+Starting from v2.16.0, LiteFlow ships its own AI Agent module, `liteflow-agent`.
 
-It is not a simple "LLM component". The lightweight core wraps a full **ReAct (Reasoning + Acting) Agent** into a standard LiteFlow component — **one component is one Agent**. Optional modules add AgentScope Harness context engineering and policy-bound local, remote, or Docker filesystem backends.
+It is not a simple "LLM component". The lightweight core wraps a full **Agent (Reasoning + Acting) Agent** into a standard LiteFlow component — **one component is one Agent**. Optional modules add AgentScope Harness context engineering and policy-bound local, remote, or Docker filesystem backends.
 
 Once an Agent becomes a LiteFlow component, it automatically inherits the full orchestration power of LiteFlow. You write rules exactly the way you always have — except one of the nodes is now a thinking AI:
 

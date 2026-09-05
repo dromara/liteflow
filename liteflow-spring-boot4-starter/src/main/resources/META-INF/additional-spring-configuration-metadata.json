@@ -251,7 +251,7 @@
     {
       "name": "liteflow.agent.state-store.type",
       "type": "com.yomahub.liteflow.property.agent.AgentStateStoreType",
-      "description": "AgentScope state store backend type. REDIS and MYSQL require the liteflow-react-agent-redis / liteflow-react-agent-mysql module.",
+      "description": "AgentScope state store backend type. REDIS and MYSQL require the liteflow-agent-redis / liteflow-agent-mysql module.",
       "sourceType": "com.yomahub.liteflow.property.agent.AgentStateStoreConfig",
       "defaultValue": "JSON"
     },
@@ -516,9 +516,9 @@
       "defaultValue": 50
     },
     {
-      "name": "liteflow.agent.logging.react-enabled",
+      "name": "liteflow.agent.logging.enabled",
       "type": "java.lang.Boolean",
-      "description": "Enable react agent internal event logging.",
+      "description": "Enable agent internal event logging.",
       "sourceType": "com.yomahub.liteflow.property.agent.LoggingConfig",
       "defaultValue": true
     },

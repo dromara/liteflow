@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将 `liteflow-react-agent-core` 从 AgentScope 1.0.12 迁移到 2.0.2，建立组件级无状态 runtime、显式 `RuntimeContext`、AgentStateStore namespace、原子 HITL 事务和无网络确定性测试基线。
+**Goal:** 将 `liteflow-agent-core` 从 AgentScope 1.0.12 迁移到 2.0.2，建立组件级无状态 runtime、显式 `RuntimeContext`、AgentStateStore namespace、原子 HITL 事务和无网络确定性测试基线。
 
-**Architecture:** `AbstractAgentComponent.process()` 统一处理 identity、调用租约、RuntimeContext、超时、结构化回复和清理；每个实际组件实例拥有一个 `AgentRuntimeHandle`。`ReActAgentRuntime` 只保存构建期 Agent、namespaced StateStore 和有所有权资源，调用期 Slot／身份／usage／事件全部从 `LiteFlowAgentContext` 与 `RuntimeContext` 获取。
+**Architecture:** `AbstractAgentComponent.process()` 统一处理 identity、调用租约、RuntimeContext、超时、结构化回复和清理；每个实际组件实例拥有一个 `AgentRuntimeHandle`。`AgentRuntime` 只保存构建期 Agent、namespaced StateStore 和有所有权资源，调用期 Slot／身份／usage／事件全部从 `LiteFlowAgentContext` 与 `RuntimeContext` 获取。
 
 **Tech Stack:** Java 17、Maven、LiteFlow、AgentScope Java 2.0.2 `agentscope-core`、Reactor、Jackson、JUnit 5、Mockito。
 
@@ -179,18 +179,18 @@ git commit -m "feat(agent): add AgentScope 2 runtime configuration"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/exception/AgentInvocationException.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/context/AgentInvocationIdentity.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/context/InvocationIdentityResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/exception/AgentInvocationErrorType.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationGuard.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationLease.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationKey.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationScope.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/LocalAgentInvocationGuard.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationGuardResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/context/InvocationIdentityResolverTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/guard/LocalAgentInvocationGuardTest.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/exception/AgentInvocationException.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/context/AgentInvocationIdentity.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/context/InvocationIdentityResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/exception/AgentInvocationErrorType.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationGuard.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationLease.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationKey.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationScope.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/LocalAgentInvocationGuard.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard/AgentInvocationGuardResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/context/InvocationIdentityResolverTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/guard/LocalAgentInvocationGuardTest.java`
 
 - [ ] **Step 1: 写编码与并发失败测试**
 
@@ -209,7 +209,7 @@ storeSessionId   = agentNamespace + "." + runtimeSessionId
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=InvocationIdentityResolverTest,LocalAgentInvocationGuardTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -226,7 +226,7 @@ Expected: FAIL，新类型不存在。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=InvocationIdentityResolverTest,LocalAgentInvocationGuardTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -235,10 +235,10 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/context \
-  liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/guard \
-  liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/exception \
-  liteflow-react-agent/liteflow-react-agent-core/src/test
+git add liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/context \
+  liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/guard \
+  liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/exception \
+  liteflow-agent/liteflow-agent-core/src/test
 git commit -m "feat(agent): add invocation identity and guards"
 ```
 
@@ -249,26 +249,26 @@ git commit -m "feat(agent): add invocation identity and guards"
 **Files:**
 
 - Modify: `pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/ReActAgentComponent.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/model/ModelSpec.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/session/AgentSession.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/session/AgentSessionManager.java`
-- Delete directory: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/session/factory`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/state/ResolvedAgentStateStore.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/state/AgentStateStoreResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/state/DefaultAgentStateStoreResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/state/GuardedNamespacedAgentStateStore.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/StateStoreFailureMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeHandle.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeBuildContext.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/ReActAgentRuntime.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/testsupport/ScriptedChatModel.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/state/GuardedNamespacedAgentStateStoreTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/StateStoreFailureMiddlewareTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeHandleTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/ReActAgentPlainTextTest.java`
+- Modify: `liteflow-agent/liteflow-agent-core/pom.xml`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AgentComponent.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/model/ModelSpec.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/session/AgentSession.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/session/AgentSessionManager.java`
+- Delete directory: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/session/factory`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/state/ResolvedAgentStateStore.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/state/AgentStateStoreResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/state/DefaultAgentStateStoreResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/state/GuardedNamespacedAgentStateStore.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/StateStoreFailureMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeHandle.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeBuildContext.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/AgentRuntime.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/testsupport/ScriptedChatModel.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/state/GuardedNamespacedAgentStateStoreTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/StateStoreFailureMiddlewareTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/AgentRuntimeHandleTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AgentPlainTextTest.java`
 
 - [ ] **Step 1: 写 StateStore、runtime ownership 和基础调用失败测试**
 
@@ -281,9 +281,9 @@ git commit -m "feat(agent): add invocation identity and guards"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=GuardedNamespacedAgentStateStoreTest,StateStoreFailureMiddlewareTest,AgentRuntimeHandleTest,ReActAgentPlainTextTest \
+  -Dtest=GuardedNamespacedAgentStateStoreTest,StateStoreFailureMiddlewareTest,AgentRuntimeHandleTest,AgentPlainTextTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
@@ -304,18 +304,18 @@ void clearLoadFailure(String userId, String runtimeSessionId);
 
 `StateStoreFailureMiddleware` 在 AgentScope `beforeAgentExecution` 加载状态之后、任何 model／tool 调用之前检查该记录。
 
-同时删除旧 Session manager/factory，并把 `ReActAgentComponent` 改为能完成一次 `UserMessage -> call(..., RuntimeContext) -> Slot` 的 2.0 最小纵切，确保此 Task 结束时模块可独立编译测试。
+同时删除旧 Session manager/factory，并把 `AgentComponent` 改为能完成一次 `UserMessage -> call(..., RuntimeContext) -> Slot` 的 2.0 最小纵切，确保此 Task 结束时模块可独立编译测试。
 
 - [ ] **Step 4: 运行测试和依赖树**
 
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=GuardedNamespacedAgentStateStoreTest,StateStoreFailureMiddlewareTest,AgentRuntimeHandleTest,ReActAgentPlainTextTest \
+  -Dtest=GuardedNamespacedAgentStateStoreTest,StateStoreFailureMiddlewareTest,AgentRuntimeHandleTest,AgentPlainTextTest \
   -Dsurefire.failIfNoSpecifiedTests=false
-mvn dependency:tree -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn dependency:tree -pl liteflow-agent/liteflow-agent-core -am \
   -Dincludes=io.agentscope:* -Dverbose
 ```
 
@@ -324,7 +324,7 @@ Expected: PASS；依赖树只有 2.0.2 细粒度模块，无 `io.agentscope:agen
 - [ ] **Step 5: 提交核心纵切**
 
 ```bash
-git add pom.xml liteflow-react-agent/liteflow-react-agent-core
+git add pom.xml liteflow-agent/liteflow-agent-core
 git commit -m "refactor(agent): migrate core runtime to AgentScope 2"
 ```
 
@@ -334,14 +334,14 @@ git commit -m "refactor(agent): migrate core runtime to AgentScope 2"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AbstractAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/context/LiteFlowAgentContext.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/message/AgentOutputSpec.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/message/AgentReplyHandler.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/ReActAgentComponent.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/ReActAgentContext.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AbstractAgentComponentTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/ReActAgentStructuredOutputTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AbstractAgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/context/LiteFlowAgentContext.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/message/AgentOutputSpec.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/message/AgentReplyHandler.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AgentComponent.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AgentContext.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AbstractAgentComponentTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AgentStructuredOutputTest.java`
 
 - [ ] **Step 1: 写 process 顺序、context 隔离和结构化输出失败测试**
 
@@ -352,9 +352,9 @@ git commit -m "refactor(agent): migrate core runtime to AgentScope 2"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=AbstractAgentComponentTest,ReActAgentStructuredOutputTest \
+  -Dtest=AbstractAgentComponentTest,AgentStructuredOutputTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
@@ -371,16 +371,16 @@ Expected: FAIL，Abstract 模板和输出类型尚不存在。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=AbstractAgentComponentTest,ReActAgentStructuredOutputTest \
+  -Dtest=AbstractAgentComponentTest,AgentStructuredOutputTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src
+git add liteflow-agent/liteflow-agent-core/src
 git commit -m "feat(agent): add typed replies and explicit runtime context"
 ```
 
@@ -390,23 +390,23 @@ git commit -m "feat(agent): add typed replies and explicit runtime context"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/AgentMiddlewareOrder.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/LiteFlowSystemPromptMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/ModelRoutingMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/FlowEventBridgeMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/ChatUsageMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/SkillTrackingMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/ReActLoggingMiddleware.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/event/AgentFlowEventData.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/event/AgentEventTypeMapper.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/ReActAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/MiddlewareOrderTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/ModelRoutingMiddlewareTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/FlowEventBridgeMiddlewareTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/ChatUsageMiddlewareTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/event/AgentEventTypeMapperTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/ReActAgentBuilderConfigurationTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/ReActRetryFallbackTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/AgentMiddlewareOrder.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/LiteFlowSystemPromptMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/ModelRoutingMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/FlowEventBridgeMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/ChatUsageMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/SkillTrackingMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/middleware/AgentLoggingMiddleware.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/event/AgentFlowEventData.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/event/AgentEventTypeMapper.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/MiddlewareOrderTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/ModelRoutingMiddlewareTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/FlowEventBridgeMiddlewareTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/middleware/ChatUsageMiddlewareTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/event/AgentEventTypeMapperTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AgentBuilderConfigurationTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AgentRetryFallbackTest.java`
 
 - [ ] **Step 1: 写顺序、模型替换、事件和 listener 策略失败测试**
 
@@ -427,16 +427,16 @@ next.apply(new ModelCallInput(
 
 builder 配置测试固定 `maxIterations()`、`modelExecutionConfig()`、`toolExecutionConfig()`、`maxRetries()`、`fallbackModel()`、`permissionContext()`、`stopOnReject()` 和 `customizeAgent()` 的映射；customizer 必须最后执行。default／fallback／routing models 都纳入 runtime ownership，关闭时各关闭一次。
 
-`ReActRetryFallbackTest` 使用计数 fake model：`maxRetries()` 必须映射到传给 `Model.stream(...)` 的 `GenerateOptions`，不在 fake 内重复测试 Provider 自己的重试实现；主模型失败后按 AgentScope 2.0.2 原生语义只切换一次 fallback；fallback 成功时返回其结果，fallback 也失败时传播 fallback 错误。AgentScope 2.0.2 的 `ReActAgent.modelForCall()` 会丢弃主错误而不附加 suppressed，本模块明确接受并刻画这一上游限制，不额外发明模型执行包装层。`ExecutionConfig` deadline 到期会取消 subscription、不会继续调用，并映射为 LiteFlow `TIMEOUT`。
+`AgentRetryFallbackTest` 使用计数 fake model：`maxRetries()` 必须映射到传给 `Model.stream(...)` 的 `GenerateOptions`，不在 fake 内重复测试 Provider 自己的重试实现；主模型失败后按 AgentScope 2.0.2 原生语义只切换一次 fallback；fallback 成功时返回其结果，fallback 也失败时传播 fallback 错误。AgentScope 2.0.2 的 `ReActAgent.modelForCall()` 会丢弃主错误而不附加 suppressed，本模块明确接受并刻画这一上游限制，不额外发明模型执行包装层。`ExecutionConfig` deadline 到期会取消 subscription、不会继续调用，并映射为 LiteFlow `TIMEOUT`。
 
 - [ ] **Step 2: 运行测试并确认旧 Hook 无法满足断言**
 
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest='*MiddlewareTest,AgentEventTypeMapperTest,ReActAgentBuilderConfigurationTest,ReActRetryFallbackTest' \
+  -Dtest='*MiddlewareTest,AgentEventTypeMapperTest,AgentBuilderConfigurationTest,AgentRetryFallbackTest' \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
@@ -448,7 +448,7 @@ Expected: FAIL。
 
 `ModelRoutingMiddleware` 只能选择 runtime handle 已管理的 default／fallback／routing models；route 返回 null 或未管理 model 时在调用前失败，不得在请求路径 `ModelRegistry.resolve()`。选择 default 时保留上游 `input.model()` 以兼容 AgentScope 原生 fallback 组合包装器；选择其他 managed model 时才替换模型。
 
-`ReActAgentComponent` 明确开放并映射 2.0 builder：
+`AgentComponent` 明确开放并映射 2.0 builder：
 
 ```java
 protected ReActAgent.Builder customizeAgent(ReActAgent.Builder builder);
@@ -470,16 +470,16 @@ protected Model routeModel(Model defaultModel, LiteFlowAgentContext context);
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest='*MiddlewareTest,AgentEventTypeMapperTest,ReActAgentBuilderConfigurationTest,ReActRetryFallbackTest' \
+  -Dtest='*MiddlewareTest,AgentEventTypeMapperTest,AgentBuilderConfigurationTest,AgentRetryFallbackTest' \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src
+git add liteflow-agent/liteflow-agent-core/src
 git commit -m "feat(agent): bridge AgentScope events with middleware"
 ```
 
@@ -489,15 +489,15 @@ git commit -m "feat(agent): bridge AgentScope events with middleware"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/component/ReActAgentComponent.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/WorkspaceFileTools.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/ManagedShellCommandTool.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/McpClientRegistration.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/GuardedWorkspacePathResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/tool/ToolkitRuntimeTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/tool/GuardedWorkspacePathResolverTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/McpClientLifecycleTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/skill/AgentSkillRepositoryIntegrationTest.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/component/AgentComponent.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/WorkspaceFileTools.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/ManagedShellCommandTool.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/runtime/McpClientRegistration.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/tool/GuardedWorkspacePathResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/tool/ToolkitRuntimeTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/tool/GuardedWorkspacePathResolverTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/McpClientLifecycleTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/skill/AgentSkillRepositoryIntegrationTest.java`
 
 - [ ] **Step 1: 写默认串行、工具注入、路径和 MCP ownership 失败测试**
 
@@ -510,7 +510,7 @@ Skills 测试使用内存 `AgentSkillRepository`：多个 repository 逐项注�
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=ToolkitRuntimeTest,GuardedWorkspacePathResolverTest,McpClientLifecycleTest,AgentSkillRepositoryIntegrationTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -550,7 +550,7 @@ new Toolkit(ToolkitConfig.builder()
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=ToolkitRuntimeTest,GuardedWorkspacePathResolverTest,McpClientLifecycleTest,AgentSkillRepositoryIntegrationTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -559,7 +559,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src
+git add liteflow-agent/liteflow-agent-core/src
 git commit -m "feat(agent): secure toolkit and MCP lifecycle"
 ```
 
@@ -569,13 +569,13 @@ git commit -m "feat(agent): secure toolkit and MCP lifecycle"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/AgentConfirmationHandler.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/AgentConfirmationHandlerResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/ConfirmationRequest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/ConfirmationResultValidator.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/ReActCallExecutor.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/hitl/ReActCallExecutorTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/hitl/HitlGuardConcurrencyTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/AgentConfirmationHandler.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/AgentConfirmationHandlerResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/ConfirmationRequest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/ConfirmationResultValidator.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hitl/AgentCallExecutor.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/hitl/AgentCallExecutorTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/hitl/HitlGuardConcurrencyTest.java`
 
 - [ ] **Step 1: 写 allow、deny、异常、超时和插队失败测试**
 
@@ -586,9 +586,9 @@ git commit -m "feat(agent): secure toolkit and MCP lifecycle"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=ReActCallExecutorTest,HitlGuardConcurrencyTest \
+  -Dtest=AgentCallExecutorTest,HitlGuardConcurrencyTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
@@ -605,16 +605,16 @@ TEXT、JAVA_TYPE、JSON_SCHEMA 首轮和 continuation 必须使用同一 `AgentO
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=ReActCallExecutorTest,HitlGuardConcurrencyTest \
+  -Dtest=AgentCallExecutorTest,HitlGuardConcurrencyTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src
+git add liteflow-agent/liteflow-agent-core/src
 git commit -m "feat(agent): add guarded HITL continuation"
 ```
 
@@ -624,19 +624,19 @@ git commit -m "feat(agent): add guarded HITL continuation"
 
 **Files:**
 
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hook/ChatUsageTrackingHook.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/hook/ReActLoggingHook.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillTrackingHook.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillBoxFactory.java`
-- Delete: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillLoadResult.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/AgentComponentLifecycleTest.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hook/ChatUsageTrackingHook.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/hook/AgentLoggingHook.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillTrackingHook.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillBoxFactory.java`
+- Delete: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillLoadResult.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/runtime/AgentComponentLifecycleTest.java`
 - Create: `liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java`
 - Create: `liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java`
 - Modify: `liteflow-spring-boot-starter/src/main/resources/META-INF/additional-spring-configuration-metadata.json`
 - Modify: `liteflow-spring-boot4-starter/src/main/resources/META-INF/additional-spring-configuration-metadata.json`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/lifecycle/SolonAgentLifecycleTest.java`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/lifecycle/SolonAgentLifecycleTest.java`
 
 - [ ] **Step 1: 写 close ownership 和属性绑定失败测试**
 
@@ -649,7 +649,7 @@ Spring Boot 2／4 绑定测试覆盖全部新 kebab-case 路径，并验证旧 `
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
   -Dtest=AgentComponentLifecycleTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -657,7 +657,7 @@ mvn test -pl liteflow-spring-boot-starter,liteflow-spring-boot4-starter -am \
   -DskipTests=false -DskipITs \
   -Dtest=AgentPropertyBindingTest \
   -Dsurefire.failIfNoSpecifiedTests=false
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs \
   -Dtest=SolonAgentLifecycleTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -667,23 +667,23 @@ Expected: FAIL，销毁接线／新属性 metadata／旧类清理尚未完成。
 
 - [ ] **Step 3: 接入容器销毁并删除旧实现**
 
-Spring／Solon 生命周期适配只调用组件公开 `close()`；不能通过反射清静态缓存。react-agent testcase POM 以 test scope 增加 `liteflow-solon-plugin` 与 `solon-test-junit5`，不让 core 依赖 Solon。删除旧 Hook、SkillBox factory 和 Session holder，技能只保留 2.0 `AgentSkillRepository`／filter 所需 resolver。
+Spring／Solon 生命周期适配只调用组件公开 `close()`；不能通过反射清静态缓存。agent testcase POM 以 test scope 增加 `liteflow-solon-plugin` 与 `solon-test-junit5`，不让 core 依赖 Solon。删除旧 Hook、SkillBox factory 和 Session holder，技能只保留 2.0 `AgentSkillRepository`／filter 所需 resolver。
 
 - [ ] **Step 4: 运行测试和旧 API 扫描**
 
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core,liteflow-spring-boot-starter,liteflow-spring-boot4-starter -am \
+mvn test -pl liteflow-agent/liteflow-agent-core,liteflow-spring-boot-starter,liteflow-spring-boot4-starter -am \
   -DskipTests=false -DskipITs \
   -Dtest=AgentComponentLifecycleTest,AgentPropertyBindingTest \
   -Dsurefire.failIfNoSpecifiedTests=false
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs \
   -Dtest=SolonAgentLifecycleTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 rg -n "AgentSessionManager|AgentSession|core\.hook\.|InMemoryMemory|SkillBox|StreamOptions" \
-  liteflow-react-agent/liteflow-react-agent-core/src/main/java
+  liteflow-agent/liteflow-agent-core/src/main/java
 ```
 
 Expected: 测试 PASS；扫描无命中。
@@ -691,9 +691,9 @@ Expected: 测试 PASS；扫描无命中。
 - [ ] **Step 5: 提交生命周期清理**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core \
+git add liteflow-agent/liteflow-agent-core \
   liteflow-spring-boot-starter liteflow-spring-boot4-starter \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent
+  liteflow-testcase-el/liteflow-testcase-el-agent
 git commit -m "refactor(agent): finalize runtime lifecycle and remove v1 hooks"
 ```
 
@@ -703,7 +703,7 @@ git commit -m "refactor(agent): finalize runtime lifecycle and remove v1 hooks"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/component/ReActAgentCoreContractTest.java`
+- Create: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/component/AgentCoreContractTest.java`
 
 - [ ] **Step 1: 写跨能力核心契约测试**
 
@@ -714,9 +714,9 @@ git commit -m "refactor(agent): finalize runtime lifecycle and remove v1 hooks"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs \
-  -Dtest=ReActAgentCoreContractTest \
+  -Dtest=AgentCoreContractTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
@@ -727,11 +727,11 @@ Expected: 首次运行暴露各子能力组合缺口；只修复测试证明的�
 Run:
 
 ```bash
-mvn clean test -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn clean test -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests=false -DskipITs
-mvn dependency:tree -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn dependency:tree -pl liteflow-agent/liteflow-agent-core -am \
   -Dincludes=io.agentscope:* -Dverbose
-mvn package -pl liteflow-react-agent/liteflow-react-agent-core -am \
+mvn package -pl liteflow-agent/liteflow-agent-core -am \
   -DskipTests
 ```
 
@@ -740,7 +740,7 @@ Expected: 全部通过；依赖树只有 AgentScope 2.0.2；测试没有 credent
 - [ ] **Step 4: 提交核心验收测试**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src/test
+git add liteflow-agent/liteflow-agent-core/src/test
 git commit -m "test(agent): establish deterministic AgentScope 2 core suite"
 ```
 

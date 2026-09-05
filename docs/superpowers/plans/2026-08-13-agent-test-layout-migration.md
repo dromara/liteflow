@@ -4,14 +4,14 @@
 
 **Goal:** 把 AgentScope 2 升级新增的 63 个测试源码与夹具全部迁入 `liteflow-testcase-el` 大模块，同时保持原 package、测试语义、离线边界和依赖隔离。
 
-**Architecture:** `liteflow-testcase-el-react-agent-core` 集中承载无容器的基础配置、Core 与 Solon ServiceLoader 隔离测试；`liteflow-testcase-el-react-agent-harness` 集中承载无容器 Harness 测试；现有 `liteflow-testcase-el-react-agent` 承载 Provider、A2A 与 Spring 纵切。Spring Boot 3、Spring Boot 4 的绑定测试进入各自 testcase 子模块。迁移只改变测试物理位置和测试 classpath，不扩大生产 API，也不改变生产依赖；最终用永久结构契约阻止测试重新进入生产模块。
+**Architecture:** `liteflow-testcase-el-agent-core` 集中承载无容器的基础配置、Core 与 Solon ServiceLoader 隔离测试；`liteflow-testcase-el-agent-harness` 集中承载无容器 Harness 测试；现有 `liteflow-testcase-el-agent` 承载 Provider、A2A 与 Spring 纵切。Spring Boot 3、Spring Boot 4 的绑定测试进入各自 testcase 子模块。迁移只改变测试物理位置和测试 classpath，不扩大生产 API，也不改变生产依赖；最终用永久结构契约阻止测试重新进入生产模块。
 
 **Tech Stack:** Java 17、JUnit 5、Maven Surefire／Failsafe、Spring Boot 3／4、Solon、Reactor Test、Mockito、AgentScope 2.0.2。
 
 ## Global Constraints
 
 - 本轮只迁移提交 `2655a16b13d7fd95c48575c979cb5b3f45b84b7b` 之后由 AgentScope 2 升级新增的 63 个测试源码与夹具。
-- 原 Agent Core 的 30 个文件与 `AgentConfigV2Test` 进入无容器 `liteflow-testcase-el-react-agent-core`；Harness 的 15 个文件进入无容器 `liteflow-testcase-el-react-agent-harness`；Provider 与 A2A 的 14 个文件进入现有 `liteflow-testcase-el-react-agent`。
+- 原 Agent Core 的 30 个文件与 `AgentConfigV2Test` 进入无容器 `liteflow-testcase-el-agent-core`；Harness 的 15 个文件进入无容器 `liteflow-testcase-el-agent-harness`；Provider 与 A2A 的 14 个文件进入现有 `liteflow-testcase-el-agent`。
 - Spring Boot 3、Spring Boot 4 的绑定测试分别进入 `liteflow-testcase-el-springboot`、`liteflow-testcase-el-springboot4`；要求 `Solon.context() == null` 的 ServiceLoader 隔离测试进入无容器 Core testcase 子模块。
 - 所有迁移文件保留原 Java package；不得为测试增加 public API。
 - 生产模块迁移后不得保留 `src/test` 文件；只删除确认仅服务于迁出测试的测试依赖。
@@ -27,17 +27,17 @@
 
 ### 永久新增
 
-- `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`：检查 AgentScope 2 测试没有回流到生产模块。
+- `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`：检查 AgentScope 2 测试没有回流到生产模块。
 - `docs/superpowers/reports/2026-08-13-agent-test-layout-migration-report.md`：记录 RED／GREEN、JDK 17、测试总数、依赖和外部环境边界。
 - `docs/superpowers/reports/2026-08-13-non-testcase-test-audit.md`：列出本轮之外仍在 `liteflow-testcase-el` 外的历史测试，等待用户决策。
 
 ### Maven 修改
 
-- `liteflow-testcase-el/liteflow-testcase-el-react-agent-core/pom.xml`：无容器 Core、基础配置和 Solon ServiceLoader 隔离测试依赖。
-- `liteflow-testcase-el/liteflow-testcase-el-react-agent-harness/pom.xml`：无容器 Harness 测试依赖与 `commons-io 2.16.1` 兼容边界。
-- `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`：Provider、A2A 与 Spring 纵切测试依赖；Provider 改为 test scope；显式增加 Agent Core、A2A Server 与 Reactor Test。
+- `liteflow-testcase-el/liteflow-testcase-el-agent-core/pom.xml`：无容器 Core、基础配置和 Solon ServiceLoader 隔离测试依赖。
+- `liteflow-testcase-el/liteflow-testcase-el-agent-harness/pom.xml`：无容器 Harness 测试依赖与 `commons-io 2.16.1` 兼容边界。
+- `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`：Provider、A2A 与 Spring 纵切测试依赖；Provider 改为 test scope；显式增加 Agent Core、A2A Server 与 Reactor Test。
 - `liteflow-testcase-el/liteflow-testcase-el-springboot/pom.xml`：为迁入的 Spring Boot 3 Agent 绑定测试增加 test-scope Agent Core。
-- `liteflow-react-agent/liteflow-react-agent-{core,openai,anthropic,gemini,dashscope,harness,a2a}/pom.xml`：删除迁出测试专用依赖；Agent Core 在升级基线前已有的 JUnit 依赖保持不变。
+- `liteflow-agent/liteflow-agent-{core,openai,anthropic,gemini,dashscope,harness,a2a}/pom.xml`：删除迁出测试专用依赖；Agent Core 在升级基线前已有的 JUnit 依赖保持不变。
 - `liteflow-core/pom.xml`：删除本次升级为 `AgentConfigV2Test` 新增的 JUnit 依赖。
 - `liteflow-spring-boot-starter/pom.xml`：删除本次升级为 Agent 绑定测试新增的 Starter Test 与 Agent Core 测试依赖。
 - `liteflow-solon-plugin/pom.xml`：删除本次升级为 Solon 隔离测试新增的 JUnit 依赖。
@@ -45,9 +45,9 @@
 
 ### 迁移目录
 
-- `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**` → `liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**`。
+- `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/**` → `liteflow-testcase-el/liteflow-testcase-el-agent-core/src/test/java/com/yomahub/liteflow/agent/**`。
 - Provider 的 `com/yomahub/liteflow/agent/{openai,anthropic,gemini,dashscope}/**` → 集中模块相同 package 路径。
-- Harness 的 `com/yomahub/liteflow/agent/harness/**` → `liteflow-testcase-el-react-agent-harness` 相同 package 路径。
+- Harness 的 `com/yomahub/liteflow/agent/harness/**` → `liteflow-testcase-el-agent-harness` 相同 package 路径。
 - A2A 的 `com/yomahub/liteflow/agent/a2a/**` → 集中模块现有 `com/yomahub/liteflow/agent/a2a/**` 路径。
 - `liteflow-core/.../AgentConfigV2Test.java` → Core testcase 子模块 `com/yomahub/liteflow/property/agent/AgentConfigV2Test.java`。
 - Spring Boot 3／4 测试 → 各自 testcase 子模块的原 package 路径；Solon ServiceLoader 测试 → 无容器 Core testcase 子模块的原 package 路径。
@@ -57,12 +57,12 @@
 ### Task 1: 建立集中测试 classpath 与结构契约 RED
 
 **Files:**
-- Create temporarily, then remove before commit: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
+- Create temporarily, then remove before commit: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
 - Modify: `liteflow-testcase-el/liteflow-testcase-el-springboot/pom.xml`
 
 **Interfaces:**
-- Consumes: Maven reactor 中现有 `liteflow-react-agent-*`、Spring Boot 3 testcase 和 AgentScope BOM 2.0.2。
+- Consumes: Maven reactor 中现有 `liteflow-agent-*`、Spring Boot 3 testcase 和 AgentScope BOM 2.0.2。
 - Produces: 后续五批集中测试需要的 test classpath；结构契约的确定性 RED 证据。
 
 - [ ] **Step 1: 验证迁移基线恰好为 63 个文件**
@@ -70,12 +70,12 @@
 Run:
 
 ```bash
-test "$(find liteflow-react-agent -path '*/src/test/*' -type f -name '*.java' | wc -l | tr -d ' ')" = "59"
+test "$(find liteflow-agent -path '*/src/test/*' -type f -name '*.java' | wc -l | tr -d ' ')" = "59"
 test -f liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
 test -f liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java
 test -f liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java
 test -f liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
-test "$(git ls-tree -r --name-only 2655a16b13d7fd95c48575c979cb5b3f45b84b7b -- liteflow-react-agent | awk '/\/src\/test\// {n++} END {print n+0}')" = "0"
+test "$(git ls-tree -r --name-only 2655a16b13d7fd95c48575c979cb5b3f45b84b7b -- liteflow-agent | awk '/\/src\/test\// {n++} END {print n+0}')" = "0"
 ```
 
 Expected: 全部 exit 0。
@@ -101,13 +101,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AgentTestLayoutContractTest {
 
     private static final List<String> PROHIBITED_ROOTS = List.of(
-            "liteflow-react-agent/liteflow-react-agent-core/src/test",
-            "liteflow-react-agent/liteflow-react-agent-openai/src/test",
-            "liteflow-react-agent/liteflow-react-agent-anthropic/src/test",
-            "liteflow-react-agent/liteflow-react-agent-gemini/src/test",
-            "liteflow-react-agent/liteflow-react-agent-dashscope/src/test",
-            "liteflow-react-agent/liteflow-react-agent-harness/src/test",
-            "liteflow-react-agent/liteflow-react-agent-a2a/src/test");
+            "liteflow-agent/liteflow-agent-core/src/test",
+            "liteflow-agent/liteflow-agent-openai/src/test",
+            "liteflow-agent/liteflow-agent-anthropic/src/test",
+            "liteflow-agent/liteflow-agent-gemini/src/test",
+            "liteflow-agent/liteflow-agent-dashscope/src/test",
+            "liteflow-agent/liteflow-agent-harness/src/test",
+            "liteflow-agent/liteflow-agent-a2a/src/test");
 
     private static final List<String> PROHIBITED_FILES = List.of(
             "liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java",
@@ -145,7 +145,7 @@ class AgentTestLayoutContractTest {
         Path current = Path.of("").toAbsolutePath().normalize();
         while (current != null) {
             if (Files.isRegularFile(current.resolve("pom.xml"))
-                    && Files.isDirectory(current.resolve("liteflow-react-agent"))
+                    && Files.isDirectory(current.resolve("liteflow-agent"))
                     && Files.isDirectory(current.resolve("liteflow-testcase-el"))) {
                 return current;
             }
@@ -161,7 +161,7 @@ class AgentTestLayoutContractTest {
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=AgentTestLayoutContractTest
 ```
@@ -174,12 +174,12 @@ Expected: `AgentTestLayoutContractTest` FAIL；错误清单包含 59 个 Agent �
 
 - [ ] **Step 5: 集中 Maven 测试依赖**
 
-在 `liteflow-testcase-el-react-agent/pom.xml` 中：
+在 `liteflow-testcase-el-agent/pom.xml` 中：
 
 ```xml
 <dependency>
     <groupId>com.yomahub</groupId>
-    <artifactId>liteflow-react-agent-core</artifactId>
+    <artifactId>liteflow-agent-core</artifactId>
     <version>${revision}</version>
     <scope>test</scope>
 </dependency>
@@ -206,7 +206,7 @@ Expected: `AgentTestLayoutContractTest` FAIL；错误清单包含 59 个 Agent �
 ```xml
 <dependency>
     <groupId>com.yomahub</groupId>
-    <artifactId>liteflow-react-agent-core</artifactId>
+    <artifactId>liteflow-agent-core</artifactId>
     <version>${revision}</version>
     <scope>test</scope>
 </dependency>
@@ -218,7 +218,7 @@ Run:
 
 ```bash
 mvn test-compile \
-  -pl liteflow-testcase-el/liteflow-testcase-el-react-agent,liteflow-testcase-el/liteflow-testcase-el-springboot \
+  -pl liteflow-testcase-el/liteflow-testcase-el-agent,liteflow-testcase-el/liteflow-testcase-el-springboot \
   -am -DskipTests=false -DskipITs
 ```
 
@@ -227,7 +227,7 @@ Expected: BUILD SUCCESS；不得出现 aggregate AgentScope artifact。
 - [ ] **Step 7: 提交 classpath 准备**
 
 ```bash
-git add liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml \
+git add liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml \
   liteflow-testcase-el/liteflow-testcase-el-springboot/pom.xml
 git diff --cached --check
 git commit -m "test(agent): prepare centralized test classpath"
@@ -239,9 +239,9 @@ git commit -m "test(agent): prepare centralized test classpath"
 
 **Files:**
 - Move: `liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java`
-- Move: `liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/**`
+- Move: `liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/**`
 - Modify: `liteflow-core/pom.xml`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/pom.xml`
+- Modify: `liteflow-agent/liteflow-agent-core/pom.xml`
 
 **Interfaces:**
 - Consumes: Task 1 的 Agent Core test-scope dependency、JUnit、Mockito、Reactor Test。
@@ -252,12 +252,12 @@ git commit -m "test(agent): prepare centralized test classpath"
 Run:
 
 ```bash
-mkdir -p liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent
-mkdir -p liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/property/agent
-git mv liteflow-react-agent/liteflow-react-agent-core/src/test/java/com/yomahub/liteflow/agent/* \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/
+mkdir -p liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent
+mkdir -p liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/property/agent
+git mv liteflow-agent/liteflow-agent-core/src/test/java/com/yomahub/liteflow/agent/* \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/
 git mv liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
 ```
 
 Expected: `git diff --summary` 显示 31 个 rename；文件内 `package` 行无变化。
@@ -266,7 +266,7 @@ Expected: `git diff --summary` 显示 31 个 rename；文件内 `package` 行无
 
 从 `liteflow-core/pom.xml` 删除本次升级新增的 `junit-jupiter` test dependency。
 
-从 `liteflow-react-agent-core/pom.xml` 删除本次升级新增的以下两个 test dependency：
+从 `liteflow-agent-core/pom.xml` 删除本次升级新增的以下两个 test dependency：
 
 ```xml
 org.mockito:mockito-core
@@ -280,9 +280,9 @@ io.projectreactor:reactor-test
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
-  -Dtest=AgentConfigV2Test,AbstractAgentComponentTest,ReActAgentBuilderConfigurationTest,ReActAgentCoreContractTest,ReActAgentPlainTextTest,ReActAgentStructuredOutputTest,ReActRetryFallbackTest,InvocationIdentityResolverTest,AgentEventTypeMapperTest,LocalAgentInvocationGuardTest,HitlGuardConcurrencyTest,ReActCallExecutorTest,ChatUsageMiddlewareTest,FlowEventBridgeMiddlewareTest,MiddlewareOrderTest,ModelRoutingMiddlewareTest,StateStoreFailureMiddlewareTest,CredentialResolverTest,ModelSpecTest,OwnedTransportModelTest,AgentComponentLifecycleTest,AgentRuntimeHandleTest,McpClientLifecycleTest,AgentSkillRepositoryIntegrationTest,GuardedNamespacedAgentStateStoreTest,GuardedWorkspacePathResolverTest,ManagedProcessTreeTest,ToolkitRuntimeTest
+  -Dtest=AgentConfigV2Test,AbstractAgentComponentTest,AgentBuilderConfigurationTest,AgentCoreContractTest,AgentPlainTextTest,AgentStructuredOutputTest,AgentRetryFallbackTest,InvocationIdentityResolverTest,AgentEventTypeMapperTest,LocalAgentInvocationGuardTest,HitlGuardConcurrencyTest,AgentCallExecutorTest,ChatUsageMiddlewareTest,FlowEventBridgeMiddlewareTest,MiddlewareOrderTest,ModelRoutingMiddlewareTest,StateStoreFailureMiddlewareTest,CredentialResolverTest,ModelSpecTest,OwnedTransportModelTest,AgentComponentLifecycleTest,AgentRuntimeHandleTest,McpClientLifecycleTest,AgentSkillRepositoryIntegrationTest,GuardedNamespacedAgentStateStoreTest,GuardedWorkspacePathResolverTest,ManagedProcessTreeTest,ToolkitRuntimeTest
 ```
 
 Expected: 28 classes 全部 PASS；failures／errors／skips 均为 0。
@@ -292,16 +292,16 @@ Expected: 28 classes 全部 PASS；failures／errors／skips 均为 0。
 Run:
 
 ```bash
-test "$(find liteflow-react-agent/liteflow-react-agent-core/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
+test "$(find liteflow-agent/liteflow-agent-core/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
 test ! -f liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
 ```
 
 - [ ] **Step 5: 提交 Core 批次**
 
 ```bash
-git add liteflow-core liteflow-react-agent/liteflow-react-agent-core \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/property/agent
+git add liteflow-core liteflow-agent/liteflow-agent-core \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/property/agent
 git diff --cached --check
 git commit -m "test(agent): centralize core AgentScope tests"
 ```
@@ -311,7 +311,7 @@ git commit -m "test(agent): centralize core AgentScope tests"
 ### Task 3: 迁移四个 Provider 测试
 
 **Files:**
-- Move: `liteflow-react-agent/liteflow-react-agent-{openai,anthropic,gemini,dashscope}/src/test/java/com/yomahub/liteflow/agent/**`
+- Move: `liteflow-agent/liteflow-agent-{openai,anthropic,gemini,dashscope}/src/test/java/com/yomahub/liteflow/agent/**`
 - Modify: 四个 Provider `pom.xml`
 
 **Interfaces:**
@@ -323,14 +323,14 @@ git commit -m "test(agent): centralize core AgentScope tests"
 Run:
 
 ```bash
-git mv liteflow-react-agent/liteflow-react-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/openai
-git mv liteflow-react-agent/liteflow-react-agent-anthropic/src/test/java/com/yomahub/liteflow/agent/anthropic \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/anthropic
-git mv liteflow-react-agent/liteflow-react-agent-gemini/src/test/java/com/yomahub/liteflow/agent/gemini \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/gemini
-git mv liteflow-react-agent/liteflow-react-agent-dashscope/src/test/java/com/yomahub/liteflow/agent/dashscope \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/dashscope
+git mv liteflow-agent/liteflow-agent-openai/src/test/java/com/yomahub/liteflow/agent/openai \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/openai
+git mv liteflow-agent/liteflow-agent-anthropic/src/test/java/com/yomahub/liteflow/agent/anthropic \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/anthropic
+git mv liteflow-agent/liteflow-agent-gemini/src/test/java/com/yomahub/liteflow/agent/gemini \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/gemini
+git mv liteflow-agent/liteflow-agent-dashscope/src/test/java/com/yomahub/liteflow/agent/dashscope \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/dashscope
 ```
 
 - [ ] **Step 2: 删除四个 Provider POM 的 JUnit test dependency**
@@ -350,7 +350,7 @@ git mv liteflow-react-agent/liteflow-react-agent-dashscope/src/test/java/com/yom
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=FirstPartyModelProviderTest,OpenAICompatibleSpecTest,OpenAISpecTest,AnthropicRuntimeContractTest,AnthropicSpecTest,GeminiLifecycleTest,GeminiSpecTest,DashScopeSpecTest
 ```
@@ -363,15 +363,15 @@ Run:
 
 ```bash
 for module in openai anthropic gemini dashscope; do
-  test "$(find "liteflow-react-agent/liteflow-react-agent-$module/src/test" -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
+  test "$(find "liteflow-agent/liteflow-agent-$module/src/test" -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
 done
 ```
 
 - [ ] **Step 5: 提交 Provider 批次**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-{openai,anthropic,gemini,dashscope} \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/{openai,anthropic,gemini,dashscope}
+git add liteflow-agent/liteflow-agent-{openai,anthropic,gemini,dashscope} \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/{openai,anthropic,gemini,dashscope}
 git diff --cached --check
 git commit -m "test(agent): centralize provider AgentScope tests"
 ```
@@ -381,8 +381,8 @@ git commit -m "test(agent): centralize provider AgentScope tests"
 ### Task 4: 迁移 Harness 测试与 sandbox 夹具
 
 **Files:**
-- Move: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/**`
-- Modify: `liteflow-react-agent/liteflow-react-agent-harness/pom.xml`
+- Move: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/**`
+- Modify: `liteflow-agent/liteflow-agent-harness/pom.xml`
 
 **Interfaces:**
 - Consumes: testcase 中的 Harness、Reactor Test 与 Agent Core 测试依赖。
@@ -393,8 +393,8 @@ git commit -m "test(agent): centralize provider AgentScope tests"
 Run:
 
 ```bash
-git mv liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/harness
+git mv liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/harness
 ```
 
 Expected: 15 个 Java 文件全部成为 rename，package 不变。
@@ -415,7 +415,7 @@ io.projectreactor:reactor-test
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=HarnessAgentBuilderFilesystemBridgeTest,HarnessAgentComponentTest,DockerSandboxConfigTest,HarnessConfigTest,GuardedLocalFilesystemTest,HarnessCapabilitiesTest,HarnessDependencyBoundaryTest,HarnessPermissionHitlTest,DockerSandboxConfigurerTest,SandboxLifecycleTest,WorkspaceProjectionTest,CrossAgentWorkspaceGuardTest
 ```
@@ -425,14 +425,14 @@ Expected: 12 classes 全部 PASS；fake Docker lifecycle 可运行，但不得�
 - [ ] **Step 4: 验证 Harness 来源目录无文件**
 
 ```bash
-test "$(find liteflow-react-agent/liteflow-react-agent-harness/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
+test "$(find liteflow-agent/liteflow-agent-harness/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
 ```
 
 - [ ] **Step 5: 提交 Harness 批次**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/harness
+git add liteflow-agent/liteflow-agent-harness \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/harness
 git diff --cached --check
 git commit -m "test(agent): centralize Harness AgentScope tests"
 ```
@@ -442,8 +442,8 @@ git commit -m "test(agent): centralize Harness AgentScope tests"
 ### Task 5: 迁移 A2A client／server 测试
 
 **Files:**
-- Move: `liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/**`
-- Modify: `liteflow-react-agent/liteflow-react-agent-a2a/pom.xml`
+- Move: `liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/**`
+- Modify: `liteflow-agent/liteflow-agent-a2a/pom.xml`
 
 **Interfaces:**
 - Consumes: testcase 中现有 `RecordingA2aRuntimeFactory`、A2A 模块、显式 A2A Server、Mockito 和 Reactor Test。
@@ -454,10 +454,10 @@ git commit -m "test(agent): centralize Harness AgentScope tests"
 Run:
 
 ```bash
-git mv liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/*.java \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/a2a/
-git mv liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/a2a/server
+git mv liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/*.java \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/a2a/
+git mv liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/a2a/server
 ```
 
 Expected: 新文件与 `RecordingA2aRuntimeFactory.java` 共存；不得修改 package-private 生产类型的可见性。
@@ -479,7 +479,7 @@ org.mockito:mockito-core
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=A2aAgentComponentTest,A2aClientRuntimeFactoryPublicApiTest,A2aClientRuntimeTest,A2aProtocolEventAdapterTest,LiteFlowA2aAgentRunnerLifecycleTest,LiteFlowA2aAgentRunnerTest
 ```
@@ -489,9 +489,9 @@ Expected: 6 classes全部 PASS；不启动 A2A server，不绑定 Web，不访�
 - [ ] **Step 4: 验证 A2A 来源目录无文件并提交**
 
 ```bash
-test "$(find liteflow-react-agent/liteflow-react-agent-a2a/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
-git add liteflow-react-agent/liteflow-react-agent-a2a \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/agent/a2a
+test "$(find liteflow-agent/liteflow-agent-a2a/src/test -type f 2>/dev/null | wc -l | tr -d ' ')" = "0"
+git add liteflow-agent/liteflow-agent-a2a \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/agent/a2a
 git diff --cached --check
 git commit -m "test(agent): centralize A2A AgentScope tests"
 ```
@@ -504,7 +504,7 @@ git commit -m "test(agent): centralize A2A AgentScope tests"
 - Move: Spring Boot 3 `AgentPropertyBindingTest.java`
 - Move: Spring Boot 4 `AgentPropertyBindingTest.java`
 - Move: `SolonCmpAroundAspectTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/structure/AgentTestLayoutContractTest.java`
 - Modify: `liteflow-spring-boot-starter/pom.xml`
 - Modify: `liteflow-solon-plugin/pom.xml`
 
@@ -519,13 +519,13 @@ Run:
 ```bash
 mkdir -p liteflow-testcase-el/liteflow-testcase-el-springboot/src/test/java/com/yomahub/liteflow/springboot
 mkdir -p liteflow-testcase-el/liteflow-testcase-el-springboot4/src/test/java/com/yomahub/liteflow/springboot4
-mkdir -p liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/spi/solon
+mkdir -p liteflow-testcase-el/liteflow-testcase-el-agent-core/src/test/java/com/yomahub/liteflow/spi/solon
 git mv liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java \
   liteflow-testcase-el/liteflow-testcase-el-springboot/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java
 git mv liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java \
   liteflow-testcase-el/liteflow-testcase-el-springboot4/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java
 git mv liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent-core/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
+  liteflow-testcase-el/liteflow-testcase-el-agent-core/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java
 ```
 
 - [ ] **Step 2: 清理本次升级新增的生产测试依赖**
@@ -534,7 +534,7 @@ git mv liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonC
 
 ```xml
 org.springframework.boot:spring-boot-starter-test
-com.yomahub:liteflow-react-agent-core
+com.yomahub:liteflow-agent-core
 ```
 
 从 `liteflow-solon-plugin/pom.xml` 删除 `org.junit.jupiter:junit-jupiter`。
@@ -552,7 +552,7 @@ mvn test -pl liteflow-testcase-el/liteflow-testcase-el-springboot -am \
 mvn test -pl liteflow-testcase-el/liteflow-testcase-el-springboot4 -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=com.yomahub.liteflow.springboot4.AgentPropertyBindingTest
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent-core -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent-core -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=com.yomahub.liteflow.spi.solon.SolonCmpAroundAspectTest
 ```
@@ -580,13 +580,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AgentTestLayoutContractTest {
 
     private static final List<String> PROHIBITED_ROOTS = List.of(
-            "liteflow-react-agent/liteflow-react-agent-core/src/test",
-            "liteflow-react-agent/liteflow-react-agent-openai/src/test",
-            "liteflow-react-agent/liteflow-react-agent-anthropic/src/test",
-            "liteflow-react-agent/liteflow-react-agent-gemini/src/test",
-            "liteflow-react-agent/liteflow-react-agent-dashscope/src/test",
-            "liteflow-react-agent/liteflow-react-agent-harness/src/test",
-            "liteflow-react-agent/liteflow-react-agent-a2a/src/test");
+            "liteflow-agent/liteflow-agent-core/src/test",
+            "liteflow-agent/liteflow-agent-openai/src/test",
+            "liteflow-agent/liteflow-agent-anthropic/src/test",
+            "liteflow-agent/liteflow-agent-gemini/src/test",
+            "liteflow-agent/liteflow-agent-dashscope/src/test",
+            "liteflow-agent/liteflow-agent-harness/src/test",
+            "liteflow-agent/liteflow-agent-a2a/src/test");
 
     private static final List<String> PROHIBITED_FILES = List.of(
             "liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java",
@@ -624,7 +624,7 @@ class AgentTestLayoutContractTest {
         Path current = Path.of("").toAbsolutePath().normalize();
         while (current != null) {
             if (Files.isRegularFile(current.resolve("pom.xml"))
-                    && Files.isDirectory(current.resolve("liteflow-react-agent"))
+                    && Files.isDirectory(current.resolve("liteflow-agent"))
                     && Files.isDirectory(current.resolve("liteflow-testcase-el"))) {
                 return current;
             }
@@ -640,10 +640,10 @@ class AgentTestLayoutContractTest {
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs -Dsurefire.failIfNoSpecifiedTests=false \
   -Dtest=AgentTestLayoutContractTest
-test -z "$(find liteflow-react-agent -path '*/src/test/*' -type f -print)"
+test -z "$(find liteflow-agent -path '*/src/test/*' -type f -print)"
 test ! -f liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java
 test ! -f liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java
 test ! -f liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java
@@ -659,7 +659,7 @@ git add liteflow-spring-boot-starter liteflow-spring-boot4-starter liteflow-solo
   liteflow-testcase-el/liteflow-testcase-el-springboot \
   liteflow-testcase-el/liteflow-testcase-el-springboot4 \
   liteflow-testcase-el/liteflow-testcase-el-solon \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/structure
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/structure
 git diff --cached --check
 git commit -m "test(agent): centralize framework AgentScope tests"
 ```
@@ -693,7 +693,7 @@ Run:
 
 ```bash
 mvn clean package \
-  -pl liteflow-react-agent,liteflow-testcase-el/liteflow-testcase-el-react-agent-core,liteflow-testcase-el/liteflow-testcase-el-react-agent-harness,liteflow-testcase-el/liteflow-testcase-el-react-agent,liteflow-testcase-el/liteflow-testcase-el-springboot,liteflow-testcase-el/liteflow-testcase-el-springboot4,liteflow-testcase-el/liteflow-testcase-el-solon \
+  -pl liteflow-agent,liteflow-testcase-el/liteflow-testcase-el-agent-core,liteflow-testcase-el/liteflow-testcase-el-agent-harness,liteflow-testcase-el/liteflow-testcase-el-agent,liteflow-testcase-el/liteflow-testcase-el-springboot,liteflow-testcase-el/liteflow-testcase-el-springboot4,liteflow-testcase-el/liteflow-testcase-el-solon \
   -am -DskipTests=false -DskipITs
 ```
 
@@ -704,11 +704,11 @@ Expected: BUILD SUCCESS；所有已发现测试 failures／errors 为 0；迁入
 Run:
 
 ```bash
-find liteflow-core liteflow-react-agent liteflow-testcase-el \
+find liteflow-core liteflow-agent liteflow-testcase-el \
   -path '*/target/surefire-reports/TEST-*.xml' \
   \( -path 'liteflow-core/*' \
-     -o -path 'liteflow-react-agent/*' \
-     -o -path 'liteflow-testcase-el/liteflow-testcase-el-react-agent/*' \
+     -o -path 'liteflow-agent/*' \
+     -o -path 'liteflow-testcase-el/liteflow-testcase-el-agent/*' \
      -o -path 'liteflow-testcase-el/liteflow-testcase-el-springboot/*' \
      -o -path 'liteflow-testcase-el/liteflow-testcase-el-springboot4/*' \
      -o -path 'liteflow-testcase-el/liteflow-testcase-el-solon/*' \) \
@@ -727,9 +727,9 @@ Run:
 
 ```bash
 mvn dependency:tree \
-  -pl liteflow-react-agent/liteflow-react-agent-core,liteflow-react-agent/liteflow-react-agent-harness,liteflow-react-agent/liteflow-react-agent-a2a,liteflow-testcase-el/liteflow-testcase-el-react-agent \
+  -pl liteflow-agent/liteflow-agent-core,liteflow-agent/liteflow-agent-harness,liteflow-agent/liteflow-agent-a2a,liteflow-testcase-el/liteflow-testcase-el-agent \
   -DskipTests=false \
-  -Dincludes=io.agentscope:*,com.yomahub:liteflow-react-agent-*
+  -Dincludes=io.agentscope:*,com.yomahub:liteflow-agent-*
 ```
 
 Expected:
@@ -744,9 +744,9 @@ Expected:
 Run:
 
 ```bash
-test -z "$(find liteflow-react-agent -path '*/src/test/*' -type f -print)"
+test -z "$(find liteflow-agent -path '*/src/test/*' -type f -print)"
 test -z "$(rg -n '@Disabled|Assumptions\.|assumeTrue|assumeFalse' \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java \
+  liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java \
   liteflow-testcase-el/liteflow-testcase-el-{springboot,springboot4,solon}/src/test/java/com/yomahub/liteflow || true)"
 git diff --check
 ```

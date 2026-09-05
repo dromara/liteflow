@@ -518,7 +518,7 @@
 
 		<pluginManagement>
 			<plugins>
-				<!-- Release 插件统一定义，release-main 和 release-react-agent 共用 -->
+				<!-- Release 插件统一定义，release-on-8 和 release-on-17 共用 -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
@@ -609,7 +609,7 @@
 			</activation>
 		</profile>
 
-		<!-- ReAct Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
+		<!-- Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
 		<profile>
 			<id>compile-17+</id>
 			<activation>
@@ -628,7 +628,7 @@
 				<module>liteflow-el-builder</module>
 				<module>liteflow-metrics</module>
 				<module>liteflow-benchmark</module>
-				<module>liteflow-react-agent</module>
+				<module>liteflow-agent</module>
 			</modules>
 		</profile>
 
@@ -671,7 +671,7 @@
 		<profile>
 			<id>release-on-17</id>
 			<modules>
-				<module>liteflow-react-agent</module>
+				<module>liteflow-agent</module>
 				<module>liteflow-spring-boot4-starter</module>
 			</modules>
 

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在核心运行时、Provider 与 Harness 迁移完成后，增加隔离的 A2A 可选模块，重写 React Agent 集成测试与用户文档，并用完整依赖审计和 JDK 17 构建完成 AgentScope 2.0.2 升级验收。
+**Goal:** 在核心运行时、Provider 与 Harness 迁移完成后，增加隔离的 A2A 可选模块，重写 Agent 集成测试与用户文档，并用完整依赖审计和 JDK 17 构建完成 AgentScope 2.0.2 升级验收。
 
 **Architecture:** A2A 客户端因 AgentScope 2.0.2 的上游实现仍持有单次请求可变状态，每次 LiteFlow 调用创建独立 `A2aAgent`；A2A 服务端从 `ReActAgent.streamEvents(..., RuntimeContext)` 获取类型化事件，仅在上游 `AgentRunner` 边界转换为旧粗粒度 `Event`。集成测试默认全部离线、确定性执行，真实 Provider 与真实 Docker 分别放入显式 profile。
 
@@ -24,13 +24,13 @@
 
 **Files:**
 
-- Modify: `liteflow-react-agent/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntime.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntimeFactory.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/A2aAgentComponentTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntimeTest.java`
+- Modify: `liteflow-agent/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-a2a/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aAgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntime.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntimeFactory.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/A2aAgentComponentTest.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/A2aClientRuntimeTest.java`
 
 - [ ] **Step 1: 写出客户端生命周期失败测试**
 
@@ -50,7 +50,7 @@ assertThat(component.lastContext().conversationId()).isEqualTo("conversation-7")
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-a2a -am \
+mvn test -pl liteflow-agent/liteflow-agent-a2a -am \
   -DskipTests=false -DskipITs \
   -Dtest=A2aAgentComponentTest,A2aClientRuntimeTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -60,7 +60,7 @@ Expected: Maven 因模块／类不存在而失败。
 
 - [ ] **Step 3: 创建细粒度依赖与客户端执行边界**
 
-`liteflow-react-agent-a2a/pom.xml` 只依赖 `liteflow-react-agent-core` 与：
+`liteflow-agent-a2a/pom.xml` 只依赖 `liteflow-agent-core` 与：
 
 ```xml
 <dependency>
@@ -123,7 +123,7 @@ public abstract class A2aAgentComponent
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-a2a -am \
+mvn test -pl liteflow-agent/liteflow-agent-a2a -am \
   -DskipTests=false -DskipITs \
   -Dtest=A2aAgentComponentTest,A2aClientRuntimeTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -134,9 +134,9 @@ Expected: PASS；测试证明同一组件从未跨调用复用 `A2aAgent`。
 - [ ] **Step 6: 提交客户端模块**
 
 ```bash
-git add liteflow-react-agent/pom.xml \
-  liteflow-react-agent/liteflow-react-agent-a2a/pom.xml \
-  liteflow-react-agent/liteflow-react-agent-a2a/src
+git add liteflow-agent/pom.xml \
+  liteflow-agent/liteflow-agent-a2a/pom.xml \
+  liteflow-agent/liteflow-agent-a2a/src
 git commit -m "feat(agent): add isolated A2A client component"
 ```
 
@@ -146,13 +146,13 @@ git commit -m "feat(agent): add isolated A2A client component"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-a2a/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/A2aServerAgentFactory.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aAgentRunner.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/A2aProtocolEventAdapter.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aServerFactory.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aAgentRunnerTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server/A2aProtocolEventAdapterTest.java`
+- Modify: `liteflow-agent/liteflow-agent-a2a/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/A2aServerAgentFactory.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aAgentRunner.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/A2aProtocolEventAdapter.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aServerFactory.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server/LiteFlowA2aAgentRunnerTest.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/test/java/com/yomahub/liteflow/agent/a2a/server/A2aProtocolEventAdapterTest.java`
 
 - [ ] **Step 1: 写类型化执行和取消语义测试**
 
@@ -171,7 +171,7 @@ git commit -m "feat(agent): add isolated A2A client component"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-a2a -am \
+mvn test -pl liteflow-agent/liteflow-agent-a2a -am \
   -DskipTests=false -DskipITs \
   -Dtest=LiteFlowA2aAgentRunnerTest,A2aProtocolEventAdapterTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -247,12 +247,12 @@ factory 返回 `AgentScopeA2aServer`；endpoint、端口和 Controller 由业务
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-a2a -am \
+mvn test -pl liteflow-agent/liteflow-agent-a2a -am \
   -DskipTests=false -DskipITs \
   -Dtest=LiteFlowA2aAgentRunnerTest,A2aProtocolEventAdapterTest \
   -Dsurefire.failIfNoSpecifiedTests=false
 rg -n "core\.agent\.(Event|EventType)|core\.hook\.Hook" \
-  liteflow-react-agent/liteflow-react-agent-a2a/src/main/java
+  liteflow-agent/liteflow-agent-a2a/src/main/java
 ```
 
 Expected: 测试 PASS；`rg` 只命中 `A2aProtocolEventAdapter.java` 中有说明的协议边界，不命中 Hook。
@@ -260,7 +260,7 @@ Expected: 测试 PASS；`rg` 只命中 `A2aProtocolEventAdapter.java` 中有说�
 - [ ] **Step 7: 提交服务端适配**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-a2a
+git add liteflow-agent/liteflow-agent-a2a
 git commit -m "feat(agent): expose typed runtime through A2A"
 ```
 
@@ -270,33 +270,33 @@ git commit -m "feat(agent): expose typed runtime through A2A"
 
 **Files:**
 
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/support/BaseAgentLiveTest.java`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/support/LiveTestSupport.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/support/ScriptedChatModel.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/support/AgentTestEvents.java`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/hook`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/memorypersistence`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/sessionreuse`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/streaming`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/skills`
-- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/shelltool`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/runtimecontext/RuntimeContextIsolationTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/structuredoutput/StructuredOutputChainTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/hitl/HitlChainTest.java`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/HarnessComponentTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/a2a/A2aAgentCmp.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/a2a/A2aChainTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/runtimecontext/application.properties`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/runtimecontext/flow.el.xml`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/structuredoutput/application.properties`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/structuredoutput/flow.el.xml`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/hitl/application.properties`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/hitl/flow.el.xml`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/harness/application.properties`
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/harness/flow.el.xml`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/a2a/application.properties`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/a2a/flow.el.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/support/BaseAgentLiveTest.java`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/support/LiveTestSupport.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/support/ScriptedChatModel.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/support/AgentTestEvents.java`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/hook`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/memorypersistence`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/sessionreuse`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/streaming`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/skills`
+- Replace directory: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/shelltool`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/runtimecontext/RuntimeContextIsolationTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/structuredoutput/StructuredOutputChainTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/hitl/HitlChainTest.java`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/HarnessComponentTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/a2a/A2aAgentCmp.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/a2a/A2aChainTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/runtimecontext/application.properties`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/runtimecontext/flow.el.xml`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/structuredoutput/application.properties`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/structuredoutput/flow.el.xml`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/hitl/application.properties`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/hitl/flow.el.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/harness/application.properties`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/harness/flow.el.xml`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/a2a/application.properties`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/a2a/flow.el.xml`
 
 - [ ] **Step 1: 先写四条 Spring 集成失败测试**
 
@@ -313,7 +313,7 @@ git commit -m "feat(agent): expose typed runtime through A2A"
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs \
   -Dtest=RuntimeContextIsolationTest,StructuredOutputChainTest,HitlChainTest,HarnessComponentTest,A2aChainTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -323,7 +323,7 @@ Expected: FAIL，新测试支持类或迁移后的 Spring 组件尚未完成。
 
 - [ ] **Step 3: 增加 Harness／A2A 测试依赖并重写旧语义测试**
 
-测试 POM 增加 `liteflow-react-agent-harness` 与 `liteflow-react-agent-a2a`。将旧目录按下表改名并重写断言，不能仅用 `@Disabled` 跳过：
+测试 POM 增加 `liteflow-agent-harness` 与 `liteflow-agent-a2a`。将旧目录按下表改名并重写断言，不能仅用 `@Disabled` 跳过：
 
 | 旧目录 | 新语义 |
 |---|---|
@@ -348,7 +348,7 @@ POM 配置：
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs
 ```
 
@@ -357,7 +357,7 @@ Expected: PASS；没有网络连接、没有真实密钥也能覆盖核心、Pro
 - [ ] **Step 6: 提交确定性集成测试**
 
 ```bash
-git add liteflow-testcase-el/liteflow-testcase-el-react-agent
+git add liteflow-testcase-el/liteflow-testcase-el-agent
 git commit -m "test(agent): migrate integration suite to AgentScope 2"
 ```
 
@@ -367,13 +367,13 @@ git commit -m "test(agent): migrate integration suite to AgentScope 2"
 
 **Files:**
 
-- Modify: `docs/liteflow-react-agent-guide.md`
-- Create: `docs/liteflow-react-agent-agentscope-2-migration.md`
+- Modify: `docs/liteflow-agent-guide.md`
+- Create: `docs/liteflow-agent-agentscope-2-migration.md`
 - Modify: `README.md`
 - Modify: `README.zh-CN.md`
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/package-info.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/package-info.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/package-info.java`
+- Create: `liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/package-info.java`
 
 - [ ] **Step 1: 写文档契约检查并确认当前指南命中旧概念**
 
@@ -381,17 +381,17 @@ Run:
 
 ```bash
 rg -n "1\.0\.12|SessionManager|AgentSession|SkillBox|hooks\(\)|JDK 21\+|黑名单.*沙箱" \
-  docs/liteflow-react-agent-guide.md README.md README.zh-CN.md
+  docs/liteflow-agent-guide.md README.md README.zh-CN.md
 ```
 
 Expected: 命中旧会话、Hook、SkillBox、旧 JDK 要求或错误沙箱表述。
 
 - [ ] **Step 2: 重写主指南**
 
-`docs/liteflow-react-agent-guide.md` 至少包含可编译示例和以下章节：
+`docs/liteflow-agent-guide.md` 至少包含可编译示例和以下章节：
 
 - JDK 17、BOM 与 core／Provider／Harness／A2A 的依赖选择；
-- `AbstractAgentComponent`、`ReActAgentComponent` 和 `LiteFlowAgentContext`；
+- `AbstractAgentComponent`、`AgentComponent` 和 `LiteFlowAgentContext`；
 - 构建期扩展点与调用期扩展点，明确构建期不得读取 Slot；
 - `RuntimeContext`、`userId`、`conversationId`、`agentKey` 与状态 namespace；
 - `AgentStateStore` Bean、JSON 本地开发 Store 和多副本协调要求；
@@ -405,11 +405,11 @@ Expected: 命中旧会话、Hook、SkillBox、旧 JDK 要求或错误沙箱表�
 
 - [ ] **Step 3: 写 1.x 到 2.0.2 迁移表**
 
-`docs/liteflow-react-agent-agentscope-2-migration.md` 必须提供下列直接映射：
+`docs/liteflow-agent-agentscope-2-migration.md` 必须提供下列直接映射：
 
 | 1.x | 2.0.2 |
 |---|---|
-| `ReActAgentContext`／隐式 `ctx()` | 显式 `LiteFlowAgentContext` 参数 |
+| `AgentContext`／隐式 `ctx()` | 显式 `LiteFlowAgentContext` 参数 |
 | `hooks()`／`Hook` | `middlewares()`／`MiddlewareBase` |
 | `AgentSessionManager`／Memory factory | `AgentStateStore` Bean 与 namespaced decorator |
 | `session.memory.*` | `runtime.*` 与 `state-store.*` |
@@ -421,7 +421,7 @@ Expected: 命中旧会话、Hook、SkillBox、旧 JDK 要求或错误沙箱表�
 
 - [ ] **Step 4: 修正 README 和 package JavaDoc**
 
-README 必须把“JDK 21+”修正为该模块实际验证的 JDK 17，并把能力描述更新为“轻量 ReAct + 可选 Harness／sandbox”，不宣称本地 path namespace 是安全沙箱。
+README 必须把“JDK 21+”修正为该模块实际验证的 JDK 17，并把能力描述更新为“轻量 Agent + 可选 Harness／sandbox”，不宣称本地 path namespace 是安全沙箱。
 
 - [ ] **Step 5: 运行文档扫描**
 
@@ -429,8 +429,8 @@ Run:
 
 ```bash
 rg -n "SessionManager|AgentSession|SkillBox|hooks\(\)|JDK 21\+|1\.0\.12" \
-  docs/liteflow-react-agent-guide.md README.md README.zh-CN.md \
-  liteflow-react-agent/*/src/main/java
+  docs/liteflow-agent-guide.md README.md README.zh-CN.md \
+  liteflow-agent/*/src/main/java
 ```
 
 Expected: 生产 Java 与主指南无旧实现引用；迁移指南中允许出现旧名，但必须位于迁移表或删除说明中。
@@ -438,12 +438,12 @@ Expected: 生产 Java 与主指南无旧实现引用；迁移指南中允许出�
 - [ ] **Step 6: 提交文档**
 
 ```bash
-git add docs/liteflow-react-agent-guide.md \
-  docs/liteflow-react-agent-agentscope-2-migration.md \
+git add docs/liteflow-agent-guide.md \
+  docs/liteflow-agent-agentscope-2-migration.md \
   README.md README.zh-CN.md \
-  liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java \
-  liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/package-info.java \
-  liteflow-react-agent/liteflow-react-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/package-info.java
+  liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/package-info.java \
+  liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/package-info.java \
+  liteflow-agent/liteflow-agent-a2a/src/main/java/com/yomahub/liteflow/agent/a2a/package-info.java
 git commit -m "docs(agent): document AgentScope 2 runtime and sandbox"
 ```
 
@@ -454,18 +454,18 @@ git commit -m "docs(agent): document AgentScope 2 runtime and sandbox"
 **Files:**
 
 - Modify if findings require a fix: `pom.xml`
-- Modify if findings require a fix: `liteflow-react-agent/pom.xml`
-- Modify if findings require a fix: `liteflow-react-agent/liteflow-react-agent-core/pom.xml`
-- Modify if findings require a fix: `liteflow-react-agent/liteflow-react-agent-harness/pom.xml`
-- Modify if findings require a fix: `liteflow-react-agent/liteflow-react-agent-a2a/pom.xml`
-- Modify if findings require a fix: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
+- Modify if findings require a fix: `liteflow-agent/pom.xml`
+- Modify if findings require a fix: `liteflow-agent/liteflow-agent-core/pom.xml`
+- Modify if findings require a fix: `liteflow-agent/liteflow-agent-harness/pom.xml`
+- Modify if findings require a fix: `liteflow-agent/liteflow-agent-a2a/pom.xml`
+- Modify if findings require a fix: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
 
 - [ ] **Step 1: 验证 AgentScope 依赖图**
 
 Run:
 
 ```bash
-mvn dependency:tree -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn dependency:tree -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -Dincludes=io.agentscope:*,io.github.a2asdk:* -Dverbose
 ```
 
@@ -475,7 +475,7 @@ Expected:
 - 不存在 `io.agentscope:agentscope` shaded 聚合包；
 - 不存在 `1.0.12` 或任何 1.x AgentScope artifact；
 - Provider SDK 只由对应 Provider 模块传递；
-- Harness 与 A2A 不被 core 传递给只使用轻量 ReAct 的项目。
+- Harness 与 A2A 不被 core 传递给只使用轻量 Agent 的项目。
 
 - [ ] **Step 2: 扫描旧 API 和错误安全表述**
 
@@ -483,8 +483,8 @@ Run:
 
 ```bash
 rg -n "core\.hook\.|SessionManager|AgentSession|InMemoryMemory|SkillBox|StreamOptions" \
-  liteflow-react-agent/*/src/main/java
-rg -n "core\.agent\.(Event|EventType)" liteflow-react-agent/*/src/main/java
+  liteflow-agent/*/src/main/java
+rg -n "core\.agent\.(Event|EventType)" liteflow-agent/*/src/main/java
 ```
 
 Expected: 第一条无命中；第二条只命中 `A2aProtocolEventAdapter.java`。
@@ -494,7 +494,7 @@ Expected: 第一条无命中；第二条只命中 `A2aProtocolEventAdapter.java`
 Run:
 
 ```bash
-mvn test -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs
 ```
 
@@ -506,7 +506,7 @@ Run:
 
 ```bash
 java -version
-mvn package -pl liteflow-react-agent,liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn package -pl liteflow-agent,liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs
 ```
 
@@ -517,9 +517,9 @@ Expected: `java -version` 为 17；所有相关模块编译、测试和打包成
 仅在环境具备条件时运行；缺少条件时在交付报告中标记“未执行”，不得伪装成通过：
 
 ```bash
-mvn verify -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn verify -pl liteflow-agent/liteflow-agent-harness -am \
   -Pagent-docker-it -DskipTests=false
-mvn verify -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn verify -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -Pagent-live -DskipTests=false
 ```
 
@@ -537,7 +537,7 @@ git status --short
 若前五步产生修复：
 
 ```bash
-git add pom.xml liteflow-react-agent liteflow-testcase-el/liteflow-testcase-el-react-agent docs README.md README.zh-CN.md
+git add pom.xml liteflow-agent liteflow-testcase-el/liteflow-testcase-el-agent docs README.md README.zh-CN.md
 git commit -m "chore(agent): complete AgentScope 2 migration audit"
 ```
 

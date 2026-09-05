@@ -9,8 +9,8 @@ package com.yomahub.liteflow.property.agent;
 public enum AgentStateStoreType {
 	/** Local JSON files, one directory per (userId, sessionId) slot. */
 	JSON,
-	/** Redis via {@code agentscope-extensions-redis}; requires the liteflow-react-agent-redis module. */
+	/** Redis via {@code agentscope-extensions-redis}; requires the liteflow-agent-redis module. */
 	REDIS,
-	/** MySQL via {@code agentscope-extensions-mysql}; requires the liteflow-react-agent-mysql module. */
+	/** MySQL via {@code agentscope-extensions-mysql}; requires the liteflow-agent-mysql module. */
 	MYSQL
 }

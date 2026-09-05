@@ -12,9 +12,9 @@
 
 ## File Structure
 
-- **Modify** `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
+- **Modify** `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
   - 职责不变（把 skill 的 `tools` 解析为可注册工具实例），仅把"实例化方式"从反射 new 改为容器优先 + 降级。
-- **Modify** `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
+- **Modify** `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
   - 新增受控的 stub `ContextAware`（内部静态类）+ 反射注入 `ContextAwareHolder` 的辅助方法 + 3 个测试（复用 / 降级 / 防御）。
 
 ### 关键既有事实（实现者须知）
@@ -22,7 +22,7 @@
 - `SkillToolResolver` 与 `instantiateTools` 都是 **package-private**（`final class SkillToolResolver`），且位于 `com.yomahub.liteflow.agent.skill` 包；测试在 `com.yomahub.liteflow.test.agent.unit` 包，**不能直接调用**它，只能通过 public 的 `SkillBoxFactory.build(...)` 间接驱动。
 - 现有验证手段：`SkillEchoTool` 构造时 `CONSTRUCT_COUNT.incrementAndGet()`，`SkillEchoTool.reset()` 归零；`SkillBoxFactoryTest.setUp()` 已调用 `SkillEchoTool.reset()`。
 - 测试用 skill `tool-skill` 的 `SKILL.md` 声明：`tools: com.yomahub.liteflow.test.agent.tool.SkillEchoTool`。
-- `liteflow-react-agent-core` 已依赖 `liteflow-core`，可直接 import `com.yomahub.liteflow.spi.ContextAware` 与 `com.yomahub.liteflow.spi.holder.ContextAwareHolder`。
+- `liteflow-agent-core` 已依赖 `liteflow-core`，可直接 import `com.yomahub.liteflow.spi.ContextAware` 与 `com.yomahub.liteflow.spi.holder.ContextAwareHolder`。
 - `ContextAwareHolder` 字段为 `private static ContextAware contextAware;`，并提供 `public static void clean()`（置 null）。无 public setter，故测试用反射写入该字段、用 `clean()` 复原。
 - `LocalContextAware`（`com.yomahub.liteflow.spi.local.LocalContextAware`）是 public 类，方法均 public，可被测试 stub 继承并覆写 `hasBean(Class)` / `getBean(Class)`，其余方法沿用其空实现。
 
@@ -31,8 +31,8 @@
 ## Task 1: SkillToolResolver 改为容器优先 + 降级，并以 TDD 驱动复用路径
 
 **Files:**
-- Modify: `liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
-- Test: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
+- Modify: `liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java`
+- Test: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
 
 - [ ] **Step 1: 写失败测试（复用容器 bean，不应再反射构造）**
 
@@ -115,7 +115,7 @@ import java.util.Map;
 
 Run:
 ```bash
-mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am test \
+mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-agent -am test \
   -Dtest=SkillBoxFactoryTest#testRegisteredToolBeanIsReusedFromContainer
 ```
 Expected: FAIL — 断言 `expected: <1> but was: <2>`（旧实现仍反射 `new SkillEchoTool()`，CONSTRUCT_COUNT 变为 2）。
@@ -179,7 +179,7 @@ import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 
 Run:
 ```bash
-mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am test \
+mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-agent -am test \
   -Dtest=SkillBoxFactoryTest#testRegisteredToolBeanIsReusedFromContainer
 ```
 Expected: PASS（hasBean=true → getBean 复用 prebuilt，未再构造，CONSTRUCT_COUNT 保持 1）。
@@ -187,8 +187,8 @@ Expected: PASS（hasBean=true → getBean 复用 prebuilt，未再构造，CONST
 - [ ] **Step 5: 提交**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java \
-        liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java
+git add liteflow-agent/liteflow-agent-core/src/main/java/com/yomahub/liteflow/agent/skill/SkillToolResolver.java \
+        liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java
 git commit -m "feat(agent): resolve skill tools from container to enable DI
 
 SkillToolResolver 优先按类型从 ContextAware 容器取已注册的工具 bean，
@@ -202,7 +202,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ## Task 2: 补充降级路径与防御路径的显式回归测试
 
 **Files:**
-- Test: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
+- Test: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java`
 
 - [ ] **Step 1: 新增降级与防御测试**
 
@@ -244,14 +244,14 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 Run:
 ```bash
-mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am test -Dtest=SkillBoxFactoryTest
+mvn -q -pl liteflow-testcase-el/liteflow-testcase-el-agent -am test -Dtest=SkillBoxFactoryTest
 ```
 Expected: PASS — 包含原有用例（`testFrontmatterToolClassIsInstantiated`、`testInlineArrayToolsAreInstantiated`、`testBrokenSiblingSkillOutsideAllowListDoesNotFailBuild` 等，它们在 stub 未注入时通过 try-catch 降级继续通过）与三个新用例，全绿。
 
 - [ ] **Step 3: 提交**
 
 ```bash
-git add liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java
+git add liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/unit/SkillBoxFactoryTest.java
 git commit -m "test(agent): cover skill tool container fallback and defensive paths
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"

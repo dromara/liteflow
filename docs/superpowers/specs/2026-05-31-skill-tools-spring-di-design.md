@@ -1,12 +1,12 @@
 # 设计文档：skill tools 改为从容器引用已注册的 Spring/Solon bean
 
 - 日期：2026-05-31
-- 范围：`liteflow-react-agent` 模块，`SkillToolResolver`
+- 范围：`liteflow-agent` 模块，`SkillToolResolver`
 - 状态：设计已确认，待落地
 
 ## 背景与问题
 
-`liteflow-react-agent` 中，skill 的 `SKILL.md` frontmatter 可以声明 `tools` 字段，
+`liteflow-agent` 中，skill 的 `SKILL.md` frontmatter 可以声明 `tools` 字段，
 列出该 skill 允许使用的 Java 工具类。当前 `SkillToolResolver.instantiateTools()`
 用纯反射构造这些工具：
 
@@ -29,7 +29,7 @@ instances.add(clazz.getDeclaredConstructor().newInstance());
   使其 `@Autowired` 依赖天然生效。
 - 不破坏无框架（nospring）场景与现有单元测试。
 - 复用 LiteFlow 既有的 `ContextAware` SPI 抽象，保持框架无关性
-  （`liteflow-react-agent-core` 不直接依赖 Spring API）。
+  （`liteflow-agent-core` 不直接依赖 Spring API）。
 
 ## 非目标
 
@@ -99,8 +99,8 @@ tools: [com.example.MyDbTool, com.example.MyHttpTool]
   降级反射 new（其它）」。在 Spring 下工具变为单例，跨会话共享——需确认工具应为
   无状态（agentscope 工具对象通常无状态，状态在 `ToolCallParam` 中）。
 - **顺带收益**：消除了 Spring 环境下「每个 agent 会话重复反射实例化工具」的开销。
-- **依赖**：`liteflow-react-agent-core` 已依赖 `liteflow-core`
-  （`ReActAgentComponent extends NodeComponent`），可直接使用
+- **依赖**：`liteflow-agent-core` 已依赖 `liteflow-core`
+  （`AgentComponent extends NodeComponent`），可直接使用
   `ContextAwareHolder` / `ContextAware`，无需新增模块依赖。
 - **strict 模式**：`SkillsConfig.isStrict()` 当前控制「类找不到 / 实例化失败」的
   抛错 vs 警告，本次不改变其语义；「容器中无 bean」走降级而非 strict 判定。

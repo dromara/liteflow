@@ -34,7 +34,7 @@ LiteFlow是一个由社区驱动的项目，我们非常重视社区建设，拥
 * **Spring Boot支持全面：** 支持Spring Boot 2.X、3.X，并已支持最新的Spring Boot 4.X。
 * **脚本语言支持：** 可以定义脚本语言节点，支持Groovy，Java，Kotlin，JavaScript，QLExpress，Python，Lua，Aviator。未来还会支持更多的脚本语言。
 * **脚本和Java全打通：** 所有脚本语言均可调用Java方法，甚至于可以引用任意的实例，在脚本中调用RPC也是支持的。
-* **AI Agent编排：** 把一个完整的 ReAct Agent 封装成标准的 LiteFlow 组件，让 AI 直接被编排进你的业务规则。
+* **AI Agent编排：** 把一个完整的 Agent 封装成标准的 LiteFlow 组件，让 AI 直接被编排进你的业务规则。
 * **规则嵌套支持：** 只要你想得出，你可以利用简单的表达式完成多重嵌套的复杂逻辑编排。
 * **组件重试支持：** 组件可以支持重试，每个组件均可自定义重试配置和指定异常。
 * **上下文隔离机制：** 可靠的上下文隔离机制，你无需担心高并发情况下的数据串流。
@@ -63,9 +63,9 @@ LiteFlow期待你的了解！
 
 ## 🤖AI Agent编排（v2.16.0 全新特性）
 
-从 v2.16.0 起，LiteFlow 拥有了自己的 AI Agent 模块 `liteflow-react-agent`。
+从 v2.16.0 起，LiteFlow 拥有了自己的 AI Agent 模块 `liteflow-agent`。
 
-它做的不是简单的“大模型组件”。轻量 core 把完整的 **ReAct（Reasoning + Acting）Agent** 封装成标准 LiteFlow 组件——**一个组件，就是一个 Agent**；可选模块再提供 AgentScope Harness 上下文工程，以及受策略约束的本地、远端或 Docker filesystem。
+它做的不是简单的“大模型组件”。轻量 core 把完整的 **Agent（Reasoning + Acting）Agent** 封装成标准 LiteFlow 组件——**一个组件，就是一个 Agent**；可选模块再提供 AgentScope Harness 上下文工程，以及受策略约束的本地、远端或 Docker filesystem。
 
 而一旦 Agent 变成了 LiteFlow 组件，它就自动继承了 LiteFlow 的全套编排能力。你原来怎么写规则，现在还怎么写，只不过其中某个节点，是一个会思考的 AI：
 

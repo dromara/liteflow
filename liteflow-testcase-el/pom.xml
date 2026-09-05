@@ -57,16 +57,16 @@
     </modules>
 
     <profiles>
-        <!-- ReAct Agent 测试模块依赖 JDK 21（agentscope-java），仅在 JDK 17+ 构建中拉入 -->
+        <!-- Agent 测试模块依赖 JDK 21（agentscope-java），仅在 JDK 17+ 构建中拉入 -->
         <profile>
-            <id>testcase-react-agent</id>
+            <id>testcase-agent</id>
             <activation>
                 <jdk>[17,)</jdk>
             </activation>
             <modules>
-                <module>liteflow-testcase-el-react-agent-core</module>
-                <module>liteflow-testcase-el-react-agent-harness</module>
-                <module>liteflow-testcase-el-react-agent</module>
+                <module>liteflow-testcase-el-agent-core</module>
+                <module>liteflow-testcase-el-agent-harness</module>
+                <module>liteflow-testcase-el-agent</module>
                 <module>liteflow-testcase-el-springboot4</module>
 				<module>liteflow-testcase-el-rule-db-sql-springboot4</module>
 				<module>liteflow-testcase-el-rule-db-postgresql-springboot4</module>

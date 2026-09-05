@@ -8,10 +8,10 @@ AgentScope 2 升级新增的 63 个测试源码与夹具已全部从生产模块
 
 最终布局按运行容器隔离为：
 
-- `liteflow-testcase-el-react-agent-core`：31 个 Core／基础配置文件和 1 个 Solon
+- `liteflow-testcase-el-agent-core`：31 个 Core／基础配置文件和 1 个 Solon
   ServiceLoader 隔离测试；
-- `liteflow-testcase-el-react-agent-harness`：15 个 Harness 测试与夹具；
-- `liteflow-testcase-el-react-agent`：8 个 Provider 文件和 6 个 A2A 文件；
+- `liteflow-testcase-el-agent-harness`：15 个 Harness 测试与夹具；
+- `liteflow-testcase-el-agent`：8 个 Provider 文件和 6 个 A2A 文件；
 - `liteflow-testcase-el-springboot`：Spring Boot 3 配置绑定测试；
 - `liteflow-testcase-el-springboot4`：Spring Boot 4 配置绑定测试。
 
@@ -23,7 +23,7 @@ Core testcase，并通过 test-scope `liteflow-solon-plugin` 保留原契约。
 
 结构契约在迁移前自然 RED，准确报告 63 个禁止位置文件：
 
-- `liteflow-react-agent-*`：59 个；
+- `liteflow-agent-*`：59 个；
 - `liteflow-core`：`AgentConfigV2Test`；
 - Spring Boot 3／4：各 1 个 `AgentPropertyBindingTest`；
 - Solon：`SolonCmpAroundAspectTest`。
@@ -50,10 +50,10 @@ Core testcase，并通过 test-scope `liteflow-solon-plugin` 保留原契约。
 
 ```bash
 mvn clean package \
-  -pl liteflow-react-agent,\
-liteflow-testcase-el/liteflow-testcase-el-react-agent-core,\
-liteflow-testcase-el/liteflow-testcase-el-react-agent-harness,\
-liteflow-testcase-el/liteflow-testcase-el-react-agent,\
+  -pl liteflow-agent,\
+liteflow-testcase-el/liteflow-testcase-el-agent-core,\
+liteflow-testcase-el/liteflow-testcase-el-agent-harness,\
+liteflow-testcase-el/liteflow-testcase-el-agent,\
 liteflow-testcase-el/liteflow-testcase-el-springboot,\
 liteflow-testcase-el/liteflow-testcase-el-springboot4,\
 liteflow-testcase-el/liteflow-testcase-el-solon \
@@ -85,7 +85,7 @@ liteflow-testcase-el/liteflow-testcase-el-solon \
 - 未引入 `io.agentscope:agentscope` aggregate 或 1.x；
 - Agent Core 仅依赖 `agentscope-core`，没有 Provider、Harness 或 A2A 反向污染；
 - A2A client／server 只在 A2A 生产边界和 testcase test classpath 出现；
-- `find liteflow-react-agent -path '*/src/test/*' -type f` 无输出；
+- `find liteflow-agent -path '*/src/test/*' -type f` 无输出；
 - 四个升级相关的原生产模块测试路径均不存在；
 - 永久 `AgentTestLayoutContractTest` 已通过；
 - 迁入测试没有新增 `@Disabled`、assumption 或测试排除；

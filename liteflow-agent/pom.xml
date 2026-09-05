@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yomahub</groupId>
+        <artifactId>liteflow</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>liteflow-agent</artifactId>
+    <name>${project.artifactId}</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <module>liteflow-agent-core</module>
+        <module>liteflow-agent-a2a</module>
+        <module>liteflow-agent-harness</module>
+        <module>liteflow-agent-openai</module>
+        <module>liteflow-agent-anthropic</module>
+        <module>liteflow-agent-gemini</module>
+        <module>liteflow-agent-dashscope</module>
+        <module>liteflow-agent-redis</module>
+        <module>liteflow-agent-mysql</module>
+    </modules>
+</project>

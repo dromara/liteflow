@@ -27,7 +27,7 @@
 
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-react-agent-core</artifactId>
+            <artifactId>liteflow-agent-core</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>

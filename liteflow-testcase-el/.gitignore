@@ -85,4 +85,4 @@ atlassian-ide-plugin.xml
 .node_instance_id
 
 # Local test credentials (never commit)
-liteflow-testcase-el-react-agent/src/test/resources/env.txt
+liteflow-testcase-el-agent/src/test/resources/env.txt

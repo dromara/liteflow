@@ -82,7 +82,7 @@ class AgentPropertyBindingTest {
             PREFIX + "shell.whitelist",
             PREFIX + "shell.timeout",
             PREFIX + "defaults.max-iterations",
-            PREFIX + "logging.react-enabled",
+            PREFIX + "logging.enabled",
             PREFIX + "skills.enabled",
             PREFIX + "skills.path",
             PREFIX + "skills.strict",
@@ -150,7 +150,7 @@ class AgentPropertyBindingTest {
                 entry("shell.whitelist[0]", "printf"),
                 entry("shell.timeout", "31s"),
                 entry("defaults.max-iterations", "27"),
-                entry("logging.react-enabled", "false"),
+                entry("logging.enabled", "false"),
                 entry("skills.enabled", "true"),
                 entry("skills.path", "/tmp/skills"),
                 entry("skills.strict", "false")));
@@ -204,7 +204,7 @@ class AgentPropertyBindingTest {
         assertEquals(Set.of("printf"), Set.copyOf(agent.getShell().getWhitelist()));
         assertEquals(Duration.ofSeconds(31), agent.getShell().getTimeout());
         assertEquals(27, agent.getDefaults().getMaxIterations());
-        assertFalse(agent.getLogging().isReactEnabled());
+        assertFalse(agent.getLogging().isEnabled());
         assertTrue(agent.getSkills().isEnabled());
         assertEquals("/tmp/skills", agent.getSkills().getPath());
         assertFalse(agent.getSkills().isStrict());

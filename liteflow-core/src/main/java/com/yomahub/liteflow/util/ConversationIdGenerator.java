@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * <p>{@code conversationId} 用于在 chain 执行期间标识一段"业务会话"，由
  * {@link com.yomahub.liteflow.slot.Slot#setConversationId(String)} 写入 slot，
- * 同 chain 内所有需要会话上下文的组件（典型如 ReAct Agent）共享。
+ * 同 chain 内所有需要会话上下文的组件（典型如 Agent）共享。
  *
  * <p>不传 conversationId 时由 {@link com.yomahub.liteflow.core.FlowExecutor} 在 slot
  * 创建后调用本工具生成一次性标识；传入则原样使用，便于跨调用恢复会话。

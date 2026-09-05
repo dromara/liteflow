@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 新增可选的 `liteflow-react-agent-harness`，完整接入 AgentScope 2.0.2 的 workspace、filesystem、compaction、memory、skills、subagents、task／plan、权限与 Docker 沙箱，同时把可信本地文件模式和不可信容器执行明确分级。
+**Goal:** 新增可选的 `liteflow-agent-harness`，完整接入 AgentScope 2.0.2 的 workspace、filesystem、compaction、memory、skills、subagents、task／plan、权限与 Docker 沙箱，同时把可信本地文件模式和不可信容器执行明确分级。
 
 **Architecture:** Harness 复用 core 的组件模板、RuntimeContext、状态 namespace、调用租约、HITL 与输出执行器，只负责组装 `HarnessAgent` 和 Harness 专属能力。默认本地后端必须显式声明可信；不可信文件或 Shell 执行使用 `DockerFilesystemSpec`，通过 AgentScope 的 `SandboxManager`、`SandboxLifecycleMiddleware`、snapshot 与 workspace projection 管理容器生命周期。
 
@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - 本计划在 `2026-08-10-agentscope-2-core-runtime.md` 完成后执行，并复用其中的 `AbstractAgentComponent`、`LiteFlowAgentContext`、`AgentRuntimeHandle`、`AgentInvocationGuard`、`AgentConfirmationHandler` 与结构化输出执行器；不得复制另一套身份、锁或 HITL 实现。
-- Harness 是可选模块。`liteflow-react-agent-core` 不得传递 `agentscope-harness`、Docker 或 A2A 依赖。
+- Harness 是可选模块。`liteflow-agent-core` 不得传递 `agentscope-harness`、Docker 或 A2A 依赖。
 - 依赖只使用 `io.agentscope:agentscope-harness` 2.0.2；禁止 shaded `io.agentscope:agentscope`，也不引入 `docker-java`，因为 2.0.2 Docker 实现调用本机 Docker CLI。
 - `IsolationScope.SESSION` 是逻辑路由，不是宿主机安全边界。guarded local 只允许可信单用户／开发；不可信或多租户 Shell／文件执行必须使用容器或服务端强制 namespace 的 remote filesystem。
 - Docker 默认 `network=none`，必须配置正数 CPU／内存配额；不开放 bind mount、exposed ports 或用户任意 `additionalRunArgs`。
@@ -24,9 +24,9 @@
 
 **Files:**
 
-- Modify: `liteflow-react-agent/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/pom.xml`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/HarnessDependencyBoundaryTest.java`
+- Modify: `liteflow-agent/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-harness/pom.xml`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/HarnessDependencyBoundaryTest.java`
 
 - [ ] **Step 1: 写依赖边界编译测试**
 
@@ -44,7 +44,7 @@ assertThat(SubagentDeclaration.class).isNotNull();
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessDependencyBoundaryTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -59,7 +59,7 @@ POM 只声明：
 ```xml
 <dependency>
     <groupId>com.yomahub</groupId>
-    <artifactId>liteflow-react-agent-core</artifactId>
+    <artifactId>liteflow-agent-core</artifactId>
     <version>${revision}</version>
 </dependency>
 <dependency>
@@ -75,11 +75,11 @@ POM 只声明：
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessDependencyBoundaryTest \
   -Dsurefire.failIfNoSpecifiedTests=false
-mvn dependency:tree -pl liteflow-react-agent/liteflow-react-agent-harness \
+mvn dependency:tree -pl liteflow-agent/liteflow-agent-harness \
   -Dincludes=io.agentscope:* -Dverbose
 ```
 
@@ -88,7 +88,7 @@ Expected: PASS；依赖树只出现 2.0.2 的细粒度 AgentScope 模块，不�
 - [ ] **Step 5: 提交模块骨架**
 
 ```bash
-git add liteflow-react-agent/pom.xml liteflow-react-agent/liteflow-react-agent-harness
+git add liteflow-agent/pom.xml liteflow-agent/liteflow-agent-harness
 git commit -m "build(agent): add optional AgentScope harness module"
 ```
 
@@ -102,10 +102,10 @@ git commit -m "build(agent): add optional AgentScope harness module"
 - Create: `liteflow-core/src/main/java/com/yomahub/liteflow/property/agent/HarnessConfig.java`
 - Create: `liteflow-core/src/main/java/com/yomahub/liteflow/property/agent/HarnessFilesystemBackend.java`
 - Create: `liteflow-core/src/main/java/com/yomahub/liteflow/property/agent/DockerSandboxConfig.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/HarnessFilesystemConfigurer.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/HarnessFilesystemContext.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/config/HarnessConfigTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/config/DockerSandboxConfigTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/HarnessFilesystemConfigurer.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/HarnessFilesystemContext.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/config/HarnessConfigTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/config/DockerSandboxConfigTest.java`
 - Modify: `liteflow-spring-boot-starter/src/main/resources/META-INF/additional-spring-configuration-metadata.json`
 
 - [ ] **Step 1: 写默认值、校验和 Spring 绑定失败测试**
@@ -138,7 +138,7 @@ liteflow:
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessConfigTest,DockerSandboxConfigTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -169,7 +169,7 @@ public record HarnessFilesystemContext(
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessConfigTest,DockerSandboxConfigTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -182,7 +182,7 @@ Expected: PASS，metadata 的属性名与绑定字段完全一致。
 ```bash
 git add liteflow-core/src/main/java/com/yomahub/liteflow/property/agent \
   liteflow-spring-boot-starter/src/main/resources/META-INF/additional-spring-configuration-metadata.json \
-  liteflow-react-agent/liteflow-react-agent-harness/src
+  liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): define harness filesystem policy"
 ```
 
@@ -192,9 +192,9 @@ git commit -m "feat(agent): define harness filesystem policy"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/runtime/HarnessAgentRuntime.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponentTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/runtime/HarnessAgentRuntime.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponentTest.java`
 
 - [ ] **Step 1: 写组件生命周期失败测试**
 
@@ -205,7 +205,7 @@ git commit -m "feat(agent): define harness filesystem policy"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessAgentComponentTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -254,7 +254,7 @@ public abstract class HarnessAgentComponent
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessAgentComponentTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -265,7 +265,7 @@ Expected: PASS。
 - [ ] **Step 5: 提交组件 runtime**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): add HarnessAgent LiteFlow component"
 ```
 
@@ -275,9 +275,9 @@ git commit -m "feat(agent): add HarnessAgent LiteFlow component"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystem.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystemConfigurer.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystemTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystem.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystemConfigurer.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/filesystem/GuardedLocalFilesystemTest.java`
 
 - [ ] **Step 1: 写路径逃逸失败测试**
 
@@ -288,7 +288,7 @@ git commit -m "feat(agent): add HarnessAgent LiteFlow component"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=GuardedLocalFilesystemTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -315,7 +315,7 @@ Expected: FAIL，guarded wrapper 尚不存在。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=GuardedLocalFilesystemTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -326,7 +326,7 @@ Expected: PASS。
 - [ ] **Step 5: 提交 guarded local**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): secure local Harness workspace"
 ```
 
@@ -336,9 +336,9 @@ git commit -m "feat(agent): secure local Harness workspace"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/sandbox/DockerSandboxConfigurer.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/sandbox/SandboxSnapshotProvider.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/DockerSandboxConfigurerTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/sandbox/DockerSandboxConfigurer.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/sandbox/SandboxSnapshotProvider.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/DockerSandboxConfigurerTest.java`
 
 - [ ] **Step 1: 写 option 映射与拒绝策略测试**
 
@@ -349,7 +349,7 @@ git commit -m "feat(agent): secure local Harness workspace"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=DockerSandboxConfigurerTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -376,7 +376,7 @@ Expected: FAIL，Docker 配置映射尚不存在。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=DockerSandboxConfigurerTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -387,7 +387,7 @@ Expected: PASS。
 - [ ] **Step 5: 提交 Docker spec**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): add policy-bound Docker sandbox backend"
 ```
 
@@ -397,11 +397,11 @@ git commit -m "feat(agent): add policy-bound Docker sandbox backend"
 
 **Files:**
 
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/FakeSandboxClient.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/FakeSandbox.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/InMemorySandboxSnapshot.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/SandboxLifecycleTest.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/WorkspaceProjectionTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/FakeSandboxClient.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/FakeSandbox.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/InMemorySandboxSnapshot.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/SandboxLifecycleTest.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/sandbox/WorkspaceProjectionTest.java`
 
 - [ ] **Step 1: 写 fake sandbox 生命周期失败测试**
 
@@ -418,7 +418,7 @@ projection 只包含 `AGENTS.md`、`skills`、`subagents`、`knowledge`、`.skil
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=SandboxLifecycleTest,WorkspaceProjectionTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -437,7 +437,7 @@ Expected: FAIL，fake 与生命周期断言尚未实现。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=SandboxLifecycleTest,WorkspaceProjectionTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -448,7 +448,7 @@ Expected: PASS，包括两 session 并发回归。
 - [ ] **Step 6: 提交生命周期集成**
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): wire Harness sandbox lifecycle and snapshots"
 ```
 
@@ -458,9 +458,9 @@ git commit -m "feat(agent): wire Harness sandbox lifecycle and snapshots"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/state/HarnessNamespacedAgentStateStore.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/state/CrossAgentWorkspaceGuardTest.java`
+- Modify: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/state/HarnessNamespacedAgentStateStore.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/state/CrossAgentWorkspaceGuardTest.java`
 
 - [ ] **Step 1: 写跨 Agent 工作区并发失败测试**
 
@@ -473,7 +473,7 @@ git commit -m "feat(agent): wire Harness sandbox lifecycle and snapshots"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=CrossAgentWorkspaceGuardTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -498,7 +498,7 @@ Expected: FAIL。
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=CrossAgentWorkspaceGuardTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -507,7 +507,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "fix(agent): serialize shared Harness workspaces"
 ```
 
@@ -517,8 +517,8 @@ git commit -m "fix(agent): serialize shared Harness workspaces"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/permission/HarnessPermissionHitlTest.java`
+- Modify: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/permission/HarnessPermissionHitlTest.java`
 
 - [ ] **Step 1: 写 allow／ask／deny 失败测试**
 
@@ -529,7 +529,7 @@ git commit -m "fix(agent): serialize shared Harness workspaces"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessPermissionHitlTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -548,7 +548,7 @@ builder 精确调用 `.permissionContext(PermissionContextState)`；默认 `Perm
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessPermissionHitlTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -557,7 +557,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): apply Harness permission and confirmation policy"
 ```
 
@@ -567,9 +567,9 @@ git commit -m "feat(agent): apply Harness permission and confirmation policy"
 
 **Files:**
 
-- Modify: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
-- Modify: `liteflow-react-agent/liteflow-react-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/runtime/HarnessAgentRuntime.java`
-- Create: `liteflow-react-agent/liteflow-react-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/HarnessCapabilitiesTest.java`
+- Modify: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/component/HarnessAgentComponent.java`
+- Modify: `liteflow-agent/liteflow-agent-harness/src/main/java/com/yomahub/liteflow/agent/harness/runtime/HarnessAgentRuntime.java`
+- Create: `liteflow-agent/liteflow-agent-harness/src/test/java/com/yomahub/liteflow/agent/harness/HarnessCapabilitiesTest.java`
 
 - [ ] **Step 1: 写 Harness 能力失败测试**
 
@@ -580,7 +580,7 @@ git commit -m "feat(agent): apply Harness permission and confirmation policy"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessCapabilitiesTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -599,7 +599,7 @@ skill repository 和 subagent 使用逐项 add 语义，不能把它们误当成
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness -am \
   -DskipTests=false -DskipITs \
   -Dtest=HarnessCapabilitiesTest \
   -Dsurefire.failIfNoSpecifiedTests=false
@@ -608,7 +608,7 @@ mvn test -pl liteflow-react-agent/liteflow-react-agent-harness -am \
 Expected: PASS。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness/src
+git add liteflow-agent/liteflow-agent-harness/src
 git commit -m "feat(agent): expose Harness context engineering"
 ```
 
@@ -618,11 +618,11 @@ git commit -m "feat(agent): expose Harness context engineering"
 
 **Files:**
 
-- Modify: `liteflow-testcase-el/liteflow-testcase-el-react-agent/pom.xml`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/HarnessComponentTest.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/DockerSandboxIT.java`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/harness/application.properties`
-- Create: `liteflow-testcase-el/liteflow-testcase-el-react-agent/src/test/resources/feature/harness/flow.el.xml`
+- Modify: `liteflow-testcase-el/liteflow-testcase-el-agent/pom.xml`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/HarnessComponentTest.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/java/com/yomahub/liteflow/test/agent/feature/harness/DockerSandboxIT.java`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/harness/application.properties`
+- Create: `liteflow-testcase-el/liteflow-testcase-el-agent/src/test/resources/feature/harness/flow.el.xml`
 
 - [ ] **Step 1: 写默认离线 Spring 集成测试**
 
@@ -637,7 +637,7 @@ git commit -m "feat(agent): expose Harness context engineering"
 Run:
 
 ```bash
-mvn test -pl liteflow-react-agent/liteflow-react-agent-harness,liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn test -pl liteflow-agent/liteflow-agent-harness,liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -DskipTests=false -DskipITs
 ```
 
@@ -649,7 +649,7 @@ Run:
 
 ```bash
 docker pull alpine:3.20
-mvn verify -pl liteflow-testcase-el/liteflow-testcase-el-react-agent -am \
+mvn verify -pl liteflow-testcase-el/liteflow-testcase-el-agent -am \
   -Pagent-docker-it -DskipTests=false -Dit.test=DockerSandboxIT \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
@@ -661,7 +661,7 @@ Expected: PASS；若 Docker 不可用，记录“未执行”，不能记录为�
 Run:
 
 ```bash
-mvn dependency:tree -pl liteflow-react-agent/liteflow-react-agent-harness \
+mvn dependency:tree -pl liteflow-agent/liteflow-agent-harness \
   -Dincludes=io.agentscope:* -Dverbose
 git diff --check
 ```
@@ -669,8 +669,8 @@ git diff --check
 Expected: 只含 2.0.2 的 `agentscope-core` 与 `agentscope-harness` 相关细粒度模块，无聚合包和多版本。
 
 ```bash
-git add liteflow-react-agent/liteflow-react-agent-harness \
-  liteflow-testcase-el/liteflow-testcase-el-react-agent
+git add liteflow-agent/liteflow-agent-harness \
+  liteflow-testcase-el/liteflow-testcase-el-agent
 git commit -m "test(agent): add deterministic and opt-in Docker coverage"
 ```
 

@@ -411,7 +411,7 @@ public class FlowExecutor {
 	/**
 	 * 使用 {@link ExecuteOption} 执行 chain，自由组合 requestId、conversationId、上下文等执行维度。
 	 *
-	 * <p>这是新代码的推荐入口。当需要 conversationId（典型场景：ReAct Agent 连续对话）、
+	 * <p>这是新代码的推荐入口。当需要 conversationId（典型场景：Agent 连续对话）、
 	 * 同时传入 requestId 与多上下文时，相比多个 {@code WithXxx} 方法 overload，
 	 * 单一 ExecuteOption 入口能避免命名爆炸：
 	 * <pre>{@code
@@ -593,9 +593,9 @@ public class FlowExecutor {
 			LOG.info("requestId has generated");
 		}
 
-		// 如果调用方明确传入了 conversationId，则写入 slot；用于 ReAct Agent 等
+		// 如果调用方明确传入了 conversationId，则写入 slot；用于 Agent 等
 		// 需要在 chain 内多个组件之间共享会话上下文的场景。未传入时不主动设置，
-		// 由具体组件按其默认策略处理（例如 ReActAgentComponent 会按需懒生成）。
+		// 由具体组件按其默认策略处理（例如 AgentComponent 会按需懒生成）。
 		if (StrUtil.isNotBlank(conversationId)){
 			slot.setConversationId(conversationId);
 		}
