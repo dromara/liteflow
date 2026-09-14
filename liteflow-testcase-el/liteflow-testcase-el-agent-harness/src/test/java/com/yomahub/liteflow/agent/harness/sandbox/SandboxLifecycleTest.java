@@ -79,6 +79,35 @@ class SandboxLifecycleTest {
     Path tempDir;
 
     @Test
+    void sessionIdleComponentKeepsItsSandboxAcrossPublicCallsAndClosesItOnShutdown() throws Exception {
+        List<String> events = new CopyOnWriteArrayList<>();
+        FakeSandboxClient client = new FakeSandboxClient(events);
+        InMemorySandboxSnapshot snapshots = new InMemorySandboxSnapshot(events);
+        Sinks.One<Void> proceed = Sinks.one();
+        proceed.tryEmitEmpty();
+        DockerComponent component = dockerComponent(new ReplyModel("ready"), client, snapshots,
+                proceed, new CountDownLatch(1), null, null);
+        LiteflowConfigGetter.get().getAgent().getHarness().getDocker()
+                .setLifecycle(com.yomahub.liteflow.property.agent.DockerSandboxLifecycle.SESSION_IDLE);
+        try {
+            component.process(slot("cached-session", "request-one"));
+            FakeSandbox first = client.latestSandbox();
+            first.exec(context("cached-session"), "write test.txt retained", 1);
+            component.process(slot("cached-session", "request-two"));
+            org.junit.jupiter.api.Assertions.assertSame(first, client.latestSandbox());
+            assertEquals("retained", first.file("test.txt"));
+            assertEquals(1, client.createAttempts());
+            assertEquals(0, snapshots.snapshotCount());
+            assertTrue(events.stream().noneMatch(event -> event.startsWith("shutdown:")));
+        } finally {
+            component.close();
+            LiteflowConfigGetter.clean();
+        }
+        assertEquals(1, snapshots.snapshotCount());
+        assertEquals(1, events.stream().filter(event -> event.startsWith("shutdown:")).count());
+    }
+
+    @Test
     void fakeClientsNeverReuseFreshSandboxSessionIds() {
         FakeSandboxClient firstClient = new FakeSandboxClient(new CopyOnWriteArrayList<>());
         FakeSandboxClient secondClient = new FakeSandboxClient(new CopyOnWriteArrayList<>());

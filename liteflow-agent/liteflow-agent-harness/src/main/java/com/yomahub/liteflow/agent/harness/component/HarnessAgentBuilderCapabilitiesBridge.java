@@ -20,7 +20,7 @@ import java.util.Properties;
 /** Version-pinned, read-only guard for LiteFlow-managed Harness capability configuration. */
 final class HarnessAgentBuilderCapabilitiesBridge {
 
-    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.3";
     private static final String VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static final List<FieldContract> FIELD_CONTRACTS = List.of(
@@ -169,7 +169,7 @@ final class HarnessAgentBuilderCapabilitiesBridge {
 
     private static AgentConfigException incompatible(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Harness capability guard requires agentscope-harness 2.0.2: " + detail,
+                "Harness capability guard requires agentscope-harness 2.0.3: " + detail,
                 cause);
     }
 

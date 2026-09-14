@@ -19,6 +19,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.yomahub</groupId><artifactId>liteflow-agent-mysql</artifactId>
+            <version>${revision}</version><scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId><artifactId>liteflow-agent-redis</artifactId>
+            <version>${revision}</version><scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-agent-harness</artifactId>
             <version>${revision}</version>

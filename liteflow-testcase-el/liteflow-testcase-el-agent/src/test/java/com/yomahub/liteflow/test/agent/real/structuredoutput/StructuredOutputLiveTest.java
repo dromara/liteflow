@@ -3,6 +3,7 @@ package com.yomahub.liteflow.test.agent.real.structuredoutput;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
+import com.yomahub.liteflow.agent.conversation.AgentConversationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -47,6 +48,7 @@ public class StructuredOutputLiveTest extends RealAgentTestBase {
         Assertions.assertFalse(reply.answer().isBlank());
         Assertions.assertTrue(reply.score() >= 1 && reply.score() <= 10,
                 "score must be within 1..10, got: " + reply.score());
+        assertHistoryHasResult(response);
     }
 
     /** 方式二：responseData 是符合 schema 的 JsonNode。 */
@@ -66,6 +68,17 @@ public class StructuredOutputLiveTest extends RealAgentTestBase {
                 "city must be present: " + node);
         Assertions.assertEquals("中国", node.path("country").asText().strip(),
                 "country must be 中国: " + node);
+        assertHistoryHasResult(response);
+    }
+
+    private void assertHistoryHasResult(LiteflowResponse response) {
+        try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
+            var messages = history.messages(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+                    response.getConversationId(), 0, 20).items();
+            Assertions.assertEquals(2, messages.size());
+            Assertions.assertEquals("result", messages.get(1).stage());
+            Assertions.assertFalse(messages.get(1).content().isBlank(), "Structured reply must be visible in history");
+        }
     }
 
     /** §7/§18：两种结构化输出覆写同时存在 → 构建期 AgentConfigException。 */

@@ -2,6 +2,7 @@ package com.yomahub.liteflow.property.agent;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,11 @@ public class DockerSandboxConfig {
 	private Long cpuCount = 1L;
 	private DockerNetworkMode network = DockerNetworkMode.NONE;
 	private String snapshotRoot;
+	private DockerSandboxLifecycle lifecycle = DockerSandboxLifecycle.PER_CALL;
+	private Duration idleTimeout = Duration.ofMinutes(10);
+	private Duration evictionInterval = Duration.ofSeconds(30);
+	private int maxCachedSandboxes = 8;
+
 	private boolean workspaceProjectionEnabled = true;
 	private List<String> workspaceProjectionRoots = new ArrayList<>(List.of(
 			"AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"));
@@ -66,6 +72,38 @@ public class DockerSandboxConfig {
 		this.snapshotRoot = snapshotRoot;
 	}
 
+	public DockerSandboxLifecycle getLifecycle() {
+		return lifecycle;
+	}
+
+	public void setLifecycle(DockerSandboxLifecycle lifecycle) {
+		this.lifecycle = lifecycle;
+	}
+
+	public Duration getIdleTimeout() {
+		return idleTimeout;
+	}
+
+	public void setIdleTimeout(Duration idleTimeout) {
+		this.idleTimeout = idleTimeout;
+	}
+
+	public Duration getEvictionInterval() {
+		return evictionInterval;
+	}
+
+	public void setEvictionInterval(Duration evictionInterval) {
+		this.evictionInterval = evictionInterval;
+	}
+
+	public int getMaxCachedSandboxes() {
+		return maxCachedSandboxes;
+	}
+
+	public void setMaxCachedSandboxes(int maxCachedSandboxes) {
+		this.maxCachedSandboxes = maxCachedSandboxes;
+	}
+
 	public boolean isWorkspaceProjectionEnabled() {
 		return workspaceProjectionEnabled;
 	}
@@ -86,6 +124,18 @@ public class DockerSandboxConfig {
 
 	/** Validates resource limits and paths before Docker options are constructed. */
 	public void validate() {
+		if (lifecycle == null) {
+			throw invalid("lifecycle", "must not be null");
+		}
+		if (idleTimeout == null || idleTimeout.isNegative() || idleTimeout.isZero()) {
+			throw invalid("idle-timeout", "must be positive");
+		}
+		if (evictionInterval == null || evictionInterval.isNegative() || evictionInterval.toMillis() < 1) {
+			throw invalid("eviction-interval", "must be at least 1ms");
+		}
+		if (maxCachedSandboxes < 1) {
+			throw invalid("max-cached-sandboxes", "must be positive");
+		}
 		requireText(image, "image");
 		validateImageArgument(image);
 		requireText(workspaceRoot, "workspace-root");

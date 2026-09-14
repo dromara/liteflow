@@ -1,5 +1,7 @@
 # liteflow-agent 真实模型测试报告
 
+> 这是旧基线的历史报告，部分行为（例如 Harness 默认权限策略）已经变化。当前版本验收请参阅 [2026-09-06 验收报告](liteflow-agent-release-acceptance-2026-09-06.md)，当前契约以使用指南和兼容性说明为准。
+
 测试日期：2026-08-16
 测试基线：`codex/upgrade-agentscope-2.0` 分支（LiteFlow 2.16.1.1 + AgentScope 2.0.2）
 

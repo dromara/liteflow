@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.component;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.yomahub.liteflow.agent.compatibility.AgentScopeCompatibility;
 import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
 import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
@@ -42,6 +43,7 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
     public static final String CONVERSATION_ID_REQUEST_KEY = "conversationId";
 
     private final AgentRuntimeHandle<R> runtimeHandle = new AgentRuntimeHandle<>();
+    private final AgentRuntimeHandle<AgentInvocationGuard> guardHandle = new AgentRuntimeHandle<>();
     private final ReentrantReadWriteLock lifecycleLock = new ReentrantReadWriteLock(true);
 
     protected abstract R buildRuntime(AgentRuntimeBuildContext buildContext);
@@ -158,7 +160,7 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
                 config.getRuntime().getNamespace())
                 .resolve(resolveUserId(slot), conversationId, currentAgentKey);
 
-        AgentInvocationGuard guard = new AgentInvocationGuardResolver().resolve(config);
+        AgentInvocationGuard guard = invocationGuard();
         AgentInvocationCoordinator coordinator = new AgentInvocationCoordinator(guard);
         try (AgentInvocationLease ignored = coordinator.acquire(
                 identity,
@@ -225,10 +227,20 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         Lock closeLease = lifecycleLock.writeLock();
         closeLease.lock();
         try {
-            runtimeHandle.close();
+            try { runtimeHandle.close(); }
+            catch (RuntimeException | Error failure) {
+                try { guardHandle.close(); } catch (RuntimeException | Error cleanup) { failure.addSuppressed(cleanup); }
+                throw failure;
+            }
+            guardHandle.close();
         } finally {
             closeLease.unlock();
         }
+    }
+
+    /** Shared by the foreground invocation and its background resource maintenance. */
+    protected final AgentInvocationGuard invocationGuard() {
+        return guardHandle.getOrCreate(() -> new AgentInvocationGuardResolver().resolve(agentConfig()));
     }
 
     private AgentOutputSpec resolveOutputSpec() {
@@ -261,6 +273,7 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
     private static void validateForExecution(AgentConfig config) {
         try {
             config.validateForExecution();
+            AgentScopeCompatibility.requireCoreVersion();
         } catch (IllegalStateException failure) {
             throw new AgentConfigException(failure.getMessage(), failure);
         }

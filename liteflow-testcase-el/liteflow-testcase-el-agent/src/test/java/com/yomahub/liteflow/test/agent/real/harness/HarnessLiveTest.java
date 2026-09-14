@@ -3,6 +3,9 @@ package com.yomahub.liteflow.test.agent.real.harness;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
+import com.yomahub.liteflow.agent.conversation.AgentConversationService;
+import io.agentscope.core.message.ToolResultBlock;
+import io.agentscope.core.message.TextBlock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -30,17 +33,20 @@ public class HarnessLiveTest extends RealAgentTestBase {
     /** §12：模型经 harness 文件系统在 workspace 写入真实文件。 */
     @Test
     public void harnessFilesystemWritesRealFile() throws Exception {
+        String marker = "HARNESS-FILE-" + UUID.randomUUID();
+        String filename = "harness-" + UUID.randomUUID() + ".txt";
         LiteflowResponse response = flowExecutor.execute2Resp("realHarnessFileChain",
-                "请把文本 HARNESS-FILE-OK 写入 harness-note.txt 文件（使用你的文件工具），"
+                "请把文本 " + marker + " 写入 " + filename + " 文件（使用你的文件工具），"
                         + "然后告诉我完成情况。");
 
         Assertions.assertTrue(response.isSuccess(), cause(response));
         try (Stream<Path> paths = Files.walk(Path.of(WORKSPACE_ROOT))) {
             boolean found = paths
                     .filter(Files::isRegularFile)
-                    .anyMatch(HarnessLiveTest::containsHarnessMarker);
+                    .filter(path -> path.getFileName().toString().equals(filename))
+                    .anyMatch(path -> containsMarker(path, marker));
             Assertions.assertTrue(found,
-                    "harness workspace must contain a file with HARNESS-FILE-OK");
+                    "harness workspace must contain the requested new file, not just a session log");
         }
     }
 
@@ -59,7 +65,8 @@ public class HarnessLiveTest extends RealAgentTestBase {
     @Test
     public void compactionKeepsRecentMemoryAcrossManyTurns() {
         String cid = "real-compaction-" + UUID.randomUUID();
-        for (int turn = 1; turn <= 8; turn++) {
+        int turns = 4; // Seven messages before turn four cross triggerMessages=6.
+        for (int turn = 1; turn <= turns; turn++) {
             LiteflowResponse response = flowExecutor.execute2Resp("realCompactionChain",
                     "这是第 " + turn + " 轮。请只回复数字：" + turn,
                     ExecuteOption.of().conversationId(cid));
@@ -71,22 +78,36 @@ public class HarnessLiveTest extends RealAgentTestBase {
                 ExecuteOption.of().conversationId(cid));
         Assertions.assertTrue(recall.isSuccess(), cause(recall));
         Assertions.assertTrue(
-                String.valueOf((Object) recall.getSlot().getResponseData()).contains("8"),
+                String.valueOf((Object) recall.getSlot().getResponseData()).contains(String.valueOf(turns)),
                 "recent memory must survive compaction, got: "
                         + recall.getSlot().getResponseData());
+        try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
+            var state = history.agentState(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+                    cid, "realCompactionAgent").orElseThrow();
+            Assertions.assertTrue(state.getContext().size() < 2 * (turns + 1),
+                    "The user/assistant turns must actually be compacted, not merely recalled from full history");
+        }
     }
 
     /** §12.2：长期记忆抽取（真实模型）执行成功且最终回复可用。 */
     @Test
-    public void longTermMemoryExtractionSucceeds() {
+    public void longTermMemoryExtractionSucceeds() throws Exception {
         String cid = "real-memory-" + UUID.randomUUID();
+        String marker = "NEBULA-" + UUID.randomUUID();
         LiteflowResponse response = flowExecutor.execute2Resp("realMemoryChain",
-                "请记住：我的项目代号是 NEBULA-7。请简短确认。",
+                "请记住：我的项目代号是 " + marker + "。请简短确认。",
                 ExecuteOption.of().conversationId(cid));
 
         Assertions.assertTrue(response.isSuccess(), cause(response));
         Assertions.assertFalse(
                 String.valueOf((Object) response.getSlot().getResponseData()).isBlank());
+        try (Stream<Path> paths = Files.walk(Path.of(WORKSPACE_ROOT))) {
+            Assertions.assertTrue(paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().equals("MEMORY.md")
+                            || path.toString().contains("/memory/"))
+                    .anyMatch(path -> containsMarker(path, marker)),
+                    "The unique fact must be persisted in long-term memory, not just repeated in the answer");
+        }
     }
 
     /** §12.3：超大工具结果被淘汰（只保留预览），模型仍能完成回答。 */
@@ -99,9 +120,20 @@ public class HarnessLiveTest extends RealAgentTestBase {
         Object data = response.getSlot().getResponseData();
         Assertions.assertTrue(String.valueOf((Object) data).contains("REPORT-HEADER"),
                 "reply must reference the preview header, got: " + data);
+        try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
+            var state = history.agentState(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+                    response.getConversationId(), "realEvictionAgent").orElseThrow();
+            var results = state.getContext().stream().flatMap(message -> message.getContent().stream())
+                    .filter(ToolResultBlock.class::isInstance).map(ToolResultBlock.class::cast)
+                    .flatMap(block -> block.getOutput().stream()).filter(TextBlock.class::isInstance)
+                    .map(TextBlock.class::cast).map(TextBlock::getText).toList();
+            Assertions.assertFalse(results.isEmpty(), "The model must actually receive a tool result");
+            Assertions.assertTrue(results.stream().allMatch(text -> text.length() < 40_000),
+                    "The full 40K report must be evicted from working context");
+        }
     }
 
-    /** §12.4：子代理声明 + 计划模式开启的复杂任务链路。 */
+    /** GUARDED_LOCAL 禁止实际子代理执行；这里只验证声明和计划配置，不据此宣称已验证委派。 */
     @Test
     public void subagentAndPlanModeChainCompletes() {
         LiteflowResponse response = flowExecutor.execute2Resp("realSubagentPlanChain",
@@ -112,10 +144,10 @@ public class HarnessLiveTest extends RealAgentTestBase {
         Assertions.assertFalse(String.valueOf((Object) data).isBlank());
     }
 
-    private static boolean containsHarnessMarker(Path file) {
+    private static boolean containsMarker(Path file, String marker) {
         try {
             return Files.size(file) < 1024 * 1024
-                    && Files.readString(file).contains("HARNESS-FILE-OK");
+                    && Files.readString(file).contains(marker);
         } catch (Exception e) {
             return false;
         }

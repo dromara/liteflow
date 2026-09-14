@@ -26,7 +26,7 @@ class AgentConfigV2Test {
 		assertNull(config.getStateStore().getMysql().getJdbcUrl());
 		assertFalse(config.getToolkit().isParallel());
 		assertEquals(AgentListenerFailureMode.FAIL_FAST, config.getEvent().getListenerFailureMode());
-		assertEquals(AgentInvocationGuardMode.LOCAL, config.getInvocationGuard().getMode());
+		assertEquals(AgentInvocationGuardMode.AUTO, config.getInvocationGuard().getMode());
 		assertEquals(Duration.ofMinutes(2), config.getInvocationGuard().getAcquireTimeout());
 		assertEquals(WorkspaceBackend.GUARDED_LOCAL, config.getWorkspace().getBackend());
 		assertFalse(config.getWorkspace().isTrustedLocal());

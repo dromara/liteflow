@@ -6,6 +6,7 @@ import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.IsolationScope;
 import io.agentscope.harness.agent.sandbox.SandboxClient;
+import io.agentscope.harness.agent.sandbox.SandboxContext;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClient;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
@@ -21,12 +22,20 @@ import java.util.Objects;
 public final class DockerSandboxConfigurer implements HarnessFilesystemConfigurer {
 
     private static final List<String> REQUIRED_RUN_ARGS = List.of(
+            // Forward SIGTERM to the idle shell instead of waiting for Docker's stop timeout.
+            "--init",
             "--cap-drop=ALL",
             "--security-opt=no-new-privileges:true",
             "--pids-limit=64");
 
     private final SandboxSnapshotProvider snapshotProvider;
     private final SandboxClient<DockerSandboxClientOptions> sandboxClient;
+    private SandboxContext sandboxContext;
+    private final io.agentscope.harness.agent.filesystem.AbstractFilesystem managedFilesystem;
+
+    public SandboxContext sandboxContext() {
+        return Objects.requireNonNull(sandboxContext, "configure must be called first");
+    }
 
     public DockerSandboxConfigurer() {
         this(null);
@@ -46,8 +55,15 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
     public DockerSandboxConfigurer(
             SandboxSnapshotProvider snapshotProvider,
             SandboxClient<DockerSandboxClientOptions> sandboxClient) {
+        this(snapshotProvider, sandboxClient, null);
+    }
+
+    public DockerSandboxConfigurer(SandboxSnapshotProvider snapshotProvider,
+            SandboxClient<DockerSandboxClientOptions> sandboxClient,
+            io.agentscope.harness.agent.filesystem.AbstractFilesystem managedFilesystem) {
         this.snapshotProvider = snapshotProvider;
         this.sandboxClient = sandboxClient;
+        this.managedFilesystem = managedFilesystem;
     }
 
     /** Creates the per-call host workspace projection safety check. */
@@ -81,20 +97,22 @@ public final class DockerSandboxConfigurer implements HarnessFilesystemConfigure
                 .network(config.getNetwork().getDockerValue())
                 .additionalRunArgs(REQUIRED_RUN_ARGS)
                 .snapshotSpec(snapshot);
+        SandboxClient<DockerSandboxClientOptions> effectiveClient = new PolicyBoundDockerSandboxClient(
+                sandboxClient != null ? sandboxClient : new DockerSandboxClient(),
+                (DockerSandboxClientOptions) spec.toSandboxContext(context.workspaceRoot()).getClientOptions());
         if (config.isWorkspaceProjectionEnabled()) {
-            SandboxClient<DockerSandboxClientOptions> effectiveClient = sandboxClient != null
-                    ? sandboxClient
-                    : new DockerSandboxClient();
             spec.client(new ProjectionValidatingSandboxClient<>(
                     effectiveClient, workspaceProjectionPreflight(context)));
         }
-        else if (sandboxClient != null) {
-            spec.client(sandboxClient);
+        else {
+            spec.client(effectiveClient);
         }
         spec.isolationScope(IsolationScope.SESSION);
         spec.workspaceProjectionEnabled(config.isWorkspaceProjectionEnabled());
         spec.workspaceProjectionRoots(config.getWorkspaceProjectionRoots());
-        builder.filesystem(spec);
+        sandboxContext = spec.toSandboxContext(context.workspaceRoot());
+        if (managedFilesystem == null) builder.filesystem(spec);
+        else builder.abstractFilesystem(managedFilesystem);
     }
 
     private SandboxSnapshotSpec resolveSnapshot(

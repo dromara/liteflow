@@ -30,9 +30,26 @@ class DockerSandboxConfigTest {
         assertEquals(DockerNetworkMode.NONE, config.getNetwork());
         assertEquals(DockerNetworkMode.class, getterType("getNetwork"));
         assertNull(config.getSnapshotRoot());
+        assertEquals(com.yomahub.liteflow.property.agent.DockerSandboxLifecycle.PER_CALL, config.getLifecycle());
         assertTrue(config.isWorkspaceProjectionEnabled());
         assertEquals(OFFICIAL_PROJECTION_ROOTS, config.getWorkspaceProjectionRoots());
         assertDoesNotThrow(config::validate);
+    }
+
+    @Test
+    void cacheSettingsRejectInvalidDurationsAndCapacity() {
+        DockerSandboxConfig config = new DockerSandboxConfig();
+        config.setLifecycle(null);
+        assertValidationMentions(config, "lifecycle");
+        config.setLifecycle(com.yomahub.liteflow.property.agent.DockerSandboxLifecycle.SESSION_IDLE);
+        config.setIdleTimeout(java.time.Duration.ZERO);
+        assertValidationMentions(config, "idle-timeout");
+        config.setIdleTimeout(java.time.Duration.ofMinutes(10));
+        config.setEvictionInterval(java.time.Duration.ZERO);
+        assertValidationMentions(config, "eviction-interval");
+        config.setEvictionInterval(java.time.Duration.ofSeconds(30));
+        config.setMaxCachedSandboxes(0);
+        assertValidationMentions(config, "max-cached-sandboxes");
     }
 
     @Test

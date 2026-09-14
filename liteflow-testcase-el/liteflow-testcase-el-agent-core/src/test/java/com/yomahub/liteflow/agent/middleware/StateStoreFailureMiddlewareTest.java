@@ -36,7 +36,7 @@ class StateStoreFailureMiddlewareTest {
     private static final String SESSION = "lf-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
     @Test
-    void failFastStopsAfterAgentScopeSwallowsLoadFailureAndBeforeModelCall() {
+    void upstreamLoadFailureStopsBeforeModelCall() {
         RuntimeException loadFailure = new RuntimeException("state backend unavailable");
         GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(
                 new LoadFailingStore(loadFailure), NAMESPACE);
@@ -66,7 +66,7 @@ class StateStoreFailureMiddlewareTest {
     }
 
     @Test
-    void logAndContinueEmitsWarningClearsFailureAndRunsModel() {
+    void logPolicyDoesNotSwallowUpstreamLoadFailure() {
         RuntimeException loadFailure = new RuntimeException("state backend unavailable");
         GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(
                 new LoadFailingStore(loadFailure), NAMESPACE);
@@ -86,15 +86,14 @@ class StateStoreFailureMiddlewareTest {
                 .build();
 
         try {
-            Msg reply = agent.call(List.of(new UserMessage("hello")), context).block();
+            RuntimeException thrown = assertThrows(RuntimeException.class,
+                    () -> agent.call(List.of(new UserMessage("hello")), context).block());
 
-            assertNotNull(reply);
-            assertEquals("continued reply", reply.getTextContent());
-            assertEquals(List.of("warning", "transform"), events);
-            assertEquals(1, transform.callCount.get());
-            assertEquals(1, model.callCount());
-            assertEquals(1, warnings.size());
-            assertTrue(warnings.get(0).contains("state backend unavailable"));
+            assertTrue(hasCause(thrown, loadFailure));
+            assertTrue(events.isEmpty());
+            assertEquals(0, transform.callCount.get());
+            assertEquals(0, model.callCount());
+            assertTrue(warnings.isEmpty());
             assertTrue(store.takeLoadFailure("alice", SESSION).isEmpty());
         } finally {
             agent.close();

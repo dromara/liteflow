@@ -66,7 +66,7 @@ final class RealHarnessAgentsCmp {
             return CompactionConfig.builder()
                     .triggerMessages(6)
                     .keepMessages(4)
-                    .keepTokensMin(500)
+                    .keepTokens(1)
                     .build();
         }
     }

@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 /**
  * Fair reactive capacity-one gate for an AgentScope sandbox lifecycle middleware instance.
  *
- * <p>AgentScope Harness 2.0.2 keeps the active sandbox in one middleware-level reference, so a
- * single built agent must not enter two sandbox-backed public calls concurrently. Waiting is
- * reactive and cancellation-aware; no calling thread is blocked.
+ * <p>LiteFlow's session sandbox registry and managed filesystem still share a fallback sandbox
+ * reference. Keep their full public calls serialized even though AgentScope 2.0.3 also supports
+ * per-call bindings. Waiting is reactive and cancellation-aware; no calling thread is blocked.
  */
 public final class SandboxCallGate implements AutoCloseable {
 

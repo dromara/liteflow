@@ -103,6 +103,10 @@ class RedisAgentStateStoreProviderTest {
 
     /** Adapter stub: the clientAdapter builder branch stores it without connecting. */
     private static final class NoopRedisClientAdapter implements RedisClientAdapter {
+        @Override
+        public long evalScript(String script, java.util.List<String> keys, java.util.List<String> args) {
+            throw new AssertionError("Provider resolution must not execute Redis scripts");
+        }
 
         @Override
         public void set(String key, String value) { }

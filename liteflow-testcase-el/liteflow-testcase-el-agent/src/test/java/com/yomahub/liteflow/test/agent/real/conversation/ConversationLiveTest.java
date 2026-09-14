@@ -109,7 +109,7 @@ public class ConversationLiveTest extends RealAgentTestBase {
     /**
      * §5.3：JSON 后端真实落盘。
      *
-     * <p>注意：当前实现（AgentScope 2.0.2 JsonFileAgentStateStore）把对话历史
+     * <p>注意：当前实现（AgentScope 2.0.3 JsonFileAgentStateStore）把对话历史
      * 持久化在 agent_state.json 的 context 字段内；指南 §5.3 描述的独立
      * memory_messages.jsonl 文件实际不会生成——本用例按真实行为断言，
      * 差异已记入测试报告。

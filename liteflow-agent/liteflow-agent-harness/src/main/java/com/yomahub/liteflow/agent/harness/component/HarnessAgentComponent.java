@@ -11,6 +11,15 @@ import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.runtime.SandboxCallGate;
 import com.yomahub.liteflow.agent.harness.sandbox.DockerSandboxConfigurer;
 import com.yomahub.liteflow.agent.harness.sandbox.SandboxSnapshotProvider;
+import com.yomahub.liteflow.agent.harness.sandbox.SessionSandboxRegistry;
+import com.yomahub.liteflow.agent.harness.storage.HarnessStorage;
+import com.yomahub.liteflow.agent.harness.storage.ManagedSandboxFilesystem;
+import com.yomahub.liteflow.agent.harness.storage.StaticWorkspaceStaging;
+import com.yomahub.liteflow.agent.harness.storage.StoreSnapshotClient;
+import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import io.agentscope.harness.agent.sandbox.snapshot.RemoteSnapshotSpec;
+import com.yomahub.liteflow.agent.harness.storage.StoredWorkspaceFilesystem;
+import io.agentscope.harness.agent.middleware.HarnessSkillMiddleware;
 import com.yomahub.liteflow.agent.harness.state.HarnessNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.hitl.AgentCallTarget;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
@@ -21,6 +30,7 @@ import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.HarnessConfig;
 import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
+import com.yomahub.liteflow.property.agent.DockerSandboxLifecycle;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.middleware.MiddlewareBase;
@@ -138,6 +148,32 @@ public abstract class HarnessAgentComponent
         AutoCloseable workspaceTaskRollback = null;
         try {
             collectOwnedHarnessResources(ownedProviderResources);
+            ManagedSandboxFilesystem managedFilesystem = null;
+            if (usesSharedStorage(buildContext.agentConfig())) {
+                AgentConfig config = buildContext.agentConfig();
+                HarnessStorage storage = HarnessStorage.open(config.getStateStore());
+                ownedProviderResources.add(storage);
+                StaticWorkspaceStaging staging = StaticWorkspaceStaging.create(config);
+                ownedProviderResources.add(staging);
+                HarnessFilesystemContext fsContext = new HarnessFilesystemContext(staging.root(),
+                        filesystem.context().maxFileBytes(), filesystem.context().commandTimeout(), config);
+                HarnessFilesystemConfigurer configurer;
+                if (filesystem.dockerBackend()) {
+                    managedFilesystem = new ManagedSandboxFilesystem(storage.store(), config.getRuntime().getNamespace(),
+                            buildContext.agentNamespace(), staging.root(), config.getHarness().getDocker().getWorkspaceRoot(), config.getWorkspace().getMaxFileBytes());
+                    configurer = new DockerSandboxConfigurer(ignored -> new RemoteSnapshotSpec(
+                            new StoreSnapshotClient(storage.store(), config.getRuntime().getNamespace())),
+                            dockerSandboxClient(), managedFilesystem);
+                } else {
+                    var remote = new StoredWorkspaceFilesystem(storage.store(), rc -> List.of("liteflow", config.getRuntime().getNamespace(),
+                            "workspace-v1", rc.getUserId() == null ? "_internal" : rc.getUserId(),
+                            rc.getSessionId() == null ? buildContext.agentNamespace() : rc.getSessionId()), staging.root());
+                    configurer = (builder, context) -> builder.abstractFilesystem(remote);
+                }
+                filesystem = new FilesystemPreparation(configurer, fsContext,
+                        filesystem.dockerBackend() ? DockerSandboxConfigurer.workspaceProjectionPreflight(fsContext) : () -> { },
+                        filesystem.dockerBackend());
+            }
             TaskRepository tasks = taskRepository();
             boolean ownsTasks = tasks != null && ownsTaskRepository(tasks);
             if (tasks instanceof WorkspaceTaskRepository workspaceTasks) {
@@ -188,7 +224,8 @@ public abstract class HarnessAgentComponent
             if (compaction != null) {
                 builder.compaction(compaction);
             }
-            MemoryConfig memory = memoryConfig();
+            MemoryConfig memory = HarnessMemoryConfigResolver.resolve(
+                    memoryConfig(), buildContext.agentConfig().getHarness().getMemory());
             if (memory != null) {
                 builder.memory(memory);
             }
@@ -286,12 +323,23 @@ public abstract class HarnessAgentComponent
             SandboxCallGate sandboxCallGate = filesystem.dockerBackend()
                     ? new SandboxCallGate()
                     : null;
+            SessionSandboxRegistry sandboxRegistry = null;
+            if (filesystem.dockerBackend() && (managedFilesystem != null || buildContext.agentConfig().getHarness().getDocker().getLifecycle()
+                    == DockerSandboxLifecycle.SESSION_IDLE)) {
+                sandboxRegistry = new SessionSandboxRegistry(
+                        ((DockerSandboxConfigurer) filesystem.configurer()).sandboxContext(),
+                        prepared.ownership().stateStore(), buildContext.agentNamespace(),
+                        invocationGuard(), buildContext.agentConfig().getHarness().getDocker(), managedFilesystem,
+                        prestageSkills(agent));
+                ownedProviderResources.add(sandboxRegistry);
+            }
             return new HarnessAgentRuntime(
                     agent,
                     prepared.ownership(),
                     ownedProviderResources,
                     sandboxCallGate,
-                    permissionContext);
+                    permissionContext,
+                    sandboxRegistry);
         }
         catch (RuntimeException | Error failure) {
             prepared.ownership().rollback(failure, agent, ownedProviderResources);
@@ -316,7 +364,7 @@ public abstract class HarnessAgentComponent
         HarnessRuntimeContextContinuation continuation =
                 HarnessRuntimeContextContinuation.create();
         runtimeContext.put(HarnessRuntimeContextContinuation.class, continuation);
-        Mono<Msg> invocation = runtime.executeSandboxCall(() -> invokeCallTarget(
+        Mono<Msg> invocation = runtime.executeSandboxCall(liteflowContext.getIdentity(), runtimeContext, () -> invokeCallTarget(
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
@@ -405,7 +453,15 @@ public abstract class HarnessAgentComponent
         }
         String root = config.getWorkspace().getRoot();
         if (root == null || root.isBlank()) {
-            throw new AgentConfigException("Harness workspace.root must not be blank");
+            if (!usesSharedStorage(config)) throw new AgentConfigException("Harness workspace.root must not be blank");
+            root = "."; // Validation only; replaced with disposable staging before builder construction.
+        }
+        if (usesSharedStorage(config)) {
+            if (backend == HarnessFilesystemBackend.CUSTOM) throw new AgentConfigException(
+                    "Shared storage requires the built-in DOCKER or GUARDED_LOCAL filesystem");
+            if (harness.getDocker().getSnapshotRoot() != null && !harness.getDocker().getSnapshotRoot().isBlank()
+                    || sandboxSnapshotProvider() != null) throw new AgentConfigException(
+                    "MYSQL/REDIS storage owns snapshots; remove docker.snapshot-root and SandboxSnapshotProvider");
         }
         if (config.getWorkspace().getMaxFileBytes() <= 0) {
             throw new AgentConfigException("Harness workspace.maxFileBytes must be positive");
@@ -435,6 +491,17 @@ public abstract class HarnessAgentComponent
         catch (InvalidPathException failure) {
             throw new AgentConfigException("invalid Harness workspace.root", failure);
         }
+    }
+
+    private static boolean usesSharedStorage(AgentConfig config) {
+        return config.getStateStore().getType() == AgentStateStoreType.MYSQL
+                || config.getStateStore().getType() == AgentStateStoreType.REDIS;
+    }
+
+    private static java.util.function.Consumer<RuntimeContext> prestageSkills(HarnessAgent agent) {
+        var skills = agent.getDelegate().getMiddlewares().stream()
+                .filter(HarnessSkillMiddleware.class::isInstance).map(HarnessSkillMiddleware.class::cast).toList();
+        return context -> skills.forEach(skill -> skill.prestageMarketplaceSkills(context));
     }
 
     private void collectOwnedHarnessResources(List<AutoCloseable> resources) {

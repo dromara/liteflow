@@ -62,6 +62,23 @@ final class AnthropicThinkingFormatter extends AnthropicBaseFormatter {
         delegate.applySystemMessage(paramsBuilder, messages);
     }
 
+    @Override
+    public void applySystemMessage(
+            MessageCreateParams.Builder paramsBuilder, List<Msg> messages, boolean cacheControlEnabled) {
+        delegate.applySystemMessage(paramsBuilder, messages, cacheControlEnabled);
+    }
+
+    @Override
+    public List<MessageParam> applyCacheControl(List<MessageParam> messages) {
+        return delegate.applyCacheControl(messages);
+    }
+
+    @Override
+    public void cacheTtl(String ttl) {
+        super.cacheTtl(ttl);
+        delegate.cacheTtl(ttl);
+    }
+
     static Selection select(GenerateOptions perCall, GenerateOptions defaults) {
         GenerateOptions merged = GenerateOptions.mergeOptions(perCall, defaults);
         if (merged == null) {

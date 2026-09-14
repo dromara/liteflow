@@ -15,7 +15,7 @@ import java.util.Properties;
 /** Read-only, version-pinned inspection of Harness task-repository ownership decisions. */
 final class HarnessAgentBuilderTaskOwnershipBridge {
 
-    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.3";
     private static final String VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static final List<FieldContract> FIELD_CONTRACTS = List.of(
@@ -129,7 +129,7 @@ final class HarnessAgentBuilderTaskOwnershipBridge {
 
     private static AgentConfigException incompatible(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Harness task ownership guard requires agentscope-harness 2.0.2: " + detail,
+                "Harness task ownership guard requires agentscope-harness 2.0.3: " + detail,
                 cause);
     }
 

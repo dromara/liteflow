@@ -25,7 +25,7 @@ import java.util.Set;
 /** Read-only, version-pinned inspection of mandatory Harness builder invariants. */
 final class HarnessAgentBuilderFilesystemBridge {
 
-    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.3";
     private static final String VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static final Set<String> GUARDED_LOCAL_SUBAGENT_TOOLS = Set.of(
@@ -288,7 +288,7 @@ final class HarnessAgentBuilderFilesystemBridge {
 
     private static AgentConfigException incompatible(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Harness filesystem guard requires agentscope-harness 2.0.2: " + detail,
+                "Harness filesystem guard requires agentscope-harness 2.0.3: " + detail,
                 cause);
     }
 

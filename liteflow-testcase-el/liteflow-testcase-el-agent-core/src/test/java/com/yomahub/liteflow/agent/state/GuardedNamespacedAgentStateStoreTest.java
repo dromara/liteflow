@@ -41,6 +41,36 @@ class GuardedNamespacedAgentStateStoreTest {
     private static final String PREFIXED_C = NAMESPACE + "." + SESSION_C;
 
     @Test
+    void versionedWritesRejectStaleUpdatesAndKeepUsersAndSessionsIsolated() {
+        InMemoryAgentStateStore delegate = new InMemoryAgentStateStore();
+        GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(delegate, NAMESPACE);
+        assertTrue(store.supportsVersioning());
+        assertEquals(0, store.getVersioned("alice", SESSION_A, "state", UserMessage.class).version());
+        long first = store.saveIfVersion("alice", SESSION_A, "state", new UserMessage("one"), 0);
+        var baseline = store.getVersioned("alice", SESSION_A, "state", UserMessage.class);
+        assertEquals(first, baseline.version());
+        long second = store.saveIfVersion("alice", SESSION_A, "state", new UserMessage("two"), first);
+        assertTrue(second > first);
+        assertEquals(AgentStateStore.UNVERSIONED,
+                store.saveIfVersion("alice", SESSION_A, "state", new UserMessage("stale"), first));
+        assertEquals("two", delegate.get("alice", PREFIXED_A, "state", UserMessage.class)
+                .orElseThrow().getTextContent());
+        assertFalse(store.getVersioned("bob", SESSION_A, "state", UserMessage.class).isPresent());
+        assertFalse(store.getVersioned("alice", SESSION_C, "state", UserMessage.class).isPresent());
+    }
+
+    @Test
+    void jsonBackendExplicitlyReportsUnversionedState(@TempDir Path root) {
+        GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(
+                new JsonFileAgentStateStore(root), NAMESPACE);
+        assertFalse(store.supportsVersioning());
+        assertEquals(AgentStateStore.UNVERSIONED,
+                store.saveIfVersion("alice", SESSION_A, "state", new UserMessage("one"), 0));
+        assertEquals(AgentStateStore.UNVERSIONED,
+                store.getVersioned("alice", SESSION_A, "state", UserMessage.class).version());
+    }
+
+    @Test
     void routesEverySessionOperationAndFiltersForeignOrMalformedListings() {
         CloseTrackingStore delegate = new CloseTrackingStore();
         GuardedNamespacedAgentStateStore store =

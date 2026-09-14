@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.property.agent;
 
-/** Behavior when state persistence fails. */
+/** Policy for deferred adapter load errors; directly raised storage failures always propagate. */
 public enum AgentStateStoreFailurePolicy {
 	FAIL_FAST,
 	LOG_AND_CONTINUE

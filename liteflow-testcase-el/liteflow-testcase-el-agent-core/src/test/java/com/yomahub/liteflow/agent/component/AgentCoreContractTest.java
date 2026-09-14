@@ -395,7 +395,7 @@ class AgentCoreContractTest {
     }
 
     @Test
-    void strictStateLoadFailureStopsBeforeModelAndLogPolicyWarnsThenContinues()
+    void stateLoadFailureAlwaysStopsBeforeModelWithoutReplacingHistory()
             throws Exception {
         AgentConfig config = configureAgent("state-failure-contract");
         RuntimeException loadFailure = new RuntimeException("state backend unavailable");
@@ -406,7 +406,7 @@ class AgentCoreContractTest {
                 new ResolvedAgentStateStore(new LoadFailingStore(loadFailure), false);
         Set<String> strictAttachments = attachmentSnapshot(strict.slot);
 
-        AgentException thrown = assertThrows(AgentException.class, strict::process);
+        RuntimeException thrown = assertThrows(RuntimeException.class, strict::process);
 
         assertTrue(hasCause(thrown, loadFailure));
         assertEquals(0, strict.model.calls.get());
@@ -425,11 +425,10 @@ class AgentCoreContractTest {
         lenient.agentKey = "lenient-state-agent";
         lenient.stateStoreResolver = ignored ->
                 new ResolvedAgentStateStore(new LoadFailingStore(loadFailure), false);
-        processAndAssertAttachments(lenient);
-        assertEquals("lenient reply", lenient.slot.getResponseData());
-        assertEquals(1, lenient.model.calls.get());
-        assertEquals(1, lenient.warnings.size());
-        assertTrue(lenient.warnings.get(0).contains(loadFailure.getMessage()));
+        RuntimeException lenientFailure = assertThrows(RuntimeException.class, lenient::process);
+        assertTrue(hasCause(lenientFailure, loadFailure));
+        assertEquals(0, lenient.model.calls.get());
+        assertTrue(lenient.warnings.isEmpty());
         assertNoLoadFailure(lenient, config);
     }
 

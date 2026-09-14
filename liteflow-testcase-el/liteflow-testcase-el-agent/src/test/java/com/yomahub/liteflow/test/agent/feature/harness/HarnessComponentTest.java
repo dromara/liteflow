@@ -60,9 +60,10 @@ import reactor.core.publisher.Flux;
 import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.InputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -668,6 +669,13 @@ final class RecordingStateStore extends InMemoryAgentStateStore {
     private final List<StateCall> saves = new CopyOnWriteArrayList<>();
 
     @Override
+    public long saveIfVersion(String userId, String sessionId, String key, State value, long expectedVersion) {
+        long version = super.saveIfVersion(userId, sessionId, key, value, expectedVersion);
+        if (version != UNVERSIONED) saves.add(new StateCall(sessionId, key));
+        return version;
+    }
+
+    @Override
     public void save(String userId, String sessionId, String key, State value) {
         saves.add(new StateCall(sessionId, key));
         super.save(userId, sessionId, key, value);
@@ -846,15 +854,14 @@ final class OfflineSandbox implements Sandbox {
     @Override
     public InputStream persistWorkspace() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (DataOutputStream output = new DataOutputStream(bytes)) {
-            List<Map.Entry<String, byte[]>> entries = files.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .toList();
-            output.writeInt(entries.size());
-            for (Map.Entry<String, byte[]> entry : entries) {
-                output.writeUTF(entry.getKey());
-                output.writeInt(entry.getValue().length);
+        try (TarArchiveOutputStream output = new TarArchiveOutputStream(bytes)) {
+            output.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+            for (Map.Entry<String, byte[]> entry : files.entrySet()) {
+                TarArchiveEntry file = new TarArchiveEntry(entry.getKey());
+                file.setSize(entry.getValue().length);
+                output.putArchiveEntry(file);
                 output.write(entry.getValue());
+                output.closeArchiveEntry();
             }
         }
         return new ByteArrayInputStream(bytes.toByteArray());
@@ -862,12 +869,11 @@ final class OfflineSandbox implements Sandbox {
 
     @Override
     public void hydrateWorkspace(InputStream archive) throws Exception {
-        files.clear();
-        try (DataInputStream input = new DataInputStream(archive)) {
-            int count = input.readInt();
-            for (int index = 0; index < count; index++) {
-                String path = input.readUTF();
-                files.put(path, input.readNBytes(input.readInt()));
+        // AgentScope also hydrates single-file tar archives; extraction overlays existing files.
+        try (TarArchiveInputStream input = new TarArchiveInputStream(archive)) {
+            TarArchiveEntry entry;
+            while ((entry = input.getNextEntry()) != null) {
+                if (!entry.isDirectory()) files.put(entry.getName(), input.readAllBytes());
             }
         }
     }

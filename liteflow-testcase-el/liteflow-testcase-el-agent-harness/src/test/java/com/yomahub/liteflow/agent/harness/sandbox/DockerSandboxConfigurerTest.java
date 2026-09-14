@@ -63,6 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DockerSandboxConfigurerTest {
 
     private static final List<String> REQUIRED_RUN_ARGS = List.of(
+            "--init",
             "--cap-drop=ALL",
             "--security-opt=no-new-privileges:true",
             "--pids-limit=64");
@@ -137,14 +138,37 @@ class DockerSandboxConfigurerTest {
     }
 
     @Test
-    void disabledProjectionUsesTheUpstreamDefaultDockerClient() throws Exception {
+    void disabledProjectionStillEnforcesCurrentDockerOptionsOnResume() throws Exception {
         AgentConfig agent = agentConfig();
         agent.getHarness().getDocker().setWorkspaceProjectionEnabled(false);
 
         SandboxContext sandbox = configuredSpec(new DockerSandboxConfigurer(), context(agent))
                 .toSandboxContext(workspace);
 
-        assertInstanceOf(DockerSandboxClient.class, sandbox.getClient());
+        assertInstanceOf(PolicyBoundDockerSandboxClient.class, sandbox.getClient());
+    }
+
+    @Test
+    void oldSessionResumeUsesCurrentOptionsAndKeepsItsSnapshotIdentity() throws Exception {
+        AgentConfig agent = agentConfig();
+        FakeSandboxClient client = new FakeSandboxClient(new java.util.ArrayList<>());
+        SandboxContext context = configuredSpec(new DockerSandboxConfigurer(null, client), context(agent))
+                .toSandboxContext(workspace);
+        DockerSandboxState old = new DockerSandboxState();
+        old.setSessionId("old-session");
+        old.setContainerId("old-container");
+        old.setWorkspaceSpec(context.getWorkspaceSpec());
+        old.setImage("old-image");
+        old.setAdditionalRunArgs(List.of("--pids-limit=64"));
+        var snapshot = new LocalSnapshotSpec(workspace.resolve("snapshots")).build("old-snapshot");
+        old.setSnapshot(snapshot);
+
+        context.getClient().resume(old);
+
+        assertEquals(REQUIRED_RUN_ARGS, old.getAdditionalRunArgs());
+        assertEquals(agent.getHarness().getDocker().getImage(), old.getImage());
+        assertEquals("old-container", old.getContainerId());
+        assertSame(snapshot, old.getSnapshot());
     }
 
     @Test
@@ -266,7 +290,7 @@ class DockerSandboxConfigurerTest {
 
         assertFalse(command.contains("--"));
         assertEquals("--network=host", command.get(command.size() - 4));
-        assertEquals(List.of("sh", "-c", "while :; do sleep 3600; done"),
+        assertEquals(List.of("sh", "-c", "trap 'exit 0' TERM; while :; do sleep 3600 & wait $!; done"),
                 command.subList(command.size() - 3, command.size()));
     }
 

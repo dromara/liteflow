@@ -12,7 +12,7 @@ import java.util.Properties;
 /** Version-pinned bridge for the Anthropic client owned by AgentScope's model. */
 final class AnthropicClientBridge {
 
-    private static final String AGENTSCOPE_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_VERSION = "2.0.3";
     private static final String ANTHROPIC_VERSION = "2.14.0";
     private static volatile Field clientField;
 
@@ -108,7 +108,7 @@ final class AnthropicClientBridge {
 
     private static AgentConfigException incompatible(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Anthropic client ownership requires AgentScope Anthropic 2.0.2 and "
+                "Anthropic client ownership requires AgentScope Anthropic 2.0.3 and "
                         + "anthropic-java 2.14.0: " + detail,
                 cause);
     }

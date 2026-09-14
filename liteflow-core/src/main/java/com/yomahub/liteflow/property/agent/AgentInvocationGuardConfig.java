@@ -5,7 +5,7 @@ import java.time.Duration;
 /** Cross-invocation coordination settings. */
 public class AgentInvocationGuardConfig {
 
-	private AgentInvocationGuardMode mode = AgentInvocationGuardMode.LOCAL;
+	private AgentInvocationGuardMode mode = AgentInvocationGuardMode.AUTO;
 	private String beanName;
 	private Duration acquireTimeout = Duration.ofMinutes(2);
 	private Duration leaseDuration = Duration.ofMinutes(2);

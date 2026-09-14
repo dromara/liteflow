@@ -35,6 +35,30 @@ class AnthropicRuntimeContractTest {
             "lf-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
     @Test
+    void thinkingFormatterPreservesCacheBreakpointsAndTtlForSystemToolsAndMessages() {
+        var formatter = new AnthropicThinkingFormatter(null);
+        formatter.cacheTtl("1h");
+        var builder = MessageCreateParams.builder().model("claude-test").maxTokens(4096);
+        formatter.applySystemMessage(builder, List.of(io.agentscope.core.message.Msg.builder()
+                .role(io.agentscope.core.message.MsgRole.SYSTEM).textContent("system prompt").build()), true);
+        var messages = formatter.applyCacheControl(formatter.format(
+                List.of(new io.agentscope.core.message.UserMessage("question"))));
+        builder.messages(messages);
+        formatter.applyOptions(builder, GenerateOptions.builder()
+                .cacheControl(true).maxTokens(4096).thinkingBudget(1024).build(), null);
+        formatter.applyTools(builder, List.of(io.agentscope.core.model.ToolSchema.builder()
+                .name("lookup").description("Lookup a record").parameters(Map.of("type", "object")).build()));
+        var request = builder.build();
+        assertEquals("1h", request.system().orElseThrow().asTextBlockParams().get(0)
+                .cacheControl().orElseThrow().ttl().orElseThrow().toString());
+        assertEquals("1h", request.tools().orElseThrow().get(0).asTool()
+                .cacheControl().orElseThrow().ttl().orElseThrow().toString());
+        assertEquals("1h", messages.get(0).content().asBlockParams().get(0).asText()
+                .cacheControl().orElseThrow().ttl().orElseThrow().toString());
+        assertEquals(1024, request.thinking().orElseThrow().asEnabled().budgetTokens());
+    }
+
+    @Test
     void modelFactoriesReturnOwnersAndSerializePerCallThinkingWithoutDefaults()
             throws Exception {
         Model standard = AnthropicModelFactory.of("test-key", "claude-factory");
@@ -309,7 +333,7 @@ class AnthropicRuntimeContractTest {
                 AgentConfigException.class,
                 () -> AnthropicClientBridge.close(new Object()));
 
-        assertTrue(failure.getMessage().contains("AgentScope Anthropic 2.0.2"));
+        assertTrue(failure.getMessage().contains("AgentScope Anthropic 2.0.3"));
     }
 
     @Test

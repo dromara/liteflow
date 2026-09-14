@@ -151,7 +151,7 @@ class AgentStructuredOutputTest {
     }
 
     @Test
-    void nonStrictStateStoreFailureAllowsPrivatePromptTransformAndModelEntry()
+    void upstreamStateLoadFailureStopsBeforePromptTransformEvenWithLogPolicy()
             throws Exception {
         configureAgent().getStateStore().setFailurePolicy(
                 AgentStateStoreFailurePolicy.LOG_AND_CONTINUE);
@@ -160,11 +160,11 @@ class AgentStructuredOutputTest {
         TestComponent component = component(slot, model);
         component.stateLoadFailure = new RuntimeException("state backend unavailable");
 
-        component.process();
+        RuntimeException thrown = assertThrows(RuntimeException.class, component::process);
 
-        assertEquals("continued reply", slot.getResponseData());
-        assertEquals(1, component.transformCount.get());
-        assertEquals(1, model.callCount());
+        assertTrue(hasCause(thrown, component.stateLoadFailure));
+        assertEquals(0, component.transformCount.get());
+        assertEquals(0, model.callCount());
     }
 
     private TestComponent component(Slot slot, ScriptedChatModel model) {

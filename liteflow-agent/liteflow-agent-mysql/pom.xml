@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-agent-core</artifactId>
+            <artifactId>liteflow-agent-harness</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

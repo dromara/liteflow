@@ -6,13 +6,15 @@
 
 ## 1. 简介
 
-`liteflow-agent` 是 LiteFlow 的 Agent 扩展模块，基于 AgentScope Java（2.0.2）构建。它把一个大模型 Agent 封装成一个普通的 LiteFlow 组件，从而可以：
+`liteflow-agent` 是 LiteFlow 的 Agent 扩展模块，基于 AgentScope Java（2.0.3）构建。它把一个大模型 Agent 封装成一个普通的 LiteFlow 组件，从而可以：
 
 - 用 LiteFlow EL（`THEN` / `WHEN` / `IF` / `SWITCH` 等）自由编排一个或多个 Agent，以及普通业务组件。
 - 通过统一的 `ModelSpec` 描述符接入各家大模型平台，凭据走配置，参数走代码。
 - 获得开箱即用的多轮对话记忆、工具调用、流式事件、结构化输出、人工确认（HITL）等能力。
 
-**运行要求**：JDK 17+。本文对应 LiteFlow `2.16.2` 和 AgentScope `2.0.2`。
+**运行要求**：JDK 17+。本文对应 LiteFlow `2.16.2` 和 AgentScope `2.0.3`。
+
+支持环境、公开 API 边界和存储格式升级约定见 [兼容性说明](liteflow-agent-compatibility.md)。
 
 **模块清单**（Maven groupId 均为 `com.yomahub`）：
 
@@ -485,11 +487,11 @@ liteflow.agent.state-store.type=JSON
 # type=JSON 时的存储根目录，默认 ./data/agent-state
 liteflow.agent.state-store.json-root=/data/agent-state
 
-# 会话状态加载失败策略：FAIL_FAST（默认） / LOG_AND_CONTINUE
+# 延迟上报的状态加载错误策略：FAIL_FAST（默认） / LOG_AND_CONTINUE
 liteflow.agent.state-store.failure-policy=FAIL_FAST
 ```
 
-`failure-policy` 目前只处理会话状态的加载失败：`LOG_AND_CONTINUE` 会记录错误并在没有历史状态的情况下继续。Store 构建失败和状态保存失败仍会直接向外抛出。
+AgentScope 2.0.3 会直接传播状态加载错误，读取失败时停止执行，不会用空历史覆盖已有会话。`failure-policy` 仅处理扩展适配器延迟上报的加载错误；`LOG_AND_CONTINUE` 不会吞掉上游直接抛出的异常。Store 构建失败和状态保存失败也会向外抛出。
 
 #### Redis：引入 liteflow-agent-redis 模块
 
@@ -545,6 +547,27 @@ liteflow.agent.state-store.mysql.create-if-not-exist=true
 
 通过 `redis.client-bean-name` 或 `mysql.data-source-bean-name` 传入的客户端属于应用，LiteFlow 不会关闭；使用 `redis.uri` 或 `mysql.jdbc-url` 时，连接资源由 LiteFlow 创建并随 Runtime 关闭。
 
+### Harness 的统一持久化
+
+`state-store.type` 同时选择 Agent 状态、Web 历史、Harness 记录与快照的持久化后端。业务代码继续使用 `AgentStateStore`、`AgentConversationService`、`AbstractFilesystem` 和快照接口，通过 Provider 切换实现。
+
+| 数据 | JSON 文件模式 | MySQL 模式 | Redis 模式 | 读写时机 |
+| --- | --- | --- | --- | --- |
+| Agent 上下文、HITL 状态 | JSON 状态目录 | 配置的状态表 | 状态键 | 调用前加载，调用结束或中断时保存 |
+| Web 会话标题、显示消息 | 同一 JSON 状态后端 | 同一状态表中的独立记录 | 同一状态后端中的独立键 | 列表点击直接读取；消息产生时写入 |
+| 记忆、Harness 会话归档、任务和计划 | 原工作区文件 | `<state-table>_workspace` 表 | `<key-prefix>workspace:` 键 | 记忆工具、归档和任务组件直接读写后端 |
+| Docker 恢复元数据 | JSON 状态后端 | 配置的状态表 | 状态键 | 获取容器时读，每轮结束时保存 |
+| Docker 业务文件快照 | 配置的本地 tar 目录 | workspace 表中的分块归档 | workspace 键中的分块归档 | 共享模式每轮提交；跨实例或回收后恢复时读取 |
+
+MySQL 的伴随 workspace 表与状态表使用同一数据库；`create-if-not-exist` 同时控制其自动创建。Redis 的文件记录使用服务端 CAS；文件记录和快照不依赖宿主机缓存。自定义 `RedisClientAdapter` 没有 Lua 能力，统一 Harness 存储需要使用内置支持的 Jedis、Lettuce 或 Redisson 连接源。
+
+数据库模式下，容器 `/workspace` 只保留技能、脚本和业务工作文件。`memory/`、`MEMORY.md`、`agents/`、`.agentscope/`、`plans/` 经文件系统接口直接读写后端，不会复制到容器。需要查记忆时调用记忆或文件工具，Shell 中直接 `cat /workspace/MEMORY.md` 不再适用。记忆仍按 namespace、用户、会话隔离，不会因为使用数据库就自动跨会话共享。
+
+`workspace.root` 可省略；配置时仅作为静态输入来源。框架会创建可丢弃的临时目录来暂存投影文件和技能资源，正常关闭时删除。它不是状态目录，也不参与会话恢复。`CUSTOM` 文件系统目前需要自行维护存储契约，不能与内置 MySQL／Redis 统一存储同时选择。
+
+升级旧的 MySQL／Redis 会话时，如果恢复元数据仍指向本地 tar，框架在持有会话锁时执行一次性迁移：将记忆与会话记录导入后端，再保存不含这些记录的业务文件归档。原 tar 不会被修改或删除，已有远程记录不会被旧归档覆盖。首次迁移必须在能读取原 tar 的节点执行；找不到归档会明确失败，不会悄悄创建空工作区。迁移期间应停止仍运行旧版代码的实例。已有 JSON 状态切换到 MySQL／Redis 并不是自动跨后端搬库，需要另行迁移状态数据。
+
+
 #### 自定义存储
 
 需要其他后端（如 MongoDB）时，覆写组件的 `stateStoreResolver()` 返回自定义 `AgentStateStore` 装配：
@@ -560,7 +583,7 @@ protected AgentStateStoreResolver stateStoreResolver() {
 
 #### 存储内容与清理
 
-AgentScope 2.0.2 的主要持久化入口是 `agent_state`，其中 `context` 保存当前模型上下文，另外还包含摘要、权限、任务、计划和工具状态。`memory_messages` / `toolkit_activeGroups` 是旧版兼容读取键，不应作为新会话消息查询的主要入口。
+AgentScope 2.0.3 的主要持久化入口是 `agent_state`，其中 `context` 保存当前模型上下文，另外还包含摘要、权限、任务、计划和工具状态。`memory_messages` / `toolkit_activeGroups` 是旧版兼容读取键，不应作为新会话消息查询的主要入口。
 
 Core Agent 的物理会话 ID 为 `lf-<agent 哈希>.lf-<会话哈希>`；Harness 使用带 `.h1.` 版本标记的独立编码，并另外保存沙箱恢复状态。读取时使用下节的 `AgentConversationService.agentState(...)`，无需自己拼接目录、Redis key 或 SQL 的 `session_id`。
 
@@ -652,7 +675,7 @@ conversations.append("alice", conversationId, "user", "input", userText);
 conversations.append("alice", conversationId, "assistant", "result", finalText);
 ```
 
-`append(...)` 还支持传入 agentKey 和 requestId。它保存独立的展示内容，不向模型上下文注入消息。自动记录默认只包含输入、结果和错误；工具轨迹、UI 状态等可以通过自定义 stage 显式追加。通用属性保存在 `AgentConversation.attributes`，框架不规定前端样式。
+`append(...)` 还支持传入 agentKey 和 requestId。它保存独立的展示内容，不向模型上下文注入消息。自动记录默认只包含输入、结果和错误；答复没有非空白文本但包含结构化数据时，将结构化结果保存为 JSON 文本。工具轨迹、UI 状态等可以通过自定义 stage 显式追加。通用属性保存在 `AgentConversation.attributes`，框架不规定前端样式。
 
 删除会先持久化删除标记，然后等待已登记 Agent 的状态锁，清理会话消息与关联的 Agent 状态。迟到的结果不会恢复已删除的数据；删除失败可以重试，删除后的 ID 不能复用。会保留一个不含消息正文的小型删除标记。旧会话或自定义执行器的状态可先调用 `attachAgent(userId, conversationId, agentKey)` 关联；调用 `agentState(...)` 本身不会建立这种关联。
 
@@ -985,10 +1008,10 @@ public class MyHarnessAgentCmp extends HarnessAgentComponent {
 
 ### 12.2 文件系统后端
 
-Harness 无论选择哪种文件系统后端，都必须配置宿主机上的 `workspace.root`：
+文件模式（`state-store.type=JSON`）需要配置 `workspace.root`。MySQL／Redis 模式不需要本地持久化目录；`workspace.root` 仅作为可选的静态输入目录，用于复制技能、说明文件等：
 
 ```properties
-# 三种后端都必填
+# 文件模式必填；MySQL／Redis 模式可省略
 liteflow.agent.workspace.root=/data/agent-workspace
 
 # 方案一：GUARDED_LOCAL（默认）
@@ -1015,7 +1038,39 @@ liteflow.agent.harness.trusted-local=true
 | `DOCKER` | 需要进程、文件和资源隔离 | 本机 Docker 可用；支持子代理；默认无网络、512 MB 内存、1 个 CPU |
 | `CUSTOM` | 接入远程文件系统或自有沙箱 | 必须覆写 `filesystemConfigurer()`；安全边界和资源生命周期由实现方负责；支持子代理 |
 
-Docker 的 `snapshot-root` 用于把 sandbox 快照持久化到本地；也可以覆写 `sandboxSnapshotProvider()` 接入远程快照，但二者不能同时使用。工作区投影默认开启，只允许把 `workspace-projection-roots` 中列出的相对路径投影到 sandbox，路径逃逸和符号链接会被拒绝。
+文件模式下，Docker 的 `snapshot-root` 用于保存本地快照，也可以覆写 `sandboxSnapshotProvider()`，二者互斥。MySQL／Redis 模式自动把快照保存到所选后端，不允许再配置 `snapshot-root` 或 `sandboxSnapshotProvider()`，避免出现第二个持久化来源。工作区投影默认开启，只允许把 `workspace-projection-roots` 中列出的相对路径投影到 sandbox，路径逃逸和符号链接会被拒绝。
+
+### Docker 会话复用与空闲回收
+
+`liteflow.agent.harness.docker.lifecycle` 默认为 `PER_CALL`，保持每轮销毁容器、按配置保存快照的行为。连续聊天可以启用：
+
+```yaml
+liteflow:
+  agent:
+    harness:
+      docker:
+        lifecycle: SESSION_IDLE
+        idle-timeout: 10m
+        eviction-interval: 30s
+        max-cached-sandboxes: 8
+        # 仅 JSON 文件模式需要：
+        # snapshot-root: sandbox-snapshots
+```
+
+`SESSION_IDLE` 在文件模式下必须配置持久化快照（`snapshot-root` 或 `sandboxSnapshotProvider()`）；MySQL／Redis 自动提供。文件模式每轮只保存恢复元数据和 Agent 状态，空闲回收时才保存工作区快照。MySQL／Redis 模式也复用容器，但每轮结束会把业务工作区快照提交到共享后端，使下一轮可以在另一个服务实例恢复；这一步仍有归档和传输开销，容器不会因此每轮销毁。空闲时间从完整调用结束后开始计算；扫描器跳过持有执行租约的会话。达到空闲期限，或缓存满时淘汰最久未使用的空闲容器：先保存工作区快照和恢复元数据，再停止、删除容器。快照失败会保留容器并记录错误，后续扫描重试。达到容量上限且没有可回收的空闲容器时，新的会话调用会明确报错。
+
+缓存容量按组件运行时计算。恢复元数据沿用现有的 namespace、userId、conversationId 隔离方式；Agent 状态仍按 agentKey 隔离。同一会话交给不同组件时，先对前一个组件持有的沙箱做快照和释放，再按新组件的配置恢复，避免两个运行时同时持有同一个工作区。恢复旧会话时，重新创建容器使用当前的 Docker 参数，包括 `--init`；已经运行的容器不会原地修改启动参数。
+
+调用 `AgentConversationService.delete(...)` 会在执行结束后释放本进程托管的容器；历史删除仍保留工作区快照。组件关闭或应用正常退出时，会回收自己的缓存容器。快照失败时不会强行销毁唯一的工作区副本，关闭操作会报告失败，原容器保留用于恢复。
+
+物理容器缓存属于当前 JVM。MySQL／Redis 模式通过共享调用锁和每轮快照支持跨实例接续；旧实例回收前检查共享恢复元数据，不会把过期工作区覆盖到新实例的数据上。文件模式只在回收时保存快照，适用于单实例或会话固定路由；异常退出可能丢失尚未归档的业务文件。共享模式异常退出时也可能丢失当前尚未结束一轮的业务文件变更。快照只包含工作区，不保存后台进程、进程内存或工作区之外的安装目录。
+
+可选的真实 Docker 回归不调用外部模型：
+
+```bash
+LITEFLOW_TEST_DOCKER=true mvn -pl liteflow-testcase-el/liteflow-testcase-el-agent-harness -am test \
+  -DskipTests=false -Dtest=SessionSandboxDockerTest -Dsurefire.failIfNoSpecifiedTests=false
+```
 
 选择 `CUSTOM` 时，至少要提供一个 configurer：
 
@@ -1056,6 +1111,29 @@ protected CompactionConfig compactionConfig() {
 摘要默认用主模型生成，可用 `.model(...)` 指定更便宜的模型执行。
 
 ### 12.4 长期记忆（Memory）
+
+自动记忆提取不是正常续聊的必要步骤。Agent 上下文、Web 历史和 Harness 会话归档的保存不依赖每轮自动提取。需要关闭回答结束后的额外模型提取请求时，配置：
+
+```yaml
+liteflow:
+  agent:
+    harness:
+      memory:
+        flush-mode: NEVER
+        flush-min-gap: 5m
+```
+
+| `flush-mode` | 每轮调用结束后的行为 |
+| --- | --- |
+| `ALWAYS` | 每轮调用模型提取记忆 |
+| `NEVER` | 跳过每轮自动提取，继续保存会话归档 |
+| `THROTTLED` | 按需提取，同一 SDK 隔离身份在 `flush-min-gap` 内最多触发一次 |
+
+`flush-min-gap` 默认 5 分钟，仅 `THROTTLED` 使用，必须为正数；它是触发间隔，不是后台定时任务。节流沿用 AgentScope 2.0.3 的进程内计时，不是跨实例全局限流。每轮记忆提取在后台执行，收到答复不代表长期记忆已完成落盘；聊天历史和 Agent 运行状态的保存与此分开。
+
+LiteFlow 的 `flush-mode` 默认是 `NEVER`，未配置也不会每轮自动提取。需要启用时，显式设置为 `ALWAYS` 或 `THROTTLED`。这一策略覆盖组件 `memoryConfig()` 中的提取触发策略，保留其记忆模型、提示词和保留天数。配置在 Runtime 初始化时读取，修改后需重启应用。
+
+这个开关只控制每轮结束后的自动提取，不关闭手动记忆工具、上下文压缩时的提取或已有记忆的定期整理，也不跳过会话状态和快照保存；因此不代表回答之后完全没有其他收尾工作。请勿用 `disableMemoryHooks()` 代替：它还会移除负责会话归档的中间件。
 
 把对话中的关键信息抽取为长期记忆，供后续会话使用：
 
@@ -1239,7 +1317,7 @@ protected Model routeModel(Model defaultModel, LiteFlowAgentContext context) {
 
 ### 14.4 并发守卫
 
-同一身份（namespace + userId + conversationId + agentKey）的并发调用会被串行化，防止会话状态错乱。默认进程内实现，可替换为自定义实现（如基于 Redis 的分布式锁）：
+同一身份（namespace + userId + conversationId + agentKey）的并发调用会被串行化。默认 `AUTO`：文件模式使用进程内锁，MySQL 使用连接级 `GET_LOCK`，Redis 使用带令牌校验和自动续期的租约。Harness 还会锁定整个会话工作区，使同一会话交给不同 Agent 时也不会互相覆盖。需要自定义实现时配置：
 
 ```properties
 liteflow.agent.invocation-guard.mode=BEAN
@@ -1247,7 +1325,7 @@ liteflow.agent.invocation-guard.bean-name=myAgentInvocationGuard   # AgentInvoca
 liteflow.agent.invocation-guard.acquire-timeout=2m                 # 等待锁的超时
 ```
 
-`invocation-guard.lease-duration` 当前是保留配置，内置运行路径不读取它。自定义守卫只能依赖传入的 `acquire-timeout`，如果需要租约续期，应在守卫实现内部完成。
+`invocation-guard.lease-duration` 控制内置 Redis 租约时长（默认 2 分钟，最小 300 毫秒），运行期间每三分之一租期续约；续约失败会中断持锁调用。MySQL 租约随专用连接释放。`LOCAL` 仍可显式选择，用于单进程测试；多实例应使用 `AUTO` 或分布式 `BEAN`。Redis 网络故障或长时间进程暂停仍需按租约锁的故障语义处理；这不是跨存储事务或业务副作用的恰好一次保证。
 
 ### 14.5 异常类型
 
@@ -1300,7 +1378,7 @@ protected Model buildModel() {
 | `conversation-history-enabled` | `false` | 自动登记会话并保存独立的输入、答复及失败记录；见 §5.6 |
 | `state-store.type` | `JSON` | 会话状态存储：`JSON` / `REDIS` / `MYSQL`（均持久化） |
 | `state-store.json-root` | `./data/agent-state` | JSON 存储根目录 |
-| `state-store.failure-policy` | `FAIL_FAST` | 会话状态加载失败策略：`FAIL_FAST` / `LOG_AND_CONTINUE`；不影响构建和保存失败 |
+| `state-store.failure-policy` | `FAIL_FAST` | 延迟上报的加载错误策略；上游直接抛出的状态错误始终终止执行 |
 | `state-store.redis.uri` | 无 | Redis 直连 URI（与 `redis.client-bean-name` 二选一，需 redis 模块） |
 | `state-store.redis.client-bean-name` | 无 | 已有 Jedis、Lettuce、Redisson 或 `RedisClientAdapter` bean 名 |
 | `state-store.redis.key-prefix` | `agentscope:session:` | Redis key 前缀 |
@@ -1311,10 +1389,10 @@ protected Model buildModel() {
 | `state-store.mysql.create-if-not-exist` | `false` | 是否自动建库建表 |
 | `toolkit.parallel` | `false` | 工具是否并行执行 |
 | `event.listener-failure-mode` | `FAIL_FAST` | 事件监听器异常策略 |
-| `invocation-guard.mode` | `LOCAL` | 并发守卫：`LOCAL` / `BEAN` |
+| `invocation-guard.mode` | `AUTO` | 按存储后端选择调用锁；可显式选择 `LOCAL` / `BEAN` |
 | `invocation-guard.bean-name` | 无 | `mode=BEAN` 时的守卫 bean 名 |
 | `invocation-guard.acquire-timeout` | `2m` | 等待调用锁的超时 |
-| `invocation-guard.lease-duration` | `2m` | 保留项，当前内置运行路径不读取 |
+| `invocation-guard.lease-duration` | `2m` | Redis 租约时长，运行期间自动续约；最小 300 毫秒 |
 | `hitl.confirmation-timeout` | `2m` | 人工确认等待超时 |
 | `hitl.fail-on-denied-tool` | `false` | 工具被拒绝时是否让链失败 |
 | `workspace.backend` | `GUARDED_LOCAL` | core 内置文件与 Shell 工具的后端边界 |
@@ -1338,12 +1416,18 @@ protected Model buildModel() {
 | 各平台的 `extra.*` | 无 | 保留字段，当前内置 Provider 不读取 |
 | `harness.filesystem-backend` | `GUARDED_LOCAL` | Harness 文件系统后端：`GUARDED_LOCAL` / `DOCKER` / `CUSTOM` |
 | `harness.trusted-local` | `false` | `GUARDED_LOCAL` 需设为 `true` |
+| `harness.memory.flush-mode` | `NEVER` | 每轮提取策略：`ALWAYS` / `NEVER` / `THROTTLED` |
+| `harness.memory.flush-min-gap` | `5m` | `THROTTLED` 的最小触发间隔，必须为正数 |
 | `harness.docker.image` | `ubuntu:22.04` | 沙箱镜像 |
 | `harness.docker.workspace-root` | `/workspace` | 沙箱内工作目录 |
 | `harness.docker.memory-size-bytes` | `536870912` | 沙箱内存上限（512MB） |
 | `harness.docker.cpu-count` | `1` | 沙箱 CPU 数 |
 | `harness.docker.network` | `none` | 沙箱网络模式 |
-| `harness.docker.snapshot-root` | 无 | 本地 sandbox 快照目录；与 `sandboxSnapshotProvider()` 互斥 |
+| `harness.docker.snapshot-root` | 无 | 仅文件模式使用；MySQL／Redis 自动保存共享快照 |
+| `harness.docker.lifecycle` | `PER_CALL` | `PER_CALL` 每轮回收；`SESSION_IDLE` 按会话缓存、空闲回收 |
+| `harness.docker.idle-timeout` | `10m` | 完整调用结束后可保留的空闲时间 |
+| `harness.docker.eviction-interval` | `30s` | 空闲扫描间隔 |
+| `harness.docker.max-cached-sandboxes` | `8` | 每个组件运行时的缓存容器上限 |
 | `harness.docker.workspace-projection-enabled` | `true` | 是否把宿主 workspace 的允许内容投影到 sandbox |
 | `harness.docker.workspace-projection-roots` | `AGENTS.md, skills, subagents, knowledge, .skills-cache` | 允许投影的相对路径列表 |
 
@@ -1421,3 +1505,19 @@ protected Model buildModel() {
 | `A2A client requires exactly one UserMessage` / `A2A client supports TEXT output only` | A2A 客户端输入/输出形态不符合协议约束 | 输入改为单条用户消息；结构化需求在远端完成后以文本返回，见 [§13](#13-a2a调用远程-agent) |
 
 调用期的 `AgentInvocationException`（TIMEOUT / INTERRUPTED / ACQUISITION_FAILED / PERMISSION / STRUCTURED_OUTPUT）见 [§14.5](#145-异常类型)。
+
+
+## AgentScope 2.0.3 文件交付
+
+Harness 可通过现有 `customizeHarness` 扩展点配置上游 `ArtifactDeliveryTarget`。配置后会注册 `deliver_artifact`，将工作区中的文件交给应用实现的目标；文件下载接口、业务身份和展示由应用管理。
+
+```java
+@Override
+protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
+    return builder.artifactDeliveryTarget(artifactDeliveryTarget);
+}
+```
+
+`liteflow-agent-example/liteflow-agent-web-container-mysql` 提供完整示例：产物存入 MySQL 工作区表的独立命名空间，聊天事件携带附件信息，用户可点击下载。默认拒绝覆盖同会话同名文件，允许工具显式传入 `force=true`；文件大小沿用 `workspace.max-file-bytes`。删除示例会话后同时清除其产物。
+
+状态存储包装层已转发 2.0.3 的版本接口，MySQL／Redis 可保留底层 CAS 能力；JSON 后端仍报告不支持版本。基础集成沿用上游 `OVERWRITE` 策略，并保留 LiteFlow 调用锁和沙箱串行保护，没有将版本接口等同于严格分布式冲突保护。

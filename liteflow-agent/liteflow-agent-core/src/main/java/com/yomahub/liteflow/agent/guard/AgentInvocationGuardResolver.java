@@ -16,8 +16,17 @@ public final class AgentInvocationGuardResolver {
     public AgentInvocationGuard resolve(AgentConfig config) {
         validate(config);
         AgentInvocationGuardConfig guardConfig = config.getInvocationGuard();
-        if (guardConfig.getMode() == null || guardConfig.getMode() == AgentInvocationGuardMode.LOCAL) {
+        if (guardConfig.getMode() == AgentInvocationGuardMode.LOCAL) {
             return PROCESS_GUARD;
+        }
+        if (guardConfig.getMode() == null || guardConfig.getMode() == AgentInvocationGuardMode.AUTO) {
+            var type = config.getStateStore().getType();
+            if (type == com.yomahub.liteflow.property.agent.AgentStateStoreType.JSON) return PROCESS_GUARD;
+            var providers = java.util.ServiceLoader.load(AgentInvocationGuardProvider.class).stream()
+                    .map(java.util.ServiceLoader.Provider::get).filter(provider -> provider.type() == type).toList();
+            if (providers.size() != 1) throw new AgentConfigException(
+                    "AUTO invocation guard requires exactly one provider for " + type);
+            return providers.get(0).resolve(config);
         }
         if (guardConfig.getMode() != AgentInvocationGuardMode.BEAN) {
             throw new AgentConfigException("Unsupported invocation guard mode: " + guardConfig.getMode());
@@ -31,7 +40,8 @@ public final class AgentInvocationGuardResolver {
             throw new AgentConfigException("Invocation guard bean '" + beanName
                     + "' must implement " + AgentInvocationGuard.class.getName());
         }
-        return (AgentInvocationGuard) candidate;
+        AgentInvocationGuard borrowed = (AgentInvocationGuard) candidate;
+        return borrowed::acquire;
     }
 
     public void validate(AgentConfig config) {

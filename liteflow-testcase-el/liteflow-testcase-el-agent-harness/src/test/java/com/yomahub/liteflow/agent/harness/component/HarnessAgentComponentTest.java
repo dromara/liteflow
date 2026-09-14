@@ -2104,8 +2104,6 @@ class HarnessAgentComponentTest {
 
         @Override public BackgroundTask getTask(RuntimeContext context, String agentId, String taskId) { return null; }
         @Override public BackgroundTask putTask(RuntimeContext context, String agentId, String taskId, String description, TaskRunSpec spec) { return null; }
-        @Override public void removeTask(RuntimeContext context, String agentId, String taskId) { }
-        @Override public void clear() { }
         @Override public Collection<BackgroundTask> listTasks(RuntimeContext context, String agentId, TaskStatus status) { return List.of(); }
         @Override public boolean cancelTask(RuntimeContext context, String agentId, String taskId) { return false; }
 

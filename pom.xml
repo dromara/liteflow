@@ -98,7 +98,7 @@
 		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 		<apache-commons-test.version>1.14.0</apache-commons-test.version>
 		<caffeine.version>2.9.3</caffeine.version>
-		<agentscope.version>2.0.2</agentscope.version>
+		<agentscope.version>2.0.3</agentscope.version>
 	</properties>
 
 	<dependencyManagement>
@@ -156,6 +156,13 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${org.slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
@@ -609,7 +616,7 @@
 			</activation>
 		</profile>
 
-		<!-- Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
+		<!-- Agent 模块：需要 JDK 17+，JDK 版本满足时自动激活 -->
 		<profile>
 			<id>compile-17+</id>
 			<activation>

@@ -3,6 +3,7 @@ package com.yomahub.liteflow.agent.harness.state;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
+import io.agentscope.core.state.VersionedState;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -55,6 +56,25 @@ public final class HarnessNamespacedAgentStateStore
     public void save(String userId, String sessionId, String key, State value) {
         Route route = route(userId, sessionId, key);
         delegate().save(route.userId(), route.sessionId(), key, value);
+    }
+
+    @Override
+    public <T extends State> VersionedState<T> getVersioned(
+            String userId, String sessionId, String key, Class<T> type) {
+        Route route = route(userId, sessionId, key);
+        try {
+            return delegate().getVersioned(route.userId(), route.sessionId(), key, type);
+        } catch (RuntimeException | Error failure) {
+            recordLoadFailure(userId, route.runtimeSessionId(), failure);
+            throw failure;
+        }
+    }
+
+    @Override
+    public long saveIfVersion(
+            String userId, String sessionId, String key, State value, long expectedVersion) {
+        Route route = route(userId, sessionId, key);
+        return delegate().saveIfVersion(route.userId(), route.sessionId(), key, value, expectedVersion);
     }
 
     @Override

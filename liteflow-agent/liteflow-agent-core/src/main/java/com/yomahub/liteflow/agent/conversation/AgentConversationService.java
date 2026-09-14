@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.agent.conversation;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.yomahub.liteflow.agent.compatibility.AgentScopeCompatibility;
 import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
 import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuard;
@@ -9,9 +11,11 @@ import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.message.Msg;
+import io.agentscope.core.message.MessageMetadataKeys;
 import io.agentscope.core.state.AgentState;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
+import io.agentscope.core.util.JsonUtils;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -57,10 +61,9 @@ public final class AgentConversationService implements AutoCloseable {
     /** Opens an owned store using liteflow.agent.state-store.*. Close this service on shutdown. */
     public static AgentConversationService open(AgentConfig config) {
         validateConfig(config);
-        AgentInvocationGuard guard = new AgentInvocationGuardResolver().resolve(config);
         ResolvedAgentStateStore resolved = new DefaultAgentStateStoreResolver().resolve(config.getStateStore());
         try {
-            return new AgentConversationService(config, resolved.store(), resolved, guard);
+            return new AgentConversationService(config, resolved.store(), resolved);
         } catch (RuntimeException | Error failure) {
             try {
                 resolved.close();
@@ -73,21 +76,21 @@ public final class AgentConversationService implements AutoCloseable {
 
     /** Borrows an application-owned store, including stores supplied by custom resolvers. */
     public AgentConversationService(AgentConfig config, AgentStateStore store) {
-        this(config, store, null, new AgentInvocationGuardResolver().resolve(config));
+        this(config, store, null);
     }
 
     private AgentConversationService(AgentConfig config, AgentStateStore store,
-                                     ResolvedAgentStateStore ownedStore, AgentInvocationGuard guard) {
+                                     ResolvedAgentStateStore ownedStore) {
         validateConfig(config);
         this.namespace = config.getRuntime().getNamespace();
         this.identities = new InvocationIdentityResolver(namespace);
         this.prefix = "lf-conversation." + identities.resolve("index", "index", "conversation").agentNamespace() + ".";
         this.store = Objects.requireNonNull(store, "store");
         this.ownedStore = ownedStore;
-        this.guard = guard;
         this.timeout = Objects.requireNonNull(config.getInvocationGuard().getAcquireTimeout(), "acquireTimeout");
         this.addressProviders = ServiceLoader.load(AgentStateAddressProvider.class,
                 AgentStateAddressProvider.class.getClassLoader()).stream().map(ServiceLoader.Provider::get).toList();
+        this.guard = new AgentInvocationGuardResolver().resolve(config);
     }
 
     public AgentConversation create(String userId, String title) {
@@ -239,6 +242,7 @@ public final class AgentConversationService implements AutoCloseable {
             });
             // Never hold the metadata lock while waiting for execution: a finishing call may journal.
             try (var workspace = guard.acquire(AgentInvocationKey.workspace(namespace, userId, conversationId), timeout)) {
+                AgentConversationResourceRegistry.release(AgentInvocationKey.workspace(namespace, userId, conversationId));
                 for (AgentLocation agent : deleting.agents()) {
                     try (var state = guard.acquire(AgentInvocationKey.state(namespace, userId, conversationId, agent.agentKey()), timeout)) {
                         store.delete(userId, agent.sessionId());
@@ -310,7 +314,7 @@ public final class AgentConversationService implements AutoCloseable {
         locked(identity.userId(), identity.conversationId(), () -> {
             Optional<StoredConversation> loaded = load(identity.userId(), identity.conversationId());
             if (loaded.isPresent() && !loaded.get().deleted() && loaded.get().recordAgentMessages()) {
-                String content = failure == null ? (reply == null ? "" : reply.getTextContent())
+                String content = failure == null ? replyContent(reply)
                         : Objects.toString(failure.getMessage(), failure.getClass().getSimpleName());
                 appendLocked(identity.userId(), loaded.get(), "assistant", failure == null ? "result" : "error",
                         Objects.toString(content, ""), identity.agentKey(), requestId);
@@ -319,15 +323,31 @@ public final class AgentConversationService implements AutoCloseable {
         });
     }
 
+    private static String replyContent(Msg reply) {
+        if (reply == null) {
+            return "";
+        }
+        String text = reply.getTextContent();
+        if ((text == null || text.isBlank()) && reply.hasStructuredData()
+                && reply.getMetadata().get(MessageMetadataKeys.STRUCTURED_OUTPUT) != null) {
+            return JsonUtils.getJsonCodec().toJson(reply.getStructuredData(JsonNode.class));
+        }
+        return Objects.toString(text, "");
+    }
+
     @Override
     public void close() {
         lifecycle.writeLock().lock();
         try {
             if (!closed) {
                 closed = true;
-                if (ownedStore != null) {
-                    ownedStore.close();
+                try {
+                    if (ownedStore != null) ownedStore.close();
+                } catch (RuntimeException | Error failure) {
+                    try { guard.close(); } catch (RuntimeException | Error cleanup) { failure.addSuppressed(cleanup); }
+                    throw failure;
                 }
+                guard.close();
             }
         } finally {
             lifecycle.writeLock().unlock();
@@ -425,6 +445,7 @@ public final class AgentConversationService implements AutoCloseable {
 
     private static void validateConfig(AgentConfig config) {
         Objects.requireNonNull(config, "config").validateForExecution();
+        AgentScopeCompatibility.requireCoreVersion();
     }
 
     private static void requireText(String value, String name) {
@@ -435,8 +456,21 @@ public final class AgentConversationService implements AutoCloseable {
 
     /** Persistence DTO; internal physical addresses are never returned by the service API. */
     public record StoredConversation(AgentConversation conversation, boolean recordAgentMessages,
-                                     List<AgentLocation> agents, boolean deleted) implements State {
+                                     List<AgentLocation> agents, boolean deleted, int schemaVersion) implements State {
+        public StoredConversation(AgentConversation conversation, boolean recordAgentMessages,
+                                  List<AgentLocation> agents, boolean deleted) {
+            this(conversation, recordAgentMessages, agents, deleted, 1);
+        }
+
         public StoredConversation {
+            // The initial unversioned format is read as version 1 without changing its addresses.
+            if (schemaVersion == 0) {
+                schemaVersion = 1;
+            }
+            if (schemaVersion != 1) {
+                throw new IllegalArgumentException("Unsupported conversation schemaVersion: " + schemaVersion
+                        + "; this release supports version 1");
+            }
             agents = List.copyOf(agents);
         }
     }

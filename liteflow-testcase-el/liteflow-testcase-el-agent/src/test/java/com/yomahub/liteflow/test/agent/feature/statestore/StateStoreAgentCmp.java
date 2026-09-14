@@ -98,6 +98,12 @@ public abstract class StateStoreAgentCmp extends AgentComponent {
     }
 
     private static final class RecordingStore extends InMemoryAgentStateStore {
+        @Override
+        public long saveIfVersion(String userId, String sessionId, String key, State value, long expectedVersion) {
+            long version = super.saveIfVersion(userId, sessionId, key, value, expectedVersion);
+            if (version != UNVERSIONED) sessions.add(sessionId);
+            return version;
+        }
         private final Set<String> sessions = ConcurrentHashMap.newKeySet();
 
         @Override

@@ -1,5 +1,5 @@
 /**
- * LiteFlow's JDK 17 integration layer for AgentScope Java 2.0.2.
+ * LiteFlow's JDK 17 integration layer for AgentScope Java 2.0.3.
  *
  * <p>An agent component owns one lazily built, stateless runtime. Each invocation receives a
  * fresh {@code LiteFlowAgentContext} through AgentScope's {@code RuntimeContext}; build-time

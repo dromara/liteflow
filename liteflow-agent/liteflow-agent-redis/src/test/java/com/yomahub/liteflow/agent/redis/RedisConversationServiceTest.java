@@ -57,6 +57,16 @@ class RedisConversationServiceTest {
         @Override public Set<String> getSetMembers(String key) { return Set.copyOf(sets.getOrDefault(key, Set.of())); }
         @Override public long getSetSize(String key) { return getSetMembers(key).size(); }
         @Override public boolean keyExists(String key) { return values.containsKey(key) || sets.containsKey(key); }
+        @Override public synchronized long evalScript(String script, List<String> keys, List<String> args) {
+            assertEquals(io.agentscope.extensions.redis.state.RedisStateVersionSupport.SAVE_SCRIPT, script);
+            long current = Long.parseLong(values.getOrDefault(keys.get(1), "0"));
+            long expected = Long.parseLong(args.get(1));
+            if (expected != -1 && expected != current) return -1;
+            values.put(keys.get(0), args.get(0));
+            values.put(keys.get(1), Long.toString(current + 1));
+            addToSet(keys.get(2), args.get(2));
+            return current + 1;
+        }
         @Override public Set<String> findKeysByPattern(String pattern) {
             String regex = java.util.Arrays.stream(pattern.split("\\*", -1)).map(Pattern::quote).collect(Collectors.joining(".*"));
             Set<String> keys = new HashSet<>(values.keySet());

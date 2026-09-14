@@ -5,6 +5,12 @@ import com.yomahub.liteflow.agent.guard.AgentInvocationGuardResolver;
 import com.yomahub.liteflow.agent.guard.AgentInvocationKey;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import io.agentscope.core.message.UserMessage;
+import io.agentscope.core.message.Msg;
+import io.agentscope.core.message.MsgRole;
+import io.agentscope.core.message.MessageMetadataKeys;
+import io.agentscope.core.message.TextBlock;
+import io.agentscope.core.util.JsonUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.agentscope.core.state.AgentState;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.state.State;
@@ -24,6 +30,68 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AgentConversationServiceTest {
     @TempDir Path root;
+
+    @Test
+    void structuredRepliesWithoutTextRemainReadableAfterJsonStoreReopens() {
+        AgentConfig config = config("structured-history");
+        config.getStateStore().setJsonRoot(root.toString());
+        List<Object> payloads = List.of(Map.of("answer", 42), new StructuredAnswer(42),
+                JsonUtils.getJsonCodec().fromJson("{\"answer\":42}", JsonNode.class));
+        try (var service = AgentConversationService.open(config)) {
+            for (int i = 0; i < payloads.size(); i++) {
+                var identity = new InvocationIdentityResolver("structured-history").resolve("alice", "c" + i, "agent");
+                service.beginInvocation(identity, identity.storeSessionId(), List.of(new UserMessage("question")), "r");
+                Msg reply = Msg.builder().role(MsgRole.ASSISTANT)
+                        .content(TextBlock.builder().text(i == 1 ? "  " : "").build())
+                        .metadata(Map.of(MessageMetadataKeys.STRUCTURED_OUTPUT, payloads.get(i))).build();
+                service.finishInvocation(identity, "r", reply, null);
+            }
+        }
+        try (var service = AgentConversationService.open(config)) {
+            for (int i = 0; i < payloads.size(); i++) {
+                var message = service.messages("alice", "c" + i, 1, 1).items().get(0);
+                assertFalse(message.content().isBlank(), "structured reply must not disappear from history");
+                assertEquals(42, JsonUtils.getJsonCodec().fromJson(message.content(), JsonNode.class).get("answer").asInt());
+                assertEquals("result", message.stage());
+                assertEquals("agent", message.agentKey());
+            }
+        }
+    }
+
+    @Test
+    void historyKeepsExistingDisplayTextAndDoesNotExposeUnrelatedMetadata() {
+        try (var service = new AgentConversationService(config("app"), new InMemoryAgentStateStore())) {
+            var identity = new InvocationIdentityResolver("app").resolve("alice", "text", "agent");
+            service.beginInvocation(identity, identity.storeSessionId(), List.of(new UserMessage("question")), "r");
+            service.finishInvocation(identity, "r", Msg.builder().role(MsgRole.ASSISTANT)
+                    .content(TextBlock.builder().text("display answer").build())
+                    .metadata(Map.of(MessageMetadataKeys.STRUCTURED_OUTPUT, Map.of("answer", 42))).build(), null);
+            service.finishInvocation(identity, "r", Msg.builder().role(MsgRole.ASSISTANT)
+                    .metadata(Map.of("internal_note", "not user content")).build(), null);
+            service.finishInvocation(identity, "r", null, null);
+            service.finishInvocation(identity, "r", Msg.builder().role(MsgRole.ASSISTANT)
+                    .metadata(java.util.Collections.singletonMap(MessageMetadataKeys.STRUCTURED_OUTPUT, null)).build(), null);
+            assertEquals(List.of("display answer", "", "", ""), service.messages("alice", "text", 1, 10)
+                    .items().stream().map(AgentConversationMessage::content).toList());
+        }
+    }
+
+    public record StructuredAnswer(int answer) { }
+
+    @Test
+    void readsUnversionedMetadataAndRejectsAnUnknownFutureFormat() {
+        String legacy = """
+                {"conversation":{"id":"legacy","title":"old","createdAt":1,"updatedAt":2,
+                "messageCount":0,"attributes":{}},"recordAgentMessages":false,"agents":[],"deleted":false}
+                """;
+        var decoded = JsonUtils.getJsonCodec().fromJson(legacy, AgentConversationService.StoredConversation.class);
+        assertEquals(1, decoded.schemaVersion());
+        assertEquals("legacy", decoded.conversation().id());
+        assertTrue(JsonUtils.getJsonCodec().toJson(decoded).contains("\"schemaVersion\":1"));
+        String future = legacy.replace("\"deleted\":false", "\"deleted\":false,\"schemaVersion\":99");
+        assertThrows(RuntimeException.class,
+                () -> JsonUtils.getJsonCodec().fromJson(future, AgentConversationService.StoredConversation.class));
+    }
 
     @Test
     void jsonHistorySurvivesReopenAndPagesWithoutReadingTheWholeTranscript() {

@@ -1,11 +1,12 @@
 package com.yomahub.liteflow.property.agent;
 
-/** AgentScope Harness filesystem policy. */
+/** AgentScope Harness filesystem and memory policy. */
 public class HarnessConfig {
 
 	private HarnessFilesystemBackend filesystemBackend = HarnessFilesystemBackend.GUARDED_LOCAL;
 	private boolean trustedLocal;
 	private DockerSandboxConfig docker = new DockerSandboxConfig();
+	private HarnessMemoryConfig memory = new HarnessMemoryConfig();
 
 	public HarnessFilesystemBackend getFilesystemBackend() {
 		return filesystemBackend;
@@ -31,8 +32,20 @@ public class HarnessConfig {
 		this.docker = docker;
 	}
 
+	public HarnessMemoryConfig getMemory() {
+		return memory;
+	}
+
+	public void setMemory(HarnessMemoryConfig memory) {
+		this.memory = memory;
+	}
+
 	/** Validates the selected filesystem policy before a Harness runtime is built. */
 	public void validate() {
+		if (memory == null) {
+			throw new IllegalStateException("liteflow.agent.harness.memory must not be null");
+		}
+		memory.validate();
 		if (filesystemBackend == null) {
 			throw new IllegalStateException(
 					"liteflow.agent.harness.filesystem-backend must not be null");

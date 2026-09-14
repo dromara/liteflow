@@ -72,7 +72,7 @@ class HarnessAgentBuilderFilesystemBridgeTest {
         AgentConfigException drift = assertThrows(
                 AgentConfigException.class,
                 () -> HarnessAgentBuilderFilesystemBridge.validateShape(DriftedBuilder.class));
-        assertTrue(drift.getMessage().contains("2.0.2"));
+        assertTrue(drift.getMessage().contains("2.0.3"));
         assertNotNull(drift.getCause());
     }
 
@@ -99,7 +99,7 @@ class HarnessAgentBuilderFilesystemBridgeTest {
                 AgentConfigException.class,
                 () -> HarnessAgentBuilderTaskOwnershipBridge.validateShape(
                         DriftedBuilder.class));
-        assertTrue(drift.getMessage().contains("2.0.2"));
+        assertTrue(drift.getMessage().contains("2.0.3"));
         assertNotNull(drift.getCause());
     }
 
@@ -121,7 +121,7 @@ class HarnessAgentBuilderFilesystemBridgeTest {
                 AgentConfigException.class,
                 () -> HarnessAgentBuilderSubagentPermissionBridge
                         .validateDynamicMiddlewareShape(DriftedDynamicMiddleware.class));
-        assertTrue(drift.getMessage().contains("agentscope-harness 2.0.2"));
+        assertTrue(drift.getMessage().contains("agentscope-harness 2.0.3"));
     }
 
     @Test

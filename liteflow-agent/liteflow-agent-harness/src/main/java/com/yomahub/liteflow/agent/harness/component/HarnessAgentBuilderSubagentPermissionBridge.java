@@ -29,13 +29,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import reactor.core.publisher.Flux;
 
-/** AgentScope Harness 2.0.2 compatibility bridge for declared child permission inheritance. */
+/** AgentScope Harness 2.0.3 compatibility bridge for declared child permission inheritance. */
 final class HarnessAgentBuilderSubagentPermissionBridge {
 
-    private static final String AGENTSCOPE_CORE_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_CORE_VERSION = "2.0.3";
     private static final String CORE_VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-core/pom.properties";
-    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_HARNESS_VERSION = "2.0.3";
     private static final String HARNESS_VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static volatile Field initialPermissionContextField;
@@ -159,7 +159,7 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
                 .getResourceAsStream(CORE_VERSION_RESOURCE)) {
             if (input == null) {
                 throw new AgentConfigException(
-                        "Harness subagent permission bridge requires agentscope-core 2.0.2 metadata");
+                        "Harness subagent permission bridge requires agentscope-core 2.0.3 metadata");
             }
             properties.load(input);
         }
@@ -171,7 +171,7 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
         }
         if (!AGENTSCOPE_CORE_VERSION.equals(properties.getProperty("version"))) {
             throw new AgentConfigException(
-                    "Harness subagent permission bridge requires agentscope-core 2.0.2");
+                    "Harness subagent permission bridge requires agentscope-core 2.0.3");
         }
     }
 
@@ -297,7 +297,7 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
 
     private static AgentConfigException incompatibleHarness(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Harness subagent permission bridge requires agentscope-harness 2.0.2: "
+                "Harness subagent permission bridge requires agentscope-harness 2.0.3: "
                         + detail,
                 cause);
     }
@@ -328,13 +328,13 @@ final class HarnessAgentBuilderSubagentPermissionBridge {
                             || !Modifier.isFinal(modifiers)
                             || !field.trySetAccessible()) {
                         throw new AgentConfigException(
-                                "agentscope-core 2.0.2 permission context shape changed");
+                                "agentscope-core 2.0.3 permission context shape changed");
                     }
                     initialPermissionContextField = field;
                 }
                 catch (NoSuchFieldException failure) {
                     throw new AgentConfigException(
-                            "agentscope-core 2.0.2 permission context shape changed", failure);
+                            "agentscope-core 2.0.3 permission context shape changed", failure);
                 }
             }
             return initialPermissionContextField;

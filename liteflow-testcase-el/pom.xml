@@ -57,7 +57,7 @@
     </modules>
 
     <profiles>
-        <!-- Agent 测试模块依赖 JDK 21（agentscope-java），仅在 JDK 17+ 构建中拉入 -->
+        <!-- Agent 测试模块需要 JDK 17+，仅在对应构建中拉入 -->
         <profile>
             <id>testcase-agent</id>
             <activation>

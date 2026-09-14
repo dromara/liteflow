@@ -564,7 +564,7 @@ class FirstPartyModelProviderTest {
         return config;
     }
 
-    // AgentScope 2.0.2 exposes no configured-options/formatter accessor. These source-pinned
+    // AgentScope 2.0.3 exposes no configured-options/formatter accessor. These source-pinned
     // probes inspect the real extension model built by ModelRegistry without sending a request.
     private static GenerateOptions configuredOptions(OpenAIChatModel model) throws Exception {
         return field(model, "configuredOptions", GenerateOptions.class);

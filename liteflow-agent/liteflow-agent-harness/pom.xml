@@ -25,7 +25,7 @@
             <groupId>io.agentscope</groupId>
             <artifactId>agentscope-harness</artifactId>
         </dependency>
-        <!-- agentscope-harness 2.0.2 uses commons-compress 1.27.1, which requires this API. -->
+        <!-- agentscope-harness 2.0.3 uses commons-compress 1.27.1, which requires this API. -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>

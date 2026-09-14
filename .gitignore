@@ -92,3 +92,5 @@ atlassian-ide-plugin.xml
 .node_instance_id
 # AgentScope default JSON state-store root (./data/agent-state)
 data/
+/docs
+/scripts/

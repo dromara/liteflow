@@ -163,13 +163,14 @@ class HarnessCapabilitiesTest {
     }
 
     @Test
-    void nullCapabilityHooksPreserveHarnessDefaults() throws Exception {
+    void nullCapabilityHooksApplyTheLiteflowMemoryDefaultAndPreserveOtherDefaults() throws Exception {
         configureCustom("null-defaults");
         TestComponent component = component(new RecordingModel(), new RecordingFilesystem(Map.of()));
         component.inspectBuilder = builder -> {
             assertFalse(booleanField(builder, "disableCompaction"));
             assertFalse(booleanField(builder, "disableToolResultEviction"));
             MemoryConfig upstreamDefault = (MemoryConfig) field(builder, "memoryConfig");
+            assertEquals(MemoryConfig.FlushMode.NEVER, upstreamDefault.flushTrigger().mode());
             assertEquals(MemoryConfig.DEFAULT_SESSION_RETENTION_DAYS,
                     upstreamDefault.sessionRetentionDays());
             assertEquals(MemoryConfig.DEFAULT_DAILY_FILE_RETENTION_DAYS,
@@ -180,7 +181,7 @@ class HarnessCapabilitiesTest {
     }
 
     @Test
-    void explicitCompactionMemoryAndEvictionObjectsArePassedByIdentity() throws Exception {
+    void explicitCapabilitySettingsArePreservedExceptForTheConfiguredMemoryTrigger() throws Exception {
         configureCustom("explicit-context-engineering");
         TestComponent component = component(new RecordingModel(), new RecordingFilesystem(Map.of()));
         component.compaction = CompactionConfig.builder().triggerMessages(7).keepMessages(3).build();
@@ -191,7 +192,9 @@ class HarnessCapabilitiesTest {
                 .build();
         component.inspectBuilder = builder -> {
             assertSame(component.compaction, field(builder, "compactionConfig"));
-            assertSame(component.memory, field(builder, "memoryConfig"));
+            MemoryConfig memory = (MemoryConfig) field(builder, "memoryConfig");
+            assertEquals(component.memory.sessionRetentionDays(), memory.sessionRetentionDays());
+            assertEquals(MemoryConfig.FlushMode.NEVER, memory.flushTrigger().mode());
             assertSame(component.eviction, field(builder, "toolResultEvictionConfig"));
         };
 
@@ -231,6 +234,8 @@ class HarnessCapabilitiesTest {
             throws Exception {
         String namespace = "real-memory";
         configureGuarded(namespace);
+        LiteflowConfigGetter.get().getAgent().getHarness().getMemory()
+                .setFlushMode(com.yomahub.liteflow.property.agent.HarnessMemoryFlushMode.ALWAYS);
         String daily = "memory/" + LocalDate.now() + ".md";
         List<String> markers = List.of("A-ONE", "A-TWO", "B-ONE", "B-TWO");
         List<TestComponent> matrix = List.of(
@@ -313,7 +318,7 @@ class HarnessCapabilitiesTest {
         RecordingModel model = RecordingModel.loadSkill(allowed);
         TestComponent component = component(model, new RecordingFilesystem(Map.of()));
         component.repositories = List.of(repository);
-        // Harness 2.0.2 applies the visibility filter to the skill name; the rendered/tool
+        // Harness 2.0.3 applies the visibility filter to the skill name; the rendered/tool
         // catalog remains keyed by the source-qualified skill id.
         component.skillFilter = SkillFilter.only(allowed.getName());
         component.dynamicSkills = true;
@@ -1383,8 +1388,6 @@ class HarnessCapabilitiesTest {
                     .filter(task -> task.getTaskId().equals(taskId)).findFirst().orElse(null);
         }
         @Override public BackgroundTask putTask(RuntimeContext context, String agentId, String taskId, String description, TaskRunSpec spec) { return null; }
-        @Override public void removeTask(RuntimeContext context, String agentId, String taskId) { }
-        @Override public void clear() { }
         @Override public Collection<BackgroundTask> listTasks(
                 RuntimeContext context, String agentId, TaskStatus status) {
             listCalls.add(new TaskListCall(agentId, status));

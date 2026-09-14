@@ -1,5 +1,5 @@
 /**
- * Optional AgentScope Harness 2.0.2 integration for LiteFlow Agent components.
+ * Optional AgentScope Harness 2.0.3 integration for LiteFlow Agent components.
  *
  * <p>The module adds compaction, memory, skills, typed subagent declarations, task and plan
  * support, tool-result eviction, snapshots, and policy-bound filesystems. Guarded local access is

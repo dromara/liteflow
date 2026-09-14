@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-/** Converts AgentScope's load-error fallback into the configured LiteFlow failure policy. */
+/** Handles deferred provider load errors; AgentScope 2.0.3's directly raised failures propagate. */
 public final class StateStoreFailureMiddleware implements MiddlewareBase {
 
     private final GuardedNamespacedAgentStateStore stateStore;

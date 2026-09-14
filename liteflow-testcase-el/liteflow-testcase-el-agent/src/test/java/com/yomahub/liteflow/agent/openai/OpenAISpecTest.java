@@ -467,7 +467,7 @@ class OpenAISpecTest {
         return config;
     }
 
-    // AgentScope 2.0.2 has no public configured-options/formatter accessor. These source-pinned
+    // AgentScope 2.0.3 has no public configured-options/formatter accessor. These source-pinned
     // probes inspect the real built extension model instead of bypassing its builder.
     private static GenerateOptions configuredOptions(OpenAIChatModel model) throws Exception {
         return field(model, "configuredOptions", GenerateOptions.class);

@@ -5,6 +5,7 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.State;
+import io.agentscope.core.state.VersionedState;
 
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,29 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
     @Override
     public void save(String userId, String sessionId, String key, State value) {
         delegate.save(userId, namespace(sessionId), key, value);
+    }
+
+    @Override
+    public boolean supportsVersioning() {
+        return delegate.supportsVersioning();
+    }
+
+    @Override
+    public <T extends State> VersionedState<T> getVersioned(
+            String userId, String sessionId, String key, Class<T> type) {
+        String logicalSessionId = requireSafeHashId(sessionId, "sessionId");
+        try {
+            return delegate.getVersioned(userId, sessionPrefix + logicalSessionId, key, type);
+        } catch (RuntimeException | Error failure) {
+            recordLoadFailure(userId, logicalSessionId, failure);
+            throw failure;
+        }
+    }
+
+    @Override
+    public long saveIfVersion(
+            String userId, String sessionId, String key, State value, long expectedVersion) {
+        return delegate.saveIfVersion(userId, namespace(sessionId), key, value, expectedVersion);
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.Properties;
 /** Version-pinned default policy and inspection of the final Harness permission context. */
 final class HarnessAgentBuilderPermissionBridge {
 
-    private static final String AGENTSCOPE_VERSION = "2.0.2";
+    private static final String AGENTSCOPE_VERSION = "2.0.3";
     private static final String HARNESS_VERSION_RESOURCE =
             "META-INF/maven/io.agentscope/agentscope-harness/pom.properties";
     private static final String CORE_VERSION_RESOURCE =
@@ -177,7 +177,7 @@ final class HarnessAgentBuilderPermissionBridge {
 
     private static AgentConfigException incompatible(String detail, Throwable cause) {
         return new AgentConfigException(
-                "Harness permission guard requires AgentScope 2.0.2: " + detail, cause);
+                "Harness permission guard requires AgentScope 2.0.3: " + detail, cause);
     }
 
     private record Fields(Field inner, Field permissionContext, Field middlewares) {
