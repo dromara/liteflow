@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.platform.deepseek;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.openai.DeepSeek;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * DeepSeek（OpenAI 兼容预设，内置默认 baseUrl）连通性测试组件。
  */
 @Component("deepseekPlatformAgent")
-public class DeepSeekPlatformAgentCmp extends AgentComponent {
+public class DeepSeekPlatformAgentCmp extends HarnessAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
@@ -36,11 +36,6 @@ public class DeepSeekPlatformAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 }

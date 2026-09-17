@@ -1,8 +1,8 @@
 package com.yomahub.liteflow.agent.state;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
-import com.yomahub.liteflow.property.agent.AgentStateStoreConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.JsonFileAgentStateStore;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * Default JSON and ServiceLoader-backed state-store mapping.
+ * Default JSON and ServiceLoader-backed session-store mapping.
  *
  * <p>JSON is handled here directly. REDIS and MYSQL are delegated to the
  * {@link AgentStateStoreProvider} SPI, implemented by the optional
@@ -22,18 +22,18 @@ import java.util.ServiceLoader;
  */
 public final class DefaultAgentStateStoreResolver implements AgentStateStoreResolver {
 
-	static final Map<AgentStateStoreType, String> PROVIDER_MODULES =
-			Map.of(AgentStateStoreType.REDIS, "liteflow-agent-redis",
-					AgentStateStoreType.MYSQL, "liteflow-agent-mysql");
+	static final Map<AgentSessionStoreType, String> PROVIDER_MODULES =
+			Map.of(AgentSessionStoreType.REDIS, "liteflow-agent-redis",
+					AgentSessionStoreType.MYSQL, "liteflow-agent-mysql");
 
-	private final Map<AgentStateStoreType, AgentStateStoreProvider> providers;
+	private final Map<AgentSessionStoreType, AgentStateStoreProvider> providers;
 
 	public DefaultAgentStateStoreResolver() {
 		this(loadProviders());
 	}
 
 	DefaultAgentStateStoreResolver(Iterable<AgentStateStoreProvider> providers) {
-		Map<AgentStateStoreType, AgentStateStoreProvider> indexed = new EnumMap<>(AgentStateStoreType.class);
+		Map<AgentSessionStoreType, AgentStateStoreProvider> indexed = new EnumMap<>(AgentSessionStoreType.class);
 		for (AgentStateStoreProvider provider : providers) {
 			if (provider == null || provider.type() == null) {
 				continue;
@@ -44,12 +44,12 @@ public final class DefaultAgentStateStoreResolver implements AgentStateStoreReso
 	}
 
 	@Override
-	public ResolvedAgentStateStore resolve(AgentStateStoreConfig config) {
+	public ResolvedAgentStateStore resolve(AgentSessionStoreConfig config) {
 		if (config == null) {
-			throw new AgentConfigException("liteflow.agent.state-store must not be null");
+			throw new AgentConfigException("liteflow.agent.session-store must not be null");
 		}
 		if (config.getType() == null) {
-			throw new AgentConfigException("liteflow.agent.state-store.type must not be null");
+			throw new AgentConfigException("liteflow.agent.session-store.type must not be null");
 		}
 		return switch (config.getType()) {
 			case JSON -> resolveJson(config);
@@ -57,11 +57,11 @@ public final class DefaultAgentStateStoreResolver implements AgentStateStoreReso
 		};
 	}
 
-	private static ResolvedAgentStateStore resolveJson(AgentStateStoreConfig config) {
+	private static ResolvedAgentStateStore resolveJson(AgentSessionStoreConfig config) {
 		String jsonRoot = config.getJsonRoot();
 		if (jsonRoot == null || jsonRoot.isBlank()) {
 			throw new AgentConfigException(
-					"liteflow.agent.state-store.json-root is required when type=JSON");
+					"liteflow.agent.session-store.json-root is required when type=JSON");
 		}
 		try {
 			return new ResolvedAgentStateStore(
@@ -69,15 +69,15 @@ public final class DefaultAgentStateStoreResolver implements AgentStateStoreReso
 		} catch (RuntimeException | LinkageError failure) {
 			throw new AgentConfigException(
 					"JSON state store could not be created from "
-							+ "liteflow.agent.state-store.json-root",
+							+ "liteflow.agent.session-store.json-root",
 					failure);
 		}
 	}
 
-	private ResolvedAgentStateStore resolveProvider(AgentStateStoreConfig config) {
+	private ResolvedAgentStateStore resolveProvider(AgentSessionStoreConfig config) {
 		AgentStateStoreProvider provider = providers.get(config.getType());
 		if (provider == null) {
-			throw new AgentConfigException("state-store type " + config.getType()
+			throw new AgentConfigException("session-store type " + config.getType()
 					+ " requires the " + PROVIDER_MODULES.get(config.getType())
 					+ " module on the classpath");
 		}

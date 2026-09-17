@@ -60,7 +60,7 @@ class GuardedLocalFilesystemTest {
     void rejectsCrossPlatformAbsoluteTraversalNulBlankAndWin32AliasesBeforeCreatingSessionRoot()
             throws Exception {
         Path root = tempDir.resolve("workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 1024);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         RuntimeContext context = context("session-a", "user-a");
         List<String> rejected = List.of(
                 "/etc/passwd",
@@ -103,7 +103,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void preservesTask2SafeWin32TrailingNamesWithoutRewriting() {
         GuardedLocalFilesystem filesystem =
-                new GuardedLocalFilesystem(tempDir.resolve("workspace"), 1024);
+                new GuardedLocalFilesystem(tempDir.resolve("workspace"));
         RuntimeContext context = context("session-a", "user-a");
 
         assertTrue(filesystem.write(context, "folder./file.", "dot").isSuccess());
@@ -117,7 +117,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void dotMeansSessionRootAndSafeDotSegmentsAndMixedSeparatorsRemainUsable() {
         GuardedLocalFilesystem filesystem =
-                new GuardedLocalFilesystem(tempDir.resolve("workspace"), 1024);
+                new GuardedLocalFilesystem(tempDir.resolve("workspace"));
         RuntimeContext context = context("session-a", "user-a");
 
         assertTrue(filesystem.ls(context, ".").isSuccess());
@@ -134,12 +134,12 @@ class GuardedLocalFilesystemTest {
     }
 
     @Test
-    void safelyEncodesRuntimeSessionIdAndIsolatesOnlyBySession() throws Exception {
+    void usesPlainRuntimeSessionIdAndIsolatesOnlyBySession() throws Exception {
         Path root = tempDir.resolve("workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 1024);
-        RuntimeContext first = context("../tenant/a\\C:", "user-a");
-        RuntimeContext sameSessionDifferentUser = context("../tenant/a\\C:", "user-b");
-        RuntimeContext second = context("../tenant/b\\C:", "user-a");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext first = context("session-a", "user-a");
+        RuntimeContext sameSessionDifferentUser = context("session-a", "user-b");
+        RuntimeContext second = context("session-b", "user-a");
 
         assertTrue(filesystem.write(first, "visible.txt", "first").isSuccess());
         assertTrue(filesystem.read(sameSessionDifferentUser, "visible.txt", 0, 0).isSuccess());
@@ -162,7 +162,7 @@ class GuardedLocalFilesystemTest {
         assertEquals(2, sessionRoots.size());
         assertTrue(sessionRoots.stream().allMatch(path -> path.getParent().equals(root)));
         assertTrue(sessionRoots.stream().allMatch(path -> path.getFileName().toString()
-                .matches("session-[0-9a-f]{64}")));
+                .matches("session-[ab]")));
         assertNotEquals(sessionRoots.get(0).getFileName(), sessionRoots.get(1).getFileName());
 
         assertThrows(
@@ -183,7 +183,7 @@ class GuardedLocalFilesystemTest {
     void agentMemoryIsPhysicalAgentSessionStateWhileConversationFilesStayShared()
             throws Exception {
         Path root = tempDir.resolve("agent-memory-workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         LiteFlowAgentContext firstLiteFlow = liteFlowContext("conversation", "agent-a");
         LiteFlowAgentContext secondLiteFlow = liteFlowContext("conversation", "agent-b");
         RuntimeContext first = runtimeContext(firstLiteFlow);
@@ -215,7 +215,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void dotAliasedMemoryPathsUseTheSameAgentSessionRootAsCanonicalMemoryPaths() {
         GuardedLocalFilesystem filesystem =
-                new GuardedLocalFilesystem(tempDir.resolve("aliased-memory-workspace"), 4096);
+                new GuardedLocalFilesystem(tempDir.resolve("aliased-memory-workspace"));
         RuntimeContext first = runtimeContext(liteFlowContext("conversation", "agent-a"));
         RuntimeContext second = runtimeContext(liteFlowContext("conversation", "agent-b"));
 
@@ -239,7 +239,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void memoryListingsAndSearchExposeOnlyVirtualPathsAndReadThosePathsSuccessfully() {
         Path root = tempDir.resolve("virtual-memory-workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         RuntimeContext context = runtimeContext(liteFlowContext("conversation", "agent-a"));
         assertTrue(filesystem.write(context, "MEMORY.md", "curated needle").isSuccess());
         assertTrue(filesystem.write(
@@ -273,7 +273,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void internalMemoryListingsRoundTripThroughWorkspaceManagerAndSearch() {
         Path root = tempDir.resolve("internal-memory-workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         RuntimeContext internal = context("internal-session", "internal-user");
         RuntimeContext sameSession = context("internal-session", "other-user");
 
@@ -315,11 +315,11 @@ class GuardedLocalFilesystemTest {
     @Test
     void mismatchedLiteFlowSessionMemoryListingsUseSessionOnlyFallback() {
         Path root = tempDir.resolve("mismatched-memory-workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 4096);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         LiteFlowAgentContext attachment = liteFlowContext("conversation", "agent-a");
         String runtimeSessionId = attachment.getRuntimeSessionId() + "-internal";
         RuntimeContext mismatch = RuntimeContext.builder()
-                .userId(attachment.getRuntimeUserId())
+                .userId(null)
                 .sessionId(runtimeSessionId)
                 .put(LiteFlowAgentContext.class, attachment)
                 .build();
@@ -368,7 +368,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void rejectsFileAndDirectorySymlinksForReadListDeleteWriteUploadAndMove() throws Exception {
         Path root = tempDir.resolve("workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 1024);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         RuntimeContext context = context("session-a", "user-a");
         assertTrue(filesystem.write(context, "seed.txt", "seed").isSuccess());
         Path sessionRoot = onlySessionRoot(root);
@@ -411,7 +411,7 @@ class GuardedLocalFilesystemTest {
     @Test
     void validatesBothMoveEndpointsBeforeMutation() throws Exception {
         Path root = tempDir.resolve("workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 1024);
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
         RuntimeContext context = context("session-a", "user-a");
         assertTrue(filesystem.write(context, "source.txt", "source").isSuccess());
 
@@ -425,40 +425,20 @@ class GuardedLocalFilesystemTest {
     }
 
     @Test
-    void rejectsOversizedUtf8WriteAndBinaryUploadBeforeChangingTargets() throws Exception {
-        Path root = tempDir.resolve("workspace");
-        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root, 3);
+    void writesEditsUploadsAndSearchesFilesLargerThanTheFormerLimit() throws Exception {
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(tempDir.resolve("workspace"));
         RuntimeContext context = context("session-a", "user-a");
-
-        WriteResult oversizedWrite = filesystem.write(context, "utf8.txt", "你a");
-        assertFalse(oversizedWrite.isSuccess());
-        try (Stream<Path> children = Files.list(root)) {
-            assertEquals(0, children.count());
-        }
-
-        List<FileUploadResponse> initial = filesystem.uploadFiles(
-                context,
-                List.of(
-                        Map.entry("kept.bin", new byte[] {1, 2, 3}),
-                        Map.entry("oversized.bin", new byte[] {1, 2, 3, 4})));
-        assertTrue(initial.get(0).isSuccess());
-        assertFalse(initial.get(1).isSuccess());
-        assertFalse(filesystem.exists(context, "oversized.bin"));
-
-        FileUploadResponse replacement = filesystem.uploadFiles(
-                context,
-                List.of(Map.entry("kept.bin", new byte[] {9, 9, 9, 9})))
-                .get(0);
-        assertFalse(replacement.isSuccess());
-        FileDownloadResponse kept = filesystem.downloadFiles(context, List.of("kept.bin")).get(0);
-        assertTrue(kept.isSuccess());
-        assertArrayEquals(new byte[] {1, 2, 3}, kept.content());
-
-        assertTrue(filesystem.write(context, "editable.txt", "a").isSuccess());
-        EditResult oversizedEdit = filesystem.edit(context, "editable.txt", "a", "你a", false);
-        assertFalse(oversizedEdit.isSuccess());
-        assertEquals("a", filesystem.read(context, "editable.txt", 0, 0)
-                .fileData().content());
+        String large = "你".repeat(4 * 1024 * 1024);
+        assertTrue(filesystem.write(context, "large.txt", "sentinel\n" + large).isSuccess());
+        assertEquals(1, filesystem.grep(context, "sentinel", ".", "*.txt").matches().size());
+        assertTrue(filesystem.write(context, "editable.txt", "small").isSuccess());
+        assertTrue(filesystem.edit(context, "editable.txt", "small", large, false).isSuccess());
+        assertArrayEquals(large.getBytes(StandardCharsets.UTF_8),
+                filesystem.downloadFiles(context, List.of("editable.txt")).get(0).content());
+        byte[] binary = new byte[11 * 1024 * 1024];
+        binary[binary.length - 1] = 7;
+        assertTrue(filesystem.uploadFiles(context, List.of(Map.entry("large.bin", binary))).get(0).isSuccess());
+        assertArrayEquals(binary, filesystem.downloadFiles(context, List.of("large.bin")).get(0).content());
     }
 
     @Test
@@ -466,10 +446,12 @@ class GuardedLocalFilesystemTest {
             throws Exception {
         Path root = tempDir.resolve("workspace");
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getWorkspace().setRoot(root.toString());
+        config.setApplicationName("test-app");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
         HarnessFilesystemContext context =
-                new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
         HarnessAgent.Builder builder = HarnessAgent.builder().model(model());
         new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
                 .configure(builder, context);
@@ -500,13 +482,14 @@ class GuardedLocalFilesystemTest {
     }
 
     @Test
-    void configurerInjectsOnlyTheGuardedAbstractFilesystemAndHonorsAutoCreate() throws Exception {
+    void configurerInjectsTheGuardedAbstractFilesystemAndCreatesItsRoot() throws Exception {
         Path root = tempDir.resolve("workspace");
         AgentConfig config = new AgentConfig();
-        config.getWorkspace().setRoot(root.toString());
-        config.getWorkspace().setAutoCreate(true);
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
         HarnessFilesystemContext context =
-                new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
         HarnessAgent.Builder builder = HarnessAgent.builder();
 
         new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
@@ -526,9 +509,11 @@ class GuardedLocalFilesystemTest {
             throws Exception {
         Path root = tempDir.resolve("stable-internal-workspace");
         AgentConfig config = new AgentConfig();
-        config.getWorkspace().setRoot(root.toString());
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
         HarnessFilesystemContext context =
-                new HarnessFilesystemContext(root, 4096, Duration.ofSeconds(2), config);
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
         String firstAgent = "lf-" + "a".repeat(64);
         String secondAgent = "lf-" + "b".repeat(64);
 
@@ -546,7 +531,7 @@ class GuardedLocalFilesystemTest {
                 AsyncToolRecord.RUNNING,
                 Instant.now().minusSeconds(10));
         firstRegistry.register(record).block();
-        assertEquals(1, sessionRootCount(root));
+        assertEquals(1, sessionRootCount(root.resolve("test-app")));
 
         HarnessAgent.Builder rebuiltBuilder = HarnessAgent.builder();
         new GuardedLocalFilesystemConfigurer(firstAgent).configure(rebuiltBuilder, context);
@@ -560,37 +545,33 @@ class GuardedLocalFilesystemTest {
         assertEquals(
                 List.of(record),
                 rebuiltRegistry.findStale("conversation-1", Duration.ZERO).block());
-        assertEquals(1, sessionRootCount(root));
+        assertEquals(1, sessionRootCount(root.resolve("test-app")));
 
         HarnessAgent.Builder otherBuilder = HarnessAgent.builder();
         new GuardedLocalFilesystemConfigurer(secondAgent).configure(otherBuilder, context);
         MessageBus otherBus = (MessageBus) builderField("messageBus").get(otherBuilder);
         assertFalse(otherBus.queuePeek("recoverable").block());
         otherBus.queuePush("other", Map.of("value", "second-agent")).block();
-        assertEquals(2, sessionRootCount(root));
+        assertEquals(2, sessionRootCount(root.resolve("test-app")));
 
         GuardedLocalFilesystem guarded = (GuardedLocalFilesystem)
                 builderField("abstractFilesystem").get(rebuiltBuilder);
         RuntimeContext ordinaryConversation = context("lf-" + "c".repeat(64), "user-a");
         assertFalse(guarded.exists(ordinaryConversation, ".agentscope/bus"));
         assertTrue(guarded.write(ordinaryConversation, "ordinary.txt", "ordinary").isSuccess());
-        assertEquals(3, sessionRootCount(root));
+        assertEquals(3, sessionRootCount(root.resolve("test-app")));
     }
 
     @Test
-    void disabledAutoCreateRequiresAnExistingWorkspaceRoot() {
+    void missingWorkspaceDirectoryIsCreatedAutomatically() {
         Path root = tempDir.resolve("missing-workspace");
         AgentConfig config = new AgentConfig();
-        config.getWorkspace().setRoot(root.toString());
-        config.getWorkspace().setAutoCreate(false);
-        HarnessFilesystemContext context =
-                new HarnessFilesystemContext(root, 17, Duration.ofSeconds(2), config);
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
-                        .configure(HarnessAgent.builder(), context));
-        assertFalse(Files.exists(root));
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
+        HarnessFilesystemContext context = new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64)).configure(HarnessAgent.builder(), context);
+        assertTrue(Files.isDirectory(root));
     }
 
     private static RuntimeContext context(String sessionId, String userId) {
@@ -599,7 +580,7 @@ class GuardedLocalFilesystemTest {
 
     private static LiteFlowAgentContext liteFlowContext(String conversationId, String agentKey) {
         AgentInvocationIdentity identity = new InvocationIdentityResolver("namespace")
-                .resolve("user", conversationId, agentKey);
+                .resolve(conversationId, agentKey);
         Slot slot = new Slot();
         slot.setChainId("chain");
         slot.setConversationId(conversationId);
@@ -618,7 +599,7 @@ class GuardedLocalFilesystemTest {
 
     private static RuntimeContext runtimeContext(LiteFlowAgentContext context) {
         return RuntimeContext.builder()
-                .userId(context.getRuntimeUserId())
+                .userId(null)
                 .sessionId(context.getRuntimeSessionId())
                 .put(LiteFlowAgentContext.class, context)
                 .build();

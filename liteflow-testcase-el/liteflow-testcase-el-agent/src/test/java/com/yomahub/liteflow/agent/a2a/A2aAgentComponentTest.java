@@ -57,10 +57,9 @@ class A2aAgentComponentTest {
 
         guard = new RecordingGuard();
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getRuntime().setNamespace("a2a-component-test");
-        agent.getRuntime().setDefaultUserId("user-3");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(2));
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.setApplicationName("a2a-component-test");
+        agent.setExecutionTimeout(Duration.ofSeconds(2));
         agent.getInvocationGuard().setMode(AgentInvocationGuardMode.BEAN);
         agent.getInvocationGuard().setBeanName("a2a-test-guard");
         LiteflowConfig config = new LiteflowConfig();
@@ -91,7 +90,6 @@ class A2aAgentComponentTest {
         assertEquals(List.of("reply-1", "reply-2"), List.of(firstReply, secondReply));
         assertEquals("conversation-7", component.lastContext.getConversationId());
         assertEquals(Map.of(
-                        "liteflow.userId", "user-3",
                         "liteflow.conversationId", "conversation-7",
                         "liteflow.agentKey", "node-a",
                         "liteflow.traceId", "request-9"),
@@ -137,7 +135,7 @@ class A2aAgentComponentTest {
 
     @Test
     void coreDeadlineCancelsDefaultRuntimeInterruptsOnceAndReleasesLeaseForRetry() throws Exception {
-        LiteflowConfigGetter.get().getAgent().getRuntime().setTimeout(Duration.ofMillis(40));
+        LiteflowConfigGetter.get().getAgent().setExecutionTimeout(Duration.ofMillis(40));
         AtomicInteger interrupts = new AtomicInteger();
         CountDownLatch cancelled = new CountDownLatch(1);
         AtomicReference<Mono<Msg>> response = new AtomicReference<>(

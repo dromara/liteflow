@@ -6,7 +6,6 @@ import io.agentscope.harness.agent.IsolationScope;
 import io.agentscope.harness.agent.filesystem.local.LocalFilesystem;
 import io.agentscope.harness.agent.filesystem.model.EditResult;
 import io.agentscope.harness.agent.filesystem.model.FileInfo;
-import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
 import io.agentscope.harness.agent.filesystem.model.GlobResult;
 import io.agentscope.harness.agent.filesystem.model.GrepMatch;
 import io.agentscope.harness.agent.filesystem.model.GrepResult;
@@ -24,10 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,19 +38,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class GuardedLocalFilesystem extends LocalFilesystem {
 
-    private static final long BYTES_PER_MEBIBYTE = 1024L * 1024;
     private static final NamespaceFactory SESSION_NAMESPACE_FACTORY = sessionNamespaceFactory();
 
     private final Path root;
-    private final long maxFileBytes;
     private final Map<String, ReentrantLock> editLocks = new ConcurrentHashMap<>();
 
-    public GuardedLocalFilesystem(Path root, long maxFileBytes) {
-        this(root, maxFileBytes, true);
-    }
-
-    public GuardedLocalFilesystem(Path root, long maxFileBytes, boolean autoCreate) {
-        this(prepareRoot(root, maxFileBytes, autoCreate));
+    public GuardedLocalFilesystem(Path root) {
+        this(prepareRoot(root));
     }
 
     private GuardedLocalFilesystem(PreparedRoot prepared) {
@@ -63,10 +52,9 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
                 prepared.path(),
                 LocalFsMode.UNRESTRICTED,
                 PathPolicy.empty(),
-                searchLimitMebibytes(prepared.maxFileBytes()),
+                Integer.MAX_VALUE,
                 SESSION_NAMESPACE_FACTORY);
         this.root = prepared.path();
-        this.maxFileBytes = prepared.maxFileBytes();
     }
 
     @Override
@@ -146,16 +134,6 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     }
 
     @Override
-    public WriteResult write(RuntimeContext runtimeContext, String filePath, String content) {
-        Objects.requireNonNull(content, "content");
-        long bytes = content.getBytes(StandardCharsets.UTF_8).length;
-        if (bytes > maxFileBytes) {
-            return WriteResult.fail(sizeError(bytes));
-        }
-        return super.write(runtimeContext, filePath, content);
-    }
-
-    @Override
     public EditResult edit(
             RuntimeContext runtimeContext,
             String filePath,
@@ -183,10 +161,6 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
                 return EditResult.fail((String) replacement[0]);
             }
             String edited = (String) replacement[0];
-            long bytes = edited.getBytes(StandardCharsets.UTF_8).length;
-            if (bytes > maxFileBytes) {
-                return EditResult.fail(sizeError(bytes));
-            }
             Files.writeString(resolved, edited, StandardCharsets.UTF_8);
             return EditResult.ok(filePath, (int) replacement[1]);
         }
@@ -196,24 +170,6 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         finally {
             lock.unlock();
         }
-    }
-
-    @Override
-    public List<FileUploadResponse> uploadFiles(
-            RuntimeContext runtimeContext, List<Map.Entry<String, byte[]>> files) {
-        Objects.requireNonNull(files, "files");
-        List<FileUploadResponse> responses = new ArrayList<>(files.size());
-        for (Map.Entry<String, byte[]> file : files) {
-            Objects.requireNonNull(file, "file");
-            byte[] content = Objects.requireNonNull(file.getValue(), "file content");
-            if (content.length > maxFileBytes) {
-                responses.add(FileUploadResponse.fail(file.getKey(), sizeError(content.length)));
-            }
-            else {
-                responses.add(super.uploadFiles(runtimeContext, List.of(file)).get(0));
-            }
-        }
-        return responses;
     }
 
     @Override
@@ -232,7 +188,8 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         if (isAgentMemoryPath(relativePath)
                 && usesAgentMemoryRoot(runtimeContext)) {
             LiteFlowAgentContext liteFlow = runtimeContext.get(LiteFlowAgentContext.class);
-            namespaceRoot = root.resolve("agent-" + sha256(liteFlow.getAgentNamespace())).normalize();
+            namespaceRoot = root.resolve(namespace.get(0)).resolve(".agentscope").resolve("memory").normalize();
+            namespace = List.of(com.yomahub.liteflow.agent.context.AgentInvocationIdentity.requirePathSegment(liteFlow.getAgentKey(), "agentKey"));
         }
         Path session = namespaceRoot.resolve(namespace.get(0)).normalize();
         if (!session.startsWith(root)) {
@@ -273,7 +230,7 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
 
     private String virtualMemoryPath(RuntimeContext runtimeContext, String physicalPath) {
         Path memorySession = sessionRoot(runtimeContext, Path.of("memory"));
-        Path physical = root.resolve(physicalPath.replace('\\', '/')).normalize();
+        Path physical = sessionRoot(runtimeContext, Path.of(".")).resolve(physicalPath.replace('\\', '/')).normalize();
         if (!physical.startsWith(memorySession)) {
             throw new SecurityException("guarded local memory listing escaped its agent session");
         }
@@ -281,24 +238,20 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
     }
 
     private static void ensureRealDirectory(Path base, Path directory) throws IOException {
-        if (base.equals(directory)) {
-            return;
+        if (!directory.startsWith(base)) {
+            throw new SecurityException("guarded local namespace escapes root");
         }
-        if (!directory.getParent().equals(base)) {
-            throw new SecurityException("guarded local namespace must be directly below root");
-        }
-        if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
-            try {
-                Files.createDirectory(directory);
+        Path current = base;
+        for (Path segment : base.relativize(directory)) {
+            current = current.resolve(segment);
+            if (!Files.exists(current, LinkOption.NOFOLLOW_LINKS)) {
+                try { Files.createDirectory(current); }
+                catch (FileAlreadyExistsException concurrentCreate) { /* Validate below. */ }
             }
-            catch (FileAlreadyExistsException concurrentCreate) {
-                // Another call created the same agent namespace; validate below.
+            if (Files.isSymbolicLink(current) || !Files.isDirectory(current, LinkOption.NOFOLLOW_LINKS)
+                    || !current.toRealPath().startsWith(base)) {
+                throw new SecurityException("guarded local namespace must be a real directory");
             }
-        }
-        if (Files.isSymbolicLink(directory)
-                || !Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS)
-                || !directory.toRealPath().startsWith(base)) {
-            throw new SecurityException("guarded local agent namespace must be a real directory");
         }
     }
 
@@ -343,28 +296,19 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
         }
     }
 
-    private String sizeError(long actualBytes) {
-        return "content exceeds maxFileBytes: " + actualBytes + " > " + maxFileBytes;
-    }
-
     private static String normalizeNewlines(String value) {
         return value.replace("\r\n", "\n").replace("\r", "\n");
     }
 
-    private static PreparedRoot prepareRoot(Path configuredRoot, long maxFileBytes, boolean autoCreate) {
+    private static PreparedRoot prepareRoot(Path configuredRoot) {
         Objects.requireNonNull(configuredRoot, "root");
-        if (maxFileBytes <= 0) {
-            throw new IllegalArgumentException("maxFileBytes must be positive");
-        }
         Path absolute = configuredRoot.toAbsolutePath().normalize();
         try {
-            if (autoCreate) {
-                Files.createDirectories(absolute);
-            }
+            Files.createDirectories(absolute);
             if (!Files.isDirectory(absolute, LinkOption.NOFOLLOW_LINKS)) {
                 throw new IllegalArgumentException("workspace root must be an existing directory");
             }
-            return new PreparedRoot(absolute.toRealPath(), maxFileBytes);
+            return new PreparedRoot(absolute.toRealPath());
         }
         catch (IOException failure) {
             throw new IllegalArgumentException(
@@ -441,25 +385,10 @@ public final class GuardedLocalFilesystem extends LocalFilesystem {
                     || namespace.get(0).isBlank()) {
                 throw new IllegalArgumentException("runtimeSessionId must not be blank");
             }
-            return List.of("session-" + sha256(namespace.get(0)));
+            return List.of(com.yomahub.liteflow.agent.context.AgentInvocationIdentity.requirePathSegment(namespace.get(0), "conversationId"));
         };
     }
 
-    private static String sha256(String value) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(value.getBytes(StandardCharsets.UTF_8)));
-        }
-        catch (NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException("SHA-256 is unavailable", impossible);
-        }
-    }
-
-    private static int searchLimitMebibytes(long maxFileBytes) {
-        long mebibytes = ((maxFileBytes - 1) / BYTES_PER_MEBIBYTE) + 1;
-        return (int) Math.min(mebibytes, Integer.MAX_VALUE);
-    }
-
-    private record PreparedRoot(Path path, long maxFileBytes) {
+    private record PreparedRoot(Path path) {
     }
 }

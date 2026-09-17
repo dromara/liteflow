@@ -26,9 +26,9 @@ public final class StoredWorkspaceFilesystem extends RemoteFilesystem {
         if (p.equals(root) || p.equals(".") || p.isEmpty()) return "/";
         if (p.startsWith(root + "/")) p = p.substring(root.length());
         p = p.replaceFirst("^/+", "");
-        String user = rc.getUserId();
-        if (user != null && !user.isBlank() && p.startsWith(user + "/")
-                && ManagedSandboxFilesystem.isManaged(p.substring(user.length() + 1))) p = p.substring(user.length() + 1);
+        String session = rc.getSessionId();
+        if (session != null && !session.isBlank() && p.startsWith(session + "/")
+                && ManagedSandboxFilesystem.isManaged(p.substring(session.length() + 1))) p = p.substring(session.length() + 1);
         return "/" + p;
     }
     @Override public ReadResult read(RuntimeContext rc, String p, int offset, int limit) { return super.read(rc, path(rc, p), offset, limit); }

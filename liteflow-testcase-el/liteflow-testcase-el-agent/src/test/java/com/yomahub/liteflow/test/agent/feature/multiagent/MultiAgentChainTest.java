@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.multiagent;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.flow.LiteflowResponse;
 import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +39,7 @@ public class MultiAgentChainTest extends BaseAgentLiveTest {
     @Test
     public void testTwoAgentsShareConversationAndWorkspaceButHaveDistinctAgentKeys() {
         LiteflowResponse response = flowExecutor.execute2Resp("multiAgentChain", Map.of(
-                AgentComponent.CONVERSATION_ID_REQUEST_KEY, CID,
+                HarnessAgentComponent.CONVERSATION_ID_REQUEST_KEY, CID,
                 "prompt", "请用一句话作答。"));
 
         Assertions.assertTrue(response.isSuccess(),

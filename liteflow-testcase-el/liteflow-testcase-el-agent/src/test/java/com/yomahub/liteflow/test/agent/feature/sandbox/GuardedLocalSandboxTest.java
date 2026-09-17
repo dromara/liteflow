@@ -39,7 +39,7 @@ class GuardedLocalSandboxTest {
 
     @Test
     void guardedLocalWritesInsideWorkspaceAndRejectsTraversalWithoutDocker() throws Exception {
-        Path workspace = Path.of(liteflowConfig.getAgent().getWorkspace().getRoot())
+        Path workspace = Path.of(liteflowConfig.getAgent().getHarness().getLocal().getWorkspaceRoot())
                 .toAbsolutePath()
                 .normalize();
         Path escaped = workspace.resolve("../guarded-local-escape-probe.txt").normalize();

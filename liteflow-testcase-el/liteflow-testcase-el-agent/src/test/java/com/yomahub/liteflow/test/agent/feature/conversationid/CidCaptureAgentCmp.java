@@ -41,9 +41,4 @@ public class CidCaptureAgentCmp extends OfflineAgentComponent {
     protected boolean enableShellTool() {
         return false;
     }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
 }

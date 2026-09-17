@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.buildmodel;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.Msg;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 验证覆写 buildModel() 后 {@code model().resolve(...)} 不再被调用。
  */
 @Component("buildModelEscapeAgent")
-public class BuildModelEscapeAgentCmp extends AgentComponent {
+public class BuildModelEscapeAgentCmp extends HarnessAgentComponent {
 
     public static final AtomicInteger BUILD_MODEL_COUNT = new AtomicInteger();
 
@@ -57,11 +57,6 @@ public class BuildModelEscapeAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 

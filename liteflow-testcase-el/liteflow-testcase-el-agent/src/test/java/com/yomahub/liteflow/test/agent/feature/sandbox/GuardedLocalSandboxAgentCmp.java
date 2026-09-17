@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component("guardedLocalAgent")
 public class GuardedLocalSandboxAgentCmp extends HarnessAgentComponent {
+    @Override protected boolean enableShellTool() { return false; }
+
 
     private static final AtomicInteger DOCKER_CLIENT_CALLS = new AtomicInteger();
 

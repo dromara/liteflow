@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.agent.exception.AgentInvocationException;
@@ -57,7 +58,7 @@ class AgentRetryFallbackTest {
     @Test
     void maxRetriesIsPassedToTheRealModelThroughGenerateOptions() throws Exception {
         AgentConfig config = configure();
-        config.getRuntime().setTimeout(Duration.ofSeconds(1));
+        config.setExecutionTimeout(Duration.ofSeconds(1));
         CountingModel primary = CountingModel.reply("primary", "primary reply");
         component = component(primary, null);
         component.maxRetries = 6;
@@ -111,7 +112,7 @@ class AgentRetryFallbackTest {
     @Test
     void executionDeadlineCancelsSourceStopsPendingRetryAndMapsOuterTimeout() throws Exception {
         AgentConfig config = configure();
-        config.getRuntime().setTimeout(Duration.ofMillis(80));
+        config.setExecutionTimeout(Duration.ofMillis(80));
         CountingModel primary = CountingModel.executionAwareNever("primary");
         component = component(primary, null);
         component.maxRetries = 3;
@@ -144,10 +145,11 @@ class AgentRetryFallbackTest {
 
     private AgentConfig configure() {
         AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getStateStore().setJsonRoot("target/agent-state");
-        agentConfig.getRuntime().setNamespace("retry-test");
-        agentConfig.getRuntime().setDefaultUserId("user-1");
-        agentConfig.getRuntime().setTimeout(Duration.ofSeconds(1));
+        agentConfig.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agentConfig.getSessionStore().setJsonWorkspaceRoot(agentConfig.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agentConfig.getSessionStore().setJsonRoot("target/agent-state");
+        agentConfig.setApplicationName("retry-test");
+        agentConfig.setExecutionTimeout(Duration.ofSeconds(1));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agentConfig);
         LiteflowConfigGetter.setLiteflowConfig(config);
@@ -162,7 +164,13 @@ class AgentRetryFallbackTest {
         return (RuntimeException) current;
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
+        @Override protected io.agentscope.harness.agent.HarnessAgent.Builder customizeHarness(
+                io.agentscope.harness.agent.HarnessAgent.Builder builder) {
+            return builder.disableMemoryHooks().disableCompaction().disableDefaultWorkspaceSkills();
+        }
         private final Slot slot;
         private final Model primary;
         private final Model fallback;

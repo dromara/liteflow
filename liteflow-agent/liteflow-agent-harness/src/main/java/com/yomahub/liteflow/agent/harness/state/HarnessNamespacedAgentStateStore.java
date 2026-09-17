@@ -30,17 +30,23 @@ public final class HarnessNamespacedAgentStateStore
     private static final String WORKSPACE_PREFIX = "harness-workspace.";
     private static final String AGENT_SESSION_VERSION = ".h1.";
     private static final Pattern SANDBOX_SESSION = Pattern.compile(
-            "sandbox/session/(lf-[0-9a-f]{64})");
+            "sandbox/session/(.+)");
     private static final Pattern BASE64_URL = Pattern.compile("[a-zA-Z0-9_-]+");
 
     private final String agentPrefix;
+    private final String workspacePrefix;
     private final ConcurrentMap<LoadFailureKey, Throwable> loadFailures =
             new ConcurrentHashMap<>();
 
     public HarnessNamespacedAgentStateStore(
             AgentStateStore delegate, String agentNamespace) {
+        this(delegate, agentNamespace, "default");
+    }
+
+    public HarnessNamespacedAgentStateStore(AgentStateStore delegate, String agentNamespace, String applicationName) {
         super(delegate, agentNamespace);
         this.agentPrefix = agentNamespace() + AGENT_SESSION_VERSION;
+        this.workspacePrefix = WORKSPACE_PREFIX + encodeRuntimeSession(applicationName) + ".";
     }
 
     @Override
@@ -190,10 +196,10 @@ public final class HarnessNamespacedAgentStateStore
         Matcher matcher = SANDBOX_SESSION.matcher(requireLogicalSession(sessionId));
         if (!matcher.matches()) {
             throw new IllegalArgumentException(
-                    "_sandbox_state sessionId must match sandbox/session/lf-[0-9a-f]{64}");
+                    "_sandbox_state requires sandbox/session/<conversationId>");
         }
         String runtimeSessionId = matcher.group(1);
-        return new Route(null, WORKSPACE_PREFIX + runtimeSessionId, runtimeSessionId);
+        return new Route(null, workspacePrefix + encodeRuntimeSession(runtimeSessionId), runtimeSessionId);
     }
 
     private Route agentRoute(String userId, String sessionId) {

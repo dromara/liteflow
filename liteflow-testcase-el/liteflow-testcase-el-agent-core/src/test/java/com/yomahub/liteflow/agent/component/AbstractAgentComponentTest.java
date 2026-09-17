@@ -91,7 +91,7 @@ class AbstractAgentComponentTest {
         assertNotSame(component.runtimeContexts.get(0), component.runtimeContexts.get(1));
         assertSame(first, component.runtimeContexts.get(0).get(LiteFlowAgentContext.class));
         assertSame(slot, component.runtimeContexts.get(0).get(Slot.class));
-        assertEquals("test-user", component.runtimeContexts.get(0).getUserId());
+        assertNull(component.runtimeContexts.get(0).getUserId());
         assertEquals(first.getRuntimeSessionId(), component.runtimeContexts.get(0).getSessionId());
         assertEquals("conversation-7", first.getConversationId());
         assertEquals("plain-chain", first.getChainId());
@@ -99,7 +99,7 @@ class AbstractAgentComponentTest {
         assertEquals("request-1", first.getRequestId());
         assertEquals(first.getRequestId(), first.getTraceId());
         assertNotNull(first.getDeadline());
-        assertTrue(first.getRuntimeSessionId().matches("lf-[0-9a-f]{64}"));
+        assertEquals(first.getConversationId(), first.getRuntimeSessionId());
         assertTrue(first.getAgentNamespace().matches("lf-[0-9a-f]{64}"));
         assertEquals(AgentOutputSpec.text(), first.getOutputSpec());
         assertEquals(List.of(true, true), component.attachmentVisibleDuringInvoke);
@@ -200,7 +200,7 @@ class AbstractAgentComponentTest {
     @Test
     void timeoutCancelsInvocationAndCleansItsAttachment() throws Exception {
         AgentConfig config = configureAgent();
-        config.getRuntime().setTimeout(Duration.ofMillis(25));
+        config.setExecutionTimeout(Duration.ofMillis(25));
         Slot slot = slot();
         TestComponent component = component(slot);
         component.reply = Mono.never();
@@ -217,7 +217,7 @@ class AbstractAgentComponentTest {
     @Test
     void closeWaitsForActiveInvocationBeforeClosingRuntime() throws Exception {
         AgentConfig config = configureAgent();
-        config.getRuntime().setTimeout(Duration.ofSeconds(10));
+        config.setExecutionTimeout(Duration.ofSeconds(10));
         TestComponent component = component(slot());
         CountDownLatch invocationEntered = new CountDownLatch(1);
         CountDownLatch releaseInvocation = new CountDownLatch(1);
@@ -261,7 +261,7 @@ class AbstractAgentComponentTest {
     @Test
     void differentInvocationsCanUseOneComponentRuntimeConcurrently() throws Exception {
         AgentConfig config = configureAgent();
-        config.getRuntime().setTimeout(Duration.ofSeconds(10));
+        config.setExecutionTimeout(Duration.ofSeconds(10));
         TestComponent component = component(slot());
         component.distinctConversationPerCall = true;
         CountDownLatch bothInvocationsEntered = new CountDownLatch(2);
@@ -324,10 +324,9 @@ class AbstractAgentComponentTest {
 
     private AgentConfig configureAgent() {
         AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getStateStore().setJsonRoot("target/agent-state");
-        agentConfig.getRuntime().setNamespace("abstract-test");
-        agentConfig.getRuntime().setDefaultUserId("test-user");
-        agentConfig.getRuntime().setTimeout(Duration.ofSeconds(1));
+        agentConfig.getSessionStore().setJsonRoot("target/agent-state");
+        agentConfig.setApplicationName("abstract-test");
+        agentConfig.setExecutionTimeout(Duration.ofSeconds(1));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agentConfig);
         LiteflowConfigGetter.setLiteflowConfig(config);

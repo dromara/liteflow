@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 public final class LegacySnapshotMigration {
     private LegacySnapshotMigration() { }
     public static void migrate(SandboxSnapshot source, SandboxSnapshot destination,
-                               AbstractFilesystem records, RuntimeContext context, long maxFileBytes) throws Exception {
+                               AbstractFilesystem records, RuntimeContext context) throws Exception {
         // A previous attempt may have committed the import before its metadata write failed.
         if (destination.isRestorable()) return;
         if (!source.isRestorable()) throw new IOException(
@@ -31,10 +31,10 @@ public final class LegacySnapshotMigration {
                     String path = Path.of(entry.getName()).normalize().toString();
                     if (ManagedSandboxFilesystem.isManaged(path)) {
                         if (entry.isDirectory()) continue;
-                        if (!entry.isFile() || entry.getSize() > maxFileBytes || entry.getSize() > Integer.MAX_VALUE) {
+                        if (!entry.isFile()) {
                             throw new IOException("Unsupported Agent record in legacy archive: " + path);
                         }
-                        byte[] bytes = archive.readNBytes((int) entry.getSize());
+                        byte[] bytes = archive.readAllBytes();
                         if (bytes.length != entry.getSize()) throw new EOFException("Incomplete Agent record: " + path);
                         if (!records.exists(context, path)) {
                             var result = records.write(context, path, new String(bytes, StandardCharsets.UTF_8));

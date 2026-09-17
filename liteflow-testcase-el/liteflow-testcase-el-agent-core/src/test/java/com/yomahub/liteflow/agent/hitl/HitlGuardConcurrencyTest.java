@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.agent.hitl;
 
 import com.yomahub.liteflow.agent.component.AbstractAgentComponent;
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
@@ -9,14 +9,13 @@ import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.slot.Slot;
-import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.ConfirmResult;
 import io.agentscope.core.event.RequireUserConfirmEvent;
@@ -235,7 +234,7 @@ class HitlGuardConcurrencyTest {
         assertFailureAndNoAttachment(denied, AgentInvocationErrorType.PERMISSION);
 
         config.getHitl().setFailOnDeniedTool(false);
-        config.getRuntime().setTimeout(Duration.ofMillis(50));
+        config.setExecutionTimeout(Duration.ofMillis(50));
         TestComponent initialTimeout = component(slot(), allowAll());
         initialTimeout.answer = (messages, runtimeContext) -> Mono.never();
         assertFailureAndNoAttachment(initialTimeout, AgentInvocationErrorType.TIMEOUT);
@@ -285,10 +284,11 @@ class HitlGuardConcurrencyTest {
 
     private static AgentConfig configure(Duration runtime, Duration confirmation) {
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getRuntime().setNamespace("hitl-test");
-        agent.getRuntime().setDefaultUserId("user-1");
-        agent.getRuntime().setTimeout(runtime);
+        agent.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(agent.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.setApplicationName("hitl-test");
+        agent.setExecutionTimeout(runtime);
         agent.getHitl().setConfirmationTimeout(confirmation);
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
@@ -332,10 +332,10 @@ class HitlGuardConcurrencyTest {
         Mono<Msg> answer(List<Msg> messages, RuntimeContext runtimeContext);
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
         private final Slot slot;
         private final AgentConfirmationHandler handler;
-        private final ReActAgent agent = mock(ReActAgent.class);
+        private final io.agentscope.harness.agent.HarnessAgent agent = mock(io.agentscope.harness.agent.HarnessAgent.class);
         private final AtomicInteger buildCount = new AtomicInteger();
         private final AtomicInteger callCount = new AtomicInteger();
         private CallAnswer answer;
@@ -356,14 +356,14 @@ class HitlGuardConcurrencyTest {
         @Override protected AgentConfirmationHandler confirmationHandler() { return handler; }
 
         @Override
-        protected AgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
+        protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             buildCount.incrementAndGet();
             InMemoryAgentStateStore delegate = new InMemoryAgentStateStore();
-            return new AgentRuntime(
+            return new HarnessAgentRuntime(
                     agent,
-                    new GuardedNamespacedAgentStateStore(
-                            delegate, buildContext.agentNamespace()),
-                    new ResolvedAgentStateStore(delegate, false),
+                    new com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership(
+                            new GuardedNamespacedAgentStateStore(delegate, buildContext.agentNamespace()),
+                            new ResolvedAgentStateStore(delegate, false), List.of(), List.of(), List.of()),
                     List.of());
         }
     }

@@ -135,9 +135,10 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
             }
 
             Model model = buildModel(providerId + ":" + modelName, effectiveContext);
-            return ownedTransport == null
+            Model owned = ownedTransport == null
                     ? model
                     : new OwnedTransportModel(model, ownedTransport);
+            return recordMetadata(owned, providerId, effectiveContext.getBaseUrl());
         } catch (RuntimeException | Error failure) {
             OwnedTransportModel.closeAfterBuildFailure(ownedTransport, failure);
             throw failure;

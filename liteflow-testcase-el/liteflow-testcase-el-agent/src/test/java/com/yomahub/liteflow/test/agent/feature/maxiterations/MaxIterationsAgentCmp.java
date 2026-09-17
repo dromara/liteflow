@@ -43,11 +43,6 @@ public class MaxIterationsAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
         return probe == null ? List.of() : List.of(probe.middleware());

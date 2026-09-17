@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.platform.dashscope;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.dashscope.DashScope;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * DashScope 头等平台连通性测试组件。
  */
 @Component("dashscopePlatformAgent")
-public class DashScopePlatformAgentCmp extends AgentComponent {
+public class DashScopePlatformAgentCmp extends HarnessAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
@@ -36,11 +36,6 @@ public class DashScopePlatformAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 }

@@ -68,10 +68,6 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         return config;
     }
 
-    protected String resolveUserId(Slot slot) {
-        return agentConfig().getRuntime().getDefaultUserId();
-    }
-
     protected String resolveConversationId(Slot slot) {
         String existing = slot.getConversationId();
         if (existing != null && !existing.isBlank()) {
@@ -150,15 +146,15 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         AgentConfig config = agentConfig();
         validateForExecution(config);
         AgentOutputSpec output = resolveOutputSpec();
-        Duration runtimeTimeout = config.getRuntime().getTimeout();
+        Duration runtimeTimeout = config.getExecutionTimeout();
 
         Slot slot = getSlot();
         String conversationId = resolveConversationId(slot);
         slot.setConversationId(conversationId);
         String currentAgentKey = agentKey();
         AgentInvocationIdentity identity = new InvocationIdentityResolver(
-                config.getRuntime().getNamespace())
-                .resolve(resolveUserId(slot), conversationId, currentAgentKey);
+                config.getApplicationName())
+                .resolve(conversationId, currentAgentKey);
 
         AgentInvocationGuard guard = invocationGuard();
         AgentInvocationCoordinator coordinator = new AgentInvocationCoordinator(guard);
@@ -186,12 +182,15 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
             slot.setAttachment(attachmentKey, context);
             try {
                 RuntimeContext.Builder runtimeContextBuilder = RuntimeContext.builder()
-                        .userId(identity.userId())
                         .sessionId(identity.runtimeSessionId())
                         .put(LiteFlowAgentContext.class, context)
                         .put(Slot.class, slot);
                 customizeRuntimeContext(runtimeContextBuilder, context);
                 RuntimeContext runtimeContext = runtimeContextBuilder.build();
+                if (runtimeContext.getUserId() != null
+                        || !identity.runtimeSessionId().equals(runtimeContext.getSessionId())) {
+                    throw new AgentConfigException("customizeRuntimeContext must preserve the conversation identity and leave userId unset");
+                }
 
                 String prompt = userPrompt(context);
                 if (prompt == null) {
@@ -277,16 +276,10 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
         } catch (IllegalStateException failure) {
             throw new AgentConfigException(failure.getMessage(), failure);
         }
-        if (config.getRuntime() == null
-                || config.getRuntime().getDefaultUserId() == null
-                || config.getRuntime().getDefaultUserId().isBlank()) {
-            throw new AgentConfigException(
-                    "liteflow.agent.runtime.default-user-id must not be blank");
-        }
-        Duration runtimeTimeout = config.getRuntime().getTimeout();
+        Duration runtimeTimeout = config.getExecutionTimeout();
         if (runtimeTimeout == null || runtimeTimeout.isZero() || runtimeTimeout.isNegative()) {
             throw new AgentConfigException(
-                    "liteflow.agent.runtime.timeout must be positive");
+                    "liteflow.agent.execution-timeout must be positive");
         }
         if (config.getHitl() == null) {
             throw new AgentConfigException("liteflow.agent.hitl must not be null");
@@ -298,13 +291,13 @@ public abstract class AbstractAgentComponent<R extends AutoCloseable>
             throw new AgentConfigException(
                     "liteflow.agent.hitl.confirmation-timeout must be positive");
         }
-        if (config.getStateStore() == null || config.getStateStore().getType() == null) {
+        if (config.getSessionStore() == null || config.getSessionStore().getType() == null) {
             throw new AgentConfigException(
-                    "liteflow.agent.state-store.type must not be null");
+                    "liteflow.agent.session-store.type must not be null");
         }
-        if (config.getStateStore().getFailurePolicy() == null) {
+        if (config.getSessionStore().getFailurePolicy() == null) {
             throw new AgentConfigException(
-                    "liteflow.agent.state-store.failure-policy must not be null");
+                    "liteflow.agent.session-store.failure-policy must not be null");
         }
         if (config.getInvocationGuard() == null) {
             throw new AgentConfigException(

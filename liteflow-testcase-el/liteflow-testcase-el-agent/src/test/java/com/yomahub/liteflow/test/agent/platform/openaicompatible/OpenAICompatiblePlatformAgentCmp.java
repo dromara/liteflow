@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.platform.openaicompatible;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * OpenAICompatible.custom 平台连通性测试组件（自定义 baseUrl + apiKey）。
  */
 @Component("openaicompatiblePlatformAgent")
-public class OpenAICompatiblePlatformAgentCmp extends AgentComponent {
+public class OpenAICompatiblePlatformAgentCmp extends HarnessAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
@@ -34,11 +34,6 @@ public class OpenAICompatiblePlatformAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 }

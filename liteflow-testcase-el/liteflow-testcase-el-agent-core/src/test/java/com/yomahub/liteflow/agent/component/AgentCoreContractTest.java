@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
 import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.event.AgentFlowEventData;
-import com.yomahub.liteflow.agent.exception.AgentException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuard;
@@ -17,7 +17,7 @@ import com.yomahub.liteflow.agent.guard.LocalAgentInvocationGuard;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.middleware.StateStoreFailureMiddleware;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
@@ -26,8 +26,8 @@ import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import com.yomahub.liteflow.spi.local.LocalContextAware;
@@ -76,6 +76,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -156,8 +157,8 @@ class AgentCoreContractTest {
         components.add(component);
 
         processAndAssertAttachments(component);
-        AgentRuntime firstRuntime = component.runtime;
-        AgentBase firstAgent = component.runtime.agent();
+        HarnessAgentRuntime firstRuntime = component.runtime;
+        var firstAgent = component.runtime.agent();
         processAndAssertAttachments(component);
 
         assertEquals("deterministic reply", slot.getResponseData());
@@ -172,7 +173,7 @@ class AgentCoreContractTest {
         LiteFlowAgentContext secondInvocation = secondRuntimeContext.get(LiteFlowAgentContext.class);
         assertNotSame(firstInvocation, secondInvocation);
         assertFalse(firstInvocation.getAttachmentKey().equals(secondInvocation.getAttachmentKey()));
-        assertEquals("contract-user", firstRuntimeContext.getUserId());
+        assertNull(firstRuntimeContext.getUserId());
         assertEquals(firstRuntimeContext.getSessionId(), secondRuntimeContext.getSessionId());
         assertSame(slot, firstRuntimeContext.get(Slot.class));
     }
@@ -224,8 +225,10 @@ class AgentCoreContractTest {
         assertNotSame(text.runtime.agent().getToolkit(), beta.runtime.agent().getToolkit());
         assertNotSame(text.runtime.stateStore(), beta.runtime.stateStore());
         assertNotSame(text.model, beta.model);
-        assertEquals(List.of("alpha_tool"), text.model.toolNames.get(0));
-        assertEquals(List.of("beta_tool"), beta.model.toolNames.get(0));
+        assertTrue(text.model.toolNames.get(0).contains("alpha_tool"));
+        assertFalse(text.model.toolNames.get(0).contains("beta_tool"));
+        assertTrue(beta.model.toolNames.get(0).contains("beta_tool"));
+        assertFalse(beta.model.toolNames.get(0).contains("alpha_tool"));
         String alphaSystemPrompt = systemPrompt(text.model.inputs.get(0));
         String betaSystemPrompt = systemPrompt(beta.model.inputs.get(0));
         assertTrue(alphaSystemPrompt.contains("alpha system"));
@@ -263,7 +266,7 @@ class AgentCoreContractTest {
                 second.process();
                 return null;
             });
-            assertTrue(guard.secondStateAttempt.await(5, TimeUnit.SECONDS));
+            assertTrue(guard.secondWorkspaceAttempt.await(5, TimeUnit.SECONDS));
             assertEquals(0, second.model.calls.get());
             releaseFirst.countDown();
             firstCall.get(5, TimeUnit.SECONDS);
@@ -356,8 +359,8 @@ class AgentCoreContractTest {
     void jsonStoreCloseAndRecreateRestoresOnlyTheMatchingAgentState() throws Exception {
         Path stateRoot = tempDir.resolve("json-state");
         AgentConfig config = configureAgent("json-persistence-contract");
-        config.getStateStore().setType(AgentStateStoreType.JSON);
-        config.getStateStore().setJsonRoot(stateRoot.toString());
+        config.getSessionStore().setType(AgentSessionStoreType.JSON);
+        config.getSessionStore().setJsonRoot(stateRoot.toString());
 
         ContractComponent alpha = component("persistent-conversation",
                 new RecordingModel("alpha reply"));
@@ -418,8 +421,8 @@ class AgentCoreContractTest {
         retry.agentKey = "failed-state-agent";
         runBounded(retry);
 
-        config.getStateStore().setFailurePolicy(
-                AgentStateStoreFailurePolicy.LOG_AND_CONTINUE);
+        config.getSessionStore().setFailurePolicy(
+                AgentSessionStoreFailurePolicy.LOG_AND_CONTINUE);
         ContractComponent lenient = component("lenient-state-conversation",
                 new RecordingModel("lenient reply"));
         lenient.agentKey = "lenient-state-agent";
@@ -490,7 +493,7 @@ class AgentCoreContractTest {
     void errorsAndTimeoutCancelSubscriptionReleaseWorkspaceAndRestoreAttachments()
             throws Exception {
         AgentConfig config = configureAgent("terminal-cleanup-contract");
-        config.getRuntime().setTimeout(Duration.ofMillis(40));
+        config.setExecutionTimeout(Duration.ofMillis(40));
         RuntimeException modelFailure = new RuntimeException("model failed");
         ContractComponent failed = component("terminal-workspace",
                 new RecordingModel("unused", new FailurePlan(modelFailure)));
@@ -542,9 +545,10 @@ class AgentCoreContractTest {
 
     private AgentConfig configureAgent(String namespace) {
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("contract-user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(2));
+        agent.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(agent.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agent.setApplicationName(namespace);
+        agent.setExecutionTimeout(Duration.ofSeconds(2));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(config);
@@ -637,11 +641,10 @@ class AgentCoreContractTest {
     private static void assertNoLoadFailure(
             ContractComponent component, AgentConfig config) {
         AgentInvocationIdentity identity = new InvocationIdentityResolver(
-                config.getRuntime().getNamespace()).resolve(
-                config.getRuntime().getDefaultUserId(),
+                config.getApplicationName()).resolve(
                 component.slot.getConversationId(), component.agentKey());
         assertTrue(component.runtime.stateStore().takeLoadFailure(
-                identity.userId(), identity.runtimeSessionId()).isEmpty());
+                null, identity.runtimeSessionId()).isEmpty());
     }
 
     private ContractComponent component(String conversationId, RecordingModel model) {
@@ -675,11 +678,13 @@ class AgentCoreContractTest {
         public String answer;
     }
 
-    private static final class ContractComponent extends AgentComponent {
+    private static final class ContractComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
         private final Slot slot;
         private final RecordingModel model;
         private final AtomicInteger runtimeBuilds = new AtomicInteger();
-        private AgentRuntime runtime;
+        private HarnessAgentRuntime runtime;
         private String systemPrompt = "stable contract prompt";
         private String userPrompt = "contract question";
         private Class<?> outputType;
@@ -711,7 +716,7 @@ class AgentCoreContractTest {
         }
 
         @Override
-        protected AgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
+        protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             runtimeBuilds.incrementAndGet();
             runtime = super.buildRuntime(buildContext);
             return runtime;
@@ -748,11 +753,6 @@ class AgentCoreContractTest {
         }
 
         @Override
-        protected boolean requiresWorkspaceLease() {
-            return workspaceLease;
-        }
-
-        @Override
         protected AgentStateStoreResolver stateStoreResolver() {
             return stateStoreResolver == null
                     ? super.stateStoreResolver()
@@ -762,7 +762,7 @@ class AgentCoreContractTest {
         @Override
         StateStoreFailureMiddleware createStateStoreFailureMiddleware(
                 GuardedNamespacedAgentStateStore stateStore,
-                AgentStateStoreFailurePolicy failurePolicy) {
+                AgentSessionStoreFailurePolicy failurePolicy) {
             return new StateStoreFailureMiddleware(
                     stateStore, failurePolicy, warnings::add);
         }
@@ -984,6 +984,7 @@ class AgentCoreContractTest {
 
         @Override
         public AgentInvocationLease acquire(AgentInvocationKey key, Duration timeout) {
+            if (key.scope() == AgentInvocationScope.CONVERSATION) return delegate.acquire(key, timeout);
             List<AgentInvocationKey> keys = key.scope() == AgentInvocationScope.STATE
                     ? stateKeys : workspaceKeys;
             keys.add(key);

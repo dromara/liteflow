@@ -1,11 +1,13 @@
 package com.yomahub.liteflow.agent.component;
 
+import io.agentscope.harness.agent.HarnessAgent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.middleware.ModelRoutingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
@@ -51,6 +53,46 @@ class AgentBuilderConfigurationTest {
             "lf-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
     @Test
+    void usesOneHundredIterationsWhenNeitherConfigurationNorComponentOverridesIt() {
+        TestComponent component = new TestComponent(new CloseableModel("default", new ArrayList<>()));
+        component.iterations = -1;
+
+        try (HarnessAgentRuntime runtime = component.runtime(config())) {
+            assertEquals(100, runtime.agent().getDelegate().getReactConfig().maxIters());
+        }
+    }
+
+    @Test
+    void usesConfiguredIterationLimitUnlessComponentOverridesIt() {
+        AgentConfig config = config();
+        config.setMaxIterations(27);
+        TestComponent component = new TestComponent(new CloseableModel("default", new ArrayList<>()));
+        component.iterations = -1;
+
+        try (HarnessAgentRuntime runtime = component.runtime(config)) {
+            assertEquals(27, runtime.agent().getDelegate().getReactConfig().maxIters());
+        }
+
+        TestComponent override = new TestComponent(new CloseableModel("override", new ArrayList<>()));
+        override.iterations = 7;
+        try (HarnessAgentRuntime runtime = override.runtime(config)) {
+            assertEquals(7, runtime.agent().getDelegate().getReactConfig().maxIters());
+        }
+    }
+
+    @Test
+    void rejectsNonPositiveConfiguredIterationLimits() {
+        for (int limit : List.of(0, -1)) {
+            AgentConfig config = config();
+            config.setMaxIterations(limit);
+            TestComponent component = new TestComponent(new CloseableModel("default", new ArrayList<>()));
+            component.iterations = -1;
+
+            assertThrows(AgentConfigException.class, () -> component.runtime(config));
+        }
+    }
+
+    @Test
     void mapsEveryNativeBuilderOptionAndRunsCustomizerLast() {
         CloseableModel defaultModel = new CloseableModel("default", new ArrayList<>());
         CloseableModel fallbackModel = new CloseableModel("fallback", new ArrayList<>());
@@ -76,9 +118,9 @@ class AgentBuilderConfigurationTest {
         component.stopOnReject = true;
         component.customizer = builder -> builder.maxIters(9).model(defaultModel);
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
-            ReActAgent agent = runtime.agent();
+            ReActAgent agent = runtime.agent().getDelegate();
             assertEquals(9, agent.getReactConfig().maxIters(),
                     "customizer must execute after maxIterations mapping");
             assertTrue(agent.getReactConfig().stopOnReject());
@@ -110,7 +152,7 @@ class AgentBuilderConfigurationTest {
         component.routing = List.of(
                 routingOne, defaultModel, routingTwo, fallbackModel, routingOne);
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         runtime.close();
         runtime.close();
 
@@ -265,12 +307,12 @@ class AgentBuilderConfigurationTest {
                 .model(finalPrimary)
                 .fallbackModel(originalDefault);
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
             assertSame(finalPrimary, runtime.agent().getModel());
-            assertSame(originalDefault, runtime.agent().getModelConfig().fallbackModel());
+            assertSame(originalDefault, runtime.agent().getDelegate().getModelConfig().fallbackModel());
 
-            ModelRoutingMiddleware routing = runtime.agent().getMiddlewares().stream()
+            ModelRoutingMiddleware routing = runtime.agent().getDelegate().getMiddlewares().stream()
                     .filter(ModelRoutingMiddleware.class::isInstance)
                     .map(ModelRoutingMiddleware.class::cast)
                     .findFirst()
@@ -297,25 +339,13 @@ class AgentBuilderConfigurationTest {
     }
 
     @Test
-    void distinctReturnedBuilderIsAcceptedWhenItRetainsMandatoryResources() {
-        CloseableModel originalDefault = new CloseableModel("original", new ArrayList<>());
-        CloseableModel originalFallback = new CloseableModel("fallback", new ArrayList<>());
-        CloseableModel finalPrimary = new CloseableModel("routing", new ArrayList<>());
-        TestComponent component = new TestComponent(originalDefault);
-        component.fallback = originalFallback;
-        component.routing = List.of(finalPrimary);
-        component.customizer = builder -> copyBuilderRetainingLiteFlowResources(
-                builder, finalPrimary, originalDefault, true);
-
-        AgentRuntime runtime = component.runtime(config());
-        try {
-            assertSame(finalPrimary, runtime.agent().getModel());
-            assertSame(originalDefault, runtime.agent().getModelConfig().fallbackModel());
-            assertTrue(runtime.agent().getMiddlewares().stream()
-                    .anyMatch(ModelRoutingMiddleware.class::isInstance));
-        } finally {
-            runtime.close();
-        }
+    void distinctReturnedBuilderIsRejectedEvenWhenItRetainsCoreResources() {
+        CloseableModel original = new CloseableModel("original", new ArrayList<>());
+        TestComponent component = new TestComponent(original);
+        component.customizer = builder -> copyBuilderRetainingLiteFlowResources(builder, original, null, true);
+        AgentConfigException failure = assertThrows(AgentConfigException.class, () -> component.runtime(config()));
+        assertTrue(failure.getMessage().contains("provided builder"));
+        assertEquals(1, original.closeCount.get());
     }
 
     @Test
@@ -331,14 +361,14 @@ class AgentBuilderConfigurationTest {
 
         CloseableModel missingStateModel = new CloseableModel("missing-state", new ArrayList<>());
         TestComponent missingState = new TestComponent(missingStateModel);
-        missingState.customizer = builder -> ReActAgent.builder()
+        missingState.customizer = builder -> HarnessAgent.builder()
                 .name("unsafe")
                 .sysPrompt("unsafe")
                 .model(missingStateModel);
 
         AgentConfigException stateFailure = assertThrows(
                 AgentConfigException.class, () -> missingState.runtime(config()));
-        assertTrue(stateFailure.getMessage().contains("namespaced StateStore"));
+        assertTrue(stateFailure.getMessage().contains("provided builder"));
         assertEquals(1, missingStateModel.closeCount.get());
 
         CloseableModel missingMiddlewareModel =
@@ -349,7 +379,7 @@ class AgentBuilderConfigurationTest {
 
         AgentConfigException middlewareFailure = assertThrows(
                 AgentConfigException.class, () -> missingMiddleware.runtime(config()));
-        assertTrue(middlewareFailure.getMessage().contains("core middlewares"));
+        assertTrue(middlewareFailure.getMessage().contains("provided builder"));
         assertEquals(1, missingMiddlewareModel.closeCount.get());
     }
 
@@ -375,19 +405,21 @@ class AgentBuilderConfigurationTest {
 
     private static AgentConfig config() {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getRuntime().setNamespace("builder-test");
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.setApplicationName("builder-test");
         return config;
     }
 
-    private static ReActAgent.Builder copyBuilderRetainingLiteFlowResources(
-            ReActAgent.Builder source,
+    private static HarnessAgent.Builder copyBuilderRetainingLiteFlowResources(
+            HarnessAgent.Builder source,
             Model primary,
             Model fallback,
             boolean copyMiddlewares) {
-        ReActAgent snapshot = source.build();
+        ReActAgent snapshot = source.build().getDelegate();
         try {
-            ReActAgent.Builder copy = ReActAgent.Builder.fromAgent(snapshot)
+            HarnessAgent.Builder copy = HarnessAgent.Builder.fromAgent(snapshot)
                     .model(primary)
                     .fallbackModel(fallback)
                     .modelExecutionConfig(snapshot.getModelExecutionConfig())
@@ -405,7 +437,9 @@ class AgentBuilderConfigurationTest {
         }
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
         private final CloseableModel defaultModel;
         private int iterations = 7;
         private ExecutionConfig modelExecution;
@@ -416,7 +450,7 @@ class AgentBuilderConfigurationTest {
         private PermissionContextState permission;
         private boolean stopOnReject;
         private List<MiddlewareBase> userMiddlewares = List.of(new UserMiddleware());
-        private UnaryOperator<ReActAgent.Builder> customizer = UnaryOperator.identity();
+        private UnaryOperator<HarnessAgent.Builder> customizer = UnaryOperator.identity();
         private final AtomicInteger customizerCalls = new AtomicInteger();
         private List<String> hookOrder;
         private List<SkillRepositoryRegistration> repositoryRegistrations = List.of();
@@ -425,11 +459,11 @@ class AgentBuilderConfigurationTest {
             this.defaultModel = defaultModel;
         }
 
-        private AgentRuntime runtime(AgentConfig config) {
+        private HarnessAgentRuntime runtime(AgentConfig config) {
             return runtime(config, AGENT_NAMESPACE);
         }
 
-        private AgentRuntime runtime(AgentConfig config, String namespace) {
+        private HarnessAgentRuntime runtime(AgentConfig config, String namespace) {
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "builder-agent", "agent-key", namespace));
         }
@@ -522,7 +556,7 @@ class AgentBuilderConfigurationTest {
         }
 
         @Override
-        protected ReActAgent.Builder customizeAgent(ReActAgent.Builder builder) {
+        protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
             customizerCalls.incrementAndGet();
             return customizer.apply(builder);
         }

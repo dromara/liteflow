@@ -33,7 +33,6 @@ public final class AgentTestEvents {
         return new LiteFlowAgentContext(
                 new AgentInvocationIdentity(
                         "events-namespace",
-                        "events-user",
                         "events-conversation",
                         "events-agent",
                         null,
@@ -51,7 +50,7 @@ public final class AgentTestEvents {
 
     public static RuntimeContext runtimeContext(LiteFlowAgentContext context) {
         return RuntimeContext.builder()
-                .userId(context.getRuntimeUserId())
+                .userId(null)
                 .sessionId(context.getRuntimeSessionId())
                 .put(LiteFlowAgentContext.class, context)
                 .put(Slot.class, context.getSlot())

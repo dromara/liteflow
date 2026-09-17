@@ -144,14 +144,15 @@ class WorkspaceProjectionTest {
 
     private static AgentConfig config(Path workspace) {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getWorkspace().setRoot(workspace.toString());
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         return config;
     }
 
     private static HarnessFilesystemContext context(AgentConfig config, Path workspace) {
         return new HarnessFilesystemContext(
-                workspace, 1024L, Duration.ofSeconds(5), config);
+                workspace, Duration.ofSeconds(5), config);
     }
 
     private static SandboxContext configuredContext(

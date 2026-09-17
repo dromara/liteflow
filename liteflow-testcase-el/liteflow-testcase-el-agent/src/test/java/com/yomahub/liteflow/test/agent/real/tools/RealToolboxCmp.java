@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.tools;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import io.agentscope.core.tool.Tool;
@@ -50,7 +50,7 @@ public final class RealToolboxCmp {
         }
     }
 
-    abstract static class AbstractToolAgent extends AgentComponent {
+    abstract static class AbstractToolAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {
@@ -129,11 +129,6 @@ public final class RealToolboxCmp {
     /** §4.3 内置文件工具：view/list/write/insert。 */
     @Component("realFileToolsAgent")
     public static class FileToolsAgentCmp extends AbstractToolAgent {
-
-        @Override
-        protected boolean enableWorkspaceFileTools() {
-            return true;
-        }
 
         @Override
         protected String systemPrompt() {

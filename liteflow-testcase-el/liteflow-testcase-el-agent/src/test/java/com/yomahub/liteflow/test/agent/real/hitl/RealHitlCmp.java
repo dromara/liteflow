@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.hitl;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
@@ -48,7 +48,7 @@ final class RealHitlCmp {
         }
     }
 
-    abstract static class AbstractHitlAgent extends AgentComponent {
+    abstract static class AbstractHitlAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

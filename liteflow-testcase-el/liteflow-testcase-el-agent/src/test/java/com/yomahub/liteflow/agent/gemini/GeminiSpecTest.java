@@ -315,7 +315,7 @@ class GeminiSpecTest {
 
     private static AgentConfig geminiConfig(String apiKey, String baseUrl) {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
+        config.getSessionStore().setJsonRoot("target/agent-state");
         PlatformCredential credential = new PlatformCredential();
         credential.setApiKey(apiKey);
         credential.setBaseUrl(baseUrl);

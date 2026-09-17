@@ -27,8 +27,8 @@ class SharedSandboxRegistryTest {
         var records = new InMemoryStore(); var states = new InMemoryAgentStateStore();
         var config = new AgentConfig(); config.getHarness().getDocker().setLifecycle(DockerSandboxLifecycle.SESSION_IDLE);
         var guard = new AgentInvocationGuardResolver().resolve(config);
-        var id = new InvocationIdentityResolver(UUID.randomUUID().toString()).resolve("user", "session", "agent");
-        var rc = RuntimeContext.builder().userId(id.userId()).sessionId(id.runtimeSessionId()).build();
+        var id = new InvocationIdentityResolver(UUID.randomUUID().toString()).resolve("session", "agent");
+        var rc = RuntimeContext.builder().userId(null).sessionId(id.runtimeSessionId()).build();
         var fs = new ManagedSandboxFilesystem(records, id.namespace(), id.agentNamespace(), temp, "/workspace");
         var spec = new RemoteSnapshotSpec(new StoreSnapshotClient(records, id.namespace()));
         var template = SandboxContext.builder().client(client).clientOptions(new DockerSandboxClientOptions())

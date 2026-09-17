@@ -438,7 +438,7 @@ class AnthropicSpecTest {
     @Test
     void compatibleEndpointRequiresEffectiveBaseUrl() {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
+        config.getSessionStore().setJsonRoot("target/agent-state");
         PlatformCredential credential = new PlatformCredential();
         credential.setApiKey("compatible-key");
         config.setAnthropicCompatible(Map.of("gateway", credential));

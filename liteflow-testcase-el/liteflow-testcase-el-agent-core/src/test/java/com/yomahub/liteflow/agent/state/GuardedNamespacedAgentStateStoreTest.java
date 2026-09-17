@@ -2,8 +2,8 @@ package com.yomahub.liteflow.agent.state;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.exception.AgentException;
-import com.yomahub.liteflow.property.agent.AgentStateStoreConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.state.InMemoryAgentStateStore;
@@ -89,7 +89,7 @@ class GuardedNamespacedAgentStateStoreTest {
 
         delegate.save("alice", "lf-dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd."
                 + SESSION_C, "single", second);
-        delegate.save("alice", NAMESPACE + ".malformed", "single", second);
+        delegate.save("alice", NAMESPACE + ".../escape", "single", second);
         delegate.save("alice", PREFIXED_C, "single", second);
         assertEquals(Set.of(SESSION_A, SESSION_C), store.listSessionIds("alice"));
 
@@ -177,8 +177,8 @@ class GuardedNamespacedAgentStateStoreTest {
     void resolverCreatesOwnedJsonStore(@TempDir Path tempDir) {
         DefaultAgentStateStoreResolver resolver = new DefaultAgentStateStoreResolver(List.of());
 
-        AgentStateStoreConfig jsonConfig = new AgentStateStoreConfig();
-        jsonConfig.setType(AgentStateStoreType.JSON);
+        AgentSessionStoreConfig jsonConfig = new AgentSessionStoreConfig();
+        jsonConfig.setType(AgentSessionStoreType.JSON);
         jsonConfig.setJsonRoot(tempDir.toString());
         ResolvedAgentStateStore json = resolver.resolve(jsonConfig);
         assertTrue(json.owned());
@@ -193,23 +193,23 @@ class GuardedNamespacedAgentStateStoreTest {
 
         assertThrows(RuntimeException.class, () -> emptyResolver.resolve(null));
 
-        AgentStateStoreConfig nullType = new AgentStateStoreConfig();
+        AgentSessionStoreConfig nullType = new AgentSessionStoreConfig();
         nullType.setType(null);
         assertThrows(RuntimeException.class, () -> emptyResolver.resolve(nullType));
 
-        AgentStateStoreConfig blankJson = new AgentStateStoreConfig();
-        blankJson.setType(AgentStateStoreType.JSON);
+        AgentSessionStoreConfig blankJson = new AgentSessionStoreConfig();
+        blankJson.setType(AgentSessionStoreType.JSON);
         blankJson.setJsonRoot(" ");
         assertThrows(RuntimeException.class, () -> emptyResolver.resolve(blankJson));
 
-        AgentStateStoreConfig redisConfig = new AgentStateStoreConfig();
-        redisConfig.setType(AgentStateStoreType.REDIS);
+        AgentSessionStoreConfig redisConfig = new AgentSessionStoreConfig();
+        redisConfig.setType(AgentSessionStoreType.REDIS);
         AgentConfigException redisFailure = assertThrows(AgentConfigException.class,
                 () -> emptyResolver.resolve(redisConfig));
         assertTrue(redisFailure.getMessage().contains("liteflow-agent-redis"));
 
-        AgentStateStoreConfig mysqlConfig = new AgentStateStoreConfig();
-        mysqlConfig.setType(AgentStateStoreType.MYSQL);
+        AgentSessionStoreConfig mysqlConfig = new AgentSessionStoreConfig();
+        mysqlConfig.setType(AgentSessionStoreType.MYSQL);
         AgentConfigException mysqlFailure = assertThrows(AgentConfigException.class,
                 () -> emptyResolver.resolve(mysqlConfig));
         assertTrue(mysqlFailure.getMessage().contains("liteflow-agent-mysql"));
@@ -220,12 +220,12 @@ class GuardedNamespacedAgentStateStoreTest {
         CloseTrackingStore providerStore = new CloseTrackingStore();
         AgentStateStoreProvider redisProvider = new AgentStateStoreProvider() {
             @Override
-            public AgentStateStoreType type() {
-                return AgentStateStoreType.REDIS;
+            public AgentSessionStoreType type() {
+                return AgentSessionStoreType.REDIS;
             }
 
             @Override
-            public ResolvedAgentStateStore resolve(AgentStateStoreConfig config) {
+            public ResolvedAgentStateStore resolve(AgentSessionStoreConfig config) {
                 return "fail".equals(config.getRedis().getUri())
                         ? null
                         : new ResolvedAgentStateStore(providerStore, false);
@@ -234,16 +234,16 @@ class GuardedNamespacedAgentStateStoreTest {
         DefaultAgentStateStoreResolver resolver =
                 new DefaultAgentStateStoreResolver(List.of(redisProvider));
 
-        AgentStateStoreConfig redisConfig = new AgentStateStoreConfig();
-        redisConfig.setType(AgentStateStoreType.REDIS);
+        AgentSessionStoreConfig redisConfig = new AgentSessionStoreConfig();
+        redisConfig.setType(AgentSessionStoreType.REDIS);
         ResolvedAgentStateStore redis = resolver.resolve(redisConfig);
         assertFalse(redis.owned());
         assertSame(providerStore, redis.store());
         redis.close();
         assertEquals(0, providerStore.closeCount.get());
 
-        AgentStateStoreConfig failingConfig = new AgentStateStoreConfig();
-        failingConfig.setType(AgentStateStoreType.REDIS);
+        AgentSessionStoreConfig failingConfig = new AgentSessionStoreConfig();
+        failingConfig.setType(AgentSessionStoreType.REDIS);
         failingConfig.getRedis().setUri("fail");
         assertThrows(AgentConfigException.class, () -> resolver.resolve(failingConfig));
     }
@@ -252,14 +252,14 @@ class GuardedNamespacedAgentStateStoreTest {
     void resolverWrapsMalformedJsonRootAsConfigurationFailure() {
         DefaultAgentStateStoreResolver resolver =
                 new DefaultAgentStateStoreResolver(List.of());
-        AgentStateStoreConfig malformedJson = new AgentStateStoreConfig();
-        malformedJson.setType(AgentStateStoreType.JSON);
+        AgentSessionStoreConfig malformedJson = new AgentSessionStoreConfig();
+        malformedJson.setType(AgentSessionStoreType.JSON);
         malformedJson.setJsonRoot("invalid\0root");
 
         AgentConfigException thrown = assertThrows(AgentConfigException.class,
                 () -> resolver.resolve(malformedJson));
 
-        assertTrue(thrown.getMessage().contains("liteflow.agent.state-store.json-root"));
+        assertTrue(thrown.getMessage().contains("liteflow.agent.session-store.json-root"));
         assertInstanceOf(InvalidPathException.class, thrown.getCause());
     }
 

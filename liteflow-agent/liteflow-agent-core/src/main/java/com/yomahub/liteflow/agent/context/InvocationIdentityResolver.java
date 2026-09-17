@@ -6,16 +6,15 @@ public final class InvocationIdentityResolver {
     private final String namespace;
 
     public InvocationIdentityResolver(String namespace) {
-        AgentInvocationIdentity.requireValue(namespace, "namespace");
+        AgentInvocationIdentity.requirePathSegment(namespace, "applicationName");
         this.namespace = namespace;
     }
 
-    public AgentInvocationIdentity resolve(String userId, String conversationId, String agentKey) {
-        AgentInvocationIdentity.requireValue(userId, "userId");
+    public AgentInvocationIdentity resolve(String conversationId, String agentKey) {
         AgentInvocationIdentity.requireValue(conversationId, "conversationId");
         AgentInvocationIdentity.requireValue(agentKey, "agentKey");
 
-        return new AgentInvocationIdentity(namespace, userId, conversationId, agentKey,
+        return new AgentInvocationIdentity(namespace, conversationId, agentKey,
                 null, null, null);
     }
 }

@@ -100,7 +100,7 @@ public class DashScopeSpec extends ModelSpec<DashScopeSpec> {
                         "liteflow.agent.dashscope",
                         getApiKey(),
                         getBaseUrl());
-        return buildModel(credential.apiKey(), credential.baseUrl());
+        return recordMetadata(buildModel(credential.apiKey(), credential.baseUrl()), "dashscope", credential.baseUrl());
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {

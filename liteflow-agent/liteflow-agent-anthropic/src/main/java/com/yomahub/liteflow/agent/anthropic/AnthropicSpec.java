@@ -80,7 +80,7 @@ public class AnthropicSpec extends ModelSpec<AnthropicSpec> {
                                 + compatibleConfigKey + ".base-url");
             }
         }
-        return buildModel(credential.apiKey(), credential.baseUrl());
+        return recordMetadata(buildModel(credential.apiKey(), credential.baseUrl()), "anthropic", credential.baseUrl());
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {

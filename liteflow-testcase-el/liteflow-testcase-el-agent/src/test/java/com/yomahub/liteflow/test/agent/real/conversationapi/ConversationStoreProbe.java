@@ -1,13 +1,13 @@
 package com.yomahub.liteflow.test.agent.real.conversationapi;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.conversation.AgentConversationService;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.test.agent.support.LiveTestSupport;
 import com.yomahub.liteflow.spi.spring.SpringAware;
@@ -27,7 +27,7 @@ public final class ConversationStoreProbe {
     private ConversationStoreProbe() {
     }
 
-    static AgentConfig configure(AgentStateStoreType backend, Path root) {
+    static AgentConfig configure(AgentSessionStoreType backend, Path root) {
         closeContainer();
         // The acceptance module includes the Spring starter, so bootstrap the real selected SPI.
         container = new StaticApplicationContext();
@@ -35,18 +35,19 @@ public final class ConversationStoreProbe {
         new SpringAware().setApplicationContext(container);
         LiteflowConfig liteflow = new LiteflowConfig();
         AgentConfig config = new AgentConfig();
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
         liteflow.setAgent(config);
-        config.getRuntime().setNamespace("release-conversation-" + backend);
-        config.getRuntime().setDefaultUserId(USER);
-        config.getRuntime().setTimeout(Duration.ofMinutes(2));
+        config.setApplicationName("release-conversation-" + backend);
+        config.setExecutionTimeout(Duration.ofMinutes(2));
         config.setConversationHistoryEnabled(true);
-        config.getLogging().setEnabled(false);
-        config.getDefaults().setMaxIterations(4);
-        config.getStateStore().setType(backend);
-        config.getStateStore().setJsonRoot(root.toString());
-        config.getStateStore().getRedis().setUri("redis://localhost:16379");
-        config.getStateStore().getRedis().setKeyPrefix("liteflow:release:conversation:");
-        var mysql = config.getStateStore().getMysql();
+        config.setExecutionLogEnabled(false);
+        config.setMaxIterations(4);
+        config.getSessionStore().setType(backend);
+        config.getSessionStore().setJsonRoot(root.toString());
+        config.getSessionStore().getRedis().setUri("redis://localhost:16379");
+        config.getSessionStore().getRedis().setKeyPrefix("liteflow:release:conversation:");
+        var mysql = config.getSessionStore().getMysql();
         mysql.setJdbcUrl("jdbc:mysql://localhost:13306/liteflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
         mysql.setUsername("root");
         mysql.setPassword("root123456");
@@ -66,7 +67,7 @@ public final class ConversationStoreProbe {
     }
 
     public static void main(String[] args) throws Exception {
-        AgentConfig config = configure(AgentStateStoreType.valueOf(args[0]), Path.of(args[1]));
+        AgentConfig config = configure(AgentSessionStoreType.valueOf(args[0]), Path.of(args[1]));
         String cid = args[2];
         boolean write = "write".equals(args[3]);
         String token = "TOKEN-" + cid;
@@ -81,11 +82,11 @@ public final class ConversationStoreProbe {
                 throw new AssertionError("Agent did not restore its memory in the new JVM: " + reply);
             }
             int expected = write ? 2 : 4;
-            var messages = conversations.messages(USER, cid, 0, 20).items();
+            var messages = conversations.messages(cid, 0, 20).items();
             if (messages.size() != expected || messages.get(expected - 1).content().isBlank()) {
                 throw new AssertionError("Conversation history did not survive JVM restart");
             }
-            if (conversations.agentState(USER, cid, AGENT).isEmpty()) {
+            if (conversations.agentState(cid, AGENT).isEmpty()) {
                 throw new AssertionError("Persisted Agent state is missing");
             }
             System.out.println(write ? "CONVERSATION_WRITE_OK" : "CONVERSATION_RESTART_OK");
@@ -94,7 +95,7 @@ public final class ConversationStoreProbe {
         }
     }
 
-    static final class LiveComponent extends AgentComponent {
+    static final class LiveComponent extends HarnessAgentComponent {
         private final Slot slot = new Slot();
         private final String prompt;
         private final List<Object> tools;

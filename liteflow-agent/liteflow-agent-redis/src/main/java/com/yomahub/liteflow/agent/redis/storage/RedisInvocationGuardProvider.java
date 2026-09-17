@@ -5,7 +5,7 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -19,13 +19,13 @@ public final class RedisInvocationGuardProvider implements AgentInvocationGuardP
     private static final String RENEW = "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('pexpire',KEYS[1],ARGV[2]) else return 0 end";
     private static final String RELEASE = "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end";
 
-    @Override public AgentStateStoreType type() { return AgentStateStoreType.REDIS; }
+    @Override public AgentSessionStoreType type() { return AgentSessionStoreType.REDIS; }
     @Override public AgentInvocationGuard resolve(AgentConfig config) {
         Duration duration = config.getInvocationGuard().getLeaseDuration();
         if (duration == null || duration.toMillis() < 300) throw new AgentConfigException("Redis invocation lease-duration must be at least 300ms");
         long ttl = duration.toMillis();
-        var connection = RedisStorageConnection.open(config.getStateStore().getRedis());
-        String prefix = RedisStorageConnection.prefix(config.getStateStore().getRedis()) + "lock:";
+        var connection = RedisStorageConnection.open(config.getSessionStore().getRedis());
+        String prefix = RedisStorageConnection.prefix(config.getSessionStore().getRedis()) + "lock:";
         ScheduledExecutorService renewals = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "liteflow-redis-lease-renewal"); thread.setDaemon(true); return thread;
         });

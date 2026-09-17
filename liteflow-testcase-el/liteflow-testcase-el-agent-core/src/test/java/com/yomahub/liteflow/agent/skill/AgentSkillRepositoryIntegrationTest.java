@@ -1,13 +1,14 @@
 package com.yomahub.liteflow.agent.skill;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import io.agentscope.harness.agent.HarnessAgent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.middleware.SkillTrackingMiddleware;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.agent.runtime.PreparedAgentResources;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.runtime.SkillRepositoryRegistration;
 import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
@@ -20,7 +21,7 @@ import io.agentscope.core.middleware.ActingInput;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.skill.AgentSkill;
-import io.agentscope.core.skill.DynamicSkillMiddleware;
+import io.agentscope.harness.agent.middleware.HarnessSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.AgentSkillRepositoryInfo;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,11 +59,11 @@ class AgentSkillRepositoryIntegrationTest {
         InMemoryRepository high = new InMemoryRepository("high", List.of(highShared, blocked));
         TestComponent component = new TestComponent(List.of(low, high), List.of());
         component.filter = SkillFilter.only(
-                highShared.getSkillId(), allowed.getSkillId());
+                highShared.getName(), allowed.getName());
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
-            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            HarnessSkillMiddleware dynamic = middleware(runtime, HarnessSkillMiddleware.class);
             LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
             RuntimeContext allowedContext = AgentTestContexts.runtimeContext(invocation);
             String allowedPrompt = dynamic.onSystemPrompt(
@@ -75,10 +75,10 @@ class AgentSkillRepositoryIntegrationTest {
             assertFalse(allowedPrompt.contains("blocked-description"));
 
             RuntimeContext filteredContext = RuntimeContext.builder()
-                    .userId(invocation.getRuntimeUserId())
+                    .userId(null)
                     .sessionId(invocation.getRuntimeSessionId())
                     .put(LiteFlowAgentContext.class, invocation)
-                    .put(SkillFilter.class, SkillFilter.disable(allowed.getSkillId()))
+                    .put(SkillFilter.class, SkillFilter.disable(allowed.getName()))
                     .build();
             String filteredPrompt = dynamic.onSystemPrompt(
                     runtime.agent(), filteredContext, "base").block();
@@ -96,9 +96,9 @@ class AgentSkillRepositoryIntegrationTest {
         InMemoryRepository repository = new InMemoryRepository("tracked", List.of(skill));
         TestComponent component = new TestComponent(List.of(repository), List.of());
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
-            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            HarnessSkillMiddleware dynamic = middleware(runtime, HarnessSkillMiddleware.class);
             SkillTrackingMiddleware tracking = middleware(runtime, SkillTrackingMiddleware.class);
             LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
             RuntimeContext runtimeContext = AgentTestContexts.runtimeContext(invocation);
@@ -142,11 +142,11 @@ class AgentSkillRepositoryIntegrationTest {
         DeferredRepository repository = new DeferredRepository(skill);
         TestComponent component = new TestComponent(List.of(repository), List.of());
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
             assertEquals(0, repository.enumerationCount.get());
             repository.open = true;
-            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
+            HarnessSkillMiddleware dynamic = middleware(runtime, HarnessSkillMiddleware.class);
             String prompt = dynamic.onSystemPrompt(
                             runtime.agent(),
                             AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
@@ -162,17 +162,17 @@ class AgentSkillRepositoryIntegrationTest {
     }
 
     @Test
-    void coreNeverAdvertisesSkillCodeExecutionAndShellRemainsDisabled() {
+    void explicitlyDisabledShellDoesNotAdvertiseSkillCodeExecution() {
         AgentSkill diskSkill = skill(
                 "disk-skill", "disk-description", Path.of("/trusted/skill/source"));
         InMemoryRepository repository = new InMemoryRepository("disk", List.of(diskSkill));
         TestComponent component = new TestComponent(List.of(repository), List.of());
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
-            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
-            assertEquals(1, runtime.agent().getMiddlewares().stream()
-                    .filter(DynamicSkillMiddleware.class::isInstance)
+            HarnessSkillMiddleware dynamic = middleware(runtime, HarnessSkillMiddleware.class);
+            assertEquals(1, runtime.agent().getDelegate().getMiddlewares().stream()
+                    .filter(HarnessSkillMiddleware.class::isInstance)
                     .count());
             String prompt = dynamic.onSystemPrompt(
                             runtime.agent(),
@@ -197,7 +197,7 @@ class AgentSkillRepositoryIntegrationTest {
         TestComponent component = new TestComponent(
                 List.of(owned, borrowed, owned), List.of(owned));
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         runtime.close();
         runtime.close();
 
@@ -228,17 +228,17 @@ class AgentSkillRepositoryIntegrationTest {
     }
 
     @Test
-    void customizedAgentMustRetainNativeDynamicSkillMiddlewareAndBuildFailureClosesOwnedRepo() {
+    void customizedAgentMustRetainNativeHarnessSkillMiddlewareAndBuildFailureClosesOwnedRepo() {
         InMemoryRepository owned = new InMemoryRepository(
                 "owned", List.of(skill("owned-skill", "owned-description", null)));
         TestComponent component = new TestComponent(List.of(owned), List.of(owned));
         component.customizer = builder -> {
-            ReActAgent snapshot = builder.build();
+            ReActAgent snapshot = builder.build().getDelegate();
             try {
                 List<MiddlewareBase> withoutDynamic = snapshot.getMiddlewares().stream()
-                        .filter(middleware -> !(middleware instanceof DynamicSkillMiddleware))
+                        .filter(middleware -> !(middleware instanceof HarnessSkillMiddleware))
                         .toList();
-                return ReActAgent.Builder.fromAgent(snapshot)
+                return HarnessAgent.Builder.fromAgent(snapshot)
                         .defaultSessionId(snapshot.getDefaultSessionId())
                         .stateStore(snapshot.getStateStore())
                         .middlewares(withoutDynamic);
@@ -250,89 +250,46 @@ class AgentSkillRepositoryIntegrationTest {
         AgentConfigException failure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(config()));
 
-        assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
+        assertTrue(failure.getMessage().contains("provided builder") || failure.getMessage().contains("DynamicSkillMiddleware"));
         assertEquals(1, owned.closeCount.get());
     }
 
     @Test
-    void customizerCannotEnableASecondCodeExecutingDynamicSkillMiddleware() {
+    void customizerCannotEnableASecondCodeExecutingHarnessSkillMiddleware() {
         InMemoryRepository repository = new InMemoryRepository(
                 "secured", List.of(skill("secured-skill", "secured-description", null)));
         TestComponent component = new TestComponent(List.of(repository), List.of());
         component.customizer = builder -> builder
-                .dynamicSkillsEnabled(true)
-                .skillCodeExecutionEnabled(true);
+                .middleware(new io.agentscope.core.skill.DynamicSkillMiddleware(List.of(repository), new io.agentscope.core.tool.Toolkit()));
 
         AgentConfigException failure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(config()));
 
-        assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
+        assertTrue(failure.getMessage().contains("provided builder") || failure.getMessage().contains("DynamicSkillMiddleware"));
     }
 
     @Test
-    void customizerCannotReplaceManagedDynamicSkillMiddlewareWithAnEmptyOne() {
+    void customizerCannotReplaceManagedHarnessSkillMiddlewareWithAnEmptyOne() {
         InMemoryRepository repository = new InMemoryRepository(
                 "secured", List.of(skill("secured-skill", "secured-description", null)));
         TestComponent component = new TestComponent(List.of(repository), List.of());
         component.customizer = builder -> builder
-                .middleware(new DynamicSkillMiddleware(List.of(), new io.agentscope.core.tool.Toolkit()))
-                .dynamicSkillsEnabled(false);
+                .middleware(new io.agentscope.core.skill.DynamicSkillMiddleware(List.of(), new io.agentscope.core.tool.Toolkit()))
+                .disableDynamicSkills();
 
         AgentConfigException failure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(config()));
 
-        assertTrue(failure.getMessage().contains("DynamicSkillMiddleware"));
+        assertTrue(failure.getMessage().contains("provided builder") || failure.getMessage().contains("DynamicSkillMiddleware"));
     }
 
     @Test
-    void distinctBuilderRetainsManagedDynamicIdentityAndRebindsFinalToolkit() {
-        AgentSkill skill = skill("distinct", "distinct-description", null);
-        InMemoryRepository repository = new InMemoryRepository("distinct", List.of(skill));
+    void distinctBuilderCannotReplaceTheManagedSkillRuntime() {
+        InMemoryRepository repository = new InMemoryRepository("distinct", List.of(skill("distinct", "description", null)));
         TestComponent component = new TestComponent(List.of(repository), List.of());
-        AtomicReference<DynamicSkillMiddleware> managedIdentity = new AtomicReference<>();
-        AtomicReference<io.agentscope.core.tool.Toolkit> replacementToolkit =
-                new AtomicReference<>();
-        component.customizer = builder -> {
-            ReActAgent snapshot = builder.build();
-            try {
-                managedIdentity.set(snapshot.getMiddlewares().stream()
-                        .filter(DynamicSkillMiddleware.class::isInstance)
-                        .map(DynamicSkillMiddleware.class::cast)
-                        .findFirst()
-                        .orElseThrow());
-                io.agentscope.core.tool.Toolkit toolkit = new io.agentscope.core.tool.Toolkit();
-                replacementToolkit.set(toolkit);
-                return ReActAgent.builder()
-                        .name("distinct-builder")
-                        .sysPrompt("distinct-builder")
-                        .model(component.model)
-                        .toolkit(toolkit)
-                        .defaultSessionId(snapshot.getDefaultSessionId())
-                        .stateStore(snapshot.getStateStore())
-                        .middlewares(snapshot.getMiddlewares());
-            } finally {
-                snapshot.close();
-            }
-        };
-
-        AgentRuntime runtime = component.runtime(config());
-        try {
-            DynamicSkillMiddleware dynamic = middleware(runtime, DynamicSkillMiddleware.class);
-            assertSame(managedIdentity.get(), dynamic);
-
-            dynamic.onSystemPrompt(
-                            runtime.agent(),
-                            AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()),
-                            "base")
-                    .block();
-
-            assertTrue(runtime.agent().getToolkit().getToolNames()
-                    .contains(SkillTrackingMiddleware.LOAD_SKILL_TOOL_NAME));
-            assertFalse(replacementToolkit.get().getToolNames()
-                    .contains(SkillTrackingMiddleware.LOAD_SKILL_TOOL_NAME));
-        } finally {
-            runtime.close();
-        }
+        component.customizer = builder -> HarnessAgent.builder().model(component.model);
+        AgentConfigException failure = assertThrows(AgentConfigException.class, () -> component.runtime(config()));
+        assertTrue(failure.getMessage().contains("provided builder"));
     }
 
     private static ToolResultEndEvent successEvent(ToolUseBlock toolUse) {
@@ -350,8 +307,8 @@ class AgentSkillRepositoryIntegrationTest {
                 originDir);
     }
 
-    private static <T> T middleware(AgentRuntime runtime, Class<T> type) {
-        return runtime.agent().getMiddlewares().stream()
+    private static <T> T middleware(HarnessAgentRuntime runtime, Class<T> type) {
+        return runtime.agent().getDelegate().getMiddlewares().stream()
                 .filter(type::isInstance)
                 .map(type::cast)
                 .findFirst()
@@ -360,18 +317,22 @@ class AgentSkillRepositoryIntegrationTest {
 
     private static AgentConfig config() {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getRuntime().setNamespace("skill-test");
-        config.getRuntime().setTimeout(Duration.ofSeconds(2));
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.setApplicationName("skill-test");
+        config.setExecutionTimeout(Duration.ofSeconds(2));
         return config;
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
         private final Model model = new ScriptedChatModel("reply");
         private final List<AgentSkillRepository> repositories;
         private final List<AgentSkillRepository> owned;
         private SkillFilter filter = SkillFilter.all();
-        private UnaryOperator<ReActAgent.Builder> customizer = UnaryOperator.identity();
+        private UnaryOperator<HarnessAgent.Builder> customizer = UnaryOperator.identity();
 
         private TestComponent(
                 List<AgentSkillRepository> repositories,
@@ -380,7 +341,7 @@ class AgentSkillRepositoryIntegrationTest {
             this.owned = owned;
         }
 
-        private AgentRuntime runtime(AgentConfig config) {
+        private HarnessAgentRuntime runtime(AgentConfig config) {
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "skill-agent", "agent-key", AGENT_NAMESPACE));
         }
@@ -388,9 +349,7 @@ class AgentSkillRepositoryIntegrationTest {
         private PreparedAgentResources resources(AgentConfig config) {
             return prepareAgentResources(
                     new AgentRuntimeBuildContext(
-                            config, "skill-agent", "agent-key", AGENT_NAMESPACE),
-                    true,
-                    false);
+                            config, "skill-agent", "agent-key", AGENT_NAMESPACE));
         }
 
         @Override
@@ -428,7 +387,7 @@ class AgentSkillRepositoryIntegrationTest {
         }
 
         @Override
-        protected ReActAgent.Builder customizeAgent(ReActAgent.Builder builder) {
+        protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
             return customizer.apply(builder);
         }
     }

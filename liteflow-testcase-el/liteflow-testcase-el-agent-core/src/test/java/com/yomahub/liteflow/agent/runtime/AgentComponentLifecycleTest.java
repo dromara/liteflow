@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.runtime;
 
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.component.AbstractAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
@@ -9,7 +10,6 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.slot.Slot;
-import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.Msg;
@@ -120,7 +120,7 @@ class AgentComponentLifecycleTest {
     @Test
     void runtimeClosesOnlyOwnedResourcesInTheDocumentedOrder() {
         List<String> order = new ArrayList<>();
-        ReActAgent agent = mock(ReActAgent.class);
+        io.agentscope.harness.agent.HarnessAgent agent = mock(io.agentscope.harness.agent.HarnessAgent.class);
         doAnswer(invocation -> {
             order.add("agent");
             return null;
@@ -136,16 +136,16 @@ class AgentComponentLifecycleTest {
         RecordingModel secondModel = new RecordingModel("model-2", order);
         GuardedNamespacedAgentStateStore namespaced =
                 new GuardedNamespacedAgentStateStore(ownedStore, AGENT_NAMESPACE);
-        AgentRuntime runtime = new AgentRuntime(
+        HarnessAgentRuntime runtime = new HarnessAgentRuntime(
                 agent,
-                namespaced,
+                new AgentRuntimeOwnership(namespaced,
                 new ResolvedAgentStateStore(ownedStore, true),
                 List.of(
                         new McpClientRegistration(firstMcp, true),
                         new McpClientRegistration(borrowedMcp, false),
                         new McpClientRegistration(secondMcp, true)),
                 List.of(firstRepository, secondRepository),
-                List.of(firstModel, secondModel));
+                List.of(firstModel, secondModel)), List.of());
 
         runtime.close();
         runtime.close();
@@ -160,9 +160,9 @@ class AgentComponentLifecycleTest {
 
     private static void configureAgent() {
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getRuntime().setNamespace("lifecycle-test");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(10));
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.setApplicationName("lifecycle-test");
+        agent.setExecutionTimeout(Duration.ofSeconds(10));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(config);

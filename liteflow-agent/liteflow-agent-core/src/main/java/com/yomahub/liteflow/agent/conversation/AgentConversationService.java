@@ -58,10 +58,10 @@ public final class AgentConversationService implements AutoCloseable {
     private final ReentrantReadWriteLock lifecycle = new ReentrantReadWriteLock();
     private boolean closed;
 
-    /** Opens an owned store using liteflow.agent.state-store.*. Close this service on shutdown. */
+    /** Opens an owned store using liteflow.agent.session-store.*. Close this service on shutdown. */
     public static AgentConversationService open(AgentConfig config) {
         validateConfig(config);
-        ResolvedAgentStateStore resolved = new DefaultAgentStateStoreResolver().resolve(config.getStateStore());
+        ResolvedAgentStateStore resolved = new DefaultAgentStateStoreResolver().resolve(config.getSessionStore());
         try {
             return new AgentConversationService(config, resolved.store(), resolved);
         } catch (RuntimeException | Error failure) {
@@ -82,9 +82,9 @@ public final class AgentConversationService implements AutoCloseable {
     private AgentConversationService(AgentConfig config, AgentStateStore store,
                                      ResolvedAgentStateStore ownedStore) {
         validateConfig(config);
-        this.namespace = config.getRuntime().getNamespace();
+        this.namespace = config.getApplicationName();
         this.identities = new InvocationIdentityResolver(namespace);
-        this.prefix = "lf-conversation." + identities.resolve("index", "index", "conversation").agentNamespace() + ".";
+        this.prefix = "lf-conversation-v2." + identities.resolve("index", "conversation").agentNamespace() + ".";
         this.store = Objects.requireNonNull(store, "store");
         this.ownedStore = ownedStore;
         this.timeout = Objects.requireNonNull(config.getInvocationGuard().getAcquireTimeout(), "acquireTimeout");
@@ -93,8 +93,8 @@ public final class AgentConversationService implements AutoCloseable {
         this.guard = new AgentInvocationGuardResolver().resolve(config);
     }
 
-    public AgentConversation create(String userId, String title) {
-        return create(userId, UUID.randomUUID().toString(), title, true);
+    public AgentConversation create(String title) {
+        return create(UUID.randomUUID().toString(), title, true);
     }
 
     /**
@@ -102,36 +102,34 @@ public final class AgentConversationService implements AutoCloseable {
      * its own user-facing inputs/results with append(), e.g. a chain containing multiple Agents.
      * Agent participation is still tracked when conversation-history-enabled=true.
      */
-    public AgentConversation create(String userId, String conversationId, String title, boolean recordAgentMessages) {
-        return locked(userId, conversationId, () -> {
-            if (load(userId, conversationId).isPresent()) {
+    public AgentConversation create(String conversationId, String title, boolean recordAgentMessages) {
+        return locked(conversationId, () -> {
+            if (load(conversationId).isPresent()) {
                 throw new IllegalStateException("Conversation ID already used: " + conversationId);
             }
             StoredConversation state = fresh(conversationId, title, recordAgentMessages);
-            save(userId, state);
+            save(state);
             return state.conversation();
         });
     }
 
-    public Optional<AgentConversation> get(String userId, String conversationId) {
-        return locked(userId, conversationId,
-                () -> load(userId, conversationId).filter(state -> !state.deleted()).map(StoredConversation::conversation));
+    public Optional<AgentConversation> get(String conversationId) {
+        return locked(conversationId,
+                () -> load(conversationId).filter(state -> !state.deleted()).map(StoredConversation::conversation));
     }
 
     /** Newest activity first, with ID as a stable tie-breaker. Cursor is an offset in metadata. */
-    public AgentConversationPage<AgentConversation> list(String userId, long cursor, int limit) {
+    public AgentConversationPage<AgentConversation> list(long cursor, int limit) {
         checkPage(cursor, limit);
-        requireText(userId, "userId");
         return operation(() -> {
-            List<AgentConversation> all = store.listSessionIds(userId).stream()
-                    .filter(id -> id.startsWith(prefix))
+            List<AgentConversation> all = store.listSessionIds(null).stream()
+                    .filter(id -> id.startsWith(prefix + "active."))
                     .filter(id -> !id.startsWith(prefix + "deleted."))
-                    // Some SQL collations compare the user prefix case-insensitively. Recheck
-                    // the full address, whose hash includes the exact logical user identity.
-                    .map(id -> store.get(userId, id, METADATA, StoredConversation.class)
-                            .filter(state -> id.equals(slot(userId, state.conversation().id()))))
+                    // Recheck that metadata belongs to this application and conversation.
+                    .map(id -> store.get(null, id, METADATA, StoredConversation.class)
+                            .filter(state -> id.equals(slot(state.conversation().id()))))
                     .flatMap(Optional::stream).filter(state -> !state.deleted())
-                    .filter(state -> !store.exists(userId, tombstoneSlot(userId, state.conversation().id())))
+                    .filter(state -> !store.exists(null, tombstoneSlot(state.conversation().id())))
                     .map(StoredConversation::conversation)
                     .sorted(Comparator.comparingLong(AgentConversation::updatedAt).reversed()
                             .thenComparing(AgentConversation::id)).toList();
@@ -143,15 +141,15 @@ public final class AgentConversationService implements AutoCloseable {
 
     /** Cursor is the last sequence already received; zero starts at the first message. */
     public AgentConversationPage<AgentConversationMessage> messages(
-            String userId, String conversationId, long cursor, int limit) {
+            String conversationId, long cursor, int limit) {
         checkPage(cursor, limit);
-        return locked(userId, conversationId, () -> {
-            long count = requireConversation(userId, conversationId).conversation().messageCount();
+        return locked(conversationId, () -> {
+            long count = requireConversation(conversationId).conversation().messageCount();
             long start = Math.min(cursor, count);
             long end = start + Math.min(limit, count - start);
             List<AgentConversationMessage> messages = new ArrayList<>();
             for (long sequence = start + 1; sequence <= end; sequence++) {
-                messages.add(store.get(userId, slot(userId, conversationId), messageKey(sequence),
+                messages.add(store.get(null, slot(conversationId), messageKey(sequence),
                         AgentConversationMessage.class).orElseThrow(
                         () -> new IllegalStateException("Conversation message is missing: " + conversationId)));
             }
@@ -159,29 +157,29 @@ public final class AgentConversationService implements AutoCloseable {
         });
     }
 
-    public AgentConversationMessage append(String userId, String conversationId,
+    public AgentConversationMessage append(String conversationId,
                                             String role, String stage, String content) {
-        return append(userId, conversationId, role, stage, content, null, null);
+        return append(conversationId, role, stage, content, null, null);
     }
 
-    public AgentConversationMessage append(String userId, String conversationId, String role,
+    public AgentConversationMessage append(String conversationId, String role,
                                             String stage, String content, String agentKey, String requestId) {
         requireText(role, "role");
         requireText(stage, "stage");
         Objects.requireNonNull(content, "content");
-        return locked(userId, conversationId, () -> appendLocked(userId,
-                requireConversation(userId, conversationId), role, stage, content, agentKey, requestId));
+        return locked(conversationId, () -> appendLocked(
+                requireConversation(conversationId), role, stage, content, agentKey, requestId));
     }
 
     /** Null title preserves the title. Attributes replace the previous attribute map. */
-    public AgentConversation update(String userId, String conversationId, String title, Map<String, String> attributes) {
+    public AgentConversation update(String conversationId, String title, Map<String, String> attributes) {
         Map<String, String> values = Map.copyOf(Objects.requireNonNull(attributes, "attributes"));
-        return locked(userId, conversationId, () -> {
-            StoredConversation state = requireConversation(userId, conversationId);
+        return locked(conversationId, () -> {
+            StoredConversation state = requireConversation(conversationId);
             AgentConversation current = state.conversation();
             AgentConversation updated = new AgentConversation(current.id(), title == null ? current.title() : title,
                     current.createdAt(), now(), current.messageCount(), values);
-            save(userId, new StoredConversation(updated, state.recordAgentMessages(), state.agents(), false));
+            save(new StoredConversation(updated, state.recordAgentMessages(), state.agents(), false));
             return updated;
         });
     }
@@ -190,11 +188,11 @@ public final class AgentConversationService implements AutoCloseable {
      * Reads the persisted working context, including sessions created before the conversation API.
      * This is a snapshot, and may already have been compacted. It does not create a conversation.
      */
-    public Optional<AgentState> agentState(String userId, String conversationId, String agentKey) {
-        AgentInvocationIdentity identity = identities.resolve(userId, conversationId, agentKey);
+    public Optional<AgentState> agentState(String conversationId, String agentKey) {
+        AgentInvocationIdentity identity = identities.resolve(conversationId, agentKey);
         return operation(() -> {
             try (var ignored = guard.acquire(AgentInvocationKey.state(identity), timeout)) {
-                Optional<StoredConversation> metadata = load(userId, conversationId);
+                Optional<StoredConversation> metadata = load(conversationId);
                 if (metadata.isPresent() && metadata.get().deleted()) {
                     return Optional.empty();
                 }
@@ -204,7 +202,7 @@ public final class AgentConversationService implements AutoCloseable {
                         .forEach(addresses::add));
                 AgentState found = null;
                 for (String address : addresses) {
-                    Optional<AgentState> candidate = store.get(userId, address, "agent_state", AgentState.class);
+                    Optional<AgentState> candidate = store.get(null, address, "agent_state", AgentState.class);
                     if (candidate.isPresent()) {
                         if (found != null) {
                             throw new IllegalStateException("Multiple Agent states found for agentKey: " + agentKey);
@@ -219,41 +217,41 @@ public final class AgentConversationService implements AutoCloseable {
     }
 
     /** Associates existing state with a managed conversation, for migration or custom runtimes. */
-    public void attachAgent(String userId, String conversationId, String agentKey) {
-        AgentInvocationIdentity identity = identities.resolve(userId, conversationId, agentKey);
-        locked(userId, conversationId, () -> {
-            StoredConversation state = requireConversation(userId, conversationId);
+    public void attachAgent(String conversationId, String agentKey) {
+        AgentInvocationIdentity identity = identities.resolve(conversationId, agentKey);
+        locked(conversationId, () -> {
+            StoredConversation state = requireConversation(conversationId);
             Set<AgentLocation> agents = new LinkedHashSet<>(state.agents());
             addresses(identity).forEach(address -> agents.add(new AgentLocation(agentKey, address)));
-            save(userId, new StoredConversation(state.conversation(), state.recordAgentMessages(), List.copyOf(agents), false));
+            save(new StoredConversation(state.conversation(), state.recordAgentMessages(), List.copyOf(agents), false));
             return null;
         });
     }
 
-    public void delete(String userId, String conversationId) {
+    public void delete(String conversationId) {
         operation(() -> {
-            StoredConversation deleting = locked(userId, conversationId, () -> {
-                StoredConversation existing = load(userId, conversationId)
+            StoredConversation deleting = locked(conversationId, () -> {
+                StoredConversation existing = load(conversationId)
                         .orElseGet(() -> fresh(conversationId, "", false));
                 StoredConversation marker = new StoredConversation(existing.conversation(),
                         false, existing.agents(), true);
-                store.save(userId, tombstoneSlot(userId, conversationId), METADATA, marker);
+                store.save(null, tombstoneSlot(conversationId), METADATA, marker);
                 return marker;
             });
             // Never hold the metadata lock while waiting for execution: a finishing call may journal.
-            try (var workspace = guard.acquire(AgentInvocationKey.workspace(namespace, userId, conversationId), timeout)) {
-                AgentConversationResourceRegistry.release(AgentInvocationKey.workspace(namespace, userId, conversationId));
+            try (var workspace = guard.acquire(AgentInvocationKey.workspace(namespace, conversationId), timeout)) {
+                AgentConversationResourceRegistry.release(AgentInvocationKey.workspace(namespace, conversationId));
                 for (AgentLocation agent : deleting.agents()) {
-                    try (var state = guard.acquire(AgentInvocationKey.state(namespace, userId, conversationId, agent.agentKey()), timeout)) {
-                        store.delete(userId, agent.sessionId());
+                    try (var state = guard.acquire(AgentInvocationKey.state(namespace, conversationId, agent.agentKey()), timeout)) {
+                        store.delete(null, agent.sessionId());
                     }
                 }
-                locked(userId, conversationId, () -> {
+                locked(conversationId, () -> {
                     // The separate tombstone survives full deletion, including unpublished messages
                     // left by a failed append/import. No per-key delete support is required.
-                    store.delete(userId, slot(userId, conversationId));
+                    store.delete(null, slot(conversationId));
                     AgentConversation empty = new AgentConversation(conversationId, "", 0, now(), 0, Map.of());
-                    store.save(userId, tombstoneSlot(userId, conversationId), METADATA,
+                    store.save(null, tombstoneSlot(conversationId), METADATA,
                             new StoredConversation(empty, false, List.of(), true));
                     return null;
                 });
@@ -266,21 +264,21 @@ public final class AgentConversationService implements AutoCloseable {
      * Publishes legacy display history only if the ID has never been used, including tombstones.
      * Messages are written before metadata, making retries safe after a partial failed import.
      */
-    public boolean importIfAbsent(String userId, AgentConversation conversation, List<AgentConversationMessage> messages) {
+    public boolean importIfAbsent(AgentConversation conversation, List<AgentConversationMessage> messages) {
         List<AgentConversationMessage> snapshot = List.copyOf(messages);
-        return locked(userId, conversation.id(), () -> {
-            if (load(userId, conversation.id()).isPresent()) {
+        return locked(conversation.id(), () -> {
+            if (load(conversation.id()).isPresent()) {
                 return false;
             }
             long sequence = 0;
             for (AgentConversationMessage message : snapshot) {
                 AgentConversationMessage imported = new AgentConversationMessage(++sequence, message.id(),
                         message.role(), message.stage(), message.content(), message.agentKey(), message.requestId(), message.timestamp());
-                store.save(userId, slot(userId, conversation.id()), messageKey(sequence), imported);
+                store.save(null, slot(conversation.id()), messageKey(sequence), imported);
             }
             AgentConversation imported = new AgentConversation(conversation.id(), conversation.title(),
                     conversation.createdAt(), conversation.updatedAt(), sequence, conversation.attributes());
-            save(userId, new StoredConversation(imported, false, List.of(), false));
+            save(new StoredConversation(imported, false, List.of(), false));
             return true;
         });
     }
@@ -288,8 +286,8 @@ public final class AgentConversationService implements AutoCloseable {
     /** Runtime integration; callers already hold the Agent state lease. */
     public void beginInvocation(AgentInvocationIdentity identity, String physicalSessionId, List<Msg> input, String requestId) {
         requireNamespace(identity);
-        locked(identity.userId(), identity.conversationId(), () -> {
-            StoredConversation state = load(identity.userId(), identity.conversationId())
+        locked(identity.conversationId(), () -> {
+            StoredConversation state = load(identity.conversationId())
                     .orElseGet(() -> fresh(identity.conversationId(), "", true));
             if (state.deleted()) {
                 throw new IllegalStateException("Conversation was deleted: " + identity.conversationId());
@@ -297,11 +295,11 @@ public final class AgentConversationService implements AutoCloseable {
             Set<AgentLocation> agents = new LinkedHashSet<>(state.agents());
             agents.add(new AgentLocation(identity.agentKey(), physicalSessionId));
             state = new StoredConversation(state.conversation(), state.recordAgentMessages(), List.copyOf(agents), false);
-            save(identity.userId(), state);
+            save(state);
             if (state.recordAgentMessages()) {
                 for (Msg message : input) {
-                    appendLocked(identity.userId(), state, "user", "input", message.getTextContent(), identity.agentKey(), requestId);
-                    state = requireConversation(identity.userId(), identity.conversationId());
+                    appendLocked(state, "user", "input", message.getTextContent(), identity.agentKey(), requestId);
+                    state = requireConversation(identity.conversationId());
                 }
             }
             return null;
@@ -311,12 +309,12 @@ public final class AgentConversationService implements AutoCloseable {
     /** Runtime integration; tombstones discard late results without reviving deleted conversations. */
     public void finishInvocation(AgentInvocationIdentity identity, String requestId, Msg reply, Throwable failure) {
         requireNamespace(identity);
-        locked(identity.userId(), identity.conversationId(), () -> {
-            Optional<StoredConversation> loaded = load(identity.userId(), identity.conversationId());
+        locked(identity.conversationId(), () -> {
+            Optional<StoredConversation> loaded = load(identity.conversationId());
             if (loaded.isPresent() && !loaded.get().deleted() && loaded.get().recordAgentMessages()) {
                 String content = failure == null ? replyContent(reply)
                         : Objects.toString(failure.getMessage(), failure.getClass().getSimpleName());
-                appendLocked(identity.userId(), loaded.get(), "assistant", failure == null ? "result" : "error",
+                appendLocked(loaded.get(), "assistant", failure == null ? "result" : "error",
                         Objects.toString(content, ""), identity.agentKey(), requestId);
             }
             return null;
@@ -354,16 +352,16 @@ public final class AgentConversationService implements AutoCloseable {
         }
     }
 
-    private AgentConversationMessage appendLocked(String userId, StoredConversation state, String role,
+    private AgentConversationMessage appendLocked(StoredConversation state, String role,
             String stage, String content, String agentKey, String requestId) {
         AgentConversation current = state.conversation();
         long sequence = Math.addExact(current.messageCount(), 1);
         AgentConversationMessage message = new AgentConversationMessage(sequence, UUID.randomUUID().toString(),
                 role, stage, content, agentKey, requestId, now());
-        store.save(userId, slot(userId, current.id()), messageKey(sequence), message);
+        store.save(null, slot(current.id()), messageKey(sequence), message);
         AgentConversation updated = new AgentConversation(current.id(), current.title(), current.createdAt(),
                 message.timestamp(), sequence, current.attributes());
-        save(userId, new StoredConversation(updated, state.recordAgentMessages(), state.agents(), false));
+        save(new StoredConversation(updated, state.recordAgentMessages(), state.agents(), false));
         return message;
     }
 
@@ -380,30 +378,30 @@ public final class AgentConversationService implements AutoCloseable {
                 recordAgentMessages, List.of(), false);
     }
 
-    private StoredConversation requireConversation(String userId, String id) {
-        return load(userId, id).filter(state -> !state.deleted())
+    private StoredConversation requireConversation(String id) {
+        return load(id).filter(state -> !state.deleted())
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found: " + id));
     }
 
-    private Optional<StoredConversation> load(String userId, String id) {
-        Optional<StoredConversation> tombstone = store.get(userId, tombstoneSlot(userId, id), METADATA, StoredConversation.class);
-        return tombstone.isPresent() ? tombstone : store.get(userId, slot(userId, id), METADATA, StoredConversation.class);
+    private Optional<StoredConversation> load(String id) {
+        Optional<StoredConversation> tombstone = store.get(null, tombstoneSlot(id), METADATA, StoredConversation.class);
+        return tombstone.isPresent() ? tombstone : store.get(null, slot(id), METADATA, StoredConversation.class);
     }
 
-    private void save(String userId, StoredConversation state) {
-        store.save(userId, slot(userId, state.conversation().id()), METADATA, state);
+    private void save(StoredConversation state) {
+        store.save(null, slot(state.conversation().id()), METADATA, state);
     }
 
-    private String slot(String userId, String id) {
-        return prefix + identities.resolve(userId, id, "conversation").runtimeSessionId();
+    private String slot(String id) {
+        return prefix + "active." + identities.resolve(id, "conversation").runtimeSessionId();
     }
 
-    private String tombstoneSlot(String userId, String id) {
-        return prefix + "deleted." + identities.resolve(userId, id, "conversation").runtimeSessionId();
+    private String tombstoneSlot(String id) {
+        return prefix + "deleted." + identities.resolve(id, "conversation").runtimeSessionId();
     }
 
-    private <T> T locked(String userId, String id, Supplier<T> action) {
-        AgentInvocationKey key = AgentInvocationKey.conversation(namespace, userId, id);
+    private <T> T locked(String id, Supplier<T> action) {
+        AgentInvocationKey key = AgentInvocationKey.conversation(namespace, id);
         return operation(() -> {
             try (var ignored = guard.acquire(key, timeout)) {
                 return action.get();

@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.platform.gemini;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.gemini.Gemini;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * Gemini 头等平台连通性测试组件。
  */
 @Component("geminiPlatformAgent")
-public class GeminiPlatformAgentCmp extends AgentComponent {
+public class GeminiPlatformAgentCmp extends HarnessAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
@@ -36,11 +36,6 @@ public class GeminiPlatformAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 }

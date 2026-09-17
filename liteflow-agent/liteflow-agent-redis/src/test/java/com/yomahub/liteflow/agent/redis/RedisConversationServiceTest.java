@@ -22,23 +22,22 @@ class RedisConversationServiceTest {
     void metadataPagingMessagesAndTombstonesRoundTripThroughRedisStore() {
         MemoryAdapter client = new MemoryAdapter();
         AgentConfig config = new AgentConfig();
-        config.getRuntime().setNamespace("redis-conversation-test");
+        config.setApplicationName("redis-conversation-test");
         String id;
         try (var service = new AgentConversationService(config,
                 RedisAgentStateStore.builder().clientAdapter(client).build())) {
-            id = service.create("alice", "Redis 会话").id();
-            service.append("alice", id, "user", "input", "第一条");
-            service.append("alice", id, "assistant", "result", "第二条");
+            id = service.create("Redis 会话").id();
+            service.append(id, "user", "input", "第一条");
+            service.append(id, "assistant", "result", "第二条");
         }
         try (var reopened = new AgentConversationService(config,
                 RedisAgentStateStore.builder().clientAdapter(client).build())) {
-            assertEquals("Redis 会话", reopened.list("alice", 0, 10).items().get(0).title());
-            assertEquals("第二条", reopened.messages("alice", id, 1, 1).items().get(0).content());
-            assertTrue(reopened.list("bob", 0, 10).items().isEmpty());
-            reopened.delete("alice", id);
-            assertTrue(reopened.list("alice", 0, 10).items().isEmpty());
+            assertEquals("Redis 会话", reopened.list(0, 10).items().get(0).title());
+            assertEquals("第二条", reopened.messages(id, 1, 1).items().get(0).content());
+            reopened.delete(id);
+            assertTrue(reopened.list(0, 10).items().isEmpty());
             assertTrue(client.values.keySet().stream().noneMatch(key -> key.contains("message_")));
-            assertThrows(IllegalStateException.class, () -> reopened.create("alice", id, "revive", true));
+            assertThrows(IllegalStateException.class, () -> reopened.create(id, "revive", true));
         }
     }
 

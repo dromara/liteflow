@@ -33,7 +33,7 @@ public class ReliabilityLiveTest extends RealAgentTestBase {
     public void resetReliabilityFixture() {
         RealReliabilityAgentsCmp.reset();
         RealReliabilityAgentsCmp.LiteflowConfigHolder.set(liteflowConfig);
-        liteflowConfig.getAgent().getRuntime().setTimeout(Duration.ofMinutes(3));
+        liteflowConfig.getAgent().setExecutionTimeout(Duration.ofMinutes(3));
     }
 
     /** §14.1：主模型凭据无效 + maxRetries=1 → 回退到真实模型后成功。 */
@@ -64,10 +64,10 @@ public class ReliabilityLiveTest extends RealAgentTestBase {
                 "easy request must route to the cheap model");
     }
 
-    /** §14.3 / §14.5：runtime.timeout 超时抛 AgentInvocationException(TIMEOUT)。 */
+    /** §14.3 / §14.5：execution-timeout 超时抛 AgentInvocationException(TIMEOUT)。 */
     @Test
     public void runtimeTimeoutFailsWithTimeoutInvocationException() {
-        liteflowConfig.getAgent().getRuntime().setTimeout(Duration.ofMillis(1));
+        liteflowConfig.getAgent().setExecutionTimeout(Duration.ofMillis(1));
 
         LiteflowResponse response = flowExecutor.execute2Resp("realTimeoutChain",
                 "你好");

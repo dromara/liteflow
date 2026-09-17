@@ -22,26 +22,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HarnessConfigTest {
 
     @Test
-    void guardedLocalDefaultsFailClosedUntilTrustIsExplicit() {
-        AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getStateStore().setJsonRoot("target/agent-state");
-
-        assertEquals(HarnessFilesystemBackend.GUARDED_LOCAL,
-                agentConfig.getHarness().getFilesystemBackend());
-        assertFalse(agentConfig.getHarness().isTrustedLocal());
-
-        IllegalStateException failure = assertThrows(
-                IllegalStateException.class, agentConfig.getHarness()::validate);
-
-        assertTrue(failure.getMessage().contains("trusted-local"));
+    void guardedLocalDefaultsAreValidWithoutAnAdditionalTrustFlag() {
+        AgentConfig config = new AgentConfig();
+        assertEquals(HarnessFilesystemBackend.GUARDED_LOCAL, config.getHarness().getFilesystemBackend());
+        assertDoesNotThrow(config.getHarness()::validate);
     }
 
     @Test
-    void explicitTrustMakesGuardedLocalConfigurationValid() {
-        AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getHarness().setTrustedLocal(true);
-
-        assertDoesNotThrow(agentConfig.getHarness()::validate);
+    void missingLocalConfigurationIsRejected() {
+        AgentConfig config = new AgentConfig();
+        config.getHarness().setLocal(null);
+        assertThrows(IllegalStateException.class, config.getHarness()::validate);
     }
 
     @Test
@@ -49,7 +40,6 @@ class HarnessConfigTest {
         AgentConfig agentConfig = new AgentConfig();
         agentConfig.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
 
-        assertFalse(agentConfig.getHarness().isTrustedLocal());
         assertDoesNotThrow(agentConfig.getHarness()::validate);
     }
 
@@ -65,12 +55,12 @@ class HarnessConfigTest {
     }
 
     @Test
-    void filesystemExtensionContextCarriesLiteFlowLimitsSeparatelyFromDocker() {
+    void filesystemExtensionContextCarriesLocationAndCommandTimeout() {
         AgentConfig agentConfig = new AgentConfig();
         Path workspaceRoot = Path.of("build", "harness-workspace");
         Duration commandTimeout = Duration.ofSeconds(37);
         HarnessFilesystemContext context = new HarnessFilesystemContext(
-                workspaceRoot, 8192L, commandTimeout, agentConfig);
+                workspaceRoot, commandTimeout, agentConfig);
         AtomicReference<HarnessAgent.Builder> configuredBuilder = new AtomicReference<>();
         AtomicReference<HarnessFilesystemContext> configuredContext = new AtomicReference<>();
         HarnessFilesystemConfigurer configurer = (builder, suppliedContext) -> {
@@ -84,7 +74,6 @@ class HarnessConfigTest {
         assertSame(builder, configuredBuilder.get());
         assertSame(context, configuredContext.get());
         assertEquals(workspaceRoot, context.workspaceRoot());
-        assertEquals(8192L, context.maxFileBytes());
         assertEquals(commandTimeout, context.commandTimeout());
         assertSame(agentConfig, context.agentConfig());
     }

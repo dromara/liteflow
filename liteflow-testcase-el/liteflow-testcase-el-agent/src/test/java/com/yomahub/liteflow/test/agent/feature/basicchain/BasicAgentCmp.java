@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.basicchain;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
 import io.agentscope.core.middleware.MiddlewareBase;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 让 {@code BasicChainTest} 一次链路调用即可断言多个基础行为。
  */
 @Component("basicAgent")
-public class BasicAgentCmp extends AgentComponent {
+public class BasicAgentCmp extends HarnessAgentComponent {
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
     public static final AtomicReference<String> SEEN_CONVERSATION_ID = new AtomicReference<>();
@@ -69,11 +69,6 @@ public class BasicAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 

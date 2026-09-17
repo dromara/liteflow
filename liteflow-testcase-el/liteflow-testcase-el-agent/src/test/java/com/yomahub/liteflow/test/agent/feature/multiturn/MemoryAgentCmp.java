@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.multiturn;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
 import com.yomahub.liteflow.test.agent.support.ForwardingProbeMiddleware;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>探针通过 AgentScope 2 middleware 注册到组件持有的 runtime。
  */
 @Component("memoryAgent")
-public class MemoryAgentCmp extends AgentComponent {
+public class MemoryAgentCmp extends HarnessAgentComponent {
 
     public static final String FIXED_CONVERSATION_ID = "multiturn-conversation";
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
@@ -69,11 +69,6 @@ public class MemoryAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 

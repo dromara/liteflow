@@ -1,11 +1,11 @@
 package com.yomahub.liteflow.test.agent.feature.lifecycle;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
@@ -33,8 +33,10 @@ class SolonAgentLifecycleTest {
     @Test
     void stoppingFreshAppContextClosesTheRegisteredAgentRuntimeExactlyOnce() throws Exception {
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getRuntime().setNamespace("solon-lifecycle-test");
+        agent.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(agent.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.setApplicationName("solon-lifecycle-test");
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
@@ -60,7 +62,7 @@ class SolonAgentLifecycleTest {
         }
     }
 
-    private static final class LifecycleAgentComponent extends AgentComponent {
+    private static final class LifecycleAgentComponent extends HarnessAgentComponent {
         private final Slot slot = new Slot();
         private final Model model;
         private final AtomicInteger runtimeBuildCount = new AtomicInteger();
@@ -79,7 +81,7 @@ class SolonAgentLifecycleTest {
         }
 
         @Override
-        protected AgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
+        protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
             runtimeBuildCount.incrementAndGet();
             return super.buildRuntime(buildContext);
         }

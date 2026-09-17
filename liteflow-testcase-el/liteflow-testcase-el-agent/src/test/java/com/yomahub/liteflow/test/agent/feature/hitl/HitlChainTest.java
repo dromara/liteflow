@@ -37,14 +37,14 @@ public class HitlChainTest {
     }
 
     @Test
-    void approvalResumesWithMetadataOnlyWhileHoldingOneInvocationLease() {
+    void approvalResumesWithMetadataOnlyWhileHoldingStateAndWorkspaceLeases() {
         LiteflowResponse response = flowExecutor.execute2Resp(
                 "hitlChain", "approve",
                 ExecuteOption.of().conversationId("conversation-hitl"));
 
         assertTrue(response.isSuccess(), () -> String.valueOf(response.getCause()));
         assertEquals("approved", response.getSlot().getResponseData());
-        assertEquals(List.of(1, 1, 1), HitlAgentCmp.activeLeaseObservations());
+        assertEquals(List.of(2, 2, 2), HitlAgentCmp.activeLeaseObservations());
         assertEquals(0, HitlAgentCmp.guard().active());
 
         List<Msg> continuation = HitlAgentCmp.continuationInput();

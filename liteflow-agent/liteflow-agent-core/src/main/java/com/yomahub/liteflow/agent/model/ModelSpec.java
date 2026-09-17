@@ -22,6 +22,37 @@ import java.util.Map;
  */
 public abstract class ModelSpec<SELF extends ModelSpec<SELF>> {
 
+    private Integer contextWindow;
+    private String modelCatalogProvider;
+
+    /** Optional deployment limit for private models or endpoints absent from the catalog. */
+    public SELF contextWindow(int tokens) {
+        if (tokens <= 0) throw new IllegalArgumentException("contextWindow must be positive");
+        this.contextWindow = tokens;
+        return self();
+    }
+
+    /** Explicit models.dev provider identifier for a gateway whose limits match that provider. */
+    public SELF modelCatalogProvider(String provider) {
+        if (provider == null || provider.isBlank()) throw new IllegalArgumentException("provider must not be blank");
+        this.modelCatalogProvider = provider;
+        return self();
+    }
+
+    protected final Model recordMetadata(Model model, String provider, String baseUrl) {
+        GenerateOptions options = mergeGenerateOptions(null);
+        Integer output = options == null ? null : options.getMaxCompletionTokens();
+        Boolean completion = output == null ? null : true;
+        if (output == null && options != null && options.getMaxTokens() != null) {
+            output = options.getMaxTokens();
+            completion = false;
+        }
+        return com.yomahub.liteflow.agent.model.catalog.ModelMetadata.register(model,
+                modelCatalogProvider != null ? modelCatalogProvider
+                        : com.yomahub.liteflow.agent.model.catalog.ModelMetadata.providerFor(provider, baseUrl),
+                contextWindow, output, completion);
+    }
+
     private String apiKey;
     private String baseUrl;
     private Double temperature;
@@ -170,7 +201,7 @@ public abstract class ModelSpec<SELF extends ModelSpec<SELF>> {
      * 实现需从 {@link AgentConfig} 中读取对应平台的 credential，
      * 并把共性 + 个性参数翻译成 AgentScope 2 的 GenerateOptions。
      * <p>
-     * 本方法是框架 SPI：{@code AgentComponent} 在不同包中调用，
+     * 本方法是框架 SPI：{@code HarnessAgentComponent} 在不同包中调用，
      * 因此必须为 {@code public}。
      */
     public abstract Model resolve(AgentConfig cfg);

@@ -1,11 +1,12 @@
 package com.yomahub.liteflow.agent.tool;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import io.agentscope.harness.agent.HarnessAgent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.testsupport.AgentTestContexts;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.agent.AgentConfig;
@@ -52,7 +53,7 @@ class ToolkitRuntimeTest {
         component.tools = List.of(serial);
         component.toolkitCustomizer = toolkit -> toolkit.registerTool(contextProbe);
 
-        AgentRuntime runtime = component.runtime(config());
+        HarnessAgentRuntime runtime = component.runtime(config());
         try {
             LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
             RuntimeContext runtimeContext = AgentTestContexts.runtimeContext(invocation);
@@ -81,35 +82,34 @@ class ToolkitRuntimeTest {
     }
 
     @Test
-    void agentScopeBuiltInsAreDisabledByDefaultAndRequireAWorkspaceLeaseWhenEnabled(
+    void explicitShellDisableAndFileToolOptInRetainWorkspaceLeaseSemantics(
             @TempDir Path workspaceRoot) {
         TestComponent disabled = new TestComponent();
-        AgentRuntime disabledRuntime = disabled.runtime(config());
+        HarnessAgentRuntime disabledRuntime = disabled.runtime(config());
         try {
-            assertFalse(disabledRuntime.agent().getToolkit().getToolNames().contains("view_text_file"));
-            assertFalse(disabledRuntime.agent().getToolkit().getToolNames().contains("write_text_file"));
+            assertTrue(disabledRuntime.agent().getToolkit().getToolNames().contains("read_file"));
+            assertTrue(disabledRuntime.agent().getToolkit().getToolNames().contains("write_file"));
             assertFalse(disabledRuntime.agent().getToolkit().getToolNames()
-                    .contains("execute_shell_command"));
-            assertFalse(disabled.workspaceLeaseRequired());
+                    .contains("execute"));
+            assertTrue(disabled.workspaceLeaseRequired());
         } finally {
             disabledRuntime.close();
         }
 
         AgentConfig enabledConfig = config();
-        enabledConfig.getWorkspace().setRoot(workspaceRoot.toString());
-        enabledConfig.getWorkspace().setTrustedLocal(true);
-        enabledConfig.getShell().setMode(ShellMode.WHITELIST);
+        enabledConfig.getHarness().getLocal().setWorkspaceRoot(workspaceRoot.toString());
+        enabledConfig.getHarness().getShell().setMode(ShellMode.WHITELIST);
         TestComponent enabled = new TestComponent();
         enabled.workspaceTools = true;
         enabled.shellTool = true;
-        AgentRuntime enabledRuntime = enabled.runtime(enabledConfig);
+        HarnessAgentRuntime enabledRuntime = enabled.runtime(enabledConfig);
         try {
-            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("view_text_file"));
-            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("list_directory"));
-            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("write_text_file"));
-            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("insert_text_file"));
+            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("read_file"));
+            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("list_files"));
+            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("write_file"));
+            assertTrue(enabledRuntime.agent().getToolkit().getToolNames().contains("edit_file"));
             assertTrue(enabledRuntime.agent().getToolkit().getToolNames()
-                    .contains("execute_shell_command"));
+                    .contains("execute"));
             assertTrue(enabled.workspaceLeaseRequired());
             assertTrue(Files.isDirectory(workspaceRoot),
                     "the workspace root must be created when built-ins are enabled");
@@ -119,18 +119,34 @@ class ToolkitRuntimeTest {
     }
 
     @Test
-    void enabledBuiltInsRejectUntrustedOrNonLocalWorkspaceConfiguration() {
+    void defaultShellExecutesWithTheDefaultCommandList(@TempDir Path workspaceRoot) {
+        TestComponent component = new TestComponent();
+        component.shellTool = null; // Exercise the inherited default without overriding it.
+        AgentConfig config = config();
+        config.getHarness().getLocal().setWorkspaceRoot(workspaceRoot.toString());
+        try (HarnessAgentRuntime runtime = component.runtime(config)) {
+            assertTrue(runtime.agent().getToolkit().getToolNames().contains("execute"));
+            var results = runtime.agent().getToolkit().callTools(
+                    List.of(new ToolUseBlock("default-shell", "execute",
+                            Map.of("command", "printf default-core-shell"), "{\"command\":\"printf default-core-shell\"}", Map.of())),
+                    null, runtime.agent(), AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext()))
+                    .block(Duration.ofSeconds(5));
+            assertTrue(results != null && results.get(0).getOutput().stream()
+                    .filter(io.agentscope.core.message.TextBlock.class::isInstance)
+                    .map(io.agentscope.core.message.TextBlock.class::cast)
+                    .anyMatch(block -> block.getText().contains("default-core-shell")),
+                    () -> "Shell result: " + results);
+        }
+    }
+
+    @Test
+    void enabledBuiltInsRequireALocalExecutionRoot() {
         TestComponent component = new TestComponent();
         component.workspaceTools = true;
-
-        AgentConfig missingTrust = config();
-        missingTrust.getWorkspace().setRoot("target/untrusted-workspace");
-        AgentConfigException trustFailure = assertThrows(
-                AgentConfigException.class, () -> component.runtime(missingTrust));
-        assertTrue(trustFailure.getMessage().contains("trustedLocal"));
+        component.shellTool = true;
 
         AgentConfig missingRoot = config();
-        missingRoot.getWorkspace().setTrustedLocal(true);
+        missingRoot.getHarness().getLocal().setWorkspaceRoot(null);
         AgentConfigException rootFailure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(missingRoot));
         assertTrue(rootFailure.getMessage().contains("root"));
@@ -138,10 +154,10 @@ class ToolkitRuntimeTest {
 
     @Test
     void shellRegistrationRejectsDisabledModeAndBlankWhitelist(@TempDir Path workspaceRoot) {
-        assertInvalidShell(workspaceRoot, config -> config.getShell().setMode(ShellMode.DISABLED));
-        assertInvalidShell(workspaceRoot, config -> config.getShell().setWhitelist(null));
-        assertInvalidShell(workspaceRoot, config -> config.getShell().setWhitelist(List.of()));
-        assertInvalidShell(workspaceRoot, config -> config.getShell().setWhitelist(List.of("java", " ")));
+        assertInvalidShell(workspaceRoot, config -> config.getHarness().getShell().setMode(ShellMode.DISABLED));
+        assertInvalidShell(workspaceRoot, config -> config.getHarness().getShell().setWhitelist(null));
+        assertInvalidShell(workspaceRoot, config -> config.getHarness().getShell().setWhitelist(List.of()));
+        assertInvalidShell(workspaceRoot, config -> config.getHarness().getShell().setWhitelist(List.of("java", " ")));
     }
 
     @Test
@@ -150,9 +166,9 @@ class ToolkitRuntimeTest {
         ContextProbeTool required = new ContextProbeTool();
         component.tools = List.of(required);
         component.agentCustomizer = builder -> {
-            ReActAgent snapshot = builder.build();
+            ReActAgent snapshot = builder.build().getDelegate();
             try {
-                return ReActAgent.builder()
+                return HarnessAgent.builder()
                         .name("replacement")
                         .sysPrompt("replacement")
                         .model(component.model)
@@ -168,16 +184,15 @@ class ToolkitRuntimeTest {
         AgentConfigException failure = assertThrows(
                 AgentConfigException.class, () -> component.runtime(config()));
 
-        assertTrue(failure.getMessage().contains("Toolkit"));
+        assertTrue(failure.getMessage().contains("provided builder"));
     }
 
     private static void assertInvalidShell(
             Path root, java.util.function.Consumer<AgentConfig> invalidator) {
         AgentConfig config = config();
-        config.getWorkspace().setRoot(root.toString());
-        config.getWorkspace().setTrustedLocal(true);
-        config.getShell().setMode(ShellMode.WHITELIST);
-        config.getShell().setWhitelist(List.of("java"));
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getHarness().getShell().setMode(ShellMode.WHITELIST);
+        config.getHarness().getShell().setWhitelist(List.of("java"));
         invalidator.accept(config);
         TestComponent component = new TestComponent();
         component.shellTool = true;
@@ -186,21 +201,23 @@ class ToolkitRuntimeTest {
 
     private static AgentConfig config() {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getRuntime().setNamespace("toolkit-test");
-        config.getRuntime().setTimeout(Duration.ofSeconds(2));
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.setApplicationName("toolkit-test");
+        config.setExecutionTimeout(Duration.ofSeconds(2));
         return config;
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
         private final Model model = new ScriptedChatModel("reply");
         private List<Object> tools = List.of();
         private java.util.function.Consumer<Toolkit> toolkitCustomizer = ignored -> { };
-        private UnaryOperator<ReActAgent.Builder> agentCustomizer = UnaryOperator.identity();
+        private UnaryOperator<HarnessAgent.Builder> agentCustomizer = UnaryOperator.identity();
         private boolean workspaceTools;
-        private boolean shellTool;
+        private Boolean shellTool = false;
 
-        private AgentRuntime runtime(AgentConfig config) {
+        private HarnessAgentRuntime runtime(AgentConfig config) {
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "toolkit-agent", "agent-key", AGENT_NAMESPACE));
         }
@@ -240,17 +257,12 @@ class ToolkitRuntimeTest {
         }
 
         @Override
-        protected boolean enableWorkspaceFileTools() {
-            return workspaceTools;
-        }
-
-        @Override
         protected boolean enableShellTool() {
-            return shellTool;
+            return shellTool == null ? super.enableShellTool() : shellTool;
         }
 
         @Override
-        protected ReActAgent.Builder customizeAgent(ReActAgent.Builder builder) {
+        protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
             return agentCustomizer.apply(builder);
         }
     }

@@ -28,7 +28,6 @@ import io.agentscope.harness.agent.sandbox.SandboxState;
 import io.agentscope.harness.agent.sandbox.WorkspaceProjectionApplier;
 import io.agentscope.harness.agent.sandbox.WorkspaceSpec;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandbox;
-import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClient;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxClientOptions;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxState;
 import io.agentscope.harness.agent.sandbox.impl.docker.DockerFilesystemSpec;
@@ -365,11 +364,12 @@ class DockerSandboxConfigurerTest {
         Path linkedRoot = workspace.resolve("linked-root");
         Files.createSymbolicLink(linkedRoot, realRoot);
         AgentConfig rootAgent = agentConfig();
-        rootAgent.getWorkspace().setRoot(linkedRoot.toString());
+        rootAgent.getHarness().getLocal().setWorkspaceRoot(linkedRoot.toString());
+        rootAgent.getSessionStore().setJsonWorkspaceRoot(linkedRoot.toString());
         rootAgent.getHarness().getDocker().setWorkspaceProjectionRoots(List.of("."));
         Runnable rootPreflight = DockerSandboxConfigurer.workspaceProjectionPreflight(
                 new HarnessFilesystemContext(
-                        linkedRoot, 1024L, Duration.ofSeconds(5), rootAgent));
+                        linkedRoot, Duration.ofSeconds(5), rootAgent));
 
         AgentConfigException rootFailure = assertThrows(
                 AgentConfigException.class, rootPreflight::run);
@@ -380,10 +380,11 @@ class DockerSandboxConfigurerTest {
     void projectionPreflightObservesChangesMadeAfterRuntimeConstruction() throws Exception {
         Path source = Files.createDirectories(workspace.resolve("late-change-source"));
         AgentConfig agent = agentConfig();
-        agent.getWorkspace().setRoot(source.toString());
+        agent.getHarness().getLocal().setWorkspaceRoot(source.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(source.toString());
         agent.getHarness().getDocker().setWorkspaceProjectionRoots(List.of("AGENTS.md"));
         Runnable preflight = DockerSandboxConfigurer.workspaceProjectionPreflight(
-                new HarnessFilesystemContext(source, 1024L, Duration.ofSeconds(5), agent));
+                new HarnessFilesystemContext(source, Duration.ofSeconds(5), agent));
 
         Path external = workspace.resolve("late-external.txt");
         Files.writeString(external, "late external content");
@@ -405,11 +406,12 @@ class DockerSandboxConfigurerTest {
         Path linkedRoot = workspace.resolve("disabled-linked-root");
         Files.createSymbolicLink(linkedRoot, realRoot);
         AgentConfig agent = agentConfig();
-        agent.getWorkspace().setRoot(linkedRoot.toString());
+        agent.getHarness().getLocal().setWorkspaceRoot(linkedRoot.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(linkedRoot.toString());
         agent.getHarness().getDocker().setWorkspaceProjectionEnabled(false);
         Runnable preflight = DockerSandboxConfigurer.workspaceProjectionPreflight(
                 new HarnessFilesystemContext(
-                        linkedRoot, 1024L, Duration.ofSeconds(5), agent));
+                        linkedRoot, Duration.ofSeconds(5), agent));
 
         preflight.run();
     }
@@ -421,11 +423,12 @@ class DockerSandboxConfigurerTest {
         String secret = "callback-created-external-content";
         Files.writeString(external, secret);
         AgentConfig agentConfig = agentConfig();
-        agentConfig.getWorkspace().setRoot(source.toString());
+        agentConfig.getHarness().getLocal().setWorkspaceRoot(source.toString());
+        agentConfig.getSessionStore().setJsonWorkspaceRoot(source.toString());
         agentConfig.getHarness().getDocker().setWorkspaceProjectionRoots(
                 List.of(".skills-cache"));
         HarnessFilesystemContext filesystemContext = new HarnessFilesystemContext(
-                source, 1024L, Duration.ofSeconds(5), agentConfig);
+                source, Duration.ofSeconds(5), agentConfig);
         RecordingProjectionSandboxClient client = new RecordingProjectionSandboxClient();
         DockerSandboxConfigurer configurer = new DockerSandboxConfigurer(null, client);
         HarnessAgent.Builder builder = HarnessAgent.builder()
@@ -482,14 +485,15 @@ class DockerSandboxConfigurerTest {
 
     private AgentConfig agentConfig() {
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getWorkspace().setRoot(workspace.toString());
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         return agent;
     }
 
     private HarnessFilesystemContext context(AgentConfig agent) {
         return new HarnessFilesystemContext(
-                workspace, 1024L, Duration.ofSeconds(5), agent);
+                workspace, Duration.ofSeconds(5), agent);
     }
 
     private DockerSandboxClientOptions options(DockerFilesystemSpec spec) {
@@ -540,11 +544,12 @@ class DockerSandboxConfigurerTest {
             Path source, List<String> roots, ThrowingAction createSymlink) throws Exception {
         createSymlink.run();
         AgentConfig agent = new AgentConfig();
-        agent.getWorkspace().setRoot(source.toString());
+        agent.getHarness().getLocal().setWorkspaceRoot(source.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(source.toString());
         agent.getHarness().getDocker().setWorkspaceProjectionRoots(roots);
         Runnable preflight = DockerSandboxConfigurer.workspaceProjectionPreflight(
                 new HarnessFilesystemContext(
-                        source, 1024L, Duration.ofSeconds(5), agent));
+                        source, Duration.ofSeconds(5), agent));
 
         AgentConfigException failure = assertThrows(AgentConfigException.class, preflight::run);
         assertTrue(failure.getMessage().contains("symbolic link"));

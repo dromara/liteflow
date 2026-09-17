@@ -21,25 +21,32 @@ class MysqlConversationServiceTest {
                     + " PRIMARY KEY(session_id,state_key,item_index))");
         }
         AgentConfig config = new AgentConfig();
-        config.getRuntime().setNamespace("sql-conversation-test");
+        config.setApplicationName("sql-conversation-test");
+        AgentConfig otherConfig = new AgentConfig();
+        otherConfig.setApplicationName("other-sql-application");
         String id;
         try (var service = new AgentConversationService(config,
                 new MysqlAgentStateStore(dataSource, "conversations", "sessions", false))) {
-            id = service.create("alice", "SQL 会话").id();
-            service.append("alice", id, "user", "input", "第一条");
-            service.append("alice", id, "assistant", "result", "第二条");
-            service.create("Alice", id, "Different user", true);
+            id = service.create("SQL 会话").id();
+            service.append(id, "user", "input", "第一条");
+            service.append(id, "assistant", "result", "第二条");
+            try (var other = new AgentConversationService(otherConfig,
+                    new MysqlAgentStateStore(dataSource, "conversations", "sessions", false))) {
+                other.create(id, "Different application", true);
+            }
         }
         try (var reopened = new AgentConversationService(config,
                 new MysqlAgentStateStore(dataSource, "conversations", "sessions", false))) {
-            assertEquals("SQL 会话", reopened.list("alice", 0, 10).items().get(0).title());
-            assertEquals(1, reopened.list("alice", 0, 10).items().size());
-            assertEquals("第二条", reopened.messages("alice", id, 1, 1).items().get(0).content());
-            assertTrue(reopened.list("bob", 0, 10).items().isEmpty());
-            reopened.delete("alice", id);
-            assertTrue(reopened.list("alice", 0, 10).items().isEmpty());
-            assertEquals("Different user", reopened.list("Alice", 0, 10).items().get(0).title());
-            assertThrows(IllegalStateException.class, () -> reopened.create("alice", id, "revive", true));
+            assertEquals("SQL 会话", reopened.list(0, 10).items().get(0).title());
+            assertEquals(1, reopened.list(0, 10).items().size());
+            assertEquals("第二条", reopened.messages(id, 1, 1).items().get(0).content());
+            reopened.delete(id);
+            assertTrue(reopened.list(0, 10).items().isEmpty());
+            try (var other = new AgentConversationService(otherConfig,
+                    new MysqlAgentStateStore(dataSource, "conversations", "sessions", false))) {
+                assertEquals("Different application", other.get(id).orElseThrow().title());
+            }
+            assertThrows(IllegalStateException.class, () -> reopened.create(id, "revive", true));
         } finally {
             try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
                 statement.execute("SHUTDOWN");

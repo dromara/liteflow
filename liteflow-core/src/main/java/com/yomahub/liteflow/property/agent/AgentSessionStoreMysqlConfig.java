@@ -1,14 +1,14 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * MySQL state-store settings, bound from {@code liteflow.agent.state-store.mysql.*}.
+ * MySQL session-store settings, bound from {@code liteflow.agent.session-store.mysql.*}.
  *
  * <p>Exactly one connection source must be configured: either
  * {@code data-source-bean-name} (the application's pooled {@code DataSource}, the
  * recommended production setup) or {@code jdbc-url} plus credentials (LiteFlow
  * builds a driver {@code DataSource} and owns it).
  */
-public class AgentStateStoreMysqlConfig {
+public class AgentSessionStoreMysqlConfig {
 
 	/** Name of a container-managed {@code javax.sql.DataSource} bean. */
 	private String dataSourceBeanName;

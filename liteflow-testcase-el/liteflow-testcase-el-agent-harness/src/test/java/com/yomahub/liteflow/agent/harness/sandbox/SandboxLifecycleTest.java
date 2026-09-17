@@ -554,9 +554,10 @@ class SandboxLifecycleTest {
             PermissionContextState permissionContext) throws Exception {
         Path workspace = Files.createDirectories(tempDir.resolve("workspace"));
         AgentConfig config = new AgentConfig();
-        config.getWorkspace().setRoot(workspace.toString());
+        config.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         HarnessFilesystemContext filesystemContext = new HarnessFilesystemContext(
-                workspace, 1024L, Duration.ofSeconds(5), config);
+                workspace, Duration.ofSeconds(5), config);
         HarnessAgent.Builder builder = HarnessAgent.builder()
                 .name("sandbox-lifecycle")
                 .agentId("sandbox-lifecycle")
@@ -599,11 +600,13 @@ class SandboxLifecycleTest {
             PermissionContextState permissionContext) throws Exception {
         Path workspace = Files.createDirectories(tempDir.resolve("component-workspace"));
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace("sandbox-component-test");
-        agent.getRuntime().setDefaultUserId("test-user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
-        agent.getWorkspace().setRoot(workspace.toString());
+        agent.setApplicationName("sandbox-component-test");
+        agent.setExecutionTimeout(Duration.ofSeconds(5));
+        agent.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        // The fake sandbox implements these deterministic pseudo-commands.
+        agent.getHarness().getShell().setWhitelist(List.of("write", "read"));
         LiteflowConfig liteflow = new LiteflowConfig();
         liteflow.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(liteflow);

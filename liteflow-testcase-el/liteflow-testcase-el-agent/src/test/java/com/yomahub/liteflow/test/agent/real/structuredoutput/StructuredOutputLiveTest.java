@@ -73,7 +73,7 @@ public class StructuredOutputLiveTest extends RealAgentTestBase {
 
     private void assertHistoryHasResult(LiteflowResponse response) {
         try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
-            var messages = history.messages(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+            var messages = history.messages(
                     response.getConversationId(), 0, 20).items();
             Assertions.assertEquals(2, messages.size());
             Assertions.assertEquals("result", messages.get(1).stage());

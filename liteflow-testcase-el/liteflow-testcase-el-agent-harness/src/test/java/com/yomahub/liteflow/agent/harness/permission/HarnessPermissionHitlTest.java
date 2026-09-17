@@ -376,7 +376,7 @@ class HarnessPermissionHitlTest {
         assertEquals(0, component.middleware.resumeCalls.get());
         assertEquals(PermissionMode.BYPASS,
                 component.runtime.agent().getDelegate()
-                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getAgentState(null, component.lastContext.get().getRuntimeSessionId())
                         .getPermissionContext().getMode());
         assertClean(component);
     }
@@ -422,7 +422,7 @@ class HarnessPermissionHitlTest {
 
         component.process();
         component.runtime.agent().getDelegate().replacePermissionContext(
-                "user", component.lastContext.get().getRuntimeSessionId(),
+                null, component.lastContext.get().getRuntimeSessionId(),
                 rule(PermissionBehavior.ASK));
         model.script("legacy-tool");
 
@@ -432,7 +432,7 @@ class HarnessPermissionHitlTest {
         assertEquals(0, component.middleware.resumeCalls.get());
         assertEquals(PermissionMode.BYPASS,
                 component.runtime.agent().getDelegate()
-                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getAgentState(null, component.lastContext.get().getRuntimeSessionId())
                         .getPermissionContext().getMode());
         assertClean(component);
     }
@@ -497,7 +497,7 @@ class HarnessPermissionHitlTest {
         assertEquals(0, component.tool.executions.get());
         assertEquals(PermissionMode.DEFAULT,
                 component.runtime.agent().getDelegate()
-                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getAgentState(null, component.lastContext.get().getRuntimeSessionId())
                         .getPermissionContext().getMode());
 
         AgentInvocationException secondFailure =
@@ -506,7 +506,7 @@ class HarnessPermissionHitlTest {
         assertEquals(0, model.calls.get());
         assertEquals(PermissionMode.DEFAULT,
                 component.runtime.agent().getDelegate()
-                        .getAgentState("user", component.lastContext.get().getRuntimeSessionId())
+                        .getAgentState(null, component.lastContext.get().getRuntimeSessionId())
                         .getPermissionContext().getMode());
         assertClean(component);
     }
@@ -532,13 +532,12 @@ class HarnessPermissionHitlTest {
         Path workspace = tempDir.resolve(namespace);
         Files.createDirectories(workspace);
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("user");
-        agent.getRuntime().setTimeout(runtimeTimeout);
+        agent.setApplicationName(namespace);
+        agent.setExecutionTimeout(runtimeTimeout);
         agent.getHitl().setConfirmationTimeout(confirmationTimeout);
-        agent.getWorkspace().setRoot(workspace.toString());
+        agent.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.GUARDED_LOCAL);
-        agent.getHarness().setTrustedLocal(true);
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(config);

@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.reliability;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
@@ -137,7 +137,7 @@ final class RealReliabilityAgentsCmp {
         }
     }
 
-    abstract static class AbstractReliabilityAgent extends AgentComponent {
+    abstract static class AbstractReliabilityAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

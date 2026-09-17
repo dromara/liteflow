@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/** Non-owning state-store decorator that isolates one Agent runtime by its safe namespace. */
+/** Non-owning session-store decorator that isolates one Agent runtime by its safe namespace. */
 public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCloseable {
 
     private static final Pattern SAFE_HASH_ID = Pattern.compile("lf-[0-9a-f]{64}");
@@ -66,7 +66,7 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
     @Override
     public <T extends State> VersionedState<T> getVersioned(
             String userId, String sessionId, String key, Class<T> type) {
-        String logicalSessionId = requireSafeHashId(sessionId, "sessionId");
+        String logicalSessionId = requireSessionId(sessionId);
         try {
             return delegate.getVersioned(userId, sessionPrefix + logicalSessionId, key, type);
         } catch (RuntimeException | Error failure) {
@@ -90,7 +90,7 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
     @Override
     public <T extends State> Optional<T> get(
             String userId, String sessionId, String key, Class<T> type) {
-        String logicalSessionId = requireSafeHashId(sessionId, "sessionId");
+        String logicalSessionId = requireSessionId(sessionId);
         try {
             return delegate.get(userId, sessionPrefix + logicalSessionId, key, type);
         } catch (RuntimeException | Error failure) {
@@ -102,7 +102,7 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
     @Override
     public <T extends State> List<T> getList(
             String userId, String sessionId, String key, Class<T> itemType) {
-        String logicalSessionId = requireSafeHashId(sessionId, "sessionId");
+        String logicalSessionId = requireSessionId(sessionId);
         try {
             return delegate.getList(userId, sessionPrefix + logicalSessionId, key, itemType);
         } catch (RuntimeException | Error failure) {
@@ -113,7 +113,7 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
 
     @Override
     public boolean exists(String userId, String sessionId) {
-        String logicalSessionId = requireSafeHashId(sessionId, "sessionId");
+        String logicalSessionId = requireSessionId(sessionId);
         try {
             return delegate.exists(userId, sessionPrefix + logicalSessionId);
         } catch (RuntimeException | Error failure) {
@@ -142,17 +142,17 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
                 .filter(Objects::nonNull)
                 .filter(sessionId -> sessionId.startsWith(sessionPrefix))
                 .map(sessionId -> sessionId.substring(sessionPrefix.length()))
-                .filter(sessionId -> SAFE_HASH_ID.matcher(sessionId).matches())
+                .filter(GuardedNamespacedAgentStateStore::isValidSessionId)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
     public Optional<Throwable> takeLoadFailure(String userId, String runtimeSessionId) {
-        String logicalSessionId = requireSafeHashId(runtimeSessionId, "runtimeSessionId");
+        String logicalSessionId = requireSessionId(runtimeSessionId);
         return Optional.ofNullable(loadFailures.remove(new LoadFailureKey(userId, logicalSessionId)));
     }
 
     public void clearLoadFailure(String userId, String runtimeSessionId) {
-        String logicalSessionId = requireSafeHashId(runtimeSessionId, "runtimeSessionId");
+        String logicalSessionId = requireSessionId(runtimeSessionId);
         loadFailures.remove(new LoadFailureKey(userId, logicalSessionId));
     }
 
@@ -162,11 +162,20 @@ public class GuardedNamespacedAgentStateStore implements AgentStateStore, AutoCl
     }
 
     private String namespace(String sessionId) {
-        return sessionPrefix + requireSafeHashId(sessionId, "sessionId");
+        return sessionPrefix + requireSessionId(sessionId);
     }
 
     private void recordLoadFailure(String userId, String sessionId, Throwable failure) {
         loadFailures.putIfAbsent(new LoadFailureKey(userId, sessionId), failure);
+    }
+
+    private static boolean isValidSessionId(String value) {
+        try { requireSessionId(value); return true; }
+        catch (IllegalArgumentException invalid) { return false; }
+    }
+
+    private static String requireSessionId(String value) {
+        return com.yomahub.liteflow.agent.context.AgentInvocationIdentity.requirePathSegment(value, "conversationId");
     }
 
     private static String requireSafeHashId(String value, String name) {

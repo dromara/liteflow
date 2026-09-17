@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.multiagent;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
@@ -154,7 +154,7 @@ final class RealMultiAgentCmp {
         }
     }
 
-    abstract static class AbstractRealAgent extends AgentComponent {
+    abstract static class AbstractRealAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

@@ -25,9 +25,9 @@ public abstract class BaseAgentLiveTest {
 
     @BeforeEach
     void configureAgentScope2Runtime() {
-        if (liteflowConfig.getAgent().getRuntime().getNamespace() == null
-                || liteflowConfig.getAgent().getRuntime().getNamespace().isBlank()) {
-            liteflowConfig.getAgent().getRuntime().setNamespace("agent-test");
+        if (liteflowConfig.getAgent().getApplicationName() == null
+                || liteflowConfig.getAgent().getApplicationName().isBlank()) {
+            liteflowConfig.getAgent().setApplicationName("agent-test");
         }
     }
 

@@ -37,17 +37,17 @@ public class WorkspaceToolsFeatureTest extends BaseAgentLiveTest {
         Assertions.assertTrue(response.isSuccess(),
                 "chain failed: " + (response.getCause() == null ? "" : response.getCause().getMessage()));
 
-        // write_text_file 真的落盘，view_text_file 能读回内容。
+        // write_file 真的落盘，read_file 能读回内容。
         Assertions.assertEquals(Boolean.TRUE, WorkspaceToolsAgentCmp.FILE_EXISTS.get(),
-                "write_text_file 应写入工作区文件");
+                "write_file 应写入工作区文件");
         Assertions.assertNotNull(WorkspaceToolsAgentCmp.READ_RESULT.get());
         Assertions.assertTrue(WorkspaceToolsAgentCmp.READ_RESULT.get().contains("abcdef"),
-                "view_text_file 应读回写入的内容: " + WorkspaceToolsAgentCmp.READ_RESULT.get());
+                "read_file 应读回写入的内容: " + WorkspaceToolsAgentCmp.READ_RESULT.get());
 
-        // list_directory 能列出刚写入的文件。
+        // list_files 能列出刚写入的文件。
         Assertions.assertNotNull(WorkspaceToolsAgentCmp.LIST_RESULT.get());
         Assertions.assertTrue(WorkspaceToolsAgentCmp.LIST_RESULT.get().contains("a.txt"),
-                "list_directory 应包含刚写入的文件: " + WorkspaceToolsAgentCmp.LIST_RESULT.get());
+                "list_files 应包含刚写入的文件: " + WorkspaceToolsAgentCmp.LIST_RESULT.get());
 
         // 越界路径被拒绝（相对路径穿越与绝对路径都不允许逃出 workspace root）。
         Assertions.assertNotNull(WorkspaceToolsAgentCmp.RELATIVE_ESCAPE.get());
@@ -59,11 +59,11 @@ public class WorkspaceToolsFeatureTest extends BaseAgentLiveTest {
 
         // 开启 workspace 文件工具时 4 个内置工具都应在 toolkit 中。
         Set<String> toolNames = WorkspaceToolsAgentCmp.PROBE.get().toolNames();
-        Assertions.assertTrue(toolNames.contains("view_text_file"));
-        Assertions.assertTrue(toolNames.contains("list_directory"));
-        Assertions.assertTrue(toolNames.contains("write_text_file"));
-        Assertions.assertTrue(toolNames.contains("insert_text_file"));
+        Assertions.assertTrue(toolNames.contains("read_file"));
+        Assertions.assertTrue(toolNames.contains("list_files"));
+        Assertions.assertTrue(toolNames.contains("write_file"));
+        Assertions.assertTrue(toolNames.contains("edit_file"));
         // Shell 关闭，不应注册。
-        Assertions.assertFalse(toolNames.contains("execute_shell_command"));
+        Assertions.assertFalse(toolNames.contains("execute"));
     }
 }

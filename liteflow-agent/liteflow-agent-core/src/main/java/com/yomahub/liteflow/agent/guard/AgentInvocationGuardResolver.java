@@ -20,8 +20,8 @@ public final class AgentInvocationGuardResolver {
             return PROCESS_GUARD;
         }
         if (guardConfig.getMode() == null || guardConfig.getMode() == AgentInvocationGuardMode.AUTO) {
-            var type = config.getStateStore().getType();
-            if (type == com.yomahub.liteflow.property.agent.AgentStateStoreType.JSON) return PROCESS_GUARD;
+            var type = config.getSessionStore().getType();
+            if (type == com.yomahub.liteflow.property.agent.AgentSessionStoreType.JSON) return PROCESS_GUARD;
             var providers = java.util.ServiceLoader.load(AgentInvocationGuardProvider.class).stream()
                     .map(java.util.ServiceLoader.Provider::get).filter(provider -> provider.type() == type).toList();
             if (providers.size() != 1) throw new AgentConfigException(

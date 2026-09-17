@@ -67,20 +67,12 @@ public final class LiteFlowAgentContext {
         return identity.namespace();
     }
 
-    public String getUserId() {
-        return identity.userId();
-    }
-
     public String getConversationId() {
         return identity.conversationId();
     }
 
     public String getAgentKey() {
         return identity.agentKey();
-    }
-
-    public String getRuntimeUserId() {
-        return identity.userId();
     }
 
     public String getRuntimeSessionId() {

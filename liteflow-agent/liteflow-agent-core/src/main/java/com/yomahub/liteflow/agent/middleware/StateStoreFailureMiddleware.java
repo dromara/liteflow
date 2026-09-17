@@ -4,7 +4,7 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.exception.AgentException;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.log.LFLoggerManager;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.AgentEvent;
@@ -25,12 +25,12 @@ import java.util.function.Function;
 public final class StateStoreFailureMiddleware implements MiddlewareBase {
 
     private final GuardedNamespacedAgentStateStore stateStore;
-    private final AgentStateStoreFailurePolicy failurePolicy;
+    private final AgentSessionStoreFailurePolicy failurePolicy;
     private final Consumer<String> warningSink;
 
     public StateStoreFailureMiddleware(
             GuardedNamespacedAgentStateStore stateStore,
-            AgentStateStoreFailurePolicy failurePolicy) {
+            AgentSessionStoreFailurePolicy failurePolicy) {
         this(stateStore, failurePolicy,
                 message -> LFLoggerManager.getLogger(StateStoreFailureMiddleware.class)
                         .warn(message));
@@ -38,12 +38,12 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
 
     public StateStoreFailureMiddleware(
             GuardedNamespacedAgentStateStore stateStore,
-            AgentStateStoreFailurePolicy failurePolicy,
+            AgentSessionStoreFailurePolicy failurePolicy,
             Consumer<String> warningSink) {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         if (failurePolicy == null) {
             throw new AgentConfigException(
-                    "liteflow.agent.state-store.failure-policy must not be null");
+                    "liteflow.agent.session-store.failure-policy must not be null");
         }
         this.failurePolicy = failurePolicy;
         this.warningSink = Objects.requireNonNull(warningSink, "warningSink");
@@ -111,7 +111,7 @@ public final class StateStoreFailureMiddleware implements MiddlewareBase {
             Throwable cause = failure.orElseThrow();
             String message = "AgentStateStore load failed for userId=" + context.getUserId()
                     + ", sessionId=" + context.getSessionId() + ": " + cause.getMessage();
-            if (failurePolicy == AgentStateStoreFailurePolicy.FAIL_FAST) {
+            if (failurePolicy == AgentSessionStoreFailurePolicy.FAIL_FAST) {
                 return Mono.error(new AgentException(message, cause));
             }
             warningSink.accept(message);

@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component("harnessSkillsAgent")
 public class HarnessSkillsAgentCmp extends HarnessAgentComponent {
+    @Override protected boolean enableShellTool() { return false; }
+
 
     private static final AtomicReference<String> ALLOWED_SKILL_ID = new AtomicReference<>();
     private static final AtomicReference<List<String>> USED_SKILLS = new AtomicReference<>(List.of());

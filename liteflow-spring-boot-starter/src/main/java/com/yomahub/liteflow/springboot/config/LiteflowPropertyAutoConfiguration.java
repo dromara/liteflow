@@ -3,6 +3,7 @@ package com.yomahub.liteflow.springboot.config;
 import cn.hutool.core.util.StrUtil;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.RuleDbConfig;
+import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.springboot.LiteflowMonitorProperty;
 import com.yomahub.liteflow.springboot.LiteflowProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -60,7 +61,11 @@ public class LiteflowPropertyAutoConfiguration {
 		liteflowConfig.setEnableVirtualThread(property.isEnableVirtualThread());
 		liteflowConfig.setChainCacheEnabled(property.getChainCache().isEnabled());
 		liteflowConfig.setChainCacheCapacity(property.getChainCache().getCapacity());
-		liteflowConfig.setAgent(property.getAgent());
+		AgentConfig agent = property.getAgent() == null ? new AgentConfig() : property.getAgent();
+		if (StrUtil.isBlank(agent.getApplicationName())) {
+			agent.setApplicationName(environment.getProperty("spring.application.name"));
+		}
+		liteflowConfig.setAgent(agent);
 		// Rule-DB：application-name 未显式配置时默认取 spring.application.name（多应用共库的隔离维度）；
 		// 零配置姿势（未写任何 liteflow.rule-db.* 时 ruleDb 为 null）也要享受该默认
 		RuleDbConfig ruleDb = property.getRuleDb() == null ? new RuleDbConfig() : property.getRuleDb();

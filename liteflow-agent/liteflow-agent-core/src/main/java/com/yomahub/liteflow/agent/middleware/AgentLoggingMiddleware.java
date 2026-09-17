@@ -138,10 +138,9 @@ public final class AgentLoggingMiddleware implements MiddlewareBase {
 
     static String contextLabel(LiteFlowAgentContext context) {
         if (context == null) {
-            return "user=- conversation=- agent=- chain=- node=- request=-";
+            return "conversation=- agent=- chain=- node=- request=-";
         }
-        return "user=" + safe(context.getUserId())
-                + " conversation=" + safe(context.getConversationId())
+        return "conversation=" + safe(context.getConversationId())
                 + " agent=" + safe(context.getAgentKey())
                 + " chain=" + safe(context.getChainId())
                 + " node=" + safe(context.getNodeId())

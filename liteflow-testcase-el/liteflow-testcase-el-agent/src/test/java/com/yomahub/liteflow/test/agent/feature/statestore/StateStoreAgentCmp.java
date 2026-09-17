@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.statestore;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class StateStoreAgentCmp extends AgentComponent {
+public abstract class StateStoreAgentCmp extends HarnessAgentComponent {
 
     private static final RecordingStore STORE = new RecordingStore();
     private static final List<Integer> ALPHA_COUNTS = new CopyOnWriteArrayList<>();
@@ -62,7 +62,7 @@ public abstract class StateStoreAgentCmp extends AgentComponent {
 
     @Override
     protected final String systemPrompt() {
-        return "offline state-store contract";
+        return "offline session-store contract";
     }
 
     @Override
@@ -130,7 +130,7 @@ public abstract class StateStoreAgentCmp extends AgentComponent {
 }
 
 @Component("failingStateAgent")
-final class FailingStateStoreAgentCmp extends AgentComponent {
+final class FailingStateStoreAgentCmp extends HarnessAgentComponent {
 
     private static final AtomicInteger MODEL_CALLS = new AtomicInteger();
 
@@ -168,7 +168,7 @@ final class FailingStateStoreAgentCmp extends AgentComponent {
 
     @Override
     protected String systemPrompt() {
-        return "offline failing state-store contract";
+        return "offline failing session-store contract";
     }
 
     @Override

@@ -161,7 +161,7 @@ class MiddlewareOrderTest {
         AgentLoggingMiddleware middleware = new AgentLoggingMiddleware(true, warnings::add);
 
         assertEquals(
-                "user=user-1 conversation=conversation-1 agent=agent-1 "
+                "conversation=conversation-1 agent=agent-1 "
                         + "chain=chain-1 node=node-1 request=request-1",
                 AgentLoggingMiddleware.contextLabel(invocation));
         assertEquals("😀...(truncated)", AgentLoggingMiddleware.truncate("😀😀", 1));

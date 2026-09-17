@@ -37,11 +37,6 @@ public class ParallelAgentBCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected String agentKey() {
         return "parallelAgentB__" + getSlot().getRequestId();
     }

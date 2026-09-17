@@ -172,8 +172,8 @@ class LocalAgentInvocationGuardTest {
 
     @Test
     void coordinatorAcquiresWorkspaceBeforeStateAndReleasesInReverseOrderOnFailure() {
-        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "user", "conversation");
-        AgentInvocationKey state = AgentInvocationKey.state("tenant", "user", "conversation", "agent");
+        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "conversation");
+        AgentInvocationKey state = AgentInvocationKey.state("tenant", "conversation", "agent");
         List<String> events = new ArrayList<>();
         AgentInvocationGuard guard = (key, timeout) -> {
             events.add("acquire:" + key.scope());
@@ -193,8 +193,8 @@ class LocalAgentInvocationGuardTest {
 
     @Test
     void coordinatorReleasesStateBeforeWorkspaceAfterSuccessfulAcquisition() {
-        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "user", "conversation");
-        AgentInvocationKey state = AgentInvocationKey.state("tenant", "user", "conversation", "agent");
+        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "conversation");
+        AgentInvocationKey state = AgentInvocationKey.state("tenant", "conversation", "agent");
         List<String> events = new ArrayList<>();
         AgentInvocationGuard guard = (key, timeout) -> {
             events.add("acquire:" + key.scope());
@@ -210,8 +210,8 @@ class LocalAgentInvocationGuardTest {
 
     @Test
     void coordinatorClosesWorkspaceAfterStateCloseFailsAndSuppressesWorkspaceFailureOnce() {
-        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "user", "conversation");
-        AgentInvocationKey state = AgentInvocationKey.state("tenant", "user", "conversation", "agent");
+        AgentInvocationKey workspace = AgentInvocationKey.workspace("tenant", "conversation");
+        AgentInvocationKey state = AgentInvocationKey.state("tenant", "conversation", "agent");
         List<String> events = new ArrayList<>();
         RuntimeException stateFailure = new IllegalStateException("state close failed");
         RuntimeException workspaceFailure = new IllegalStateException("workspace close failed");
@@ -230,7 +230,7 @@ class LocalAgentInvocationGuardTest {
     @Test
     void localGuardIsSharedAcrossResolversForTheSameKey() throws Exception {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
+        config.getSessionStore().setJsonRoot("target/agent-state");
         AgentInvocationGuard firstGuard = new AgentInvocationGuardResolver().resolve(config);
         AgentInvocationGuard secondGuard = new AgentInvocationGuardResolver().resolve(config);
         AgentInvocationKey key = key("agent-a");
@@ -303,7 +303,7 @@ class LocalAgentInvocationGuardTest {
 
     private static AgentInvocationKey key(String agentKey) {
         AgentInvocationIdentity identity = new InvocationIdentityResolver("tenant")
-                .resolve("user", "conversation", agentKey);
+                .resolve("conversation", agentKey);
         return AgentInvocationKey.state(identity);
     }
 

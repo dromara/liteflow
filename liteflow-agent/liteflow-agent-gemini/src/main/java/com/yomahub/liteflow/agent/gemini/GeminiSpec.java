@@ -56,7 +56,7 @@ public class GeminiSpec extends ModelSpec<GeminiSpec> {
                         "liteflow.agent.gemini",
                         getApiKey(),
                         getBaseUrl());
-        return buildModel(credential.apiKey(), credential.baseUrl());
+        return recordMetadata(buildModel(credential.apiKey(), credential.baseUrl()), "google", credential.baseUrl());
     }
 
     protected Model buildModel(String apiKey, String baseUrl) {

@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.agent.redis.storage;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
-import com.yomahub.liteflow.property.agent.AgentStateStoreRedisConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreRedisConfig;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.ScanArgs;
@@ -34,7 +34,7 @@ public final class RedisStorageConnection implements AutoCloseable {
             Function<String,Set<String>> keys, Script eval, AutoCloseable cleanup) {
         this.get=get; this.delete=delete; this.keys=keys; this.eval=eval; this.cleanup=cleanup;
     }
-    public static RedisStorageConnection open(AgentStateStoreRedisConfig config) {
+    public static RedisStorageConnection open(AgentSessionStoreRedisConfig config) {
         String uri=config.getUri(); String bean=config.getClientBeanName();
         if (uri != null && !uri.isBlank()) {
             if (bean != null && !bean.isBlank()) throw new AgentConfigException("Redis URI and bean are mutually exclusive");
@@ -78,7 +78,7 @@ public final class RedisStorageConnection implements AutoCloseable {
             return found;
         },(script,k,args)->((Number)scripts.eval(script,ScriptOutputType.INTEGER,k.toArray(String[]::new),args.toArray(String[]::new))).longValue(),close);
     }
-    public static String prefix(AgentStateStoreRedisConfig config) {
+    public static String prefix(AgentSessionStoreRedisConfig config) {
         return config.getKeyPrefix()==null || config.getKeyPrefix().isBlank() ? "agentscope:session:" : config.getKeyPrefix();
     }
     @Override public void close() {if (!closed.compareAndSet(false, true)) return; try {cleanup.close();}catch(Exception failure){throw new IllegalStateException("Cannot close Redis connection",failure);}}

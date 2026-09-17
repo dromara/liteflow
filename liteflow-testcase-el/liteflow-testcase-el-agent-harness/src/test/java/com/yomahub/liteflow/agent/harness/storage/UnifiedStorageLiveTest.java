@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnabledIfEnvironmentVariable(named = "LITEFLOW_TEST_SHARED_STORAGE", matches = "true")
 class UnifiedStorageLiveTest {
     @Test void mysqlAndRedisPersistEverythingAcrossComponentRecreation() throws Exception {
-        for (AgentStateStoreType type : List.of(AgentStateStoreType.MYSQL, AgentStateStoreType.REDIS)) {
+        for (AgentSessionStoreType type : List.of(AgentSessionStoreType.MYSQL, AgentSessionStoreType.REDIS)) {
             AgentConfig config = configure(type);
             Path firstStaging;
             try (var first = new Component(false)) {
@@ -42,36 +42,36 @@ class UnifiedStorageLiveTest {
             try (var second = new Component(true)) {
                 second.process();
                 assertTrue(second.sawPriorConversation, "Agent context must survive a component restart");
-                try (var storage = HarnessStorage.open(config.getStateStore())) {
-                    var id = new InvocationIdentityResolver(config.getRuntime().getNamespace()).resolve("test-user", "conversation", "storage-test");
-                    var rc = RuntimeContext.builder().userId(id.userId()).sessionId(id.runtimeSessionId()).build();
-                    var files = new ManagedSandboxFilesystem(storage.store(), config.getRuntime().getNamespace(),
+                try (var storage = HarnessStorage.open(config.getSessionStore())) {
+                    var id = new InvocationIdentityResolver(config.getApplicationName()).resolve("conversation", "storage-test");
+                    var rc = RuntimeContext.builder().userId(null).sessionId(id.runtimeSessionId()).build();
+                    var files = new ManagedSandboxFilesystem(storage.store(), config.getApplicationName(),
                             id.agentNamespace(), firstStaging, "/workspace");
-                    List<String> ns = List.of("contract", config.getRuntime().getNamespace());
+                    List<String> ns = List.of("contract", config.getApplicationName());
                     assertTrue(storage.store().putIfVersion(ns, "record", Map.of("array", List.of()), 0));
                     assertFalse(storage.store().putIfVersion(ns, "record", Map.of("lost", true), 0));
                     assertEquals(List.of(), storage.store().get(ns, "record").value().get("array"));
                     assertTrue(storage.store().putIfVersion(ns, "record", Map.of("next", true), 1));
                     assertEquals("prefers Chinese", files.read(rc, "MEMORY.md", 0, 0).fileData().content());
                     assertFalse(files.glob(rc, "**/*.log.jsonl", "agents").matches().isEmpty(), "Harness archive must be remote");
-                    assertFalse(storage.store().search(List.of("liteflow", config.getRuntime().getNamespace(), "sandbox-snapshots-v1"), 100, 0).isEmpty());
+                    assertFalse(storage.store().search(List.of("liteflow", config.getApplicationName(), "sandbox-snapshots-v1"), 100, 0).isEmpty());
                 }
                 try (var conversations = AgentConversationService.open(config)) {
-                    assertFalse(conversations.messages("test-user", "conversation", 0, 100).items().isEmpty());
+                    assertFalse(conversations.messages("conversation", 0, 100).items().isEmpty());
                 }
             } finally { LiteflowConfigGetter.clean(); }
             System.out.println("Unified " + type + " storage: context, history, memory, archive and Docker recovery passed");
         }
     }
     @Test void independentInstancesCoordinateTheSameConversation() {
-        for (AgentStateStoreType type : List.of(AgentStateStoreType.MYSQL, AgentStateStoreType.REDIS)) {
+        for (AgentSessionStoreType type : List.of(AgentSessionStoreType.MYSQL, AgentSessionStoreType.REDIS)) {
             AgentConfig config = configure(type);
             config.getInvocationGuard().setLeaseDuration(Duration.ofMillis(600));
-            var key = AgentInvocationKey.workspace(config.getRuntime().getNamespace(), "user", "conversation");
+            var key = AgentInvocationKey.workspace(config.getApplicationName(), "conversation");
             try (var first = new AgentInvocationGuardResolver().resolve(config);
                  var second = new AgentInvocationGuardResolver().resolve(config)) {
                 try (var held = first.acquire(key, Duration.ZERO)) {
-                    if (type == AgentStateStoreType.REDIS) {
+                    if (type == AgentSessionStoreType.REDIS) {
                         try { Thread.sleep(1000); } catch (InterruptedException failure) { throw new RuntimeException(failure); }
                     }
                     assertThrows(RuntimeException.class, () -> second.acquire(key, Duration.ZERO));
@@ -80,20 +80,19 @@ class UnifiedStorageLiveTest {
             } finally { LiteflowConfigGetter.clean(); }
         }
     }
-    private AgentConfig configure(AgentStateStoreType type) {
+    private AgentConfig configure(AgentSessionStoreType type) {
         AgentConfig config = new AgentConfig();
-        config.getRuntime().setNamespace("unified-test-" + UUID.randomUUID());
-        config.getRuntime().setDefaultUserId("test-user");
-        config.getRuntime().setTimeout(Duration.ofSeconds(60));
+        config.setApplicationName("unified-test-" + UUID.randomUUID());
+        config.setExecutionTimeout(Duration.ofSeconds(60));
         config.setConversationHistoryEnabled(true);
-        config.getStateStore().setType(type);
-        config.getStateStore().getMysql().setJdbcUrl(System.getenv().getOrDefault("LITEFLOW_TEST_MYSQL_URL", "jdbc:mysql://127.0.0.1:13316/liteflow_storage_test?allowPublicKeyRetrieval=true&useSSL=false"));
-        config.getStateStore().getMysql().setUsername("root");
-        config.getStateStore().getMysql().setPassword("");
-        config.getStateStore().getMysql().setDatabaseName("liteflow_storage_test");
-        config.getStateStore().getMysql().setTableName("agent_sessions");
-        config.getStateStore().getMysql().setCreateIfNotExist(true);
-        config.getStateStore().getRedis().setUri(System.getenv().getOrDefault("LITEFLOW_TEST_REDIS_URI", "redis://127.0.0.1:16386"));
+        config.getSessionStore().setType(type);
+        config.getSessionStore().getMysql().setJdbcUrl(System.getenv().getOrDefault("LITEFLOW_TEST_MYSQL_URL", "jdbc:mysql://127.0.0.1:13316/liteflow_storage_test?allowPublicKeyRetrieval=true&useSSL=false"));
+        config.getSessionStore().getMysql().setUsername("root");
+        config.getSessionStore().getMysql().setPassword("");
+        config.getSessionStore().getMysql().setDatabaseName("liteflow_storage_test");
+        config.getSessionStore().getMysql().setTableName("agent_sessions");
+        config.getSessionStore().getMysql().setCreateIfNotExist(true);
+        config.getSessionStore().getRedis().setUri(System.getenv().getOrDefault("LITEFLOW_TEST_REDIS_URI", "redis://127.0.0.1:16386"));
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
         config.getHarness().getDocker().setImage(System.getenv().getOrDefault("LITEFLOW_SANDBOX_TEST_IMAGE", "liteflow-agent-sandbox:node22"));
         config.getHarness().getDocker().setLifecycle(DockerSandboxLifecycle.SESSION_IDLE);
@@ -131,8 +130,8 @@ class UnifiedStorageLiveTest {
                     try {
                         var fs = (ManagedSandboxFilesystem) runtime.agent().getWorkspaceManager().getFilesystem();
                         var sandbox = fs.getSandbox();
-                        var id = new InvocationIdentityResolver(agentConfig().getRuntime().getNamespace()).resolve("test-user", "conversation", "storage-test");
-                        var rc = RuntimeContext.builder().userId(id.userId()).sessionId(id.runtimeSessionId()).build();
+                        var id = new InvocationIdentityResolver(agentConfig().getApplicationName()).resolve("conversation", "storage-test");
+                        var rc = RuntimeContext.builder().userId(null).sessionId(id.runtimeSessionId()).build();
                         containerIds.add(((DockerSandboxState) sandbox.getState()).getContainerId());
                         assertEquals(0, sandbox.exec(rc, "test ! -e /workspace/memory && test ! -e /workspace/MEMORY.md && test ! -e /workspace/agents", 5).exitCode());
                         assertTrue(sandbox.exec(rc, "find /workspace/.skills-cache -name hello.sh -exec sh {} +", 5).stdout().contains("skill-ready"),

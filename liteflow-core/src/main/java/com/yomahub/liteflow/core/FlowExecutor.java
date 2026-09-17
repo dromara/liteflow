@@ -15,7 +15,6 @@ import cn.hutool.core.util.*;
 import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
-import com.yomahub.liteflow.common.entity.ValidationResp;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
 import com.yomahub.liteflow.enums.ParseModeEnum;
 import com.yomahub.liteflow.exception.*;
@@ -595,7 +594,7 @@ public class FlowExecutor {
 
 		// 如果调用方明确传入了 conversationId，则写入 slot；用于 Agent 等
 		// 需要在 chain 内多个组件之间共享会话上下文的场景。未传入时不主动设置，
-		// 由具体组件按其默认策略处理（例如 AgentComponent 会按需懒生成）。
+		// 由具体组件按其默认策略处理（例如 HarnessAgentComponent 会按需懒生成）。
 		if (StrUtil.isNotBlank(conversationId)){
 			slot.setConversationId(conversationId);
 		}

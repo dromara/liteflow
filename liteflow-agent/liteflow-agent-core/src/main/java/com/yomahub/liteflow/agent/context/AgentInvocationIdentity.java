@@ -8,7 +8,6 @@ import java.util.HexFormat;
 /** Raw and safe identifiers for one agent invocation. */
 public record AgentInvocationIdentity(
         String namespace,
-        String userId,
         String conversationId,
         String agentKey,
         String runtimeSessionId,
@@ -16,11 +15,10 @@ public record AgentInvocationIdentity(
         String storeSessionId) {
 
     public AgentInvocationIdentity {
-        requireValue(namespace, "namespace");
-        requireValue(userId, "userId");
-        requireValue(conversationId, "conversationId");
+        requirePathSegment(namespace, "applicationName");
+        requirePathSegment(conversationId, "conversationId");
         requireValue(agentKey, "agentKey");
-        runtimeSessionId = "lf-" + hash(namespace, userId, conversationId);
+        runtimeSessionId = conversationId;
         agentNamespace = "lf-" + hash(namespace, agentKey);
         storeSessionId = agentNamespace + "." + runtimeSessionId;
     }
@@ -29,6 +27,18 @@ public record AgentInvocationIdentity(
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(name + " must not be blank");
         }
+    }
+
+    /** Application names and conversation IDs are literal directory names. */
+    public static String requirePathSegment(String value, String name) {
+        requireValue(value, name);
+        if (value.equals(".") || value.equals("..") || value.indexOf('/') >= 0
+                || value.indexOf('\\') >= 0 || value.chars().anyMatch(Character::isISOControl)
+                || value.chars().anyMatch(ch -> "<>:\"|?*".indexOf(ch) >= 0)
+                || value.endsWith(".") || value.endsWith(" ")) {
+            throw new IllegalArgumentException(name + " must be a plain directory name");
+        }
+        return value;
     }
 
     private static String hash(String... values) {

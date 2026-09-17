@@ -5,7 +5,7 @@ import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.exception.AgentInvocationErrorType;
 import com.yomahub.liteflow.agent.mysql.MysqlAgentStateStoreProvider;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import io.agentscope.extensions.mysql.state.MysqlAgentStateStore;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -15,9 +15,9 @@ import java.util.HexFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MysqlInvocationGuardProvider implements AgentInvocationGuardProvider {
-    @Override public AgentStateStoreType type() { return AgentStateStoreType.MYSQL; }
+    @Override public AgentSessionStoreType type() { return AgentSessionStoreType.MYSQL; }
     @Override public AgentInvocationGuard resolve(AgentConfig config) {
-        var resolved = new MysqlAgentStateStoreProvider().resolve(config.getStateStore());
+        var resolved = new MysqlAgentStateStoreProvider().resolve(config.getSessionStore());
         var state = (MysqlAgentStateStore) resolved.store();
         var source = state.getDataSource();
         String storageIdentity = state.getDatabaseName() + ":" + state.getTableName();

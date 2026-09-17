@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.events;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import io.agentscope.core.message.Msg;
@@ -27,7 +27,7 @@ final class RealEventsAgentsCmp {
         CAPTURED_USAGES.clear();
     }
 
-    abstract static class AbstractEventsAgent extends AgentComponent {
+    abstract static class AbstractEventsAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

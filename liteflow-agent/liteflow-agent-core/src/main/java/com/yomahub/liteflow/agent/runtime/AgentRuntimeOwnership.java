@@ -80,7 +80,7 @@ public final class AgentRuntimeOwnership {
 
     /**
      * Closes the provider runtime first, then provider resources in reverse order, followed by
-     * shared MCP clients, skill repositories, models, and state-store wrappers.
+     * shared MCP clients, skill repositories, models, and session-store wrappers.
      */
     public void close(
             String runtimeDescription,

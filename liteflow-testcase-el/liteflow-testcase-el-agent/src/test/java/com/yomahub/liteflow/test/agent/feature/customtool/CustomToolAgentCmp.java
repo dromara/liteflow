@@ -43,11 +43,6 @@ public class CustomToolAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected List<Object> tools() {
         return List.of(new EchoTool());
     }

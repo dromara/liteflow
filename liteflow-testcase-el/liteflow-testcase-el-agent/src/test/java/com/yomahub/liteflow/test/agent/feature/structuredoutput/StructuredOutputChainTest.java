@@ -2,11 +2,11 @@ package com.yomahub.liteflow.test.agent.feature.structuredoutput;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.message.AgentOutputSpec;
 import com.yomahub.liteflow.agent.model.ModelSpec;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.core.FlowExecutor;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -70,7 +70,7 @@ public class StructuredOutputChainTest {
     }
 }
 
-abstract class OfflineStructuredComponent extends AgentComponent {
+abstract class OfflineStructuredComponent extends HarnessAgentComponent {
 
     @Override
     protected final ModelSpec<?> model() {
@@ -123,7 +123,7 @@ final class StructuredEmptyAgentCmp extends OfflineStructuredComponent {
         return ScriptedChatModel.builder().reply("unused").build();
     }
     @Override protected Mono<Msg> invokeRuntime(
-            AgentRuntime runtime, java.util.List<Msg> input, AgentOutputSpec output,
+            HarnessAgentRuntime runtime, java.util.List<Msg> input, AgentOutputSpec output,
             RuntimeContext runtimeContext, LiteFlowAgentContext liteflowContext) {
         return Mono.empty();
     }

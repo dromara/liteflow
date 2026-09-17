@@ -113,9 +113,9 @@ class HarnessMemoryModeTest {
             assertEquals(expectedExtraCalls, component.memory.calls.get());
             assertTrue(component.primary.inputs.get(1).stream()
                     .anyMatch(message -> message.getRole() == MsgRole.ASSISTANT), "second turn must see prior Agent context");
-            var identity = new InvocationIdentityResolver(config.getRuntime().getNamespace())
-                    .resolve(config.getRuntime().getDefaultUserId(), "conversation", "memory-mode-agent");
-            var context = RuntimeContext.builder().userId(identity.userId()).sessionId(identity.runtimeSessionId()).build();
+            var identity = new InvocationIdentityResolver(config.getApplicationName())
+                    .resolve("conversation", "memory-mode-agent");
+            var context = RuntimeContext.builder().userId(null).sessionId(identity.runtimeSessionId()).build();
             var filesystem = component.runtime.agent().getWorkspaceManager().getFilesystem();
             var archives = filesystem.glob(context, "**/*.log.jsonl", "agents");
             assertFalse(archives.matches().isEmpty(), "NEVER must retain the Harness archive hook");
@@ -123,17 +123,17 @@ class HarnessMemoryModeTest {
             assertTrue(archive.contains("hello"));
             assertTrue(archive.contains("answer"));
             try (var history = new AgentConversationService(config, component.states)) {
-                assertEquals(4, history.messages(identity.userId(), "conversation", 0, 20).items().size());
+                assertEquals(4, history.messages("conversation", 0, 20).items().size());
             }
         }
     }
 
     private AgentConfig configure(HarnessMemoryFlushMode mode) {
         AgentConfig config = new AgentConfig();
-        config.getRuntime().setNamespace("memory-mode-" + UUID.randomUUID());
-        config.getRuntime().setDefaultUserId("user-" + UUID.randomUUID());
-        config.getRuntime().setTimeout(Duration.ofSeconds(10));
-        config.getWorkspace().setRoot(temp.toString());
+        config.setApplicationName("memory-mode-" + UUID.randomUUID());
+        config.setExecutionTimeout(Duration.ofSeconds(10));
+        config.getHarness().getLocal().setWorkspaceRoot(temp.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(temp.toString());
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.CUSTOM);
         if (mode != null) {
             config.getHarness().getMemory().setFlushMode(mode);
@@ -172,7 +172,7 @@ class HarnessMemoryModeTest {
         @Override protected AgentStateStoreResolver stateStoreResolver() { return ignored -> new ResolvedAgentStateStore(states, false); }
         @Override protected HarnessFilesystemConfigurer filesystemConfigurer() {
             return (builder, context) -> builder.abstractFilesystem(new StoredWorkspaceFilesystem(files,
-                    rc -> List.of(config.getRuntime().getNamespace(), rc.getUserId() == null ? "internal" : rc.getUserId(),
+                    rc -> List.of(config.getApplicationName(), rc.getUserId() == null ? "internal" : rc.getUserId(),
                             rc.getSessionId() == null ? "internal" : rc.getSessionId()), context.workspaceRoot()));
         }
         @Override protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext context) {

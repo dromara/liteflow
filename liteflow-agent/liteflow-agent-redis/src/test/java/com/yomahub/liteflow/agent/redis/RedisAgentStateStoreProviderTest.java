@@ -3,8 +3,8 @@ package com.yomahub.liteflow.agent.redis;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
-import com.yomahub.liteflow.property.agent.AgentStateStoreConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import io.agentscope.extensions.redis.state.RedisClientAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -33,20 +33,20 @@ class RedisAgentStateStoreProviderTest {
 
     @Test
     void supportsRedisType() {
-        assertEquals(AgentStateStoreType.REDIS, provider.type());
+        assertEquals(AgentSessionStoreType.REDIS, provider.type());
     }
 
     @Test
     void rejectsMissingConnectionSource() {
         AgentConfigException failure = assertThrows(AgentConfigException.class,
-                () -> provider.resolve(new AgentStateStoreConfig()));
+                () -> provider.resolve(new AgentSessionStoreConfig()));
         assertTrue(failure.getMessage().contains("uri"));
         assertTrue(failure.getMessage().contains("client-bean-name"));
     }
 
     @Test
     void rejectsUriAndBeanNameTogether() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.getRedis().setUri("redis://localhost:6379");
         config.getRedis().setClientBeanName("redisClient");
         AgentConfigException failure = assertThrows(AgentConfigException.class,
@@ -56,14 +56,14 @@ class RedisAgentStateStoreProviderTest {
 
     @Test
     void rejectsInvalidUri() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.getRedis().setUri("not a uri");
         assertThrows(AgentConfigException.class, () -> provider.resolve(config));
     }
 
     @Test
     void uriModeWrapsConnectionFailureAsConfigException() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.getRedis().setUri(CLOSED_PORT_URI);
         config.getRedis().setKeyPrefix("liteflow:agent:state:");
         AgentConfigException failure = assertThrows(AgentConfigException.class,
@@ -73,7 +73,7 @@ class RedisAgentStateStoreProviderTest {
 
     @Test
     void beanModeAcceptsClientAdapterAndStaysUnowned() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.getRedis().setClientBeanName("adapterBean");
         ResolvedAgentStateStore resolved = new RedisAgentStateStoreProvider(
                 name -> new NoopRedisClientAdapter()).resolve(config);
@@ -82,7 +82,7 @@ class RedisAgentStateStoreProviderTest {
 
     @Test
     void beanModeRejectsUnsupportedClientType() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.getRedis().setClientBeanName("notAClient");
         AgentConfigException failure = assertThrows(AgentConfigException.class,
                 () -> new RedisAgentStateStoreProvider(name -> "not a client").resolve(config));
@@ -91,8 +91,8 @@ class RedisAgentStateStoreProviderTest {
 
     @Test
     void resolverDiscoversProviderThroughServiceLoader() {
-        AgentStateStoreConfig config = new AgentStateStoreConfig();
-        config.setType(AgentStateStoreType.REDIS);
+        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
+        config.setType(AgentSessionStoreType.REDIS);
         config.getRedis().setUri(CLOSED_PORT_URI);
         // SPI wiring proven: the error comes from the provider's connection attempt,
         // not the missing-module path.

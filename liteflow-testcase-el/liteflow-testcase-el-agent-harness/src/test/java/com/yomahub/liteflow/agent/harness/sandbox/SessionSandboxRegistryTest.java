@@ -155,13 +155,13 @@ class SessionSandboxRegistryTest {
     @Test
     void deletingAConversationReleasesItsLiveSandbox() {
         AgentInvocationIdentity id = id("delete");
-        config.getRuntime().setNamespace(id.namespace());
+        config.setApplicationName(id.namespace());
         try (var registry = registry(snapshots); var conversations = new AgentConversationService(config, store)) {
-            conversations.create(id.userId(), id.conversationId(), "test", false);
+            conversations.create(id.conversationId(), "test", false);
             turn(registry, id, sandbox -> sandbox);
-            conversations.delete(id.userId(), id.conversationId());
+            conversations.delete(id.conversationId());
             assertTrue(events.stream().anyMatch(event -> event.startsWith("shutdown:")));
-            assertTrue(conversations.get(id.userId(), id.conversationId()).isEmpty());
+            assertTrue(conversations.get(id.conversationId()).isEmpty());
         }
     }
 
@@ -173,7 +173,7 @@ class SessionSandboxRegistryTest {
                 sandbox.exec(context(id), "write shared.txt handover", 1);
                 return sandbox;
             });
-            Sandbox next = turn(second, identities.resolve("user", "a", "other-agent"), sandbox -> sandbox);
+            Sandbox next = turn(second, identities.resolve("a", "other-agent"), sandbox -> sandbox);
             assertNotSame(old, next);
             assertEquals("handover", ((FakeSandbox) next).file("shared.txt"));
             assertEquals(1, snapshots.snapshotCount());
@@ -242,9 +242,9 @@ class SessionSandboxRegistryTest {
         return new SessionSandboxRegistry(template, stateStore, "agent", guard, config.getHarness().getDocker(), now::get, false);
     }
 
-    private AgentInvocationIdentity id(String session) { return identities.resolve("user", session, "agent"); }
+    private AgentInvocationIdentity id(String session) { return identities.resolve(session, "agent"); }
     private RuntimeContext context(AgentInvocationIdentity id) {
-        return RuntimeContext.builder().userId(id.userId()).sessionId(id.runtimeSessionId()).build();
+        return RuntimeContext.builder().userId(null).sessionId(id.runtimeSessionId()).build();
     }
     private <T> T turn(SessionSandboxRegistry registry, AgentInvocationIdentity id, SandboxAction<T> action) {
         RuntimeContext ctx = context(id);

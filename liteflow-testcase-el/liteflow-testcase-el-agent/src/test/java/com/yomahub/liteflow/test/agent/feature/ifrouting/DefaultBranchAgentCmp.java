@@ -35,11 +35,6 @@ public class DefaultBranchAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         INVOCATION_COUNT.incrementAndGet();
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());

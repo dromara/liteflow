@@ -86,7 +86,7 @@ class AgentEventTypeMapperTest {
             for (FlowEvent flowEvent : mapped) {
                 AgentFlowEventData data = (AgentFlowEventData) flowEvent.getData();
                 assertSame(eventCase.event(), data.event());
-                assertEquals("user-1", data.userId());
+
                 assertEquals("conversation-1", data.conversationId());
                 assertEquals("agent-1", data.agentKey());
                 assertEquals("chain-1", data.chainId());

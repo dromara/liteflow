@@ -23,7 +23,6 @@ import java.util.Objects;
 /** LiteFlow node that invokes a remote A2A agent through an isolated per-call instance. */
 public abstract class A2aAgentComponent extends AbstractAgentComponent<A2aClientRuntime> {
 
-    public static final String USER_ID_METADATA = "liteflow.userId";
     public static final String CONVERSATION_ID_METADATA = "liteflow.conversationId";
     public static final String AGENT_KEY_METADATA = "liteflow.agentKey";
     public static final String TRACE_ID_METADATA = "liteflow.traceId";
@@ -83,7 +82,6 @@ public abstract class A2aAgentComponent extends AbstractAgentComponent<A2aClient
         UserMessage message = UserMessage.builder()
                 .content(source.getContent())
                 .metadata(Map.of(
-                        USER_ID_METADATA, runtimeContext.getUserId(),
                         CONVERSATION_ID_METADATA, liteflowContext.getConversationId(),
                         AGENT_KEY_METADATA, liteflowContext.getAgentKey(),
                         TRACE_ID_METADATA, liteflowContext.getTraceId()))

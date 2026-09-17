@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.conversation.AgentConversationService;
 import com.yomahub.liteflow.agent.conversation.AgentConversationMessage;
@@ -9,9 +10,10 @@ import com.yomahub.liteflow.agent.exception.AgentInvocationException;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuard;
 import com.yomahub.liteflow.agent.guard.AgentInvocationKey;
 import com.yomahub.liteflow.agent.guard.AgentInvocationLease;
+import com.yomahub.liteflow.agent.guard.AgentInvocationScope;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeHandle;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.state.AgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
@@ -43,6 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -95,8 +98,8 @@ class AgentPlainTextTest {
         assertEquals("hello from slot", firstUserInput.getTextContent());
 
         RuntimeContext runtimeContext = model.runtimeContextAt(0);
-        assertEquals("test-user", runtimeContext.getUserId());
-        assertTrue(runtimeContext.getSessionId().matches("lf-[0-9a-f]{64}"));
+        assertNull(runtimeContext.getUserId());
+        assertEquals(slot.getConversationId(), runtimeContext.getSessionId());
         assertSame(slot, runtimeContext.get(Slot.class));
         assertEquals(runtimeContext.getSessionId(), model.runtimeContextAt(1).getSessionId());
     }
@@ -127,10 +130,10 @@ class AgentPlainTextTest {
         component.setNodeId("plain-agent");
 
         for (Duration invalid : new Duration[]{null, Duration.ZERO, Duration.ofMillis(-1)}) {
-            agentConfig.getRuntime().setTimeout(invalid);
+            agentConfig.setExecutionTimeout(invalid);
             AgentConfigException thrown = assertThrows(
                     AgentConfigException.class, component::process);
-            assertTrue(thrown.getMessage().contains("runtime.timeout"));
+            assertTrue(thrown.getMessage().contains("execution-timeout"));
         }
         assertEquals(0, model.callCount());
         assertEquals(0, component.modelBuildCount.get());
@@ -139,7 +142,7 @@ class AgentPlainTextTest {
     @Test
     void runtimeTimeoutCancelsCallClassifiesFailureAndReleasesGuardForRetry() throws Exception {
         AgentConfig agentConfig = configureAgent("plain-text-test", "test-user");
-        agentConfig.getRuntime().setTimeout(Duration.ofMillis(25));
+        agentConfig.setExecutionTimeout(Duration.ofMillis(250));
         Slot slot = new Slot();
         slot.setChainId("plain-chain");
         slot.setConversationId("conversation-7");
@@ -166,7 +169,7 @@ class AgentPlainTextTest {
     @Test
     void upstreamTimeoutExceptionIsPreservedWithoutFrameworkDeadlineClassification() {
         AgentConfig agentConfig = configureAgent("plain-text-test", "test-user");
-        agentConfig.getRuntime().setTimeout(Duration.ofSeconds(1));
+        agentConfig.setExecutionTimeout(Duration.ofSeconds(1));
         Slot slot = new Slot();
         slot.setChainId("plain-chain");
         slot.setConversationId("conversation-7");
@@ -211,9 +214,8 @@ class AgentPlainTextTest {
     }
 
     @Test
-    void conversationApiJournalsRealCallsAndDeletesStateBeforeAnotherModelCall() throws Exception {
+    void conversationApiJournalsRealCallsByDefaultAndDeletesStateBeforeAnotherModelCall() throws Exception {
         AgentConfig config = configureAgent("conversation-api-test", "alice");
-        config.setConversationHistoryEnabled(true);
         InMemoryAgentStateStore store = new InMemoryAgentStateStore();
         Slot slot = new Slot();
         slot.setChainId("conversation-chain");
@@ -222,25 +224,47 @@ class AgentPlainTextTest {
         component = new TestComponent(slot, model, ignored -> new ResolvedAgentStateStore(store, false));
         component.setNodeId("agent");
         try (var conversations = new AgentConversationService(config, store)) {
-            assertTrue(conversations.list("alice", 0, 10).items().isEmpty());
+            assertTrue(conversations.list(0, 10).items().isEmpty());
             component.process();
             component.process();
             assertEquals(List.of("hello from slot", "answer", "hello from slot", "answer"),
-                    conversations.messages("alice", "conversation-1", 0, 10).items().stream()
+                    conversations.messages("conversation-1", 0, 10).items().stream()
                             .map(AgentConversationMessage::content).toList());
-            assertEquals(4, conversations.agentState("alice", "conversation-1", "agent").orElseThrow().getContext().size());
-            conversations.delete("alice", "conversation-1");
-            assertTrue(conversations.agentState("alice", "conversation-1", "agent").isEmpty());
+            assertEquals(4, conversations.agentState("conversation-1", "agent").orElseThrow().getContext().size());
+            conversations.delete("conversation-1");
+            assertTrue(conversations.agentState("conversation-1", "agent").isEmpty());
             assertThrows(IllegalStateException.class, component::process);
             assertEquals(2, model.callCount());
         }
     }
 
     @Test
+    void explicitlyDisablingConversationHistoryPreservesAgentState() throws Exception {
+        AgentConfig config = configureAgent("conversation-disabled-test", "alice");
+        config.setConversationHistoryEnabled(false);
+        InMemoryAgentStateStore store = new InMemoryAgentStateStore();
+        Slot slot = new Slot();
+        slot.setChainId("conversation-chain");
+        slot.setConversationId("conversation-1");
+        ScriptedChatModel model = new ScriptedChatModel("answer");
+        component = new TestComponent(slot, model, ignored -> new ResolvedAgentStateStore(store, false));
+        component.setNodeId("agent");
+
+        component.process();
+        component.process();
+
+        assertEquals("answer", slot.getResponseData());
+        try (var conversations = new AgentConversationService(config, store)) {
+            assertTrue(conversations.list(0, 10).items().isEmpty());
+            assertEquals(4, conversations.agentState("conversation-1", "agent")
+                    .orElseThrow().getContext().size());
+        }
+    }
+
+    @Test
     void failedAgentCallRecordsAnErrorWithoutReplacingTheOriginalFailure() throws Exception {
         AgentConfig config = configureAgent("conversation-failure-test", "alice");
-        config.setConversationHistoryEnabled(true);
-        config.getRuntime().setTimeout(Duration.ofMillis(50));
+        config.setExecutionTimeout(Duration.ofMillis(50));
         InMemoryAgentStateStore store = new InMemoryAgentStateStore();
         Slot slot = new Slot();
         slot.setChainId("chain");
@@ -250,16 +274,17 @@ class AgentPlainTextTest {
         component.setNodeId("agent");
         assertThrows(AgentInvocationException.class, component::process);
         try (var conversations = new AgentConversationService(config, store)) {
-            assertEquals(List.of("input", "error"), conversations.messages("alice", "failed", 0, 10)
+            assertEquals(List.of("input", "error"), conversations.messages("failed", 0, 10)
                     .items().stream().map(AgentConversationMessage::stage).toList());
         }
     }
 
     private AgentConfig configureAgent(String namespace, String defaultUserId) {
         AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getStateStore().setJsonRoot("target/agent-state");
-        agentConfig.getRuntime().setNamespace(namespace);
-        agentConfig.getRuntime().setDefaultUserId(defaultUserId);
+        agentConfig.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agentConfig.getSessionStore().setJsonWorkspaceRoot(agentConfig.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agentConfig.getSessionStore().setJsonRoot("target/agent-state");
+        agentConfig.setApplicationName(namespace);
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agentConfig);
         LiteflowConfigGetter.setLiteflowConfig(config);
@@ -273,7 +298,13 @@ class AgentPlainTextTest {
         contextAwareField.set(null, contextAware);
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
+        @Override protected io.agentscope.harness.agent.HarnessAgent.Builder customizeHarness(
+                io.agentscope.harness.agent.HarnessAgent.Builder builder) {
+            return builder.disableMemoryHooks().disableCompaction().disableDefaultWorkspaceSkills();
+        }
         private final Slot slot;
         private final ScriptedChatModel scriptedModel;
         private final AgentStateStoreResolver stateStoreResolver;
@@ -332,7 +363,7 @@ class AgentPlainTextTest {
                 AgentRuntimeHandle<?> handle = (AgentRuntimeHandle<?>) handleField.get(this);
                 Field runtimeField = AgentRuntimeHandle.class.getDeclaredField("runtime");
                 runtimeField.setAccessible(true);
-                return ((AgentRuntime) runtimeField.get(handle)).stateStore();
+                return ((HarnessAgentRuntime) runtimeField.get(handle)).stateStore();
             } catch (ReflectiveOperationException failure) {
                 throw new AssertionError(failure);
             }
@@ -380,7 +411,7 @@ class AgentPlainTextTest {
 
                 @Override
                 public void close() {
-                    if (!released.compareAndSet(false, true)) {
+                    if (key.scope() != AgentInvocationScope.STATE || !released.compareAndSet(false, true)) {
                         return;
                     }
                     RuntimeContext runtimeContext = model.runtimeContextAt(0);
@@ -390,7 +421,7 @@ class AgentPlainTextTest {
                             () -> store.get(
                                     runtimeContext.getUserId(),
                                     runtimeContext.getSessionId(),
-                                    "state",
+                                    "agent_state",
                                     UserMessage.class)));
                 }
             };

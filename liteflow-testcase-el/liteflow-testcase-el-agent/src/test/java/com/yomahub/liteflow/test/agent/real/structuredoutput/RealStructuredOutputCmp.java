@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.agent.real.structuredoutput;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ final class RealStructuredOutputCmp {
     public record StructuredReply(String answer, int score, boolean recommend) {
     }
 
-    abstract static class AbstractStructuredAgent extends AgentComponent {
+    abstract static class AbstractStructuredAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

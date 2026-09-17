@@ -156,14 +156,13 @@ class A2aClientRuntimeTest {
             String conversationId, Duration timeout, RuntimeBinding binding) {
         Slot slot = new Slot();
         AgentInvocationIdentity identity = new AgentInvocationIdentity(
-                "a2a-test", "user-3", conversationId, "node-a", null, null, null);
+                "a2a-test", conversationId, "node-a", null, null, null);
         LiteFlowAgentContext context = new LiteFlowAgentContext(
                 identity, slot, "chain", "node-a", "request-9", "trace-4",
                 Instant.now().plusSeconds(5), AgentOutputSpec.text(), "attachment");
         UserMessage message = UserMessage.builder()
                 .textContent("hello")
                 .metadata(Map.of(
-                        "liteflow.userId", "user-3",
                         "liteflow.conversationId", conversationId,
                         "liteflow.agentKey", "node-a",
                         "liteflow.traceId", "trace-4"))

@@ -2,7 +2,7 @@ package com.yomahub.liteflow.test.agent.real.conversationapi;
 
 import com.yomahub.liteflow.agent.conversation.AgentConversationService;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
 import io.agentscope.core.tool.Tool;
 import org.junit.jupiter.api.AfterEach;
@@ -34,25 +34,25 @@ class ConversationStoreLiveTest {
     }
 
     @ParameterizedTest
-    @EnumSource(AgentStateStoreType.class)
-    void memoryAndHistorySurviveAnActualJvmRestart(AgentStateStoreType backend) throws Exception {
+    @EnumSource(AgentSessionStoreType.class)
+    void memoryAndHistorySurviveAnActualJvmRestart(AgentSessionStoreType backend) throws Exception {
         var config = ConversationStoreProbe.configure(backend, root);
         String cid = UUID.randomUUID().toString();
         try (var conversations = AgentConversationService.open(config)) {
             runJvm(backend, cid, "write");
             runJvm(backend, cid, "read");
-            assertEquals(4, conversations.messages(USER, cid, 0, 20).items().size());
-            assertTrue(conversations.get("different-user", cid).isEmpty());
-            assertTrue(conversations.agentState("different-user", cid, AGENT).isEmpty());
-            conversations.delete(USER, cid);
-            assertTrue(conversations.get(USER, cid).isEmpty());
-            assertTrue(conversations.agentState(USER, cid, AGENT).isEmpty());
+            assertEquals(4, conversations.messages(cid, 0, 20).items().size());
+            assertTrue(conversations.get(cid).isEmpty());
+            assertTrue(conversations.agentState(cid, AGENT).isEmpty());
+            conversations.delete(cid);
+            assertTrue(conversations.get(cid).isEmpty());
+            assertTrue(conversations.agentState(cid, AGENT).isEmpty());
         }
     }
 
     @ParameterizedTest
-    @EnumSource(AgentStateStoreType.class)
-    void deletionWaitsForARealAgentToolAndDoesNotReviveItsHistory(AgentStateStoreType backend) throws Exception {
+    @EnumSource(AgentSessionStoreType.class)
+    void deletionWaitsForARealAgentToolAndDoesNotReviveItsHistory(AgentSessionStoreType backend) throws Exception {
         var config = ConversationStoreProbe.configure(backend, root);
         String cid = UUID.randomUUID().toString();
         BlockingTool tool = new BlockingTool();
@@ -70,18 +70,18 @@ class ConversationStoreLiveTest {
                     }
                 }
                 assertEquals(0, tool.started.getCount(), "Real model must call the blocking tool");
-                var deleting = pool.submit(() -> conversations.delete(USER, cid));
+                var deleting = pool.submit(() -> conversations.delete(cid));
                 long deadline = System.nanoTime() + Duration.ofSeconds(10).toNanos();
-                while (conversations.get(USER, cid).isPresent() && System.nanoTime() < deadline) {
+                while (conversations.get(cid).isPresent() && System.nanoTime() < deadline) {
                     Thread.sleep(20);
                 }
-                assertTrue(conversations.get(USER, cid).isEmpty(), "Deletion marker must become visible");
+                assertTrue(conversations.get(cid).isEmpty(), "Deletion marker must become visible");
                 assertFalse(deleting.isDone(), "Deletion must wait for the active Agent state lease");
                 tool.release.countDown();
                 running.get(120, TimeUnit.SECONDS);
                 deleting.get(120, TimeUnit.SECONDS);
-                assertTrue(conversations.get(USER, cid).isEmpty());
-                assertTrue(conversations.agentState(USER, cid, AGENT).isEmpty());
+                assertTrue(conversations.get(cid).isEmpty());
+                assertTrue(conversations.agentState(cid, AGENT).isEmpty());
             } finally {
                 tool.release.countDown();
             }
@@ -91,7 +91,7 @@ class ConversationStoreLiveTest {
         }
     }
 
-    private void runJvm(AgentStateStoreType backend, String cid, String mode) throws Exception {
+    private void runJvm(AgentSessionStoreType backend, String cid, String mode) throws Exception {
         Path output = root.resolve(backend + "-" + mode + ".log");
         String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
         Process child = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),

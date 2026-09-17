@@ -1,12 +1,12 @@
 package com.yomahub.liteflow.agent.gemini;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import io.agentscope.harness.agent.HarnessAgent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.Model;
 import io.agentscope.extensions.model.gemini.GeminiChatModel;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ class GeminiLifecycleTest {
         OwnedGeminiModel owned = new OwnedGeminiModel(delegate);
         TestComponent component = new TestComponent(owned, null);
 
-        AgentRuntime runtime = component.runtime();
+        HarnessAgentRuntime runtime = component.runtime();
         runtime.close();
         runtime.close();
 
@@ -56,7 +56,7 @@ class GeminiLifecycleTest {
         assertEquals(1, delegate.closeCount.get());
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
         private final Model model;
         private final RuntimeException buildFailure;
 
@@ -65,10 +65,12 @@ class GeminiLifecycleTest {
             this.buildFailure = buildFailure;
         }
 
-        private AgentRuntime runtime() {
+        private HarnessAgentRuntime runtime() {
             AgentConfig config = new AgentConfig();
-            config.getStateStore().setJsonRoot("target/agent-state");
-            config.getRuntime().setNamespace("gemini-lifecycle-test");
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
+            config.getSessionStore().setJsonRoot("target/agent-state");
+            config.setApplicationName("gemini-lifecycle-test");
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "gemini-agent", "gemini-key", AGENT_NAMESPACE));
         }
@@ -94,7 +96,7 @@ class GeminiLifecycleTest {
         }
 
         @Override
-        protected ReActAgent.Builder customizeAgent(ReActAgent.Builder builder) {
+        protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {
             if (buildFailure != null) {
                 throw buildFailure;
             }

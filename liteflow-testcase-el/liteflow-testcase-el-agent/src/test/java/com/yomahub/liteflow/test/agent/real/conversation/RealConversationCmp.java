@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.conversation;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ public final class RealConversationCmp {
     private RealConversationCmp() {
     }
 
-    abstract static class AbstractMemoryAgent extends AgentComponent {
+    abstract static class AbstractMemoryAgent extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

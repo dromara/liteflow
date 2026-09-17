@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.middleware;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.ScriptedChatModel;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @Component("middlewareAgent")
-public class MiddlewareAgentCmp extends AgentComponent {
+public class MiddlewareAgentCmp extends HarnessAgentComponent {
 
     private static final List<String> OBSERVATIONS = new CopyOnWriteArrayList<>();
 
@@ -86,7 +86,7 @@ public class MiddlewareAgentCmp extends AgentComponent {
 }
 
 @Component("failingMiddlewareAgent")
-final class FailingMiddlewareAgentCmp extends AgentComponent {
+final class FailingMiddlewareAgentCmp extends HarnessAgentComponent {
 
     private static final AtomicInteger MODEL_CALLS = new AtomicInteger();
 

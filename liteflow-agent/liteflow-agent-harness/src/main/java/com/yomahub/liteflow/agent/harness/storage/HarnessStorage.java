@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.agent.harness.storage;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
-import com.yomahub.liteflow.property.agent.AgentStateStoreConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
 import io.agentscope.harness.agent.filesystem.remote.store.BaseStore;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -19,7 +19,7 @@ public final class HarnessStorage implements AutoCloseable {
     }
     public BaseStore store() { return store; }
 
-    public static HarnessStorage open(AgentStateStoreConfig config) {
+    public static HarnessStorage open(AgentSessionStoreConfig config) {
         var providers = ServiceLoader.load(HarnessStorageProvider.class).stream()
                 .map(ServiceLoader.Provider::get).filter(p -> p.type() == config.getType()).toList();
         if (providers.size() != 1) throw new AgentConfigException(

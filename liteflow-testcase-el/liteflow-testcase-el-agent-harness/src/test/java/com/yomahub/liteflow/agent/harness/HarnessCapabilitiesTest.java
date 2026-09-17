@@ -167,7 +167,7 @@ class HarnessCapabilitiesTest {
         configureCustom("null-defaults");
         TestComponent component = component(new RecordingModel(), new RecordingFilesystem(Map.of()));
         component.inspectBuilder = builder -> {
-            assertFalse(booleanField(builder, "disableCompaction"));
+            assertTrue(booleanField(builder, "disableCompaction")); // LiteFlow installs adaptive compaction instead.
             assertFalse(booleanField(builder, "disableToolResultEviction"));
             MemoryConfig upstreamDefault = (MemoryConfig) field(builder, "memoryConfig");
             assertEquals(MemoryConfig.FlushMode.NEVER, upstreamDefault.flushTrigger().mode());
@@ -221,7 +221,7 @@ class HarnessCapabilitiesTest {
                 .anyMatch(msg -> ConversationCompactor.SUMMARY_MSG_NAME.equals(msg.getName())));
         List<Msg> state = component.runtime.agent().getDelegate()
                 .getAgentState(
-                        component.lastContext.getRuntimeUserId(),
+                        null,
                         component.lastContext.getRuntimeSessionId())
                 .getContext();
         assertTrue(state.stream()
@@ -234,6 +234,8 @@ class HarnessCapabilitiesTest {
             throws Exception {
         String namespace = "real-memory";
         configureGuarded(namespace);
+        LiteflowConfigGetter.get().getAgent().getSessionStore().setJsonWorkspaceRoot(
+                LiteflowConfigGetter.get().getAgent().getHarness().getLocal().getWorkspaceRoot());
         LiteflowConfigGetter.get().getAgent().getHarness().getMemory()
                 .setFlushMode(com.yomahub.liteflow.property.agent.HarnessMemoryFlushMode.ALWAYS);
         String daily = "memory/" + LocalDate.now() + ".md";
@@ -248,11 +250,11 @@ class HarnessCapabilitiesTest {
             component.process();
         }
 
-        Path workspace = tempDir.resolve(namespace);
+        Path workspace = tempDir.resolve(namespace).resolve(namespace);
         List<Path> physicalMemoryFiles = matrix.stream()
                 .map(component -> workspace
-                        .resolve("agent-" + sha256(component.lastContext.getAgentNamespace()))
-                        .resolve("session-" + sha256(component.lastContext.getRuntimeSessionId()))
+                        .resolve(component.lastContext.getConversationId())
+                        .resolve(".agentscope/memory").resolve(component.lastContext.getAgentKey())
                         .resolve(daily))
                 .toList();
         assertEquals(4, Set.copyOf(physicalMemoryFiles).size());
@@ -270,7 +272,7 @@ class HarnessCapabilitiesTest {
         for (int index = 0; index < matrix.size(); index++) {
             TestComponent component = matrix.get(index);
             RuntimeContext context = RuntimeContext.builder()
-                    .userId(component.lastContext.getRuntimeUserId())
+                    .userId(null)
                     .sessionId(component.lastContext.getRuntimeSessionId())
                     .put(LiteFlowAgentContext.class, component.lastContext)
                     .build();
@@ -379,7 +381,7 @@ class HarnessCapabilitiesTest {
                 .build());
         component.process();
         RuntimeContext parent = RuntimeContext.builder()
-                .userId(component.lastContext.getRuntimeUserId())
+                .userId(null)
                 .sessionId(component.lastContext.getRuntimeSessionId())
                 .put(LiteFlowAgentContext.class, component.lastContext)
                 .build();
@@ -439,7 +441,7 @@ class HarnessCapabilitiesTest {
         component.process();
         PermissionContextState currentSessionPermissions = fullParentPermissions();
         component.runtime.agent().getDelegate().replacePermissionContext(
-                component.lastContext.getRuntimeUserId(),
+                null,
                 component.lastContext.getRuntimeSessionId(),
                 currentSessionPermissions);
 
@@ -584,7 +586,7 @@ class HarnessCapabilitiesTest {
         component.process();
         PermissionContextState currentSessionPermissions = fullParentPermissions();
         component.runtime.agent().getDelegate().replacePermissionContext(
-                component.lastContext.getRuntimeUserId(),
+                null,
                 component.lastContext.getRuntimeSessionId(),
                 currentSessionPermissions);
 
@@ -641,11 +643,11 @@ class HarnessCapabilitiesTest {
         component.process();
         HarnessAgent agent = component.runtime.agent();
         RuntimeContext first = RuntimeContext.builder()
-                .userId(component.lastContext.getRuntimeUserId())
+                .userId(null)
                 .sessionId(component.lastContext.getRuntimeSessionId())
                 .build();
         RuntimeContext second = RuntimeContext.builder()
-                .userId(component.lastContext.getRuntimeUserId())
+                .userId(null)
                 .sessionId(component.lastContext.getRuntimeSessionId() + "-other")
                 .build();
 
@@ -695,7 +697,7 @@ class HarnessCapabilitiesTest {
         component.tasks = tasks;
         component.permission = allow("task_list");
         component.process();
-        String user = component.lastContext.getRuntimeUserId();
+        String user = null;
         String firstSession = component.lastContext.getRuntimeSessionId();
         String secondSession = firstSession + "-other";
         tasks.persist(firstSession, "first-task");
@@ -924,11 +926,10 @@ class HarnessCapabilitiesTest {
         Path workspace = tempDir.resolve(namespace);
         Files.createDirectories(workspace);
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("user");
-        agent.getWorkspace().setRoot(workspace.toString());
+        agent.setApplicationName(namespace);
+        agent.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         agent.getHarness().setFilesystemBackend(backend);
-        agent.getHarness().setTrustedLocal(backend == HarnessFilesystemBackend.GUARDED_LOCAL);
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(config);

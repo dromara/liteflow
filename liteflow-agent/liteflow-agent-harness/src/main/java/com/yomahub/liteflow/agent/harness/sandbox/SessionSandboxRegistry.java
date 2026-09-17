@@ -131,7 +131,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
     }
 
     private Entry borrow(AgentInvocationIdentity identity, RuntimeContext context) throws Exception {
-        if (!Objects.equals(identity.userId(), context.getUserId())
+        if (context.getUserId() != null
                 || !Objects.equals(identity.runtimeSessionId(), context.getSessionId())) {
             throw new AgentConfigException("Sandbox runtime identity must match the LiteFlow invocation");
         }
@@ -146,6 +146,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
             synchronized (this) {
                 if (existing.busy) throw new IllegalStateException("Sandbox is already in use");
                 existing.busy = true;
+                existing.lastActiveAt = System.currentTimeMillis();
                 return existing;
             }
         }
@@ -165,7 +166,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
                 }
                 var remote = template.getSnapshotSpec().build(state.getSessionId());
                 com.yomahub.liteflow.agent.harness.storage.LegacySnapshotMigration.migrate(
-                        state.getSnapshot(), remote, managedFilesystem, context, managedFilesystem.maxFileBytes());
+                        state.getSnapshot(), remote, managedFilesystem, context);
                 // Remove the old container only after both its records and business archive are durable.
                 client.resume(state).shutdown();
                 state.setSnapshot(remote);
@@ -191,6 +192,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
                 if (entries.size() >= capacity) throw new IllegalStateException("Sandbox cache capacity reached");
                 AgentConversationResourceRegistry.register(key, entry);
                 entries.put(key, entry);
+                AgentSandboxStatusService.register(key, entry);
             }
             return entry;
         } catch (RuntimeException failure) {
@@ -207,6 +209,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         synchronized (this) {
             entries.remove(entry.key, entry);
             AgentConversationResourceRegistry.unregister(entry.key, entry);
+            AgentSandboxStatusService.unregister(entry.key, entry);
         }
         if (entry.fresh) {
             try { entry.sandbox.shutdown(); }
@@ -224,7 +227,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
             if (managedFilesystem != null) {
                 managedFilesystem.setSandbox(null);
                 if (entry.sandbox.isRunning()) {
-                    entry.sandbox.stop();
+                    stopForCheckpoint(entry.sandbox);
                     entry.checkpointed = true;
                     persist(entry);
                 }
@@ -235,11 +238,31 @@ public final class SessionSandboxRegistry implements AutoCloseable {
             synchronized (this) {
                 entry.busy = false;
                 entry.lastUsed = clock.getAsLong();
+                entry.lastActiveAt = System.currentTimeMillis();
             }
         }
         // Failed/pre-cancelled starts have no reusable workspace.
         if (perCall || (!entry.sandbox.isRunning() && !entry.checkpointed)) {
             try { evict(entry); } catch (Exception failure) { throw new IllegalStateException("Sandbox cleanup failed", failure); }
+        }
+    }
+
+    /** Retry only a rejected, uncommitted Docker tar snapshot while still holding the workspace lease. */
+    static void stopForCheckpoint(Sandbox sandbox) throws Exception {
+        for (int attempt = 0; ; attempt++) {
+            try {
+                sandbox.stop();
+                return;
+            } catch (Exception failure) {
+                String message = failure.getMessage();
+                boolean changingArchive = message != null
+                        && message.contains("docker tar command failed (exit=1)")
+                        && message.contains("file changed as we read it");
+                if (!changingArchive || attempt == 2) throw failure;
+                // SDK background housekeeping may finish just after the final model event.
+                // The failed archive was discarded; never accept tar's partial output.
+                Thread.sleep(25L << attempt);
+            }
         }
     }
 
@@ -308,7 +331,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
             return;
         }
         if (entry.sandbox.isRunning()) {
-            entry.sandbox.stop();
+            stopForCheckpoint(entry.sandbox);
             entry.checkpointed = true;
         }
         // A failed fresh start has no durable workspace to advertise to another node.
@@ -317,6 +340,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         synchronized (this) {
             entries.remove(entry.key, entry);
             AgentConversationResourceRegistry.unregister(entry.key, entry);
+            AgentSandboxStatusService.unregister(entry.key, entry);
         }
     }
 
@@ -330,6 +354,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         synchronized (this) {
             entries.remove(entry.key, entry);
             AgentConversationResourceRegistry.unregister(entry.key, entry);
+            AgentSandboxStatusService.unregister(entry.key, entry);
         }
     }
 
@@ -344,6 +369,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
             } catch (Exception cleanup) {
                 // Leave the physical container available for recovery if its checkpoint failed.
                 AgentConversationResourceRegistry.unregister(entry.key, entry);
+                AgentSandboxStatusService.unregister(entry.key, entry);
                 if (failure == null) failure = new IllegalStateException("Cannot close cached sandboxes", cleanup);
                 else failure.addSuppressed(cleanup);
             }
@@ -355,7 +381,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         if (closed) throw new IllegalStateException("Sandbox registry is closed");
     }
 
-    private final class Entry implements AutoCloseable {
+    private final class Entry implements AutoCloseable, AgentSandboxStatusService.Source {
         private final AgentInvocationKey key;
         private final SandboxIsolationKey stateKey;
         private final Sandbox sandbox;
@@ -364,6 +390,7 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         private boolean checkpointed;
         private String lastPersisted;
         private long lastUsed;
+        private long lastActiveAt = System.currentTimeMillis();
 
         private Entry(AgentInvocationKey key, SandboxIsolationKey stateKey, Sandbox sandbox, boolean fresh) {
             this.key = key;
@@ -373,5 +400,16 @@ public final class SessionSandboxRegistry implements AutoCloseable {
         }
 
         @Override public void close() throws Exception { evict(this); }
+
+        @Override public AgentSandboxStatusService.Snapshot snapshot() {
+            synchronized (SessionSandboxRegistry.this) {
+                var state = sandbox.getState();
+                if (state instanceof io.agentscope.harness.agent.sandbox.impl.docker.DockerSandboxState docker) {
+                    return new AgentSandboxStatusService.Snapshot(docker.getContainerId(), docker.getContainerName(),
+                            docker.getImage(), busy, lastActiveAt);
+                }
+                return new AgentSandboxStatusService.Snapshot(null, null, null, busy, lastActiveAt);
+            }
+        }
     }
 }

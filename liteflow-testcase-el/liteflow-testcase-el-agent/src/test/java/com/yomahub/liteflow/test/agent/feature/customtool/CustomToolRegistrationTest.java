@@ -39,10 +39,10 @@ public class CustomToolRegistrationTest extends BaseAgentLiveTest {
         Set<String> toolNames = CustomToolAgentCmp.PROBE.get().toolNames();
         Assertions.assertTrue(toolNames.contains("echo_input"),
                 "组件 tools() 注册的 echo_input 应出现在 toolkit：实际=" + toolNames);
-        // shell / workspace 工具默认关闭，不应出现。
+        // 组件关闭 Shell，Harness 文件工具仍然可用。
         Assertions.assertFalse(toolNames.contains("execute_shell_command"));
-        Assertions.assertFalse(toolNames.contains("read_file"));
-        // skills 未开启，也不应注册 load_skill_through_path。
-        Assertions.assertFalse(toolNames.contains("load_skill_through_path"));
+        Assertions.assertTrue(toolNames.contains("read_file"));
+        // 配置目录未开启时仍保留 Harness 工作区技能加载工具。
+        Assertions.assertTrue(toolNames.contains("load_skill_through_path"));
     }
 }

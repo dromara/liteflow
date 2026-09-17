@@ -27,7 +27,7 @@ public class SkillsConfig {
     /**
      * 旧的严格解析配置占位。
      *
-     * <p>当前 {@code AgentComponent}、AgentScope 2 repository 与
+     * <p>当前 {@code HarnessAgentComponent}、AgentScope 2 repository 与
      * {@code SkillFilter} 均不读取该字段；设置为 {@code false} 不会改变错误处理策略。
      */
     private boolean strict = true;

@@ -82,7 +82,7 @@ public class HarnessLiveTest extends RealAgentTestBase {
                 "recent memory must survive compaction, got: "
                         + recall.getSlot().getResponseData());
         try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
-            var state = history.agentState(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+            var state = history.agentState(
                     cid, "realCompactionAgent").orElseThrow();
             Assertions.assertTrue(state.getContext().size() < 2 * (turns + 1),
                     "The user/assistant turns must actually be compacted, not merely recalled from full history");
@@ -121,7 +121,7 @@ public class HarnessLiveTest extends RealAgentTestBase {
         Assertions.assertTrue(String.valueOf((Object) data).contains("REPORT-HEADER"),
                 "reply must reference the preview header, got: " + data);
         try (var history = AgentConversationService.open(liteflowConfig.getAgent())) {
-            var state = history.agentState(liteflowConfig.getAgent().getRuntime().getDefaultUserId(),
+            var state = history.agentState(
                     response.getConversationId(), "realEvictionAgent").orElseThrow();
             var results = state.getContext().stream().flatMap(message -> message.getContent().stream())
                     .filter(ToolResultBlock.class::isInstance).map(ToolResultBlock.class::cast)

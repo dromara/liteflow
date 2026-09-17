@@ -7,6 +7,9 @@ import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemConfigurer;
 import com.yomahub.liteflow.agent.harness.filesystem.HarnessFilesystemContext;
+import com.yomahub.liteflow.agent.harness.filesystem.LocalExecutionFilesystem;
+import com.yomahub.liteflow.agent.harness.tool.SandboxShellTool;
+import io.agentscope.harness.agent.filesystem.sandbox.AbstractSandboxFilesystem;
 import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.harness.runtime.SandboxCallGate;
 import com.yomahub.liteflow.agent.harness.sandbox.DockerSandboxConfigurer;
@@ -16,7 +19,7 @@ import com.yomahub.liteflow.agent.harness.storage.HarnessStorage;
 import com.yomahub.liteflow.agent.harness.storage.ManagedSandboxFilesystem;
 import com.yomahub.liteflow.agent.harness.storage.StaticWorkspaceStaging;
 import com.yomahub.liteflow.agent.harness.storage.StoreSnapshotClient;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import io.agentscope.harness.agent.sandbox.snapshot.RemoteSnapshotSpec;
 import com.yomahub.liteflow.agent.harness.storage.StoredWorkspaceFilesystem;
 import io.agentscope.harness.agent.middleware.HarnessSkillMiddleware;
@@ -72,6 +75,8 @@ public abstract class HarnessAgentComponent
         return builder;
     }
 
+    /** @deprecated Configure liteflow.agent.harness.compaction-threshold instead. */
+    @Deprecated
     protected CompactionConfig compactionConfig() {
         return null;
     }
@@ -128,21 +133,29 @@ public abstract class HarnessAgentComponent
     }
 
     @Override
+    protected final void registerShellTool(io.agentscope.core.tool.Toolkit toolkit, AgentConfig config) {
+        // Harness owns the backend's execute tool. Never register the core host command tool here.
+        validateShellToolConfiguration(config);
+    }
+
+    @Override
     protected final boolean requiresWorkspaceLease() {
         return true;
     }
 
     @Override
     protected final HarnessNamespacedAgentStateStore createNamespacedStateStore(
-            AgentStateStore delegate, String agentNamespace) {
-        return new HarnessNamespacedAgentStateStore(delegate, agentNamespace);
+            AgentStateStore delegate, String agentNamespace, String applicationName) {
+        return new HarnessNamespacedAgentStateStore(delegate, agentNamespace, applicationName);
     }
 
     @Override
     protected HarnessAgentRuntime buildRuntime(AgentRuntimeBuildContext buildContext) {
+        boolean shellEnabled = enableShellTool();
         FilesystemPreparation filesystem = validateAndPrepareFilesystem(
                 buildContext.agentConfig(), buildContext.agentNamespace());
-        PreparedAgentResources prepared = prepareAgentResources(buildContext, false, true);
+        PreparedAgentResources prepared = prepareAgentResources(buildContext);
+        boolean customExecuteTool = prepared.requiredTools().containsKey("execute");
         HarnessAgent agent = null;
         List<AutoCloseable> ownedProviderResources = new ArrayList<>();
         AutoCloseable workspaceTaskRollback = null;
@@ -151,24 +164,37 @@ public abstract class HarnessAgentComponent
             ManagedSandboxFilesystem managedFilesystem = null;
             if (usesSharedStorage(buildContext.agentConfig())) {
                 AgentConfig config = buildContext.agentConfig();
-                HarnessStorage storage = HarnessStorage.open(config.getStateStore());
+                HarnessStorage storage = HarnessStorage.open(config.getSessionStore());
                 ownedProviderResources.add(storage);
+                Path executionRoot = filesystem.context().workspaceRoot();
                 StaticWorkspaceStaging staging = StaticWorkspaceStaging.create(config);
                 ownedProviderResources.add(staging);
-                HarnessFilesystemContext fsContext = new HarnessFilesystemContext(staging.root(),
-                        filesystem.context().maxFileBytes(), filesystem.context().commandTimeout(), config);
+                Path sharedRoot = staging.root();
+                if (!filesystem.dockerBackend()) {
+                    new com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystem(
+                            executionRoot.resolve(config.getApplicationName()));
+                }
+                HarnessFilesystemContext fsContext = new HarnessFilesystemContext(sharedRoot, filesystem.context().commandTimeout(), config);
                 HarnessFilesystemConfigurer configurer;
                 if (filesystem.dockerBackend()) {
-                    managedFilesystem = new ManagedSandboxFilesystem(storage.store(), config.getRuntime().getNamespace(),
-                            buildContext.agentNamespace(), staging.root(), config.getHarness().getDocker().getWorkspaceRoot(), config.getWorkspace().getMaxFileBytes());
+                    managedFilesystem = new ManagedSandboxFilesystem(storage.store(), config.getApplicationName(),
+                            buildContext.agentNamespace(), sharedRoot, config.getHarness().getDocker().getWorkspaceRoot());
                     configurer = new DockerSandboxConfigurer(ignored -> new RemoteSnapshotSpec(
-                            new StoreSnapshotClient(storage.store(), config.getRuntime().getNamespace())),
+                            new StoreSnapshotClient(storage.store(), config.getApplicationName())),
                             dockerSandboxClient(), managedFilesystem);
                 } else {
-                    var remote = new StoredWorkspaceFilesystem(storage.store(), rc -> List.of("liteflow", config.getRuntime().getNamespace(),
-                            "workspace-v1", rc.getUserId() == null ? "_internal" : rc.getUserId(),
-                            rc.getSessionId() == null ? buildContext.agentNamespace() : rc.getSessionId()), staging.root());
-                    configurer = (builder, context) -> builder.abstractFilesystem(remote);
+                    var remote = new StoredWorkspaceFilesystem(storage.store(), rc -> rc.getSessionId() == null
+                            ? List.of("liteflow", config.getApplicationName(), "workspace-v2-internal", buildContext.agentNamespace())
+                            : List.of("liteflow", config.getApplicationName(), "workspace-v2", rc.getSessionId()), sharedRoot.resolve(config.getApplicationName()));
+                    configurer = (builder, context) -> {
+                        var files = enableShellTool()
+                                ? new LocalExecutionFilesystem(remote, executionRoot,
+                                        config.getHarness().getShell(), config.getApplicationName())
+                                : remote;
+                        builder.abstractFilesystem(files).transcriptStore(
+                                new io.agentscope.harness.agent.transcript.ObjectStoreTranscriptStore(
+                                        files, RuntimeContext.empty(), ".agentscope/transcripts"));
+                    };
                 }
                 filesystem = new FilesystemPreparation(configurer, fsContext,
                         filesystem.dockerBackend() ? DockerSandboxConfigurer.workspaceProjectionPreflight(fsContext) : () -> { },
@@ -193,6 +219,7 @@ public abstract class HarnessAgentComponent
                 addIdentityDistinct(ownedProviderResources, closeable);
             }
 
+            java.util.concurrent.atomic.AtomicReference<HarnessAgent> workspaceAgent = new java.util.concurrent.atomic.AtomicReference<>();
             HarnessAgent.Builder builder = HarnessAgent.builder()
                     .name(buildContext.agentName())
                     .agentId(buildContext.agentNamespace())
@@ -207,7 +234,8 @@ public abstract class HarnessAgentComponent
                     .stopOnReject(prepared.stopOnReject())
                     .defaultSessionId(buildContext.agentNamespace())
                     .stateStore(prepared.ownership().stateStore())
-                    .workspace(filesystem.context().workspaceRoot());
+                    .workspace(filesystem.dockerBackend() ? filesystem.context().workspaceRoot()
+                            : filesystem.context().workspaceRoot().resolve(buildContext.agentConfig().getApplicationName()));
             filesystem.configurer().configure(builder, filesystem.context());
             boolean guardedLocal = buildContext.agentConfig().getHarness().getFilesystemBackend()
                     == HarnessFilesystemBackend.GUARDED_LOCAL;
@@ -221,8 +249,17 @@ public abstract class HarnessAgentComponent
                     HarnessAgentBuilderFilesystemBridge.snapshotToolkit(
                             builder, prepared.toolkit());
             CompactionConfig compaction = compactionConfig();
+            com.yomahub.liteflow.agent.harness.compaction.AdaptiveCompactionMiddleware adaptiveCompaction = null;
             if (compaction != null) {
                 builder.compaction(compaction);
+            } else {
+                builder.disableCompaction();
+                HarnessConfig harnessConfig = buildContext.agentConfig().getHarness();
+                adaptiveCompaction = new com.yomahub.liteflow.agent.harness.compaction.AdaptiveCompactionMiddleware(
+                        () -> workspaceAgent.get().getWorkspaceManager(), prepared.defaultModel(),
+                        prepared.fallbackModel(), prepared.managedModels(), harnessConfig.getCompactionThreshold(),
+                        harnessConfig.getCompactionFallbackContextWindow(), harnessConfig.getCompactionFallbackThreshold());
+                builder.middleware(adaptiveCompaction);
             }
             MemoryConfig memory = HarnessMemoryConfigResolver.resolve(
                     memoryConfig(), buildContext.agentConfig().getHarness().getMemory());
@@ -258,11 +295,14 @@ public abstract class HarnessAgentComponent
                 builder.toolResultEviction(eviction);
             }
             addLiteFlowMiddlewares(builder, prepared);
+            builder.middleware(new com.yomahub.liteflow.agent.harness.skill.SessionSkillWorkspaceMiddleware(
+                    () -> workspaceAgent.get().getWorkspaceManager().getFilesystem(), shellEnabled));
             HarnessAgentBuilderCapabilitiesBridge.CapabilitiesSnapshot capabilitySnapshot =
                     HarnessAgentBuilderCapabilitiesBridge.snapshot(builder);
             HarnessAgentBuilderPermissionBridge.PermissionSnapshot permissionSnapshot =
                     HarnessAgentBuilderPermissionBridge.snapshot(builder, permissionContext);
 
+            if (!shellEnabled || customExecuteTool) builder.disableShellTool();
             HarnessAgent.Builder customized = customizeHarness(builder);
             if (customized == null) {
                 throw new AgentConfigException("customizeHarness must not return null");
@@ -276,7 +316,7 @@ public abstract class HarnessAgentComponent
             permissionSnapshot.requireUnchanged(customized);
             capabilitySnapshot.requireUnchanged(
                     customized,
-                    compaction != null,
+                    true,
                     memory != null,
                     eviction != null,
                     planMode);
@@ -297,7 +337,32 @@ public abstract class HarnessAgentComponent
                     HarnessAgentBuilderTaskOwnershipBridge.snapshot(customized, tasks);
             HarnessAgentBuilderFilesystemBridge.preflightKnownBuildFailures(
                     customized, filesystemSnapshot);
+            if (!shellEnabled || customExecuteTool) customized.disableShellTool();
             agent = customized.build();
+            workspaceAgent.set(agent);
+            if (adaptiveCompaction != null && !agent.getDelegate().getMiddlewares().contains(adaptiveCompaction)) {
+                throw new AgentConfigException("customizeHarness must retain adaptive compaction middleware");
+            }
+            if (agent.getDelegate().getMiddlewares().stream().anyMatch(
+                    io.agentscope.core.skill.DynamicSkillMiddleware.class::isInstance)) {
+                throw new AgentConfigException("DynamicSkillMiddleware conflicts with the Harness skill runtime");
+            }
+            if (!shellEnabled) {
+                if (!customExecuteTool) agent.getToolkit().removeTool("execute");
+            } else if (!customExecuteTool && agent.getToolkit().getToolNames().contains("execute")) {
+                var executionFilesystem = agent.getWorkspaceManager().getFilesystem();
+                if (executionFilesystem instanceof AbstractSandboxFilesystem sandbox) {
+                    // Preserve SDK Skill discovery; enforce the configured policy on the selected backend.
+                    agent.getToolkit().removeTool("execute");
+                    if (executionFilesystem instanceof LocalExecutionFilesystem local) {
+                        agent.getToolkit().registerTool(local);
+                    } else {
+                        agent.getToolkit().registerTool(new SandboxShellTool(sandbox,
+                                buildContext.agentConfig().getHarness().getShell(),
+                                buildContext.agentConfig().getHarness().getFilesystemBackend() == HarnessFilesystemBackend.DOCKER));
+                    }
+                }
+            }
             permissionMiddleware.requireFinal(agent);
             subagentPermissions.bind(agent);
             HarnessAgentBuilderSubagentPermissionBridge.inheritDeclaredLocalPermissions(
@@ -357,14 +422,15 @@ public abstract class HarnessAgentComponent
         HarnessAgent agent = runtime.agent();
         requireNoReservedRuntimeValues(runtimeContext);
         var permissionContext = runtime.permissionContext();
+        HarnessRuntimeContextContinuation continuation =
+                HarnessRuntimeContextContinuation.create();
+        runtimeContext.put(HarnessRuntimeContextContinuation.class, continuation);
+        Mono<Msg> invocation = Mono.defer(() -> {
         if (permissionContext != null && permissionContext.getMode() == PermissionMode.BYPASS) {
             agent.getDelegate().replacePermissionContext(
                     runtimeContext.getUserId(), runtimeContext.getSessionId(), permissionContext);
         }
-        HarnessRuntimeContextContinuation continuation =
-                HarnessRuntimeContextContinuation.create();
-        runtimeContext.put(HarnessRuntimeContextContinuation.class, continuation);
-        Mono<Msg> invocation = runtime.executeSandboxCall(liteflowContext.getIdentity(), runtimeContext, () -> invokeCallTarget(
+        return runtime.executeSandboxCall(liteflowContext.getIdentity(), runtimeContext, () -> invokeCallTarget(
                 new AgentCallTarget() {
                     @Override
                     public Mono<Msg> call(List<Msg> messages, RuntimeContext context) {
@@ -393,6 +459,7 @@ public abstract class HarnessAgentComponent
                 output,
                 runtimeContext,
                 liteflowContext));
+        });
         return Mono.using(
                 () -> continuation,
                 ignored -> clearStateLoadFailureOnTermination(
@@ -439,7 +506,7 @@ public abstract class HarnessAgentComponent
                     sandboxSnapshotProvider(), dockerSandboxClient());
         }
         else if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
-            configurer = new GuardedLocalFilesystemConfigurer(agentNamespace);
+            configurer = new GuardedLocalFilesystemConfigurer(agentNamespace, enableShellTool());
         }
         else {
             configurer = filesystemConfigurer();
@@ -448,37 +515,47 @@ public abstract class HarnessAgentComponent
                         "Harness CUSTOM filesystem requires a non-null filesystemConfigurer");
             }
         }
-        if (config.getWorkspace() == null) {
-            throw new AgentConfigException("liteflow.agent.workspace must not be null");
-        }
-        String root = config.getWorkspace().getRoot();
-        if (root == null || root.isBlank()) {
-            if (!usesSharedStorage(config)) throw new AgentConfigException("Harness workspace.root must not be blank");
-            root = "."; // Validation only; replaced with disposable staging before builder construction.
+        String root;
+        if (backend == HarnessFilesystemBackend.DOCKER) {
+            // Host state/cache is separate from the container execution location.
+            String persistent = config.getSessionStore().getJsonWorkspaceRoot();
+            root = usesSharedStorage(config) ? "." : persistent == null || persistent.isBlank()
+                    ? Path.of(config.getSessionStore().getJsonRoot()).resolve("workspace").toString()
+                    : persistent;
+        } else {
+            root = harness.getLocal().getWorkspaceRoot();
+            if (root == null || root.isBlank()) {
+                if (enableShellTool()) {
+                    throw new AgentConfigException("harness.local.workspace-root is required for local execution");
+                }
+                root = usesSharedStorage(config) ? "."
+                        : Path.of(config.getSessionStore().getJsonRoot()).resolve("workspace").toString();
+            }
         }
         if (usesSharedStorage(config)) {
             if (backend == HarnessFilesystemBackend.CUSTOM) throw new AgentConfigException(
                     "Shared storage requires the built-in DOCKER or GUARDED_LOCAL filesystem");
-            if (harness.getDocker().getSnapshotRoot() != null && !harness.getDocker().getSnapshotRoot().isBlank()
-                    || sandboxSnapshotProvider() != null) throw new AgentConfigException(
+            if (backend == HarnessFilesystemBackend.DOCKER
+                    && (harness.getDocker().getSnapshotRoot() != null && !harness.getDocker().getSnapshotRoot().isBlank()
+                    || sandboxSnapshotProvider() != null)) throw new AgentConfigException(
                     "MYSQL/REDIS storage owns snapshots; remove docker.snapshot-root and SandboxSnapshotProvider");
         }
-        if (config.getWorkspace().getMaxFileBytes() <= 0) {
-            throw new AgentConfigException("Harness workspace.maxFileBytes must be positive");
+        if (config.getHarness().getShell() == null) {
+            throw new AgentConfigException("liteflow.agent.harness.shell must not be null");
         }
-        if (config.getShell() == null) {
-            throw new AgentConfigException("liteflow.agent.shell must not be null");
-        }
-        Duration commandTimeout = config.getShell().getTimeout();
+        Duration commandTimeout = config.getHarness().getShell().getTimeout();
         if (commandTimeout == null || commandTimeout.isZero() || commandTimeout.isNegative()) {
-            throw new AgentConfigException("Harness shell.timeout must be positive");
+            throw new AgentConfigException("liteflow.agent.harness.shell.timeout must be positive");
         }
         try {
             HarnessFilesystemContext context = new HarnessFilesystemContext(
                     Path.of(root).toAbsolutePath().normalize(),
-                    config.getWorkspace().getMaxFileBytes(),
                     commandTimeout,
                     config);
+            if (backend == HarnessFilesystemBackend.DOCKER && !usesSharedStorage(config)) {
+                new com.yomahub.liteflow.agent.harness.filesystem.GuardedLocalFilesystem(
+                        context.workspaceRoot());
+            }
             Runnable beforeCall = backend == HarnessFilesystemBackend.DOCKER
                     ? DockerSandboxConfigurer.workspaceProjectionPreflight(context)
                     : () -> { };
@@ -489,13 +566,13 @@ public abstract class HarnessAgentComponent
                     backend == HarnessFilesystemBackend.DOCKER);
         }
         catch (InvalidPathException failure) {
-            throw new AgentConfigException("invalid Harness workspace.root", failure);
+            throw new AgentConfigException("invalid Harness workspace location", failure);
         }
     }
 
     private static boolean usesSharedStorage(AgentConfig config) {
-        return config.getStateStore().getType() == AgentStateStoreType.MYSQL
-                || config.getStateStore().getType() == AgentStateStoreType.REDIS;
+        return config.getSessionStore().getType() == AgentSessionStoreType.MYSQL
+                || config.getSessionStore().getType() == AgentSessionStoreType.REDIS;
     }
 
     private static java.util.function.Consumer<RuntimeContext> prestageSkills(HarnessAgent agent) {

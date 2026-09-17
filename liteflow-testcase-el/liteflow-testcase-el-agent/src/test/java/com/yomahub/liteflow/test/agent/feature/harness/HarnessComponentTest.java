@@ -249,6 +249,7 @@ final class OfflineHarnessFixtures {
 
 abstract class OfflineHarnessComponent extends HarnessAgentComponent {
 
+
     private final Model offlineModel;
 
     OfflineHarnessComponent(Model offlineModel) {

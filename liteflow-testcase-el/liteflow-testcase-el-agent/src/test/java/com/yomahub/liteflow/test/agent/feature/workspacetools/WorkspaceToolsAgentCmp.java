@@ -1,26 +1,26 @@
 package com.yomahub.liteflow.test.agent.feature.workspacetools;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.DeterministicHistoryModel;
-import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.model.Model;
-import io.agentscope.core.tool.file.ReadFileTool;
-import io.agentscope.core.tool.file.WriteFileTool;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * 开启 AgentScope 内置文件工具的 Agent，并在 userPrompt 中直接调用内置
- * {@code ReadFileTool}/{@code WriteFileTool} 验证读写、列目录与路径越界拒绝，
- * 使断言不依赖模型是否真的调用工具。
- */
+/** Exercises the actual Harness file view without depending on model tool selection. */
 @Component("workspaceToolsAgent")
-public class WorkspaceToolsAgentCmp extends AgentComponent {
+public class WorkspaceToolsAgentCmp extends HarnessAgentComponent {
+    private io.agentscope.harness.agent.filesystem.AbstractFilesystem filesystem;
+    @Override protected com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime buildRuntime(
+            com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext context) {
+        var runtime = super.buildRuntime(context);
+        filesystem = runtime.agent().getWorkspaceManager().getFilesystem();
+        return runtime;
+    }
+
 
     public static final AtomicReference<AgentProbe> PROBE = new AtomicReference<>();
 
@@ -65,11 +65,6 @@ public class WorkspaceToolsAgentCmp extends AgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return true;
-    }
-
-    @Override
     protected List<MiddlewareBase> middlewares() {
         AgentProbe probe = PROBE.get();
         return probe == null ? List.of() : List.of(probe.middleware());
@@ -77,41 +72,20 @@ public class WorkspaceToolsAgentCmp extends AgentComponent {
 
     @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
-        String root = agentConfig().getWorkspace().getRoot();
-        WriteFileTool writeFileTool = new WriteFileTool(root);
-        ReadFileTool readFileTool = new ReadFileTool(root);
-
-        writeFileTool.writeTextFile("notes/a.txt", "abcdef", null).block();
-        FILE_EXISTS.set(java.nio.file.Files.exists(Path.of(root, "notes", "a.txt")));
-
-        ToolResultBlock readResult = readFileTool.viewTextFile("notes/a.txt", null).block();
-        READ_RESULT.set(render(readResult));
-
-        ToolResultBlock listResult = readFileTool.listDirectory("notes").block();
-        LIST_RESULT.set(render(listResult));
-
-        ToolResultBlock relativeEscape = readFileTool.viewTextFile("../escape.txt", null).block();
-        RELATIVE_ESCAPE.set(render(relativeEscape));
-
-        ToolResultBlock absoluteEscape = readFileTool.viewTextFile("/tmp/escape.txt", null).block();
-        ABSOLUTE_ESCAPE.set(render(absoluteEscape));
+        var rc = io.agentscope.core.agent.RuntimeContext.builder()
+                .userId(null).sessionId(context.getRuntimeSessionId())
+                .put(com.yomahub.liteflow.agent.context.LiteFlowAgentContext.class, context).build();
+        filesystem.write(rc, "notes/a.txt", "abcdef");
+        FILE_EXISTS.set(filesystem.exists(rc, "notes/a.txt"));
+        READ_RESULT.set(filesystem.read(rc, "notes/a.txt", 0, 0).fileData().content());
+        LIST_RESULT.set(filesystem.ls(rc, "notes").entries().toString());
+        try { RELATIVE_ESCAPE.set(filesystem.read(rc, "../escape.txt", 0, 0).toString()); }
+        catch (RuntimeException rejected) { RELATIVE_ESCAPE.set(rejected.getMessage()); }
+        try { ABSOLUTE_ESCAPE.set(filesystem.read(rc, "/tmp/escape.txt", 0, 0).toString()); }
+        catch (RuntimeException rejected) { ABSOLUTE_ESCAPE.set(rejected.getMessage()); }
 
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         return reqData == null ? "" : reqData.toString();
     }
 
-    private static String render(ToolResultBlock result) {
-        if (result == null || result.getOutput() == null) {
-            return null;
-        }
-        StringBuilder rendered = new StringBuilder();
-        for (io.agentscope.core.message.ContentBlock block : result.getOutput()) {
-            if (block instanceof io.agentscope.core.message.TextBlock textBlock) {
-                rendered.append(textBlock.getText());
-            } else {
-                rendered.append(block);
-            }
-        }
-        return rendered.toString();
-    }
 }

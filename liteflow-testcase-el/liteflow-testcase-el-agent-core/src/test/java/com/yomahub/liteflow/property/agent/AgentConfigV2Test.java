@@ -16,38 +16,48 @@ class AgentConfigV2Test {
 	void appliesAgentScope2RuntimeDefaults() {
 		AgentConfig config = new AgentConfig();
 
-		assertNull(config.getRuntime().getNamespace());
-		assertEquals("anonymous", config.getRuntime().getDefaultUserId());
-		assertEquals(Duration.ofMinutes(2), config.getRuntime().getTimeout());
-		assertEquals(AgentStateStoreType.JSON, config.getStateStore().getType());
-		assertEquals("./data/agent-state", config.getStateStore().getJsonRoot());
-		assertEquals(AgentStateStoreFailurePolicy.FAIL_FAST, config.getStateStore().getFailurePolicy());
-		assertNull(config.getStateStore().getRedis().getUri());
-		assertNull(config.getStateStore().getMysql().getJdbcUrl());
+		assertTrue(config.isConversationHistoryEnabled());
+		assertNull(config.getApplicationName());
+		assertEquals(Duration.ofMinutes(10), config.getExecutionTimeout());
+		assertEquals(AgentSessionStoreType.JSON, config.getSessionStore().getType());
+		assertEquals("./data/agent-state", config.getSessionStore().getJsonRoot());
+		assertEquals(AgentSessionStoreFailurePolicy.FAIL_FAST, config.getSessionStore().getFailurePolicy());
+		assertNull(config.getSessionStore().getRedis().getUri());
+		assertNull(config.getSessionStore().getMysql().getJdbcUrl());
 		assertFalse(config.getToolkit().isParallel());
 		assertEquals(AgentListenerFailureMode.FAIL_FAST, config.getEvent().getListenerFailureMode());
 		assertEquals(AgentInvocationGuardMode.AUTO, config.getInvocationGuard().getMode());
 		assertEquals(Duration.ofMinutes(2), config.getInvocationGuard().getAcquireTimeout());
-		assertEquals(WorkspaceBackend.GUARDED_LOCAL, config.getWorkspace().getBackend());
-		assertFalse(config.getWorkspace().isTrustedLocal());
+		assertEquals(HarnessFilesystemBackend.GUARDED_LOCAL, config.getHarness().getFilesystemBackend());
 		assertEquals(Duration.ofMinutes(2), config.getHitl().getConfirmationTimeout());
 		assertFalse(config.getHitl().isFailOnDeniedTool());
-		assertEquals(ShellMode.DISABLED, config.getShell().getMode());
+		assertEquals(ShellMode.WHITELIST, config.getHarness().getShell().getMode());
+		assertTrue(config.getHarness().getShell().getWhitelist().containsAll(java.util.List.of("sh", "bash", "python3", "node", "git", "npm", "mvn")));
 	}
 
+    @Test
+    void aCustomCommandListReplacesDefaultsWithoutChangingOtherConfigurations() {
+        ShellConfig first = new ShellConfig();
+        ShellConfig second = new ShellConfig();
+        first.setWhitelist(java.util.List.of("printf"));
+        assertEquals(java.util.List.of("printf"), first.getWhitelist());
+        assertTrue(second.getWhitelist().contains("python3"));
+        assertTrue(second.getWhitelist().contains("node"));
+    }
+
 	@Test
-	void rejectsBlankRuntimeNamespaceBeforeExecution() {
+	void rejectsMissingApplicationNameBeforeExecution() {
 		AgentConfig config = new AgentConfig();
 
 		IllegalStateException error = assertThrows(IllegalStateException.class, config::validateForExecution);
 
-		assertTrue(error.getMessage().contains("runtime.namespace"));
+		assertTrue(error.getMessage().contains("application-name"));
 	}
 
 	@Test
-	void acceptsConfiguredNamespaceBeforeExecution() {
+	void acceptsConfiguredApplicationNameBeforeExecution() {
 		AgentConfig config = new AgentConfig();
-		config.getRuntime().setNamespace("orders");
+		config.setApplicationName("orders");
 
 		org.junit.jupiter.api.Assertions.assertDoesNotThrow(config::validateForExecution);
 	}

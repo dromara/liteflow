@@ -1,29 +1,29 @@
 package com.yomahub.liteflow.agent.state;
 
-import com.yomahub.liteflow.property.agent.AgentStateStoreConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 
 /**
- * SPI for state-store backends delivered by companion modules.
+ * SPI for session-store backends delivered by companion modules.
  *
  * <p>Providers are discovered through {@link java.util.ServiceLoader}; the companion
  * module registers its implementation in
  * {@code META-INF/services/com.yomahub.liteflow.agent.state.AgentStateStoreProvider}.
  * This keeps optional backend dependencies (Redis, MySQL, ...) out of
  * liteflow-agent-core while {@link DefaultAgentStateStoreResolver} stays the
- * single selection point for {@code liteflow.agent.state-store.*}.
+ * single selection point for {@code liteflow.agent.session-store.*}.
  */
 public interface AgentStateStoreProvider {
 
-	/** The {@link AgentStateStoreType} this provider builds. */
-	AgentStateStoreType type();
+	/** The {@link AgentSessionStoreType} this provider builds. */
+	AgentSessionStoreType type();
 
 	/**
-	 * Builds the resolved store for {@code liteflow.agent.state-store.type == type()}.
+	 * Builds the resolved store for {@code liteflow.agent.session-store.type == type()}.
 	 *
-	 * @param config the full state-store config; nested sections relevant to the
+	 * @param config the full session-store config; nested sections relevant to the
 	 *               provider's type are guaranteed non-null
 	 * @return the store plus ownership flag; never {@code null}
 	 */
-	ResolvedAgentStateStore resolve(AgentStateStoreConfig config);
+	ResolvedAgentStateStore resolve(AgentSessionStoreConfig config);
 }

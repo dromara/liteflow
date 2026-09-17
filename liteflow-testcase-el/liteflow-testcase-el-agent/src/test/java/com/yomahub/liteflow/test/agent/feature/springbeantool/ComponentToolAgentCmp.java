@@ -48,11 +48,6 @@ public class ComponentToolAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected List<Object> tools() {
         Object tool = toolBean;
         CAPTURED_TOOL_INSTANCE.set(tool);

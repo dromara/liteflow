@@ -1,6 +1,7 @@
 package com.yomahub.liteflow.agent.runtime;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +34,7 @@ class McpClientLifecycleTest {
         TestComponent component = new TestComponent(
                 List.of(owned, borrowed, owned), List.of(owned));
 
-        AgentRuntime runtime = component.runtime(config(Duration.ofSeconds(1)));
+        HarnessAgentRuntime runtime = component.runtime(config(Duration.ofSeconds(1)));
         runtime.close();
         runtime.close();
 
@@ -136,13 +136,17 @@ class McpClientLifecycleTest {
 
     private static AgentConfig config(Duration timeout) {
         AgentConfig config = new AgentConfig();
-        config.getStateStore().setJsonRoot("target/agent-state");
-        config.getRuntime().setNamespace("mcp-test");
-        config.getRuntime().setTimeout(timeout);
+        config.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        config.getSessionStore().setJsonWorkspaceRoot(config.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.setApplicationName("mcp-test");
+        config.setExecutionTimeout(timeout);
         return config;
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
         private final Model model = new ScriptedChatModel("reply");
         private final List<McpClientWrapper> clients;
         private final List<McpClientWrapper> owned;
@@ -152,7 +156,7 @@ class McpClientLifecycleTest {
             this.owned = owned;
         }
 
-        private AgentRuntime runtime(AgentConfig config) {
+        private HarnessAgentRuntime runtime(AgentConfig config) {
             return buildRuntime(new AgentRuntimeBuildContext(
                     config, "mcp-agent", "agent-key", AGENT_NAMESPACE));
         }

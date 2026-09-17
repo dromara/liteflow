@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * Redis state-store settings, bound from {@code liteflow.agent.state-store.redis.*}.
+ * Redis session-store settings, bound from {@code liteflow.agent.session-store.redis.*}.
  *
  * <p>Exactly one connection source must be configured: either {@code uri} (LiteFlow
  * builds and owns a Lettuce client) or {@code client-bean-name} (an existing
@@ -9,7 +9,7 @@ package com.yomahub.liteflow.property.agent;
  * {@code RedisClient}/{@code RedisClusterClient} bean whose lifecycle stays with
  * the application).
  */
-public class AgentStateStoreRedisConfig {
+public class AgentSessionStoreRedisConfig {
 
 	/** Redis URI such as {@code redis://localhost:6379}; when set LiteFlow owns the client. */
 	private String uri;

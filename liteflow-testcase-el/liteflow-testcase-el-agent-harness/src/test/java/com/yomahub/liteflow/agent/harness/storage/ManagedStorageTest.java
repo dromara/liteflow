@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ManagedStorageTest {
     @TempDir Path temp;
     private RuntimeContext context(String user, String session) {
-        return RuntimeContext.builder().userId(user).sessionId(session).build();
+        return RuntimeContext.builder().sessionId(session).build();
     }
 
     @Test void backgroundTranscriptMirrorsPreserveTheDatabaseRouteWithAnActiveSandbox() {
@@ -50,13 +50,13 @@ class ManagedStorageTest {
             workspace.appendUtf8WorkspaceRelative(rc, path, "first");
             workspace.appendUtf8WorkspaceRelative(rc, path, "second");
             assertEquals("firstsecond", filesystem.read(rc, "/workspace/" + path, 0, 0).fileData().content());
-            assertEquals("firstsecond", filesystem.read(rc, temp.resolve("alice").resolve(path).toString(), 0, 0).fileData().content());
+            assertEquals("firstsecond", filesystem.read(rc, temp.resolve("one").resolve(path).toString(), 0, 0).fileData().content());
             assertFalse(Files.exists(temp.resolve(path)));
         }
         var reopened = new ManagedSandboxFilesystem(store, "app", "other-agent", temp.resolve("another-host"), "/workspace");
         assertEquals("firstsecond", reopened.read(rc, "MEMORY.md", 0, 0).fileData().content());
         assertFalse(reopened.exists(context("alice", "two"), "MEMORY.md"));
-        assertFalse(reopened.exists(context("bob", "one"), "MEMORY.md"));
+        assertTrue(reopened.exists(context("bob", "one"), "MEMORY.md"));
         assertFalse(new ManagedSandboxFilesystem(store, "other-app", "agent", temp, "/workspace").exists(rc, "MEMORY.md"));
         assertThrows(IllegalArgumentException.class, () -> filesystem.write(rc, "memory/../private.txt", "unsafe"));
         assertFalse(filesystem.move(rc, "MEMORY.md", "output.txt").isSuccess());
@@ -92,7 +92,7 @@ class ManagedStorageTest {
         var remote = new io.agentscope.harness.agent.sandbox.snapshot.RemoteSnapshotSpec(new StoreSnapshotClient(store, "app")).build("old");
         var fs = new ManagedSandboxFilesystem(store, "app", "agent", temp, "/workspace");
         var rc = context("alice", "one");
-        LegacySnapshotMigration.migrate(local, remote, fs, rc, 1024);
+        LegacySnapshotMigration.migrate(local, remote, fs, rc);
         assertEquals("./MEMORY.md", fs.read(rc, "MEMORY.md", 0, 0).fileData().content());
         assertTrue(fs.exists(rc, "agents/a/sessions/one.log.jsonl"));
         try (var tar = new org.apache.commons.compress.archivers.tar.TarArchiveInputStream(remote.restore())) {
@@ -101,12 +101,14 @@ class ManagedStorageTest {
         }
         assertArrayEquals(archiveBytes.toByteArray(), Files.readAllBytes(temp.resolve("old.tar")));
         fs.edit(rc, "MEMORY.md", "./MEMORY.md", "newer memory", false);
-        LegacySnapshotMigration.migrate(local, remote, fs, rc, 1024);
+        LegacySnapshotMigration.migrate(local, remote, fs, rc);
         assertEquals("newer memory", fs.read(rc, "MEMORY.md", 0, 0).fileData().content());
     }
-    @Test void stagingCopiesStaticSkillsAndNeverCopiesOldAgentRecords() throws Exception {
+    @Test void stagingIgnoresLocalExecutionRootAndRejectsManagedProjectionRoots() throws Exception {
         AgentConfig config = new AgentConfig();
-        config.getWorkspace().setRoot(temp.toString());
+        config.getHarness().setFilesystemBackend(com.yomahub.liteflow.property.agent.HarnessFilesystemBackend.DOCKER);
+        config.getHarness().getLocal().setWorkspaceRoot(temp.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(temp.toString());
         Files.createDirectories(temp.resolve("skills/example"));
         Files.writeString(temp.resolve("skills/example/SKILL.md"), "static skill");
         Files.createDirectories(temp.resolve("memory"));
@@ -114,12 +116,19 @@ class ManagedStorageTest {
         Path staged;
         try (var staging = StaticWorkspaceStaging.create(config)) {
             staged = staging.root();
-            assertEquals("static skill", Files.readString(staged.resolve("skills/example/SKILL.md")));
+            assertFalse(Files.exists(staged.resolve("skills/example/SKILL.md")));
             assertFalse(Files.exists(staged.resolve("memory")));
         }
         assertFalse(Files.exists(staged));
         assertTrue(Files.exists(temp.resolve("memory/old.md")));
         config.getHarness().getDocker().setWorkspaceProjectionRoots(List.of("memory"));
         assertThrows(RuntimeException.class, () -> StaticWorkspaceStaging.create(config));
+    }
+    @Test void localStagingDoesNotReadDockerSettings() throws Exception {
+        AgentConfig config = new AgentConfig();
+        config.getHarness().setDocker(null);
+        try (var staging = StaticWorkspaceStaging.create(config)) {
+            assertTrue(Files.isDirectory(staging.root()));
+        }
     }
 }

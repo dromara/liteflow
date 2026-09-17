@@ -47,7 +47,9 @@ class SessionSandboxDockerTest {
         config.getHarness().getDocker().setWorkspaceProjectionEnabled(false);
         var guard = new AgentInvocationGuardResolver().resolve(config);
         var identity = new InvocationIdentityResolver("docker-regression-" + UUID.randomUUID())
-                .resolve("user", "session", "agent");
+                .resolve("session", "agent");
+        var statusService = new AgentSandboxStatusService(identity.namespace());
+        assertEquals(AgentSandboxStatus.State.NOT_ALLOCATED, statusService.getStatus("session").state());
         var store = new InMemoryAgentStateStore();
         var configurer = new DockerSandboxConfigurer();
         var builder = HarnessAgent.builder().name("sandbox-regression").agentId(identity.agentNamespace())
@@ -56,8 +58,7 @@ class SessionSandboxDockerTest {
                 .disableMemoryTools().disableMemoryHooks().disableWorkspaceContext()
                 .disableAtPathExpansion().disableDefaultWorkspaceSkills().disableDynamicSkills()
                 .disableToolsConfig();
-        configurer.configure(builder, new HarnessFilesystemContext(temp.resolve("workspace"),
-                1048576, Duration.ofSeconds(10), config));
+        configurer.configure(builder, new HarnessFilesystemContext(temp.resolve("workspace"), Duration.ofSeconds(10), config));
         AtomicLong clock = new AtomicLong();
         String firstId;
         String restoredId;
@@ -68,6 +69,13 @@ class SessionSandboxDockerTest {
             Sandbox first;
             try (var lease = guard.acquire(AgentInvocationKey.workspace(identity), Duration.ofSeconds(2))) {
                 first = turn(registry, agent, identity);
+                first.stop();
+                assertFalse(first.isRunning(), "SDK lifecycle flag is cleared by checkpointing");
+                var idleStatus = statusService.getStatus("session");
+                assertEquals(AgentSandboxStatus.State.RUNNING, idleStatus.state(), "Docker still runs after checkpointing");
+                assertFalse(idleStatus.busy());
+                assertNotNull(idleStatus.containerId());
+                first.start();
                 first.exec(context(identity), "printf retained > /workspace/answer.txt; printf transient > /tmp/turn-marker", 5);
                 Sandbox second = turn(registry, agent, identity);
                 assertSame(first, second);
@@ -78,11 +86,13 @@ class SessionSandboxDockerTest {
             clock.set(Duration.ofMinutes(11).toNanos());
             long evictionStarted = System.nanoTime();
             registry.evictIdle();
+            assertEquals(AgentSandboxStatus.State.NOT_ALLOCATED, statusService.getStatus("session").state());
             assertTrue(Duration.ofNanos(System.nanoTime() - evictionStarted).compareTo(Duration.ofSeconds(10)) < 0,
                     "idle cleanup should not wait for the old 30-second Docker stop timeout");
             try (var lease = guard.acquire(AgentInvocationKey.workspace(identity), Duration.ofSeconds(2))) {
                 Sandbox restored = turn(registry, agent, identity);
                 restoredId = ((DockerSandboxState) restored.getState()).getContainerId();
+                assertEquals(restoredId, statusService.getStatus("session").containerId());
                 assertNotEquals(firstId, restoredId);
                 assertEquals("retained", restored.exec(context(identity), "cat /workspace/answer.txt", 5).stdout());
                 assertEquals("absent", restored.exec(context(identity), "test ! -e /tmp/turn-marker && printf absent", 5).stdout());
@@ -90,6 +100,7 @@ class SessionSandboxDockerTest {
         }
         assertContainerRemoved(firstId);
         assertContainerRemoved(restoredId);
+        assertEquals(AgentSandboxStatus.State.NOT_ALLOCATED, statusService.getStatus("session").state());
         System.out.println("Real Docker reuse + snapshot restore passed in "
                 + Duration.ofNanos(System.nanoTime() - started).toMillis() + "ms");
     }
@@ -99,13 +110,17 @@ class SessionSandboxDockerTest {
         AtomicReference<Sandbox> sandbox = new AtomicReference<>();
         registry.execute(identity, context, () -> {
             sandbox.set(context.get(SandboxContext.class).getExternalSandbox());
-            return agent.call(List.of(new UserMessage("reply")), context);
+            return agent.call(List.of(new UserMessage("reply")), context).doOnNext(reply -> {
+                var status = new AgentSandboxStatusService(identity.namespace()).getStatus("session");
+                assertEquals(AgentSandboxStatus.State.RUNNING, status.state());
+                assertTrue(status.busy());
+            });
         }).block(Duration.ofSeconds(30));
         return sandbox.get();
     }
 
     private RuntimeContext context(AgentInvocationIdentity identity) {
-        return RuntimeContext.builder().userId(identity.userId()).sessionId(identity.runtimeSessionId()).build();
+        return RuntimeContext.builder().userId(null).sessionId(identity.runtimeSessionId()).build();
     }
 
     private void assertContainerRemoved(String id) throws Exception {

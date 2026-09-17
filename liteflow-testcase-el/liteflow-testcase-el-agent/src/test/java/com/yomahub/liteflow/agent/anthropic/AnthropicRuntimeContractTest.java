@@ -4,11 +4,10 @@ import com.anthropic.client.AnthropicClient;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership;
-import com.yomahub.liteflow.agent.runtime.AgentRuntime;
+import com.yomahub.liteflow.agent.harness.runtime.HarnessAgentRuntime;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.state.InMemoryAgentStateStore;
@@ -287,13 +286,16 @@ class AnthropicRuntimeContractTest {
                 .build();
         AtomicInteger closes = replaceClient(delegate, new IllegalStateException("close failure"));
         Model owned = AnthropicClientOwner.own(delegate);
-        ReActAgent agent = ReActAgent.builder().name("owner-test").model(owned).build();
+        io.agentscope.harness.agent.HarnessAgent agent = io.agentscope.harness.agent.HarnessAgent.builder()
+                .workspace(java.nio.file.Files.createTempDirectory("anthropic-owner"))
+                .name("owner-test").model(owned).build();
         InMemoryAgentStateStore store = new InMemoryAgentStateStore();
-        AgentRuntime runtime = new AgentRuntime(
+        HarnessAgentRuntime runtime = new HarnessAgentRuntime(
                 agent,
-                new GuardedNamespacedAgentStateStore(store, AGENT_NAMESPACE),
-                new ResolvedAgentStateStore(store, true),
-                List.of(owned, owned));
+                new com.yomahub.liteflow.agent.runtime.AgentRuntimeOwnership(
+                        new GuardedNamespacedAgentStateStore(store, AGENT_NAMESPACE),
+                        new ResolvedAgentStateStore(store, true), List.of(), List.of(), List.of(owned, owned)),
+                List.of());
 
         Throwable failure = assertThrows(RuntimeException.class, runtime::close);
         runtime.close();

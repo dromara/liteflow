@@ -26,10 +26,9 @@ import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.ShellMode;
 import com.yomahub.liteflow.property.agent.SkillsConfig;
-import com.yomahub.liteflow.property.agent.WorkspaceBackend;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.ExecutionConfig;
@@ -37,7 +36,6 @@ import io.agentscope.core.model.Model;
 import io.agentscope.core.agent.config.ModelConfig;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionContextState;
-import io.agentscope.core.skill.DynamicSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.skill.repository.ClasspathSkillRepository;
@@ -46,14 +44,10 @@ import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.ToolkitConfig;
-import io.agentscope.core.tool.coding.ShellCommandTool;
-import io.agentscope.core.tool.file.ReadFileTool;
-import io.agentscope.core.tool.file.WriteFileTool;
 import io.agentscope.core.tool.mcp.McpClientWrapper;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -154,12 +148,9 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
         return true;
     }
 
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
+    /** Enables this component's backend-specific command tool; override false to disable it. */
     protected boolean enableShellTool() {
-        return false;
+        return true;
     }
 
     protected AgentConfirmationHandler confirmationHandler() {
@@ -172,28 +163,26 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
 
     /** Provider-neutral seam for state stores that route additional, explicitly known keys. */
     protected GuardedNamespacedAgentStateStore createNamespacedStateStore(
-            AgentStateStore delegate, String agentNamespace) {
+            AgentStateStore delegate, String agentNamespace, String applicationName) {
         return new GuardedNamespacedAgentStateStore(delegate, agentNamespace);
     }
 
     StateStoreFailureMiddleware createStateStoreFailureMiddleware(
             GuardedNamespacedAgentStateStore stateStore,
-            AgentStateStoreFailurePolicy failurePolicy) {
+            AgentSessionStoreFailurePolicy failurePolicy) {
         return new StateStoreFailureMiddleware(stateStore, failurePolicy);
     }
 
-    /** Prepares the resources shared by ReActAgent and HarnessAgent builders. */
+    /** Prepares provider-neutral resources for the Harness runtime. */
     protected final PreparedAgentResources prepareAgentResources(
-            AgentRuntimeBuildContext buildContext,
-            boolean installCoreDynamicSkillMiddleware,
-            boolean forceSerialToolkit) {
+            AgentRuntimeBuildContext buildContext) {
         BuildOptions options = buildOptions(buildContext);
         AgentStateStoreResolver resolver = stateStoreResolver();
         if (resolver == null) {
             throw new AgentConfigException("stateStoreResolver must not return null");
         }
         ResolvedAgentStateStore resolved = resolver.resolve(
-                buildContext.agentConfig().getStateStore());
+                buildContext.agentConfig().getSessionStore());
         if (resolved == null) {
             throw new AgentConfigException("AgentStateStoreResolver.resolve must not return null");
         }
@@ -206,7 +195,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
             collectSkillRepositories(
                     buildContext.agentConfig(), repositories, ownedRepositories);
             namespaced = createNamespacedStateStore(
-                    resolved.store(), buildContext.agentNamespace());
+                    resolved.store(), buildContext.agentNamespace(), buildContext.agentConfig().getApplicationName());
             if (namespaced == null) {
                 throw new AgentConfigException("createNamespacedStateStore must not return null");
             }
@@ -235,7 +224,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
 
             StateStoreFailureMiddleware failureMiddleware = createStateStoreFailureMiddleware(
                     namespaced,
-                    buildContext.agentConfig().getStateStore().getFailurePolicy());
+                    buildContext.agentConfig().getSessionStore().getFailurePolicy());
             List<Model> managedModels = List.copyOf(ownedModels);
             AgentLoggingMiddleware loggingMiddleware =
                     new AgentLoggingMiddleware(options.loggingEnabled());
@@ -252,24 +241,14 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                 throw new AgentConfigException("skillFilter must not return null");
             }
             Toolkit toolkit = buildToolkit(
-                    buildContext.agentConfig(), registeredMcpClients, forceSerialToolkit);
+                    buildContext.agentConfig(), registeredMcpClients, true);
             boolean dynamicSkills = dynamicSkillsEnabled();
-            DynamicSkillMiddleware managedDynamicSkills =
-                    installCoreDynamicSkillMiddleware
-                            && !repositories.isEmpty()
-                            && dynamicSkills
-                    ? new DynamicSkillMiddleware(
-                            repositories, toolkit, baseSkillFilter, false, null)
-                    : null;
             List<MiddlewareBase> mandatoryMiddlewares = new ArrayList<>(List.of(
                     failureMiddleware,
                     loggingMiddleware,
                     eventMiddleware,
                     usageMiddleware,
                     skillMiddleware));
-            if (managedDynamicSkills != null) {
-                mandatoryMiddlewares.add(managedDynamicSkills);
-            }
             mandatoryMiddlewares.add(promptMiddleware);
             mandatoryMiddlewares.add(routingMiddleware);
             AgentRuntimeOwnership ownership = new AgentRuntimeOwnership(
@@ -287,7 +266,6 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                     List.copyOf(repositories),
                     baseSkillFilter,
                     dynamicSkills,
-                    managedDynamicSkills,
                     List.copyOf(mandatoryMiddlewares),
                     options.userMiddlewares(),
                     routingMiddleware,
@@ -325,10 +303,6 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
         }
         for (MiddlewareBase mandatory : prepared.coreMiddlewares()) {
             if (!identityContains(actualMiddlewares, mandatory)) {
-                if (mandatory == prepared.managedDynamicSkills()) {
-                    throw new AgentConfigException(
-                            customizerName + " must retain the managed DynamicSkillMiddleware");
-                }
                 throw new AgentConfigException(
                         customizerName + " must retain all LiteFlow core middlewares");
             }
@@ -348,16 +322,6 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                         customizerName
                                 + " must retain the LiteFlow Toolkit tool identity: "
                                 + required.getKey());
-            }
-        }
-        if (prepared.managedDynamicSkills() != null) {
-            for (MiddlewareBase middleware : actualMiddlewares) {
-                if (middleware instanceof DynamicSkillMiddleware
-                        && middleware != prepared.managedDynamicSkills()) {
-                    throw new AgentConfigException(
-                            customizerName
-                                    + " must not add or replace the managed DynamicSkillMiddleware");
-                }
             }
         }
     }
@@ -384,7 +348,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                 handler,
                 agentConfig().getHitl().getConfirmationTimeout(),
                 agentConfig().getHitl().isFailOnDeniedTool(),
-                agentConfig().getRuntime().getTimeout());
+                agentConfig().getExecutionTimeout());
         if (!agentConfig().isConversationHistoryEnabled()) {
             return invocation;
         }
@@ -412,7 +376,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
 
     @Override
     protected boolean requiresWorkspaceLease() {
-        return enableWorkspaceFileTools() || enableShellTool();
+        return enableShellTool();
     }
 
     @Override
@@ -427,10 +391,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
         int configuredIterations = maxIterations();
         int iterations;
         if (configuredIterations == -1) {
-            if (context.agentConfig().getDefaults() == null) {
-                throw new AgentConfigException("liteflow.agent.defaults must not be null");
-            }
-            iterations = context.agentConfig().getDefaults().getMaxIterations();
+            iterations = context.agentConfig().getMaxIterations();
         }
         else {
             iterations = configuredIterations;
@@ -458,9 +419,6 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
             throw new AgentConfigException(
                     "liteflow.agent.event.listener-failure-mode must not be null");
         }
-        if (context.agentConfig().getLogging() == null) {
-            throw new AgentConfigException("liteflow.agent.logging must not be null");
-        }
         return new BuildOptions(
                 iterations,
                 modelExecutionConfig(),
@@ -470,7 +428,7 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                 stopOnReject(),
                 List.copyOf(userMiddlewares),
                 context.agentConfig().getEvent().getListenerFailureMode(),
-                context.agentConfig().getLogging().isEnabled());
+                context.agentConfig().isExecutionLogEnabled());
     }
 
     private Toolkit buildToolkit(
@@ -493,31 +451,8 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
             }
             toolkit.registerTool(tool);
         }
-        if (enableWorkspaceFileTools() || enableShellTool()) {
-            Path baseDir = workspaceBaseDir(config);
-            if (enableWorkspaceFileTools()) {
-                toolkit.registerTool(new ReadFileTool(baseDir.toString()));
-                toolkit.registerTool(new WriteFileTool(baseDir.toString()));
-            }
-            if (enableShellTool()) {
-                if (config.getShell() == null
-                        || config.getShell().getMode() == null
-                        || config.getShell().getMode() == ShellMode.DISABLED) {
-                    throw new AgentConfigException(
-                            "enableShellTool requires liteflow.agent.shell.mode != DISABLED");
-                }
-                List<String> whitelist = config.getShell().getWhitelist();
-                if (whitelist == null || whitelist.isEmpty()) {
-                    throw new AgentConfigException(
-                            "enableShellTool requires a non-empty liteflow.agent.shell.whitelist");
-                }
-                if (whitelist.stream().anyMatch(command -> command == null || command.isBlank())) {
-                    throw new AgentConfigException(
-                            "enableShellTool requires non-blank liteflow.agent.shell.whitelist entries");
-                }
-                toolkit.registerTool(new ShellCommandTool(
-                        baseDir.toString(), Set.copyOf(whitelist), null));
-            }
+        if (enableShellTool()) {
+            registerShellTool(toolkit, config);
         }
         customizeToolkit(toolkit);
         List<McpClientWrapper> clients = mcpClients();
@@ -536,36 +471,26 @@ public abstract class AbstractAgentScopeComponent<R extends AutoCloseable>
                     new McpClientRegistration(client, ownsMcpClient(client));
             registeredMcpClients.add(registration);
             toolkit.registerMcpClient(client)
-                    .timeout(config.getRuntime().getTimeout())
+                    .timeout(config.getExecutionTimeout())
                     .block();
         }
         return toolkit;
     }
 
-    private Path workspaceBaseDir(AgentConfig config) {
-        if (config.getWorkspace() == null) {
-            throw new AgentConfigException("liteflow.agent.workspace must not be null");
+    /** The concrete runtime installs its backend's command tool. */
+    protected abstract void registerShellTool(Toolkit toolkit, AgentConfig config);
+
+    protected final void validateShellToolConfiguration(AgentConfig config) {
+        if (config.getHarness().getShell() == null || config.getHarness().getShell().getMode() == null
+                || config.getHarness().getShell().getMode() == ShellMode.DISABLED) {
+            throw new AgentConfigException("enableShellTool requires liteflow.agent.harness.shell.mode != DISABLED");
         }
-        if (config.getWorkspace().getBackend() != WorkspaceBackend.GUARDED_LOCAL) {
-            throw new AgentConfigException(
-                    "built-in workspace tools require WorkspaceBackend.GUARDED_LOCAL");
+        List<String> whitelist = config.getHarness().getShell().getWhitelist();
+        if (whitelist == null || whitelist.isEmpty()) {
+            throw new AgentConfigException("enableShellTool requires a non-empty liteflow.agent.harness.shell.whitelist");
         }
-        if (!config.getWorkspace().isTrustedLocal()) {
-            throw new AgentConfigException(
-                    "built-in workspace tools require workspace.trustedLocal=true");
-        }
-        String root = config.getWorkspace().getRoot();
-        if (root == null || root.isBlank()) {
-            throw new AgentConfigException(
-                    "built-in workspace tools require a valid workspace.root");
-        }
-        try {
-            Path baseDir = Path.of(root).toAbsolutePath().normalize();
-            Files.createDirectories(baseDir);
-            return baseDir;
-        }
-        catch (IllegalArgumentException | java.io.IOException failure) {
-            throw new AgentConfigException("invalid guarded local workspace.root", failure);
+        if (whitelist.stream().anyMatch(command -> command == null || command.isBlank())) {
+            throw new AgentConfigException("enableShellTool requires non-blank liteflow.agent.harness.shell.whitelist entries");
         }
     }
 

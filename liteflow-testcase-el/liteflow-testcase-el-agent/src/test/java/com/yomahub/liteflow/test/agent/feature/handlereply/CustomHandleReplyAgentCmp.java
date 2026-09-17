@@ -35,11 +35,6 @@ public class CustomHandleReplyAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         context.getSlot().setOutput(OUTPUT_KEY, reply == null ? null : reply.getTextContent());
     }

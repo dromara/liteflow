@@ -147,7 +147,6 @@ public final class AgentEventTypeMapper {
         }
         return new AgentFlowEventData(
                 event,
-                context.getUserId(),
                 context.getConversationId(),
                 context.getAgentKey(),
                 context.getChainId(),

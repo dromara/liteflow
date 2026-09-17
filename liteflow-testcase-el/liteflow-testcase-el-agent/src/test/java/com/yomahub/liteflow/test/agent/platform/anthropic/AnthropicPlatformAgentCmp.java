@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.platform.anthropic;
 
 import com.yomahub.liteflow.agent.anthropic.Anthropic;
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.test.agent.support.LiveTestEnv;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * Anthropic 头等平台连通性测试组件。
  */
 @Component("anthropicPlatformAgent")
-public class AnthropicPlatformAgentCmp extends AgentComponent {
+public class AnthropicPlatformAgentCmp extends HarnessAgentComponent {
 
     @Override
     protected ModelSpec<?> model() {
@@ -36,11 +36,6 @@ public class AnthropicPlatformAgentCmp extends AgentComponent {
 
     @Override
     protected boolean enableShellTool() {
-        return false;
-    }
-
-    @Override
-    protected boolean enableWorkspaceFileTools() {
         return false;
     }
 }

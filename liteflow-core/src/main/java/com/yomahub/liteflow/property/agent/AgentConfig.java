@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.property.agent;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -13,14 +14,17 @@ import java.util.Map;
  */
 public class AgentConfig {
 
-	/** AgentScope 2 runtime identity and timeout settings. */
-	private AgentRuntimeConfig runtime = new AgentRuntimeConfig();
+	/** Stable application name used to isolate Agent data; defaults to the framework application name. */
+	private String applicationName;
 
-	/** Agent state persistence settings. */
-	private AgentStateStoreConfig stateStore = new AgentStateStoreConfig();
+	/** Maximum duration of one complete Agent execution, including model and tool calls. */
+	private Duration executionTimeout = Duration.ofMinutes(10);
 
-	/** Opt in to durable, display-oriented conversation history and Agent participation tracking. */
-	private boolean conversationHistoryEnabled;
+	/** Agent session persistence settings. */
+	private AgentSessionStoreConfig sessionStore = new AgentSessionStoreConfig();
+
+	/** Enable durable, display-oriented conversation history and Agent participation tracking by default. */
+	private boolean conversationHistoryEnabled = true;
 
 	public boolean isConversationHistoryEnabled() {
 		return conversationHistoryEnabled;
@@ -45,17 +49,11 @@ public class AgentConfig {
 	/** AgentScope Harness filesystem and sandbox settings. */
 	private HarnessConfig harness = new HarnessConfig();
 
-    /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
-    private WorkspaceConfig workspace = new WorkspaceConfig();
+    /** 单次 Agent 执行的推理与工具调用循环上限，组件 maxIterations() 返回 -1 时使用。 */
+    private int maxIterations = 100;
 
-    /** Shell 工具配置，决定 agent 调用内置 Shell 工具时的命令过滤模式与白名单。 */
-    private ShellConfig shell = new ShellConfig();
-
-    /** 默认值配置，例如 Agent 流程在组件未指定 maxIterations 时使用的全局默认迭代次数。 */
-    private DefaultsConfig defaults = new DefaultsConfig();
-
-    /** 日志开关配置，控制 Agent 内部 reason / act / error 等事件日志是否输出。 */
-    private LoggingConfig logging = new LoggingConfig();
+    /** 是否输出 Agent 执行、推理、工具调用和模型调用的生命周期日志。 */
+    private boolean executionLogEnabled = true;
 
     /** Skills configuration for loading AgentSkillRepository entries from SKILL.md repositories. */
     private SkillsConfig skills = new SkillsConfig();
@@ -84,20 +82,28 @@ public class AgentConfig {
      */
 	private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
 
-	public AgentRuntimeConfig getRuntime() {
-		return runtime;
+	public String getApplicationName() {
+		return applicationName;
 	}
 
-	public void setRuntime(AgentRuntimeConfig runtime) {
-		this.runtime = runtime;
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
 	}
 
-	public AgentStateStoreConfig getStateStore() {
-		return stateStore;
+	public Duration getExecutionTimeout() {
+		return executionTimeout;
 	}
 
-	public void setStateStore(AgentStateStoreConfig stateStore) {
-		this.stateStore = stateStore;
+	public void setExecutionTimeout(Duration executionTimeout) {
+		this.executionTimeout = executionTimeout;
+	}
+
+	public AgentSessionStoreConfig getSessionStore() {
+		return sessionStore;
+	}
+
+	public void setSessionStore(AgentSessionStoreConfig sessionStore) {
+		this.sessionStore = sessionStore;
 	}
 
 	public AgentToolkitConfig getToolkit() {
@@ -144,8 +150,8 @@ public class AgentConfig {
 	 * Validates configuration needed by the AgentScope 2 runtime immediately before use.
 	 */
 	public void validateForExecution() {
-		if (runtime == null || isBlank(runtime.getNamespace())) {
-			throw new IllegalStateException("liteflow.agent.runtime.namespace is required before execution");
+		if (isBlank(applicationName)) {
+			throw new IllegalStateException("liteflow.agent.application-name is required before execution");
 		}
 	}
 
@@ -153,36 +159,20 @@ public class AgentConfig {
 		return value == null || value.trim().isEmpty();
 	}
 
-    public WorkspaceConfig getWorkspace() {
-        return workspace;
+    public int getMaxIterations() {
+        return maxIterations;
     }
 
-    public void setWorkspace(WorkspaceConfig v) {
-        this.workspace = v;
+    public void setMaxIterations(int maxIterations) {
+        this.maxIterations = maxIterations;
     }
 
-    public ShellConfig getShell() {
-        return shell;
+    public boolean isExecutionLogEnabled() {
+        return executionLogEnabled;
     }
 
-    public void setShell(ShellConfig v) {
-        this.shell = v;
-    }
-
-    public DefaultsConfig getDefaults() {
-        return defaults;
-    }
-
-    public void setDefaults(DefaultsConfig v) {
-        this.defaults = v;
-    }
-
-    public LoggingConfig getLogging() {
-        return logging;
-    }
-
-    public void setLogging(LoggingConfig v) {
-        this.logging = v;
+    public void setExecutionLogEnabled(boolean executionLogEnabled) {
+        this.executionLogEnabled = executionLogEnabled;
     }
 
     public SkillsConfig getSkills() {

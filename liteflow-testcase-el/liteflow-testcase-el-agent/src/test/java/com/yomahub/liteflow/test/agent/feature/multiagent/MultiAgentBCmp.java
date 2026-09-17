@@ -45,15 +45,10 @@ public class MultiAgentBCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected String userPrompt(com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         SEEN_CONVERSATION_ID.set(context.getConversationId());
         SEEN_AGENT_KEY.set(context.getAgentKey());
-        Path ws = Path.of(agentConfig().getWorkspace().getRoot())
+        Path ws = Path.of(agentConfig().getHarness().getLocal().getWorkspaceRoot())
                 .resolve(context.getRuntimeSessionId());
         SEEN_WORKSPACE.set(ws);
         try {

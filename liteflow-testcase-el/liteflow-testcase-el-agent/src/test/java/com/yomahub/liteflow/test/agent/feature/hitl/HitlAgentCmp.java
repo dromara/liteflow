@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.feature.hitl;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.guard.AgentInvocationGuard;
 import com.yomahub.liteflow.agent.guard.AgentInvocationKey;
@@ -36,7 +36,7 @@ import java.util.function.Function;
 import reactor.core.publisher.Flux;
 
 @Component("hitlAgent")
-public final class HitlAgentCmp extends AgentComponent {
+public final class HitlAgentCmp extends HarnessAgentComponent {
 
     private static final HitlRecordingGuard GUARD = new HitlRecordingGuard();
     private static final List<Integer> ACTIVE = new CopyOnWriteArrayList<>();

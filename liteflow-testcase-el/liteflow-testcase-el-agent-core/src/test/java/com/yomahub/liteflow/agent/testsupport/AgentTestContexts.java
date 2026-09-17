@@ -22,7 +22,6 @@ public final class AgentTestContexts {
         return new LiteFlowAgentContext(
                 new AgentInvocationIdentity(
                         "namespace-1",
-                        "user-1",
                         "conversation-1",
                         "agent-1",
                         null,
@@ -40,7 +39,7 @@ public final class AgentTestContexts {
 
     public static RuntimeContext runtimeContext(LiteFlowAgentContext context) {
         return RuntimeContext.builder()
-                .userId(context.getRuntimeUserId())
+                .userId(null)
                 .sessionId(context.getRuntimeSessionId())
                 .put(LiteFlowAgentContext.class, context)
                 .put(Slot.class, context.getSlot())

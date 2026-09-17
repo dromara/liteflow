@@ -42,6 +42,6 @@ public class OpenAICompatibleSpec extends OpenAISpec {
                             + configKey
                             + ".base-url");
         }
-        return buildModel(credential.apiKey(), effectiveBaseUrl);
+        return recordMetadata(buildModel(credential.apiKey(), effectiveBaseUrl), configKey, effectiveBaseUrl);
     }
 }

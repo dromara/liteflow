@@ -35,11 +35,6 @@ public class ResolveCidAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected String resolveConversationId(com.yomahub.liteflow.slot.Slot slot) {
         Object reqData = getSlot().getChainReqData(getSlot().getChainId());
         if (reqData instanceof Map<?, ?> map) {

@@ -19,34 +19,34 @@ class HarnessConversationServiceTest {
     @Test
     void discoversOldHarnessStateWithoutRuntimeAndDeletesOnlyAttachedAgents() {
         AgentConfig config = new AgentConfig();
-        config.getRuntime().setNamespace("harness-history");
-        config.getStateStore().setJsonRoot(root.toString());
+        config.setApplicationName("harness-history");
+        config.getSessionStore().setJsonRoot(root.toString());
         var identities = new InvocationIdentityResolver("harness-history");
-        var first = identities.resolve("alice", "conversation", "one");
-        var second = identities.resolve("alice", "conversation", "two");
-        var other = identities.resolve("bob", "conversation", "one");
+        var first = identities.resolve("conversation", "one");
+        var second = identities.resolve("conversation", "two");
+        var other = identities.resolve("other-conversation", "one");
         var raw = new JsonFileAgentStateStore(root);
         for (var identity : java.util.List.of(first, second, other)) {
             var wrapper = new HarnessNamespacedAgentStateStore(raw, identity.agentNamespace());
-            wrapper.save(identity.userId(), identity.runtimeSessionId(), "agent_state", AgentState.builder()
-                    .userId(identity.userId()).sessionId(identity.runtimeSessionId())
+            wrapper.save(null, identity.runtimeSessionId(), "agent_state", AgentState.builder()
+                    .userId(null).sessionId(identity.runtimeSessionId())
                     .addMessage(new UserMessage(identity.agentKey())).build());
         }
         try (var service = AgentConversationService.open(config)) {
-            assertEquals("one", service.agentState("alice", "conversation", "one")
+            assertEquals("one", service.agentState("conversation", "one")
                     .orElseThrow().getContext().get(0).getTextContent());
-            assertTrue(service.list("alice", 0, 20).items().isEmpty());
-            service.create("alice", "conversation", "imported", false);
-            service.attachAgent("alice", "conversation", "one");
-            service.attachAgent("alice", "conversation", "two");
+            assertTrue(service.list(0, 20).items().isEmpty());
+            service.create("conversation", "imported", false);
+            service.attachAgent("conversation", "one");
+            service.attachAgent("conversation", "two");
         }
         try (var reopened = AgentConversationService.open(config)) {
-            reopened.delete("alice", "conversation");
-            assertFalse(raw.exists("alice", HarnessNamespacedAgentStateStore.physicalAgentSessionId(
+            reopened.delete("conversation");
+            assertFalse(raw.exists(null, HarnessNamespacedAgentStateStore.physicalAgentSessionId(
                     first.agentNamespace(), first.runtimeSessionId())));
-            assertFalse(raw.exists("alice", HarnessNamespacedAgentStateStore.physicalAgentSessionId(
+            assertFalse(raw.exists(null, HarnessNamespacedAgentStateStore.physicalAgentSessionId(
                     second.agentNamespace(), second.runtimeSessionId())));
-            assertTrue(reopened.agentState("bob", "conversation", "one").isPresent());
+            assertTrue(reopened.agentState("other-conversation", "one").isPresent());
         }
         raw.close();
     }

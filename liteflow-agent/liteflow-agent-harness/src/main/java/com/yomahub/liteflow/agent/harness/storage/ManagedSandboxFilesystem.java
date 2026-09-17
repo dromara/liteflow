@@ -21,21 +21,15 @@ public final class ManagedSandboxFilesystem extends BaseSandboxFilesystem {
     private final RemoteFilesystem records;
     private final String sourceRoot;
     private final String sandboxRoot;
-    private final long maxFileBytes;
 
     public ManagedSandboxFilesystem(BaseStore store, String namespace, String agentNamespace,
                                     Path sourceRoot, String sandboxRoot) {
-        this(store, namespace, agentNamespace, sourceRoot, sandboxRoot, 10L * 1024 * 1024);
-    }
-    public ManagedSandboxFilesystem(BaseStore store, String namespace, String agentNamespace,
-                                    Path sourceRoot, String sandboxRoot, long maxFileBytes) {
-        this.maxFileBytes = maxFileBytes;
         this.sourceRoot = sourceRoot.toAbsolutePath().normalize().toString();
         this.sandboxRoot = Path.of(sandboxRoot).normalize().toString();
-        this.records = new StoredWorkspaceFilesystem(store, rc -> List.of("liteflow", namespace, "workspace-v1",
-                textOr(rc.getUserId(), "_internal"), textOr(rc.getSessionId(), agentNamespace)), sourceRoot);
+        this.records = new StoredWorkspaceFilesystem(store, rc -> rc.getSessionId() == null
+                ? List.of("liteflow", namespace, "workspace-v2-internal", agentNamespace)
+                : List.of("liteflow", namespace, "workspace-v2", rc.getSessionId()), sourceRoot);
     }
-    public long maxFileBytes() { return maxFileBytes; }
     private static String textOr(String value, String fallback) { return value == null || value.isBlank() ? fallback : value; }
     public static boolean isManaged(String path) {
         String p = path.replace('\\', '/').replaceFirst("^/+", "");
@@ -59,9 +53,8 @@ public final class ManagedSandboxFilesystem extends BaseSandboxFilesystem {
         if (p.startsWith(sourceRoot + "/")) p = p.substring(sourceRoot.length());
         else if (p.startsWith(sandboxRoot + "/")) p = p.substring(sandboxRoot.length());
         p = p.replaceFirst("^/+", "");
-        // WorkspaceManager can pass either raw relative paths or user/session-prefixed paths.
-        for (String prefix : List.of(textOr(rc.getUserId(), ""),
-                textOr(rc.getUserId(), "") + "/" + textOr(rc.getSessionId(), ""))) {
+        // WorkspaceManager can pass either raw relative paths or session-prefixed paths.
+        for (String prefix : List.of(textOr(rc.getSessionId(), ""))) {
             if (!prefix.isBlank() && p.startsWith(prefix + "/") && isManaged(p.substring(prefix.length() + 1))) {
                 p = p.substring(prefix.length() + 1); break;
             }

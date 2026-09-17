@@ -1,6 +1,6 @@
 package com.yomahub.liteflow.test.agent.real.middleware;
 
-import com.yomahub.liteflow.agent.component.AgentComponent;
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.test.agent.real.RealAgentTestBase;
 import io.agentscope.core.agent.Agent;
@@ -82,7 +82,7 @@ final class RealMiddlewareCmp {
     }
 
     @Component("realMiddlewareAgent")
-    static class MiddlewareAgentCmp extends AgentComponent {
+    static class MiddlewareAgentCmp extends HarnessAgentComponent {
 
         @Override
         protected com.yomahub.liteflow.agent.model.ModelSpec<?> model() {

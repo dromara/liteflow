@@ -57,8 +57,8 @@ public class BasicChainTest extends BaseAgentLiveTest {
         Assertions.assertTrue(BasicAgentCmp.PROBE.get().reasoningCount() > 0,
                 "deterministic model should emit at least one reasoning event");
         Assertions.assertNotNull(BasicAgentCmp.PROBE.get().observedAgentId());
-        // 当组件关闭 shell/workspace 工具时，Toolkit 应该不包含这些内置工具。
+        // 关闭 Shell 后仍保留 Harness 的统一文件工具。
         Assertions.assertFalse(BasicAgentCmp.PROBE.get().toolNames().contains("execute_shell_command"));
-        Assertions.assertFalse(BasicAgentCmp.PROBE.get().toolNames().contains("read_file"));
+        Assertions.assertTrue(BasicAgentCmp.PROBE.get().toolNames().contains("read_file"));
     }
 }

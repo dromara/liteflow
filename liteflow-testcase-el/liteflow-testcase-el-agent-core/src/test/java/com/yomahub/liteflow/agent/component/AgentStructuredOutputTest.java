@@ -1,5 +1,6 @@
 package com.yomahub.liteflow.agent.component;
 
+import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
@@ -11,7 +12,7 @@ import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.model.Model;
@@ -135,8 +136,8 @@ class AgentStructuredOutputTest {
 
     @Test
     void strictStateStoreFailurePrecedesPrivatePromptTransformAndModelEntry() {
-        configureAgent().getStateStore().setFailurePolicy(
-                AgentStateStoreFailurePolicy.FAIL_FAST);
+        configureAgent().getSessionStore().setFailurePolicy(
+                AgentSessionStoreFailurePolicy.FAIL_FAST);
         RuntimeException loadFailure = new RuntimeException("state backend unavailable");
         ScriptedChatModel model = new ScriptedChatModel("must not run");
         TestComponent component = component(slot("strict-state-request"), model);
@@ -153,8 +154,8 @@ class AgentStructuredOutputTest {
     @Test
     void upstreamStateLoadFailureStopsBeforePromptTransformEvenWithLogPolicy()
             throws Exception {
-        configureAgent().getStateStore().setFailurePolicy(
-                AgentStateStoreFailurePolicy.LOG_AND_CONTINUE);
+        configureAgent().getSessionStore().setFailurePolicy(
+                AgentSessionStoreFailurePolicy.LOG_AND_CONTINUE);
         ScriptedChatModel model = new ScriptedChatModel("continued reply");
         Slot slot = slot("non-strict-state-request");
         TestComponent component = component(slot, model);
@@ -176,10 +177,11 @@ class AgentStructuredOutputTest {
 
     private AgentConfig configureAgent() {
         AgentConfig agentConfig = new AgentConfig();
-        agentConfig.getStateStore().setJsonRoot("target/agent-state");
-        agentConfig.getRuntime().setNamespace("structured-test");
-        agentConfig.getRuntime().setDefaultUserId("test-user");
-        agentConfig.getRuntime().setTimeout(Duration.ofSeconds(2));
+        agentConfig.getHarness().getLocal().setWorkspaceRoot(java.nio.file.Path.of("target", "harness-tests", java.util.UUID.randomUUID().toString()).toAbsolutePath().toString());
+        agentConfig.getSessionStore().setJsonWorkspaceRoot(agentConfig.getHarness().getLocal().getWorkspaceRoot() + "/records");
+        agentConfig.getSessionStore().setJsonRoot("target/agent-state");
+        agentConfig.setApplicationName("structured-test");
+        agentConfig.setExecutionTimeout(Duration.ofSeconds(2));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agentConfig);
         LiteflowConfigGetter.setLiteflowConfig(config);
@@ -227,7 +229,9 @@ class AgentStructuredOutputTest {
         public String answer;
     }
 
-    private static final class TestComponent extends AgentComponent {
+    private static final class TestComponent extends HarnessAgentComponent {
+        // This fixture exercises non-Shell behavior; opt out of the enabled-by-default tool.
+        @Override protected boolean enableShellTool() { return false; }
         private final Slot slot;
         private final ScriptedChatModel model;
         private final AtomicInteger modelBuildCount = new AtomicInteger();

@@ -55,11 +55,6 @@ public class ChatUsageAgentCmp extends OfflineAgentComponent {
     }
 
     @Override
-    protected boolean enableWorkspaceFileTools() {
-        return false;
-    }
-
-    @Override
     protected void handleReply(Msg reply, com.yomahub.liteflow.agent.context.LiteFlowAgentContext context) {
         // getChatUsage() 只能在 process() 生命周期内调用，handleReply 是合法时机。
         GET_USAGE_CALLED.set(true);

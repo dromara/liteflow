@@ -108,7 +108,7 @@ public class OpenAISpec extends ModelSpec<OpenAISpec> {
                         "liteflow.agent.openai",
                         getApiKey(),
                         getBaseUrl());
-        return buildModel(credential.apiKey(), credential.baseUrl());
+        return recordMetadata(buildModel(credential.apiKey(), credential.baseUrl()), "openai", credential.baseUrl());
     }
 
     /** 子类（OpenAICompatibleSpec）可覆盖以提供不同 baseUrl / apiKey 来源。 */

@@ -19,7 +19,7 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
 import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import com.yomahub.liteflow.slot.Slot;
 import com.yomahub.liteflow.spi.holder.ContextAwareHolder;
@@ -203,7 +203,7 @@ class CrossAgentWorkspaceGuardTest {
         store.save(null, SANDBOX_A, "_sandbox_state", new TestState("snapshot"));
 
         assertTrue(store.exists(null, SANDBOX_A));
-        assertTrue(delegate.exists(null, "harness-workspace." + SESSION_A));
+        assertTrue(delegate.exists(null, "harness-workspace.ZGVmYXVsdA." + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(SESSION_A.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
         assertEquals(Set.of(), store.listSessionIds(null));
     }
 
@@ -293,7 +293,7 @@ class CrossAgentWorkspaceGuardTest {
         assertSame(agentFailure, assertThrows(RuntimeException.class,
                 () -> store.get("user", SESSION_A, "agent_state", TestState.class)));
         StateStoreFailureMiddleware failFast = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.FAIL_FAST);
+                store, AgentSessionStoreFailurePolicy.FAIL_FAST);
         RuntimeException classified = assertThrows(RuntimeException.class,
                 () -> failFast.onSystemPrompt(null, context, "prompt").block());
         assertTrue(classified.getMessage().contains("agent load failed"));
@@ -302,7 +302,7 @@ class CrossAgentWorkspaceGuardTest {
                 () -> store.get(null, SANDBOX_A, "_sandbox_state", TestState.class)));
         List<String> warnings = new CopyOnWriteArrayList<>();
         StateStoreFailureMiddleware logAndContinue = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.LOG_AND_CONTINUE, warnings::add);
+                store, AgentSessionStoreFailurePolicy.LOG_AND_CONTINUE, warnings::add);
         assertEquals("prompt",
                 logAndContinue.onSystemPrompt(null, context, "prompt").block());
         assertEquals(1, warnings.size());
@@ -525,7 +525,7 @@ class CrossAgentWorkspaceGuardTest {
         assertEquals(List.of(
                 "acquire:WORKSPACE", "acquire:STATE", "close:STATE", "close:WORKSPACE",
                 "acquire:WORKSPACE", "acquire:STATE", "close:STATE", "close:WORKSPACE"),
-                guard.events);
+                guard.events.stream().filter(event -> !event.endsWith(":CONVERSATION")).toList());
     }
 
     @Test
@@ -550,12 +550,11 @@ class CrossAgentWorkspaceGuardTest {
     private RecordingGuard configureHarness(String namespace) throws Exception {
         Files.createDirectories(tempDir.resolve("workspace"));
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
-        agent.getWorkspace().setRoot(tempDir.resolve("workspace").toString());
+        agent.setApplicationName(namespace);
+        agent.setExecutionTimeout(Duration.ofSeconds(5));
+        agent.getHarness().getLocal().setWorkspaceRoot(tempDir.resolve("workspace").toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(tempDir.resolve("workspace").toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.GUARDED_LOCAL);
-        agent.getHarness().setTrustedLocal(true);
         agent.getInvocationGuard().setMode(AgentInvocationGuardMode.BEAN);
         agent.getInvocationGuard().setBeanName("recording-guard");
         LiteflowConfig config = new LiteflowConfig();
@@ -572,11 +571,13 @@ class CrossAgentWorkspaceGuardTest {
     private void configureDockerHarness(String namespace) throws Exception {
         Files.createDirectories(tempDir.resolve("docker-workspace"));
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
-        agent.getWorkspace().setRoot(tempDir.resolve("docker-workspace").toString());
+        agent.setApplicationName(namespace);
+        agent.setExecutionTimeout(Duration.ofSeconds(5));
+        agent.getHarness().getLocal().setWorkspaceRoot(tempDir.resolve("docker-workspace").toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(tempDir.resolve("docker-workspace").toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
+        // The fake sandbox implements these deterministic pseudo-commands.
+        agent.getHarness().getShell().setWhitelist(List.of("write", "read"));
         LiteflowConfig config = new LiteflowConfig();
         config.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(config);
@@ -586,12 +587,14 @@ class CrossAgentWorkspaceGuardTest {
             throws Exception {
         Files.createDirectories(tempDir.resolve("docker-workspace"));
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace(namespace);
-        agent.getRuntime().setDefaultUserId("user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
-        agent.getWorkspace().setRoot(tempDir.resolve("docker-workspace").toString());
+        agent.setApplicationName(namespace);
+        agent.setExecutionTimeout(Duration.ofSeconds(5));
+        agent.getHarness().getLocal().setWorkspaceRoot(tempDir.resolve("docker-workspace").toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(tempDir.resolve("docker-workspace").toString());
         agent.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
-        agent.getStateStore().setFailurePolicy(AgentStateStoreFailurePolicy.FAIL_FAST);
+        // The fake sandbox implements these deterministic pseudo-commands.
+        agent.getHarness().getShell().setWhitelist(List.of("write", "read"));
+        agent.getSessionStore().setFailurePolicy(AgentSessionStoreFailurePolicy.FAIL_FAST);
         agent.getInvocationGuard().setMode(AgentInvocationGuardMode.BEAN);
         agent.getInvocationGuard().setBeanName("recording-guard");
         LiteflowConfig config = new LiteflowConfig();

@@ -229,7 +229,6 @@ class HarnessAgentComponentTest {
                 AgentConfig config = configureAgent();
                 config.getHarness().setFilesystemBackend(backend);
                 if (backend == HarnessFilesystemBackend.GUARDED_LOCAL) {
-                    config.getHarness().setTrustedLocal(true);
                 }
                 RecordingModel model =
                         new RecordingModel("must not run", false, null, null, null);
@@ -282,7 +281,8 @@ class HarnessAgentComponentTest {
             throws Exception {
         AgentConfig config = configureAgent();
         config.getHarness().setFilesystemBackend(HarnessFilesystemBackend.DOCKER);
-        Path workspace = Path.of(config.getWorkspace().getRoot());
+        Path workspace = Path.of(config.getHarness().getLocal().getWorkspaceRoot());
+        config.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         Path external = tempDir.resolve("late-projection-source.txt");
         Files.writeString(external, "external");
         RecordingModel model = new RecordingModel("must not run", false, null, null, null);
@@ -373,20 +373,9 @@ class HarnessAgentComponentTest {
     }
 
     @Test
-    void guardedLocalBuildsOnlyWithTrustAndCustomOrInvalidDockerRemainFailClosed()
+    void guardedLocalBuildsByDefaultAndCustomOrInvalidDockerRemainFailClosed()
             throws Exception {
         AgentConfig config = configureAgent();
-        TestComponent untrustedComponent = component(
-                slot("backend-session", "backend-request"),
-                new RecordingModel("must not run", false, null, null, null),
-                null);
-
-        AgentConfigException untrusted =
-                assertThrows(AgentConfigException.class, untrustedComponent::process);
-        assertTrue(untrusted.getMessage().contains("trusted-local"));
-        assertEquals(0, untrustedComponent.modelBuildCount.get());
-
-        config.getHarness().setTrustedLocal(true);
         TestComponent guardedComponent = component(
                 slot("guarded-session", "guarded-request"),
                 new RecordingModel("guarded reply", false, null, null, null),
@@ -460,8 +449,8 @@ class HarnessAgentComponentTest {
     void guardedLocalDisablesWorkspaceDeclaredAndCustomizedSubagentsWithoutBreakingParent()
             throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
-        Path workspace = Path.of(config.getWorkspace().getRoot());
+        Path workspace = Path.of(config.getHarness().getLocal().getWorkspaceRoot());
+        config.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         Files.createDirectories(workspace.resolve("subagents"));
         Files.writeString(
                 workspace.resolve("subagents/preloaded.md"),
@@ -523,7 +512,6 @@ class HarnessAgentComponentTest {
     @Test
     void guardedLocalRejectsManualSubagentMiddlewareAndFinalFlagTampering() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         RecordingFilesystem manualFilesystem =
                 new RecordingFilesystem("manual-subagent-filesystem", new ArrayList<>());
         WorkspaceManager manualWorkspace =
@@ -562,7 +550,6 @@ class HarnessAgentComponentTest {
     @Test
     void guardedLocalRejectsWrappedOfficialSubagentMiddlewareWithoutTools() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         List<MiddlewareCase> cases = List.of(
                 new MiddlewareCase("direct-static", false, 0),
                 new MiddlewareCase("direct-dynamic", true, 0),
@@ -638,7 +625,6 @@ class HarnessAgentComponentTest {
     @Test
     void guardedLocalRejectsOfficialSubagentToolsWithoutMiddleware() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         Path workspace = tempDir.resolve("tool-only-subagent");
         Files.createDirectories(workspace);
         RecordingFilesystem filesystem =
@@ -698,7 +684,6 @@ class HarnessAgentComponentTest {
     void guardedLocalAuditsOfficialSubagentToolsInInactiveGroupsBeforeStateRestore()
             throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         Path workspace = tempDir.resolve("inactive-subagent-group");
         Files.createDirectories(workspace);
         RecordingFilesystem filesystem =
@@ -721,8 +706,8 @@ class HarnessAgentComponentTest {
         component.groupedTools = official.getTools();
         component.stateStoreResolver = ignored -> new ResolvedAgentStateStore(delegate, false);
         var identity = new com.yomahub.liteflow.agent.context.InvocationIdentityResolver(
-                        config.getRuntime().getNamespace())
-                .resolve("test-user", "inactive-session", "harness-agent");
+                        config.getApplicationName())
+                .resolve("inactive-session", "harness-agent");
         String runtimeSessionId = identity.runtimeSessionId();
         AgentState restored = AgentState.builder()
                 .userId("test-user")
@@ -759,7 +744,6 @@ class HarnessAgentComponentTest {
     @Test
     void guardedLocalRejectsOfficialAgentGenerateTool() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         Path workspace = tempDir.resolve("agent-generate-tool");
         Files.createDirectories(workspace);
         RecordingFilesystem filesystem =
@@ -783,7 +767,6 @@ class HarnessAgentComponentTest {
     void guardedLocalRejectsOfficialSubagentToolsRegisteredOnlyByHookAfterBuild()
             throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         Path workspace = tempDir.resolve("hook-only-subagent");
         Files.createDirectories(workspace);
         RecordingFilesystem filesystem =
@@ -853,7 +836,6 @@ class HarnessAgentComponentTest {
     @Test
     void finalGuardedToolkitFailureRollsBackBuiltAgentAndPreparedOwnership() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         List<String> closeOrder = new CopyOnWriteArrayList<>();
         RecordingStore store = new RecordingStore("store", closeOrder, null);
         RecordingModel model = new RecordingModel("must not run", false, null, null, closeOrder);
@@ -911,7 +893,6 @@ class HarnessAgentComponentTest {
     @Test
     void guardedLocalAllowsOrdinaryHookTools() throws Exception {
         AgentConfig config = configureAgent();
-        config.getHarness().setTrustedLocal(true);
         RecordingModel model = new RecordingModel("reply", false, null, null, null);
         TestComponent component = component(
                 slot("ordinary-hook-session", "ordinary-hook-request"), model, null);
@@ -1395,11 +1376,11 @@ class HarnessAgentComponentTest {
         Path workspace = tempDir.resolve("workspace");
         Files.createDirectories(workspace);
         AgentConfig agent = new AgentConfig();
-        agent.getStateStore().setJsonRoot("target/agent-state");
-        agent.getRuntime().setNamespace("harness-test");
-        agent.getRuntime().setDefaultUserId("test-user");
-        agent.getRuntime().setTimeout(Duration.ofSeconds(5));
-        agent.getWorkspace().setRoot(workspace.toString());
+        agent.getSessionStore().setJsonRoot("target/agent-state");
+        agent.setApplicationName("harness-test");
+        agent.setExecutionTimeout(Duration.ofSeconds(5));
+        agent.getHarness().getLocal().setWorkspaceRoot(workspace.toString());
+        agent.getSessionStore().setJsonWorkspaceRoot(workspace.toString());
         LiteflowConfig liteflow = new LiteflowConfig();
         liteflow.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(liteflow);

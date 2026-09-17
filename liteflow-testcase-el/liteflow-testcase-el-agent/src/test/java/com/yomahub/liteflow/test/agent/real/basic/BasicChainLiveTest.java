@@ -72,20 +72,20 @@ public class BasicChainLiveTest extends RealAgentTestBase {
         Assertions.assertFalse(response.getSlot().getResponseData().toString().isBlank());
     }
 
-    /** §2.2 / §18：缺失 liteflow.agent.runtime.namespace 时首次执行 fail-fast。 */
+    /** §2.2 / §18：缺失 liteflow.agent.application-name 时首次执行 fail-fast。 */
     @Test
     public void missingNamespaceFailsFastWithAgentConfigException() {
-        String original = liteflowConfig.getAgent().getRuntime().getNamespace();
-        liteflowConfig.getAgent().getRuntime().setNamespace(" ");
+        String original = liteflowConfig.getAgent().getApplicationName();
+        liteflowConfig.getAgent().setApplicationName(" ");
         try {
             LiteflowResponse response = flowExecutor.execute2Resp("realBasicChain", PROMPT);
             Assertions.assertFalse(response.isSuccess(), "blank namespace must fail the chain");
             Assertions.assertNotNull(response.getCause());
             Assertions.assertTrue(cause(response).contains(
-                            "liteflow.agent.runtime.namespace is required before execution"),
+                            "liteflow.agent.application-name is required before execution"),
                     "unexpected cause: " + cause(response));
         } finally {
-            liteflowConfig.getAgent().getRuntime().setNamespace(original);
+            liteflowConfig.getAgent().setApplicationName(original);
         }
     }
 

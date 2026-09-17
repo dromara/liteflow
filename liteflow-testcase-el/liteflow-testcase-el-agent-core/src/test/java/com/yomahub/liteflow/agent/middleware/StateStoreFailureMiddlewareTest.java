@@ -2,7 +2,7 @@ package com.yomahub.liteflow.agent.middleware;
 
 import com.yomahub.liteflow.agent.state.GuardedNamespacedAgentStateStore;
 import com.yomahub.liteflow.agent.testsupport.ScriptedChatModel;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.agent.RuntimeContext;
@@ -42,7 +42,7 @@ class StateStoreFailureMiddlewareTest {
                 new LoadFailingStore(loadFailure), NAMESPACE);
         ScriptedChatModel model = new ScriptedChatModel("must-not-run");
         StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.FAIL_FAST, warning -> { });
+                store, AgentSessionStoreFailurePolicy.FAIL_FAST, warning -> { });
         RuntimeException transformFailure = new RuntimeException("transform must not run");
         PromptTransformMiddleware transform = new PromptTransformMiddleware(
                 new ArrayList<>(), transformFailure);
@@ -74,7 +74,7 @@ class StateStoreFailureMiddlewareTest {
         List<String> warnings = new ArrayList<>();
         List<String> events = new ArrayList<>();
         StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.LOG_AND_CONTINUE, warning -> {
+                store, AgentSessionStoreFailurePolicy.LOG_AND_CONTINUE, warning -> {
                     warnings.add(warning);
                     events.add("warning");
                 });
@@ -106,7 +106,7 @@ class StateStoreFailureMiddlewareTest {
         GuardedNamespacedAgentStateStore store = new GuardedNamespacedAgentStateStore(
                 new LoadFailingStore(loadFailure), NAMESPACE);
         StateStoreFailureMiddleware middleware = new StateStoreFailureMiddleware(
-                store, AgentStateStoreFailurePolicy.FAIL_FAST, warning -> { });
+                store, AgentSessionStoreFailurePolicy.FAIL_FAST, warning -> { });
         RuntimeContext context = RuntimeContext.builder()
                 .userId("alice")
                 .sessionId(SESSION)

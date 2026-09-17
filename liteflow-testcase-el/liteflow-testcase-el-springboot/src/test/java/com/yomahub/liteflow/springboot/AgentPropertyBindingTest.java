@@ -10,31 +10,39 @@ import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
+import com.yomahub.liteflow.property.agent.DockerSandboxLifecycle;
+import com.yomahub.liteflow.property.agent.HarnessMemoryFlushMode;
 import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import com.yomahub.liteflow.property.agent.AgentInvocationGuardMode;
 import com.yomahub.liteflow.property.agent.AgentListenerFailureMode;
-import com.yomahub.liteflow.property.agent.AgentStateStoreFailurePolicy;
-import com.yomahub.liteflow.property.agent.AgentStateStoreType;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreFailurePolicy;
+import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import com.yomahub.liteflow.property.agent.DockerNetworkMode;
 import com.yomahub.liteflow.property.agent.ShellMode;
-import com.yomahub.liteflow.property.agent.WorkspaceBackend;
+import com.yomahub.liteflow.property.agent.HarnessFilesystemBackend;
 import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.Msg;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import com.yomahub.liteflow.springboot.config.LiteflowPropertyAutoConfiguration;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ClassUtils;
 import org.springframework.context.support.GenericApplicationContext;
 import reactor.core.publisher.Mono;
 
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,87 +59,24 @@ class AgentPropertyBindingTest {
 
     private static final String PREFIX = "liteflow.agent.";
 
-    private static final Set<String> EXPECTED_AGENT_KEYS = Set.of(
-            PREFIX + "runtime.namespace",
-            PREFIX + "runtime.default-user-id",
-            PREFIX + "runtime.timeout",
-            PREFIX + "state-store.type",
-            PREFIX + "state-store.json-root",
-            PREFIX + "state-store.failure-policy",
-            PREFIX + "state-store.redis.uri",
-            PREFIX + "state-store.redis.client-bean-name",
-            PREFIX + "state-store.redis.key-prefix",
-            PREFIX + "state-store.mysql.data-source-bean-name",
-            PREFIX + "state-store.mysql.jdbc-url",
-            PREFIX + "state-store.mysql.username",
-            PREFIX + "state-store.mysql.password",
-            PREFIX + "state-store.mysql.database-name",
-            PREFIX + "state-store.mysql.table-name",
-            PREFIX + "state-store.mysql.create-if-not-exist",
-            PREFIX + "toolkit.parallel",
-            PREFIX + "event.listener-failure-mode",
-            PREFIX + "invocation-guard.mode",
-            PREFIX + "invocation-guard.bean-name",
-            PREFIX + "invocation-guard.acquire-timeout",
-            PREFIX + "invocation-guard.lease-duration",
-            PREFIX + "hitl.confirmation-timeout",
-            PREFIX + "hitl.fail-on-denied-tool",
-            PREFIX + "harness.filesystem-backend",
-            PREFIX + "harness.trusted-local",
-            PREFIX + "harness.docker.image",
-            PREFIX + "harness.docker.workspace-root",
-            PREFIX + "harness.docker.memory-size-bytes",
-            PREFIX + "harness.docker.cpu-count",
-            PREFIX + "harness.docker.network",
-            PREFIX + "harness.docker.snapshot-root",
-            PREFIX + "harness.docker.workspace-projection-enabled",
-            PREFIX + "harness.docker.workspace-projection-roots",
-            PREFIX + "workspace.backend",
-            PREFIX + "workspace.trusted-local",
-            PREFIX + "workspace.root",
-            PREFIX + "workspace.auto-create",
-            PREFIX + "workspace.max-file-bytes",
-            PREFIX + "shell.mode",
-            PREFIX + "shell.whitelist",
-            PREFIX + "shell.timeout",
-            PREFIX + "defaults.max-iterations",
-            PREFIX + "logging.enabled",
-            PREFIX + "skills.enabled",
-            PREFIX + "skills.path",
-            PREFIX + "skills.strict",
-            PREFIX + "openai.api-key",
-            PREFIX + "openai.base-url",
-            PREFIX + "openai.extra",
-            PREFIX + "anthropic.api-key",
-            PREFIX + "anthropic.base-url",
-            PREFIX + "anthropic.extra",
-            PREFIX + "gemini.api-key",
-            PREFIX + "gemini.base-url",
-            PREFIX + "gemini.extra",
-            PREFIX + "dashscope.api-key",
-            PREFIX + "dashscope.base-url",
-            PREFIX + "dashscope.extra",
-            PREFIX + "openai-compatible",
-            PREFIX + "anthropic-compatible");
-
     @Test
     void bindsEveryAgentScope2PropertyUsingExactKebabCasePaths() {
         LiteflowProperty property = bind(Map.ofEntries(
-                entry("runtime.namespace", "binding-test"),
-                entry("runtime.default-user-id", "user-7"),
-                entry("runtime.timeout", "17s"),
-                entry("state-store.type", "REDIS"),
-                entry("state-store.json-root", "/tmp/agent-state"),
-                entry("state-store.failure-policy", "LOG_AND_CONTINUE"),
-                entry("state-store.redis.uri", "redis://localhost:6379"),
-                entry("state-store.redis.client-bean-name", ""),
-                entry("state-store.redis.key-prefix", "liteflow:agent:state:"),
-                entry("state-store.mysql.jdbc-url", "jdbc:mysql://localhost:3306/liteflow"),
-                entry("state-store.mysql.username", "lf"),
-                entry("state-store.mysql.password", "secret"),
-                entry("state-store.mysql.database-name", "liteflow"),
-                entry("state-store.mysql.table-name", "agent_state"),
-                entry("state-store.mysql.create-if-not-exist", "true"),
+                entry("application-name", "binding-test"),
+                entry("execution-timeout", "17s"),
+                entry("session-store.type", "REDIS"),
+                entry("session-store.json-root", "/tmp/agent-state"),
+                entry("session-store.json-workspace-root", "/tmp/agent-records"),
+                entry("session-store.failure-policy", "LOG_AND_CONTINUE"),
+                entry("session-store.redis.uri", "redis://localhost:6379"),
+                entry("session-store.redis.client-bean-name", ""),
+                entry("session-store.redis.key-prefix", "liteflow:agent:state:"),
+                entry("session-store.mysql.jdbc-url", "jdbc:mysql://localhost:3306/liteflow"),
+                entry("session-store.mysql.username", "lf"),
+                entry("session-store.mysql.password", "secret"),
+                entry("session-store.mysql.database-name", "liteflow"),
+                entry("session-store.mysql.table-name", "agent_state"),
+                entry("session-store.mysql.create-if-not-exist", "true"),
                 entry("toolkit.parallel", "true"),
                 entry("event.listener-failure-mode", "LOG_AND_CONTINUE"),
                 entry("invocation-guard.mode", "BEAN"),
@@ -141,50 +86,53 @@ class AgentPropertyBindingTest {
                 entry("hitl.confirmation-timeout", "29s"),
                 entry("hitl.fail-on-denied-tool", "true"),
                 entry("harness.filesystem-backend", "DOCKER"),
-                entry("harness.trusted-local", "false"),
                 entry("harness.docker.image", "alpine:3.20"),
                 entry("harness.docker.workspace-root", "/workspace"),
                 entry("harness.docker.memory-size-bytes", "268435456"),
                 entry("harness.docker.cpu-count", "1"),
                 entry("harness.docker.network", "none"),
                 entry("harness.docker.snapshot-root", "./data/agent-snapshots"),
+                entry("harness.docker.lifecycle", "SESSION_IDLE"),
+                entry("harness.docker.idle-timeout", "41s"),
+                entry("harness.docker.eviction-interval", "7s"),
+                entry("harness.docker.max-cached-sandboxes", "12"),
                 entry("harness.docker.workspace-projection-enabled", "true"),
                 entry("harness.docker.workspace-projection-roots[0]", "AGENTS.md"),
                 entry("harness.docker.workspace-projection-roots[1]", "skills"),
                 entry("harness.docker.workspace-projection-roots[2]", "subagents"),
                 entry("harness.docker.workspace-projection-roots[3]", "knowledge"),
                 entry("harness.docker.workspace-projection-roots[4]", ".skills-cache"),
-                entry("workspace.backend", "REMOTE_FILESYSTEM"),
-                entry("workspace.trusted-local", "true"),
-                entry("workspace.root", "/tmp/workspace"),
-                entry("workspace.auto-create", "false"),
-                entry("workspace.max-file-bytes", "12345"),
-                entry("shell.mode", "WHITELIST"),
-                entry("shell.whitelist[0]", "printf"),
-                entry("shell.timeout", "31s"),
-                entry("defaults.max-iterations", "27"),
-                entry("logging.enabled", "false"),
+                entry("harness.local.workspace-root", "/tmp/workspace"),
+                entry("harness.compaction-threshold", "0.75"),
+                entry("harness.compaction-fallback-context-window", "262144"),
+                entry("harness.compaction-fallback-threshold", "0.85"),
+                entry("harness.memory.flush-mode", "THROTTLED"),
+                entry("harness.memory.flush-min-gap", "43s"),
+                entry("harness.shell.mode", "WHITELIST"),
+                entry("harness.shell.whitelist[0]", "printf"),
+                entry("harness.shell.timeout", "31s"),
+                entry("max-iterations", "27"),
+                entry("execution-log-enabled", "false"),
                 entry("skills.enabled", "true"),
                 entry("skills.path", "/tmp/skills"),
                 entry("skills.strict", "false")));
 
         AgentConfig agent = property.getAgent();
-        assertEquals("binding-test", agent.getRuntime().getNamespace());
-        assertEquals("user-7", agent.getRuntime().getDefaultUserId());
-        assertEquals(Duration.ofSeconds(17), agent.getRuntime().getTimeout());
-        assertEquals(AgentStateStoreType.REDIS, agent.getStateStore().getType());
-        assertEquals("/tmp/agent-state", agent.getStateStore().getJsonRoot());
-        assertEquals(AgentStateStoreFailurePolicy.LOG_AND_CONTINUE,
-                agent.getStateStore().getFailurePolicy());
-        assertEquals("redis://localhost:6379", agent.getStateStore().getRedis().getUri());
-        assertEquals("liteflow:agent:state:", agent.getStateStore().getRedis().getKeyPrefix());
+        assertEquals("binding-test", agent.getApplicationName());
+        assertEquals(Duration.ofSeconds(17), agent.getExecutionTimeout());
+        assertEquals(AgentSessionStoreType.REDIS, agent.getSessionStore().getType());
+        assertEquals("/tmp/agent-state", agent.getSessionStore().getJsonRoot());
+        assertEquals(AgentSessionStoreFailurePolicy.LOG_AND_CONTINUE,
+                agent.getSessionStore().getFailurePolicy());
+        assertEquals("redis://localhost:6379", agent.getSessionStore().getRedis().getUri());
+        assertEquals("liteflow:agent:state:", agent.getSessionStore().getRedis().getKeyPrefix());
         assertEquals("jdbc:mysql://localhost:3306/liteflow",
-                agent.getStateStore().getMysql().getJdbcUrl());
-        assertEquals("lf", agent.getStateStore().getMysql().getUsername());
-        assertEquals("secret", agent.getStateStore().getMysql().getPassword());
-        assertEquals("liteflow", agent.getStateStore().getMysql().getDatabaseName());
-        assertEquals("agent_state", agent.getStateStore().getMysql().getTableName());
-        assertTrue(agent.getStateStore().getMysql().isCreateIfNotExist());
+                agent.getSessionStore().getMysql().getJdbcUrl());
+        assertEquals("lf", agent.getSessionStore().getMysql().getUsername());
+        assertEquals("secret", agent.getSessionStore().getMysql().getPassword());
+        assertEquals("liteflow", agent.getSessionStore().getMysql().getDatabaseName());
+        assertEquals("agent_state", agent.getSessionStore().getMysql().getTableName());
+        assertTrue(agent.getSessionStore().getMysql().isCreateIfNotExist());
         assertTrue(agent.getToolkit().isParallel());
         assertEquals(AgentListenerFailureMode.LOG_AND_CONTINUE,
                 agent.getEvent().getListenerFailureMode());
@@ -196,7 +144,6 @@ class AgentPropertyBindingTest {
         assertTrue(agent.getHitl().isFailOnDeniedTool());
         assertEquals(HarnessFilesystemBackend.DOCKER,
                 agent.getHarness().getFilesystemBackend());
-        assertFalse(agent.getHarness().isTrustedLocal());
         DockerSandboxConfig docker = agent.getHarness().getDocker();
         assertEquals("alpine:3.20", docker.getImage());
         assertEquals("/workspace", docker.getWorkspaceRoot());
@@ -204,23 +151,63 @@ class AgentPropertyBindingTest {
         assertEquals(1L, docker.getCpuCount());
         assertEquals(DockerNetworkMode.NONE, docker.getNetwork());
         assertEquals("./data/agent-snapshots", docker.getSnapshotRoot());
+        assertEquals(DockerSandboxLifecycle.SESSION_IDLE, docker.getLifecycle());
+        assertEquals(Duration.ofSeconds(41), docker.getIdleTimeout());
+        assertEquals(Duration.ofSeconds(7), docker.getEvictionInterval());
+        assertEquals(12, docker.getMaxCachedSandboxes());
         assertTrue(docker.isWorkspaceProjectionEnabled());
         assertEquals(List.of("AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"),
                 docker.getWorkspaceProjectionRoots());
+        assertEquals(HarnessMemoryFlushMode.THROTTLED, agent.getHarness().getMemory().getFlushMode());
+        assertEquals(Duration.ofSeconds(43), agent.getHarness().getMemory().getFlushMinGap());
         assertDoesNotThrow(agent.getHarness()::validate);
-        assertEquals(WorkspaceBackend.REMOTE_FILESYSTEM, agent.getWorkspace().getBackend());
-        assertTrue(agent.getWorkspace().isTrustedLocal());
-        assertEquals("/tmp/workspace", agent.getWorkspace().getRoot());
-        assertFalse(agent.getWorkspace().isAutoCreate());
-        assertEquals(12345L, agent.getWorkspace().getMaxFileBytes());
-        assertEquals(ShellMode.WHITELIST, agent.getShell().getMode());
-        assertEquals(Set.of("printf"), Set.copyOf(agent.getShell().getWhitelist()));
-        assertEquals(Duration.ofSeconds(31), agent.getShell().getTimeout());
-        assertEquals(27, agent.getDefaults().getMaxIterations());
-        assertFalse(agent.getLogging().isEnabled());
+        assertEquals("/tmp/agent-records", agent.getSessionStore().getJsonWorkspaceRoot());
+        assertEquals("/tmp/workspace", agent.getHarness().getLocal().getWorkspaceRoot());
+        assertEquals(0.75, agent.getHarness().getCompactionThreshold());
+        assertEquals(262144, agent.getHarness().getCompactionFallbackContextWindow());
+        assertEquals(0.85, agent.getHarness().getCompactionFallbackThreshold());
+        assertEquals(ShellMode.WHITELIST, agent.getHarness().getShell().getMode());
+        assertEquals(Set.of("printf"), Set.copyOf(agent.getHarness().getShell().getWhitelist()));
+        assertEquals(Duration.ofSeconds(31), agent.getHarness().getShell().getTimeout());
+        assertEquals(27, agent.getMaxIterations());
+        assertFalse(agent.isExecutionLogEnabled());
         assertTrue(agent.getSkills().isEnabled());
         assertEquals("/tmp/skills", agent.getSkills().getPath());
         assertFalse(agent.getSkills().isStrict());
+    }
+
+    @Test
+    void applicationNameDefaultsToSpringApplicationNameWithoutAgentConfiguration() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(LiteflowPropertyAutoConfiguration.class)
+                .withPropertyValues("spring.application.name=orders-module")
+                .run(context -> {
+                    AgentConfig agent = context.getBean(LiteflowConfig.class).getAgent();
+                    assertEquals("orders-module", agent.getApplicationName());
+                    assertEquals(Duration.ofMinutes(10), agent.getExecutionTimeout());
+                    assertEquals(100, agent.getMaxIterations());
+                    assertEquals(Duration.ofMinutes(1), agent.getHarness().getShell().getTimeout());
+                    assertTrue(agent.isExecutionLogEnabled());
+                    assertDoesNotThrow(agent::validateForExecution);
+                });
+    }
+
+    @Test
+    void explicitAgentApplicationNameAndExecutionTimeoutOverrideDefaults() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(LiteflowPropertyAutoConfiguration.class)
+                .withPropertyValues("spring.application.name=orders-module",
+                        "liteflow.agent.application-name=shared-orders",
+                        "liteflow.agent.execution-timeout=45s",
+                        "liteflow.agent.max-iterations=27",
+                        "liteflow.agent.execution-log-enabled=false")
+                .run(context -> {
+                    AgentConfig agent = context.getBean(LiteflowConfig.class).getAgent();
+                    assertEquals("shared-orders", agent.getApplicationName());
+                    assertEquals(Duration.ofSeconds(45), agent.getExecutionTimeout());
+                    assertEquals(27, agent.getMaxIterations());
+                    assertFalse(agent.isExecutionLogEnabled());
+                });
     }
 
     @Test
@@ -237,19 +224,14 @@ class AgentPropertyBindingTest {
     }
 
     @Test
-    void boundGuardedLocalConfigurationFailsClosedWithoutExplicitTrust() {
+    void boundGuardedLocalConfigurationIsValidWithoutAnAdditionalTrustFlag() {
         AgentConfig agent = bind(Map.of(
-                PREFIX + "harness.filesystem-backend", "GUARDED_LOCAL",
-                PREFIX + "harness.trusted-local", "false")).getAgent();
-
-        IllegalStateException failure = assertThrows(
-                IllegalStateException.class, agent.getHarness()::validate);
-
-        assertTrue(failure.getMessage().contains("trusted-local"));
+                PREFIX + "harness.filesystem-backend", "GUARDED_LOCAL")).getAgent();
+        assertDoesNotThrow(agent.getHarness()::validate);
     }
 
     @Test
-    void metadataContainsTheSymmetricAgentKeySetAndDeprecatesOnlyLegacyMemory() throws Exception {
+    void metadataCoversEveryAgentPropertyWithMatchingTypes() throws Exception {
         JsonNode root;
         try (InputStream stream = AgentPropertyBindingTest.class.getResourceAsStream(
                 "/META-INF/additional-spring-configuration-metadata.json")) {
@@ -272,29 +254,30 @@ class AgentPropertyBindingTest {
                         (left, right) -> left,
                         LinkedHashMap::new));
 
-        assertEquals(EXPECTED_AGENT_KEYS, agentProperties.keySet());
+        Map<String, String> expectedTypes = agentPropertyTypes(AgentConfig.class, PREFIX);
+        assertEquals(expectedTypes.keySet(), agentProperties.keySet());
+        expectedTypes.forEach((name, type) -> assertEquals(
+                type, agentProperties.get(name).path("type").asText().replace(" ", ""), name));
         Set<String> deprecated = agentProperties.entrySet().stream()
                 .filter(entry -> entry.getValue().has("deprecation"))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
         assertEquals(Set.of(), deprecated, "no liteflow.agent.* key should be deprecated");
 
-        assertMetadata(agentProperties, "runtime.timeout", "java.time.Duration", "2m");
-        assertMetadata(agentProperties, "state-store.type",
-                AgentStateStoreType.class.getName(), "JSON");
-        assertMetadata(agentProperties, "state-store.failure-policy",
-                AgentStateStoreFailurePolicy.class.getName(), "FAIL_FAST");
+        assertMetadata(agentProperties, "execution-timeout", "java.time.Duration", "10m");
+        assertMetadata(agentProperties, "session-store.type",
+                AgentSessionStoreType.class.getName(), "JSON");
+        assertMetadata(agentProperties, "session-store.failure-policy",
+                AgentSessionStoreFailurePolicy.class.getName(), "FAIL_FAST");
         assertMetadata(agentProperties, "toolkit.parallel", "java.lang.Boolean", "false");
         assertMetadata(agentProperties, "event.listener-failure-mode",
                 AgentListenerFailureMode.class.getName(), "FAIL_FAST");
         assertMetadata(agentProperties, "invocation-guard.mode",
-                AgentInvocationGuardMode.class.getName(), "LOCAL");
+                AgentInvocationGuardMode.class.getName(), new AgentConfig().getInvocationGuard().getMode().name());
         assertMetadata(agentProperties, "hitl.confirmation-timeout",
                 "java.time.Duration", "2m");
         assertMetadata(agentProperties, "harness.filesystem-backend",
                 HarnessFilesystemBackend.class.getName(), "GUARDED_LOCAL");
-        assertMetadata(agentProperties, "harness.trusted-local",
-                "java.lang.Boolean", "false");
         assertMetadata(agentProperties, "harness.docker.image",
                 "java.lang.String", "ubuntu:22.04");
         assertMetadata(agentProperties, "harness.docker.workspace-root",
@@ -303,22 +286,36 @@ class AgentPropertyBindingTest {
                 "java.lang.Long", "536870912");
         assertMetadata(agentProperties, "harness.docker.cpu-count",
                 "java.lang.Long", "1");
+        assertMetadata(agentProperties, "harness.docker.lifecycle",
+                DockerSandboxLifecycle.class.getName(), "PER_CALL");
+        assertMetadata(agentProperties, "harness.docker.idle-timeout",
+                "java.time.Duration", "10m");
+        assertMetadata(agentProperties, "harness.docker.eviction-interval",
+                "java.time.Duration", "30s");
+        assertMetadata(agentProperties, "harness.docker.max-cached-sandboxes",
+                "java.lang.Integer", "8");
+        assertMetadata(agentProperties, "harness.memory.flush-mode",
+                HarnessMemoryFlushMode.class.getName(), "NEVER");
+        assertMetadata(agentProperties, "harness.memory.flush-min-gap",
+                "java.time.Duration", "5m");
         assertMetadata(agentProperties, "harness.docker.network",
                 DockerNetworkMode.class.getName(), "NONE");
         assertMetadata(agentProperties, "harness.docker.workspace-projection-enabled",
                 "java.lang.Boolean", "true");
-        assertMetadata(agentProperties, "workspace.backend",
-                WorkspaceBackend.class.getName(), "GUARDED_LOCAL");
-        assertMetadata(agentProperties, "shell.mode",
-                ShellMode.class.getName(), "DISABLED");
-        assertMetadata(agentProperties, "defaults.max-iterations",
-                "java.lang.Integer", "50");
+        assertMetadata(agentProperties, "harness.shell.mode",
+                ShellMode.class.getName(), "WHITELIST");
+        assertMetadata(agentProperties, "harness.shell.timeout",
+                "java.time.Duration", "1m");
+        assertMetadata(agentProperties, "max-iterations",
+                "java.lang.Integer", "100");
+        assertMetadata(agentProperties, "execution-log-enabled",
+                "java.lang.Boolean", "true");
     }
 
     @Test
     void springContextCloseInvokesThePublicAgentComponentCloseExactlyOnce() throws Exception {
         AgentConfig agent = new AgentConfig();
-        agent.getRuntime().setNamespace("spring-lifecycle-test");
+        agent.setApplicationName("spring-lifecycle-test");
         LiteflowConfig liteflowConfig = new LiteflowConfig();
         liteflowConfig.setAgent(agent);
         LiteflowConfigGetter.setLiteflowConfig(liteflowConfig);
@@ -339,6 +336,26 @@ class AgentPropertyBindingTest {
             context.close();
             LiteflowConfigGetter.clean();
         }
+    }
+
+    private static Map<String, String> agentPropertyTypes(Class<?> beanType, String prefix)
+            throws Exception {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (PropertyDescriptor property : Introspector.getBeanInfo(beanType, Object.class)
+                .getPropertyDescriptors()) {
+            String name = prefix + property.getName()
+                    .replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
+            Class<?> type = property.getPropertyType();
+            if (!type.isEnum() && type.getPackageName().equals(AgentConfig.class.getPackageName())) {
+                types.putAll(agentPropertyTypes(type, name + "."));
+            } else {
+                String metadataType = type.isPrimitive()
+                        ? ClassUtils.resolvePrimitiveIfNecessary(type).getName()
+                        : property.getReadMethod().getGenericReturnType().getTypeName().replace(" ", "");
+                types.put(name, metadataType);
+            }
+        }
+        return types;
     }
 
     private static LiteflowProperty bind(Map<String, Object> properties) {

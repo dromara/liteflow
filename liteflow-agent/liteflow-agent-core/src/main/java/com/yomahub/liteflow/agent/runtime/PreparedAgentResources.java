@@ -5,7 +5,6 @@ import io.agentscope.core.model.ExecutionConfig;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.middleware.MiddlewareBase;
 import io.agentscope.core.permission.PermissionContextState;
-import io.agentscope.core.skill.DynamicSkillMiddleware;
 import io.agentscope.core.skill.SkillFilter;
 import io.agentscope.core.skill.repository.AgentSkillRepository;
 import io.agentscope.core.tool.AgentTool;
@@ -25,7 +24,6 @@ public record PreparedAgentResources(
         List<AgentSkillRepository> skillRepositories,
         SkillFilter skillFilter,
         boolean dynamicSkillsEnabled,
-        DynamicSkillMiddleware managedDynamicSkills,
         List<MiddlewareBase> coreMiddlewares,
         List<MiddlewareBase> userMiddlewares,
         ModelRoutingMiddleware routingMiddleware,

@@ -5,10 +5,9 @@ import com.yomahub.liteflow.property.agent.AgentConfig;
 import java.nio.file.Path;
 import java.time.Duration;
 
-/** LiteFlow-owned limits supplied to a Harness filesystem extension. */
+/** Execution location and configuration supplied to a Harness filesystem extension. */
 public record HarnessFilesystemContext(
         Path workspaceRoot,
-        long maxFileBytes,
         Duration commandTimeout,
         AgentConfig agentConfig) {
 }
