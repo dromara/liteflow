@@ -118,6 +118,12 @@
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-agent-core</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
             <artifactId>liteflow-spring-boot4-starter</artifactId>
             <version>${revision}</version>
         </dependency>

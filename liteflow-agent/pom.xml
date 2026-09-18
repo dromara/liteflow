@@ -23,7 +23,6 @@
     <modules>
         <module>liteflow-agent-core</module>
         <module>liteflow-agent-a2a</module>
-        <module>liteflow-agent-harness</module>
         <module>liteflow-agent-openai</module>
         <module>liteflow-agent-anthropic</module>
         <module>liteflow-agent-gemini</module>

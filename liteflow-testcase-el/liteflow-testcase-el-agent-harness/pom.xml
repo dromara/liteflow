@@ -13,11 +13,18 @@
     <artifactId>liteflow-testcase-el-agent-harness</artifactId>
 
     <properties>
+        <skipTests>false</skipTests>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.1.214</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.yomahub</groupId><artifactId>liteflow-agent-mysql</artifactId>
             <version>${revision}</version><scope>test</scope>
@@ -28,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-agent-harness</artifactId>
+            <artifactId>liteflow-agent-core</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>

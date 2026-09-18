@@ -45,8 +45,11 @@ class StateStoreIntegrationTest {
 
         assertEquals(List.of(2, 2, 4), StateStoreAgentCmp.alphaMessageCounts());
         assertEquals(List.of(2, 2), StateStoreAgentCmp.betaMessageCounts());
-        assertEquals(4, StateStoreAgentCmp.physicalSessions().size(),
+        assertEquals(4, StateStoreAgentCmp.agentSessions().size(),
                 "two agent namespaces times two conversations must remain disjoint");
+        assertTrue(StateStoreAgentCmp.physicalSessions().containsAll(StateStoreAgentCmp.agentSessions()));
+        assertEquals(6, StateStoreAgentCmp.physicalSessions().size(),
+                "four working contexts plus two separate conversation histories");
     }
 
     @Test

@@ -5,53 +5,53 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.FileVisitResult;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AgentTestLayoutContractTest {
 
-    private static final List<String> PROHIBITED_ROOTS = List.of(
-            "liteflow-agent/liteflow-agent-core/src/test",
-            "liteflow-agent/liteflow-agent-openai/src/test",
-            "liteflow-agent/liteflow-agent-anthropic/src/test",
-            "liteflow-agent/liteflow-agent-gemini/src/test",
-            "liteflow-agent/liteflow-agent-dashscope/src/test",
-            "liteflow-agent/liteflow-agent-harness/src/test",
-            "liteflow-agent/liteflow-agent-a2a/src/test");
-
-    private static final List<String> PROHIBITED_FILES = List.of(
-            "liteflow-core/src/test/java/com/yomahub/liteflow/property/agent/AgentConfigV2Test.java",
-            "liteflow-spring-boot-starter/src/test/java/com/yomahub/liteflow/springboot/AgentPropertyBindingTest.java",
-            "liteflow-spring-boot4-starter/src/test/java/com/yomahub/liteflow/springboot4/AgentPropertyBindingTest.java",
-            "liteflow-solon-plugin/src/test/java/com/yomahub/liteflow/spi/solon/SolonCmpAroundAspectTest.java");
+    private static final Set<String> ALLOWED_ROOTS = Set.of("liteflow-testcase-el", "liteflow-benchmark");
 
     @Test
-    void agentScope2TestsLiveOnlyUnderLiteflowTestcaseEl() throws IOException {
+    void allTestsLiveUnderTestcaseElExceptBenchmarks() throws IOException {
         Path root = repositoryRoot();
         List<String> violations = new ArrayList<>();
-        for (String relativeRoot : PROHIBITED_ROOTS) {
-            Path prohibited = root.resolve(relativeRoot);
-            if (!Files.exists(prohibited)) {
-                continue;
+        Files.walkFileTree(root, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
+                if (directory.equals(root)) return FileVisitResult.CONTINUE;
+                String name = directory.getFileName().toString();
+                if (name.startsWith(".") || name.equals("target") || name.equals("node_modules")
+                        || (directory.getParent().equals(root) && ALLOWED_ROOTS.contains(name))) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                return FileVisitResult.CONTINUE;
             }
-            try (var paths = Files.walk(prohibited)) {
-                paths.filter(Files::isRegularFile)
-                        .map(root::relativize)
-                        .map(Path::toString)
-                        .forEach(violations::add);
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+                String relative = root.relativize(file).toString().replace('\\', '/');
+                if (relative.contains("/src/test/") || relative.startsWith("src/test/")) {
+                    violations.add(relative);
+                } else if (relative.endsWith(".java") || relative.endsWith(".kt") || relative.endsWith(".groovy")) {
+                    String source = Files.readString(file);
+                    if (source.matches("(?s).*\\bimport\\s+(?:static\\s+)?(?:org\\.junit\\.|org\\.testng\\.|junit\\.framework\\.).*")) {
+                        violations.add(relative);
+                    }
+                }
+                return FileVisitResult.CONTINUE;
             }
-        }
-        for (String relativeFile : PROHIBITED_FILES) {
-            if (Files.isRegularFile(root.resolve(relativeFile))) {
-                violations.add(relativeFile);
-            }
-        }
+        });
         violations.sort(Comparator.naturalOrder());
         assertEquals(List.of(), violations,
-                () -> "AgentScope 2 tests must live under liteflow-testcase-el: " + violations);
+                () -> "Tests must live under liteflow-testcase-el (benchmark excepted): " + violations);
     }
 
     private static Path repositoryRoot() {

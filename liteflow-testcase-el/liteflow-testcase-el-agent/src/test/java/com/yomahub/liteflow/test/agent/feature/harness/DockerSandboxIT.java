@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class DockerSandboxIT {
 
-    private static final String IMAGE = "alpine:3.20";
+    private static final String IMAGE = System.getProperty("liteflow.agent.test.docker-image", "alpine:3.20");
     private static final String WORKSPACE = "/workspace";
     private static final long MEMORY_BYTES = 64L * 1024 * 1024;
     private static final long CPU_COUNT = 1L;
@@ -156,8 +156,8 @@ public class DockerSandboxIT {
         assertFalse(result.exitCode() == 0,
                 () -> "container was not removed: " + containerId + "\n" + result.stdout());
         assertTrue(
-                result.stderr().contains("No such object")
-                        || result.stderr().contains("No such container"),
+                result.stderr().toLowerCase(java.util.Locale.ROOT).contains("no such object")
+                        || result.stderr().toLowerCase(java.util.Locale.ROOT).contains("no such container"),
                 () -> "Docker inspect failed for an unexpected reason: " + result.stderr());
     }
 

@@ -85,6 +85,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HexFormat;
@@ -115,6 +116,180 @@ class HarnessCapabilitiesTest {
     Path tempDir;
 
     private final List<TestComponent> components = new ArrayList<>();
+
+    @Test
+    void allSixDocumentedFilesystemToolsExecuteThroughTheModelToolLoop() throws Exception {
+        configureGuarded("six-file-tools");
+        RecordingModel model = new RecordingModel();
+        TestComponent component = component(model, null);
+        component.filesystemTools = true;
+        component.shellEnabled = false;
+        List<String> names = List.of("write_file", "read_file", "edit_file", "grep_files", "glob_files", "list_files");
+        List<Map<String, Object>> inputs = List.of(
+                Map.of("path", "output/report.txt", "content", "ORDER-123"),
+                Map.of("path", "output/report.txt"),
+                Map.of("path", "output/report.txt", "old_string", "ORDER-123", "new_string", "PAID-123"),
+                Map.of("path", "output", "pattern", "PAID-123"),
+                Map.of("path", "output", "pattern", "*.txt"),
+                Map.of("path", "output"));
+        for (int i = 0; i < names.size(); i++) {
+            model.armTool(names.get(i), inputs.get(i), new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(inputs.get(i)));
+            component.process();
+            String tool = names.get(i);
+            assertTrue(model.toolResults().stream().anyMatch(result -> tool.equals(result.getName())
+                    && result.getState() == ToolResultState.SUCCESS), tool + " must actually execute");
+        }
+        assertTrue(model.toolResultText("read_file").stream().anyMatch(text -> text.contains("ORDER-123")));
+        assertTrue(model.toolResultText("grep_files").stream().anyMatch(text -> text.contains("PAID-123")));
+        assertTrue(model.toolResultText("glob_files").stream().anyMatch(text -> text.contains("report.txt")));
+        assertTrue(model.toolResultText("list_files").stream().anyMatch(text -> text.contains("report.txt")));
+        RuntimeContext context = RuntimeContext.builder().sessionId(component.lastContext.getRuntimeSessionId()).build();
+        assertEquals("PAID-123", component.runtime.agent().getWorkspaceManager().getFilesystem()
+                .read(context, "output/report.txt", 0, 0).fileData().content());
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(WorkspaceMode.class)
+    void declaredSubagentWorkspaceModeControlsVisibilityAndInheritsModelWithTenIterations(WorkspaceMode mode)
+            throws Exception {
+        configureCustom("workspace-mode-" + mode);
+        RecordingModel model = new RecordingModel();
+        var files = new com.yomahub.liteflow.agent.harness.storage.StoredWorkspaceFilesystem(
+                new io.agentscope.harness.agent.filesystem.remote.store.InMemoryStore(),
+                context -> List.of("session", String.valueOf(context.getSessionId())), tempDir.resolve("parent"));
+        TestComponent component = component(model, files);
+        component.subagents = List.of(SubagentDeclaration.builder().name("reviewer").description("Review files")
+                .inlineAgentsBody("Review the supplied facts.").workspaceMode(mode).build());
+        component.process();
+        RuntimeContext parent = RuntimeContext.builder().sessionId(component.lastContext.getRuntimeSessionId())
+                .put(LiteFlowAgentContext.class, component.lastContext).build();
+        assertTrue(files.write(parent, "parent.txt", "parent content").isSuccess());
+        try (HarnessAgent child = (HarnessAgent) component.runtime.agent().getSubagentAgentManager()
+                .createAgent("reviewer", parent)) {
+            assertSame(model, child.getDelegate().getModel());
+            assertEquals(10, child.getDelegate().getReactConfig().maxIters());
+            var childFiles = child.getWorkspaceManager().getFilesystem();
+            if (mode == WorkspaceMode.SHARED) {
+                assertEquals("parent content", childFiles.read(parent, "parent.txt", 0, 0).fileData().content());
+            } else {
+                assertFalse(childFiles.exists(parent, "parent.txt"));
+                assertFalse(child.getWorkspaceManager().getWorkspace()
+                        .equals(component.runtime.agent().getWorkspaceManager().getWorkspace()));
+            }
+            assertTrue(childFiles.write(parent, "child.txt", "child content").isSuccess());
+            assertEquals(mode == WorkspaceMode.SHARED, files.exists(parent, "child.txt"));
+            assertEquals("parent content", files.read(parent, "parent.txt", 0, 0).fileData().content());
+        }
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"success", "conflict", "failure", "null", "exception"})
+    void artifactDeliveryUsesWorkspaceBytesAndReturnsTheDestinationOutcome(String outcome) throws Exception {
+        configureGuarded("artifact-" + outcome);
+        RecordingModel model = new RecordingModel();
+        TestComponent component = component(model, null);
+        component.filesystemTools = true;
+        component.shellEnabled = false;
+        var delivered = new ArrayList<io.agentscope.harness.agent.artifact.ArtifactDeliveryRequest>();
+        component.mutateBuilder = builder -> builder.artifactDeliveryTarget((context, request) -> {
+            assertEquals(component.lastContext.getRuntimeSessionId(), context.getSessionId());
+            delivered.add(request);
+            return switch (outcome) {
+                case "success" -> io.agentscope.harness.agent.artifact.ArtifactDeliveryResult.success("artifact-42");
+                case "conflict" -> io.agentscope.harness.agent.artifact.ArtifactDeliveryResult.conflict("already exists");
+                case "failure" -> io.agentscope.harness.agent.artifact.ArtifactDeliveryResult.fail("destination offline");
+                case "null" -> null;
+                default -> throw new IllegalStateException("destination failed");
+            };
+        });
+        component.process();
+        RuntimeContext context = RuntimeContext.builder().sessionId(component.lastContext.getRuntimeSessionId()).build();
+        String content = "报告内容\nwith a second line";
+        assertTrue(component.runtime.agent().getWorkspaceManager().getFilesystem()
+                .write(context, "report.txt", content).isSuccess());
+        Map<String, Object> input = Map.of("filePath", "report.txt", "fileName", "published.txt",
+                "description", "report", "force", true);
+        model.armTool("deliver_artifact", input, new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(input));
+        component.process();
+        assertEquals(1, delivered.size());
+        assertEquals(content, new String(delivered.get(0).content(), StandardCharsets.UTF_8));
+        assertEquals("published.txt", delivered.get(0).fileName());
+        assertEquals("report", delivered.get(0).description());
+        assertTrue(delivered.get(0).force());
+        String expected = switch (outcome) {
+            case "success" -> "artifact-42";
+            case "conflict" -> "already exists";
+            case "failure" -> "destination offline";
+            case "null" -> "returned no result";
+            default -> "destination failed";
+        };
+        assertTrue(model.toolResultText("deliver_artifact").stream().anyMatch(text -> text.contains(expected)),
+                model.toolResultText("deliver_artifact").toString());
+    }
+
+    @Test
+    void artifactDeliveryIsOptInAndDoesNotDeliverMissingFilesOrUnsafeTargetNames() throws Exception {
+        configureGuarded("artifact-validation");
+        RecordingModel disabled = new RecordingModel();
+        component(disabled, null).process();
+        assertFalse(disabled.schemas.stream().flatMap(Collection::stream)
+                .anyMatch(tool -> tool.getName().equals("deliver_artifact")));
+
+        RecordingModel model = new RecordingModel();
+        TestComponent component = component(model, null, "artifact-enabled", "artifact-session");
+        component.filesystemTools = true;
+        component.shellEnabled = false;
+        AtomicInteger deliveries = new AtomicInteger();
+        component.mutateBuilder = builder -> builder.artifactDeliveryTarget((context, request) -> {
+            deliveries.incrementAndGet();
+            return io.agentscope.harness.agent.artifact.ArtifactDeliveryResult.success();
+        });
+        for (var input : List.of(Map.of("filePath", "missing.txt"),
+                Map.of("filePath", "report.txt", "fileName", "../outside.txt"))) {
+            model.armTool("deliver_artifact", new java.util.HashMap<>(input),
+                    new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(input));
+            component.process();
+        }
+        assertEquals(0, deliveries.get());
+        assertTrue(model.toolResultText("deliver_artifact").stream().anyMatch(text -> text.contains("failed to read")));
+        assertTrue(model.toolResultText("deliver_artifact").stream().anyMatch(text -> text.contains("plain file name")));
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"allow", "deny", "timeout"})
+    void exitingPlanModeRequiresTheConfiguredApprovalAndPreservesPlanOnDenial(String decision) throws Exception {
+        configureCustom("plan-approval-" + decision);
+        LiteflowConfigGetter.get().getAgent().getHitl().setConfirmationTimeout(Duration.ofMillis(100));
+        RecordingModel model = new RecordingModel();
+        TestComponent component = component(model, new RecordingFilesystem(Map.of()));
+        component.planMode = true;
+        component.permission = PermissionContextState.builder()
+                .mode(PermissionMode.DEFAULT)
+                .addAskRule("plan_exit", new PermissionRule("plan_exit", null, PermissionBehavior.ASK, "guide"))
+                .build();
+        AtomicInteger approvals = new AtomicInteger();
+        component.confirmation = (event, context) -> {
+            approvals.incrementAndGet();
+            assertTrue(component.runtime.agent().isPlanModeActive(
+                    RuntimeContext.builder().sessionId(context.getRuntimeSessionId()).build()));
+            assertEquals("plan_exit", event.getToolCalls().get(0).getName());
+            return decision.equals("timeout") ? reactor.core.publisher.Mono.never()
+                    : reactor.core.publisher.Mono.just(List.of(new io.agentscope.core.event.ConfirmResult(
+                    decision.equals("allow"), event.getToolCalls().get(0))));
+        };
+        component.process();
+        RuntimeContext context = RuntimeContext.builder().sessionId(component.lastContext.getRuntimeSessionId()).build();
+        component.runtime.agent().enterPlanMode(context);
+        model.armTool("plan_exit", Map.of(), "{}");
+        if (decision.equals("timeout")) {
+            var failure = assertThrows(com.yomahub.liteflow.agent.exception.AgentInvocationException.class, component::process);
+            assertEquals(com.yomahub.liteflow.agent.exception.AgentInvocationErrorType.TIMEOUT, failure.getErrorType());
+        } else {
+            component.process();
+        }
+        assertEquals(1, approvals.get());
+        assertEquals(!decision.equals("allow"), component.runtime.agent().isPlanModeActive(context));
+    }
 
     @AfterEach
     void cleanUp() {
@@ -986,6 +1161,9 @@ class HarnessCapabilitiesTest {
         private List<Object> tools = List.of();
         private List<MiddlewareBase> middlewares = List.of();
         private boolean disableDynamicSubagents;
+        private boolean filesystemTools;
+        private boolean shellEnabled = true;
+        private com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler confirmation;
         private AbstractFilesystem configuredFilesystem;
 
         private TestComponent(Slot slot, Model model, AbstractFilesystem filesystem) {
@@ -995,6 +1173,7 @@ class HarnessCapabilitiesTest {
         }
 
         @Override public Slot getSlot() { return slot; }
+        @Override protected boolean enableShellTool() { return shellEnabled; }
         @Override protected ModelSpec<?> model() { throw new AssertionError("buildModel used"); }
 
         // PermissionState 断言依赖同一实例引用，测试内用进程内状态存储保持实例同一性。
@@ -1023,6 +1202,9 @@ class HarnessCapabilitiesTest {
         }
         @Override protected List<Object> tools() { return tools; }
         @Override protected List<MiddlewareBase> middlewares() { return middlewares; }
+        @Override protected com.yomahub.liteflow.agent.hitl.AgentConfirmationHandler confirmationHandler() {
+            return confirmation;
+        }
         @Override protected HarnessFilesystemConfigurer filesystemConfigurer() {
             return filesystem == null ? null : (builder, context) -> builder.abstractFilesystem(filesystem);
         }
@@ -1046,8 +1228,9 @@ class HarnessCapabilitiesTest {
                 builder.disableDynamicSubagents();
             }
             builder.disableDefaultWorkspaceSkills().disableToolsConfig()
-                    .disableFilesystemTools().disableShellTool().disableMemoryTools()
+                    .disableShellTool().disableMemoryTools()
                     .disableAtPathExpansion();
+            if (!filesystemTools) builder.disableFilesystemTools();
             return memoryHooks ? builder : builder.disableMemoryHooks();
         }
         @Override protected void customizeRuntimeContext(
@@ -1205,6 +1388,7 @@ class HarnessCapabilitiesTest {
         private final AtomicInteger calls = new AtomicInteger();
         private final AtomicInteger toolCalls = new AtomicInteger();
         private final List<List<Msg>> messages = new ArrayList<>();
+        private final List<List<ToolSchema>> schemas = new ArrayList<>();
         private final AgentSkill skillToLoad;
         private final String responseText;
         private String armedTool;
@@ -1233,6 +1417,7 @@ class HarnessCapabilitiesTest {
                 List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
             int call = calls.getAndIncrement();
             this.messages.add(List.copyOf(messages));
+            schemas.add(tools == null ? List.of() : List.copyOf(tools));
             if (armedTool != null) {
                 String toolName = armedTool;
                 assertTrue(tools.stream().anyMatch(tool -> toolName.equals(tool.getName())),

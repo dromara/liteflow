@@ -40,6 +40,26 @@ class LocalExecutionFilesystemTest {
         return new LocalExecutionFilesystem(files, temp, policy(Duration.ofSeconds(10)), "app");
     }
 
+    @Test void coincidentExecutionAndAuthoritativeRootsNeverRewriteTheirOwnSourceFiles() throws Exception {
+        var files = new GuardedLocalFilesystem(temp.resolve("app"));
+        assertTrue(files.write(first, "keep.txt", "original").isSuccess());
+        assertTrue(files.write(first, "remove.txt", "obsolete").isSuccess());
+        var execution = shell(files);
+        Path keep = execution.executionDirectory(first).resolve("keep.txt");
+        var timestamp = java.nio.file.attribute.FileTime.fromMillis(123456000);
+        Files.setLastModifiedTime(keep, timestamp);
+        execution.refresh(first);
+        assertEquals(timestamp, Files.getLastModifiedTime(keep),
+                "refresh must not truncate and copy an authoritative file onto itself");
+        assertEquals("original", Files.readString(keep));
+        var result = execution.execute(first, script("printf updated > keep.txt; rm remove.txt; printf created > new.txt"), null);
+        assertEquals(0, result.exitCode(), result.output());
+        assertEquals("updated", files.read(first, "keep.txt", 0, 0).fileData().content());
+        assertEquals("created", files.read(first, "new.txt", 0, 0).fileData().content());
+        assertFalse(files.exists(first, "remove.txt"));
+        assertFalse(Files.exists(execution.executionDirectory(first).resolve(".agentscope/execution.pending")));
+    }
+
     @ParameterizedTest @ValueSource(booleans = {false, true})
     void shellSharesFilesWithToolsAndPersistsChangesAcrossRecreation(boolean remote) {
         AbstractFilesystem files = files(remote);

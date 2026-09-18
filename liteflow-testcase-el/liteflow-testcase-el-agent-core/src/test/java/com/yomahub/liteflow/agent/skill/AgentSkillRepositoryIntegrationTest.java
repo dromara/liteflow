@@ -46,6 +46,93 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AgentSkillRepositoryIntegrationTest {
 
+    @org.junit.jupiter.api.io.TempDir Path temp;
+
+    @Test
+    void disablingDynamicSkillsFreezesTheRepositoryUntilTheRuntimeIsRebuilt() throws Exception {
+        AgentConfig config = config();
+        config.getSkills().setEnabled(true);
+        config.getSkills().setPath(temp.toString());
+        Path first = java.nio.file.Files.createDirectories(temp.resolve("first")).resolve("SKILL.md");
+        java.nio.file.Files.writeString(first, skillMarkdown("first", "FROZEN-FIRST"));
+        TestComponent component = new TestComponent(List.of(), List.of());
+        component.dynamic = false;
+        try (HarnessAgentRuntime runtime = component.runtime(config)) {
+            HarnessSkillMiddleware middleware = middleware(runtime, HarnessSkillMiddleware.class);
+            assertTrue(middleware.isFrozen());
+            assertTrue(skillPrompt(middleware, runtime).contains("FROZEN-FIRST"));
+            Path second = java.nio.file.Files.createDirectories(temp.resolve("second")).resolve("SKILL.md");
+            java.nio.file.Files.writeString(second, skillMarkdown("second", "ADDED-LATER"));
+            assertFalse(skillPrompt(middleware, runtime).contains("ADDED-LATER"));
+        }
+        TestComponent rebuilt = new TestComponent(List.of(), List.of());
+        rebuilt.dynamic = false;
+        try (HarnessAgentRuntime runtime = rebuilt.runtime(config)) {
+            assertTrue(skillPrompt(middleware(runtime, HarnessSkillMiddleware.class), runtime).contains("ADDED-LATER"));
+        }
+    }
+
+    @Test
+    void filesystemSkillsAreRediscoveredAfterActualAddModifyAndDeleteBetweenInvocations() throws Exception {
+        AgentConfig config = config();
+        config.getSkills().setEnabled(true);
+        config.getSkills().setPath(temp.toString());
+        Path first = java.nio.file.Files.createDirectories(temp.resolve("first")).resolve("SKILL.md");
+        java.nio.file.Files.writeString(first, skillMarkdown("first", "FIRST-VERSION"));
+        TestComponent component = new TestComponent(List.of(), List.of());
+        try (HarnessAgentRuntime runtime = component.runtime(config)) {
+            HarnessSkillMiddleware dynamic = middleware(runtime, HarnessSkillMiddleware.class);
+            assertTrue(skillPrompt(dynamic, runtime).contains("FIRST-VERSION"));
+            java.nio.file.Files.writeString(first, skillMarkdown("first", "UPDATED-FIRST-VERSION"));
+            Path second = java.nio.file.Files.createDirectories(temp.resolve("second")).resolve("SKILL.md");
+            java.nio.file.Files.writeString(second, skillMarkdown("second", "NEW-SECOND-SKILL"));
+            String updated = skillPrompt(dynamic, runtime);
+            assertTrue(updated.contains("UPDATED-FIRST-VERSION"), updated);
+            assertTrue(updated.contains("NEW-SECOND-SKILL"), updated);
+            java.nio.file.Files.delete(first);
+            java.nio.file.Files.delete(first.getParent());
+            String removed = skillPrompt(dynamic, runtime);
+            assertFalse(removed.contains("UPDATED-FIRST-VERSION"), removed);
+            assertTrue(removed.contains("NEW-SECOND-SKILL"), removed);
+        }
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {true, false})
+    void malformedFilesystemSkillsAreNotAdvertisedAndStrictRemainsReserved(boolean strict) throws Exception {
+        AgentConfig config = config();
+        config.getSkills().setEnabled(true);
+        config.getSkills().setStrict(strict);
+        config.getSkills().setPath(temp.toString());
+        Map<String, String> invalid = Map.of(
+                "missing-name", "---\ndescription: INVALID-NAME\n---\nbody",
+                "missing-description", "---\nname: INVALID-DESCRIPTION\n---\nbody",
+                "missing-body", "---\nname: invalid-body\ndescription: INVALID-BODY\n---\n");
+        for (var entry : invalid.entrySet()) {
+            Path dir = java.nio.file.Files.createDirectories(temp.resolve(entry.getKey()));
+            java.nio.file.Files.writeString(dir.resolve("SKILL.md"), entry.getValue());
+        }
+        java.nio.file.Files.createDirectories(temp.resolve("missing-file"));
+        Path good = java.nio.file.Files.createDirectories(temp.resolve("valid"));
+        java.nio.file.Files.writeString(good.resolve("SKILL.md"), skillMarkdown("valid", "VALID-SKILL"));
+        TestComponent component = new TestComponent(List.of(), List.of());
+        try (HarnessAgentRuntime runtime = component.runtime(config)) {
+            String prompt = skillPrompt(middleware(runtime, HarnessSkillMiddleware.class), runtime);
+            assertTrue(prompt.contains("VALID-SKILL"), prompt);
+            assertFalse(prompt.contains("INVALID-"), prompt);
+            assertFalse(prompt.contains("missing-file"), prompt);
+        }
+    }
+
+    private static String skillMarkdown(String name, String description) {
+        return "---\nname: " + name + "\ndescription: " + description + "\n---\nUse verified data.\n";
+    }
+
+    private static String skillPrompt(HarnessSkillMiddleware middleware, HarnessAgentRuntime runtime) {
+        RuntimeContext context = AgentTestContexts.runtimeContext(AgentTestContexts.liteFlowContext());
+        return middleware.onSystemPrompt(runtime.agent(), context, "base").block(Duration.ofSeconds(3));
+    }
+
     private static final String AGENT_NAMESPACE =
             "lf-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
 
@@ -332,6 +419,7 @@ class AgentSkillRepositoryIntegrationTest {
         private final List<AgentSkillRepository> repositories;
         private final List<AgentSkillRepository> owned;
         private SkillFilter filter = SkillFilter.all();
+        private boolean dynamic = true;
         private UnaryOperator<HarnessAgent.Builder> customizer = UnaryOperator.identity();
 
         private TestComponent(
@@ -385,6 +473,8 @@ class AgentSkillRepositoryIntegrationTest {
         protected SkillFilter skillFilter() {
             return filter;
         }
+
+        @Override protected boolean dynamicSkillsEnabled() { return dynamic; }
 
         @Override
         protected HarnessAgent.Builder customizeHarness(HarnessAgent.Builder builder) {

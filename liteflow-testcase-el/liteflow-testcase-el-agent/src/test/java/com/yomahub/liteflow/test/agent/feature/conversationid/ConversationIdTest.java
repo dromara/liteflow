@@ -21,7 +21,7 @@ import java.util.Map;
  *   <li>{@code ExecuteOption.autoConversationId()} 自动生成；</li>
  *   <li>请求 Map 中的 {@code conversationId} 字段；</li>
  *   <li>组件覆写 {@code resolveConversationId()} 拼接业务 cid；</li>
- *   <li>特殊字符通过 safeId 安全化。</li>
+ *   <li>目录越界字符在进入组件前被拒绝。</li>
  * </ul>
  */
 @TestPropertySource("classpath:/feature/conversationid/application.properties")
@@ -86,16 +86,16 @@ public class ConversationIdTest extends BaseAgentLiveTest {
     }
 
     @Test
-    public void testConversationIdWithUnsafeCharsIsSanitizedForCtx() {
+    public void testConversationIdWithDirectorySeparatorsIsRejectedBeforePrompt() {
         String raw = "chat/user 1";
         LiteflowResponse response = flowExecutor.execute2Resp("cidCaptureChain", "go",
                 ExecuteOption.of().conversationId(raw));
 
-        Assertions.assertTrue(response.isSuccess());
-        // 业务 cid 原样保留；只有物理 Runtime session 使用安全哈希。
+        Assertions.assertFalse(response.isSuccess());
         Assertions.assertEquals(raw, response.getConversationId());
-        Assertions.assertEquals(raw, CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get());
-        Assertions.assertTrue(CidCaptureAgentCmp.SEEN_RUNTIME_SESSION.get()
-                .matches("lf-[0-9a-f]{64}"));
+        Assertions.assertInstanceOf(IllegalArgumentException.class, response.getCause());
+        Assertions.assertTrue(response.getCause().getMessage().contains("conversationId"));
+        Assertions.assertNull(CidCaptureAgentCmp.SEEN_CONVERSATION_ID.get());
+        Assertions.assertNull(CidCaptureAgentCmp.SEEN_RUNTIME_SESSION.get());
     }
 }

@@ -496,11 +496,11 @@ class HarnessAgentComponentTest {
         RuntimeContext callContext = model.runtimeContexts.get(0);
         WorkspaceManager workspaceManager =
                 (WorkspaceManager) harnessAgentField("workspaceManager").get(parent);
-        assertTrue(workspaceManager.getFilesystem().write(
+        var write = workspaceManager.getFilesystem().write(
                 callContext,
                 "subagents/runtime-added.md",
-                "---\ndescription: session declaration\n---\nruntime")
-                .isSuccess());
+                "---\ndescription: session declaration\n---\nruntime");
+        assertTrue(write.isSuccess(), write.toString());
 
         component.process();
 

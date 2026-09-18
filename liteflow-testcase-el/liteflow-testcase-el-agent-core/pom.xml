@@ -13,6 +13,7 @@
     <artifactId>liteflow-testcase-el-agent-core</artifactId>
 
     <properties>
+        <skipTests>false</skipTests>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
@@ -20,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-agent-harness</artifactId>
+            <artifactId>liteflow-agent-core</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>

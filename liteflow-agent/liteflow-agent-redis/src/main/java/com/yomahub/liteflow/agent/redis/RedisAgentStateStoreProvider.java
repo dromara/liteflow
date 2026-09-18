@@ -85,7 +85,7 @@ public final class RedisAgentStateStoreProvider implements AgentStateStoreProvid
 		if (client instanceof UnifiedJedis unifiedJedis) {
 			builder.jedisClient(unifiedJedis);
 		} else if (client instanceof RedissonClient redisson) {
-			builder.redissonClient(redisson);
+			builder.clientAdapter(new RedissonStateClientAdapter(redisson));
 		} else if (client instanceof RedisClusterClient clusterClient) {
 			builder.lettuceClusterClient(clusterClient);
 		} else if (client instanceof RedisClient lettuceClient) {

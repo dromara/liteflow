@@ -17,7 +17,7 @@ public record AgentInvocationIdentity(
     public AgentInvocationIdentity {
         requirePathSegment(namespace, "applicationName");
         requirePathSegment(conversationId, "conversationId");
-        requireValue(agentKey, "agentKey");
+        requirePathSegment(agentKey, "agentKey");
         runtimeSessionId = conversationId;
         agentNamespace = "lf-" + hash(namespace, agentKey);
         storeSessionId = agentNamespace + "." + runtimeSessionId;
@@ -29,7 +29,7 @@ public record AgentInvocationIdentity(
         }
     }
 
-    /** Application names and conversation IDs are literal directory names. */
+    /** Application names, conversation IDs and Agent memory keys are literal directory names. */
     public static String requirePathSegment(String value, String name) {
         requireValue(value, name);
         if (value.equals(".") || value.equals("..") || value.indexOf('/') >= 0

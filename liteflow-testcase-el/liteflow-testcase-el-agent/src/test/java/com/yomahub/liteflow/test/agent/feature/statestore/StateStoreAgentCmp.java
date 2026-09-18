@@ -10,6 +10,7 @@ import com.yomahub.liteflow.test.agent.support.ScriptedChatModel;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.state.InMemoryAgentStateStore;
 import io.agentscope.core.state.State;
+import io.agentscope.core.state.AgentState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -41,6 +42,10 @@ public abstract class StateStoreAgentCmp extends HarnessAgentComponent {
 
     static Set<String> physicalSessions() {
         return STORE.physicalSessions();
+    }
+
+    static Set<String> agentSessions() {
+        return Set.copyOf(STORE.agentSessions);
     }
 
     abstract List<Integer> messageCounts();
@@ -102,13 +107,16 @@ public abstract class StateStoreAgentCmp extends HarnessAgentComponent {
         public long saveIfVersion(String userId, String sessionId, String key, State value, long expectedVersion) {
             long version = super.saveIfVersion(userId, sessionId, key, value, expectedVersion);
             if (version != UNVERSIONED) sessions.add(sessionId);
+            if (version != UNVERSIONED && value instanceof AgentState) agentSessions.add(sessionId);
             return version;
         }
         private final Set<String> sessions = ConcurrentHashMap.newKeySet();
+        private final Set<String> agentSessions = ConcurrentHashMap.newKeySet();
 
         @Override
         public void save(String userId, String sessionId, String key, State value) {
             sessions.add(sessionId);
+            if (value instanceof AgentState) agentSessions.add(sessionId);
             super.save(userId, sessionId, key, value);
         }
 
@@ -116,6 +124,7 @@ public abstract class StateStoreAgentCmp extends HarnessAgentComponent {
         public void save(
                 String userId, String sessionId, String key, List<? extends State> values) {
             sessions.add(sessionId);
+            if (values.stream().anyMatch(AgentState.class::isInstance)) agentSessions.add(sessionId);
             super.save(userId, sessionId, key, values);
         }
 
@@ -125,6 +134,7 @@ public abstract class StateStoreAgentCmp extends HarnessAgentComponent {
 
         void resetObservations() {
             sessions.clear();
+            agentSessions.clear();
         }
     }
 }

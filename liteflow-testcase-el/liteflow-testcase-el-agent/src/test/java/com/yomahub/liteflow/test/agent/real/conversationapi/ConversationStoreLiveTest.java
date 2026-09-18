@@ -42,8 +42,8 @@ class ConversationStoreLiveTest {
             runJvm(backend, cid, "write");
             runJvm(backend, cid, "read");
             assertEquals(4, conversations.messages(cid, 0, 20).items().size());
-            assertTrue(conversations.get(cid).isEmpty());
-            assertTrue(conversations.agentState(cid, AGENT).isEmpty());
+            assertTrue(conversations.get(cid).isPresent());
+            assertTrue(conversations.agentState(cid, AGENT).isPresent());
             conversations.delete(cid);
             assertTrue(conversations.get(cid).isEmpty());
             assertTrue(conversations.agentState(cid, AGENT).isEmpty());

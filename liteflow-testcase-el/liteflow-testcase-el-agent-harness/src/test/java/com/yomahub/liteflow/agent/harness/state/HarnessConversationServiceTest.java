@@ -17,7 +17,7 @@ class HarnessConversationServiceTest {
     @TempDir Path root;
 
     @Test
-    void discoversOldHarnessStateWithoutRuntimeAndDeletesOnlyAttachedAgents() {
+    void discoversOldHarnessStateWithoutRuntimeAndDeletesOnlyAttachedAgents() throws Exception {
         AgentConfig config = new AgentConfig();
         config.setApplicationName("harness-history");
         config.getSessionStore().setJsonRoot(root.toString());
@@ -41,12 +41,19 @@ class HarnessConversationServiceTest {
             service.attachAgent("conversation", "two");
         }
         try (var reopened = AgentConversationService.open(config)) {
+            Path workspace = java.nio.file.Files.createDirectories(root.resolve("workspace/harness-history/conversation"));
+            Path snapshot = java.nio.file.Files.createDirectories(root.resolve("snapshots")).resolve("conversation.snapshot");
+            java.nio.file.Files.writeString(workspace.resolve("report.txt"), "retain business output");
+            java.nio.file.Files.writeString(snapshot, "retain snapshot");
+            config.getHarness().getDocker().setSnapshotRoot(snapshot.getParent().toString());
             reopened.delete("conversation");
             assertFalse(raw.exists(null, HarnessNamespacedAgentStateStore.physicalAgentSessionId(
                     first.agentNamespace(), first.runtimeSessionId())));
             assertFalse(raw.exists(null, HarnessNamespacedAgentStateStore.physicalAgentSessionId(
                     second.agentNamespace(), second.runtimeSessionId())));
             assertTrue(reopened.agentState("other-conversation", "one").isPresent());
+            assertEquals("retain business output", java.nio.file.Files.readString(workspace.resolve("report.txt")));
+            assertEquals("retain snapshot", java.nio.file.Files.readString(snapshot));
         }
         raw.close();
     }

@@ -23,6 +23,8 @@ class InvocationIdentityResolverTest {
                     () -> new InvocationIdentityResolver("app").resolve(unsafe, "agent"));
             assertThrows(IllegalArgumentException.class,
                     () -> new InvocationIdentityResolver(unsafe).resolve("chat", "agent"));
+            assertThrows(IllegalArgumentException.class,
+                    () -> new InvocationIdentityResolver("app").resolve("chat", unsafe));
         }
         assertEquals("中文会话", new InvocationIdentityResolver("应用").resolve("中文会话", "agent").runtimeSessionId());
     }

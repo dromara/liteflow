@@ -44,7 +44,9 @@ class SessionSandboxDockerTest {
         config.getHarness().getDocker().setImage(System.getenv().getOrDefault(
                 "LITEFLOW_SANDBOX_TEST_IMAGE", "liteflow-agent-sandbox:node22"));
         config.getHarness().getDocker().setSnapshotRoot(temp.resolve("snapshots").toString());
-        config.getHarness().getDocker().setWorkspaceProjectionEnabled(false);
+        config.getHarness().getDocker().setWorkspaceProjectionEnabled(true);
+        Path reference = java.nio.file.Files.createDirectories(temp.resolve("workspace/knowledge")).resolve("reference.txt");
+        java.nio.file.Files.writeString(reference, "host-static-reference");
         var guard = new AgentInvocationGuardResolver().resolve(config);
         var identity = new InvocationIdentityResolver("docker-regression-" + UUID.randomUUID())
                 .resolve("session", "agent");
@@ -69,6 +71,12 @@ class SessionSandboxDockerTest {
             Sandbox first;
             try (var lease = guard.acquire(AgentInvocationKey.workspace(identity), Duration.ofSeconds(2))) {
                 first = turn(registry, agent, identity);
+                assertEquals("host-static-reference", first.exec(context(identity),
+                        "cat /workspace/knowledge/reference.txt", 5).stdout());
+                assertEquals(0, first.exec(context(identity),
+                        "printf container-change > /workspace/knowledge/reference.txt", 5).exitCode());
+                assertEquals("host-static-reference", java.nio.file.Files.readString(reference),
+                        "static workspace projection must copy files, not mount the host source");
                 first.stop();
                 assertFalse(first.isRunning(), "SDK lifecycle flag is cleared by checkpointing");
                 var idleStatus = statusService.getStatus("session");

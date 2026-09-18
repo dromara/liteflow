@@ -54,6 +54,33 @@ class HarnessMemoryModeTest {
         verifyTurns(HarnessMemoryFlushMode.THROTTLED, 1);
     }
 
+    @Test void throttledExtractionResumesAfterTheConfiguredGap() throws Exception {
+        // The custom filesystem uses the SDK USER coordination scope. Advance its public
+        // test clock seam instead of sleeping for an hour or relying on scheduling speed.
+        String key = "memory-flush:USER:";
+        io.agentscope.harness.agent.coordination.LocalPeriodicGate.seedLastClaimAtForTests(key, java.time.Instant.EPOCH);
+        AgentConfig config = configure(HarnessMemoryFlushMode.THROTTLED);
+        try (Component component = new Component(config)) {
+            component.process();
+            assertTrue(io.agentscope.harness.agent.memory.MemoryBackgroundTasks.awaitQuiescence(5,
+                    java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(1, component.memory.calls.get());
+            component.process();
+            assertTrue(io.agentscope.harness.agent.memory.MemoryBackgroundTasks.awaitQuiescence(5,
+                    java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(1, component.memory.calls.get());
+            io.agentscope.harness.agent.coordination.LocalPeriodicGate.seedLastClaimAtForTests(
+                    key, java.time.Instant.now().minus(Duration.ofHours(2)));
+            component.process();
+            assertTrue(io.agentscope.harness.agent.memory.MemoryBackgroundTasks.awaitQuiescence(5,
+                    java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(2, component.memory.calls.get());
+            assertEquals(3, component.primary.calls.get());
+        } finally {
+            io.agentscope.harness.agent.coordination.LocalPeriodicGate.seedLastClaimAtForTests(key, java.time.Instant.EPOCH);
+        }
+    }
+
     @Test void unconfiguredPolicyDisablesPerTurnExtraction() throws Exception {
         verifyTurns(null, 0);
     }

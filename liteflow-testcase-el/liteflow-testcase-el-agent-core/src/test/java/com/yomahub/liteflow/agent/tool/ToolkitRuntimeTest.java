@@ -45,15 +45,18 @@ class ToolkitRuntimeTest {
     private static final String AGENT_NAMESPACE =
             "lf-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
-    @Test
-    void defaultToolkitExecutesSeriallyAndInjectsTheCurrentRuntimeContext() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    void toolkitExecutesSeriallyEvenWhenParallelIsRequestedAndInjectsTheCurrentRuntimeContext(boolean parallel) {
         SerialProbeTool serial = new SerialProbeTool();
         ContextProbeTool contextProbe = new ContextProbeTool();
         TestComponent component = new TestComponent();
         component.tools = List.of(serial);
         component.toolkitCustomizer = toolkit -> toolkit.registerTool(contextProbe);
 
-        HarnessAgentRuntime runtime = component.runtime(config());
+        AgentConfig config = config();
+        config.getToolkit().setParallel(parallel);
+        HarnessAgentRuntime runtime = component.runtime(config);
         try {
             LiteFlowAgentContext invocation = AgentTestContexts.liteFlowContext();
             RuntimeContext runtimeContext = AgentTestContexts.runtimeContext(invocation);

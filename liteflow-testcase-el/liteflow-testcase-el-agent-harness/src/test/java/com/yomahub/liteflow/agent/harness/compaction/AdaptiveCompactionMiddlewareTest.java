@@ -26,6 +26,24 @@ import static org.junit.jupiter.api.Assertions.*;
 class AdaptiveCompactionMiddlewareTest {
     @TempDir Path directory;
 
+    @Test void explicitSpecCapacityAndOutputBudgetDriveAdaptiveCompaction() {
+        RecordingModel actual = new RecordingModel("private-model", 0);
+        class PrivateSpec extends com.yomahub.liteflow.agent.model.ModelSpec<PrivateSpec> {
+            @Override public Model resolve(com.yomahub.liteflow.property.agent.AgentConfig config) {
+                return recordMetadata(actual, "private", "http://localhost/private");
+            }
+        }
+        Model model = new PrivateSpec().contextWindow(8000).maxTokens(500)
+                .resolve(new com.yomahub.liteflow.property.agent.AgentConfig());
+        List<Msg> input = history();
+        try (HarnessAgent harness = harness(model)) {
+            invoke(harness, middleware(harness, model, null, List.of(model), .8, 524288, .9), model, input, List.of());
+            assertEquals(1, actual.summaries, "explicit Spec capacity must override the large unknown-model fallback");
+            List<Msg> request = actual.requests.get(actual.requests.size() - 1);
+            assertSame(input.get(input.size() - 1), request.get(request.size() - 1));
+        }
+    }
+
     @Test void fallbackDefaultsAndAllThreeConfigurationValuesAreValidated() {
         HarnessConfig config = new HarnessConfig();
         assertEquals(0.8, config.getCompactionThreshold());

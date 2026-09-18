@@ -1,7 +1,7 @@
 # LiteFlow Agent Docker Sandbox
 
 This image provides a reusable Docker execution environment for
-`liteflow-agent-harness`.
+`liteflow-agent-core`.
 
 ## Build
 

@@ -13,6 +13,8 @@
     <artifactId>liteflow-testcase-el-agent</artifactId>
 
     <properties>
+        <skipTests>false</skipTests>
+        <liteflow.agent.test.docker-image>alpine:3.20</liteflow.agent.test.docker-image>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
@@ -65,12 +67,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-agent-harness</artifactId>
-            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -193,7 +189,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>require-local-alpine-image</id>
+                                <id>require-local-sandbox-image</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>exec</goal>
@@ -203,7 +199,7 @@
                                     <arguments>
                                         <argument>image</argument>
                                         <argument>inspect</argument>
-                                        <argument>alpine:3.20</argument>
+                                        <argument>${liteflow.agent.test.docker-image}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -222,6 +218,9 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <systemPropertyVariables>
+                                <liteflow.agent.test.docker-image>${liteflow.agent.test.docker-image}</liteflow.agent.test.docker-image>
+                            </systemPropertyVariables>
                             <includes>
                                 <include>**/DockerSandboxIT.java</include>
                             </includes>

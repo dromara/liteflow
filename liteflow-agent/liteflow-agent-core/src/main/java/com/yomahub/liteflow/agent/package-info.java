@@ -9,7 +9,7 @@
  *
  * <p>The core module provides the Agent lifecycle, typed output and events, middleware, usage and
  * skill tracking, MCP ownership, retries and fallback, HITL continuation, and guarded workspace
- * tools. Optional Harness and A2A integrations live in sibling modules and are not dependencies of
- * this package.
+ * tools. The core module also includes the Harness runtime, workspace, sandbox, and compaction
+ * support. The optional A2A client integration lives in a sibling module.
  */
 package com.yomahub.liteflow.agent;
