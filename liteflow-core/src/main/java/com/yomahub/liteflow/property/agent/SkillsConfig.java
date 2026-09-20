@@ -1,32 +1,34 @@
 package com.yomahub.liteflow.property.agent;
 
 /**
- * Agent 技能配置，对应配置段 {@code liteflow.agent.skills.*}。
+ * Agent 技能配置绑定对象，对应配置段 {@code liteflow.agent.skills.*}。
  *
- * <p>用于控制 ReAct Agent 是否启用配置驱动的技能目录，以及技能配置解析时
- * 是否采用严格模式。
+ * <p>启用后，Agent 类组件会根据 {@code path} 自动创建并托管 AgentScope 2
+ * {@code AgentSkillRepository}。{@code classpath:} 前缀表示 classpath 资源目录，
+ * 其他值表示文件系统目录；{@code strict} 当前仅为配置兼容保留。
  */
 public class SkillsConfig {
 
     /**
      * 是否启用配置驱动的技能支持。
      *
-     * <p>默认关闭，保持现有 agent 行为不变。
+     * <p>默认关闭；启用后由 LiteFlow 创建并管理对应的技能仓库。
      */
     private boolean enabled = false;
 
     /**
      * 技能目录路径。
      *
-     * <p>默认读取当前工作目录下的 {@code ./skills}，后续技能加载逻辑会基于该路径
-     * 查找技能配置文件。
+     * <p>默认值为当前工作目录下的 {@code ./skills}。使用 {@code classpath:agent/skills}
+     * 这类值可从 classpath 资源目录加载技能。
      */
     private String path = "./skills";
 
     /**
-     * 是否使用严格解析模式。
+     * 旧的严格解析配置占位。
      *
-     * <p>默认开启，后续技能解析遇到非法配置时可据此决定是否快速失败。
+     * <p>当前 {@code HarnessAgentComponent}、AgentScope 2 repository 与
+     * {@code SkillFilter} 均不读取该字段；设置为 {@code false} 不会改变错误处理策略。
      */
     private boolean strict = true;
 

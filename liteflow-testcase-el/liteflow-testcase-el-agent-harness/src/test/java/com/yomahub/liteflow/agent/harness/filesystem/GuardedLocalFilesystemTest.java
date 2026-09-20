@@ -1,0 +1,642 @@
+package com.yomahub.liteflow.agent.harness.filesystem;
+
+import com.yomahub.liteflow.agent.context.AgentInvocationIdentity;
+import com.yomahub.liteflow.agent.context.InvocationIdentityResolver;
+import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
+import com.yomahub.liteflow.agent.message.AgentOutputSpec;
+import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.slot.Slot;
+import io.agentscope.core.agent.RuntimeContext;
+import io.agentscope.core.model.Model;
+import io.agentscope.harness.agent.HarnessAgent;
+import io.agentscope.harness.agent.bus.AsyncToolRecord;
+import io.agentscope.harness.agent.bus.AsyncToolRegistry;
+import io.agentscope.harness.agent.bus.MessageBus;
+import io.agentscope.harness.agent.filesystem.AbstractFilesystem;
+import io.agentscope.harness.agent.filesystem.OverlayFilesystem;
+import io.agentscope.harness.agent.filesystem.local.LocalFilesystemWithShell;
+import io.agentscope.harness.agent.filesystem.model.EditResult;
+import io.agentscope.harness.agent.filesystem.model.FileDownloadResponse;
+import io.agentscope.harness.agent.filesystem.model.FileUploadResponse;
+import io.agentscope.harness.agent.filesystem.model.GlobResult;
+import io.agentscope.harness.agent.filesystem.model.LsResult;
+import io.agentscope.harness.agent.filesystem.model.ReadResult;
+import io.agentscope.harness.agent.filesystem.model.WriteResult;
+import io.agentscope.harness.agent.middleware.SubagentEntry;
+import io.agentscope.harness.agent.subagent.SubagentDeclaration;
+import io.agentscope.harness.agent.tool.MemorySearchTool;
+import io.agentscope.harness.agent.tool.ShellExecuteTool;
+import io.agentscope.harness.agent.workspace.WorkspaceManager;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GuardedLocalFilesystemTest {
+
+    @TempDir
+    Path tempDir;
+
+    @Test
+    void rejectsCrossPlatformAbsoluteTraversalNulBlankAndWin32AliasesBeforeCreatingSessionRoot()
+            throws Exception {
+        Path root = tempDir.resolve("workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext context = context("session-a", "user-a");
+        List<String> rejected = List.of(
+                "/etc/passwd",
+                "C:\\Windows\\system.ini",
+                "C:/Windows/system.ini",
+                "C:Windows\\system.ini",
+                "\\\\server\\share\\secret",
+                "//server/share/secret",
+                "\\rooted\\secret",
+                "../secret",
+                "safe/../secret",
+                "safe\\..\\secret",
+                "safe\\../secret",
+                ".. ",
+                "...",
+                ". ",
+                "safe/.. /secret",
+                "safe\\.../secret",
+                "safe/   /secret",
+                "",
+                "   ",
+                "safe\0secret");
+
+        for (String path : rejected) {
+            assertThrows(SecurityException.class, () -> filesystem.ls(context, path), path);
+        }
+        assertThrows(SecurityException.class, () -> filesystem.ls(context, null));
+
+        try (Stream<Path> children = Files.list(root)) {
+            assertEquals(0, children.count());
+        }
+
+        Path outside = tempDir.resolve("outside.txt").toAbsolutePath();
+        assertThrows(
+                SecurityException.class,
+                () -> filesystem.write(context, outside.toString(), "denied"));
+        assertFalse(Files.exists(outside));
+    }
+
+    @Test
+    void preservesTask2SafeWin32TrailingNamesWithoutRewriting() {
+        GuardedLocalFilesystem filesystem =
+                new GuardedLocalFilesystem(tempDir.resolve("workspace"));
+        RuntimeContext context = context("session-a", "user-a");
+
+        assertTrue(filesystem.write(context, "folder./file.", "dot").isSuccess());
+        assertTrue(filesystem.write(context, "folder /file ", "space").isSuccess());
+        assertEquals("dot", filesystem.read(context, "folder./file.", 0, 0)
+                .fileData().content());
+        assertEquals("space", filesystem.read(context, "folder /file ", 0, 0)
+                .fileData().content());
+    }
+
+    @Test
+    void dotMeansSessionRootAndSafeDotSegmentsAndMixedSeparatorsRemainUsable() {
+        GuardedLocalFilesystem filesystem =
+                new GuardedLocalFilesystem(tempDir.resolve("workspace"));
+        RuntimeContext context = context("session-a", "user-a");
+
+        assertTrue(filesystem.ls(context, ".").isSuccess());
+        assertTrue(filesystem.write(context, "nested\\dir/file.txt", "hello").isSuccess());
+        assertTrue(filesystem.write(context, "safe/./other.txt", "other").isSuccess());
+
+        ReadResult mixedRead = filesystem.read(context, "nested/dir\\file.txt", 0, 0);
+        assertTrue(mixedRead.isSuccess());
+        assertEquals("hello", mixedRead.fileData().content());
+        LsResult listing = filesystem.ls(context, "nested/./dir");
+        assertTrue(listing.isSuccess());
+        assertEquals(List.of("nested/dir/file.txt"),
+                listing.entries().stream().map(entry -> entry.path()).toList());
+    }
+
+    @Test
+    void usesPlainRuntimeSessionIdAndIsolatesOnlyBySession() throws Exception {
+        Path root = tempDir.resolve("workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext first = context("session-a", "user-a");
+        RuntimeContext sameSessionDifferentUser = context("session-a", "user-b");
+        RuntimeContext second = context("session-b", "user-a");
+
+        assertTrue(filesystem.write(first, "visible.txt", "first").isSuccess());
+        assertTrue(filesystem.read(sameSessionDifferentUser, "visible.txt", 0, 0).isSuccess());
+        assertFalse(filesystem.read(second, "visible.txt", 0, 0).isSuccess());
+        assertTrue(filesystem.write(second, "visible.txt", "second").isSuccess());
+
+        assertEquals("first", filesystem.read(first, "visible.txt", 0, 0)
+                .fileData().content());
+        assertEquals("second", filesystem.read(second, "visible.txt", 0, 0)
+                .fileData().content());
+        assertEquals(List.of("visible.txt"), filesystem.ls(first, ".").entries().stream()
+                .map(entry -> entry.path()).toList());
+        assertEquals(List.of("visible.txt"), filesystem.ls(second, ".").entries().stream()
+                .map(entry -> entry.path()).toList());
+
+        List<Path> sessionRoots;
+        try (Stream<Path> children = Files.list(root)) {
+            sessionRoots = children.sorted().toList();
+        }
+        assertEquals(2, sessionRoots.size());
+        assertTrue(sessionRoots.stream().allMatch(path -> path.getParent().equals(root)));
+        assertTrue(sessionRoots.stream().allMatch(path -> path.getFileName().toString()
+                .matches("session-[ab]")));
+        assertNotEquals(sessionRoots.get(0).getFileName(), sessionRoots.get(1).getFileName());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> filesystem.ls(RuntimeContext.empty(), "."));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> filesystem.ls(context(" ", "user-a"), "."));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> filesystem.glob(RuntimeContext.empty(), "**/*", null));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> filesystem.glob(RuntimeContext.empty(), "**/*", "/"));
+    }
+
+    @Test
+    void agentMemoryIsPhysicalAgentSessionStateWhileConversationFilesStayShared()
+            throws Exception {
+        Path root = tempDir.resolve("agent-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        LiteFlowAgentContext firstLiteFlow = liteFlowContext("conversation", "agent-a");
+        LiteFlowAgentContext secondLiteFlow = liteFlowContext("conversation", "agent-b");
+        RuntimeContext first = runtimeContext(firstLiteFlow);
+        RuntimeContext second = runtimeContext(secondLiteFlow);
+
+        assertTrue(filesystem.write(first, "MEMORY.md", "curated-a").isSuccess());
+        assertTrue(filesystem.write(first, "memory/2030-01-01.md", "daily-a").isSuccess());
+        assertFalse(filesystem.read(second, "MEMORY.md", 0, 0).isSuccess());
+        assertFalse(filesystem.read(second, "memory/2030-01-01.md", 0, 0).isSuccess());
+        assertTrue(filesystem.write(second, "MEMORY.md", "curated-b").isSuccess());
+        assertTrue(filesystem.write(second, "memory/2030-01-01.md", "daily-b").isSuccess());
+
+        ReadResult curated = filesystem.read(first, "MEMORY.md", 0, 0);
+        ReadResult daily = filesystem.read(first, "memory/2030-01-01.md", 0, 0);
+        assertTrue(curated.isSuccess(), curated.error());
+        assertTrue(daily.isSuccess(), daily.error());
+        assertEquals("curated-a", curated.fileData().content());
+        assertEquals("daily-a", daily.fileData().content());
+        assertEquals("curated-b", filesystem.read(second, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily-b", filesystem.read(second, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
+
+        assertTrue(filesystem.write(first, "shared.txt", "conversation").isSuccess());
+        assertEquals("conversation", filesystem.read(second, "shared.txt", 0, 0)
+                .fileData().content());
+    }
+
+    @Test
+    void dotAliasedMemoryPathsUseTheSameAgentSessionRootAsCanonicalMemoryPaths() {
+        GuardedLocalFilesystem filesystem =
+                new GuardedLocalFilesystem(tempDir.resolve("aliased-memory-workspace"));
+        RuntimeContext first = runtimeContext(liteFlowContext("conversation", "agent-a"));
+        RuntimeContext second = runtimeContext(liteFlowContext("conversation", "agent-b"));
+
+        assertTrue(filesystem.write(first, "./MEMORY.md", "curated-a").isSuccess());
+        assertTrue(filesystem.write(first, "./memory/2030-01-01.md", "daily-a").isSuccess());
+
+        assertEquals("curated-a", filesystem.read(first, "MEMORY.md", 0, 0)
+                .fileData().content());
+        assertEquals("daily-a", filesystem.read(first, "memory/2030-01-01.md", 0, 0)
+                .fileData().content());
+        assertFalse(filesystem.read(second, "./MEMORY.md", 0, 0).isSuccess());
+        assertFalse(filesystem.read(second, "./memory/2030-01-01.md", 0, 0).isSuccess());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.glob(first, "*.md", "./memory").matches().stream()
+                        .map(match -> match.path()).toList());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.ls(first, "./memory").entries().stream()
+                        .map(entry -> entry.path()).toList());
+    }
+
+    @Test
+    void memoryListingsAndSearchExposeOnlyVirtualPathsAndReadThosePathsSuccessfully() {
+        Path root = tempDir.resolve("virtual-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext context = runtimeContext(liteFlowContext("conversation", "agent-a"));
+        assertTrue(filesystem.write(context, "MEMORY.md", "curated needle").isSuccess());
+        assertTrue(filesystem.write(
+                context, "memory/2030-01-01.md", "daily needle").isSuccess());
+
+        GlobResult glob = filesystem.glob(context, "*.md", "memory");
+        assertEquals(List.of("memory/2030-01-01.md"),
+                glob.matches().stream().map(match -> match.path()).toList());
+        assertEquals(List.of("memory/2030-01-01.md"),
+                filesystem.ls(context, "memory").entries().stream()
+                        .map(entry -> entry.path()).toList());
+
+        WorkspaceManager workspace = new WorkspaceManager(root, filesystem);
+        assertEquals(List.of("MEMORY.md", "memory/2030-01-01.md"),
+                workspace.listMemoryFilePaths(context));
+        String matches = new MemorySearchTool(workspace).memorySearch(context, "needle");
+        assertTrue(matches.contains("Source: MEMORY.md#1: curated needle"), matches);
+        assertTrue(matches.contains("Source: memory/2030-01-01.md#1: daily needle"), matches);
+        assertFalse(matches.contains("agent-"), matches);
+        assertFalse(matches.contains("session-"), matches);
+
+        assertTrue(filesystem.write(context, "ordinary/file.txt", "ordinary").isSuccess());
+        assertEquals(List.of("ordinary/file.txt"),
+                filesystem.glob(context, "*.txt", "ordinary").matches().stream()
+                        .map(match -> match.path()).toList());
+        assertEquals(List.of("ordinary/file.txt"),
+                filesystem.ls(context, "ordinary").entries().stream()
+                        .map(entry -> entry.path()).toList());
+    }
+
+    @Test
+    void internalMemoryListingsRoundTripThroughWorkspaceManagerAndSearch() {
+        Path root = tempDir.resolve("internal-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext internal = context("internal-session", "internal-user");
+        RuntimeContext sameSession = context("internal-session", "other-user");
+
+        assertTrue(filesystem.write(internal, "MEMORY.md", "internal needle").isSuccess());
+        assertTrue(filesystem.write(
+                internal, "memory/2030-01-01.md", "daily needle").isSuccess());
+        try (WorkspaceManager workspace = new WorkspaceManager(root, filesystem)) {
+            assertAll(
+                    () -> assertEquals(List.of("memory/2030-01-01.md"),
+                            filesystem.ls(internal, "memory").entries().stream()
+                                    .map(entry -> entry.path()).toList()),
+                    () -> assertEquals(List.of("memory/2030-01-01.md"),
+                            filesystem.glob(internal, "*.md", "memory").matches().stream()
+                                    .map(match -> match.path()).toList()),
+                    () -> assertEquals(List.of("MEMORY.md", "memory/2030-01-01.md"),
+                            workspace.listMemoryFilePaths(internal)),
+                    () -> assertEquals("internal needle",
+                            workspace.readManagedWorkspaceFileUtf8(internal, "MEMORY.md")),
+                    () -> assertEquals("daily needle",
+                            workspace.readManagedWorkspaceFileUtf8(
+                                    internal, "memory/2030-01-01.md")),
+                    () -> {
+                        String matches = new MemorySearchTool(workspace)
+                                .memorySearch(internal, "needle");
+                        assertTrue(matches.contains(
+                                "Source: MEMORY.md#1: internal needle"), matches);
+                        assertTrue(matches.contains(
+                                "Source: memory/2030-01-01.md#1: daily needle"), matches);
+                    },
+                    () -> assertEquals("internal needle",
+                            filesystem.read(sameSession, "MEMORY.md", 0, 0)
+                                    .fileData().content()),
+                    () -> assertEquals("daily needle",
+                            filesystem.read(sameSession, "memory/2030-01-01.md", 0, 0)
+                                    .fileData().content()));
+        }
+    }
+
+    @Test
+    void mismatchedLiteFlowSessionMemoryListingsUseSessionOnlyFallback() {
+        Path root = tempDir.resolve("mismatched-memory-workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        LiteFlowAgentContext attachment = liteFlowContext("conversation", "agent-a");
+        String runtimeSessionId = attachment.getRuntimeSessionId() + "-internal";
+        RuntimeContext mismatch = RuntimeContext.builder()
+                .userId(null)
+                .sessionId(runtimeSessionId)
+                .put(LiteFlowAgentContext.class, attachment)
+                .build();
+        RuntimeContext sessionOnly = context(runtimeSessionId, "internal-user");
+
+        assertTrue(filesystem.write(mismatch, "MEMORY.md", "mismatch needle").isSuccess());
+        assertTrue(filesystem.write(
+                mismatch, "memory/2030-01-02.md", "fallback needle").isSuccess());
+        try (WorkspaceManager workspace = new WorkspaceManager(root, filesystem)) {
+            assertAll(
+                    () -> assertEquals(List.of("memory/2030-01-02.md"),
+                            filesystem.ls(mismatch, "memory").entries().stream()
+                                    .map(entry -> entry.path()).toList()),
+                    () -> assertEquals(List.of("memory/2030-01-02.md"),
+                            filesystem.glob(mismatch, "*.md", "memory").matches().stream()
+                                    .map(match -> match.path()).toList()),
+                    () -> assertEquals(List.of("MEMORY.md", "memory/2030-01-02.md"),
+                            workspace.listMemoryFilePaths(mismatch)),
+                    () -> assertEquals(List.of("mismatch needle", "fallback needle"),
+                            workspace.listMemoryFilePaths(mismatch).stream()
+                                    .map(path -> workspace.readManagedWorkspaceFileUtf8(
+                                            mismatch, path))
+                                    .toList()),
+                    () -> {
+                        String matches = new MemorySearchTool(workspace)
+                                .memorySearch(mismatch, "needle");
+                        assertTrue(matches.contains(
+                                "Source: MEMORY.md#1: mismatch needle"), matches);
+                        assertTrue(matches.contains(
+                                "Source: memory/2030-01-02.md#1: fallback needle"), matches);
+                    },
+                    () -> {
+                        ReadResult curated = filesystem.read(sessionOnly, "MEMORY.md", 0, 0);
+                        assertTrue(curated.isSuccess(), curated.error());
+                        assertEquals("mismatch needle", curated.fileData().content());
+                    },
+                    () -> {
+                        ReadResult daily = filesystem.read(
+                                sessionOnly, "memory/2030-01-02.md", 0, 0);
+                        assertTrue(daily.isSuccess(), daily.error());
+                        assertEquals("fallback needle", daily.fileData().content());
+                    });
+        }
+    }
+
+    @Test
+    void rejectsFileAndDirectorySymlinksForReadListDeleteWriteUploadAndMove() throws Exception {
+        Path root = tempDir.resolve("workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext context = context("session-a", "user-a");
+        assertTrue(filesystem.write(context, "seed.txt", "seed").isSuccess());
+        Path sessionRoot = onlySessionRoot(root);
+
+        Path outsideFile = tempDir.resolve("outside.txt");
+        Files.writeString(outsideFile, "outside", StandardCharsets.UTF_8);
+        Files.createSymbolicLink(sessionRoot.resolve("file-link"), outsideFile);
+
+        assertThrows(SecurityException.class,
+                () -> filesystem.read(context, "file-link", 0, 0));
+        assertThrows(SecurityException.class,
+                () -> filesystem.ls(context, "file-link"));
+        assertThrows(SecurityException.class,
+                () -> filesystem.delete(context, "file-link"));
+        assertThrows(SecurityException.class,
+                () -> filesystem.move(context, "file-link", "moved.txt"));
+        assertEquals("outside", Files.readString(outsideFile, StandardCharsets.UTF_8));
+
+        Path outsideDirectory = tempDir.resolve("outside-directory");
+        Files.createDirectories(outsideDirectory);
+        Path nested = sessionRoot.resolve("nested");
+        Files.createDirectories(nested);
+        Files.createSymbolicLink(nested.resolve("dir-link"), outsideDirectory);
+
+        assertThrows(SecurityException.class,
+                () -> filesystem.write(context, "nested/dir-link/write.txt", "denied"));
+        FileUploadResponse upload = filesystem.uploadFiles(
+                context,
+                List.of(Map.entry("nested\\dir-link/upload.bin", new byte[] {1, 2, 3})))
+                .get(0);
+        assertFalse(upload.isSuccess());
+        assertThrows(SecurityException.class,
+                () -> filesystem.move(context, "seed.txt", "nested/dir-link/moved.txt"));
+        assertTrue(filesystem.exists(context, "seed.txt"));
+        assertFalse(Files.exists(outsideDirectory.resolve("write.txt")));
+        assertFalse(Files.exists(outsideDirectory.resolve("upload.bin")));
+        assertFalse(Files.exists(outsideDirectory.resolve("moved.txt")));
+    }
+
+    @Test
+    void validatesBothMoveEndpointsBeforeMutation() throws Exception {
+        Path root = tempDir.resolve("workspace");
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(root);
+        RuntimeContext context = context("session-a", "user-a");
+        assertTrue(filesystem.write(context, "source.txt", "source").isSuccess());
+
+        assertThrows(SecurityException.class,
+                () -> filesystem.move(context, "../source.txt", "target.txt"));
+        assertThrows(SecurityException.class,
+                () -> filesystem.move(context, "source.txt", "..\\target.txt"));
+
+        assertTrue(filesystem.exists(context, "source.txt"));
+        assertFalse(Files.exists(tempDir.resolve("target.txt")));
+    }
+
+    @Test
+    void writesEditsUploadsAndSearchesFilesLargerThanTheFormerLimit() throws Exception {
+        GuardedLocalFilesystem filesystem = new GuardedLocalFilesystem(tempDir.resolve("workspace"));
+        RuntimeContext context = context("session-a", "user-a");
+        String large = "你".repeat(4 * 1024 * 1024);
+        assertTrue(filesystem.write(context, "large.txt", "sentinel\n" + large).isSuccess());
+        assertEquals(1, filesystem.grep(context, "sentinel", ".", "*.txt").matches().size());
+        assertTrue(filesystem.write(context, "editable.txt", "small").isSuccess());
+        assertTrue(filesystem.edit(context, "editable.txt", "small", large, false).isSuccess());
+        assertArrayEquals(large.getBytes(StandardCharsets.UTF_8),
+                filesystem.downloadFiles(context, List.of("editable.txt")).get(0).content());
+        byte[] binary = new byte[11 * 1024 * 1024];
+        binary[binary.length - 1] = 7;
+        assertTrue(filesystem.uploadFiles(context, List.of(Map.entry("large.bin", binary))).get(0).isSuccess());
+        assertArrayEquals(binary, filesystem.downloadFiles(context, List.of("large.bin")).get(0).content());
+    }
+
+    @Test
+    void pinnedUpstreamIsolatedDeclarationFallsBackToHostLocalFilesystemAndShell()
+            throws Exception {
+        Path root = tempDir.resolve("workspace");
+        AgentConfig config = new AgentConfig();
+        config.setApplicationName("test-app");
+        config.getSessionStore().setJsonRoot("target/agent-state");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
+        HarnessFilesystemContext context =
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
+        HarnessAgent.Builder builder = HarnessAgent.builder().model(model());
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
+                .configure(builder, context);
+        builder.subagent(SubagentDeclaration.builder()
+                .name("unsafe-isolated")
+                .description("Pinned upstream fallback proof")
+                .inlineAgentsBody("isolated")
+                .build());
+
+        SubagentEntry entry = builder.buildSubagentEntries(root).stream()
+                .filter(candidate -> candidate.name().equals("unsafe-isolated"))
+                .findFirst()
+                .orElseThrow();
+        HarnessAgent child = assertInstanceOf(
+                HarnessAgent.class, entry.factory().create(context("parent-session", "user-a")));
+        try {
+            WorkspaceManager workspaceManager =
+                    (WorkspaceManager) harnessAgentField("workspaceManager").get(child);
+            AbstractFilesystem childFilesystem = workspaceManager.getFilesystem();
+            OverlayFilesystem overlay = assertInstanceOf(OverlayFilesystem.class, childFilesystem);
+            assertInstanceOf(LocalFilesystemWithShell.class, overlay.getUpper());
+            assertTrue(child.getToolkit().getToolSchemas().stream()
+                    .anyMatch(schema -> ShellExecuteTool.NAME.equals(schema.getName())));
+        }
+        finally {
+            child.close();
+        }
+    }
+
+    @Test
+    void configurerInjectsTheGuardedAbstractFilesystemAndCreatesItsRoot() throws Exception {
+        Path root = tempDir.resolve("workspace");
+        AgentConfig config = new AgentConfig();
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
+        HarnessFilesystemContext context =
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
+        HarnessAgent.Builder builder = HarnessAgent.builder();
+
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64))
+                .configure(builder, context);
+
+        Object configured = builderField("abstractFilesystem").get(builder);
+        assertInstanceOf(GuardedLocalFilesystem.class, configured);
+        assertFalse(configured instanceof io.agentscope.harness.agent.filesystem.local.LocalFilesystemWithShell);
+        assertNull(builderField("localFilesystemSpec").get(builder));
+        assertNull(builderField("sandboxFilesystemSpec").get(builder));
+        assertNull(builderField("remoteFilesystemSpec").get(builder));
+        assertTrue(Files.isDirectory(root));
+    }
+
+    @Test
+    void stableAgentScopedInternalSessionRecoversBusAndAsyncRecordsWithoutDirectoryGrowth()
+            throws Exception {
+        Path root = tempDir.resolve("stable-internal-workspace");
+        AgentConfig config = new AgentConfig();
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
+        HarnessFilesystemContext context =
+                new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
+        String firstAgent = "lf-" + "a".repeat(64);
+        String secondAgent = "lf-" + "b".repeat(64);
+
+        HarnessAgent.Builder firstBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(firstAgent).configure(firstBuilder, context);
+        MessageBus firstBus = (MessageBus) builderField("messageBus").get(firstBuilder);
+        AsyncToolRegistry firstRegistry =
+                (AsyncToolRegistry) builderField("asyncToolRegistry").get(firstBuilder);
+        firstBus.queuePush("recoverable", Map.of("value", "before-rebuild")).block();
+        AsyncToolRecord record = new AsyncToolRecord(
+                "async-1",
+                "conversation-1",
+                "slow-tool",
+                "tool-call-1",
+                AsyncToolRecord.RUNNING,
+                Instant.now().minusSeconds(10));
+        firstRegistry.register(record).block();
+        assertEquals(1, sessionRootCount(root.resolve("test-app")));
+
+        HarnessAgent.Builder rebuiltBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(firstAgent).configure(rebuiltBuilder, context);
+        MessageBus rebuiltBus = (MessageBus) builderField("messageBus").get(rebuiltBuilder);
+        AsyncToolRegistry rebuiltRegistry =
+                (AsyncToolRegistry) builderField("asyncToolRegistry").get(rebuiltBuilder);
+
+        assertEquals(
+                "before-rebuild",
+                rebuiltBus.queueDrain("recoverable", 10).block().get(0).payload().get("value"));
+        assertEquals(
+                List.of(record),
+                rebuiltRegistry.findStale("conversation-1", Duration.ZERO).block());
+        assertEquals(1, sessionRootCount(root.resolve("test-app")));
+
+        HarnessAgent.Builder otherBuilder = HarnessAgent.builder();
+        new GuardedLocalFilesystemConfigurer(secondAgent).configure(otherBuilder, context);
+        MessageBus otherBus = (MessageBus) builderField("messageBus").get(otherBuilder);
+        assertFalse(otherBus.queuePeek("recoverable").block());
+        otherBus.queuePush("other", Map.of("value", "second-agent")).block();
+        assertEquals(2, sessionRootCount(root.resolve("test-app")));
+
+        GuardedLocalFilesystem guarded = (GuardedLocalFilesystem)
+                builderField("abstractFilesystem").get(rebuiltBuilder);
+        RuntimeContext ordinaryConversation = context("lf-" + "c".repeat(64), "user-a");
+        assertFalse(guarded.exists(ordinaryConversation, ".agentscope/bus"));
+        assertTrue(guarded.write(ordinaryConversation, "ordinary.txt", "ordinary").isSuccess());
+        assertEquals(3, sessionRootCount(root.resolve("test-app")));
+    }
+
+    @Test
+    void missingWorkspaceDirectoryIsCreatedAutomatically() {
+        Path root = tempDir.resolve("missing-workspace");
+        AgentConfig config = new AgentConfig();
+        config.setApplicationName("test-app");
+        config.getHarness().getLocal().setWorkspaceRoot(root.toString());
+        config.getSessionStore().setJsonWorkspaceRoot(root.toString());
+        HarnessFilesystemContext context = new HarnessFilesystemContext(root, Duration.ofSeconds(2), config);
+        new GuardedLocalFilesystemConfigurer("lf-" + "a".repeat(64)).configure(HarnessAgent.builder(), context);
+        assertTrue(Files.isDirectory(root));
+    }
+
+    private static RuntimeContext context(String sessionId, String userId) {
+        return RuntimeContext.builder().sessionId(sessionId).userId(userId).build();
+    }
+
+    private static LiteFlowAgentContext liteFlowContext(String conversationId, String agentKey) {
+        AgentInvocationIdentity identity = new InvocationIdentityResolver("namespace")
+                .resolve(conversationId, agentKey);
+        Slot slot = new Slot();
+        slot.setChainId("chain");
+        slot.setConversationId(conversationId);
+        slot.putRequestId("request");
+        return new LiteFlowAgentContext(
+                identity,
+                slot,
+                "chain",
+                agentKey,
+                "request",
+                "trace",
+                Instant.parse("2030-01-01T00:00:00Z"),
+                AgentOutputSpec.text(),
+                LiteFlowAgentContext.SLOT_ATTACHMENT_PREFIX + agentKey);
+    }
+
+    private static RuntimeContext runtimeContext(LiteFlowAgentContext context) {
+        return RuntimeContext.builder()
+                .userId(null)
+                .sessionId(context.getRuntimeSessionId())
+                .put(LiteFlowAgentContext.class, context)
+                .build();
+    }
+
+    private static Path onlySessionRoot(Path root) throws Exception {
+        try (Stream<Path> children = Files.list(root)) {
+            List<Path> paths = children.toList();
+            assertEquals(1, paths.size());
+            return paths.get(0);
+        }
+    }
+
+    private static long sessionRootCount(Path root) throws Exception {
+        try (Stream<Path> children = Files.list(root)) {
+            return children.filter(Files::isDirectory).count();
+        }
+    }
+
+    private static Field builderField(String name) throws Exception {
+        Field field = HarnessAgent.Builder.class.getDeclaredField(name);
+        assertTrue(field.trySetAccessible());
+        return field;
+    }
+
+    private static Field harnessAgentField(String name) throws Exception {
+        Field field = HarnessAgent.class.getDeclaredField(name);
+        assertTrue(field.trySetAccessible());
+        return field;
+    }
+
+    private static Model model() {
+        return (Model) Proxy.newProxyInstance(
+                Model.class.getClassLoader(),
+                new Class<?>[] {Model.class},
+                (proxy, method, arguments) -> {
+                    throw new AssertionError("model must not be invoked");
+                });
+    }
+}

@@ -23,14 +23,14 @@ mvn clean package -DskipTests -pl liteflow-core
 
 # 发布生产模块（手动选择 profile，不会自动激活）
 mvn clean package -DskipTests -P release-on-8     # JDK 8 发布产物
-mvn clean package -DskipTests -P release-on-17     # react-agent + spring-boot4-starter
+mvn clean package -DskipTests -P release-on-17     # agent + spring-boot4-starter
 ```
 
 **JDK 驱动的模块选择（重要）：** 根 `pom.xml` 中没有顶层的 `<modules>` 块 —— 构建的模块列表完全由按 JDK 激活的 profile 提供：
 - `compile-8-to-16`（在 JDK `[1.8,17)` 上激活）：core、scripts、rules、spring-boot-starter、spring、solon、testcase-el、el-builder、metrics、benchmark。
-- `compile-17+`（在 JDK `[17,)` 上激活）：以上全部，**外加** `liteflow-react-agent` 和 `liteflow-spring-boot4-starter`。
+- `compile-17+`（在 JDK `[17,)` 上激活）：以上全部，**外加** `liteflow-agent` 和 `liteflow-spring-boot4-starter`。
 
-因此 `liteflow-react-agent` 和 `liteflow-spring-boot4-starter` 只有在 JDK 17+ 上构建时才会被纳入。这两个模块以 `maven.compiler.target=17` 编译，但根 pom 注释指出 agentscope-java（react-agent 背后的引擎）**运行时需要 Java 21+** —— 本仓库当前的开发 JDK 为 21。`release-on-8` / `release-on-17` 这两个 profile 没有 `<activation>`，必须用 `-P` 手动选择：`release-on-8` 发布 JDK 8 产物（含 `liteflow-metrics`），`release-on-17` 只发布 `liteflow-react-agent` 与 `liteflow-spring-boot4-starter`。
+因此 `liteflow-agent` 和 `liteflow-spring-boot4-starter` 只有在 JDK 17+ 上构建时才会被纳入。这两个模块以 `maven.compiler.target=17` 编译，但根 pom 注释指出 agentscope-java（agent 背后的引擎）**运行时需要 Java 21+** —— 本仓库当前的开发 JDK 为 21。`release-on-8` / `release-on-17` 这两个 profile 没有 `<activation>`，必须用 `-P` 手动选择：`release-on-8` 发布 JDK 8 产物（含 `liteflow-metrics`），`release-on-17` 只发布 `liteflow-agent` 与 `liteflow-spring-boot4-starter`。
 
 ### 运行测试
 
@@ -175,19 +175,19 @@ ls liteflow-*/pom.xml
 - **liteflow-spring-boot4-starter**：Spring Boot 4 starter（仅 JDK 17+ —— 在 `compile-17+` profile 下构建）
 - **liteflow-solon-plugin**：Solon 框架集成（Spring 的轻量替代方案）
 
-#### ReAct Agent（`liteflow-react-agent/`，仅 JDK 17+）
-让一个 LLM ReAct agent（由 agentscope-java 驱动）作为普通 LiteFlow 节点编排进 EL 链路。这是一个聚合模块，包含一个 core 模块 + 每个模型供应商各一个模块：
-- **liteflow-react-agent-core**：`ReActAgentComponent`（一个 `process()` 为 `final` 的 `NodeComponent`，通过 `model()`、`systemPrompt()`、`userPrompt()`、`tools()`、`handleReply()` 等受保护钩子定制行为）、`ModelSpec` 凭据/模型抽象、conversation/agentKey **会话模型**（`AgentSessionManager`）、可插拔的 memory 持久化（通过 `AgentSessionFactory` SPI 支持 JVM/NONE/LOCAL_FILE/REDIS/MYSQL）、桥接为 LiteFlow `FlowEvent` 的流式事件、workspace 文件工具，以及受管 shell 工具。
-- **liteflow-react-agent-openai / -anthropic / -gemini / -dashscope**：各供应商的入口类（如 `OpenAI`、`DeepSeek`、`Kimi`、`Anthropic`、`Gemini`、`DashScope`），返回对应供应商的 `ModelSpec` 子类型。业务应用通常只依赖其中一个供应商模块（每个都会传递依赖 `-core`）。
+#### Agent（`liteflow-agent/`，仅 JDK 17+）
+让一个 LLM agent（由 agentscope-java 驱动）作为普通 LiteFlow 节点编排进 EL 链路。这是一个聚合模块，包含一个 core 模块 + 每个模型供应商各一个模块：
+- **liteflow-agent-core**：`AgentComponent`（一个 `process()` 为 `final` 的 `NodeComponent`，通过 `model()`、`systemPrompt()`、`userPrompt(LiteFlowAgentContext)`、`middlewares()`、`skillRepositoryRegistrations()`、`skillFilter()`、`tools()` 与 `handleReply()` 等受保护扩展点定制行为）、`ModelSpec` 凭据/模型抽象、组件拥有的 AgentScope 2 runtime、可插拔 `AgentStateStore`（MEMORY/JSON/BEAN）、桥接为 LiteFlow `FlowEvent` 的流式事件、workspace 文件工具，以及受管 shell 工具。
+- **liteflow-agent-openai / -anthropic / -gemini / -dashscope**：各供应商的入口类（如 `OpenAI`、`DeepSeek`、`Kimi`、`Anthropic`、`Gemini`、`DashScope`），返回对应供应商的 `ModelSpec` 子类型。业务应用通常只依赖其中一个供应商模块（每个都会传递依赖 `-core`）。
 
-两层标识：`conversationId`（业务/对话维度，决定 workspace 子目录，整条 chain 内一致）和 `agentKey`（组件维度，默认取 `nodeId`，隔离各 agent 的 memory）。**完整使用指南：`docs/liteflow-react-agent-guide.md`** —— 修改 agent 行为前请查阅它，不要在此处复制其配置表格。
+两层标识：`conversationId`（业务/对话维度，决定 workspace 子目录，整条 chain 内一致）和 `agentKey`（组件维度，默认取 `nodeId`，隔离各 agent 的 memory）。**完整使用指南：`docs/liteflow-agent-guide.md`** —— 修改 agent 行为前请查阅它，不要在此处复制其配置表格。
 
 #### 测试基础设施
 **所有测试用例都集中在 `liteflow-testcase-el/` 下，不要在核心代码模块（core / metrics / spring* 等）里写测试。** 该目录下有 30+ 个测试模块，按以下维度组织：
 1. **框架**：springboot、springboot4、springnative、solon、nospring
 2. **配置源**：zk、nacos、etcd、apollo、redis、sql
 3. **脚本**：每种语言一个模块 + 多语言混合场景
-4. **特性**：builder、declare、routechain、react-agent 等
+4. **特性**：builder、declare、routechain、agent 等
 
 测试范式：
 ```java

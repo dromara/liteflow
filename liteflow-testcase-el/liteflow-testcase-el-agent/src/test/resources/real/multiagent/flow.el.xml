@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC "liteflow" "liteflow.dtd">
+<flow>
+    <chain name="realPipelineChain">
+        THEN(realPipelineGenAgent, realPipelineEchoAgent, realSaveResultCmp);
+    </chain>
+
+    <chain name="realRouteChain">
+        THEN(
+            IF(realIsMathRequest, realMathAgent, realGeneralAgent)
+        );
+    </chain>
+
+    <chain name="realParallelChain">
+        THEN(
+            WHEN(realParallelAgentA, realParallelAgentB).maxWaitSeconds(120)
+        );
+    </chain>
+
+    <chain name="realCustomReplyChain">
+        THEN(realCustomReplyAgent);
+    </chain>
+</flow>

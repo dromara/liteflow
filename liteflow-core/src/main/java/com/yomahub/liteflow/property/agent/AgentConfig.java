@@ -1,35 +1,61 @@
 package com.yomahub.liteflow.property.agent;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * ReAct Agent 模块的根配置对象。
+ * Agent 模块的根配置对象。
  *
  * <p>对应 Spring Boot 配置段 {@code liteflow.agent.*}，作为 LiteFlow 中所有
- * agent 子配置的聚合入口；其内部字段会在 {@code ReActAgentComponent}、
- * {@code AgentSessionManager}、各 ProviderSpec（OpenAI / Anthropic / Gemini /
- * DashScope 等）以及工具类（{@code ManagedShellCommandTool}、
- * {@code WorkspaceFileTools}）中分别被读取使用。
+ * agent 子配置的聚合入口；其内部字段会在 AgentScope 2 运行时组件、
+ * 各 ProviderSpec（OpenAI / Anthropic / Gemini /
+ * DashScope 等）以及内置工具装配（文件 / Shell 工具）中分别被读取使用。
  */
 public class AgentConfig {
 
-    /** 工作区配置，控制 agent 的会话工作目录、自动创建、清理策略以及文件大小上限。 */
-    private WorkspaceConfig workspace = new WorkspaceConfig();
+	/** Stable application name used to isolate Agent data; defaults to the framework application name. */
+	private String applicationName;
 
-    /** 会话配置，控制内存中 agent 实例的空闲超时、清理周期、并发上限以及记忆持久化方式。 */
-    private SessionConfig session = new SessionConfig();
+	/** Maximum duration of one complete Agent execution, including model and tool calls. */
+	private Duration executionTimeout = Duration.ofMinutes(10);
 
-    /** Shell 工具配置，决定 agent 调用 shell 工具时的命令过滤模式、超时与输出截断。 */
-    private ShellConfig shell = new ShellConfig();
+	/** Agent session persistence settings. */
+	private AgentSessionStoreConfig sessionStore = new AgentSessionStoreConfig();
 
-    /** 默认值配置，例如 ReAct 流程在组件未指定 maxIterations 时使用的全局默认迭代次数。 */
-    private DefaultsConfig defaults = new DefaultsConfig();
+	/** Enable durable, display-oriented conversation history and Agent participation tracking by default. */
+	private boolean conversationHistoryEnabled = true;
 
-    /** 日志开关配置，控制 ReAct 内部 reason / act / error 等事件日志是否输出。 */
-    private LoggingConfig logging = new LoggingConfig();
+	public boolean isConversationHistoryEnabled() {
+		return conversationHistoryEnabled;
+	}
 
-    /** Skills configuration for loading agent-scope SkillBox entries from SKILL.md repositories. */
+	public void setConversationHistoryEnabled(boolean conversationHistoryEnabled) {
+		this.conversationHistoryEnabled = conversationHistoryEnabled;
+	}
+
+	/** Toolkit execution settings. */
+	private AgentToolkitConfig toolkit = new AgentToolkitConfig();
+
+	/** Agent event delivery settings. */
+	private AgentEventConfig event = new AgentEventConfig();
+
+	/** Cross-invocation coordination settings. */
+	private AgentInvocationGuardConfig invocationGuard = new AgentInvocationGuardConfig();
+
+	/** Human-in-the-loop confirmation settings. */
+	private AgentHitlConfig hitl = new AgentHitlConfig();
+
+	/** AgentScope Harness filesystem and sandbox settings. */
+	private HarnessConfig harness = new HarnessConfig();
+
+    /** 单次 Agent 执行的推理与工具调用循环上限，组件 maxIterations() 返回 -1 时使用。 */
+    private int maxIterations = 100;
+
+    /** 是否输出 Agent 执行、推理、工具调用和模型调用的生命周期日志。 */
+    private boolean executionLogEnabled = true;
+
+    /** Skills configuration for loading AgentSkillRepository entries from SKILL.md repositories. */
     private SkillsConfig skills = new SkillsConfig();
 
     /** OpenAI 头等平台凭证（{@code liteflow.agent.openai.*}），由 {@code OpenAISpec} 解析使用。 */
@@ -54,46 +80,99 @@ public class AgentConfig {
      * Anthropic 兼容平台凭证集合，key 为用户自定义平台名，
      * 由 {@code AnthropicSpec}（带 compatibleConfigKey）通过 key 查找对应凭证。
      */
-    private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
+	private Map<String, PlatformCredential> anthropicCompatible = new LinkedHashMap<>();
 
-    public WorkspaceConfig getWorkspace() {
-        return workspace;
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	public Duration getExecutionTimeout() {
+		return executionTimeout;
+	}
+
+	public void setExecutionTimeout(Duration executionTimeout) {
+		this.executionTimeout = executionTimeout;
+	}
+
+	public AgentSessionStoreConfig getSessionStore() {
+		return sessionStore;
+	}
+
+	public void setSessionStore(AgentSessionStoreConfig sessionStore) {
+		this.sessionStore = sessionStore;
+	}
+
+	public AgentToolkitConfig getToolkit() {
+		return toolkit;
+	}
+
+	public void setToolkit(AgentToolkitConfig toolkit) {
+		this.toolkit = toolkit;
+	}
+
+	public AgentEventConfig getEvent() {
+		return event;
+	}
+
+	public void setEvent(AgentEventConfig event) {
+		this.event = event;
+	}
+
+	public AgentInvocationGuardConfig getInvocationGuard() {
+		return invocationGuard;
+	}
+
+	public void setInvocationGuard(AgentInvocationGuardConfig invocationGuard) {
+		this.invocationGuard = invocationGuard;
+	}
+
+	public AgentHitlConfig getHitl() {
+		return hitl;
+	}
+
+	public void setHitl(AgentHitlConfig hitl) {
+		this.hitl = hitl;
+	}
+
+	public HarnessConfig getHarness() {
+		return harness;
+	}
+
+	public void setHarness(HarnessConfig harness) {
+		this.harness = harness;
+	}
+
+	/**
+	 * Validates configuration needed by the AgentScope 2 runtime immediately before use.
+	 */
+	public void validateForExecution() {
+		if (isBlank(applicationName)) {
+			throw new IllegalStateException("liteflow.agent.application-name is required before execution");
+		}
+	}
+
+	private static boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
+	}
+
+    public int getMaxIterations() {
+        return maxIterations;
     }
 
-    public void setWorkspace(WorkspaceConfig v) {
-        this.workspace = v;
+    public void setMaxIterations(int maxIterations) {
+        this.maxIterations = maxIterations;
     }
 
-    public SessionConfig getSession() {
-        return session;
+    public boolean isExecutionLogEnabled() {
+        return executionLogEnabled;
     }
 
-    public void setSession(SessionConfig v) {
-        this.session = v;
-    }
-
-    public ShellConfig getShell() {
-        return shell;
-    }
-
-    public void setShell(ShellConfig v) {
-        this.shell = v;
-    }
-
-    public DefaultsConfig getDefaults() {
-        return defaults;
-    }
-
-    public void setDefaults(DefaultsConfig v) {
-        this.defaults = v;
-    }
-
-    public LoggingConfig getLogging() {
-        return logging;
-    }
-
-    public void setLogging(LoggingConfig v) {
-        this.logging = v;
+    public void setExecutionLogEnabled(boolean executionLogEnabled) {
+        this.executionLogEnabled = executionLogEnabled;
     }
 
     public SkillsConfig getSkills() {

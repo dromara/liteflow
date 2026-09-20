@@ -39,7 +39,7 @@
 	</scm>
 
 	<properties>
-		<revision>2.16.1.2</revision>
+		<revision>2.16.2</revision>
 		<micrometer.version>1.8.5</micrometer.version>
 		<skipTests>true</skipTests>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,13 +98,18 @@
 		<sharding-jdbc.version>4.1.1</sharding-jdbc.version>
 		<apache-commons-test.version>1.14.0</apache-commons-test.version>
 		<caffeine.version>2.9.3</caffeine.version>
-		<agentscope.version>1.0.12</agentscope.version>
-		<google-genai.version>1.38.0</google-genai.version>
-		<anthropic-java.version>1.2.0</anthropic-java.version>
+		<agentscope.version>2.0.3</agentscope.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>io.agentscope</groupId>
+				<artifactId>agentscope-bom</artifactId>
+				<version>${agentscope.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-beans</artifactId>
@@ -151,6 +156,13 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${org.slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
@@ -437,16 +449,6 @@
 
 	<build>
 		<plugins>
-			<!-- 编译时保留方法参数名（-parameters），供 Spring Framework 6.1+ 的 actuator endpoint 反射解析参数名 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
-				<configuration>
-					<parameters>true</parameters>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -523,7 +525,7 @@
 
 		<pluginManagement>
 			<plugins>
-				<!-- Release 插件统一定义，release-main 和 release-react-agent 共用 -->
+				<!-- Release 插件统一定义，release-on-8 和 release-on-17 共用 -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
@@ -614,7 +616,7 @@
 			</activation>
 		</profile>
 
-		<!-- ReAct Agent 模块：需要 Java 21+（agentscope-java 要求），JDK 版本满足时自动激活 -->
+		<!-- Agent 模块：需要 JDK 17+，JDK 版本满足时自动激活 -->
 		<profile>
 			<id>compile-17+</id>
 			<activation>
@@ -633,7 +635,7 @@
 				<module>liteflow-el-builder</module>
 				<module>liteflow-metrics</module>
 				<module>liteflow-benchmark</module>
-				<module>liteflow-react-agent</module>
+				<module>liteflow-agent</module>
 			</modules>
 		</profile>
 
@@ -676,7 +678,7 @@
 		<profile>
 			<id>release-on-17</id>
 			<modules>
-				<module>liteflow-react-agent</module>
+				<module>liteflow-agent</module>
 				<module>liteflow-spring-boot4-starter</module>
 			</modules>
 
