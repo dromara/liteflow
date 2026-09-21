@@ -1,5 +1,7 @@
 package com.yomahub.liteflow.solon.config;
 
+import cn.hutool.core.util.StrUtil;
+import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.monitor.MonitorBus;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import org.noear.solon.annotation.Bean;
@@ -22,6 +24,9 @@ public class LiteflowAutoConfiguration {
 
 	@Inject(value = "${liteflow.monitor.enableLog}", required = false)
 	boolean enableLog;
+
+	@Inject(value = "${solon.app.name}", required = false)
+	String applicationName;
 
 	@Bean
 	public LiteflowConfig liteflowConfig(LiteflowProperty property, LiteflowMonitorProperty liteflowMonitorProperty) {
@@ -53,7 +58,11 @@ public class LiteflowAutoConfiguration {
 		liteflowConfig.setEnableNodeInstanceId(property.isEnableNodeInstanceId());
 		liteflowConfig.setChainCacheEnabled(property.getChainCache().isEnabled());
 		liteflowConfig.setChainCacheCapacity(property.getChainCache().getCapacity());
-		liteflowConfig.setAgent(property.getAgent());
+		AgentConfig agent = property.getAgent() == null ? new AgentConfig() : property.getAgent();
+		if (StrUtil.isBlank(agent.getApplicationName())) {
+			agent.setApplicationName(applicationName);
+		}
+		liteflowConfig.setAgent(agent);
 		liteflowConfig.setRuleDb(property.getRuleDb());
 		return liteflowConfig;
 	}

@@ -1,0 +1,127 @@
+package com.yomahub.liteflow.agent.gemini;
+
+import com.yomahub.liteflow.agent.exception.AgentConfigException;
+import com.yomahub.liteflow.agent.model.CredentialResolver;
+import com.yomahub.liteflow.agent.model.ModelSpec;
+import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.google.genai.types.Content;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
+import io.agentscope.core.formatter.Formatter;
+import io.agentscope.core.model.GenerateOptions;
+import io.agentscope.core.model.Model;
+import io.agentscope.extensions.model.gemini.GeminiChatModel;
+import io.agentscope.extensions.model.gemini.formatter.GeminiChatFormatter;
+
+import java.util.function.Consumer;
+
+public class GeminiSpec extends ModelSpec<GeminiSpec> {
+
+    private final String modelName;
+    private String  thinkingLevel;
+    private Integer thinkingBudget;
+    private Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> formatter;
+    private Consumer<GeminiChatModel.Builder> builderCustomizer;
+
+    public GeminiSpec(String modelName) { this.modelName = modelName; }
+
+    public GeminiSpec thinking(Consumer<GeminiThinking> c) {
+        GeminiThinking t = new GeminiThinking();
+        c.accept(t);
+        this.thinkingLevel  = t.getLevel();
+        this.thinkingBudget = t.getBudget();
+        return this;
+    }
+
+    public GeminiSpec formatter(
+            Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> formatter) {
+        this.formatter = formatter;
+        return this;
+    }
+
+    public GeminiSpec customizeBuilder(Consumer<GeminiChatModel.Builder> customizer) {
+        this.builderCustomizer = customizer;
+        return this;
+    }
+
+    public String  getModelName()      { return modelName; }
+    public String  getThinkingLevel()  { return thinkingLevel; }
+    public Integer getThinkingBudget() { return thinkingBudget; }
+
+    @Override
+    public Model resolve(AgentConfig cfg) {
+        CredentialResolver.ResolvedCredential credential =
+                CredentialResolver.resolveFirstClass(
+                        cfg.getGemini(),
+                        "liteflow.agent.gemini",
+                        getApiKey(),
+                        getBaseUrl());
+        return recordMetadata(buildModel(credential.apiKey(), credential.baseUrl()), "google", credential.baseUrl());
+    }
+
+    protected Model buildModel(String apiKey, String baseUrl) {
+        ThinkingAwareBuilder builder = new ThinkingAwareBuilder();
+        builder.apiKey(apiKey).modelName(modelName);
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            builder.baseUrl(baseUrl);
+        }
+        GenerateOptions options = mergeGenerateOptions(buildGenerateOptions());
+        if (options != null) {
+            builder.defaultOptions(options);
+            if (options.getStream() != null) {
+                builder.streamEnabled(options.getStream());
+            }
+        }
+        builder.formatter(formatter);
+        if (builderCustomizer != null) {
+            builderCustomizer.accept(builder);
+        }
+        return new OwnedGeminiModel(builder.buildManaged());
+    }
+
+    private GenerateOptions buildGenerateOptions() {
+        if (thinkingLevel == null && thinkingBudget == null) {
+            return null;
+        }
+        GenerateOptions.Builder b = GenerateOptions.builder();
+        if (thinkingLevel != null)      b.reasoningEffort(thinkingLevel);
+        if (thinkingBudget != null)     b.thinkingBudget(thinkingBudget);
+        return b.build();
+    }
+
+    /** Keeps the final formatter decorated even when the last-running customizer replaces it. */
+    private static final class ThinkingAwareBuilder extends GeminiChatModel.Builder {
+        private boolean built;
+
+        @Override
+        public GeminiChatModel.Builder formatter(
+                Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder>
+                        formatter) {
+            Formatter<Content, GenerateContentResponse, GenerateContentConfig.Builder> effective =
+                    formatter == null ? new GeminiChatFormatter() : formatter;
+            if (effective instanceof GeminiThinkingFormatter) {
+                return super.formatter(effective);
+            }
+            return super.formatter(new GeminiThinkingFormatter(effective));
+        }
+
+        @Override
+        public GeminiChatModel build() {
+            throw escapedBuild();
+        }
+
+        private GeminiChatModel buildManaged() {
+            if (built) {
+                throw escapedBuild();
+            }
+            built = true;
+            return super.build();
+        }
+
+        private static AgentConfigException escapedBuild() {
+            return new AgentConfigException(
+                    "customizeBuilder cannot call or retain builder.build(); "
+                            + "LiteFlow owns Gemini model construction");
+        }
+    }
+}

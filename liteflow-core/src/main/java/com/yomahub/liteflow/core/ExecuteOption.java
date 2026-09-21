@@ -56,7 +56,7 @@ public class ExecuteOption {
     /**
      * 指定本次执行的 conversationId（业务会话标识）。
      *
-     * <p>主要用于 ReAct Agent 连续对话场景：同一段对话中的所有 agent
+     * <p>主要用于 Agent 连续对话场景：同一段对话中的所有 agent
      * 共享 workspace 目录，跨次调用传入相同 conversationId 即可恢复会话。
      *
      * <p>显式调用本方法会取消 {@link #autoConversationId()} 的语义。
