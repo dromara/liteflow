@@ -584,6 +584,47 @@
       "defaultValue": true
     },
     {
+      "name": "liteflow.agent.jev.provider",
+      "type": "com.yomahub.liteflow.property.agent.JevProvider",
+      "description": "Jev service provider: TYPESAFE (System One) or OPENROUTER (Decisions API).",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": "TYPESAFE"
+    },
+    {
+      "name": "liteflow.agent.jev.api-key",
+      "type": "java.lang.String",
+      "description": "API key for the selected Jev provider (TypeSafe or OpenRouter). Validated only when a Jev component executes.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig"
+    },
+    {
+      "name": "liteflow.agent.jev.base-url",
+      "type": "java.lang.String",
+      "description": "Optional API root override. Blank uses https://api.typesafe.ai/v1 for TYPESAFE or https://openrouter.ai/api/alpha for OPENROUTER; the client appends /systemone or /decisions respectively.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": "https://api.typesafe.ai/v1"
+    },
+    {
+      "name": "liteflow.agent.jev.model",
+      "type": "java.lang.String",
+      "description": "Optional model ID override. Blank uses jev-1.13.0 for TYPESAFE or typesafe/jev-1.13 for OPENROUTER.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": "jev-1.13.0"
+    },
+    {
+      "name": "liteflow.agent.jev.timeout",
+      "type": "java.time.Duration",
+      "description": "Maximum wait for the complete Jev HTTP response.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": "3s"
+    },
+    {
+      "name": "liteflow.agent.jev.min-confidence",
+      "type": "java.lang.Double",
+      "description": "Minimum confidence to select a target. Lower confidence uses SWITCH DEFAULT; calibrate on business data.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": 0.6
+    },
+    {
       "name": "liteflow.agent.openai.api-key",
       "type": "java.lang.String",
       "description": "OpenAI API key.",
@@ -1087,6 +1128,21 @@
       "description": "Whether to enable liteflow metrics collection (chain/node timers, counters and registry gauges). Requires a MeterRegistry on the classpath and in the context. Defaults to true.",
       "sourceType": "com.yomahub.liteflow.springboot.metrics.LiteflowMetricsAutoConfiguration",
       "defaultValue": true
+    }
+  ],
+  "hints": [
+    {
+      "name": "liteflow.agent.jev.provider",
+      "values": [
+        {
+          "value": "typesafe",
+          "description": "Call Jev directly through TypeSafe's System One API."
+        },
+        {
+          "value": "openrouter",
+          "description": "Call Jev through OpenRouter's Decisions API."
+        }
+      ]
     }
   ]
 }

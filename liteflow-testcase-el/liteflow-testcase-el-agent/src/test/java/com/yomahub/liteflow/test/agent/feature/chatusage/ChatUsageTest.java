@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.chatusage;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import io.agentscope.core.model.ChatUsage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = ChatUsageTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.chatusage")
-public class ChatUsageTest extends BaseAgentLiveTest {
+public class ChatUsageTest extends BaseAgentTest {
 
     @BeforeEach
     public void reset() {

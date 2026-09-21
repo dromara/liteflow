@@ -58,6 +58,9 @@ public class AgentConfig {
     /** Skills configuration for loading AgentSkillRepository entries from SKILL.md repositories. */
     private SkillsConfig skills = new SkillsConfig();
 
+    /** Jev typed decision service ({@code liteflow.agent.jev.*}). */
+    private JevConfig jev = new JevConfig();
+
     /** OpenAI 头等平台凭证（{@code liteflow.agent.openai.*}），由 {@code OpenAISpec} 解析使用。 */
     private PlatformCredential openai = new PlatformCredential();
 
@@ -185,6 +188,14 @@ public class AgentConfig {
 
     public PlatformCredential getOpenai() {
         return openai;
+    }
+
+    public JevConfig getJev() {
+        return jev;
+    }
+
+    public void setJev(JevConfig jev) {
+        this.jev = jev;
     }
 
     public void setOpenai(PlatformCredential v) {

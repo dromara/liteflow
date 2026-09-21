@@ -9,7 +9,7 @@ import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.agent.openai.DeepSeek;
 import com.yomahub.liteflow.core.ExecuteOption;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.guide")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class AgentGuideQuickStartTest extends BaseAgentLiveTest {
+class AgentGuideQuickStartTest extends BaseAgentTest {
     @TempDir static Path stateRoot;
     private static HttpServer server;
     private static final ObjectMapper JSON = new ObjectMapper();

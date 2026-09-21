@@ -22,6 +22,7 @@
 
     <modules>
         <module>liteflow-agent-core</module>
+        <module>liteflow-agent-jev</module>
         <module>liteflow-agent-a2a</module>
         <module>liteflow-agent-openai</module>
         <module>liteflow-agent-anthropic</module>

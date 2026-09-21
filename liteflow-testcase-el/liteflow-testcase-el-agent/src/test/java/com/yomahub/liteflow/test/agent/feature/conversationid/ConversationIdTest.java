@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.agent.feature.conversationid;
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.core.ExecuteOption;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import java.util.Map;
 @SpringBootTest(classes = ConversationIdTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.conversationid")
-public class ConversationIdTest extends BaseAgentLiveTest {
+public class ConversationIdTest extends BaseAgentTest {
 
     @BeforeEach
     public void reset() {

@@ -2,7 +2,11 @@ package com.yomahub.liteflow.agent.mysql;
 
 import com.yomahub.liteflow.agent.exception.AgentConfigException;
 import com.yomahub.liteflow.agent.state.DefaultAgentStateStoreResolver;
-import com.yomahub.liteflow.agent.state.ResolvedAgentStateStore;
+import com.yomahub.liteflow.agent.testsupport.MockBeanContext;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.Map;
+import static org.mockito.Mockito.*;
 import com.yomahub.liteflow.property.agent.AgentSessionStoreConfig;
 import com.yomahub.liteflow.property.agent.AgentSessionStoreType;
 import org.junit.jupiter.api.Test;
@@ -61,24 +65,29 @@ class MysqlAgentStateStoreProviderTest {
     }
 
     @Test
-    void unreachableDatabaseIsWrappedAsConfigException() {
+    void mockedConnectionFailureIsWrappedAsConfigException() throws Exception {
+        DataSource source = mock(DataSource.class);
+        when(source.getConnection()).thenThrow(new SQLException("mock connection failure"));
         AgentSessionStoreConfig config = new AgentSessionStoreConfig();
-        config.getMysql().setJdbcUrl(
-                "jdbc:mysql://localhost:65532/test?connectTimeout=1000&socketTimeout=1000");
+        config.getMysql().setDataSourceBeanName("mockSql");
         AgentConfigException failure = assertThrows(AgentConfigException.class,
-                () -> provider.resolve(config));
+                () -> new MysqlAgentStateStoreProvider(name -> source).resolve(config));
         assertTrue(failure.getMessage().contains("MySQL state store could not be created"));
+        verify(source).getConnection();
     }
 
     @Test
-    void resolverDiscoversProviderThroughServiceLoader() {
+    void resolverDiscoversProviderThroughServiceLoader() throws Exception {
+        DataSource source = mock(DataSource.class);
+        when(source.getConnection()).thenThrow(new SQLException("mock connection failure"));
         AgentSessionStoreConfig config = new AgentSessionStoreConfig();
         config.setType(AgentSessionStoreType.MYSQL);
-        config.getMysql().setJdbcUrl(
-                "jdbc:mysql://localhost:65532/test?connectTimeout=1000&socketTimeout=1000");
-        AgentConfigException failure = assertThrows(AgentConfigException.class,
-                () -> new DefaultAgentStateStoreResolver().resolve(config));
-        // SPI wiring proven: the error comes from the provider, not the missing-module path.
-        assertTrue(failure.getMessage().contains("MySQL state store could not be created"));
+        config.getMysql().setDataSourceBeanName("mockSql");
+        try (var context = new MockBeanContext(Map.of("mockSql", source))) {
+            AgentConfigException failure = assertThrows(AgentConfigException.class,
+                    () -> new DefaultAgentStateStoreResolver().resolve(config));
+            assertTrue(failure.getMessage().contains("MySQL state store could not be created"));
+            verify(source).getConnection();
+        }
     }
 }

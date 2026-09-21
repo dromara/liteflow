@@ -2,7 +2,7 @@ package com.yomahub.liteflow.test.agent.feature.multiagent;
 
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import java.util.Map;
 @SpringBootTest(classes = MultiAgentChainTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.multiagent")
-public class MultiAgentChainTest extends BaseAgentLiveTest {
+public class MultiAgentChainTest extends BaseAgentTest {
 
     private static final String CID = "multi-agent-conv";
 

@@ -2,8 +2,10 @@ package com.yomahub.liteflow.property.agent;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** Docker sandbox settings used by the optional AgentScope Harness module. */
@@ -21,7 +23,7 @@ public class DockerSandboxConfig {
 	private int maxCachedSandboxes = 8;
 
 	private boolean workspaceProjectionEnabled = true;
-	private List<String> workspaceProjectionRoots = new ArrayList<>(List.of(
+	private List<String> workspaceProjectionRoots = new ArrayList<>(Arrays.asList(
 			"AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"));
 
 	public String getImage() {
@@ -198,7 +200,7 @@ public class DockerSandboxConfig {
 		}
 
 		try {
-			Path normalized = Path.of(root).normalize();
+			Path normalized = Paths.get(root).normalize();
 			if (normalized.isAbsolute()) {
 				throw invalid("workspace-projection-roots", "must contain only relative paths");
 			}

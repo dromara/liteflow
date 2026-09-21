@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.maxiterations;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = MaxIterationsTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.maxiterations")
-public class MaxIterationsTest extends BaseAgentLiveTest {
+public class MaxIterationsTest extends BaseAgentTest {
 
     @BeforeEach
     public void resetProbe() {

@@ -1,1 +1,0 @@
-printf skill-ready

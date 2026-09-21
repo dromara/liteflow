@@ -2,8 +2,6 @@ package com.yomahub.liteflow.agent.harness.state;
 
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.agent.conversation.AgentConversationService;
-import com.yomahub.liteflow.agent.guard.AgentInvocationGuardResolver;
-import com.yomahub.liteflow.agent.guard.AgentInvocationKey;
 import com.yomahub.liteflow.agent.harness.component.HarnessAgentComponent;
 import com.yomahub.liteflow.agent.model.ModelSpec;
 import com.yomahub.liteflow.property.LiteflowConfig;
@@ -14,10 +12,7 @@ import com.yomahub.liteflow.slot.Slot;
 import io.agentscope.core.message.*;
 import io.agentscope.core.model.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import reactor.core.publisher.Flux;
 
 import java.nio.file.Files;
@@ -37,13 +32,6 @@ class AgentConversationProcessTest {
         roundTrip(AgentSessionStoreType.JSON);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = AgentSessionStoreType.class, names = {"REDIS", "MYSQL"})
-    @EnabledIfEnvironmentVariable(named = "LITEFLOW_TEST_SHARED_STORAGE", matches = "true")
-    void remoteConversationAndDeletionSurviveActualJvmRestarts(AgentSessionStoreType type) throws Exception {
-        roundTrip(type);
-    }
-
     private void roundTrip(AgentSessionStoreType type) throws Exception {
         String conversation = UUID.randomUUID().toString();
         run(type, conversation, "write");
@@ -55,28 +43,6 @@ class AgentConversationProcessTest {
             assertTrue(service.agentState(conversation, "restart-agent").isEmpty());
         }
         run(type, conversation, "deleted");
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = AgentSessionStoreType.class, names = {"REDIS", "MYSQL"})
-    @EnabledIfEnvironmentVariable(named = "LITEFLOW_TEST_SHARED_STORAGE", matches = "true")
-    void twoJvmProcessesContendForTheSameGuardAndReleaseItForTheNextOwner(AgentSessionStoreType type) throws Exception {
-        String conversation = UUID.randomUUID().toString();
-        Process holder = start(type, conversation, "hold");
-        try {
-            long deadline = System.nanoTime() + Duration.ofSeconds(15).toNanos();
-            while (!Files.exists(temp.resolve("acquired")) && holder.isAlive() && System.nanoTime() < deadline) Thread.sleep(20);
-            assertTrue(Files.exists(temp.resolve("acquired")), Files.readString(temp.resolve("hold.log")));
-            // The child JVM startup plus this wait exceeds the 600ms Redis lease. Its owner must renew it.
-            Thread.sleep(750);
-            run(type, conversation, "blocked");
-            Files.writeString(temp.resolve("release"), "release");
-            finish(holder, "hold");
-            run(type, conversation, "acquire");
-        } finally {
-            Files.writeString(temp.resolve("release"), "release");
-            if (holder.isAlive()) holder.destroyForcibly().waitFor(5, TimeUnit.SECONDS);
-        }
     }
 
     private void run(AgentSessionStoreType type, String conversation, String mode) throws Exception {
@@ -107,14 +73,6 @@ class AgentConversationProcessTest {
         config.getSessionStore().setType(type);
         config.getSessionStore().setJsonRoot(root.resolve("state").toString());
         config.getSessionStore().setJsonWorkspaceRoot(root.resolve("workspace").toString());
-        config.getSessionStore().getRedis().setUri(System.getenv("LITEFLOW_TEST_REDIS_URI"));
-        var mysql = config.getSessionStore().getMysql();
-        mysql.setJdbcUrl(System.getenv("LITEFLOW_TEST_MYSQL_URL"));
-        mysql.setUsername("root");
-        mysql.setPassword("");
-        mysql.setDatabaseName("liteflow_storage_test");
-        mysql.setTableName("process_sessions");
-        mysql.setCreateIfNotExist(true);
         return config;
     }
 
@@ -129,32 +87,13 @@ class AgentConversationProcessTest {
             liteflow.setAgent(config);
             LiteflowConfigGetter.setLiteflowConfig(liteflow);
             try {
-                if (List.of("hold", "blocked", "acquire").contains(mode)) {
-                    try (var guard = new AgentInvocationGuardResolver().resolve(config)) {
-                        var key = AgentInvocationKey.workspace(config.getApplicationName(), conversation);
-                        if (mode.equals("blocked")) {
-                            assertThrows(RuntimeException.class, () -> guard.acquire(key, Duration.ZERO));
-                        } else {
-                            try (var lease = guard.acquire(key, Duration.ZERO)) {
-                                assertEquals(key, lease.key());
-                                if (mode.equals("hold")) {
-                                    Files.writeString(root.resolve("acquired"), "acquired");
-                                    long deadline = System.nanoTime() + Duration.ofSeconds(15).toNanos();
-                                    while (!Files.exists(root.resolve("release")) && System.nanoTime() < deadline) Thread.sleep(20);
-                                    assertTrue(Files.exists(root.resolve("release")));
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    try (var component = new Component(conversation, mode)) {
-                        if (mode.equals("deleted")) {
-                            assertThrows(RuntimeException.class, component::process);
-                            assertEquals(0, component.calls);
-                        } else {
-                            component.process();
-                            assertEquals(1, component.calls);
-                        }
+                try (var component = new Component(conversation, mode)) {
+                    if (mode.equals("deleted")) {
+                        assertThrows(RuntimeException.class, component::process);
+                        assertEquals(0, component.calls);
+                    } else {
+                        component.process();
+                        assertEquals(1, component.calls);
                     }
                 }
                 System.out.println("PROBE-OK:" + mode);

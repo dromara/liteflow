@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** JDBC contract checks run in the default suite; real MySQL DDL is verified separately. */
+/** JDBC schema and migration contract checks use an isolated H2 database in MySQL mode. */
 class MysqlBeanAndSchemaTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})

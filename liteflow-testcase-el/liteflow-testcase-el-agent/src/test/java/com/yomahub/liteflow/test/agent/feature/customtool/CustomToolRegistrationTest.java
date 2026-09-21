@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.customtool;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import java.util.Set;
 @SpringBootTest(classes = CustomToolRegistrationTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.customtool")
-public class CustomToolRegistrationTest extends BaseAgentLiveTest {
+public class CustomToolRegistrationTest extends BaseAgentTest {
 
     @BeforeEach
     public void resetProbe() {

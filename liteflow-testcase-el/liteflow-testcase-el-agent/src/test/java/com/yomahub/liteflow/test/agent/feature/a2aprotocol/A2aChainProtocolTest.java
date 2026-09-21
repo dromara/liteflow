@@ -3,7 +3,7 @@ package com.yomahub.liteflow.test.agent.feature.a2aprotocol;
 import com.yomahub.liteflow.agent.a2a.A2aAgentComponent;
 import com.yomahub.liteflow.agent.context.LiteFlowAgentContext;
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.agentscope.core.a2a.agent.card.AgentCardResolver;
@@ -29,7 +29,7 @@ import java.util.Map;
 @SpringBootTest(classes = A2aChainProtocolTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.a2aprotocol")
-public class A2aChainProtocolTest extends BaseAgentLiveTest {
+public class A2aChainProtocolTest extends BaseAgentTest {
 
     private static MinimalA2aServer server;
     private static volatile String authorization = "Bearer protocol-token";

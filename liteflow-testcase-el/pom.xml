@@ -57,6 +57,12 @@
     </modules>
 
     <profiles>
+        <profile>
+            <id>agent-coverage</id>
+            <modules>
+                <module>agent-coverage</module>
+            </modules>
+        </profile>
         <!-- Agent 测试模块需要 JDK 17+，仅在对应构建中拉入 -->
         <profile>
             <id>testcase-agent</id>
@@ -65,6 +71,7 @@
             </activation>
             <modules>
                 <module>liteflow-testcase-el-agent-core</module>
+                <module>liteflow-testcase-el-agent-jev</module>
                 <module>liteflow-testcase-el-agent-harness</module>
                 <module>liteflow-testcase-el-agent</module>
                 <module>liteflow-testcase-el-springboot4</module>

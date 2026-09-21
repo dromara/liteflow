@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.buildmodel;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = BuildModelEscapeTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.buildmodel")
-public class BuildModelEscapeTest extends BaseAgentLiveTest {
+public class BuildModelEscapeTest extends BaseAgentTest {
 
     @BeforeEach
     public void reset() {

@@ -3,6 +3,7 @@ package com.yomahub.liteflow.springboot4;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.JevProvider;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import com.yomahub.liteflow.property.agent.DockerSandboxLifecycle;
@@ -28,6 +29,7 @@ import org.springframework.util.ClassUtils;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,6 +48,45 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AgentPropertyBindingTest {
 
     private static final String PREFIX = "liteflow.agent.";
+
+    @Test
+    void bindsIndependentJevConfigurationWithoutChatCredentials() {
+        AgentConfig agent = bind(Map.ofEntries(
+                entry("jev.api-key", "jev-test-key"),
+                entry("jev.base-url", "http://localhost:8089/gateway/v1/"),
+                entry("jev.model", "jev-test-version"),
+                entry("jev.timeout", "750ms"),
+                entry("jev.min-confidence", "0.85"))).getAgent();
+        assertEquals(JevProvider.TYPESAFE, agent.getJev().getProvider());
+        assertEquals("jev-test-key", agent.getJev().getApiKey());
+        assertEquals("http://localhost:8089/gateway/v1/", agent.getJev().getBaseUrl());
+        assertEquals("jev-test-version", agent.getJev().getModel());
+        assertEquals(Duration.ofMillis(750), agent.getJev().getTimeout());
+        assertEquals(0.85, agent.getJev().getMinConfidence());
+        assertEquals(null, agent.getOpenai().getApiKey());
+    }
+
+
+    @Test
+    void bindsJevProviderDefaultsAndRejectsUnknownProviders() {
+        AgentConfig official = bind(Map.ofEntries(entry("jev.api-key", "official-key"))).getAgent();
+        assertEquals(JevProvider.TYPESAFE, official.getJev().getProvider());
+        assertEquals("https://api.typesafe.ai/v1", official.getJev().getBaseUrl());
+        assertEquals("jev-1.13.0", official.getJev().getModel());
+        AgentConfig router = bind(Map.ofEntries(
+                entry("jev.provider", "openrouter"), entry("jev.api-key", "openrouter-key"),
+                entry("jev.base-url", ""), entry("jev.model", ""))).getAgent();
+        assertEquals(JevProvider.OPENROUTER, router.getJev().getProvider());
+        assertEquals("openrouter-key", router.getJev().getApiKey());
+        assertEquals("https://openrouter.ai/api/alpha", router.getJev().getBaseUrl());
+        assertEquals("typesafe/jev-1.13", router.getJev().getModel());
+        AgentConfig custom = bind(Map.ofEntries(
+                entry("jev.provider", "openrouter"), entry("jev.base-url", "http://localhost:8089/api/alpha"),
+                entry("jev.model", "typesafe/custom-model"))).getAgent();
+        assertEquals("http://localhost:8089/api/alpha", custom.getJev().getBaseUrl());
+        assertEquals("typesafe/custom-model", custom.getJev().getModel());
+        assertThrows(BindException.class, () -> bind(Map.ofEntries(entry("jev.provider", "unknown"))));
+    }
 
     @Test
     void bindsEveryAgentScope2PropertyUsingExactKebabCasePaths() {
@@ -219,6 +260,32 @@ class AgentPropertyBindingTest {
     }
 
     @Test
+    void generatedMetadataExposesJevProviderAndCompletionValues() throws Exception {
+        // Read the actual starter output, not another dependency's metadata or the manual input file.
+        URL location = LiteflowProperty.class.getProtectionDomain().getCodeSource().getLocation();
+        String resource = "META-INF/spring-configuration-metadata.json";
+        URL metadata = location.getPath().endsWith(".jar")
+                ? new URL("jar:" + location.toExternalForm() + "!/" + resource)
+                : new URL(location, resource);
+        JsonNode root;
+        try (InputStream stream = metadata.openStream()) {
+            root = new ObjectMapper().readTree(stream);
+        }
+        Map<String, JsonNode> properties = StreamSupport.stream(root.path("properties").spliterator(), false)
+                .filter(node -> node.path("name").asText().startsWith(PREFIX + "jev."))
+                .collect(Collectors.toMap(node -> node.path("name").asText(), node -> node));
+        assertTrue(properties.containsKey(PREFIX + "jev.provider"),
+                "Regenerate starter metadata before packaging: generated metadata is missing Jev provider");
+        assertMetadata(properties, "jev.provider", JevProvider.class.getName(), "TYPESAFE");
+        JsonNode hint = StreamSupport.stream(root.path("hints").spliterator(), false)
+                .filter(node -> (PREFIX + "jev.provider").equals(node.path("name").asText()))
+                .findFirst().orElseThrow(() -> new AssertionError("Missing Jev provider completion hints"));
+        Set<String> values = StreamSupport.stream(hint.path("values").spliterator(), false)
+                .map(node -> node.path("value").asText()).collect(Collectors.toSet());
+        assertEquals(Set.of("typesafe", "openrouter"), values);
+    }
+
+    @Test
     void metadataCoversEveryAgentPropertyWithMatchingTypes() throws Exception {
         JsonNode root;
         try (InputStream stream = AgentPropertyBindingTest.class.getResourceAsStream(
@@ -252,6 +319,7 @@ class AgentPropertyBindingTest {
                 .collect(Collectors.toSet());
         assertEquals(Set.of(), deprecated, "no liteflow.agent.* key should be deprecated");
 
+        assertMetadata(agentProperties, "jev.provider", JevProvider.class.getName(), "TYPESAFE");
         assertMetadata(agentProperties, "execution-timeout", "java.time.Duration", "10m");
         assertMetadata(agentProperties, "session-store.type",
                 AgentSessionStoreType.class.getName(), "JSON");

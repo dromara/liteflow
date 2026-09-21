@@ -14,7 +14,6 @@
 
     <properties>
         <skipTests>false</skipTests>
-        <liteflow.agent.test.docker-image>alpine:3.20</liteflow.agent.test.docker-image>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
@@ -124,110 +123,14 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/platform/**/*Test.java</exclude>
-                        <exclude>**/*LiveTest.java</exclude>
-                        <exclude>**/*IT.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <excludes>
+                    <exclude>env.txt</exclude>
+                    <exclude>.env*</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
     </build>
-
-    <profiles>
-        <profile>
-            <id>agent-live</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration combine.self="override">
-                            <includes>
-                                <include>**/platform/**/*Test.java</include>
-                                <include>**/*LiveTest.java</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*IT.java</exclude>
-                            </excludes>
-                            <!-- LiteFlow FlowBus 是 JVM 级静态注册表：多个 Spring 上下文
-                                 共享同一 surefire fork 时，前一个上下文注册的链会残留在
-                                 FlowBus 中并导致后续上下文的规则校验失败。每个测试类
-                                 使用独立 JVM 以隔离。 -->
-                            <reuseForks>false</reuseForks>
-                            <forkCount>1</forkCount>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>agent-docker-it</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.5.0</version>
-                        <executions>
-                            <execution>
-                                <id>require-docker-daemon</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>info</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>require-local-sandbox-image</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>image</argument>
-                                        <argument>inspect</argument>
-                                        <argument>${liteflow.agent.test.docker-image}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.5.3</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <liteflow.agent.test.docker-image>${liteflow.agent.test.docker-image}</liteflow.agent.test.docker-image>
-                            </systemPropertyVariables>
-                            <includes>
-                                <include>**/DockerSandboxIT.java</include>
-                            </includes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.ifrouting;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import java.util.Map;
 @SpringBootTest(classes = IfRoutingAgentTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.ifrouting")
-public class IfRoutingAgentTest extends BaseAgentLiveTest {
+public class IfRoutingAgentTest extends BaseAgentTest {
 
     @BeforeEach
     public void resetCounts() {

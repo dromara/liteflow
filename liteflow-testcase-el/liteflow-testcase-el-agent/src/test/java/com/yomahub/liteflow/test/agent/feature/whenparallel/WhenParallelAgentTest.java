@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.whenparallel;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = WhenParallelAgentTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.whenparallel")
-public class WhenParallelAgentTest extends BaseAgentLiveTest {
+public class WhenParallelAgentTest extends BaseAgentTest {
 
     @BeforeEach
     public void resetProbes() {

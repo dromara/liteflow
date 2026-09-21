@@ -9,6 +9,7 @@ import com.yomahub.liteflow.agent.runtime.AgentRuntimeBuildContext;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
 import com.yomahub.liteflow.property.agent.AgentConfig;
+import com.yomahub.liteflow.property.agent.JevProvider;
 import com.yomahub.liteflow.property.agent.DockerSandboxConfig;
 import com.yomahub.liteflow.property.agent.DockerSandboxLifecycle;
 import com.yomahub.liteflow.property.agent.HarnessMemoryFlushMode;
@@ -39,7 +40,12 @@ import reactor.core.publisher.Mono;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.Duration;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,8 +66,47 @@ class AgentPropertyBindingTest {
     private static final String PREFIX = "liteflow.agent.";
 
     @Test
+    void bindsIndependentJevConfigurationWithoutChatCredentials() {
+        AgentConfig agent = bind(mapOfEntries(
+                entry("jev.api-key", "jev-test-key"),
+                entry("jev.base-url", "http://localhost:8089/gateway/v1/"),
+                entry("jev.model", "jev-test-version"),
+                entry("jev.timeout", "750ms"),
+                entry("jev.min-confidence", "0.85"))).getAgent();
+        assertEquals(JevProvider.TYPESAFE, agent.getJev().getProvider());
+        assertEquals("jev-test-key", agent.getJev().getApiKey());
+        assertEquals("http://localhost:8089/gateway/v1/", agent.getJev().getBaseUrl());
+        assertEquals("jev-test-version", agent.getJev().getModel());
+        assertEquals(Duration.ofMillis(750), agent.getJev().getTimeout());
+        assertEquals(0.85, agent.getJev().getMinConfidence());
+        assertEquals(null, agent.getOpenai().getApiKey());
+    }
+
+
+    @Test
+    void bindsJevProviderDefaultsAndRejectsUnknownProviders() {
+        AgentConfig official = bind(mapOfEntries(entry("jev.api-key", "official-key"))).getAgent();
+        assertEquals(JevProvider.TYPESAFE, official.getJev().getProvider());
+        assertEquals("https://api.typesafe.ai/v1", official.getJev().getBaseUrl());
+        assertEquals("jev-1.13.0", official.getJev().getModel());
+        AgentConfig router = bind(mapOfEntries(
+                entry("jev.provider", "openrouter"), entry("jev.api-key", "openrouter-key"),
+                entry("jev.base-url", ""), entry("jev.model", ""))).getAgent();
+        assertEquals(JevProvider.OPENROUTER, router.getJev().getProvider());
+        assertEquals("openrouter-key", router.getJev().getApiKey());
+        assertEquals("https://openrouter.ai/api/alpha", router.getJev().getBaseUrl());
+        assertEquals("typesafe/jev-1.13", router.getJev().getModel());
+        AgentConfig custom = bind(mapOfEntries(
+                entry("jev.provider", "openrouter"), entry("jev.base-url", "http://localhost:8089/api/alpha"),
+                entry("jev.model", "typesafe/custom-model"))).getAgent();
+        assertEquals("http://localhost:8089/api/alpha", custom.getJev().getBaseUrl());
+        assertEquals("typesafe/custom-model", custom.getJev().getModel());
+        assertThrows(BindException.class, () -> bind(mapOfEntries(entry("jev.provider", "unknown"))));
+    }
+
+    @Test
     void bindsEveryAgentScope2PropertyUsingExactKebabCasePaths() {
-        LiteflowProperty property = bind(Map.ofEntries(
+        LiteflowProperty property = bind(mapOfEntries(
                 entry("application-name", "binding-test"),
                 entry("execution-timeout", "17s"),
                 entry("session-store.type", "REDIS"),
@@ -156,7 +201,7 @@ class AgentPropertyBindingTest {
         assertEquals(Duration.ofSeconds(7), docker.getEvictionInterval());
         assertEquals(12, docker.getMaxCachedSandboxes());
         assertTrue(docker.isWorkspaceProjectionEnabled());
-        assertEquals(List.of("AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"),
+        assertEquals(Arrays.asList("AGENTS.md", "skills", "subagents", "knowledge", ".skills-cache"),
                 docker.getWorkspaceProjectionRoots());
         assertEquals(HarnessMemoryFlushMode.THROTTLED, agent.getHarness().getMemory().getFlushMode());
         assertEquals(Duration.ofSeconds(43), agent.getHarness().getMemory().getFlushMinGap());
@@ -167,7 +212,8 @@ class AgentPropertyBindingTest {
         assertEquals(262144, agent.getHarness().getCompactionFallbackContextWindow());
         assertEquals(0.85, agent.getHarness().getCompactionFallbackThreshold());
         assertEquals(ShellMode.WHITELIST, agent.getHarness().getShell().getMode());
-        assertEquals(Set.of("printf"), Set.copyOf(agent.getHarness().getShell().getWhitelist()));
+        assertEquals(Collections.singleton("printf"),
+                new HashSet<>(agent.getHarness().getShell().getWhitelist()));
         assertEquals(Duration.ofSeconds(31), agent.getHarness().getShell().getTimeout());
         assertEquals(27, agent.getMaxIterations());
         assertFalse(agent.isExecutionLogEnabled());
@@ -213,21 +259,47 @@ class AgentPropertyBindingTest {
     @Test
     void dockerNetworkAcceptsOnlySupportedModes() {
         assertEquals(DockerNetworkMode.BRIDGE,
-                bind(Map.of(PREFIX + "harness.docker.network", "bridge"))
+                bind(mapOfEntries(entry("harness.docker.network", "bridge")))
                         .getAgent().getHarness().getDocker().getNetwork());
         assertEquals(DockerNetworkMode.HOST,
-                bind(Map.of(PREFIX + "harness.docker.network", "host"))
+                bind(mapOfEntries(entry("harness.docker.network", "host")))
                         .getAgent().getHarness().getDocker().getNetwork());
 
         assertThrows(BindException.class,
-                () -> bind(Map.of(PREFIX + "harness.docker.network", "custom-network")));
+                () -> bind(mapOfEntries(entry("harness.docker.network", "custom-network"))));
     }
 
     @Test
     void boundGuardedLocalConfigurationIsValidWithoutAnAdditionalTrustFlag() {
-        AgentConfig agent = bind(Map.of(
-                PREFIX + "harness.filesystem-backend", "GUARDED_LOCAL")).getAgent();
+        AgentConfig agent = bind(mapOfEntries(
+                entry("harness.filesystem-backend", "GUARDED_LOCAL"))).getAgent();
         assertDoesNotThrow(agent.getHarness()::validate);
+    }
+
+    @Test
+    void generatedMetadataExposesJevProviderAndCompletionValues() throws Exception {
+        // Read the actual starter output, not another dependency's metadata or the manual input file.
+        URL location = LiteflowProperty.class.getProtectionDomain().getCodeSource().getLocation();
+        String resource = "META-INF/spring-configuration-metadata.json";
+        URL metadata = location.getPath().endsWith(".jar")
+                ? new URL("jar:" + location.toExternalForm() + "!/" + resource)
+                : new URL(location, resource);
+        JsonNode root;
+        try (InputStream stream = metadata.openStream()) {
+            root = new ObjectMapper().readTree(stream);
+        }
+        Map<String, JsonNode> properties = StreamSupport.stream(root.path("properties").spliterator(), false)
+                .filter(node -> node.path("name").asText().startsWith(PREFIX + "jev."))
+                .collect(Collectors.toMap(node -> node.path("name").asText(), node -> node));
+        assertTrue(properties.containsKey(PREFIX + "jev.provider"),
+                "Regenerate starter metadata before packaging: generated metadata is missing Jev provider");
+        assertMetadata(properties, "jev.provider", JevProvider.class.getName(), "TYPESAFE");
+        JsonNode hint = StreamSupport.stream(root.path("hints").spliterator(), false)
+                .filter(node -> (PREFIX + "jev.provider").equals(node.path("name").asText()))
+                .findFirst().orElseThrow(() -> new AssertionError("Missing Jev provider completion hints"));
+        Set<String> values = StreamSupport.stream(hint.path("values").spliterator(), false)
+                .map(node -> node.path("value").asText()).collect(Collectors.toSet());
+        assertEquals(new HashSet<>(Arrays.asList("typesafe", "openrouter")), values);
     }
 
     @Test
@@ -242,7 +314,7 @@ class AgentPropertyBindingTest {
                 .filter(node -> "java.util.Map".equals(node.path("type").asText()))
                 .map(node -> node.path("name").asText())
                 .collect(Collectors.toSet());
-        assertEquals(Set.of(), rawMapProperties,
+        assertEquals(Collections.emptySet(), rawMapProperties,
                 "metadata Map types must declare key and value types");
 
         Map<String, JsonNode> agentProperties = StreamSupport
@@ -262,8 +334,9 @@ class AgentPropertyBindingTest {
                 .filter(entry -> entry.getValue().has("deprecation"))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
-        assertEquals(Set.of(), deprecated, "no liteflow.agent.* key should be deprecated");
+        assertEquals(Collections.emptySet(), deprecated, "no liteflow.agent.* key should be deprecated");
 
+        assertMetadata(agentProperties, "jev.provider", JevProvider.class.getName(), "TYPESAFE");
         assertMetadata(agentProperties, "execution-timeout", "java.time.Duration", "10m");
         assertMetadata(agentProperties, "session-store.type",
                 AgentSessionStoreType.class.getName(), "JSON");
@@ -346,7 +419,7 @@ class AgentPropertyBindingTest {
             String name = prefix + property.getName()
                     .replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
             Class<?> type = property.getPropertyType();
-            if (!type.isEnum() && type.getPackageName().equals(AgentConfig.class.getPackageName())) {
+            if (!type.isEnum() && type.getPackage().getName().equals(AgentConfig.class.getPackage().getName())) {
                 types.putAll(agentPropertyTypes(type, name + "."));
             } else {
                 String metadataType = type.isPrimitive()
@@ -367,7 +440,16 @@ class AgentPropertyBindingTest {
     }
 
     private static Map.Entry<String, Object> entry(String suffix, Object value) {
-        return Map.entry(PREFIX + suffix, value);
+        return new AbstractMap.SimpleImmutableEntry<>(PREFIX + suffix, value);
+    }
+
+    @SafeVarargs
+    private static Map<String, Object> mapOfEntries(Map.Entry<String, Object>... entries) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return map;
     }
 
     private static void assertMetadata(

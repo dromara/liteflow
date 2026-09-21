@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.springbeantool;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import java.util.Set;
 @SpringBootTest(classes = SpringBeanToolInjectionTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.springbeantool")
-public class SpringBeanToolInjectionTest extends BaseAgentLiveTest {
+public class SpringBeanToolInjectionTest extends BaseAgentTest {
 
     @Resource
     private SpringBeanEchoTool toolBeanFromTestContext;

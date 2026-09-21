@@ -44,9 +44,6 @@ class RedisAgentStateStoreProviderTest {
         assertTrue(failure.getMessage().contains("requires uri or client-bean-name"));
     }
 
-    /** Nothing listens on port 1; connection attempts fail immediately. */
-    private static final String CLOSED_PORT_URI = "redis://localhost:1";
-
     private final RedisAgentStateStoreProvider provider =
             new RedisAgentStateStoreProvider(name -> {
                 throw new IllegalStateException("no bean expected: " + name);
@@ -83,13 +80,16 @@ class RedisAgentStateStoreProviderTest {
     }
 
     @Test
-    void uriModeWrapsConnectionFailureAsConfigException() {
-        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
-        config.getRedis().setUri(CLOSED_PORT_URI);
-        config.getRedis().setKeyPrefix("liteflow:agent:state:");
-        AgentConfigException failure = assertThrows(AgentConfigException.class,
-                () -> provider.resolve(config));
-        assertTrue(failure.getMessage().contains("Redis state store could not be created"));
+    void uriModeWrapsMockEndpointFailureAsConfigException() throws Exception {
+        try (var endpoint = new MockRedisEndpoint()) {
+            AgentSessionStoreConfig config = new AgentSessionStoreConfig();
+            config.getRedis().setUri(endpoint.uri());
+            config.getRedis().setKeyPrefix("liteflow:agent:state:");
+            AgentConfigException failure = assertThrows(AgentConfigException.class,
+                    () -> provider.resolve(config));
+            assertTrue(failure.getMessage().contains("Redis state store could not be created"));
+            endpoint.assertRequested();
+        }
     }
 
     @Test
@@ -111,15 +111,43 @@ class RedisAgentStateStoreProviderTest {
     }
 
     @Test
-    void resolverDiscoversProviderThroughServiceLoader() {
-        AgentSessionStoreConfig config = new AgentSessionStoreConfig();
-        config.setType(AgentSessionStoreType.REDIS);
-        config.getRedis().setUri(CLOSED_PORT_URI);
-        // SPI wiring proven: the error comes from the provider's connection attempt,
-        // not the missing-module path.
-        AgentConfigException failure = assertThrows(AgentConfigException.class,
-                () -> new DefaultAgentStateStoreResolver().resolve(config));
-        assertTrue(failure.getMessage().contains("Redis state store could not be created"));
+    void resolverDiscoversProviderThroughServiceLoader() throws Exception {
+        try (var endpoint = new MockRedisEndpoint()) {
+            AgentSessionStoreConfig config = new AgentSessionStoreConfig();
+            config.setType(AgentSessionStoreType.REDIS);
+            config.getRedis().setUri(endpoint.uri());
+            AgentConfigException failure = assertThrows(AgentConfigException.class,
+                    () -> new DefaultAgentStateStoreResolver().resolve(config));
+            assertTrue(failure.getMessage().contains("Redis state store could not be created"));
+            endpoint.assertRequested();
+        }
+    }
+
+    /** A local RESP stub rejects the handshake; no assumption about an unused machine port. */
+    private static final class MockRedisEndpoint implements AutoCloseable {
+        private final java.net.ServerSocket server;
+        private final java.util.concurrent.ExecutorService worker = java.util.concurrent.Executors.newSingleThreadExecutor();
+        private final java.util.concurrent.Future<?> request;
+
+        MockRedisEndpoint() throws Exception {
+            server = new java.net.ServerSocket(0, 1, java.net.InetAddress.getByName("127.0.0.1"));
+            request = worker.submit(() -> {
+                try (var socket = server.accept()) {
+                    socket.setSoTimeout(3000);
+                    assertTrue(socket.getInputStream().read() >= 0);
+                    socket.getOutputStream().write("-ERR mock Redis handshake failure\r\n"
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    socket.getOutputStream().flush();
+                }
+                return null;
+            });
+        }
+        String uri() { return "redis://127.0.0.1:" + server.getLocalPort(); }
+        void assertRequested() throws Exception { request.get(5, java.util.concurrent.TimeUnit.SECONDS); }
+        @Override public void close() throws Exception {
+            try { server.close(); }
+            finally { worker.shutdownNow(); }
+        }
     }
 
     /** Adapter stub: the clientAdapter builder branch stores it without connecting. */

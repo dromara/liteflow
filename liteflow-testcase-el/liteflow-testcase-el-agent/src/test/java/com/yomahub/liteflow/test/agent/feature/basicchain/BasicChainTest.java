@@ -1,7 +1,7 @@
 package com.yomahub.liteflow.test.agent.feature.basicchain;
 
 import com.yomahub.liteflow.flow.LiteflowResponse;
-import com.yomahub.liteflow.test.agent.support.BaseAgentLiveTest;
+import com.yomahub.liteflow.test.agent.support.BaseAgentTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = BasicChainTest.class)
 @EnableAutoConfiguration
 @ComponentScan("com.yomahub.liteflow.test.agent.feature.basicchain")
-public class BasicChainTest extends BaseAgentLiveTest {
+public class BasicChainTest extends BaseAgentTest {
 
     @BeforeEach
     public void resetProbe() {
