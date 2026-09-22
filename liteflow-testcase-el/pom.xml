@@ -74,6 +74,7 @@
                 <module>liteflow-testcase-el-agent-jev</module>
                 <module>liteflow-testcase-el-agent-harness</module>
                 <module>liteflow-testcase-el-agent</module>
+                <module>liteflow-testcase-el-agent-springboot4</module>
                 <module>liteflow-testcase-el-springboot4</module>
 				<module>liteflow-testcase-el-rule-db-sql-springboot4</module>
 				<module>liteflow-testcase-el-rule-db-postgresql-springboot4</module>

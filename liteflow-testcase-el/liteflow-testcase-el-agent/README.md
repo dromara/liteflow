@@ -2,7 +2,7 @@
 
 Agent testcase 不需要真实 API key、模型账户、Docker daemon、MySQL 或 Redis 服务。外部边界使用脚本模型、mock 客户端或仅监听 `127.0.0.1` 随机端口的 mock 服务。LiteFlow 组件、AgentScope 运行时、Provider SDK、规则解析和序列化逻辑仍执行真实代码。数据库语义测试使用隔离的 H2，文件持久化测试使用临时目录。
 
-四个模块默认执行测试，覆盖 `liteflow-agent` 下全部九个生产模块。命令行显式传入 `-DskipTests` 仍可跳过。已移除 `agent-live`、`agent-docker-it` 和真实凭据读取工具；原 `real/` 测试中的功能场景由下列确定性用例承接。
+五个模块默认执行测试，覆盖 `liteflow-agent` 下全部九个生产模块。命令行显式传入 `-DskipTests` 仍可跳过。已移除 `agent-live`、`agent-docker-it` 和真实凭据读取工具；原 `real/` 测试中的功能场景由下列确定性用例承接。
 
 | 能力／原场景 | 默认执行的测试 |
 | --- | --- |
@@ -18,13 +18,15 @@ Agent testcase 不需要真实 API key、模型账户、Docker daemon、MySQL �
 | MySQL／Redis 存储、CAS、分页、迁移、客户端所有权 | `MysqlConversationServiceTest`、`MysqlBeanAndSchemaTest`、`MysqlHarnessStorageTest`、`CatalogDataSourceTest`、`RedisConversationServiceTest`、`RedisStorageContractTest`、`RedisStorageConnectionTest` |
 | 分布式锁、续租、失锁、中断、清理异常 | `MysqlInvocationGuardTest`、`RedisStorageContractTest`，mock JDBC／Redis 客户端 |
 | JEV 选择、阈值、路由和异常 | `JevChoiceClientTest`、`JevSwitchComponentTest`，使用 `MockJevServer` |
+| Spring Boot 配置绑定、元数据覆盖、组件生命周期 | `liteflow-testcase-el-agent` 中的 `AgentPropertyBindingTest`（Boot 2 starter） |
+| Spring Boot 4 配置绑定与端到端链 | `liteflow-testcase-el-agent-springboot4` 中的 `AgentPropertyBindingTest`、`AgentChainGuideTest`；Boot 4 classpath 与 Boot 2 互斥，故独立成模块 |
 
 ## 执行
 
 在仓库根目录使用 JDK 17 或更高版本：
 
 ```sh
-mvn -pl liteflow-testcase-el/liteflow-testcase-el-agent-core,liteflow-testcase-el/liteflow-testcase-el-agent-harness,liteflow-testcase-el/liteflow-testcase-el-agent,liteflow-testcase-el/liteflow-testcase-el-agent-jev -am clean test
+mvn -pl liteflow-testcase-el/liteflow-testcase-el-agent-core,liteflow-testcase-el/liteflow-testcase-el-agent-harness,liteflow-testcase-el/liteflow-testcase-el-agent,liteflow-testcase-el/liteflow-testcase-el-agent-jev,liteflow-testcase-el/liteflow-testcase-el-agent-springboot4 -am clean test
 ```
 
 `clean` 会清除旧 live 测试的 class 文件和以前复制的本地凭据。历史本地 `src/test/resources/env.txt` 保持 Git 忽略，并从测试资源复制中排除；测试不会读取该文件或环境中的模型凭据。

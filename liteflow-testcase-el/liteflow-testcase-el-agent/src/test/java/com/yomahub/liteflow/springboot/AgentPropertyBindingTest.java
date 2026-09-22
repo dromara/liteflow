@@ -419,7 +419,7 @@ class AgentPropertyBindingTest {
             String name = prefix + property.getName()
                     .replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
             Class<?> type = property.getPropertyType();
-            if (!type.isEnum() && type.getPackage().getName().equals(AgentConfig.class.getPackage().getName())) {
+            if (!type.isEnum() && type.getPackageName().equals(AgentConfig.class.getPackageName())) {
                 types.putAll(agentPropertyTypes(type, name + "."));
             } else {
                 String metadataType = type.isPrimitive()
