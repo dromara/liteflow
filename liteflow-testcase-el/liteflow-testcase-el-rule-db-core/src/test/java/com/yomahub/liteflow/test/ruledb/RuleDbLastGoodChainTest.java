@@ -14,7 +14,6 @@ import com.yomahub.liteflow.repository.RuleDbSyncManager;
 import com.yomahub.liteflow.repository.runtime.RuleTargetState;
 import com.yomahub.liteflow.repository.runtime.RuleTargetStatus;
 import com.yomahub.liteflow.slot.DefaultContext;
-import com.yomahub.liteflow.util.ElRegexUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,6 +68,41 @@ public class RuleDbLastGoodChainTest extends BaseRuleDbTest {
 
 		Assertions.assertTrue(response.isSuccess());
 		Assertions.assertEquals("chain1", response.getChainId());
+	}
+
+	@Test
+	public void testEnsureChainLoadedUsesOriginalElFingerprint() {
+		String el = "THEN(a.tag(\"hello world\"));";
+		InMemoryRuleRepository.putChain("chain1", el);
+		registerCommonCmp();
+		buildExecutor(new RuleDbConfig());
+
+		RuleDbRuntime.ensureChainLoaded("chain1");
+
+		Assertions.assertEquals(el, FlowBus.getChain("chain1").getEl());
+		Assertions.assertEquals(elMd5(el), FlowBus.getChain("chain1").getElMd5());
+	}
+
+	@Test
+	public void testLiteralWhitespaceChangeReplacesElMapping() {
+		String versionOneEl = "THEN(a.tag(\"a b\"));";
+		String versionTwoEl = "THEN(a.tag(\"ab\"));";
+		FlowExecutor executor = loadVersionOne(versionOneEl);
+		Assertions.assertEquals("chain1", FlowBus.getChainIdByElMd5(elMd5(versionOneEl)));
+
+		InMemoryRuleRepository.publishChain("chain1", versionTwoEl);
+		RuleDbSyncManager.pollOnce();
+		LiteflowResponse updated = executor.execute2Resp("chain1");
+		Assertions.assertTrue(updated.isSuccess(), updated.getMessage());
+		Assertions.assertEquals("ab", updated.getExecuteStepQueue().peek().getTag());
+		Assertions.assertNull(FlowBus.getChainIdByElMd5(elMd5(versionOneEl)));
+		Assertions.assertEquals("chain1", FlowBus.getChainIdByElMd5(elMd5(versionTwoEl)));
+		Assertions.assertEquals("chain1", executor.execute2RespWithEL(versionTwoEl).getChainId());
+
+		LiteflowResponse original = executor.execute2RespWithEL(versionOneEl);
+		Assertions.assertTrue(original.isSuccess(), original.getMessage());
+		Assertions.assertNotEquals("chain1", original.getChainId());
+		Assertions.assertEquals("a b", original.getExecuteStepQueue().peek().getTag());
 	}
 
 	@Test
@@ -399,7 +433,7 @@ public class RuleDbLastGoodChainTest extends BaseRuleDbTest {
 	}
 
 	private static String elMd5(String el) {
-		return MD5.create().digestHex(ElRegexUtil.normalize(el));
+		return MD5.create().digestHex(el);
 	}
 
 	public static class RouteCmp extends NodeBooleanComponent {

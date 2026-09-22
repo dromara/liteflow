@@ -6,7 +6,6 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.alibaba.qlexpress4.Express4Runner;
@@ -34,7 +33,7 @@ import com.yomahub.liteflow.log.LFLog;
 import com.yomahub.liteflow.log.LFLoggerManager;
 import com.yomahub.liteflow.property.LiteflowConfig;
 import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.util.ElRegexUtil;
+import com.yomahub.liteflow.util.ElFingerprint;
 import com.yomahub.liteflow.util.QlExpressUtils;
 
 import java.util.ArrayList;
@@ -163,8 +162,7 @@ public class LiteFlowChainELBuilder {
 
 		this.chain.setEl(elStr);
 
-		String elMd5 = MD5.create().digestHex(ElRegexUtil.normalize(elStr));
-		this.chain.setElMd5(elMd5);
+		this.chain.setElMd5(ElFingerprint.of(elStr));
 
 		return this;
 	}

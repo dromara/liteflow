@@ -63,7 +63,7 @@ public class BaseELSpringbootTest extends BaseTest {
 		Assertions.assertTrue(response.isSuccess());
 	}
 
-	// 入参执行 EL 表达式
+	// 相同原文复用 chain，不同排版分别建链
 	@Test
 	public void testBase6() throws Exception {
 		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a, b,c);;");
@@ -72,7 +72,11 @@ public class BaseELSpringbootTest extends BaseTest {
 		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("THEN(\na, \tb,c);");
 		Assertions.assertTrue(response1.isSuccess());
 
-		Assertions.assertEquals(response.getChainId(), response1.getChainId());
+		Assertions.assertNotEquals(response.getChainId(), response1.getChainId());
+
+		LiteflowResponse repeated = flowExecutor.execute2RespWithEL("THEN(a, b,c);;");
+		Assertions.assertTrue(repeated.isSuccess());
+		Assertions.assertEquals(response.getChainId(), repeated.getChainId());
 	}
 
 	// 入参执行 EL 表达式，测试移除 chain
@@ -83,34 +87,21 @@ public class BaseELSpringbootTest extends BaseTest {
 
 		FlowBus.removeChain(response.getChainId());
 
-		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("THEN(a,b, c);");
+		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("THEN(a,b, \nc);;");
 		Assertions.assertTrue(response1.isSuccess());
 
 		Assertions.assertNotEquals(response.getChainId(), response1.getChainId());
 	}
 
-	// 运行文件里同样的 chain
+	// 使用配置文件加载后的 EL 原文，复用对应 chain
 	@Test
 	public void testBase8() throws Exception {
-		LiteflowResponse response = flowExecutor.execute2RespWithEL("THEN(a,b,SWITCH(e).to(d,f));");
-		Assertions.assertTrue(response.isSuccess());
-		// 应返回 chain2
-		Assertions.assertEquals("chain2", response.getChainId());
-
-		LiteflowResponse response1 = flowExecutor.execute2RespWithEL("t1 = THEN(c, WHEN(j,k));\n" +
-                "        w1 = WHEN(q, THEN(p, r)).id(\"w01\");\n" +
-                "        t2 = THEN(h, i);\n" +
-                "\n" +
-                "        THEN(\n" +
-                "        a,b,\n" +
-                "        WHEN(t1, d, t2 ),\n" +
-                "        SWITCH(x).to(m, n, w1),\n" +
-                "        z\n" +
-                "        );\n" +
-                "        THEN(a,b,b,a,SWITCH(e).TO(d,b));");
-		Assertions.assertTrue(response1.isSuccess());
-		// 应返回 chain5
-		Assertions.assertEquals("chain5", response1.getChainId());
+		for (String chainId : new String[]{"chain2", "chain5"}) {
+			String el = FlowBus.getChain(chainId).getEl();
+			LiteflowResponse response = flowExecutor.execute2RespWithEL(el);
+			Assertions.assertTrue(response.isSuccess());
+			Assertions.assertEquals(chainId, response.getChainId());
+		}
 	}
 
 }

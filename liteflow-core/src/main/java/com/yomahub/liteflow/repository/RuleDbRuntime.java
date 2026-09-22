@@ -2,7 +2,6 @@ package com.yomahub.liteflow.repository;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.enums.NodeTypeEnum;
 import com.yomahub.liteflow.exception.ChainLoadException;
@@ -29,7 +28,7 @@ import com.yomahub.liteflow.repository.vo.RuleManifest;
 import com.yomahub.liteflow.repository.vo.RuleDbRuntimeSnapshot;
 import com.yomahub.liteflow.repository.vo.ScriptMeta;
 import com.yomahub.liteflow.repository.vo.ScriptRecord;
-import com.yomahub.liteflow.util.ElRegexUtil;
+import com.yomahub.liteflow.util.ElFingerprint;
 import com.yomahub.liteflow.script.ScriptExecutorFactory;
 
 import java.util.ArrayList;
@@ -412,9 +411,8 @@ public class RuleDbRuntime {
 			}
 		}
 		chain.setEl(record.getEl());
-		// 与 LiteFlowChainELBuilder.setEL 保持一致地计算并写入 elMd5，
-		// 否则 FlowBus.addChain 的 elMd5Map.put 会因 null value 抛 NPE
-		chain.setElMd5(MD5.create().digestHex(ElRegexUtil.normalize(record.getEl())));
+		// 与 builder、动态 EL 执行入口保持一致，按原文计算指纹
+		chain.setElMd5(ElFingerprint.of(record.getEl()));
 		chain.setRouteEl(record.getRoute());
 		if (StrUtil.isNotBlank(record.getNamespace())) {
 			chain.setNamespace(record.getNamespace());

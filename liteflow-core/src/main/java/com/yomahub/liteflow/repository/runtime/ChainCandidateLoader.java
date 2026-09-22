@@ -1,14 +1,13 @@
 package com.yomahub.liteflow.repository.runtime;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.exception.ChainLoadException;
 import com.yomahub.liteflow.flow.element.Chain;
 import com.yomahub.liteflow.repository.RuleRepository;
 import com.yomahub.liteflow.repository.vo.ChainMeta;
 import com.yomahub.liteflow.repository.vo.ChainRecord;
-import com.yomahub.liteflow.util.ElRegexUtil;
+import com.yomahub.liteflow.util.ElFingerprint;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -39,7 +38,7 @@ public final class ChainCandidateLoader {
 		String candidateId = chainId + "@ruleDb@" + expectedVersion + "@" + UUID.randomUUID();
 		Chain candidate = new Chain(candidateId);
 		candidate.setEl(record.getEl());
-		candidate.setElMd5(MD5.create().digestHex(ElRegexUtil.normalize(record.getEl())));
+		candidate.setElMd5(ElFingerprint.of(record.getEl()));
 		candidate.setRouteEl(record.getRoute());
 		if (StrUtil.isNotBlank(record.getNamespace())) {
 			candidate.setNamespace(record.getNamespace());

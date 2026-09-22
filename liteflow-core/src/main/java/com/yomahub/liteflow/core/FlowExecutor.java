@@ -12,7 +12,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.*;
-import cn.hutool.crypto.digest.MD5;
 import com.yomahub.liteflow.builder.el.LiteFlowChainELBuilder;
 import com.yomahub.liteflow.common.ChainConstant;
 import com.yomahub.liteflow.enums.ChainExecuteModeEnum;
@@ -46,7 +45,7 @@ import com.yomahub.liteflow.spi.holder.ContextCmpInitHolder;
 import com.yomahub.liteflow.spi.holder.PathContentParserHolder;
 import com.yomahub.liteflow.thread.ExecutorHelper;
 import com.yomahub.liteflow.util.ConversationIdGenerator;
-import com.yomahub.liteflow.util.ElRegexUtil;
+import com.yomahub.liteflow.util.ElFingerprint;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -294,6 +293,8 @@ public class FlowExecutor {
 
 	/**
 	 * 直接执行 EL 表达式
+	 * <p>使用原文编译和计算指纹，仅原文完全一致时复用 chain。
+	 * 空白、引号或分号不同的 EL 会分别建链。</p>
 	 *
 	 * @param elStr EL 表达式
 	 * @return LiteflowResponse
@@ -350,11 +351,8 @@ public class FlowExecutor {
 	 * @return LiteflowResponse
 	 */
 	private LiteflowResponse execute2RespWithEL(String elStr, Object param, String requestId, Class<?>[] contextBeanClazzArray, Object[] contextBeanArray) {
-		// 规范化 el 表达式
-		String normalizedEl = ElRegexUtil.normalize(elStr);
-
-		// 计算 EL MD5 值，并检查对应的 chain 是否已加载到内存中
-		String elMd5 = MD5.create().digestHex(normalizedEl);
+		// 按 EL 原文计算指纹，仅复用原文一致的 chain
+		String elMd5 = ElFingerprint.of(elStr);
 
 		String chainId;
 
@@ -364,7 +362,7 @@ public class FlowExecutor {
 			LiteFlowChainELBuilder.createChain()
 					.setChainId(chainId)
 					.setTransientElChain(true)
-					.setEL(normalizedEl)
+					.setEL(elStr)
 					.build();
 		}
 
