@@ -27,5 +27,7 @@
         <module>liteflow-script-javax</module>
         <module>liteflow-script-javax-pro</module>
         <module>liteflow-script-kotlin</module>
+        <module>liteflow-script-python-jep</module>
+        <module>liteflow-script-python-graalpy</module>
     </modules>
 </project>

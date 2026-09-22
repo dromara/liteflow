@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE flow PUBLIC  "liteflow" "liteflow.dtd">
+<flow>
+    <nodes>
+        <node id="s1" name="普通脚本1" type="script" language="python">
+            <![CDATA[
+                import json
+
+                x='{"name": "jack", "age": 75, "nationality": "China"}'
+                jsonData=json.loads(x)
+                name=jsonData['name']
+                defaultContext.setData("name", name)
+
+
+                a=6
+                b=10
+                if a>5:
+                    b=5
+                    print('你好')
+                else:
+                    print('hi')
+                defaultContext.setData("s1",a*b)
+                defaultContext.setData("s2","中文")
+                defaultContext.setData("td", td.sayHi("jack"))
+            ]]>
+        </node>
+
+        <node id="s2" name="文件脚本" type="script" file="common/s2.py" language="python"/>
+
+        <node id="s3" name="普通脚本1" type="switch_script" language="python">
+            <![CDATA[
+                return "t2"
+            ]]>
+        </node>
+
+        <node id="s4" name="布尔脚本" type="boolean_script" language="python">
+            <![CDATA[
+                return False
+            ]]>
+        </node>
+    </nodes>
+
+    <chain name="chain1">
+        THEN(a, b, c, s1, s2);
+    </chain>
+
+    <chain name="chain2">
+        SWITCH(s3).TO(a,IF(s4, b, c).id("t2"));
+    </chain>
+</flow>
