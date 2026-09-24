@@ -1,8 +1,6 @@
 package com.yomahub.liteflow.agent.jev;
 
 import com.yomahub.liteflow.core.NodeSwitchComponent;
-import com.yomahub.liteflow.property.LiteflowConfigGetter;
-import com.yomahub.liteflow.property.agent.AgentConfig;
 import com.yomahub.liteflow.property.agent.JevConfig;
 
 import java.util.Collections;
@@ -35,11 +33,7 @@ public abstract class JevSwitchComponent extends NodeSwitchComponent {
     }
 
     protected final JevConfig jevConfig() {
-        AgentConfig agent = LiteflowConfigGetter.get().getAgent();
-        if (agent == null || agent.getJev() == null) {
-            throw new IllegalArgumentException("liteflow.agent.jev must be configured before use");
-        }
-        return agent.getJev();
+        return JevTransport.requireConfig();
     }
 
     @Override

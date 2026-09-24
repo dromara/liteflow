@@ -56,13 +56,15 @@ class AgentPropertyBindingTest {
                 entry("jev.base-url", "http://localhost:8089/gateway/v1/"),
                 entry("jev.model", "jev-test-version"),
                 entry("jev.timeout", "750ms"),
-                entry("jev.min-confidence", "0.85"))).getAgent();
+                entry("jev.min-confidence", "0.85"),
+                entry("jev.noul-threshold", "0.8"))).getAgent();
         assertEquals(JevProvider.TYPESAFE, agent.getJev().getProvider());
         assertEquals("jev-test-key", agent.getJev().getApiKey());
         assertEquals("http://localhost:8089/gateway/v1/", agent.getJev().getBaseUrl());
         assertEquals("jev-test-version", agent.getJev().getModel());
         assertEquals(Duration.ofMillis(750), agent.getJev().getTimeout());
         assertEquals(0.85, agent.getJev().getMinConfidence());
+        assertEquals(0.8, agent.getJev().getNoulThreshold());
         assertEquals(null, agent.getOpenai().getApiKey());
     }
 
@@ -85,6 +87,10 @@ class AgentPropertyBindingTest {
                 entry("jev.model", "typesafe/custom-model"))).getAgent();
         assertEquals("http://localhost:8089/api/alpha", custom.getJev().getBaseUrl());
         assertEquals("typesafe/custom-model", custom.getJev().getModel());
+        AgentConfig laya = bind(Map.ofEntries(entry("jev.provider", "laya"))).getAgent();
+        assertEquals(JevProvider.LAYA, laya.getJev().getProvider());
+        assertEquals("http://127.0.0.1:8000/v1", laya.getJev().getBaseUrl());
+        assertEquals("auto", laya.getJev().getModel());
         assertThrows(BindException.class, () -> bind(Map.ofEntries(entry("jev.provider", "unknown"))));
     }
 
@@ -282,7 +288,7 @@ class AgentPropertyBindingTest {
                 .findFirst().orElseThrow(() -> new AssertionError("Missing Jev provider completion hints"));
         Set<String> values = StreamSupport.stream(hint.path("values").spliterator(), false)
                 .map(node -> node.path("value").asText()).collect(Collectors.toSet());
-        assertEquals(Set.of("typesafe", "openrouter"), values);
+        assertEquals(Set.of("typesafe", "openrouter", "laya"), values);
     }
 
     @Test

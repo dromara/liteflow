@@ -17,7 +17,7 @@ Agent testcase 不需要真实 API key、模型账户、Docker daemon、MySQL �
 | 沙箱创建、复用、恢复、回收、失败重试、投影 | `SandboxLifecycleTest`、`SessionSandboxRegistryTest`、`CheckpointRetryTest`、`WorkspaceProjectionTest`，使用 `FakeSandboxClient` |
 | MySQL／Redis 存储、CAS、分页、迁移、客户端所有权 | `MysqlConversationServiceTest`、`MysqlBeanAndSchemaTest`、`MysqlHarnessStorageTest`、`CatalogDataSourceTest`、`RedisConversationServiceTest`、`RedisStorageContractTest`、`RedisStorageConnectionTest` |
 | 分布式锁、续租、失锁、中断、清理异常 | `MysqlInvocationGuardTest`、`RedisStorageContractTest`，mock JDBC／Redis 客户端 |
-| JEV 选择、阈值、路由和异常 | `JevChoiceClientTest`、`JevSwitchComponentTest`，使用 `MockJevServer` |
+| JEV 选择、布尔判断、阈值、路由和异常 | `JevChoiceClientTest`、`JevSwitchComponentTest`、`JevNoulClientTest`、`JevBooleanComponentTest`，使用 `MockJevServer` |
 | Spring Boot 配置绑定、元数据覆盖、组件生命周期 | `liteflow-testcase-el-agent` 中的 `AgentPropertyBindingTest`（Boot 2 starter） |
 | Spring Boot 4 配置绑定与端到端链 | `liteflow-testcase-el-agent-springboot4` 中的 `AgentPropertyBindingTest`、`AgentChainGuideTest`；Boot 4 classpath 与 Boot 2 互斥，故独立成模块 |
 

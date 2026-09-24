@@ -16,9 +16,12 @@ public class JevConfig {
     /** Application-specific threshold; calibrate with representative inputs before production use. */
     private double minConfidence = 0.6;
 
+    /** Noul probability at or above which the answer counts as yes; calibrate per application. */
+    private double noulThreshold = 0.5;
+
     public JevProvider getProvider() {
         if (provider == null) {
-            throw new IllegalArgumentException("liteflow.agent.jev.provider must be typesafe or openrouter");
+            throw new IllegalArgumentException("liteflow.agent.jev.provider must be typesafe, openrouter or laya");
         }
         return provider;
     }
@@ -37,4 +40,6 @@ public class JevConfig {
     public void setTimeout(Duration timeout) { this.timeout = timeout; }
     public double getMinConfidence() { return minConfidence; }
     public void setMinConfidence(double minConfidence) { this.minConfidence = minConfidence; }
+    public double getNoulThreshold() { return noulThreshold; }
+    public void setNoulThreshold(double noulThreshold) { this.noulThreshold = noulThreshold; }
 }

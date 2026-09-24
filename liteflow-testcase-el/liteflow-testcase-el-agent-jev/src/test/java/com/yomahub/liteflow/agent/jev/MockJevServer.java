@@ -64,6 +64,15 @@ final class MockJevServer implements AutoCloseable {
         return response(choice, confidence, "refund", "exchange", JevSwitchComponent.NO_MATCH);
     }
 
+    static String noulResponse(double probability) {
+        try {
+            return JSON.writeValueAsString(Map.of("model", "jev-test-resolved", "answers", Map.of(
+                    "judge", Map.of("type", "noul", "noul", probability))));
+        } catch (IOException impossible) {
+            throw new AssertionError(impossible);
+        }
+    }
+
     static String response(String choice, double confidence, String... options) {
         Map<String, Double> probabilities = new LinkedHashMap<>();
         for (String option : options) {

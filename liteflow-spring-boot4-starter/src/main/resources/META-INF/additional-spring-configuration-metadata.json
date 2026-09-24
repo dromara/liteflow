@@ -586,27 +586,27 @@
     {
       "name": "liteflow.agent.jev.provider",
       "type": "com.yomahub.liteflow.property.agent.JevProvider",
-      "description": "Jev service provider: TYPESAFE (System One) or OPENROUTER (Decisions API).",
+      "description": "Jev service provider: TYPESAFE (System One), OPENROUTER (Decisions API) or LAYA (self-hosted laya-serve speaking the same /v1/systemone protocol).",
       "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
       "defaultValue": "TYPESAFE"
     },
     {
       "name": "liteflow.agent.jev.api-key",
       "type": "java.lang.String",
-      "description": "API key for the selected Jev provider (TypeSafe or OpenRouter). Validated only when a Jev component executes.",
+      "description": "API key for the selected Jev provider. Required for TYPESAFE and OPENROUTER; optional for LAYA, sent only when the self-hosted server has LAYA_API_KEY set. Validated only when a Jev component executes.",
       "sourceType": "com.yomahub.liteflow.property.agent.JevConfig"
     },
     {
       "name": "liteflow.agent.jev.base-url",
       "type": "java.lang.String",
-      "description": "Optional API root override. Blank uses https://api.typesafe.ai/v1 for TYPESAFE or https://openrouter.ai/api/alpha for OPENROUTER; the client appends /systemone or /decisions respectively.",
+      "description": "Optional API root override. Blank uses https://api.typesafe.ai/v1 for TYPESAFE, https://openrouter.ai/api/alpha for OPENROUTER or http://127.0.0.1:8000/v1 for LAYA; the client appends /systemone or /decisions respectively.",
       "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
       "defaultValue": "https://api.typesafe.ai/v1"
     },
     {
       "name": "liteflow.agent.jev.model",
       "type": "java.lang.String",
-      "description": "Optional model ID override. Blank uses jev-1.13.0 for TYPESAFE or typesafe/jev-1.13 for OPENROUTER.",
+      "description": "Optional model ID override. Blank uses jev-1.13.0 for TYPESAFE, typesafe/jev-1.13 for OPENROUTER or auto for LAYA (its router picks a checkpoint; english, multilingual or typed-decisions pin one).",
       "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
       "defaultValue": "jev-1.13.0"
     },
@@ -623,6 +623,13 @@
       "description": "Minimum confidence to select a target. Lower confidence uses SWITCH DEFAULT; calibrate on business data.",
       "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
       "defaultValue": 0.6
+    },
+    {
+      "name": "liteflow.agent.jev.noul-threshold",
+      "type": "java.lang.Double",
+      "description": "Noul probability at or above which the answer counts as yes for JevBooleanComponent; calibrate on business data.",
+      "sourceType": "com.yomahub.liteflow.property.agent.JevConfig",
+      "defaultValue": 0.5
     },
     {
       "name": "liteflow.agent.openai.api-key",
@@ -1141,6 +1148,10 @@
         {
           "value": "openrouter",
           "description": "Call Jev through OpenRouter's Decisions API."
+        },
+        {
+          "value": "laya",
+          "description": "Call a self-hosted laya-serve instance (local checkpoints, downloads them on first use) over the same /v1/systemone protocol."
         }
       ]
     }
