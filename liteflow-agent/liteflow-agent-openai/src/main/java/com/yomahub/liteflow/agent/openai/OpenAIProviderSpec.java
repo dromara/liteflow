@@ -29,6 +29,7 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
     private final String providerId;
     private final String configKey;
     private final String modelName;
+    private final String defaultBaseUrl;
     private String endpointPath;
     private Boolean enableThinking;
     private ProxyConfig proxyConfig;
@@ -37,6 +38,11 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
     private Consumer<ModelCreationContext.Builder> contextCustomizer;
 
     public OpenAIProviderSpec(String providerId, String configKey, String modelName) {
+        this(providerId, configKey, modelName, null);
+    }
+
+    OpenAIProviderSpec(String providerId, String configKey, String modelName, String defaultBaseUrl) {
+        this.defaultBaseUrl = defaultBaseUrl;
         this.providerId = requireIdentifier(providerId, "providerId");
         if (providerId.indexOf(':') >= 0) {
             throw new IllegalArgumentException("providerId must not contain ':'");
@@ -103,7 +109,7 @@ public class OpenAIProviderSpec extends ModelSpec<OpenAIProviderSpec> {
             GenerateOptions options = mergeGenerateOptions(null);
             ModelCreationContext.Builder context = ModelCreationContext.builder()
                     .apiKey(credential.apiKey())
-                    .baseUrl(credential.baseUrl())
+                    .baseUrl(credential.baseUrl() == null ? defaultBaseUrl : credential.baseUrl())
                     .endpointPath(endpointPath)
                     .stream(options == null ? null : options.getStream())
                     .enableThinking(enableThinking)
