@@ -22,7 +22,7 @@ public class ACmp extends NodeComponent {
 	public void process() {
 		String str = this.getRequestData();
 		if (StrUtil.isNotBlank(str) && str.equals("exception")) {
-			throw new RuntimeException("chain execute execption");
+			throw new RuntimeException("chain execute exception");
 		}
 		LOG.info("Acomp executed!");
 	}
