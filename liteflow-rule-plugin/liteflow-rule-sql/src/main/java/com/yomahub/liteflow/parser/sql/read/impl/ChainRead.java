@@ -48,9 +48,8 @@ public class ChainRead extends AbstractSqlRead<ChainVO> {
     @Override
     public boolean getEnableFiledValue(ResultSet rs) throws SQLException {
         String chainEnableField = super.config.getChainEnableField();
-        byte enable = rs.getByte(chainEnableField);
 
-        return enable == 1;
+        return rs.getBoolean(chainEnableField);
     }
 
     @Override
