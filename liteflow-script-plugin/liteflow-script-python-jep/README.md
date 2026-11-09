@@ -1,0 +1,2 @@
+- 该模块提供了基于JEP的Python的相关能力，支持了Python3需要本地环境配合，通过JEP能够大幅提升Python相关能力，可添加所有Python三方依赖。
+- **Python执行引擎**: CPython 3.10+ / JEP 4.3.1（本地运行前执行 `python3 -m pip install jep==4.3.1`）
